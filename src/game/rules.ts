@@ -962,6 +962,12 @@ function distanceBetweenSlots(a: SlotState, b: SlotState): number {
   return Math.abs(ca.x - cb.x) + Math.abs(ca.y - cb.y);
 }
 
+function rangedDistanceBetweenSlots(a: SlotState, b: SlotState): number {
+  const ca = slotCoord(a);
+  const cb = slotCoord(b);
+  return Math.max(Math.abs(ca.x - cb.x), Math.abs(ca.y - cb.y));
+}
+
 function slotCoord(slot: SlotState): { x: number; y: number } {
   const x = slot.lane === "left" ? 0 : 2;
   if (slot.owner === "cpu") {
@@ -971,16 +977,7 @@ function slotCoord(slot: SlotState): { x: number; y: number } {
 }
 
 function isOneSkipTarget(attackerSlot: SlotState, targetSlot: SlotState): boolean {
-  return forwardRowDistance(attackerSlot, targetSlot) === 2;
-}
-
-function forwardRowDistance(attackerSlot: SlotState, targetSlot: SlotState): number {
-  const attackerCoord = slotCoord(attackerSlot);
-  const targetCoord = slotCoord(targetSlot);
-  if (attackerSlot.owner === "player") {
-    return attackerCoord.y - targetCoord.y;
-  }
-  return targetCoord.y - attackerCoord.y;
+  return rangedDistanceBetweenSlots(attackerSlot, targetSlot) === 2;
 }
 
 function ensureActionAllowed(state: GameState): void {

@@ -294,6 +294,25 @@ describe("battle prototype rules", () => {
     expect(next.slots.cpu_front_right.monster?.hp).toBe(3);
   });
 
+  it("lets range-2 attacks reach from the right front to the opposite left front", () => {
+    const game = createInitialGame(114);
+    game.slots.player_front_right.monster = createActiveMonster("yanbaru", "player");
+    game.slots.cpu_front_left.monster = createActiveMonster("takokke", "cpu");
+
+    expect(getCommandTargets(game, "player_front_right", "wild_claw")).toContainEqual({
+      kind: "monster",
+      slotKey: "cpu_front_left",
+    });
+
+    const next = attackWithCommand(game, {
+      attackerSlotKey: "player_front_right",
+      commandId: "wild_claw",
+      target: { kind: "monster", slotKey: "cpu_front_left" },
+    });
+
+    expect(next.slots.cpu_front_left.monster?.hp).toBe(3);
+  });
+
   it("allows attacks against allied monsters", () => {
     const game = createInitialGame(113);
     game.slots.player_front_left.monster = createActiveMonster("takokke", "player");
