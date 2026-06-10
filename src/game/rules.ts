@@ -4,6 +4,7 @@ import {
   getCardName,
   getMonsterDef,
 } from "./cards";
+import { applyCpuDecision, chooseCpuDecision } from "./cpuAi";
 import type {
   CardInstance,
   CommandAction,
@@ -53,16 +54,6 @@ interface DefeatedMonster {
   cardId: string;
   level: number;
   investedStones: number;
-}
-
-interface AttackCandidate {
-  action: CommandAction;
-  damage: number;
-}
-
-interface MasterAttackCandidate {
-  target: Target;
-  damage: number;
 }
 
 export function createInitialGame(seed = Date.now()): GameState {
@@ -133,65 +124,11 @@ export function endTurn(state: GameState): GameState {
 }
 
 export function runCpuStep(state: GameState): GameState {
-  let next = cloneState(state);
+  const next = cloneState(state);
   if (next.currentPlayer !== "cpu" || next.winner || next.pendingLevelUp) {
     return next;
   }
-
-  const winAttack = listAttackCandidates(next, "cpu").find(
-    (candidate) =>
-      candidate.action.target.kind === "master" &&
-      candidate.damage >= next.players.player.masterHp,
-  );
-  if (winAttack) {
-    return attackWithCommand(next, winAttack.action);
-  }
-
-  const killAttack = listAttackCandidates(next, "cpu").find((candidate) => {
-    if (candidate.action.target.kind !== "monster") {
-      return false;
-    }
-    const target = next.slots[candidate.action.target.slotKey].monster;
-    return !!target && target.owner !== "cpu" && candidate.damage >= target.hp;
-  });
-  if (killAttack) {
-    return attackWithCommand(next, killAttack.action);
-  }
-
-  const masterKillAttack = listMasterAttackCandidates(next, "cpu").find((candidate) => {
-    if (candidate.target.kind !== "monster") {
-      return false;
-    }
-    const target = next.slots[candidate.target.slotKey].monster;
-    return !!target && candidate.damage >= target.hp;
-  });
-  if (masterKillAttack) {
-    return useMasterAction(next, "master_attack", masterKillAttack.target);
-  }
-
-  const summon = chooseCpuSummon(next);
-  if (summon) {
-    return summonMonster(next, summon.handInstanceId, summon.slotKey);
-  }
-
-  const anyAttack = listAttackCandidates(next, "cpu").find(
-    (candidate) => candidate.damage > 0 && !isFriendlyMonsterTarget(next, "cpu", candidate.action.target),
-  );
-  if (anyAttack) {
-    return attackWithCommand(next, anyAttack.action);
-  }
-
-  const anyMasterAttack = listMasterAttackCandidates(next, "cpu").find((candidate) => candidate.damage > 0);
-  if (anyMasterAttack) {
-    return useMasterAction(next, "master_attack", anyMasterAttack.target);
-  }
-
-  const focusSlotKey = PLAYER_SLOT_ORDER.cpu.find((slotKey) => canFocusMonster(next, slotKey));
-  if (focusSlotKey) {
-    return focusMonster(next, focusSlotKey);
-  }
-
-  return endTurn(next);
+  return applyCpuDecision(next, chooseCpuDecision(next));
 }
 
 export function summonMonster(
@@ -1044,101 +981,6 @@ function forwardRowDistance(attackerSlot: SlotState, targetSlot: SlotState): num
     return attackerCoord.y - targetCoord.y;
   }
   return targetCoord.y - attackerCoord.y;
-}
-
-function isFriendlyMonsterTarget(state: GameState, playerId: PlayerId, target: Target): boolean {
-  if (target.kind !== "monster") {
-    return false;
-  }
-  return state.slots[target.slotKey].monster?.owner === playerId;
-}
-
-function listAttackCandidates(state: GameState, playerId: PlayerId): AttackCandidate[] {
-  if (state.currentPlayer !== playerId) {
-    return [];
-  }
-  const candidates: AttackCandidate[] = [];
-  for (const slotKey of PLAYER_SLOT_ORDER[playerId]) {
-    const monster = state.slots[slotKey].monster;
-    if (!monster?.status || monster.status !== "active" || monster.actionCount >= monster.actionLimit) {
-      continue;
-    }
-    for (const command of getMonsterCommands(monster)) {
-      for (const target of getCommandTargets(state, slotKey, command.id)) {
-        candidates.push({
-          action: { attackerSlotKey: slotKey, commandId: command.id, target },
-          damage: estimateDamage(state, monster, command, target),
-        });
-      }
-    }
-  }
-  return candidates;
-}
-
-function listMasterAttackCandidates(state: GameState, playerId: PlayerId): MasterAttackCandidate[] {
-  if (state.currentPlayer !== playerId) {
-    return [];
-  }
-  return getMasterActionTargets(state, "master_attack")
-    .filter((target) => target.kind === "monster")
-    .map((target) => ({
-      target,
-      damage: estimateMasterAttackDamage(state, target),
-    }));
-}
-
-function estimateMasterAttackDamage(state: GameState, target: Target): number {
-  if (target.kind !== "monster") {
-    return 0;
-  }
-  const targetMonster = state.slots[target.slotKey].monster;
-  if (!targetMonster) {
-    return 0;
-  }
-  let damage = MASTER_ATTACK_POWER;
-  if (targetMonster.shielded) {
-    damage = Math.max(0, damage - 1);
-  }
-  if (targetMonster.focused) {
-    damage = Math.max(0, damage - 1);
-  }
-  return damage;
-}
-
-function estimateDamage(
-  state: GameState,
-  attacker: MonsterState,
-  command: CommandDef,
-  target: Target,
-): number {
-  let power = command.power + (attacker.focused ? 1 : 0) + (attacker.powerUp ? 1 : 0);
-  if (target.kind === "master") {
-    return Math.max(0, power - 2);
-  }
-  const targetMonster = state.slots[target.slotKey].monster;
-  if (targetMonster?.shielded) {
-    power = Math.max(0, power - 1);
-  }
-  if (targetMonster?.focused) {
-    power = Math.max(0, power - 1);
-  }
-  return power;
-}
-
-function chooseCpuSummon(state: GameState): { handInstanceId: string; slotKey: SlotKey } | undefined {
-  const cpu = state.players.cpu;
-  if (cpu.stones < 1) {
-    return undefined;
-  }
-  const emptySlot = PLAYER_SLOT_ORDER.cpu.find((slotKey) => !state.slots[slotKey].monster);
-  if (!emptySlot) {
-    return undefined;
-  }
-  const card = cpu.hand.find((handCard) => getCardDef(handCard.cardId).type === "monster");
-  if (!card) {
-    return undefined;
-  }
-  return { handInstanceId: card.instanceId, slotKey: emptySlot };
 }
 
 function ensureActionAllowed(state: GameState): void {
