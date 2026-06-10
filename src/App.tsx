@@ -256,7 +256,9 @@ export function App() {
           <p>Turn {game.turnNumber} / {isCpuResolving ? "CPU resolving..." : playerLabel(game.currentPlayer)}</p>
         </div>
         <div className="topbar-actions">
-          <button type="button" onClick={handleNewGame}>New Game</button>
+          <button type="button" onClick={handleNewGame}>
+            <Icon icon="🔄" /> New Game
+          </button>
         </div>
       </header>
 
@@ -316,14 +318,14 @@ export function App() {
         <aside className="side-panel">
           {game.winner && (
             <section className="notice">
-              <h2>{playerLabel(game.winner)} Win</h2>
-              <button type="button" onClick={handleNewGame}>もう一戦</button>
+              <h2><Icon icon="🏆" /> {playerLabel(game.winner)} Win</h2>
+              <button type="button" onClick={handleNewGame}><Icon icon="🔄" /> もう一戦</button>
             </section>
           )}
 
           {game.pendingLevelUp && (
             <section className="notice">
-              <h2>Level Up</h2>
+              <h2><Icon icon="✨" /> Level Up</h2>
               <p>上げるレベル数を選択</p>
               <div className="button-row">
                 {Array.from({ length: game.pendingLevelUp.maxLevels + 1 }, (_, level) => (
@@ -347,7 +349,7 @@ export function App() {
                 onClick={() => applyChange(useMasterHpDraw)}
                 disabled={controlsDisabled || currentPlayer.deck.length === 0}
               >
-                HP Draw
+                <Icon icon="❤️" /> HP Draw
               </button>
               {MASTER_ACTIONS.map((action) => {
                 const targets = getMasterActionTargets(game, action.id);
@@ -361,12 +363,12 @@ export function App() {
                     }}
                     disabled={controlsDisabled || targets.length === 0}
                   >
-                    {action.label} {getMasterActionCost(action.id)}
+                    <Icon icon={masterActionIcon(action.id)} /> {action.label} {getMasterActionCost(action.id)}
                   </button>
                 );
               })}
               <button type="button" onClick={handleEndTurn} disabled={controlsDisabled}>
-                End Turn
+                <Icon icon="⏭️" /> End Turn
               </button>
             </div>
             {selectedMonster && selection?.kind === "monster" && (
@@ -399,7 +401,9 @@ export function App() {
             <h2>Log</h2>
             <ol>
               {game.log.slice(-18).map((entry, index) => (
-                <li className={`log-entry ${logTone(entry)}`} key={`${entry}_${index}`}>{entry}</li>
+                <li className={`log-entry ${logTone(entry)}`} key={`${entry}_${index}`}>
+                  <Icon icon={logIcon(entry)} /> {entry}
+                </li>
               ))}
             </ol>
           </section>
@@ -445,12 +449,12 @@ interface PlayerStatusProps {
 function PlayerStatus({ label, hp, stones, deck, hand, discard, active }: PlayerStatusProps) {
   return (
     <div className={`player-status ${active ? "active" : ""}`}>
-      <strong>{label}</strong>
-      <span>HP {hp}</span>
-      <span>Stone {stones}</span>
-      <span>Deck {deck}</span>
-      <span>Hand {hand}</span>
-      <span>Discard {discard}</span>
+      <strong><Icon icon={active ? "▶️" : "👤"} /> {label}</strong>
+      <span><Icon icon="❤️" /> HP {hp}</span>
+      <span><Icon icon="🪨" /> Stone {stones}</span>
+      <span><Icon icon="🂠" /> Deck {deck}</span>
+      <span><Icon icon="✋" /> Hand {hand}</span>
+      <span><Icon icon="🗑️" /> Discard {discard}</span>
     </div>
   );
 }
@@ -486,18 +490,27 @@ function BoardSlot({ slotKey, game, selected, targetable, effectKind, onClick }:
       <span className="slot-label">{label}</span>
       {monster && hidePreparedInfo ? (
         <span className="monster-card hidden-prepared">
-          <strong>準備中カード</strong>
-          <span>情報非公開</span>
+          <strong><Icon icon="🂠" /> 準備中カード</strong>
+          <span><Icon icon="🔒" /> 情報非公開</span>
         </span>
       ) : monster ? (
         <span className="monster-card">
-          <strong>{getCardName(monster.cardId)}</strong>
-          <span>Lv{monster.level} / HP {monster.hp}</span>
-          <span>{monster.status === "prepared" ? "準備中" : `${monster.actionCount}/${monster.actionLimit}行動`}</span>
-          <span>{[monster.focused ? "気合い 攻+1/被ダメ-1" : "", monster.powerUp ? "P+1" : "", monster.shielded ? "盾" : ""].filter(Boolean).join(" ")}</span>
+          <strong><Icon icon={cardIcon(monster.cardId)} /> {getCardName(monster.cardId)}</strong>
+          <span><Icon icon="✨" /> Lv{monster.level} / <Icon icon="❤️" /> HP {monster.hp}</span>
+          <span>
+            <Icon icon={monster.status === "prepared" ? "🕒" : "⚡"} />
+            {monster.status === "prepared" ? "準備中" : `${monster.actionCount}/${monster.actionLimit}行動`}
+          </span>
+          <span>
+            {[
+              monster.focused ? "💪 気合い 攻+1/被ダメ-1" : "",
+              monster.powerUp ? "⬆️ P+1" : "",
+              monster.shielded ? "🛡️ 盾" : "",
+            ].filter(Boolean).join(" ")}
+          </span>
         </span>
       ) : (
-        <span className="empty-slot">Empty</span>
+        <span className="empty-slot"><Icon icon="□" /> Empty</span>
       )}
     </button>
   );
@@ -520,7 +533,7 @@ function MonsterCommands({ game, slotKey, onCommand, onFocus, onMove }: MonsterC
 
   return (
     <div className="selected-detail">
-      <h3>{getCardName(monster.cardId)} Lv{monster.level}</h3>
+      <h3><Icon icon={cardIcon(monster.cardId)} /> {getCardName(monster.cardId)} Lv{monster.level}</h3>
       <div className="button-stack">
         {getMonsterCommands(monster).map((command) => {
           const targets = getCommandTargets(game, slotKey, command.id);
@@ -531,15 +544,15 @@ function MonsterCommands({ game, slotKey, onCommand, onFocus, onMove }: MonsterC
               onClick={() => onCommand(command.id, targets)}
               disabled={targets.length === 0}
             >
-              {command.name} {command.power}P
+              <Icon icon={commandIcon(command)} /> {command.name} {command.power}P
             </button>
           );
         })}
         <button type="button" onClick={() => onMove(moveTargets)} disabled={moveTargets.length === 0}>
-          Move / Swap
+          <Icon icon="🧭" /> Move / Swap
         </button>
         <button type="button" onClick={onFocus} disabled={!canFocusMonster(game, slotKey)}>
-          ためる
+          <Icon icon="💪" /> ためる
         </button>
       </div>
     </div>
@@ -639,10 +652,10 @@ function HandCardContent({ cardId }: HandCardContentProps) {
     return (
       <>
         <span className="hand-card-title">
-          <strong>{def.name}</strong>
+          <strong><Icon icon={cardIcon(def.id)} /> {def.name}</strong>
           <span className="card-chip magic">魔法</span>
         </span>
-        <span className="hand-card-meta">Cost {def.cost} / {targetKindsLabel(def.targetKinds)}</span>
+        <span className="hand-card-meta"><Icon icon="🪨" /> Cost {def.cost} / {targetKindsLabel(def.targetKinds)}</span>
         <span className="hand-card-text">{def.description}</span>
       </>
     );
@@ -654,11 +667,11 @@ function HandCardContent({ cardId }: HandCardContentProps) {
   return (
     <>
       <span className="hand-card-title">
-        <strong>{def.name}</strong>
-        <span className="card-chip">{def.role === "front" ? "前衛" : "後衛"}</span>
+        <strong><Icon icon={cardIcon(def.id)} /> {def.name}</strong>
+        <span className="card-chip"><Icon icon={roleIcon(def.role)} /> {def.role === "front" ? "前衛" : "後衛"}</span>
       </span>
-      <span className="hand-card-meta">召喚 1 / MaxLv {def.maxLevel}</span>
-      <span className="hand-card-meta">{maxHpText}</span>
+      <span className="hand-card-meta"><Icon icon="🪨" /> 召喚 1 / <Icon icon="✨" /> MaxLv {def.maxLevel}</span>
+      <span className="hand-card-meta"><Icon icon="❤️" /> {maxHpText}</span>
       <span className="hand-card-text">{commandText}</span>
     </>
   );
@@ -673,10 +686,10 @@ function CardDetail({ cardId }: CardDetailProps) {
   if (def.type === "magic") {
     return (
       <>
-        <h3>{def.name}</h3>
+        <h3><Icon icon={cardIcon(def.id)} /> {def.name}</h3>
         <div className="card-meta-row">
-          <span className="card-chip magic">魔法</span>
-          <span>Cost {def.cost}</span>
+          <span className="card-chip magic">✨ 魔法</span>
+          <span><Icon icon="🪨" /> Cost {def.cost}</span>
           <span>{targetKindsLabel(def.targetKinds)}</span>
         </div>
         <p>{def.description}</p>
@@ -686,17 +699,17 @@ function CardDetail({ cardId }: CardDetailProps) {
 
   return (
     <>
-      <h3>{def.name}</h3>
+      <h3><Icon icon={cardIcon(def.id)} /> {def.name}</h3>
       <div className="card-meta-row">
-        <span className="card-chip">{def.role === "front" ? "前衛" : "後衛"}</span>
-        <span>召喚 1</span>
-        <span>MaxLv {def.maxLevel}</span>
-        {def.actionLimit && <span>{def.actionLimit}回行動</span>}
+        <span className="card-chip"><Icon icon={roleIcon(def.role)} /> {def.role === "front" ? "前衛" : "後衛"}</span>
+        <span><Icon icon="🪨" /> 召喚 1</span>
+        <span><Icon icon="✨" /> MaxLv {def.maxLevel}</span>
+        {def.actionLimit && <span><Icon icon="⚡" /> {def.actionLimit}回行動</span>}
       </div>
       <div className="level-detail-list">
         {def.levels.map((level) => (
           <div className="level-detail" key={level.level}>
-            <strong>Lv{level.level} / HP {level.maxHp}</strong>
+            <strong><Icon icon="✨" /> Lv{level.level} / <Icon icon="❤️" /> HP {level.maxHp}</strong>
             <ul>
               {level.commands.map((command) => (
                 <li key={command.id}>{commandSummary(command)}</li>
@@ -711,7 +724,7 @@ function CardDetail({ cardId }: CardDetailProps) {
 
 function commandSummary(command: CommandDef): string {
   return [
-    `${command.name} ${command.power}P`,
+    `${commandIcon(command)} ${command.name} ${command.power}P`,
     rangeLabel(command.range),
     command.stoneCost ? `Stone ${command.stoneCost}` : "",
     command.recoilDamage ? `反動 ${command.recoilDamage}` : "",
@@ -720,18 +733,18 @@ function commandSummary(command: CommandDef): string {
 
 function rangeLabel(range: string): string {
   if (range === "adjacent") {
-    return "隣接";
+    return "↔️ 隣接";
   }
   if (range === "one_skip") {
-    return "射程2";
+    return "🎯 射程2";
   }
   if (range === "any_monster") {
-    return "任意モンスター";
+    return "◎ 任意モンスター";
   }
   if (range === "any_target") {
-    return "任意対象";
+    return "✦ 任意対象";
   }
-  return "マスター";
+  return "👑 マスター";
 }
 
 function targetKindsLabel(targetKinds: MagicTargetKind[]): string {
@@ -754,4 +767,107 @@ function slotLabel(slotKey: SlotKey): string {
   const rowLabel = row === "front" ? "前" : "後";
   const laneLabel = lane === "left" ? "L" : "R";
   return `${ownerLabel}${rowLabel}${laneLabel}`;
+}
+
+interface IconProps {
+  icon: string;
+}
+
+function Icon({ icon }: IconProps) {
+  return <span className="ui-icon" aria-hidden="true">{icon}</span>;
+}
+
+function cardIcon(cardId: string): string {
+  if (cardId === "takokke") {
+    return "🔴";
+  }
+  if (cardId === "bomuzo") {
+    return "💣";
+  }
+  if (cardId === "polyspinner") {
+    return "⚙️";
+  }
+  if (cardId === "sigma") {
+    return "✊";
+  }
+  if (cardId === "beyond") {
+    return "🎯";
+  }
+  if (cardId === "yanbaru") {
+    return "🏹";
+  }
+  if (cardId === "morgan") {
+    return "✨";
+  }
+  if (cardId === "healing") {
+    return "💚";
+  }
+  if (cardId === "thunder") {
+    return "⚡";
+  }
+  if (cardId === "power_up") {
+    return "⬆️";
+  }
+  return "◆";
+}
+
+function roleIcon(role: string): string {
+  return role === "front" ? "🛡️" : "🏹";
+}
+
+function commandIcon(command: CommandDef): string {
+  if (command.recoilDamage) {
+    return "💣";
+  }
+  if (command.range === "one_skip") {
+    return "🎯";
+  }
+  if (command.range === "any_target" || command.range === "any_monster") {
+    return "✨";
+  }
+  return "⚔️";
+}
+
+function masterActionIcon(actionId: MasterActionId): string {
+  if (actionId === "master_attack") {
+    return "⚔️";
+  }
+  if (actionId === "wake_up") {
+    return "⏰";
+  }
+  return "🛡️";
+}
+
+function logIcon(entry: string): string {
+  if (entry.includes("勝利") || entry.includes("敗北")) {
+    return "🏆";
+  }
+  if (entry.includes("倒れ") || entry.includes("ダメージ") || entry.includes("攻撃") || entry.includes("アタック")) {
+    return "⚔️";
+  }
+  if (entry.includes("HPが") || entry.includes("山札切れ")) {
+    return "❤️";
+  }
+  if (entry.includes("レベル") || entry.includes("Lv")) {
+    return "✨";
+  }
+  if (entry.includes("召喚") || entry.includes("登場")) {
+    return "🂠";
+  }
+  if (entry.includes("ため") || entry.includes("気合い")) {
+    return "💪";
+  }
+  if (entry.includes("シールド") || entry.includes("ウェイクアップ") || entry.includes("回復")) {
+    return "🛡️";
+  }
+  if (entry.includes("引いた")) {
+    return "✋";
+  }
+  if (entry.includes("ストーン")) {
+    return "🪨";
+  }
+  if (entry.includes("ターン")) {
+    return "⏭️";
+  }
+  return "•";
 }

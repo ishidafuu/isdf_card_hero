@@ -27,6 +27,14 @@ button {
   min-height: 36px;
 }
 
+.ui-icon {
+  display: inline-flex;
+  font-size: 1.05em;
+  line-height: 1;
+  margin-right: 4px;
+  vertical-align: -0.08em;
+}
+
 button:hover:not(:disabled) {
   border-color: #397367;
 }
@@ -97,7 +105,9 @@ button:disabled {
 }
 
 .player-status span {
+  align-items: center;
   color: #4b5652;
+  display: inline-flex;
   font-size: 13px;
 }
 
@@ -262,13 +272,20 @@ button:disabled {
 }
 
 .monster-card strong {
+  align-items: center;
+  display: inline-flex;
   font-size: 16px;
+  min-width: 0;
 }
 
 .monster-card span,
 .empty-slot {
+  align-items: center;
   color: #56615d;
+  display: inline-flex;
+  flex-wrap: wrap;
   font-size: 13px;
+  gap: 2px;
 }
 
 .side-panel {
@@ -329,17 +346,18 @@ button:disabled {
 
 .card-meta-row span,
 .card-chip {
+  align-items: center;
   background: #e7eee7;
   border: 1px solid #c7d4c8;
   border-radius: 999px;
   color: #3f4946;
+  display: inline-flex;
   font-size: 12px;
   line-height: 1;
   padding: 5px 7px;
 }
 
 .card-chip {
-  display: inline-flex;
   white-space: nowrap;
 }
 
@@ -411,8 +429,11 @@ button:disabled {
 }
 
 .log-entry {
+  align-items: flex-start;
   animation: log-in 240ms ease-out;
   border-left: 3px solid transparent;
+  display: flex;
+  gap: 2px;
   line-height: 1.35;
   padding-left: 6px;
 }
@@ -495,7 +516,9 @@ button:disabled {
 }
 
 .hand-card-title strong {
+  align-items: center;
   color: #1d2527;
+  display: inline-flex;
   font-size: 15px;
   line-height: 1.2;
   overflow-wrap: anywhere;
