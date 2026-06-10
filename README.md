@@ -8,15 +8,17 @@
 
 ## Current Focus
 
-1. 公式/参考資料から通常バトルの核を整理する
-2. プロトタイプで採用する仕様と未採用にする仕様を分ける
-3. 最小戦闘プロトタイプを実装する
+1. 戦闘プロトタイプを反復プレイに耐える状態へ安定化する
+2. CPU AIの行動理由とログ表示を改善する
+3. マジック、マスター特技、移動をCPU AIへ段階的に解禁する
 
 ## Documents
 
 - [プロジェクト方針](docs/00_project_direction.md)
 - [戦闘プロトタイプ仕様](docs/01_battle_prototype.md)
 - [資料調査メモ](docs/02_research_notes.md)
+- [CPU AI設計メモ](docs/03_cpu_ai_design.md)
+- [今後のロードマップ](docs/04_roadmap.md)
 
 ## Development
 
