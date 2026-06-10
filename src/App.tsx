@@ -25,7 +25,7 @@ import {
   useMasterAction,
   useMasterHpDraw,
 } from "./game/rules";
-import type { GameState, MasterActionId, PlayerId, SlotKey, Target } from "./game/types";
+import type { CommandDef, GameState, MagicTargetKind, MasterActionId, PlayerId, SlotKey, Target } from "./game/types";
 
 type BoardCell =
   | { kind: "slot"; slotKey: SlotKey }
@@ -380,8 +380,7 @@ export function App() {
             )}
             {selectedHand && (
               <div className="selected-detail">
-                <h3>{getCardName(selectedHand.cardId)}</h3>
-                <p>{cardHelpText(selectedHand.cardId)}</p>
+                <CardDetail cardId={selectedHand.cardId} />
               </div>
             )}
             {selection?.kind === "command" && (
@@ -424,8 +423,7 @@ export function App() {
               }}
               disabled={controlsDisabled}
             >
-              <strong>{getCardName(card.cardId)}</strong>
-              <span>{cardTypeLabel(card.cardId)}</span>
+              <HandCardContent cardId={card.cardId} />
             </button>
           ))}
         </div>
@@ -624,20 +622,124 @@ function logTone(entry: string): string {
   return "log-normal";
 }
 
-function cardTypeLabel(cardId: string): string {
-  const def = getCardDef(cardId);
-  if (def.type === "monster") {
-    return def.role === "front" ? "前衛" : "後衛";
-  }
-  return `魔法 ${def.cost}`;
+interface HandCardContentProps {
+  cardId: string;
 }
 
-function cardHelpText(cardId: string): string {
+function HandCardContent({ cardId }: HandCardContentProps) {
+  const def = getCardDef(cardId);
+
+  if (def.type === "magic") {
+    return (
+      <>
+        <span className="hand-card-title">
+          <strong>{def.name}</strong>
+          <span className="card-chip magic">魔法</span>
+        </span>
+        <span className="hand-card-meta">Cost {def.cost} / {targetKindsLabel(def.targetKinds)}</span>
+        <span className="hand-card-text">{def.description}</span>
+      </>
+    );
+  }
+
+  const firstLevel = def.levels[0];
+  const maxHpText = def.levels.map((level) => `Lv${level.level} HP${level.maxHp}`).join(" / ");
+  const commandText = firstLevel.commands.map(commandSummary).join(" / ");
+  return (
+    <>
+      <span className="hand-card-title">
+        <strong>{def.name}</strong>
+        <span className="card-chip">{def.role === "front" ? "前衛" : "後衛"}</span>
+      </span>
+      <span className="hand-card-meta">召喚 1 / MaxLv {def.maxLevel}</span>
+      <span className="hand-card-meta">{maxHpText}</span>
+      <span className="hand-card-text">{commandText}</span>
+    </>
+  );
+}
+
+interface CardDetailProps {
+  cardId: string;
+}
+
+function CardDetail({ cardId }: CardDetailProps) {
   const def = getCardDef(cardId);
   if (def.type === "magic") {
-    return def.description;
+    return (
+      <>
+        <h3>{def.name}</h3>
+        <div className="card-meta-row">
+          <span className="card-chip magic">魔法</span>
+          <span>Cost {def.cost}</span>
+          <span>{targetKindsLabel(def.targetKinds)}</span>
+        </div>
+        <p>{def.description}</p>
+      </>
+    );
   }
-  return `${def.role === "front" ? "前衛" : "後衛"}モンスター。空き枠を選ぶと召喚できます。`;
+
+  return (
+    <>
+      <h3>{def.name}</h3>
+      <div className="card-meta-row">
+        <span className="card-chip">{def.role === "front" ? "前衛" : "後衛"}</span>
+        <span>召喚 1</span>
+        <span>MaxLv {def.maxLevel}</span>
+        {def.actionLimit && <span>{def.actionLimit}回行動</span>}
+      </div>
+      <div className="level-detail-list">
+        {def.levels.map((level) => (
+          <div className="level-detail" key={level.level}>
+            <strong>Lv{level.level} / HP {level.maxHp}</strong>
+            <ul>
+              {level.commands.map((command) => (
+                <li key={command.id}>{commandSummary(command)}</li>
+              ))}
+            </ul>
+          </div>
+        ))}
+      </div>
+    </>
+  );
+}
+
+function commandSummary(command: CommandDef): string {
+  return [
+    `${command.name} ${command.power}P`,
+    rangeLabel(command.range),
+    command.stoneCost ? `Stone ${command.stoneCost}` : "",
+    command.recoilDamage ? `反動 ${command.recoilDamage}` : "",
+  ].filter(Boolean).join(" / ");
+}
+
+function rangeLabel(range: string): string {
+  if (range === "adjacent") {
+    return "隣接";
+  }
+  if (range === "one_skip") {
+    return "射程2";
+  }
+  if (range === "any_monster") {
+    return "任意モンスター";
+  }
+  if (range === "any_target") {
+    return "任意対象";
+  }
+  return "マスター";
+}
+
+function targetKindsLabel(targetKinds: MagicTargetKind[]): string {
+  return targetKinds
+    .map((kind) => {
+      if (kind === "ally_monster") {
+        return "味方モンスター";
+      }
+      if (kind === "enemy_monster") {
+        return "敵モンスター";
+      }
+      return "敵マスター";
+    })
+    .join(" / ");
 }
 
 function slotLabel(slotKey: SlotKey): string {
