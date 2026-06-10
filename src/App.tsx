@@ -467,6 +467,7 @@ interface BoardSlotProps {
 function BoardSlot({ slotKey, game, selected, targetable, effectKind, onClick }: BoardSlotProps) {
   const slot = game.slots[slotKey];
   const monster = slot.monster;
+  const hidePreparedInfo = monster?.status === "prepared" && monster.owner !== "player";
   const label = slotLabel(slotKey);
 
   return (
@@ -483,12 +484,17 @@ function BoardSlot({ slotKey, game, selected, targetable, effectKind, onClick }:
       onClick={onClick}
     >
       <span className="slot-label">{label}</span>
-      {monster ? (
+      {monster && hidePreparedInfo ? (
+        <span className="monster-card hidden-prepared">
+          <strong>準備中カード</strong>
+          <span>情報非公開</span>
+        </span>
+      ) : monster ? (
         <span className="monster-card">
           <strong>{getCardName(monster.cardId)}</strong>
           <span>Lv{monster.level} / HP {monster.hp}</span>
           <span>{monster.status === "prepared" ? "準備中" : `${monster.actionCount}/${monster.actionLimit}行動`}</span>
-          <span>{[monster.focused ? "気合い" : "", monster.powerUp ? "P+1" : "", monster.shielded ? "盾" : ""].filter(Boolean).join(" ")}</span>
+          <span>{[monster.focused ? "気合い 攻+1/被ダメ-1" : "", monster.powerUp ? "P+1" : "", monster.shielded ? "盾" : ""].filter(Boolean).join(" ")}</span>
         </span>
       ) : (
         <span className="empty-slot">Empty</span>

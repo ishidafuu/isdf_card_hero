@@ -101,6 +101,19 @@ describe("battle prototype rules", () => {
     expect(next.slots.player_front_left.monster?.cardId).toBe("takokke");
   });
 
+  it("hides CPU prepared card names in summon logs", () => {
+    const game = createInitialGame(116);
+    game.currentPlayer = "cpu";
+    game.players.cpu.stones = 1;
+    game.players.cpu.hand = [{ cardId: "takokke", instanceId: "cpu_hidden_takokke" }];
+
+    const next = summonMonster(game, "cpu_hidden_takokke", "cpu_back_left");
+
+    expect(next.slots.cpu_back_left.monster?.cardId).toBe("takokke");
+    expect(next.log.at(-1)).toBe("CPUはカードを準備中で召喚した");
+    expect(next.log.at(-1)).not.toContain("タコッケー");
+  });
+
   it("lets any_target attacks damage the opponent master through the 2P shield", () => {
     let game = createGameWithPlayerHand([{ cardId: "morgan", instanceId: "test_morgan" }]);
     game.players.player.stones = 1;
@@ -273,6 +286,24 @@ describe("battle prototype rules", () => {
       target: { kind: "monster", slotKey: "cpu_front_left" },
     });
     expect(focusedAttack.slots.cpu_front_left.monster).toBeUndefined();
+  });
+
+  it("reduces incoming monster damage by one while focused", () => {
+    let game = createInitialGame(117);
+    game.slots.player_front_left.monster = createActiveMonster("takokke", "player");
+    game.slots.cpu_front_left.monster = createActiveMonster("takokke", "cpu");
+
+    game = focusMonster(game, "player_front_left");
+    game.currentPlayer = "cpu";
+    const attacked = attackWithCommand(game, {
+      attackerSlotKey: "cpu_front_left",
+      commandId: "attack",
+      target: { kind: "monster", slotKey: "player_front_left" },
+    });
+
+    expect(attacked.slots.player_front_left.monster?.hp).toBe(4);
+    expect(attacked.slots.player_front_left.monster?.focused).toBe(false);
+    expect(attacked.log.some((entry) => entry.includes("気合いで1ダメージ軽減した"))).toBe(true);
   });
 
   it("lets range-2 attacks target the diagonally forward skipped lane", () => {

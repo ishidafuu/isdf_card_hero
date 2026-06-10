@@ -165,7 +165,8 @@ export function summonMonster(
   player.hand.splice(handIndex, 1);
   player.stones -= 1;
   slot.monster = createMonster(card, def, next.currentPlayer);
-  appendLog(next, `${playerLabel(next.currentPlayer)}は${def.name}を準備中で召喚した`);
+  const summonedName = next.currentPlayer === "cpu" ? "カード" : def.name;
+  appendLog(next, `${playerLabel(next.currentPlayer)}は${summonedName}を準備中で召喚した`);
   return next;
 }
 
@@ -849,8 +850,12 @@ function damageMonster(
     damage = Math.max(0, damage - 1);
   }
   if (monster.focused) {
+    const beforeFocusReduction = damage;
     damage = Math.max(0, damage - 1);
     monster.focused = false;
+    if (beforeFocusReduction !== damage) {
+      appendLog(state, `${monsterName(monster)}は気合いで1ダメージ軽減した`);
+    }
   }
 
   monster.hp -= damage;

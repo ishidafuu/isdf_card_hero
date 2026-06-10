@@ -251,6 +251,16 @@ button:disabled {
   gap: 3px;
 }
 
+.hidden-prepared {
+  color: #4b5652;
+  justify-items: start;
+  margin-top: 12px;
+}
+
+.hidden-prepared strong {
+  color: #303a37;
+}
+
 .monster-card strong {
   font-size: 16px;
 }
