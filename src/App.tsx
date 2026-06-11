@@ -67,6 +67,7 @@ const AUTO_STEP_DELAY_MIN_MS = 100;
 const AUTO_STEP_DELAY_MAX_MS = 3000;
 const AUTO_STEP_DELAY_STEP_MS = 50;
 const AUTO_STEP_DELAY_DEFAULT_MS = 650;
+const MAX_VISIBLE_RESOURCE_ICONS = 10;
 
 type Selection =
   | { kind: "hand"; instanceId: string }
@@ -674,8 +675,8 @@ export function App() {
       </header>
 
       <section className="status-strip" aria-label="players">
-        <PlayerStatus label="プレイヤー" hp={game.players.player.masterHp} stones={game.players.player.stones} deck={game.players.player.deck.length} hand={game.players.player.hand.length} discard={game.players.player.discard.length} active={game.currentPlayer === "player"} />
-        <PlayerStatus label="CPU" hp={game.players.cpu.masterHp} stones={game.players.cpu.stones} deck={game.players.cpu.deck.length} hand={game.players.cpu.hand.length} discard={game.players.cpu.discard.length} active={game.currentPlayer === "cpu"} />
+        <PlayerStatus label="プレイヤー" deck={game.players.player.deck.length} hand={game.players.player.hand.length} discard={game.players.player.discard.length} active={game.currentPlayer === "player"} />
+        <PlayerStatus label="CPU" deck={game.players.cpu.deck.length} hand={game.players.cpu.hand.length} discard={game.players.cpu.discard.length} active={game.currentPlayer === "cpu"} />
       </section>
 
       <section className="play-layout">
@@ -721,9 +722,13 @@ export function App() {
                         onDrop={(event) => handleMasterDrop(event, cell.playerId)}
                         data-master-id={cell.playerId}
                         onClick={() => handleMasterClick(cell.playerId)}
+                        aria-label={`${cell.label} HP ${game.players[cell.playerId].masterHp} Stone ${game.players[cell.playerId].stones}`}
                       >
-                        <span>{cell.label}</span>
-                        <strong>HP {game.players[cell.playerId].masterHp}</strong>
+                        <MasterResourceDisplay
+                          label={cell.label}
+                          hp={game.players[cell.playerId].masterHp}
+                          stones={game.players[cell.playerId].stones}
+                        />
                         <DamageBubble key={visualEffect?.id} flash={damageFlash} />
                       </button>
                     );
@@ -886,23 +891,59 @@ export function App() {
 
 interface PlayerStatusProps {
   label: string;
-  hp: number;
-  stones: number;
   deck: number;
   hand: number;
   discard: number;
   active: boolean;
 }
 
-function PlayerStatus({ label, hp, stones, deck, hand, discard, active }: PlayerStatusProps) {
+function PlayerStatus({ label, deck, hand, discard, active }: PlayerStatusProps) {
   return (
     <div className={`player-status ${active ? "active" : ""}`}>
       <strong><Icon icon={active ? "▶️" : "👤"} /> {label}</strong>
-      <span><Icon icon="❤️" /> HP {hp}</span>
-      <span><Icon icon="🪨" /> Stone {stones}</span>
       <span><Icon icon="🂠" /> Deck {deck}</span>
       <span><Icon icon="✋" /> Hand {hand}</span>
       <span><Icon icon="🗑️" /> Discard {discard}</span>
+    </div>
+  );
+}
+
+interface MasterResourceDisplayProps {
+  label: string;
+  hp: number;
+  stones: number;
+}
+
+function MasterResourceDisplay({ label, hp, stones }: MasterResourceDisplayProps) {
+  return (
+    <div className="master-resource-display">
+      <strong className="master-name">{label}</strong>
+      <ResourceIconRow label="HP" icon="❤️" amount={hp} />
+      <ResourceIconRow label="Stone" icon="🪨" amount={stones} cap={MAX_VISIBLE_RESOURCE_ICONS} />
+    </div>
+  );
+}
+
+interface ResourceIconRowProps {
+  label: string;
+  icon: string;
+  amount: number;
+  cap?: number;
+}
+
+function ResourceIconRow({ label, icon, amount, cap }: ResourceIconRowProps) {
+  const visibleAmount = Math.max(0, cap ? Math.min(amount, cap) : amount);
+  const extraAmount = cap && amount > cap ? amount - cap : 0;
+
+  return (
+    <div className="resource-row" title={`${label}: ${amount}`}>
+      <span className="resource-label">{label}</span>
+      <span className="resource-icons" aria-hidden="true">
+        {Array.from({ length: visibleAmount }, (_, index) => (
+          <span className="resource-icon" key={`${label}_${index}`}>{icon}</span>
+        ))}
+        {extraAmount ? <span className="resource-overflow">+{extraAmount}</span> : null}
+      </span>
     </div>
   );
 }
