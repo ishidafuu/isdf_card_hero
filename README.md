@@ -10,7 +10,7 @@
 
 1. 両者CPUオートプレイで長期安定性を検証する
 2. CPU AIの判断理由をログとテストで追跡できる状態を維持する
-3. カード個別挙動とCPU判断品質を、失敗seedベースで改善する
+3. カード特殊効果の網羅テストと簡略化/未対応一覧を維持する
 
 ## Documents
 
@@ -20,6 +20,8 @@
 - [CPU AI設計メモ](docs/03_cpu_ai_design.md)
 - [今後のロードマップ](docs/04_roadmap.md)
 - [オートプレイ検証ログ](docs/05_auto_play_validation.md)
+- [warning seedレビュー](docs/06_warning_seed_review.md)
+- [カード特殊効果の網羅テスト基盤](docs/07_card_effect_coverage.md)
 
 ## Development
 
