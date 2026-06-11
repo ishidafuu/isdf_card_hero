@@ -114,35 +114,6 @@ button:disabled {
   width: 76px;
 }
 
-.status-strip {
-  display: grid;
-  gap: 10px;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-}
-
-.player-status {
-  align-items: center;
-  background: #f8faf4;
-  border: 1px solid #cbd5c5;
-  border-radius: 8px;
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px 14px;
-  padding: 10px 12px;
-}
-
-.player-status.active {
-  border-color: #397367;
-  box-shadow: inset 0 0 0 1px #397367;
-}
-
-.player-status span {
-  align-items: center;
-  color: #4b5652;
-  display: inline-flex;
-  font-size: 13px;
-}
-
 .status-icon-count {
   align-items: center;
   color: #4b5652;
@@ -200,12 +171,12 @@ button:disabled {
 .master {
   align-items: center;
   display: grid;
-  gap: 6px;
+  gap: 4px;
   justify-items: center;
   min-height: 112px;
   min-width: 0;
   overflow: visible;
-  padding: 9px;
+  padding: 7px;
   position: relative;
   text-align: center;
 }
@@ -223,14 +194,17 @@ button:disabled {
 .master-resource-display {
   align-content: center;
   display: grid;
-  gap: 7px;
+  gap: 5px;
   justify-items: stretch;
   width: 100%;
 }
 
 .master-name {
+  align-items: center;
   color: #303a37;
+  display: inline-flex;
   font-size: 13px;
+  justify-content: center;
   line-height: 1.15;
 }
 
@@ -263,6 +237,19 @@ button:disabled {
 
 .resource-icon {
   font-size: 13px;
+  line-height: 1;
+}
+
+.resource-number-row {
+  gap: 2px;
+}
+
+.resource-number {
+  align-items: center;
+  color: #303a37;
+  display: inline-flex;
+  font-size: 13px;
+  font-weight: 800;
   line-height: 1;
 }
 
@@ -757,7 +744,6 @@ button:disabled {
     padding: 10px;
   }
 
-  .status-strip,
   .play-layout {
     grid-template-columns: 1fr;
   }
@@ -779,11 +765,6 @@ button:disabled {
 @media (max-width: 520px) {
   .topbar {
     align-items: stretch;
-    flex-direction: column;
-  }
-
-  .player-status {
-    align-items: flex-start;
     flex-direction: column;
   }
 

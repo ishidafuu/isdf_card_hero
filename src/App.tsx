@@ -674,11 +674,6 @@ export function App() {
         </div>
       </header>
 
-      <section className="status-strip" aria-label="players">
-        <PlayerStatus label="プレイヤー" deck={game.players.player.deck.length} hand={game.players.player.hand.length} discard={game.players.player.discard.length} active={game.currentPlayer === "player"} />
-        <PlayerStatus label="CPU" deck={game.players.cpu.deck.length} hand={game.players.cpu.hand.length} discard={game.players.cpu.discard.length} active={game.currentPlayer === "cpu"} />
-      </section>
-
       <section className="play-layout">
         <div className="battle-area">
           <div className="board" aria-label="field">
@@ -722,12 +717,15 @@ export function App() {
                         onDrop={(event) => handleMasterDrop(event, cell.playerId)}
                         data-master-id={cell.playerId}
                         onClick={() => handleMasterClick(cell.playerId)}
-                        aria-label={`${cell.label} HP ${game.players[cell.playerId].masterHp} Stone ${game.players[cell.playerId].stones}`}
+                        aria-label={`${cell.label} HP ${game.players[cell.playerId].masterHp} Stone ${game.players[cell.playerId].stones} Deck ${game.players[cell.playerId].deck.length} Hand ${game.players[cell.playerId].hand.length}`}
                       >
                         <MasterResourceDisplay
                           label={cell.label}
+                          active={game.currentPlayer === cell.playerId}
                           hp={game.players[cell.playerId].masterHp}
                           stones={game.players[cell.playerId].stones}
+                          deck={game.players[cell.playerId].deck.length}
+                          hand={game.players[cell.playerId].hand.length}
                         />
                         <DamageBubble key={visualEffect?.id} flash={damageFlash} />
                       </button>
@@ -889,28 +887,6 @@ export function App() {
   );
 }
 
-interface PlayerStatusProps {
-  label: string;
-  deck: number;
-  hand: number;
-  discard: number;
-  active: boolean;
-}
-
-function PlayerStatus({ label, deck, hand, discard, active }: PlayerStatusProps) {
-  return (
-    <div
-      className={`player-status ${active ? "active" : ""}`}
-      aria-label={`${label} Deck ${deck} Hand ${hand} Discard ${discard}`}
-    >
-      <strong><Icon icon={active ? "▶️" : "👤"} /> {label}</strong>
-      <span><Icon icon="🂠" /> Deck {deck}</span>
-      <StatusIconCount label="Hand" icon="🃏" amount={hand} cap={MAX_VISIBLE_RESOURCE_ICONS} />
-      <span><Icon icon="🗑️" /> Discard {discard}</span>
-    </div>
-  );
-}
-
 interface StatusIconCountProps {
   label: string;
   icon: string;
@@ -937,16 +913,36 @@ function StatusIconCount({ label, icon, amount, cap }: StatusIconCountProps) {
 
 interface MasterResourceDisplayProps {
   label: string;
+  active: boolean;
   hp: number;
   stones: number;
+  deck: number;
+  hand: number;
 }
 
-function MasterResourceDisplay({ label, hp, stones }: MasterResourceDisplayProps) {
+function MasterResourceDisplay({ label, active, hp, stones, deck, hand }: MasterResourceDisplayProps) {
   return (
     <div className="master-resource-display">
-      <strong className="master-name">{label}</strong>
+      <strong className="master-name">{active ? <Icon icon="▶️" /> : null}{label}</strong>
       <ResourceIconRow label="HP" icon="❤️" amount={hp} />
       <ResourceIconRow label="Stone" icon="🪨" amount={stones} cap={MAX_VISIBLE_RESOURCE_ICONS} />
+      <ResourceNumberRow label="Deck" icon="🂠" amount={deck} />
+      <ResourceIconRow label="Hand" icon="🃏" amount={hand} cap={MAX_VISIBLE_RESOURCE_ICONS} />
+    </div>
+  );
+}
+
+interface ResourceNumberRowProps {
+  label: string;
+  icon: string;
+  amount: number;
+}
+
+function ResourceNumberRow({ label, icon, amount }: ResourceNumberRowProps) {
+  return (
+    <div className="resource-row resource-number-row" title={`${label}: ${amount}`}>
+      <span className="resource-label">{label}</span>
+      <span className="resource-number"><Icon icon={icon} />{amount}</span>
     </div>
   );
 }
