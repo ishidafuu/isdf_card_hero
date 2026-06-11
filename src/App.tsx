@@ -61,6 +61,7 @@ const BOARD_SLOT_KEYS = BOARD_CELLS.flatMap((row) =>
 );
 const PLAYER_IDS: PlayerId[] = ["player", "cpu"];
 const CPU_STEP_DELAY_MS = 520;
+const VISUAL_EFFECT_DURATION_MS = 900;
 
 type Selection =
   | { kind: "hand"; instanceId: string }
@@ -92,6 +93,21 @@ interface VisualEffect {
   kind: EffectKind;
   slots: SlotKey[];
   masters: PlayerId[];
+  slotDamageFlashes: SlotDamageFlash[];
+  masterDamageFlashes: MasterDamageFlash[];
+}
+
+interface DamageFlash {
+  amount: number;
+  defeated: boolean;
+}
+
+interface SlotDamageFlash extends DamageFlash {
+  slotKey: SlotKey;
+}
+
+interface MasterDamageFlash extends DamageFlash {
+  playerId: PlayerId;
 }
 
 export function App() {
@@ -165,7 +181,7 @@ export function App() {
     if (!visualEffect) {
       return undefined;
     }
-    const timer = window.setTimeout(() => setVisualEffect(undefined), 460);
+    const timer = window.setTimeout(() => setVisualEffect(undefined), VISUAL_EFFECT_DURATION_MS);
     return () => window.clearTimeout(timer);
   }, [visualEffect]);
 
@@ -620,6 +636,7 @@ export function App() {
                         selected={isSelectedSourceSlot(selection, pendingDropAction, cell.slotKey)}
                         targetable={targetKeys.has(`monster:${cell.slotKey}`)}
                         effectKind={visualEffect?.slots.includes(cell.slotKey) ? visualEffect.kind : undefined}
+                        damageFlash={visualEffect?.slotDamageFlashes.find((flash) => flash.slotKey === cell.slotKey)}
                         draggable={canDragMonsterFromSlot(cell.slotKey)}
                         onDragStart={(event) => handleMonsterDragStart(event, cell.slotKey)}
                         onPointerDown={(event) => handleMonsterPointerDown(event, cell.slotKey)}
@@ -630,6 +647,7 @@ export function App() {
                     );
                   }
                   if (cell.kind === "master") {
+                    const damageFlash = visualEffect?.masterDamageFlashes.find((flash) => flash.playerId === cell.playerId);
                     return (
                       <button
                         key={cell.playerId}
@@ -639,6 +657,7 @@ export function App() {
                           cell.playerId === "cpu" ? "master-cpu" : "master-player",
                           targetKeys.has(`master:${cell.playerId}`) ? "targetable" : "",
                           visualEffect?.masters.includes(cell.playerId) ? `effect-active effect-${visualEffect.kind}` : "",
+                          damageFlash?.defeated ? "effect-defeated" : "",
                         ].join(" ")}
                         onDragOver={handleDragOver}
                         onDrop={(event) => handleMasterDrop(event, cell.playerId)}
@@ -647,6 +666,7 @@ export function App() {
                       >
                         <span>{cell.label}</span>
                         <strong>HP {game.players[cell.playerId].masterHp}</strong>
+                        <DamageBubble flash={damageFlash} />
                       </button>
                     );
                   }
@@ -857,6 +877,7 @@ interface BoardSlotProps {
   selected: boolean;
   targetable: boolean;
   effectKind?: EffectKind;
+  damageFlash?: DamageFlash;
   draggable: boolean;
   onDragStart: (event: DragEvent<HTMLButtonElement>) => void;
   onPointerDown: (event: ReactPointerEvent<HTMLButtonElement>) => void;
@@ -871,6 +892,7 @@ function BoardSlot({
   selected,
   targetable,
   effectKind,
+  damageFlash,
   draggable,
   onDragStart,
   onPointerDown,
@@ -893,6 +915,7 @@ function BoardSlot({
         targetable ? "targetable" : "",
         monster?.status === "prepared" ? "prepared" : "",
         effectKind ? `effect-active effect-${effectKind}` : "",
+        damageFlash?.defeated ? "effect-defeated" : "",
       ].join(" ")}
       data-slot-key={slotKey}
       draggable={draggable}
@@ -927,7 +950,21 @@ function BoardSlot({
       ) : (
         <span className="empty-slot"><Icon icon="□" /> Empty</span>
       )}
+      <DamageBubble flash={damageFlash} />
     </button>
+  );
+}
+
+function DamageBubble({ flash }: { flash?: DamageFlash }) {
+  if (!flash) {
+    return null;
+  }
+
+  return (
+    <span className={`damage-bubble ${flash.defeated ? "damage-bubble-ko" : ""}`} aria-hidden="true">
+      <span className="damage-value">-{flash.amount}</span>
+      {flash.defeated && <strong className="damage-ko-label">KO</strong>}
+    </span>
   );
 }
 
@@ -1062,14 +1099,71 @@ function commandLabel(game: GameState, slotKey: SlotKey, commandId: string): str
 }
 
 function createVisualEffect(previous: GameState, next: GameState): VisualEffect {
-  const latestLog = next.log[next.log.length - 1] ?? "";
+  const appendedLogs = getAppendedLogs(previous.log, next.log);
+  const latestLog = appendedLogs.at(-1) ?? next.log[next.log.length - 1] ?? "";
   return {
     kind: effectKindFromLog(latestLog),
     slots: BOARD_SLOT_KEYS.filter((slotKey) => slotSignature(previous, slotKey) !== slotSignature(next, slotKey)),
     masters: PLAYER_IDS.filter(
       (playerId) => previous.players[playerId].masterHp !== next.players[playerId].masterHp,
     ),
+    slotDamageFlashes: createSlotDamageFlashes(previous, next, appendedLogs),
+    masterDamageFlashes: createMasterDamageFlashes(previous, next),
   };
+}
+
+function getAppendedLogs(previousLog: string[], nextLog: string[]): string[] {
+  const maxOverlap = Math.min(previousLog.length, nextLog.length);
+  for (let overlap = maxOverlap; overlap > 0; overlap -= 1) {
+    const previousStart = previousLog.length - overlap;
+    const matches = previousLog
+      .slice(previousStart)
+      .every((entry, index) => entry === nextLog[index]);
+    if (matches) {
+      return nextLog.slice(overlap);
+    }
+  }
+  return nextLog.length > 0 ? [nextLog[nextLog.length - 1]] : [];
+}
+
+function createSlotDamageFlashes(
+  previous: GameState,
+  next: GameState,
+  appendedLogs: string[],
+): SlotDamageFlash[] {
+  return BOARD_SLOT_KEYS.flatMap((slotKey) => {
+    const previousMonster = previous.slots[slotKey].monster;
+    if (!previousMonster) {
+      return [];
+    }
+
+    const nextMonster = next.slots[slotKey].monster;
+    if (nextMonster?.instanceId === previousMonster.instanceId) {
+      const amount = previousMonster.hp - nextMonster.hp;
+      const flash: SlotDamageFlash = { slotKey, amount, defeated: false };
+      return amount > 0 ? [flash] : [];
+    }
+
+    if (wasDefeated(previousMonster.cardId, appendedLogs)) {
+      const flash: SlotDamageFlash = { slotKey, amount: Math.max(1, previousMonster.hp), defeated: true };
+      return [flash];
+    }
+
+    return [];
+  });
+}
+
+function createMasterDamageFlashes(previous: GameState, next: GameState): MasterDamageFlash[] {
+  return PLAYER_IDS.flatMap((playerId) => {
+    const amount = previous.players[playerId].masterHp - next.players[playerId].masterHp;
+    const flash: MasterDamageFlash = { playerId, amount, defeated: next.players[playerId].masterHp <= 0 };
+    return amount > 0 ? [flash] : [];
+  });
+}
+
+function wasDefeated(cardId: string, appendedLogs: string[]): boolean {
+  const cardName = getCardName(cardId);
+  return appendedLogs.some((entry) => entry.includes(cardName) && entry.includes("は倒れ"));
 }
 
 function slotSignature(game: GameState, slotKey: SlotKey): string {
