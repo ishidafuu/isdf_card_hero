@@ -1635,6 +1635,12 @@ function rangeLabel(range: string, rawRange?: string): string {
     return "✦ 任意対象";
   }
   if (range === "two_skip") {
+    if (rawRange?.includes("１つ")) {
+      return "🎯 射程2/3";
+    }
+    if (rawRange?.includes("桂馬")) {
+      return "🎯 射程3/桂馬";
+    }
     return "🎯 射程3";
   }
   if (range === "straight") {

@@ -496,6 +496,24 @@ describe("battle prototype rules", () => {
     });
   });
 
+  it("lets Pigmy Lv2 spike ball target both range-2 and range-3 squares", () => {
+    const game = createInitialGame(129);
+    game.slots.player_back_right.monster = createActiveMonster("card_051", "player", {
+      level: 2,
+      hp: 3,
+      investedStones: 2,
+    });
+    game.slots.player_front_right.monster = createActiveMonster("takokke", "player");
+    game.slots.cpu_front_right.monster = createActiveMonster("takokke", "cpu");
+    game.slots.cpu_back_left.monster = createActiveMonster("takokke", "cpu");
+
+    const targets = getCommandTargets(game, "player_back_right", "スパイクボール");
+
+    expect(targets).toContainEqual({ kind: "monster", slotKey: "cpu_front_right" });
+    expect(targets).toContainEqual({ kind: "monster", slotKey: "cpu_back_left" });
+    expect(targets).not.toContainEqual({ kind: "monster", slotKey: "player_front_right" });
+  });
+
   it("gives every imported magic card at least one playable target in a populated board", () => {
     const magicCards = getAllCardDefs().filter((card) => card.type === "magic");
 
