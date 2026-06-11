@@ -286,6 +286,40 @@ describe("battle prototype rules", () => {
       target: { kind: "monster", slotKey: "cpu_front_left" },
     });
     expect(focusedAttack.slots.cpu_front_left.monster).toBeUndefined();
+    expect(focusedAttack.slots.player_front_left.monster?.focused).toBe(false);
+  });
+
+  it("does not apply focus attack power to lower commands but still clears focus", () => {
+    const game = createInitialGame(118);
+    game.slots.player_front_right.monster = createActiveMonster("yanbaru", "player", { focused: true });
+    game.slots.cpu_front_left.monster = createActiveMonster("takokke", "cpu");
+
+    const next = attackWithCommand(game, {
+      attackerSlotKey: "player_front_right",
+      commandId: "wild_claw",
+      target: { kind: "monster", slotKey: "cpu_front_left" },
+    });
+
+    expect(next.slots.cpu_front_left.monster?.hp).toBe(3);
+    expect(next.slots.player_front_right.monster?.focused).toBe(false);
+  });
+
+  it("does not let focused lower commands deal extra damage to masters", () => {
+    const game = createInitialGame(119);
+    game.slots.player_front_left.monster = createActiveMonster("morgan", "player", {
+      focused: true,
+      hp: 4,
+      level: 2,
+    });
+
+    const next = attackWithCommand(game, {
+      attackerSlotKey: "player_front_left",
+      commandId: "arc_drive",
+      target: { kind: "master", playerId: "cpu" },
+    });
+
+    expect(next.players.cpu.masterHp).toBe(9);
+    expect(next.slots.player_front_left.monster?.focused).toBe(false);
   });
 
   it("reduces incoming monster damage by one while focused", () => {

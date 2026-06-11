@@ -930,7 +930,9 @@ function applyRecoil(state: GameState, slotKey: SlotKey, damage: number): void {
 function consumeAttackPowerBonuses(monster: MonsterState, command: CommandDef): number {
   let power = command.power;
   if (monster.focused) {
-    power += 1;
+    if (isUpperCommand(monster, command)) {
+      power += 1;
+    }
     monster.focused = false;
   }
   if (monster.powerUp) {
@@ -938,6 +940,10 @@ function consumeAttackPowerBonuses(monster: MonsterState, command: CommandDef): 
     monster.powerUp = false;
   }
   return power;
+}
+
+function isUpperCommand(monster: MonsterState, command: CommandDef): boolean {
+  return getMonsterCommands(monster)[0]?.id === command.id;
 }
 
 function getCommand(monster: MonsterState, commandId: string): CommandDef {

@@ -378,8 +378,9 @@ function scoreFocus(state: GameState, slotKey: SlotKey): number {
   }
 
   let score = 18;
-  const canBreakMasterShield = getMonsterCommands(monster).some((command) => command.power + 1 >= 3);
-  if (canBreakMasterShield) {
+  const upperCommand = getMonsterCommands(monster)[0];
+  const canBoostUpperCommandToThreePower = Boolean(upperCommand && upperCommand.power + 1 >= 3);
+  if (canBoostUpperCommandToThreePower) {
     score += 20;
   }
   if (monster.hp <= 2 && state.slots[slotKey].row === "front") {

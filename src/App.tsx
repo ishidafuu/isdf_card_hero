@@ -503,7 +503,7 @@ function BoardSlot({ slotKey, game, selected, targetable, effectKind, onClick }:
           </span>
           <span>
             {[
-              monster.focused ? "💪 気合い 攻+1/被ダメ-1" : "",
+              monster.focused ? "💪 気合い 上技+1/被ダメ-1" : "",
               monster.powerUp ? "⬆️ P+1" : "",
               monster.shielded ? "🛡️ 盾" : "",
             ].filter(Boolean).join(" ")}
