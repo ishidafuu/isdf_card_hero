@@ -81,3 +81,20 @@
 - `npm run validate:auto-play -- --seed-start 400 --count 100 --max-steps 500 --max-turns 120` で再検証済み。
 - warningは14件から5件に減少。401、446、499の移動/入れ替え往復warningは解消。
 - 残warningは長期戦2件、移動多発2件、強候補見送り1件。次のCPU改善では427、468、479を代表seedにする。
+
+## CPU選択評価後の再検証
+
+複数対象、手札選択、山札カテゴリ選択をCPUが候補展開して評価するようにした後、同じ範囲を再検証した。
+
+- artifact: `artifacts/auto-play-validation/2026-06-11T09-52-36-164Z/`
+- result: PASS
+- failures: 0
+- warnings: 9
+- low-score magic warning: 解消
+
+残warning:
+
+- 移動多発: 402、408、416、427、479
+- 長期戦: 402、416、425、465
+
+次のCPU改善では、移動多発の402、408、416、427、479を代表seedにする。

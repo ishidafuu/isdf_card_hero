@@ -254,6 +254,93 @@ describe("cpu ai", () => {
     expect(decision.type).not.toBe("magic");
   });
 
+  it("evaluates secondary targets for double shield magic", () => {
+    const game = createCpuGame([{ cardId: "card_030", instanceId: "cpu_double_shield_test" }]);
+    game.players.cpu.stones = 5;
+    game.slots.cpu_front_left.monster = createActiveMonster("takokke", "cpu", { hp: 2 });
+    game.slots.cpu_front_right.monster = createActiveMonster("beyond", "cpu", { hp: 2 });
+
+    const decisions = listCpuDecisions(game).filter(
+      (decision) => decision.type === "magic" && decision.action.handInstanceId === "cpu_double_shield_test",
+    );
+
+    expect(decisions.length).toBeGreaterThan(0);
+    expect(decisions.some((decision) => decision.type === "magic" && !!decision.action.secondaryTarget)).toBe(true);
+    const bestDoubleShield = decisions.reduce((best, decision) => (decision.score > best.score ? decision : best));
+    expect(bestDoubleShield.type).toBe("magic");
+    if (bestDoubleShield.type === "magic") {
+      expect(bestDoubleShield.action.secondaryTarget?.kind).toBe("monster");
+      if (bestDoubleShield.action.secondaryTarget?.kind === "monster") {
+        expect(game.slots[bestDoubleShield.action.secondaryTarget.slotKey].owner).toBe("cpu");
+      }
+    }
+  });
+
+  it("evaluates hand choices for shift change magic", () => {
+    const game = createCpuGame([
+      { cardId: "card_065", instanceId: "cpu_shift_test" },
+      { cardId: "yanbaru", instanceId: "cpu_shift_yanbaru" },
+      { cardId: "takokke", instanceId: "cpu_shift_takokke" },
+    ]);
+    game.players.cpu.stones = 5;
+    game.slots.cpu_front_left.monster = createActiveMonster("card_001", "cpu");
+    game.slots.cpu_front_right.monster = createActiveMonster("card_084", "cpu");
+    game.slots.cpu_back_left.monster = createActiveMonster("sigma", "cpu");
+    game.slots.cpu_back_right.monster = createActiveMonster("morgan", "cpu");
+
+    const decisions = listCpuDecisions(game).filter(
+      (decision) => decision.type === "magic" && decision.action.handInstanceId === "cpu_shift_test",
+    );
+
+    expect(decisions.some((decision) => decision.type === "magic" && decision.action.secondaryHandInstanceId === "cpu_shift_takokke")).toBe(true);
+    const bestShift = decisions.reduce((best, decision) => (decision.score > best.score ? decision : best));
+    expect(bestShift.type).toBe("magic");
+    if (bestShift.type === "magic") {
+      expect(bestShift.action.secondaryHandInstanceId).toBe("cpu_shift_takokke");
+    }
+  });
+
+  it("evaluates card search categories from the deck", () => {
+    const game = createCpuGame([{ cardId: "card_123", instanceId: "cpu_search_test" }]);
+    game.players.cpu.stones = 5;
+    game.players.cpu.deck = [
+      { cardId: "healing", instanceId: "cpu_search_magic" },
+      { cardId: "card_107", instanceId: "cpu_search_front" },
+      { cardId: "morgan", instanceId: "cpu_search_back" },
+    ];
+
+    const decision = chooseCpuDecision(game);
+
+    expect(decision.type).toBe("magic");
+    if (decision.type === "magic") {
+      expect(decision.action.handInstanceId).toBe("cpu_search_test");
+      expect(decision.action.searchCategory).toBe("back");
+    }
+  });
+
+  it("evaluates hand choices for Soul Switch commands", () => {
+    const game = createCpuGame([
+      { cardId: "yanbaru", instanceId: "cpu_soul_yanbaru" },
+      { cardId: "takokke", instanceId: "cpu_soul_takokke" },
+    ]);
+    game.players.cpu.stones = 5;
+    game.slots.cpu_front_left.monster = createActiveMonster("card_134", "cpu", { hp: 1 });
+
+    const decisions = listCpuDecisions(game).filter(
+      (decision) =>
+        decision.type === "attack" &&
+        decision.action.attackerSlotKey === "cpu_front_left" &&
+        decision.action.commandId === "ソウルスイッチ",
+    );
+
+    expect(decisions.some((decision) => decision.type === "attack" && decision.action.secondaryHandInstanceId === "cpu_soul_takokke")).toBe(true);
+    const bestSoulSwitch = decisions.reduce((best, decision) => (decision.score > best.score ? decision : best));
+    expect(bestSoulSwitch.type).toBe("attack");
+    if (bestSoulSwitch.type === "attack") {
+      expect(bestSoulSwitch.action.secondaryHandInstanceId).toBe("cpu_soul_takokke");
+    }
+  });
+
   it("moves monsters to improve role placement", () => {
     const game = createCpuGame([]);
     game.players.cpu.stones = 0;

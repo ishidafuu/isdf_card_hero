@@ -48,10 +48,10 @@
 | --- | --- | --- | --- | --- |
 | `super_cards_pending` | 未対応 | スペシャルカード | 通常カード126枚のみを投入 | 導入時にデータ、UI、CPU、専用テストを追加 |
 | `per_card_assertion_gap` | 未対応 | 全カード個別の公式一致テスト | 効果群代表テスト、全カード合法対象テスト、全カード解決スモークテストで検出 | 特殊効果カードから1枚ずつ期待値テストを増やす |
-| `multi_target_defaulting` | 簡略化 | 複数対象カード | 手動UIでは候補選択可。未指定API/CPUでは決定的補完 | CPUで評価付きsecondaryTarget選択 |
-| `hand_choice_defaulting` | 簡略化 | 手札/山札選択カード | 手動UIでは選択可。未指定API/CPUでは決定的補完 | CPUの手札/山札カテゴリ評価を追加 |
+| `multi_target_defaulting` | 簡略化 | 複数対象カード | 手動UI/CPUでは候補選択可。未指定APIでは決定的補完 | CPUの長期価値込みsecondaryTarget評価 |
+| `hand_choice_defaulting` | 簡略化 | 手札/山札選択カード | 手動UI/CPUでは選択可。未指定APIでは決定的補完 | CPUの将来ターン/手札上限込み評価 |
 | `random_resolution_seeded` | 簡略化 | ランダム効果 | `GameState.randomSeed`で決定的解決 | 結果演出と乱数結果ログを追加 |
-| `cpu_magic_heuristic` | 簡略化 | CPU特殊効果判断 | 浅い評価で判断 | warning seedを使って移動往復、複数対象、手札選択評価を改善 |
+| `cpu_magic_heuristic` | 簡略化 | CPU特殊効果判断 | 複数対象、手札選択、サーチカテゴリまで浅い評価で判断 | warning seed 427、468、479の移動多発/強候補見送り改善 |
 | `temporary_original_icons` | 簡略化 | 攻略サイト由来の仮アイコン | テスト用画像として表示 | 自作画像へ差し替え、命名規則とチェックを追加 |
 
 ## 運用

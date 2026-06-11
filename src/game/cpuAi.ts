@@ -5,7 +5,12 @@ import {
   canSummonTo,
   endTurn,
   focusMonster,
+  getCommandHandChoices,
+  getCommandSecondaryTargets,
   getCommandTargets,
+  getMagicHandChoices,
+  getMagicSearchCategories,
+  getMagicSecondaryTargets,
   getMagicTargets,
   getMasterActionTargets,
   getMonsterCommands,
@@ -206,23 +211,29 @@ function listAttackDecisions(state: GameState): CpuDecision[] {
 
     for (const command of getMonsterCommands(monster)) {
       for (const target of getCommandTargets(state, slotKey, command.id)) {
-        if (isOwnedMonsterTarget(state, target, playerId)) {
+        if (isOwnedMonsterTarget(state, target, playerId) && !canUseOwnedMonsterTargetForCommand(state, slotKey, command.id)) {
           continue;
         }
 
-        const decision = createAttackDecision(state, {
+        for (const action of expandCommandActions(state, {
           attackerSlotKey: slotKey,
           commandId: command.id,
           target,
-        });
-        if (decision) {
-          decisions.push(decision);
+        })) {
+          const decision = createAttackDecision(state, action);
+          if (decision) {
+            decisions.push(decision);
+          }
         }
       }
     }
   }
 
   return decisions;
+}
+
+function canUseOwnedMonsterTargetForCommand(state: GameState, attackerSlotKey: SlotKey, commandId: string): boolean {
+  return getCommandHandChoices(state, attackerSlotKey, commandId).length > 0;
 }
 
 function createAttackDecision(state: GameState, action: CommandAction): CpuDecision | undefined {
@@ -240,6 +251,20 @@ function createAttackDecision(state: GameState, action: CommandAction): CpuDecis
   };
 }
 
+function expandCommandActions(state: GameState, baseAction: CommandAction): CommandAction[] {
+  const secondaryTargets = getCommandSecondaryTargets(state, baseAction);
+  if (secondaryTargets.length > 0) {
+    return secondaryTargets.map((secondaryTarget) => ({ ...baseAction, secondaryTarget }));
+  }
+
+  const handChoices = getCommandHandChoices(state, baseAction.attackerSlotKey, baseAction.commandId);
+  if (handChoices.length > 0) {
+    return handChoices.map((card) => ({ ...baseAction, secondaryHandInstanceId: card.instanceId }));
+  }
+
+  return [baseAction];
+}
+
 function scoreAttackDecision(state: GameState, after: GameState, action: CommandAction): number {
   const playerId = state.currentPlayer;
   const opponent = opponentOf(playerId);
@@ -248,10 +273,14 @@ function scoreAttackDecision(state: GameState, after: GameState, action: Command
   }
 
   const recoilPenalty = attackerWasDefeated(state, after, action.attackerSlotKey) ? -120 : 0;
+  const stateDelta = evaluateState(after, playerId) - evaluateState(state, playerId);
+  if (action.secondaryHandInstanceId) {
+    return scoreCommandHandChoiceDecision(state, action, stateDelta, recoilPenalty);
+  }
   if (action.target.kind === "master") {
     const damage = state.players[opponent].masterHp - after.players[opponent].masterHp;
     if (damage <= 0) {
-      return -100;
+      return stateDelta > 8 ? 30 + stateDelta + recoilPenalty : -100;
     }
     return 70 * damage + recoilPenalty;
   }
@@ -269,9 +298,22 @@ function scoreAttackDecision(state: GameState, after: GameState, action: Command
 
   const damage = targetBefore.hp - targetAfter.hp;
   if (damage <= 0) {
-    return -100;
+    return stateDelta > 8 ? 30 + stateDelta + recoilPenalty : -100;
   }
   return 25 * damage + recoilPenalty;
+}
+
+function scoreCommandHandChoiceDecision(
+  state: GameState,
+  action: CommandAction,
+  stateDelta: number,
+  recoilPenalty: number,
+): number {
+  const selectedCard = state.players[state.currentPlayer].hand.find((card) => card.instanceId === action.secondaryHandInstanceId);
+  if (!selectedCard) {
+    return -100;
+  }
+  return 24 + stateDelta + handMonsterPlacementValue(state, selectedCard.cardId, action.attackerSlotKey) * 0.35 + recoilPenalty;
 }
 
 function attackReason(state: GameState, after: GameState, action: CommandAction): string {
@@ -283,6 +325,12 @@ function attackReason(state: GameState, after: GameState, action: CommandAction)
   }
   if (!after.slots[action.target.slotKey].monster) {
     return "敵モンスターを撃破できるため攻撃";
+  }
+  if (action.secondaryHandInstanceId) {
+    return "手札選択を含む特殊効果で局面を改善できるため使用";
+  }
+  if (action.secondaryTarget) {
+    return "追加対象を選ぶ特殊効果で局面を改善できるため使用";
   }
   const target = state.slots[action.target.slotKey].monster;
   return target ? `${getCardName(target.cardId)}を削れるため攻撃` : "有効ダメージを与えられるため攻撃";
@@ -441,27 +489,65 @@ function listMagicDecisions(state: GameState): CpuDecision[] {
     }
 
     for (const target of getMagicTargets(state, card.instanceId)) {
-      const action: MagicAction = { handInstanceId: card.instanceId, target };
-      let after: GameState;
-      try {
-        after = playMagic(state, action);
-      } catch {
-        continue;
+      for (const action of expandMagicActions(state, { handInstanceId: card.instanceId, target })) {
+        let after: GameState;
+        try {
+          after = playMagic(state, action);
+        } catch {
+          continue;
+        }
+        const score = scoreMagicDecision(state, after, action, beforeScore);
+        if (score <= 10) {
+          continue;
+        }
+        decisions.push({
+          type: "magic",
+          action,
+          reason: magicReason(state, after, action),
+          score,
+        });
       }
-      const score = scoreMagicDecision(state, after, action, beforeScore);
-      if (score <= 8) {
-        continue;
-      }
-      decisions.push({
-        type: "magic",
-        action,
-        reason: magicReason(state, after, action),
-        score,
-      });
     }
   }
 
   return decisions;
+}
+
+function expandMagicActions(state: GameState, baseAction: MagicAction): MagicAction[] {
+  const secondaryTargets = getMagicSecondaryTargets(state, baseAction);
+  if (secondaryTargets.length > 0) {
+    return secondaryTargets.map((secondaryTarget) => ({ ...baseAction, secondaryTarget }));
+  }
+
+  const handChoices = getMagicHandChoices(state, baseAction.handInstanceId);
+  if (handChoices.length > 0) {
+    const card = state.players[state.currentPlayer].hand.find((handCard) => handCard.instanceId === baseAction.handInstanceId);
+    if (card?.cardId === "card_116") {
+      return buildRefreshActions(state, baseAction, handChoices);
+    }
+    return handChoices.map((handCard) => ({ ...baseAction, secondaryHandInstanceId: handCard.instanceId }));
+  }
+
+  const searchCategories = getMagicSearchCategories(state, baseAction.handInstanceId);
+  if (searchCategories.length > 0) {
+    return searchCategories.map((searchCategory) => ({ ...baseAction, searchCategory }));
+  }
+
+  return [baseAction];
+}
+
+function buildRefreshActions(state: GameState, baseAction: MagicAction, handChoices: ReturnType<typeof getMagicHandChoices>): MagicAction[] {
+  const player = state.players[state.currentPlayer];
+  const discardCount = Math.max(1, Math.min(player.deck.length, Math.max(1, 5 - player.hand.length + 1)));
+  const leastUsefulCards = [...handChoices]
+    .sort((a, b) => handCardKeepValue(state, a) - handCardKeepValue(state, b))
+    .slice(0, discardCount)
+    .map((card) => card.instanceId);
+
+  return [
+    { ...baseAction, selectedHandInstanceIds: leastUsefulCards },
+    { ...baseAction, selectedHandInstanceIds: handChoices.map((card) => card.instanceId) },
+  ];
 }
 
 function listSummonDecisions(state: GameState): CpuDecision[] {
@@ -510,6 +596,41 @@ function scoreSummon(state: GameState, cardId: string, slotKey: SlotKey): number
   }
 
   return score;
+}
+
+function handCardKeepValue(state: GameState, card: { cardId: string }): number {
+  const def = getCardDef(card.cardId);
+  if (def.type === "magic") {
+    if (def.id === "thunder" || def.id === "card_026" || def.id === "card_092" || def.id === "card_118") {
+      return 48;
+    }
+    if (def.id === "healing" || def.id === "card_127" || def.id === "power_up") {
+      return 42;
+    }
+    if (def.id === "card_030" || def.id === "card_031" || def.id === "card_123") {
+      return 34;
+    }
+    return 24;
+  }
+
+  const ownSlots = FIELD_ORDER_BY_PLAYER[state.currentPlayer];
+  const frontCount = ownSlots.filter((slotKey) => state.slots[slotKey].row === "front" && state.slots[slotKey].monster).length;
+  const backCount = ownSlots.filter((slotKey) => state.slots[slotKey].row === "back" && state.slots[slotKey].monster).length;
+  const roleNeed = def.role === "front" ? Math.max(0, 2 - frontCount) : Math.max(0, 2 - backCount);
+  return 30 + def.maxLevel * 12 + (def.role === "front" ? 8 : 10) + roleNeed * 14;
+}
+
+function handMonsterPlacementValue(state: GameState, cardId: string, slotKey: SlotKey): number {
+  const def = getCardDef(cardId);
+  if (def.type !== "monster") {
+    return handCardKeepValue(state, { cardId });
+  }
+
+  const firstLevel = def.levels[0];
+  const slot = state.slots[slotKey];
+  const placement = def.role === slot.row ? 22 : -18;
+  const laneSupport = def.role === "back" && slot.row === "back" && state.slots[frontSlotFor(slot)].monster ? 10 : 0;
+  return 30 + def.maxLevel * 12 + firstLevel.maxHp * 6 + placement + laneSupport;
 }
 
 function summonReason(playerId: PlayerId, cardId: string, slotKey: SlotKey): string {
@@ -800,8 +921,70 @@ function scoreMagicDecision(
   if (def.id === "power_up" || def.id === "card_094" || def.id === "card_150") {
     return scorePowerMagicDecision(state, after, action, def.cost);
   }
+  if (def.id === "card_065") {
+    return scoreShiftChangeMagicDecision(state, after, action, beforeScore, def.cost);
+  }
+  if (def.category === "シールド魔法" || def.category === "特殊防御魔法") {
+    return scoreShieldMagicDecision(state, after, action, def.cost);
+  }
+  if (def.id === "card_123") {
+    return scoreSearchMagicDecision(state, action, def.cost);
+  }
+  if (def.id === "card_116") {
+    return scoreRefreshMagicDecision(state, after, action, beforeScore, def.cost);
+  }
 
   return evaluateState(after, state.currentPlayer) - beforeScore - def.cost * 8;
+}
+
+function scoreShiftChangeMagicDecision(
+  state: GameState,
+  after: GameState,
+  action: MagicAction,
+  beforeScore: number,
+  cost: number,
+): number {
+  if (action.target.kind !== "monster" || !action.secondaryHandInstanceId) {
+    return evaluateState(after, state.currentPlayer) - beforeScore - cost * 8;
+  }
+  const selectedCard = state.players[state.currentPlayer].hand.find((card) => card.instanceId === action.secondaryHandInstanceId);
+  if (!selectedCard) {
+    return -100;
+  }
+  const stateDelta = evaluateState(after, state.currentPlayer) - beforeScore;
+  return 18 + stateDelta + handMonsterPlacementValue(state, selectedCard.cardId, action.target.slotKey) * 0.35 - cost * 4;
+}
+
+function scoreSearchMagicDecision(state: GameState, action: MagicAction, cost: number): number {
+  const category = action.searchCategory ?? "front";
+  const searchedCard = state.players[state.currentPlayer].deck.find((card) => {
+    const def = getCardDef(card.cardId);
+    if (category === "magic") {
+      return def.type === "magic";
+    }
+    return def.type === "monster" && def.role === category;
+  });
+  if (!searchedCard) {
+    return -100;
+  }
+  return 18 + handCardKeepValue(state, searchedCard) * 0.35 - cost * 4;
+}
+
+function scoreRefreshMagicDecision(
+  state: GameState,
+  after: GameState,
+  action: MagicAction,
+  beforeScore: number,
+  cost: number,
+): number {
+  const selected = new Set(action.selectedHandInstanceIds ?? []);
+  const discardedPenalty = state.players[state.currentPlayer].hand
+    .filter((card) => selected.has(card.instanceId))
+    .reduce((total, card) => total + handCardKeepValue(state, card), 0);
+  const drawnCards = after.players[state.currentPlayer].hand
+    .filter((card) => !state.players[state.currentPlayer].hand.some((beforeCard) => beforeCard.instanceId === card.instanceId));
+  const drawnValue = drawnCards.reduce((total, card) => total + handCardKeepValue(after, card), 0);
+  return evaluateState(after, state.currentPlayer) - beforeScore + drawnValue * 0.35 - discardedPenalty * 0.18 - cost * 5;
 }
 
 function scoreDamageMagicDecision(state: GameState, after: GameState, action: MagicAction, cost: number): number {
@@ -872,11 +1055,41 @@ function scorePowerMagicDecision(state: GameState, after: GameState, action: Mag
   return 22 + afterBest * 0.35 + improvement * 0.8 - cost * 6;
 }
 
+function scoreShieldMagicDecision(state: GameState, after: GameState, action: MagicAction, cost: number): number {
+  const protectedTargets = [action.target, action.secondaryTarget]
+    .filter((target): target is Extract<Target, { kind: "monster" }> => target?.kind === "monster")
+    .filter((target) => {
+      const before = state.slots[target.slotKey].monster;
+      const current = after.slots[target.slotKey].monster;
+      return !!before && !!current && before.owner === state.currentPlayer && before.shielded !== current.shielded;
+    });
+
+  if (protectedTargets.length === 0) {
+    return -100;
+  }
+
+  const protectionValue = protectedTargets.reduce((total, target) => {
+    const threat = incomingThreat(state, target.slotKey);
+    return total + monsterValue(state, target.slotKey) * 0.18 + (threat.lethal ? 80 : threat.threatened ? 32 : 10);
+  }, 0);
+
+  return 16 + protectionValue - cost * 5;
+}
+
 function magicReason(state: GameState, after: GameState, action: MagicAction): string {
   const card = state.players[state.currentPlayer].hand.find((handCard) => handCard.instanceId === action.handInstanceId);
   const name = card ? getCardName(card.cardId) : "マジック";
   if (after.winner === state.currentPlayer) {
     return `${name}で相手マスターを倒せるため使用`;
+  }
+  if (action.searchCategory) {
+    return `${name}で${searchCategoryReasonLabel(action.searchCategory)}を探せるため使用`;
+  }
+  if (action.secondaryHandInstanceId) {
+    return `${name}で手札の高価値カードを使えるため使用`;
+  }
+  if (action.secondaryTarget) {
+    return `${name}で追加対象も有効にできるため使用`;
   }
   if (action.target.kind === "monster") {
     const before = state.slots[action.target.slotKey].monster;
@@ -892,6 +1105,16 @@ function magicReason(state: GameState, after: GameState, action: MagicAction): s
     }
   }
   return `${name}で局面を改善できるため使用`;
+}
+
+function searchCategoryReasonLabel(category: NonNullable<MagicAction["searchCategory"]>): string {
+  if (category === "front") {
+    return "前衛カード";
+  }
+  if (category === "back") {
+    return "後衛カード";
+  }
+  return "マジックカード";
 }
 
 function bestAttackOpportunityScore(

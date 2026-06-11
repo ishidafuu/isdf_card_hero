@@ -872,6 +872,44 @@ describe("battle prototype rules", () => {
     expect(game.players.player.deck.some((card) => card.instanceId === "back_card")).toBe(false);
   });
 
+  it("honors selected secondary targets and hand choices instead of defaulting to the first candidate", () => {
+    let game = createGameWithPlayerHand([{ cardId: "card_030", instanceId: "double_shield" }]);
+    game.players.player.stones = 3;
+    game.slots.player_front_left.monster = createActiveMonster("takokke", "player");
+    game.slots.cpu_front_left.monster = createActiveMonster("takokke", "cpu");
+    game.slots.cpu_front_right.monster = createActiveMonster("beyond", "cpu");
+
+    game = playMagic(game, {
+      handInstanceId: "double_shield",
+      target: { kind: "monster", slotKey: "player_front_left" },
+      secondaryTarget: { kind: "monster", slotKey: "cpu_front_right" },
+    });
+
+    expect(game.slots.player_front_left.monster?.shielded).toBe(true);
+    expect(game.slots.cpu_front_right.monster?.shielded).toBe(true);
+    expect(game.slots.cpu_front_left.monster?.shielded).toBe(false);
+
+    game = createInitialGame(240);
+    game.players.player.hand = [
+      { cardId: "yanbaru", instanceId: "keep_yanbaru" },
+      { cardId: "takokke", instanceId: "chosen_takokke" },
+    ];
+    game.players.player.discard = [];
+    game.players.player.stones = 2;
+    game.slots.player_front_left.monster = createActiveMonster("card_134", "player", { level: 2, investedStones: 2 });
+
+    game = attackWithCommand(game, {
+      attackerSlotKey: "player_front_left",
+      commandId: "ソウルスイッチ",
+      target: { kind: "monster", slotKey: "player_front_left" },
+      secondaryHandInstanceId: "chosen_takokke",
+    });
+
+    expect(game.slots.player_front_left.monster?.cardId).toBe("takokke");
+    expect(game.players.player.hand.map((card) => card.instanceId)).toEqual(["keep_yanbaru"]);
+    expect(game.players.player.discard.some((card) => card.cardId === "card_134")).toBe(true);
+  });
+
   it("applies deterministic random effects for level change, plastone, and Din blast", () => {
     let game = createGameWithPlayerHand([{ cardId: "card_028", instanceId: "level_change" }]);
     game.randomSeed = 7;
