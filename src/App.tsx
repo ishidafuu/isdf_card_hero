@@ -74,7 +74,6 @@ type DragPayload =
   | { kind: "monster"; slotKey: SlotKey };
 
 type PendingDropAction =
-  | { kind: "summon"; handInstanceId: string; slotKey: SlotKey }
   | { kind: "magic"; handInstanceId: string; target: Target }
   | { kind: "attack"; attackerSlotKey: SlotKey; commandId: string; target: Target }
   | { kind: "move"; fromSlotKey: SlotKey; toSlotKey: SlotKey };
@@ -370,7 +369,7 @@ export function App() {
         setError("この移動に対応する行動がありません");
         return;
       }
-      selectPendingDropAction(current.payload, target);
+      handleDropAction(current.payload, target);
     };
 
     const handleCancel = () => {
@@ -439,7 +438,7 @@ export function App() {
     if (!payload) {
       return;
     }
-    selectPendingDropAction(payload, { kind: "monster", slotKey });
+    handleDropAction(payload, { kind: "monster", slotKey });
   }
 
   function handleMasterDrop(event: DragEvent<HTMLElement>, playerId: PlayerId) {
@@ -448,7 +447,7 @@ export function App() {
     if (!payload) {
       return;
     }
-    selectPendingDropAction(payload, { kind: "master", playerId });
+    handleDropAction(payload, { kind: "master", playerId });
   }
 
   function readDragPayload(event: DragEvent<HTMLElement>): DragPayload | undefined {
@@ -470,7 +469,11 @@ export function App() {
     return undefined;
   }
 
-  function selectPendingDropAction(payload: DragPayload, target: Target) {
+  function handleDropAction(payload: DragPayload, target: Target) {
+    if (applyImmediateDropAction(payload, target)) {
+      return;
+    }
+
     const action = createPendingDropAction(payload, target);
     if (!action) {
       setPendingDropAction(undefined);
@@ -480,6 +483,25 @@ export function App() {
     setPendingDropAction(action);
     setSelection(selectionFromPendingDropAction(action));
     setError("");
+  }
+
+  function applyImmediateDropAction(payload: DragPayload, target: Target): boolean {
+    if (controlsDisabled || payload.kind !== "hand" || target.kind !== "monster") {
+      return false;
+    }
+
+    const handCard = getHandCard(game, payload.instanceId);
+    if (!handCard) {
+      return false;
+    }
+
+    const def = getCardDef(handCard.cardId);
+    if (def.type !== "monster" || !canSummonTo(game, payload.instanceId, target.slotKey)) {
+      return false;
+    }
+
+    applyChange((state) => summonMonster(state, payload.instanceId, target.slotKey));
+    return true;
   }
 
   function createPendingDropAction(payload: DragPayload, target: Target): PendingDropAction | undefined {
@@ -493,9 +515,6 @@ export function App() {
         return undefined;
       }
       const def = getCardDef(handCard.cardId);
-      if (target.kind === "monster" && def.type === "monster" && canSummonTo(game, payload.instanceId, target.slotKey)) {
-        return { kind: "summon", handInstanceId: payload.instanceId, slotKey: target.slotKey };
-      }
       if (def.type === "magic" && getMagicTargets(game, payload.instanceId).some((candidate) => targetToKey(candidate) === targetToKey(target))) {
         return { kind: "magic", handInstanceId: payload.instanceId, target };
       }
@@ -537,10 +556,6 @@ export function App() {
 
   function handleConfirmPendingDropAction() {
     if (!pendingDropAction) {
-      return;
-    }
-    if (pendingDropAction.kind === "summon") {
-      applyChange((state) => summonMonster(state, pendingDropAction.handInstanceId, pendingDropAction.slotKey));
       return;
     }
     if (pendingDropAction.kind === "magic") {
@@ -960,9 +975,6 @@ function MonsterCommands({ game, slotKey, onCommand, onFocus, onMove }: MonsterC
 }
 
 function pendingDropActionTargetKey(action: PendingDropAction): string {
-  if (action.kind === "summon") {
-    return `monster:${action.slotKey}`;
-  }
   if (action.kind === "move") {
     return `monster:${action.toSlotKey}`;
   }
@@ -970,7 +982,7 @@ function pendingDropActionTargetKey(action: PendingDropAction): string {
 }
 
 function selectionFromPendingDropAction(action: PendingDropAction): Selection {
-  if (action.kind === "summon" || action.kind === "magic") {
+  if (action.kind === "magic") {
     return { kind: "hand", instanceId: action.handInstanceId };
   }
   if (action.kind === "move") {
@@ -990,16 +1002,13 @@ function isSelectedSourceSlot(selection: Selection | undefined, action: PendingD
 }
 
 function isSelectedSourceHand(selection: Selection | undefined, action: PendingDropAction | undefined, instanceId: string): boolean {
-  if ((action?.kind === "summon" || action?.kind === "magic") && action.handInstanceId === instanceId) {
+  if (action?.kind === "magic" && action.handInstanceId === instanceId) {
     return true;
   }
   return selection?.kind === "hand" && selection.instanceId === instanceId;
 }
 
 function pendingDropActionIcon(action: PendingDropAction): string {
-  if (action.kind === "summon") {
-    return "🪨";
-  }
   if (action.kind === "magic") {
     return "✨";
   }
@@ -1010,9 +1019,6 @@ function pendingDropActionIcon(action: PendingDropAction): string {
 }
 
 function pendingDropActionTitle(action: PendingDropAction): string {
-  if (action.kind === "summon") {
-    return "召喚";
-  }
   if (action.kind === "magic") {
     return "マジック";
   }
@@ -1023,9 +1029,6 @@ function pendingDropActionTitle(action: PendingDropAction): string {
 }
 
 function pendingDropActionDescription(action: PendingDropAction, game: GameState): string {
-  if (action.kind === "summon") {
-    return `${handCardLabel(game, action.handInstanceId)} -> ${slotLabel(action.slotKey)}`;
-  }
   if (action.kind === "magic") {
     return `${handCardLabel(game, action.handInstanceId)} -> ${targetLabel(game, action.target)}`;
   }
