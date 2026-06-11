@@ -572,7 +572,7 @@ function scoreMoveDecision(state: GameState, after: GameState, fromSlotKey: Slot
   const beforePlacement = placementValue(state, state.slots[fromSlotKey], beforeMover);
   const afterMover = after.slots[moverAfterSlot].monster;
   const afterPlacement = afterMover ? placementValue(after, after.slots[moverAfterSlot], afterMover) : beforePlacement;
-  let score = 10 + (afterPlacement - beforePlacement) * 2;
+  let score = 10 + (afterPlacement - beforePlacement) * 2 - repeatedMovePenalty(state, fromSlotKey, toSlotKey, beforeMover.instanceId);
 
   const swappedMonster = state.slots[toSlotKey].monster;
   if (swappedMonster) {
@@ -596,6 +596,27 @@ function scoreMoveDecision(state: GameState, after: GameState, fromSlotKey: Slot
     score += (afterBestAttack - beforeBestAttack) * 0.45;
   }
   return score;
+}
+
+function repeatedMovePenalty(state: GameState, fromSlotKey: SlotKey, toSlotKey: SlotKey, moverInstanceId: string): number {
+  const history = (state.turnMoveHistory ?? []).filter((entry) => entry.playerId === state.currentPlayer);
+  let penalty = 0;
+
+  if (
+    history.some(
+      (entry) =>
+        (entry.fromSlotKey === fromSlotKey && entry.toSlotKey === toSlotKey) ||
+        (entry.fromSlotKey === toSlotKey && entry.toSlotKey === fromSlotKey),
+    )
+  ) {
+    penalty += 140;
+  }
+
+  if (history.some((entry) => entry.moverInstanceId === moverInstanceId || entry.swappedInstanceId === moverInstanceId)) {
+    penalty += 40;
+  }
+
+  return penalty;
 }
 
 function moveReason(state: GameState, after: GameState, fromSlotKey: SlotKey, toSlotKey: SlotKey): string {

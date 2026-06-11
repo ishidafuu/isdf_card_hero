@@ -286,6 +286,29 @@ describe("cpu ai", () => {
     }
   });
 
+  it("does not immediately reverse a same-turn swap", () => {
+    const game = createCpuGame([]);
+    game.players.cpu.stones = 0;
+    game.slots.cpu_front_left.monster = createActiveMonster("yanbaru", "cpu");
+    game.slots.cpu_back_left.monster = createActiveMonster("takokke", "cpu");
+    game.slots.player_front_left.monster = createActiveMonster("takokke", "player", { hp: 3 });
+
+    const firstDecision = chooseCpuDecision(game);
+    expect(firstDecision.type).toBe("move");
+    if (firstDecision.type !== "move") {
+      return;
+    }
+
+    const moved = applyCpuDecision(game, firstDecision);
+    const nextDecision = chooseCpuDecision(moved);
+
+    expect(
+      nextDecision.type === "move" &&
+        nextDecision.fromSlotKey === firstDecision.toSlotKey &&
+        nextDecision.toSlotKey === firstDecision.fromSlotKey,
+    ).toBe(false);
+  });
+
   it("runs deterministic CPU turns across seeds without getting stuck", () => {
     for (let seed = 300; seed < 330; seed += 1) {
       let game = endTurn(createInitialGame(seed));

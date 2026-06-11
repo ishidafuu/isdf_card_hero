@@ -7,6 +7,7 @@
 このドキュメントでは、現在のテストが担保している効果群と、まだ簡略化または未対応として扱う効果を明示する。
 
 コード上の一覧は `src/game/cardEffectCoverage.ts` に置き、`tests/game/cardEffectCoverage.test.ts` でカードデータとの差分を検出する。
+全カード/全技が発動時に落ちないことは `tests/game/cardEffectResolution.test.ts` で検出する。
 
 ## カバー対象
 
@@ -35,14 +36,20 @@
 
 既存の `tests/game/rules.test.ts` は、具体的なルール挙動を担保する。今回の新規テストは、それらを横断するメタテストとして扱う。
 
+`tests/game/cardEffectResolution.test.ts` は、次を検出する。
+
+- 全マジックカードを実際に1回解決して、対象選択後に例外が出ない。
+- 全モンスター技を実際に1回解決して、技発動後に例外が出ない。
+- 対象列挙テストでは拾えない「対象は取れるが発動時に落ちる」不具合。
+
 ## 未対応/簡略化カード効果一覧
 
 | ID | 状態 | 内容 | 現在の扱い | 次作業 |
 | --- | --- | --- | --- | --- |
 | `super_cards_pending` | 未対応 | スペシャルカード | 通常カード126枚のみを投入 | 導入時にデータ、UI、CPU、専用テストを追加 |
-| `per_card_assertion_gap` | 未対応 | 全カード個別の公式一致テスト | 効果群代表テストと全カード合法対象テストで検出 | 特殊効果カードから1枚ずつ期待値テストを増やす |
-| `multi_target_defaulting` | 簡略化 | 複数対象カード | `secondaryTarget`未指定時に決定的補完 | 手動UIで追加対象選択、CPUで評価付き選択 |
-| `hand_choice_defaulting` | 簡略化 | 手札/山札選択カード | 選択値未指定時に決定的補完 | 手動UIの選択パネルとCPU評価を追加 |
+| `per_card_assertion_gap` | 未対応 | 全カード個別の公式一致テスト | 効果群代表テスト、全カード合法対象テスト、全カード解決スモークテストで検出 | 特殊効果カードから1枚ずつ期待値テストを増やす |
+| `multi_target_defaulting` | 簡略化 | 複数対象カード | 手動UIでは候補選択可。未指定API/CPUでは決定的補完 | CPUで評価付きsecondaryTarget選択 |
+| `hand_choice_defaulting` | 簡略化 | 手札/山札選択カード | 手動UIでは選択可。未指定API/CPUでは決定的補完 | CPUの手札/山札カテゴリ評価を追加 |
 | `random_resolution_seeded` | 簡略化 | ランダム効果 | `GameState.randomSeed`で決定的解決 | 結果演出と乱数結果ログを追加 |
 | `cpu_magic_heuristic` | 簡略化 | CPU特殊効果判断 | 浅い評価で判断 | warning seedを使って移動往復、複数対象、手札選択評価を改善 |
 | `temporary_original_icons` | 簡略化 | 攻略サイト由来の仮アイコン | テスト用画像として表示 | 自作画像へ差し替え、命名規則とチェックを追加 |
@@ -58,4 +65,3 @@
 5. 必要ならこのドキュメント
 
 warning seedが出た場合は、まず `docs/06_warning_seed_review.md` と同じ粒度で分類する。カード効果漏れならルールテストへ、CPU判断品質ならCPUテストまたはオートプレイ検証へ戻す。
-

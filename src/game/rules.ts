@@ -229,6 +229,7 @@ export function moveMonster(
   mover.actionCount += 1;
   mover.focused = false;
   clearDarkHoleIfMoved(mover, toSlotKey);
+  recordMoveHistory(next, mover, fromSlotKey, toSlotKey, to.monster);
 
   if (to.monster) {
     const other = to.monster;
@@ -450,6 +451,22 @@ export function playMagic(state: GameState, action: MagicAction): GameState {
 
   applyMagicEffect(next, def.id, action);
 
+  return next;
+}
+
+export function discardHandCard(state: GameState, handInstanceId: string): GameState {
+  const next = cloneState(state);
+  ensureActionAllowed(next);
+
+  const player = next.players[next.currentPlayer];
+  const handIndex = player.hand.findIndex((card) => card.instanceId === handInstanceId);
+  if (handIndex < 0) {
+    throw new Error("捨てるカードが手札にありません");
+  }
+
+  const [discarded] = player.hand.splice(handIndex, 1);
+  player.discard.push(discarded);
+  appendLog(next, `${playerLabel(next.currentPlayer)}は${getCardName(discarded.cardId)}を手札から捨てた`);
   return next;
 }
 
@@ -1941,6 +1958,26 @@ function clearEndOfTurnMarkers(state: GameState): void {
   }
   state.players.player.masterActionsExchanged = false;
   state.players.cpu.masterActionsExchanged = false;
+  state.turnMoveHistory = [];
+}
+
+function recordMoveHistory(
+  state: GameState,
+  mover: MonsterState,
+  fromSlotKey: SlotKey,
+  toSlotKey: SlotKey,
+  swappedMonster?: MonsterState,
+): void {
+  state.turnMoveHistory = [
+    ...(state.turnMoveHistory ?? []),
+    {
+      playerId: state.currentPlayer,
+      fromSlotKey,
+      toSlotKey,
+      moverInstanceId: mover.instanceId,
+      swappedInstanceId: swappedMonster?.instanceId,
+    },
+  ];
 }
 
 function discardToHandLimit(state: GameState, playerId: PlayerId): void {

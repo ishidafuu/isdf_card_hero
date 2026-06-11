@@ -6,6 +6,7 @@ import {
   canFocusMonster,
   canSummonTo,
   createInitialGame,
+  discardHandCard,
   endTurn,
   focusMonster,
   getCommandTargets,
@@ -96,6 +97,8 @@ type PendingDropAction =
   | { kind: "attackTarget"; attackerSlotKey: SlotKey; target: Target; commandIds: string[] }
   | { kind: "move"; fromSlotKey: SlotKey; toSlotKey: SlotKey };
 
+type ZoneView = { playerId: PlayerId; zone: "deck" | "discard" };
+
 const DRAG_MIME = "application/x-card-hero-drag";
 
 const MASTER_ACTIONS: Array<{ id: MasterActionId; label: string }> = [
@@ -137,6 +140,7 @@ export function App() {
   const [pointerDragging, setPointerDragging] = useState(false);
   const [autoPlayEnabled, setAutoPlayEnabled] = useState(false);
   const [autoStepDelayMs, setAutoStepDelayMs] = useState(AUTO_STEP_DELAY_DEFAULT_MS);
+  const [zoneView, setZoneView] = useState<ZoneView | undefined>();
   const previousGameRef = useRef<GameState>(game);
   const visualEffectIdRef = useRef(0);
   const pointerDragRef = useRef<{
@@ -436,6 +440,7 @@ export function App() {
     setGame(next);
     setSelection(undefined);
     setPendingDropAction(undefined);
+    setZoneView(undefined);
     setError("");
     setVisualEffect(undefined);
   }
@@ -843,7 +848,30 @@ export function App() {
           <section className="hand-area">
             <div className="hand-heading">
               <h2>Hand</h2>
-              <StatusIconCount label="Cards" icon="🃏" amount={currentPlayer.hand.length} cap={MAX_VISIBLE_RESOURCE_ICONS} />
+              <div className="hand-tools">
+                <button
+                  type="button"
+                  className={isZoneView(zoneView, "player", "deck") ? "selected" : ""}
+                  onClick={() => setZoneView(toggleZoneView(zoneView, { playerId: "player", zone: "deck" }))}
+                >
+                  <Icon icon="🂠" /> Deck {game.players.player.deck.length}
+                </button>
+                <button
+                  type="button"
+                  className={isZoneView(zoneView, "player", "discard") ? "selected" : ""}
+                  onClick={() => setZoneView(toggleZoneView(zoneView, { playerId: "player", zone: "discard" }))}
+                >
+                  <Icon icon="🗂️" /> Discard {game.players.player.discard.length}
+                </button>
+                <button
+                  type="button"
+                  className={isZoneView(zoneView, "cpu", "discard") ? "selected" : ""}
+                  onClick={() => setZoneView(toggleZoneView(zoneView, { playerId: "cpu", zone: "discard" }))}
+                >
+                  <Icon icon="🗂️" /> CPU {game.players.cpu.discard.length}
+                </button>
+                <StatusIconCount label="Cards" icon="🃏" amount={currentPlayer.hand.length} cap={MAX_VISIBLE_RESOURCE_ICONS} />
+              </div>
             </div>
             <div className="hand-list">
               {currentPlayer.hand.map((card) => (
@@ -868,6 +896,13 @@ export function App() {
                 </button>
               ))}
             </div>
+            {zoneView && (
+              <CardZonePanel
+                game={game}
+                view={zoneView}
+                onClose={() => setZoneView(undefined)}
+              />
+            )}
           </section>
         </div>
 
@@ -924,6 +959,28 @@ export function App() {
                 onCancel={() => {
                   setSelection(undefined);
                   setError("");
+                }}
+                onSecondaryTarget={(target) => {
+                  if (selection.kind === "magicSecondaryTarget") {
+                    applyChange((state) =>
+                      playMagic(state, {
+                        handInstanceId: selection.handInstanceId,
+                        target: selection.target,
+                        secondaryTarget: target,
+                      }),
+                    );
+                    return;
+                  }
+                  if (selection.kind === "commandSecondaryTarget") {
+                    applyChange((state) =>
+                      attackWithCommand(state, {
+                        attackerSlotKey: selection.attackerSlotKey,
+                        commandId: selection.commandId,
+                        target: selection.target,
+                        secondaryTarget: target,
+                      }),
+                    );
+                  }
                 }}
                 onMagicHand={(instanceId) => {
                   if (selection.kind !== "magicHandChoice") {
@@ -1007,7 +1064,12 @@ export function App() {
             </section>
           ) : selectedHand ? (
             <section className="side-context-panel card-info-panel">
-              <CardDetail cardId={selectedHand.cardId} />
+              <HandCardPanel
+                card={selectedHand}
+                game={game}
+                disabled={controlsDisabled}
+                onDiscard={() => applyChange((state) => discardHandCard(state, selectedHand.instanceId))}
+              />
               {error && <p className="error">{error}</p>}
             </section>
           ) : (
@@ -1209,6 +1271,7 @@ interface AdditionalChoicePanelProps {
   selection: AdditionalChoiceSelection;
   game: GameState;
   onCancel: () => void;
+  onSecondaryTarget: (target: Target) => void;
   onMagicHand: (instanceId: string) => void;
   onCommandHand: (instanceId: string) => void;
   onRefreshToggle: (instanceId: string) => void;
@@ -1220,6 +1283,7 @@ function AdditionalChoicePanel({
   selection,
   game,
   onCancel,
+  onSecondaryTarget,
   onMagicHand,
   onCommandHand,
   onRefreshToggle,
@@ -1235,7 +1299,14 @@ function AdditionalChoicePanel({
           <span>第一対象: {targetLabel(game, selection.target)}</span>
           <span>候補 {selection.targets.length}</span>
         </div>
-        <button type="button" onClick={onCancel}><Icon icon="✕" /> キャンセル</button>
+        <div className="button-stack">
+          {selection.targets.map((target) => (
+            <button type="button" key={targetToKey(target)} onClick={() => onSecondaryTarget(target)}>
+              <Icon icon="🎯" /> {targetLabel(game, target)}
+            </button>
+          ))}
+          <button type="button" onClick={onCancel}><Icon icon="✕" /> キャンセル</button>
+        </div>
       </div>
     );
   }
@@ -1311,6 +1382,72 @@ function AdditionalChoicePanel({
         <button type="button" onClick={onCancel}><Icon icon="✕" /> キャンセル</button>
       </div>
     </div>
+  );
+}
+
+interface HandCardPanelProps {
+  card: CardInstance;
+  game: GameState;
+  disabled: boolean;
+  onDiscard: () => void;
+}
+
+function HandCardPanel({ card, game, disabled, onDiscard }: HandCardPanelProps) {
+  const def = getCardDef(card.cardId);
+  const actionHint = def.type === "monster"
+    ? `召喚可能 ${BOARD_SLOT_KEYS.filter((slotKey) => canSummonTo(game, card.instanceId, slotKey)).length}枠`
+    : `対象 ${getMagicTargets(game, card.instanceId).length}`;
+
+  return (
+    <div className="selected-detail">
+      <CardDetail cardId={card.cardId} />
+      <div className="hand-action-panel">
+        <span className="hint"><Icon icon={def.type === "monster" ? "🂠" : "🎯"} /> {actionHint}</span>
+        <button type="button" className="danger-button" onClick={onDiscard} disabled={disabled}>
+          <Icon icon="🗑️" /> 手札から捨てる
+        </button>
+      </div>
+    </div>
+  );
+}
+
+interface CardZonePanelProps {
+  game: GameState;
+  view: ZoneView;
+  onClose: () => void;
+}
+
+function CardZonePanel({ game, view, onClose }: CardZonePanelProps) {
+  const cards = game.players[view.playerId][view.zone];
+  const title = `${playerLabel(view.playerId)} ${view.zone === "deck" ? "Deck" : "Discard"}`;
+  const helpText = view.zone === "deck" ? "上から順に引きます。" : "上から新しい順ではなく、捨てられた順に並びます。";
+
+  return (
+    <section className="zone-panel">
+      <div className="zone-panel-heading">
+        <div>
+          <h3><Icon icon={view.zone === "deck" ? "🂠" : "🗂️"} /> {title}</h3>
+          <p>{cards.length} cards / {helpText}</p>
+        </div>
+        <button type="button" onClick={onClose} aria-label="閉じる">
+          <Icon icon="✕" /> Close
+        </button>
+      </div>
+      {cards.length === 0 ? (
+        <p className="empty-zone"><Icon icon="□" /> Empty</p>
+      ) : (
+        <div className="zone-card-list">
+          {cards.map((card, index) => (
+            <div className="zone-card-row" key={`${card.instanceId}_${index}`}>
+              <span className="zone-card-index">{index + 1}</span>
+              <CardIcon cardId={card.cardId} />
+              <span className="zone-card-name">{getCardName(card.cardId)}</span>
+              <span className="zone-card-type">{cardTypeLabel(card.cardId)}</span>
+            </div>
+          ))}
+        </div>
+      )}
+    </section>
   );
 }
 
@@ -1696,6 +1833,22 @@ function targetLabel(game: GameState, target: Target): string {
     return `${playerLabel(target.playerId)}マスター`;
   }
   return slotMonsterLabel(game, target.slotKey);
+}
+
+function isZoneView(view: ZoneView | undefined, playerId: PlayerId, zone: ZoneView["zone"]): boolean {
+  return view?.playerId === playerId && view.zone === zone;
+}
+
+function toggleZoneView(current: ZoneView | undefined, next: ZoneView): ZoneView | undefined {
+  return isZoneView(current, next.playerId, next.zone) ? undefined : next;
+}
+
+function cardTypeLabel(cardId: string): string {
+  const def = getCardDef(cardId);
+  if (def.type === "magic") {
+    return "魔法";
+  }
+  return def.role === "front" ? "前衛" : "後衛";
 }
 
 function createVisualEffect(previous: GameState, next: GameState, id: number): VisualEffect {

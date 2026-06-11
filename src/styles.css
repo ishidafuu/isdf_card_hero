@@ -510,6 +510,11 @@ button:disabled {
   flex-wrap: wrap;
 }
 
+.danger-button {
+  border-color: #c58d8d;
+  color: #8f1d1d;
+}
+
 .command-button {
   align-items: flex-start;
   display: grid;
@@ -740,7 +745,29 @@ button:disabled {
 .hand-heading {
   align-items: center;
   display: flex;
+  gap: 10px;
   justify-content: space-between;
+}
+
+.hand-tools {
+  align-items: center;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  justify-content: flex-end;
+}
+
+.hand-tools button {
+  align-items: center;
+  display: inline-flex;
+  font-size: 12px;
+  min-height: 30px;
+  padding: 5px 8px;
+}
+
+.hand-tools button.selected {
+  border-color: #2f5f91;
+  box-shadow: inset 0 0 0 1px #2f5f91;
 }
 
 .hand-list {
@@ -796,6 +823,92 @@ button:disabled {
   overflow: hidden;
   -webkit-box-orient: vertical;
   -webkit-line-clamp: 2;
+}
+
+.hand-action-panel {
+  align-items: center;
+  border-top: 1px solid #d8ded2;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  justify-content: space-between;
+  margin-top: 12px;
+  padding-top: 10px;
+}
+
+.zone-panel {
+  background: #f1f5ec;
+  border: 1px solid #cbd5c5;
+  border-radius: 6px;
+  display: grid;
+  gap: 10px;
+  padding: 10px;
+}
+
+.zone-panel-heading {
+  align-items: start;
+  display: flex;
+  gap: 10px;
+  justify-content: space-between;
+}
+
+.zone-panel-heading h3,
+.zone-panel-heading p {
+  margin: 0;
+}
+
+.zone-panel-heading h3 {
+  font-size: 16px;
+}
+
+.zone-panel-heading p,
+.empty-zone {
+  color: #56615d;
+  font-size: 13px;
+}
+
+.zone-card-list {
+  display: grid;
+  gap: 6px;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  max-height: 260px;
+  overflow: auto;
+}
+
+.zone-card-row {
+  align-items: center;
+  background: #f8faf4;
+  border: 1px solid #d5ddce;
+  border-radius: 6px;
+  display: grid;
+  gap: 6px;
+  grid-template-columns: 28px 28px minmax(0, 1fr) auto;
+  min-height: 38px;
+  padding: 6px;
+}
+
+.zone-card-index {
+  color: #65716c;
+  font-size: 12px;
+  font-weight: 800;
+  text-align: right;
+}
+
+.zone-card-name {
+  font-size: 13px;
+  font-weight: 700;
+  overflow-wrap: anywhere;
+}
+
+.zone-card-type {
+  background: #e7eee7;
+  border: 1px solid #c7d4c8;
+  border-radius: 999px;
+  color: #3f4946;
+  font-size: 11px;
+  line-height: 1;
+  padding: 4px 6px;
+  white-space: nowrap;
 }
 
 @media (max-width: 860px) {

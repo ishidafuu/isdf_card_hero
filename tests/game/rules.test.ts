@@ -4,6 +4,7 @@ import {
   attackWithCommand,
   canFocusMonster,
   createInitialGame,
+  discardHandCard,
   endTurn,
   focusMonster,
   getCommandTargets,
@@ -1244,6 +1245,19 @@ describe("battle prototype rules", () => {
       "old_7",
     ]);
     expect(next.players.player.discard.map((card) => card.instanceId)).toEqual(["old_1", "old_2"]);
+  });
+
+  it("lets the current player explicitly discard a hand card", () => {
+    const game = createGameWithPlayerHand([
+      { cardId: "takokke", instanceId: "keep" },
+      { cardId: "sigma", instanceId: "discard" },
+    ]);
+
+    const next = discardHandCard(game, "discard");
+
+    expect(next.players.player.hand.map((card) => card.instanceId)).toEqual(["keep"]);
+    expect(next.players.player.discard.map((card) => card.instanceId)).toEqual(["discard"]);
+    expect(next.log.at(-1)).toContain("手札から捨てた");
   });
 });
 

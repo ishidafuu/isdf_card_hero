@@ -140,6 +140,14 @@ export interface PlayerState {
   masterActionsExchanged?: boolean;
 }
 
+export interface MoveHistoryEntry {
+  playerId: PlayerId;
+  fromSlotKey: SlotKey;
+  toSlotKey: SlotKey;
+  moverInstanceId: string;
+  swappedInstanceId?: string;
+}
+
 export interface PendingLevelUp {
   playerId: PlayerId;
   attackerSlotKey: SlotKey;
@@ -156,6 +164,7 @@ export interface GameState {
   log: string[];
   winner?: PlayerId;
   pendingLevelUp?: PendingLevelUp;
+  turnMoveHistory?: MoveHistoryEntry[];
 }
 
 export type Target =
