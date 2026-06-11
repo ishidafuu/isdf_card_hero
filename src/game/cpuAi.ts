@@ -9,6 +9,7 @@ import {
   getMagicTargets,
   getMasterActionTargets,
   getMonsterCommands,
+  getMovableTargets,
   moveMonster,
   opponentOf,
   playMagic,
@@ -124,34 +125,46 @@ export function listCpuDecisions(state: GameState): CpuDecision[] {
 
   return [
     ...listAttackDecisions(state),
-    ...listMasterAttackDecisions(state),
+    ...listMasterActionDecisions(state),
     ...listMagicDecisions(state),
     ...listSummonDecisions(state),
+    ...listMoveDecisions(state),
     ...listFocusDecisions(state),
     createEndTurnDecision(),
   ];
 }
 
 export function applyCpuDecision(state: GameState, decision: CpuDecision): GameState {
+  const stateWithReason = appendDecisionReasonLog(state, decision);
   if (decision.type === "attack") {
-    return attackWithCommand(state, decision.action);
+    return attackWithCommand(stateWithReason, decision.action);
   }
   if (decision.type === "master_action") {
-    return useMasterAction(state, decision.actionId, decision.target);
+    return useMasterAction(stateWithReason, decision.actionId, decision.target);
   }
   if (decision.type === "summon") {
-    return summonMonster(state, decision.handInstanceId, decision.slotKey);
+    return summonMonster(stateWithReason, decision.handInstanceId, decision.slotKey);
   }
   if (decision.type === "focus") {
-    return focusMonster(state, decision.slotKey);
+    return focusMonster(stateWithReason, decision.slotKey);
   }
   if (decision.type === "magic") {
-    return playMagic(state, decision.action);
+    return playMagic(stateWithReason, decision.action);
   }
   if (decision.type === "move") {
-    return moveMonster(state, decision.fromSlotKey, decision.toSlotKey);
+    return moveMonster(stateWithReason, decision.fromSlotKey, decision.toSlotKey);
   }
-  return endTurn(state);
+  return endTurn(stateWithReason);
+}
+
+function appendDecisionReasonLog(state: GameState, decision: CpuDecision): GameState {
+  const next = structuredClone(state) as GameState;
+  const actor = next.currentPlayer === "cpu" ? "CPU" : "プレイヤーAI";
+  next.log.push(`${actor}判断: ${decision.reason}`);
+  if (next.log.length > 120) {
+    next.log = next.log.slice(-120);
+  }
+  return next;
 }
 
 export function evaluateState(state: GameState, perspective: PlayerId = "cpu"): number {
@@ -275,6 +288,14 @@ function attackReason(state: GameState, after: GameState, action: CommandAction)
   return target ? `${getCardName(target.cardId)}を削れるため攻撃` : "有効ダメージを与えられるため攻撃";
 }
 
+function listMasterActionDecisions(state: GameState): CpuDecision[] {
+  return [
+    ...listMasterAttackDecisions(state),
+    ...listWakeUpDecisions(state),
+    ...listShieldDecisions(state),
+  ];
+}
+
 function listMasterAttackDecisions(state: GameState): CpuDecision[] {
   const playerId = state.currentPlayer;
   return getMasterActionTargets(state, "master_attack")
@@ -312,6 +333,75 @@ function createMasterAttackDecision(state: GameState, target: Target): CpuDecisi
     actionId: "master_attack",
     target,
     reason: "ストーンに余裕があり敵を削れるためマスターアタック",
+    score,
+  };
+}
+
+function listWakeUpDecisions(state: GameState): CpuDecision[] {
+  return getMasterActionTargets(state, "wake_up")
+    .filter((target) => target.kind === "monster" && state.slots[target.slotKey].owner === state.currentPlayer)
+    .map((target) => createWakeUpDecision(state, target))
+    .filter((decision): decision is CpuDecision => !!decision);
+}
+
+function createWakeUpDecision(state: GameState, target: Target): CpuDecision | undefined {
+  if (target.kind !== "monster") {
+    return undefined;
+  }
+  const monster = state.slots[target.slotKey].monster;
+  if (!monster || monster.status !== "prepared") {
+    return undefined;
+  }
+  const after = useMasterAction(state, "wake_up", target);
+  const activeMonster = after.slots[target.slotKey].monster;
+  const canActNow = !!activeMonster && getMonsterCommands(activeMonster)
+    .some((command) => getCommandTargets(after, target.slotKey, command.id).length > 0);
+  const score = 28 + monsterValue(state, target.slotKey) * 0.35 + (canActNow ? 45 : 0) - 16;
+  if (score < 32) {
+    return undefined;
+  }
+  return {
+    type: "master_action",
+    actionId: "wake_up",
+    target,
+    reason: canActNow
+      ? "準備中の味方を起こすと追加行動できるためウェイクアップ"
+      : "高価値の準備中味方を早く登場させるためウェイクアップ",
+    score,
+  };
+}
+
+function listShieldDecisions(state: GameState): CpuDecision[] {
+  return getMasterActionTargets(state, "shield")
+    .filter((target) => target.kind === "monster" && state.slots[target.slotKey].owner === state.currentPlayer)
+    .map((target) => createShieldDecision(state, target))
+    .filter((decision): decision is CpuDecision => !!decision);
+}
+
+function createShieldDecision(state: GameState, target: Target): CpuDecision | undefined {
+  if (target.kind !== "monster") {
+    return undefined;
+  }
+  const monster = state.slots[target.slotKey].monster;
+  if (!monster || monster.shielded || monster.status !== "active") {
+    return undefined;
+  }
+  const threat = incomingThreat(state, target.slotKey);
+  const important = monster.level >= 2 || getMonsterDef(monster.cardId).role === "back" || monster.hp <= 2;
+  if (!threat.threatened && !important) {
+    return undefined;
+  }
+  const score = 18 + monsterValue(state, target.slotKey) * 0.18 + (threat.lethal ? 55 : threat.threatened ? 24 : 0) - 14;
+  if (score < 28) {
+    return undefined;
+  }
+  return {
+    type: "master_action",
+    actionId: "shield",
+    target,
+    reason: threat.lethal
+      ? "次に倒されそうな味方を守るためシールド"
+      : "高価値の味方を守るためシールド",
     score,
   };
 }
@@ -368,7 +458,7 @@ function listSummonDecisions(state: GameState): CpuDecision[] {
         type: "summon",
         handInstanceId: card.instanceId,
         slotKey,
-        reason: summonReason(card.cardId, slotKey),
+        reason: summonReason(state.currentPlayer, card.cardId, slotKey),
         score,
       });
     }
@@ -398,7 +488,7 @@ function scoreSummon(state: GameState, cardId: string, slotKey: SlotKey): number
   return score;
 }
 
-function summonReason(cardId: string, slotKey: SlotKey): string {
+function summonReason(playerId: PlayerId, cardId: string, slotKey: SlotKey): string {
   const def = getMonsterDef(cardId);
   const slotLabel = stateSlotLabel(slotKey);
   if (def.role === "front" && slotKey.includes("_front_")) {
@@ -407,7 +497,88 @@ function summonReason(cardId: string, slotKey: SlotKey): string {
   if (def.role === "back" && slotKey.includes("_back_")) {
     return `後衛カードを${slotLabel}へ召喚`;
   }
+  if (playerId === "cpu") {
+    return `カードを${slotLabel}へ召喚`;
+  }
   return `${getCardName(cardId)}を空き枠へ召喚`;
+}
+
+function listMoveDecisions(state: GameState): CpuDecision[] {
+  const decisions: CpuDecision[] = [];
+  const playerId = state.currentPlayer;
+  for (const fromSlotKey of FIELD_ORDER_BY_PLAYER[playerId]) {
+    const monster = state.slots[fromSlotKey].monster;
+    if (!monster?.status || monster.status !== "active" || monster.actionCount >= monster.actionLimit) {
+      continue;
+    }
+    for (const toSlotKey of getMovableTargets(state, fromSlotKey)) {
+      const decision = createMoveDecision(state, fromSlotKey, toSlotKey);
+      if (decision) {
+        decisions.push(decision);
+      }
+    }
+  }
+  return decisions;
+}
+
+function createMoveDecision(state: GameState, fromSlotKey: SlotKey, toSlotKey: SlotKey): CpuDecision | undefined {
+  const after = moveMonster(state, fromSlotKey, toSlotKey);
+  const score = scoreMoveDecision(state, after, fromSlotKey, toSlotKey);
+  if (score <= 14) {
+    return undefined;
+  }
+  return {
+    type: "move",
+    fromSlotKey,
+    toSlotKey,
+    reason: moveReason(state, fromSlotKey, toSlotKey),
+    score,
+  };
+}
+
+function scoreMoveDecision(state: GameState, after: GameState, fromSlotKey: SlotKey, toSlotKey: SlotKey): number {
+  const beforeMover = state.slots[fromSlotKey].monster;
+  if (!beforeMover) {
+    return 0;
+  }
+  const moverAfterSlot = findMonsterSlot(after, beforeMover.instanceId);
+  if (!moverAfterSlot) {
+    return 0;
+  }
+  const beforePlacement = placementValue(state, state.slots[fromSlotKey], beforeMover);
+  const afterMover = after.slots[moverAfterSlot].monster;
+  const afterPlacement = afterMover ? placementValue(after, after.slots[moverAfterSlot], afterMover) : beforePlacement;
+  let score = 10 + (afterPlacement - beforePlacement) * 2;
+
+  const swappedMonster = state.slots[toSlotKey].monster;
+  if (swappedMonster) {
+    const swappedAfterSlot = findMonsterSlot(after, swappedMonster.instanceId);
+    if (swappedAfterSlot) {
+      const beforeSwappedPlacement = placementValue(state, state.slots[toSlotKey], swappedMonster);
+      const afterSwapped = after.slots[swappedAfterSlot].monster;
+      const afterSwappedPlacement = afterSwapped
+        ? placementValue(after, after.slots[swappedAfterSlot], afterSwapped)
+        : beforeSwappedPlacement;
+      score += afterSwappedPlacement - beforeSwappedPlacement;
+    }
+  }
+
+  if (createsImmediateAttack(after, moverAfterSlot)) {
+    score += 18;
+  }
+  return score;
+}
+
+function moveReason(state: GameState, fromSlotKey: SlotKey, toSlotKey: SlotKey): string {
+  const mover = state.slots[fromSlotKey].monster;
+  const role = mover ? getMonsterDef(mover.cardId).role : undefined;
+  if (role === "front" && toSlotKey.includes("_front_")) {
+    return "前衛カードを前列へ出して攻撃しやすくするため移動";
+  }
+  if (role === "back" && toSlotKey.includes("_back_")) {
+    return "後衛カードを後列へ戻して射程を活かすため移動";
+  }
+  return "配置評価を改善できるため移動";
 }
 
 function listFocusDecisions(state: GameState): CpuDecision[] {
@@ -483,6 +654,9 @@ function decisionPriority(decision: CpuDecision): number {
   if (decision.type === "focus") {
     return 30;
   }
+  if (decision.type === "move") {
+    return 25;
+  }
   if (decision.type === "end_turn") {
     return 10;
   }
@@ -544,6 +718,50 @@ function attackerLevelGain(state: GameState, after: GameState, attackerSlotKey: 
     return 0;
   }
   return Math.max(0, current.level - before.level);
+}
+
+function incomingThreat(state: GameState, targetSlotKey: SlotKey): { threatened: boolean; lethal: boolean } {
+  const target = state.slots[targetSlotKey].monster;
+  if (!target) {
+    return { threatened: false, lethal: false };
+  }
+  const opponent = opponentOf(target.owner);
+  const opponentState = structuredClone(state) as GameState;
+  opponentState.currentPlayer = opponent;
+
+  let threatened = false;
+  let lethal = false;
+  for (const slotKey of FIELD_ORDER_BY_PLAYER[opponent]) {
+    const monster = opponentState.slots[slotKey].monster;
+    if (!monster?.status || monster.status !== "active" || monster.actionCount >= monster.actionLimit) {
+      continue;
+    }
+    for (const command of getMonsterCommands(monster)) {
+      const canTarget = getCommandTargets(opponentState, slotKey, command.id)
+        .some((candidate) => candidate.kind === "monster" && candidate.slotKey === targetSlotKey);
+      if (!canTarget) {
+        continue;
+      }
+      threatened = true;
+      if (command.power >= target.hp) {
+        lethal = true;
+      }
+    }
+  }
+
+  return { threatened, lethal };
+}
+
+function createsImmediateAttack(state: GameState, slotKey: SlotKey): boolean {
+  const monster = state.slots[slotKey].monster;
+  if (!monster?.status || monster.status !== "active" || monster.actionCount >= monster.actionLimit) {
+    return false;
+  }
+  return getMonsterCommands(monster).some((command) => getCommandTargets(state, slotKey, command.id).length > 0);
+}
+
+function findMonsterSlot(state: GameState, instanceId: string): SlotKey | undefined {
+  return ALL_FIELD_ORDER.find((slotKey) => state.slots[slotKey].monster?.instanceId === instanceId);
 }
 
 function stateSlotLabel(slotKey: SlotKey): string {

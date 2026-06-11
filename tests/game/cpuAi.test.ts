@@ -138,6 +138,56 @@ describe("cpu ai", () => {
 
     expect(next.slots.cpu_front_left.monster?.cardId).toBe("takokke");
     expect(next.players.cpu.stones).toBe(2);
+    expect(next.log.some((entry) => entry.startsWith("CPU判断:"))).toBe(true);
+    expect(next.log.find((entry) => entry.startsWith("CPU判断:"))).not.toContain("タコッケー");
+  });
+
+  it("wakes up a prepared ally when it can act immediately", () => {
+    const game = createCpuGame([]);
+    game.players.cpu.stones = 5;
+    game.slots.cpu_back_left.monster = createActiveMonster("morgan", "cpu", {
+      status: "prepared",
+      hp: 4,
+    });
+
+    const decision = chooseCpuDecision(game);
+
+    expect(decision.type).toBe("master_action");
+    if (decision.type === "master_action") {
+      expect(decision.actionId).toBe("wake_up");
+      expect(decision.reason).toContain("ウェイクアップ");
+    }
+  });
+
+  it("shields a threatened valuable ally", () => {
+    const game = createCpuGame([]);
+    game.players.cpu.stones = 5;
+    game.slots.cpu_front_left.monster = createActiveMonster("beyond", "cpu", { hp: 2 });
+    game.slots.player_front_left.monster = createActiveMonster("takokke", "player");
+
+    const decision = chooseCpuDecision(game);
+
+    expect(decision.type).toBe("master_action");
+    if (decision.type === "master_action") {
+      expect(decision.actionId).toBe("shield");
+      expect(decision.target).toEqual({ kind: "monster", slotKey: "cpu_front_left" });
+      expect(decision.reason).toContain("シールド");
+    }
+  });
+
+  it("moves monsters to improve role placement", () => {
+    const game = createCpuGame([]);
+    game.players.cpu.stones = 0;
+    game.slots.cpu_front_left.monster = createActiveMonster("yanbaru", "cpu");
+
+    const decision = chooseCpuDecision(game);
+
+    expect(decision.type).toBe("move");
+    if (decision.type === "move") {
+      expect(decision.fromSlotKey).toBe("cpu_front_left");
+      expect(decision.toSlotKey).toBe("cpu_back_left");
+      expect(decision.reason).toContain("後列");
+    }
   });
 
   it("runs deterministic CPU turns across seeds without getting stuck", () => {
@@ -186,6 +236,40 @@ describe("cpu ai", () => {
       expect(game.turnNumber).toBeGreaterThan(1);
     }
   });
+
+  it("finishes 100 auto-play games without exceptions, unresolved prompts, or extreme length", () => {
+    const results: Array<{ seed: number; steps: number; turns: number; winner: PlayerId | undefined }> = [];
+
+    for (let seed = 400; seed < 500; seed += 1) {
+      let game = createInitialGame(seed);
+      let repeatedSignatureCount = 0;
+      let previousSignature = progressSignature(game);
+      let step = 0;
+
+      for (; step < 500 && !game.winner; step += 1) {
+        game = runAutoStep(game);
+        if (game.pendingLevelUp) {
+          game = runAutoStep(game);
+        }
+
+        const nextSignature = progressSignature(game);
+        repeatedSignatureCount = nextSignature === previousSignature ? repeatedSignatureCount + 1 : 0;
+        previousSignature = nextSignature;
+
+        expect(game.pendingLevelUp, `seed ${seed} left unresolved level-up`).toBeUndefined();
+        expect(repeatedSignatureCount, `seed ${seed} repeated the same state too many times`).toBeLessThan(8);
+      }
+
+      results.push({ seed, steps: step, turns: game.turnNumber, winner: game.winner });
+      expect(game.winner, `seed ${seed} did not finish within 500 auto steps`).toBeDefined();
+      expect(step, `seed ${seed} took too many auto steps`).toBeLessThan(500);
+    }
+
+    const maxSteps = Math.max(...results.map((result) => result.steps));
+    const maxTurns = Math.max(...results.map((result) => result.turns));
+    expect(maxSteps).toBeLessThan(500);
+    expect(maxTurns).toBeLessThan(120);
+  }, 60_000);
 });
 
 function createCpuGame(hand: CardInstance[] = []): GameState {
@@ -230,4 +314,42 @@ function createActiveMonster(
     shielded: false,
     ...overrides,
   };
+}
+
+function progressSignature(game: GameState): string {
+  return JSON.stringify({
+    currentPlayer: game.currentPlayer,
+    turnNumber: game.turnNumber,
+    winner: game.winner,
+    player: {
+      hp: game.players.player.masterHp,
+      stones: game.players.player.stones,
+      hand: game.players.player.hand.length,
+      deck: game.players.player.deck.length,
+      discard: game.players.player.discard.length,
+    },
+    cpu: {
+      hp: game.players.cpu.masterHp,
+      stones: game.players.cpu.stones,
+      hand: game.players.cpu.hand.length,
+      deck: game.players.cpu.deck.length,
+      discard: game.players.cpu.discard.length,
+    },
+    slots: Object.entries(game.slots).map(([slotKey, slot]) => [
+      slotKey,
+      slot.monster
+        ? {
+            id: slot.monster.instanceId,
+            cardId: slot.monster.cardId,
+            owner: slot.monster.owner,
+            hp: slot.monster.hp,
+            level: slot.monster.level,
+            status: slot.monster.status,
+            actionCount: slot.monster.actionCount,
+            focused: slot.monster.focused,
+            shielded: slot.monster.shielded,
+          }
+        : null,
+    ]),
+  });
 }

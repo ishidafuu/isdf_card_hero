@@ -8,9 +8,9 @@
 
 ## Current Focus
 
-1. 戦闘プロトタイプを反復プレイに耐える状態へ安定化する
-2. CPU AIの行動理由とログ表示を改善する
-3. マジック、マスター特技、移動をCPU AIへ段階的に解禁する
+1. 両者CPUオートプレイで長期安定性を検証する
+2. CPU AIの判断理由をログとテストで追跡できる状態を維持する
+3. カード個別挙動とCPU判断品質を、失敗seedベースで改善する
 
 ## Documents
 
@@ -19,6 +19,7 @@
 - [資料調査メモ](docs/02_research_notes.md)
 - [CPU AI設計メモ](docs/03_cpu_ai_design.md)
 - [今後のロードマップ](docs/04_roadmap.md)
+- [オートプレイ検証ログ](docs/05_auto_play_validation.md)
 
 ## Development
 
