@@ -71,6 +71,9 @@ function isNonGameplayNote(note) {
   const normalized = note.normalize("NFKC").toLowerCase();
   return (
     normalized.includes("spd使用不可") ||
+    normalized.includes("スーパーカード") ||
+    normalized.includes("全てのスーパー") ||
+    /^lv\d+からレベルアップで .+ になれる$/.test(normalized) ||
     note.includes("限定版") ||
     note.includes("非売品") ||
     note.includes("超レア") ||

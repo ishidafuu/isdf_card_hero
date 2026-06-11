@@ -8,6 +8,9 @@ import {
   getMagicTargets,
   getMovableTargets,
   playMagic,
+  resolveLevelUp,
+  startTurn,
+  summonMonster,
   useMasterAction,
 } from "../../src/game/rules";
 import type { CardInstance, GameState, MonsterState, PlayerId } from "../../src/game/types";
@@ -672,6 +675,150 @@ describe("official card effect expectations", () => {
     expect(game.slots.cpu_front_left.monster).toBeUndefined();
   });
 
+  it("bomuzo ボムゾウ takes recoil when using 自爆", () => {
+    let game = createGameWithPlayerHand([]);
+    game.slots.player_front_left.monster = createActiveMonster("bomuzo", "player");
+    game.slots.cpu_front_left.monster = createActiveMonster("takokke", "cpu");
+
+    game = attackWithCommand(game, {
+      attackerSlotKey: "player_front_left",
+      commandId: "self_bomb",
+      target: { kind: "monster", slotKey: "cpu_front_left" },
+    });
+
+    expect(game.slots.cpu_front_left.monster?.hp).toBe(3);
+    expect(game.slots.player_front_left.monster?.hp).toBe(5);
+  });
+
+  it("polyspinner ポリスピナー can act twice in one turn", () => {
+    let game = createGameWithPlayerHand([]);
+    game.slots.player_front_left.monster = createActiveMonster("polyspinner", "player");
+    game.slots.cpu_front_left.monster = createActiveMonster("takokke", "cpu");
+
+    game = attackWithCommand(game, {
+      attackerSlotKey: "player_front_left",
+      commandId: "attack",
+      target: { kind: "monster", slotKey: "cpu_front_left" },
+    });
+
+    expect(game.slots.player_front_left.monster?.actionCount).toBe(1);
+    expect(getCommandTargets(game, "player_front_left", "attack")).toContainEqual({
+      kind: "monster",
+      slotKey: "cpu_front_left",
+    });
+
+    game = attackWithCommand(game, {
+      attackerSlotKey: "player_front_left",
+      commandId: "attack",
+      target: { kind: "monster", slotKey: "cpu_front_left" },
+    });
+
+    expect(game.slots.player_front_left.monster?.actionCount).toBe(2);
+    expect(getCommandTargets(game, "player_front_left", "attack")).toEqual([]);
+  });
+
+  it("card_044 ヒートロン gains power when healed by magic", () => {
+    let game = createGameWithPlayerHand([{ cardId: "healing", instanceId: "heal_heatron" }]);
+    game.players.player.stones = magicCost("healing");
+    game.slots.player_front_left.monster = createActiveMonster("card_044", "player", { hp: 4 });
+    game.slots.cpu_front_left.monster = createActiveMonster("takokke", "cpu");
+
+    game = playMagic(game, {
+      handInstanceId: "heal_heatron",
+      target: { kind: "monster", slotKey: "player_front_left" },
+    });
+
+    expect(game.slots.player_front_left.monster?.hp).toBe(5);
+    expect(game.slots.player_front_left.monster?.powerModifier).toBe(1);
+
+    game = attackWithCommand(game, {
+      attackerSlotKey: "player_front_left",
+      commandId: "attack",
+      target: { kind: "monster", slotKey: "cpu_front_left" },
+    });
+
+    expect(game.slots.cpu_front_left.monster?.hp).toBe(2);
+    expect(game.slots.player_front_left.monster?.powerModifier).toBe(0);
+  });
+
+  it("card_046 シトラス gives its level-up right to another ally", () => {
+    let game = createGameWithPlayerHand([]);
+    game.players.player.stones = 2;
+    game.slots.player_front_left.monster = createActiveMonster("card_046", "player");
+    game.slots.player_front_right.monster = createActiveMonster("takokke", "player");
+    game.slots.cpu_front_left.monster = createActiveMonster("card_099", "cpu", { hp: 1 });
+
+    game = attackWithCommand(game, {
+      attackerSlotKey: "player_front_left",
+      commandId: "attack",
+      target: { kind: "monster", slotKey: "cpu_front_left" },
+    });
+
+    expect(game.pendingLevelUp?.attackerSlotKey).toBe("player_front_right");
+
+    game = resolveLevelUp(game, 1);
+
+    expect(game.slots.player_front_left.monster?.level).toBe(1);
+    expect(game.slots.player_front_right.monster?.level).toBe(2);
+  });
+
+  it("card_048 グリフォン retreats after using its lower command when the back slot is open", () => {
+    let game = createGameWithPlayerHand([]);
+    game.slots.player_front_left.monster = createActiveMonster("card_048", "player");
+    game.slots.cpu_back_left.monster = createActiveMonster("takokke", "cpu");
+    const target = getCommandTargets(game, "player_front_left", "バック_クロウ")[0];
+    if (!target) {
+      throw new Error("グリフォンのバック・クロウ対象がありません");
+    }
+
+    game = attackWithCommand(game, {
+      attackerSlotKey: "player_front_left",
+      commandId: "バック_クロウ",
+      target,
+    });
+
+    expect(game.slots.player_front_left.monster).toBeUndefined();
+    expect(game.slots.player_back_left.monster?.cardId).toBe("card_048");
+  });
+
+  it("card_077 ゼス guards against further damage after taking damage in the same turn", () => {
+    let game = createGameWithPlayerHand([]);
+    game.currentPlayer = "cpu";
+    game.slots.cpu_front_left.monster = createActiveMonster("polyspinner", "cpu");
+    game.slots.player_front_left.monster = createActiveMonster("card_077", "player");
+
+    game = attackWithCommand(game, {
+      attackerSlotKey: "cpu_front_left",
+      commandId: "attack",
+      target: { kind: "monster", slotKey: "player_front_left" },
+    });
+    game = attackWithCommand(game, {
+      attackerSlotKey: "cpu_front_left",
+      commandId: "attack",
+      target: { kind: "monster", slotKey: "player_front_left" },
+    });
+
+    expect(game.slots.player_front_left.monster?.hp).toBe(2);
+    expect(game.log.some((entry) => entry.includes("仮死状態で攻撃を受けつけなかった"))).toBe(true);
+  });
+
+  it("card_081 マンクス heals the monster directly in front after taking damage", () => {
+    let game = createGameWithPlayerHand([]);
+    game.currentPlayer = "cpu";
+    game.slots.cpu_front_left.monster = createActiveMonster("bomuzo", "cpu");
+    game.slots.player_back_left.monster = createActiveMonster("card_081", "player");
+    game.slots.player_front_left.monster = createActiveMonster("takokke", "player", { hp: 2 });
+
+    game = attackWithCommand(game, {
+      attackerSlotKey: "cpu_front_left",
+      commandId: "storm_bomb",
+      target: { kind: "monster", slotKey: "player_back_left" },
+    });
+
+    expect(game.slots.player_front_left.monster?.hp).toBe(3);
+    expect(game.log.some((entry) => entry.includes("献身が発動した"))).toBe(true);
+  });
+
   it("card_052 クレア clears effects from the damaged target with ウォッシュ", () => {
     let game = createGameWithPlayerHand([]);
     game.players.player.stones = 2;
@@ -940,6 +1087,93 @@ describe("official card effect expectations", () => {
     expect(game.players.player.stones).toBe(2);
   });
 
+  it("card_051 ピグミィ can act twice in one turn", () => {
+    let game = createGameWithPlayerHand([]);
+    game.slots.player_front_left.monster = createActiveMonster("card_051", "player");
+    game.slots.cpu_back_left.monster = createActiveMonster("takokke", "cpu");
+    const target = getCommandTargets(game, "player_front_left", "スパイクボール")[0];
+    if (!target) {
+      throw new Error("ピグミィのスパイクボール対象がありません");
+    }
+
+    game = attackWithCommand(game, {
+      attackerSlotKey: "player_front_left",
+      commandId: "スパイクボール",
+      target,
+    });
+    game = attackWithCommand(game, {
+      attackerSlotKey: "player_front_left",
+      commandId: "スパイクボール",
+      target,
+    });
+
+    expect(game.slots.player_front_left.monster?.actionCount).toBe(2);
+    expect(getCommandTargets(game, "player_front_left", "スパイクボール")).toEqual([]);
+  });
+
+  it("card_099 ゴーント gives Stone Curse to the monster that defeats it", () => {
+    let game = createGameWithPlayerHand([]);
+    game.slots.player_front_left.monster = createActiveMonster("takokke", "player");
+    game.slots.cpu_front_left.monster = createActiveMonster("card_099", "cpu", { hp: 1 });
+
+    game = attackWithCommand(game, {
+      attackerSlotKey: "player_front_left",
+      commandId: "attack",
+      target: { kind: "monster", slotKey: "cpu_front_left" },
+    });
+
+    expect(game.slots.player_front_left.monster?.stoneCurse).toBe(true);
+    expect(game.log.some((entry) => entry.includes("ストーン呪を受けた"))).toBe(true);
+  });
+
+  it("card_100 カムロ gives Damage Curse to the monster that defeats it", () => {
+    let game = createGameWithPlayerHand([]);
+    game.players.player.stones = 0;
+    game.slots.player_front_left.monster = createActiveMonster("takokke", "player");
+    game.slots.cpu_front_left.monster = createActiveMonster("card_100", "cpu", { hp: 1 });
+
+    game = attackWithCommand(game, {
+      attackerSlotKey: "player_front_left",
+      commandId: "attack",
+      target: { kind: "monster", slotKey: "cpu_front_left" },
+    });
+
+    expect(game.slots.player_front_left.monster?.damageCurse).toBe(true);
+
+    const attacker = game.slots.player_front_left.monster;
+    if (attacker) {
+      attacker.actionCount = 0;
+    }
+    game.slots.cpu_front_left.monster = createActiveMonster("takokke", "cpu");
+    game = attackWithCommand(game, {
+      attackerSlotKey: "player_front_left",
+      commandId: "attack",
+      target: { kind: "monster", slotKey: "cpu_front_left" },
+    });
+
+    expect(game.slots.player_front_left.monster?.hp).toBe(1);
+    expect(game.slots.player_front_left.monster?.damageCurse).toBe(false);
+  });
+
+  it("card_102 赤竜キバ counterattacks only at Lv2", () => {
+    let game = createGameWithPlayerHand([]);
+    game.currentPlayer = "cpu";
+    game.slots.cpu_front_left.monster = createActiveMonster("takokke", "cpu");
+    game.slots.player_front_left.monster = createActiveMonster("card_102", "player", {
+      level: 2,
+      hp: 5,
+      investedStones: 2,
+    });
+
+    game = attackWithCommand(game, {
+      attackerSlotKey: "cpu_front_left",
+      commandId: "attack",
+      target: { kind: "monster", slotKey: "player_front_left" },
+    });
+
+    expect(game.slots.cpu_front_left.monster?.hp).toBe(3);
+  });
+
   it("card_109 ナッツロックル auto-counters the monster directly in front after taking damage", () => {
     let game = createGameWithPlayerHand([]);
     game.currentPlayer = "cpu";
@@ -969,6 +1203,28 @@ describe("official card effect expectations", () => {
     expect(game.slots.player_front_left.monster?.hp).toBe(4);
     expect(game.slots.cpu_front_left.monster?.hp).toBe(4);
     expect(game.log.filter((entry) => entry.includes("やつあたりが発動した"))).toHaveLength(1);
+  });
+
+  it("card_132 オクトロス randomly changes power at turn start", () => {
+    let game = createGameWithPlayerHand([]);
+    game.randomSeed = 7;
+    game.players.player.turnsStarted = 1;
+    game.slots.player_front_left.monster = createActiveMonster("card_132", "player");
+
+    game = startTurn(game, "player");
+
+    expect(Math.abs(game.slots.player_front_left.monster?.powerModifier ?? 0)).toBe(1);
+    expect(game.log.some((entry) => entry.includes("ランダム結果: きまぐれ"))).toBe(true);
+  });
+
+  it("card_144 ホロウダイン enters with Stone Curse", () => {
+    let game = createGameWithPlayerHand([{ cardId: "card_144", instanceId: "hollow" }]);
+    game.players.player.stones = 1;
+
+    game = summonMonster(game, "hollow", "player_back_left");
+
+    expect(game.slots.player_back_left.monster?.stoneCurse).toBe(true);
+    expect(game.slots.player_back_left.monster?.hollow).toBe(true);
   });
 
   it("card_106 ピュア powers the next master attack and then leaves", () => {

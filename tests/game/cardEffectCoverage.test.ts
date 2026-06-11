@@ -6,6 +6,11 @@ import {
   SIMPLIFIED_OR_PENDING_CARD_EFFECTS,
   type CommandEffectTrait,
 } from "../../src/game/cardEffectCoverage";
+import {
+  getCardNoteDisplays,
+  IMPLEMENTED_PERSONALITY_CARD_IDS,
+  isNonGameplayNote,
+} from "../../src/game/cardAnnotations";
 import { getAllCardDefs, getMonsterDef } from "../../src/game/cards";
 import type { CommandDef } from "../../src/game/types";
 
@@ -66,47 +71,25 @@ describe("card effect coverage registry", () => {
   });
 
   it("keeps implemented monster personality effects visible in card notes", () => {
-    const implementedPersonalityCards = [
-      "bomuzo",
-      "polyspinner",
-      "card_035",
-      "card_039",
-      "card_044",
-      "card_046",
-      "card_048",
-      "card_051",
-      "card_052",
-      "card_067",
-      "card_072",
-      "card_073",
-      "card_077",
-      "card_078",
-      "card_080",
-      "card_081",
-      "card_099",
-      "card_100",
-      "card_102",
-      "card_106",
-      "card_109",
-      "card_112",
-      "card_132",
-      "card_133",
-      "card_144",
-    ] as const;
-
-    for (const cardId of implementedPersonalityCards) {
+    for (const cardId of IMPLEMENTED_PERSONALITY_CARD_IDS) {
       const notes = getMonsterDef(cardId).notes ?? [];
       expect(notes.some((note) => note.trim().startsWith("性格")), cardId).toBe(true);
     }
   });
 
+  it("keeps every visible personality note backed by an implemented personality effect", () => {
+    const visiblePersonalityCards = getAllCardDefs()
+      .filter((card) => getCardNoteDisplays(card).some((note) => note.kind === "personality"))
+      .map((card) => card.id)
+      .sort();
+
+    expect(visiblePersonalityCards).toEqual([...IMPLEMENTED_PERSONALITY_CARD_IDS].sort());
+  });
+
   it("keeps non-gameplay source annotations out of visible card notes", () => {
     for (const card of getAllCardDefs()) {
       for (const note of card.notes ?? []) {
-        const normalized = note.normalize("NFKC").toLowerCase();
-        expect(normalized, `${card.id}: ${note}`).not.toContain("spd使用不可");
-        expect(note, card.id).not.toMatch(/限定版|非売品|超レア|入手困難|流出モノ|珍品/);
-        expect(note, card.id).not.toMatch(/^（[^）]+）$/);
+        expect(isNonGameplayNote(note), `${card.id}: ${note}`).toBe(false);
       }
     }
   });

@@ -55,9 +55,7 @@ export const CARD_DEFS = {
     "type": "monster",
     "role": "front",
     "maxLevel": 2,
-    "notes": [
-      "Lv2からレベルアップで パパトット になれる"
-    ],
+    "notes": [],
     "levels": [
       {
         "level": 1,
@@ -98,9 +96,7 @@ export const CARD_DEFS = {
     "type": "monster",
     "role": "front",
     "maxLevel": 2,
-    "notes": [
-      "Lv2からレベルアップで ラガポップル アラポップル になれる"
-    ],
+    "notes": [],
     "levels": [
       {
         "level": 1,
@@ -183,8 +179,7 @@ export const CARD_DEFS = {
     "role": "front",
     "maxLevel": 2,
     "notes": [
-      "性格： 自爆 通常攻撃時に自分もダメージを受ける",
-      "Lv2からレベルアップで ボムキング になれる"
+      "性格： 自爆 通常攻撃時に自分もダメージを受ける"
     ],
     "levels": [
       {
@@ -384,9 +379,7 @@ export const CARD_DEFS = {
     "type": "monster",
     "role": "front",
     "maxLevel": 2,
-    "notes": [
-      "Lv2からレベルアップで 牙王バサラ になれる"
-    ],
+    "notes": [],
     "levels": [
       {
         "level": 1,
@@ -447,8 +440,7 @@ export const CARD_DEFS = {
     "maxLevel": 2,
     "actionLimit": 2,
     "notes": [
-      "性格： ２行動 １ターン中に２回行動できる",
-      "Lv2からレベルアップで Ｔ３－００ エルスピナー になれる"
+      "性格： ２行動 １ターン中に２回行動できる"
     ],
     "levels": [
       {
@@ -490,9 +482,7 @@ export const CARD_DEFS = {
     "type": "monster",
     "role": "front",
     "maxLevel": 2,
-    "notes": [
-      "Lv2からレベルアップで 聖獣ラフィオー になれる"
-    ],
+    "notes": [],
     "levels": [
       {
         "level": 1,
@@ -640,9 +630,7 @@ export const CARD_DEFS = {
     "type": "monster",
     "role": "back",
     "maxLevel": 2,
-    "notes": [
-      "Lv2からレベルアップで ビョーグル になれる"
-    ],
+    "notes": [],
     "levels": [
       {
         "level": 1,
@@ -837,9 +825,7 @@ export const CARD_DEFS = {
     "type": "monster",
     "role": "back",
     "maxLevel": 2,
-    "notes": [
-      "Lv2からレベルアップで メガンタス ギガンタス になれる"
-    ],
+    "notes": [],
     "levels": [
       {
         "level": 1,
@@ -1186,9 +1172,7 @@ export const CARD_DEFS = {
     "type": "monster",
     "role": "front",
     "maxLevel": 2,
-    "notes": [
-      "Lv2からレベルアップで ガンガガンガ ドンガドンガ になれる"
-    ],
+    "notes": [],
     "levels": [
       {
         "level": 1,
@@ -1248,8 +1232,7 @@ export const CARD_DEFS = {
     "role": "front",
     "maxLevel": 2,
     "notes": [
-      "性格： 転生 倒れた後「パフ」として復活",
-      "Lv2からレベルアップで フルール になれる"
+      "性格： 転生 倒れた後「パフ」として復活"
     ],
     "levels": [
       {
@@ -1336,9 +1319,7 @@ export const CARD_DEFS = {
     "type": "monster",
     "role": "front",
     "maxLevel": 2,
-    "notes": [
-      "Lv2からレベルアップで ファレイナ メサイア になれる"
-    ],
+    "notes": [],
     "levels": [
       {
         "level": 1,
@@ -1524,9 +1505,7 @@ export const CARD_DEFS = {
     "type": "monster",
     "role": "front",
     "maxLevel": 2,
-    "notes": [
-      "Lv2からレベルアップで ジャレット になれる"
-    ],
+    "notes": [],
     "levels": [
       {
         "level": 1,
@@ -2050,8 +2029,7 @@ export const CARD_DEFS = {
     "role": "back",
     "maxLevel": 2,
     "notes": [
-      "性格： 無効化 攻撃した相手の全ての効果を消す",
-      "Lv2からレベルアップで 聖天ソフィアス になれる"
+      "性格： 無効化 攻撃した相手の全ての効果を消す"
     ],
     "levels": [
       {
@@ -2112,9 +2090,7 @@ export const CARD_DEFS = {
     "type": "monster",
     "role": "back",
     "maxLevel": 2,
-    "notes": [
-      "Lv2からレベルアップで 聖天ソフィアス になれる"
-    ],
+    "notes": [],
     "levels": [
       {
         "level": 1,
@@ -2394,8 +2370,7 @@ export const CARD_DEFS = {
     "role": "front",
     "maxLevel": 2,
     "notes": [
-      "性格： 復活 １回だけ復活する ただしパワーがダウンしている",
-      "Lv2からレベルアップで 邪神ヤヌー になれる"
+      "性格： 復活 １回だけ復活する ただしパワーがダウンしている"
     ],
     "levels": [
       {
@@ -2580,10 +2555,7 @@ export const CARD_DEFS = {
     "type": "monster",
     "role": "front",
     "maxLevel": 2,
-    "notes": [
-      "性格： 擬態 どのスーパーカードにもなれる",
-      "Lv2からレベルアップで 全てのスーパー になれる"
-    ],
+    "notes": [],
     "levels": [
       {
         "level": 1,
@@ -2722,9 +2694,7 @@ export const CARD_DEFS = {
     "type": "monster",
     "role": "front",
     "maxLevel": 2,
-    "notes": [
-      "Lv2からレベルアップで 戦帝ブリドラ 氷帝コルドラ になれる"
-    ],
+    "notes": [],
     "levels": [
       {
         "level": 1,
@@ -2861,8 +2831,7 @@ export const CARD_DEFS = {
     "role": "back",
     "maxLevel": 2,
     "notes": [
-      "性格： 拡散 相手のフィールドのどこか１ヶ所を特技攻撃した後周囲８方向を－１Ｐで攻撃する",
-      "Lv2からレベルアップで 樹聖オリント になれる"
+      "性格： 拡散 相手のフィールドのどこか１ヶ所を特技攻撃した後周囲８方向を－１Ｐで攻撃する"
     ],
     "levels": [
       {
@@ -3451,8 +3420,7 @@ export const CARD_DEFS = {
     "role": "front",
     "maxLevel": 2,
     "notes": [
-      "性格： ダメージ呪 自分を倒した相手を呪う 呪われた者が行動するとＨＰが１になる",
-      "Lv2からレベルアップで 妖姫ヨシノ になれる"
+      "性格： ダメージ呪 自分を倒した相手を呪う 呪われた者が行動するとＨＰが１になる"
     ],
     "levels": [
       {
@@ -3495,8 +3463,7 @@ export const CARD_DEFS = {
     "role": "front",
     "maxLevel": 2,
     "notes": [
-      "性格： 反撃ＬＶ２ ＬＶ２の時に自分を攻撃した相手に反撃をする",
-      "Lv2からレベルアップで 灼牙竜アギト になれる"
+      "性格： 反撃ＬＶ２ ＬＶ２の時に自分を攻撃した相手に反撃をする"
     ],
     "levels": [
       {

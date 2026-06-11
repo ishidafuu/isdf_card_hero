@@ -161,6 +161,7 @@ export const CARD_EFFECT_COVERAGE_AREAS: readonly CardEffectCoverageArea[] = [
       "tests/game/cardOfficialExpectations.test.ts: card_150 スパルタス覚醒 powers up Spartas and levels it up when a stone is available",
       "tests/game/cardOfficialExpectations.test.ts: special magic and curse cards from card_057/card_058/card_061/card_064/card_087/card_090/card_097/card_098/card_124/card_125/card_128/card_129",
       "tests/game/cardOfficialExpectations.test.ts: monster signature commands and traits including Power Horn, Gemini Lance, Nuts Rockle counter, Death Sheep seal, Drill Break, and Soul Switch",
+      "tests/game/cardOfficialExpectations.test.ts: monster personality traits including self-bomb, double action, heal up, assist, retreat, suspended animation, devotion, curses, Lv2 counter, whim, and hollow",
     ],
     magicCategories: ["パワー魔法", "特殊魔法", "攻撃魔法", "回復魔法", "カード魔法", "空間魔法", "特殊防御魔法"],
     commandTraits: ["stoneCost", "effectText"],
@@ -239,6 +240,7 @@ export const CARD_EFFECT_COVERAGE_AREAS: readonly CardEffectCoverageArea[] = [
       "tests/game/autoPlayValidation.test.ts: validates an arbitrary seed range without relying on vitest assertions inside the runner",
       "tests/game/autoPlayValidation.test.ts: captures reproducible state, log tail, and decision history for failures",
       "npm run validate:auto-play -- --seed-start 400 --count 100",
+      "npm run validate:auto-play -- --seed-start 400 --count 500 --write-artifacts --out-dir artifacts/auto-play-validation/2026-06-12-phase4-500",
     ],
   },
 ];

@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import type { DragEvent, PointerEvent as ReactPointerEvent } from "react";
-import { getCardDef, getCardIconPath, getCardName } from "./game/cards";
+import { getCardNoteDisplays } from "./game/cardAnnotations";
+import { getAllCardDefs, getCardDef, getCardIconPath, getCardName } from "./game/cards";
 import {
   attackWithCommand,
   canFocusMonster,
@@ -97,7 +98,9 @@ type PendingDropAction =
   | { kind: "attackTarget"; attackerSlotKey: SlotKey; target: Target; commandIds: string[] }
   | { kind: "move"; fromSlotKey: SlotKey; toSlotKey: SlotKey };
 
-type ZoneView = { playerId: PlayerId; zone: "deck" | "discard" };
+type ZoneView =
+  | { kind: "playerZone"; playerId: PlayerId; zone: "deck" | "discard" }
+  | { kind: "catalog" };
 type LogFilter = "all" | "battle" | "damage" | "support" | "turn" | "cpu";
 
 const DRAG_MIME = "application/x-card-hero-drag";
@@ -876,23 +879,30 @@ export function App() {
                 <button
                   type="button"
                   className={isZoneView(zoneView, "player", "deck") ? "selected" : ""}
-                  onClick={() => setZoneView(toggleZoneView(zoneView, { playerId: "player", zone: "deck" }))}
+                  onClick={() => setZoneView(toggleZoneView(zoneView, { kind: "playerZone", playerId: "player", zone: "deck" }))}
                 >
                   <Icon icon="🂠" /> Deck {game.players.player.deck.length}
                 </button>
                 <button
                   type="button"
                   className={isZoneView(zoneView, "player", "discard") ? "selected" : ""}
-                  onClick={() => setZoneView(toggleZoneView(zoneView, { playerId: "player", zone: "discard" }))}
+                  onClick={() => setZoneView(toggleZoneView(zoneView, { kind: "playerZone", playerId: "player", zone: "discard" }))}
                 >
                   <Icon icon="🗂️" /> Discard {game.players.player.discard.length}
                 </button>
                 <button
                   type="button"
                   className={isZoneView(zoneView, "cpu", "discard") ? "selected" : ""}
-                  onClick={() => setZoneView(toggleZoneView(zoneView, { playerId: "cpu", zone: "discard" }))}
+                  onClick={() => setZoneView(toggleZoneView(zoneView, { kind: "playerZone", playerId: "cpu", zone: "discard" }))}
                 >
                   <Icon icon="🗂️" /> CPU {game.players.cpu.discard.length}
+                </button>
+                <button
+                  type="button"
+                  className={zoneView?.kind === "catalog" ? "selected" : ""}
+                  onClick={() => setZoneView(toggleZoneView(zoneView, { kind: "catalog" }))}
+                >
+                  <Icon icon="📚" /> Card List
                 </button>
                 <StatusIconCount label="Cards" icon="🃏" amount={currentPlayer.hand.length} cap={MAX_VISIBLE_RESOURCE_ICONS} />
               </div>
@@ -1471,6 +1481,10 @@ interface CardZonePanelProps {
 }
 
 function CardZonePanel({ game, view, onClose }: CardZonePanelProps) {
+  if (view.kind === "catalog") {
+    return <CardCatalogPanel onClose={onClose} />;
+  }
+
   const cards = game.players[view.playerId][view.zone];
   const title = `${playerLabel(view.playerId)} ${view.zone === "deck" ? "Deck" : "Discard"}`;
   const helpText = view.zone === "deck" ? "上から順に引きます。" : "上から新しい順ではなく、捨てられた順に並びます。";
@@ -1500,6 +1514,38 @@ function CardZonePanel({ game, view, onClose }: CardZonePanelProps) {
           ))}
         </div>
       )}
+    </section>
+  );
+}
+
+function CardCatalogPanel({ onClose }: { onClose: () => void }) {
+  const cards = getAllCardDefs();
+
+  return (
+    <section className="zone-panel">
+      <div className="zone-panel-heading">
+        <div>
+          <h3><Icon icon="📚" /> Card List</h3>
+          <p>{cards.length} cards / 通常カードのみ</p>
+        </div>
+        <button type="button" onClick={onClose} aria-label="閉じる">
+          <Icon icon="✕" /> Close
+        </button>
+      </div>
+      <div className="catalog-card-list">
+        {cards.map((card) => (
+          <details className="catalog-card-row" key={card.id}>
+            <summary>
+              <CardIcon cardId={card.id} />
+              <span className="catalog-card-name">{card.name}</span>
+              <span className="zone-card-type">{cardTypeLabel(card.id)}</span>
+            </summary>
+            <div className="catalog-card-detail">
+              <CardDetail cardId={card.id} showTitle={false} />
+            </div>
+          </details>
+        ))}
+      </div>
     </section>
   );
 }
@@ -1889,11 +1935,14 @@ function targetLabel(game: GameState, target: Target): string {
   return slotMonsterLabel(game, target.slotKey);
 }
 
-function isZoneView(view: ZoneView | undefined, playerId: PlayerId, zone: ZoneView["zone"]): boolean {
-  return view?.playerId === playerId && view.zone === zone;
+function isZoneView(view: ZoneView | undefined, playerId: PlayerId, zone: Extract<ZoneView, { kind: "playerZone" }>["zone"]): boolean {
+  return view?.kind === "playerZone" && view.playerId === playerId && view.zone === zone;
 }
 
 function toggleZoneView(current: ZoneView | undefined, next: ZoneView): ZoneView | undefined {
+  if (next.kind === "catalog") {
+    return current?.kind === "catalog" ? undefined : next;
+  }
   return isZoneView(current, next.playerId, next.zone) ? undefined : next;
 }
 
@@ -2185,7 +2234,7 @@ function HandCardContent({ cardId }: HandCardContentProps) {
         </span>
         <span className="hand-card-meta"><Icon icon="🪨" /> Cost {def.cost} / {targetKindsLabel(def.targetKinds)}</span>
         <span className="hand-card-text">{def.description}</span>
-        <CardNotes notes={def.notes} compact />
+        <CardNotes card={def} compact />
       </>
     );
   }
@@ -2202,7 +2251,7 @@ function HandCardContent({ cardId }: HandCardContentProps) {
       <span className="hand-card-meta"><Icon icon="🪨" /> 召喚 1 / <Icon icon="✨" /> MaxLv {def.maxLevel}</span>
       <span className="hand-card-meta"><Icon icon="❤️" /> {maxHpText}</span>
       <span className="hand-card-text">{commandText}</span>
-      <CardNotes notes={def.notes} compact />
+      <CardNotes card={def} compact />
     </>
   );
 }
@@ -2224,7 +2273,7 @@ function CardDetail({ cardId, showTitle = true }: CardDetailProps) {
           <span>{targetKindsLabel(def.targetKinds)}</span>
         </div>
         <p>{def.description}</p>
-        <CardNotes notes={def.notes} />
+        <CardNotes card={def} />
       </>
     );
   }
@@ -2238,7 +2287,7 @@ function CardDetail({ cardId, showTitle = true }: CardDetailProps) {
         <span><Icon icon="✨" /> MaxLv {def.maxLevel}</span>
         {def.actionLimit && <span><Icon icon="⚡" /> {def.actionLimit}回行動</span>}
       </div>
-      <CardNotes notes={def.notes} />
+      <CardNotes card={def} />
       <div className="level-detail-list">
         {def.levels.map((level) => (
           <div className="level-detail" key={level.level}>
@@ -2255,16 +2304,19 @@ function CardDetail({ cardId, showTitle = true }: CardDetailProps) {
   );
 }
 
-function CardNotes({ notes, compact = false }: { notes?: string[]; compact?: boolean }) {
-  const visibleNotes = notes?.filter((note) => note.trim()) ?? [];
+function CardNotes({ card, compact = false }: { card: ReturnType<typeof getCardDef>; compact?: boolean }) {
+  const visibleNotes = getCardNoteDisplays(card);
   if (visibleNotes.length === 0) {
     return null;
   }
 
   return (
     <span className={`card-notes ${compact ? "compact" : ""}`}>
-      {visibleNotes.map((note, index) => (
-        <span key={`${note}_${index}`}><Icon icon="🧬" /> {note}</span>
+      {visibleNotes.map((note) => (
+        <span className={`card-note card-note-${note.kind}`} key={`${note.kind}_${note.text}`}>
+          <span className="card-note-label">{note.label}</span>
+          <span className="card-note-text">{note.text}</span>
+        </span>
       ))}
     </span>
   );
@@ -2276,10 +2328,10 @@ function MonsterTraitSummary({ cardId }: { cardId: string }) {
     return null;
   }
 
-  const traitNotes = def.notes
-    ?.filter((note) => note.trim().startsWith("性格"))
-    .map((note) => note.replace(/^性格[:：]\s*/, ""));
-  if (!traitNotes?.length) {
+  const traitNotes = getCardNoteDisplays(def)
+    .filter((note) => note.kind === "personality")
+    .map((note) => note.summary);
+  if (traitNotes.length === 0) {
     return null;
   }
 
