@@ -1080,13 +1080,17 @@ function applyMagicEffect(state: GameState, cardId: string, action: MagicAction)
 
   if (cardId === "card_028" && target.kind === "monster") {
     const monster = requireTargetMonster(state, target.slotKey);
+    const targetName = monsterName(monster);
     const canLevelUp = monster.level < getMonsterDef(monster.cardId).maxLevel && !monster.levelFixed && state.players[monster.owner].stones > 0;
     const canLevelDown = monster.level > 1 && !monster.levelFixed;
     if (canLevelUp && (!canLevelDown || randomChance(state, 0.5))) {
+      appendRandomResultLog(state, "レベルチェンジ", `${targetName}のレベルアップ`);
       performLevelUp(state, target.slotKey, 1);
     } else if (canLevelDown) {
+      appendRandomResultLog(state, "レベルチェンジ", `${targetName}のレベルダウン`);
       levelDownMonster(state, target.slotKey);
     } else {
+      appendRandomResultLog(state, "レベルチェンジ", `${targetName}は変化なし`);
       appendLog(state, `${monsterName(monster)}のレベルは変わらなかった`);
     }
     return;
@@ -1150,7 +1154,9 @@ function applyMagicEffect(state: GameState, cardId: string, action: MagicAction)
       }
       defeatMonster(state, allySlotKey);
     }
-    if (randomChance(state, 0.5)) {
+    const tempted = randomChance(state, 0.5);
+    appendRandomResultLog(state, "誘惑", tempted ? `${monsterName(requireTargetMonster(state, target.slotKey))}が消える` : `${monsterName(requireTargetMonster(state, target.slotKey))}が耐える`);
+    if (tempted) {
       defeatMonster(state, target.slotKey);
     } else {
       appendLog(state, `${monsterName(requireTargetMonster(state, target.slotKey))}は誘惑に耐えた`);
@@ -1206,7 +1212,13 @@ function applyMagicEffect(state: GameState, cardId: string, action: MagicAction)
     damageTargetByMagic(state, target, 2, "マッドファイア");
     if (target.kind === "monster") {
       for (const slotKey of adjacentSlotKeys(state.slots[target.slotKey])) {
-        if (state.slots[slotKey].monster?.status === "active" && randomChance(state, 0.5)) {
+        const adjacentMonster = state.slots[slotKey].monster;
+        if (adjacentMonster?.status !== "active") {
+          continue;
+        }
+        const hit = randomChance(state, 0.5);
+        appendRandomResultLog(state, "マッドファイア余波", `${monsterName(adjacentMonster)}に${hit ? "命中" : "外れ"}`);
+        if (hit) {
           damageMonster(state, slotKey, 1, "マッドファイア余波");
         }
       }
@@ -1310,6 +1322,7 @@ function applyMagicEffect(state: GameState, cardId: string, action: MagicAction)
   if (cardId === "card_121") {
     const gained = randomInt(state, 1, 3);
     state.players[state.currentPlayer].stones += gained;
+    appendRandomResultLog(state, "プラストーン", `ストーン${gained}個`);
     appendLog(state, `${playerLabel(state.currentPlayer)}はストーンを${gained}個得た`);
     return;
   }
@@ -1874,7 +1887,7 @@ function applyTurnStartTraits(state: GameState, playerId: PlayerId): void {
     if (monster.cardId === "card_132") {
       const modifier = randomChance(state, 0.5) ? 1 : -1;
       monster.powerModifier = (monster.powerModifier ?? 0) + modifier;
-      appendLog(state, `${monsterName(monster)}のきまぐれでパワー${modifier > 0 ? "+1" : "-1"}`);
+      appendRandomResultLog(state, "きまぐれ", `${monsterName(monster)}のパワー${modifier > 0 ? "+1" : "-1"}`);
     }
   }
 }
@@ -2053,9 +2066,13 @@ function damageMonster(
     return undefined;
   }
 
-  if (monster.dodgeChance && context.kind !== "recoil" && randomChance(state, 0.5)) {
-    appendLog(state, `${monsterName(monster)}は女神の加護で攻撃をかわした`);
-    return undefined;
+  if (monster.dodgeChance && context.kind !== "recoil") {
+    const dodged = randomChance(state, 0.5);
+    appendRandomResultLog(state, "女神の加護", `${monsterName(monster)}が${dodged ? "回避" : "被弾"}`);
+    if (dodged) {
+      appendLog(state, `${monsterName(monster)}は女神の加護で攻撃をかわした`);
+      return undefined;
+    }
   }
 
   let damage = power;
@@ -2193,7 +2210,9 @@ function getCommandBasePower(
     return state.slots[target.slotKey].monster?.level ?? 0;
   }
   if (command.name === "爆雷撃") {
-    return randomInt(state, 2, 5);
+    const power = randomInt(state, 2, 5);
+    appendRandomResultLog(state, "爆雷撃", `${power}P`);
+    return power;
   }
   if (command.range === "decreasing_straight" && target.kind === "monster") {
     const distance = rangedDistanceBetweenSlots(attackerSlot, state.slots[target.slotKey]);
@@ -2438,7 +2457,12 @@ function finishCommandSideEffects(
 }
 
 function shouldCommandMiss(state: GameState, attacker: MonsterState, command: CommandDef): boolean {
-  return attacker.cardId === "card_039" && !isUpperCommand(attacker, command) && randomChance(state, 0.5);
+  if (attacker.cardId !== "card_039" || isUpperCommand(attacker, command)) {
+    return false;
+  }
+  const missed = randomChance(state, 0.5);
+  appendRandomResultLog(state, command.name, `${monsterName(attacker)}が${missed ? "空振り" : "命中"}`);
+  return missed;
 }
 
 function applyAfterDamageTraits(
@@ -3101,6 +3125,10 @@ function appendLog(state: GameState, message: string): void {
   if (state.log.length > 120) {
     state.log = state.log.slice(-120);
   }
+}
+
+function appendRandomResultLog(state: GameState, label: string, result: string): void {
+  appendLog(state, `ランダム結果: ${label} -> ${result}`);
 }
 
 function monsterName(monster: MonsterState): string {

@@ -110,7 +110,7 @@ const MASTER_ACTIONS: Array<{ id: MasterActionId; label: string }> = [
   { id: "shield", label: "Shield" },
 ];
 
-type EffectKind = "attack" | "damage" | "summon" | "focus" | "move" | "heal" | "turn" | "default";
+type EffectKind = "attack" | "damage" | "summon" | "focus" | "move" | "heal" | "turn" | "random" | "default";
 
 interface VisualEffect {
   id: number;
@@ -1907,12 +1907,15 @@ function cardTypeLabel(cardId: string): string {
 function createVisualEffect(previous: GameState, next: GameState, id: number): VisualEffect {
   const appendedLogs = getAppendedLogs(previous.log, next.log);
   const latestLog = appendedLogs.at(-1) ?? next.log[next.log.length - 1] ?? "";
+  const kind = effectKindFromLogs(appendedLogs, latestLog);
   return {
     id,
-    kind: effectKindFromLog(latestLog),
+    kind,
     slots: BOARD_SLOT_KEYS.filter((slotKey) => slotSignature(previous, slotKey) !== slotSignature(next, slotKey)),
     masters: PLAYER_IDS.filter(
-      (playerId) => previous.players[playerId].masterHp !== next.players[playerId].masterHp,
+      (playerId) =>
+        previous.players[playerId].masterHp !== next.players[playerId].masterHp ||
+        (kind === "random" && previous.players[playerId].stones !== next.players[playerId].stones),
     ),
     slotDamageFlashes: createSlotDamageFlashes(previous, next, appendedLogs),
     masterDamageFlashes: createMasterDamageFlashes(previous, next),
@@ -1991,10 +1994,38 @@ function slotSignature(game: GameState, slotKey: SlotKey): string {
     monster.focused,
     monster.powerUp,
     monster.shielded,
+    monster.powerModifier,
+    monster.powerOverride,
+    monster.cannotMove,
+    monster.levelFixed,
+    monster.immune,
+    monster.halfShielded,
+    monster.oneShotShield,
+    monster.reviveOnDefeat,
+    monster.shadowCursed,
+    monster.scapegoat,
+    monster.canAttackAnywhere,
+    monster.stoneCostMultiplier,
+    monster.commandSealed,
+    monster.cannotActUntilDamaged,
+    monster.berserkPower,
+    monster.dodgeChance,
+    monster.dragonShield,
+    monster.provokeTargetSlotKey,
+    monster.deathChainSlotKey,
+    monster.stoneCurse,
+    monster.damageCurse,
   ].join(":");
 }
 
+function effectKindFromLogs(appendedLogs: string[], fallback: string): EffectKind {
+  return appendedLogs.some(isRandomResultLog) ? "random" : effectKindFromLog(fallback);
+}
+
 function effectKindFromLog(entry: string): EffectKind {
+  if (isRandomResultLog(entry)) {
+    return "random";
+  }
   if (entry.includes("ダメージ") || entry.includes("倒れ") || entry.includes("攻撃") || entry.includes("アタック")) {
     return "attack";
   }
@@ -2019,9 +2050,16 @@ function effectKindFromLog(entry: string): EffectKind {
   return "default";
 }
 
+function isRandomResultLog(entry: string): boolean {
+  return entry.includes("ランダム結果");
+}
+
 function logTone(entry: string): string {
   if (entry.includes("勝利") || entry.includes("敗北")) {
     return "log-win";
+  }
+  if (isRandomResultLog(entry)) {
+    return "log-random";
   }
   if (entry.includes("ダメージ") || entry.includes("倒れ") || entry.includes("HPが") || entry.includes("山札切れ")) {
     return "log-damage";
@@ -2066,7 +2104,8 @@ function logMatchesFilter(entry: string, filter: LogFilter): boolean {
       entry.includes("コピー") ||
       entry.includes("入れ替え") ||
       entry.includes("ローテーション") ||
-      entry.includes("リフレッシュ")
+      entry.includes("リフレッシュ") ||
+      isRandomResultLog(entry)
     );
   }
   return entry.includes("ターン") || entry.includes("引いた") || entry.includes("ストーン") || entry.includes("召喚");

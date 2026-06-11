@@ -69,7 +69,6 @@ describe("card effect coverage registry", () => {
     expect(SIMPLIFIED_OR_PENDING_CARD_EFFECTS.map((effect) => effect.id)).toEqual([
       "super_cards_pending",
       "per_card_assertion_gap",
-      "random_resolution_seeded",
       "cpu_magic_heuristic",
       "temporary_original_icons",
     ]);

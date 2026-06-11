@@ -922,6 +922,7 @@ describe("battle prototype rules", () => {
     });
 
     expect(game.slots.player_front_left.monster?.level).toBe(2);
+    expect(game.log.some((entry) => entry.includes("ランダム結果: レベルチェンジ"))).toBe(true);
 
     game.players.player.hand = [{ cardId: "card_121", instanceId: "plastone" }];
     game.players.player.stones = 1;
@@ -933,6 +934,7 @@ describe("battle prototype rules", () => {
     });
 
     expect(game.players.player.stones).toBe(2);
+    expect(game.log.some((entry) => entry.includes("ランダム結果: プラストーン -> ストーン2個"))).toBe(true);
 
     game.randomSeed = 1;
     game.players.player.stones = 1;
@@ -947,6 +949,7 @@ describe("battle prototype rules", () => {
 
     expect(game.slots.cpu_front_left.monster?.hp).toBe(6);
     expect(game.slots.player_front_left.monster?.hp).toBe(6);
+    expect(game.log.some((entry) => entry.includes("ランダム結果: 爆雷撃 -> 4P"))).toBe(true);
   });
 
   it("applies defensive persistent effects: goddess, dragon shield, scapegoat, and death chain", () => {

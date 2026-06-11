@@ -288,6 +288,759 @@ describe("official card effect expectations", () => {
     expect(game.slots.player_front_left.monster?.powerModifier).toBe(2);
     expect(game.players.player.stones).toBe(0);
   });
+
+  it("card_057 エスケープ removes an allied monster from the field", () => {
+    let game = createGameWithPlayerHand([{ cardId: "card_057", instanceId: "escape" }]);
+    game.players.player.stones = magicCost("card_057");
+    game.slots.player_front_left.monster = createActiveMonster("takokke", "player");
+    game.slots.cpu_front_left.monster = createActiveMonster("takokke", "cpu");
+
+    expect(getMagicTargets(game, "escape")).toContainEqual({ kind: "monster", slotKey: "player_front_left" });
+    expect(getMagicTargets(game, "escape")).not.toContainEqual({ kind: "monster", slotKey: "cpu_front_left" });
+
+    game = playMagic(game, {
+      handInstanceId: "escape",
+      target: { kind: "monster", slotKey: "player_front_left" },
+    });
+
+    expect(game.slots.player_front_left.monster).toBeUndefined();
+    expect(game.players.player.discard.some((card) => card.cardId === "takokke")).toBe(true);
+    expect(game.players.player.stones).toBe(1);
+  });
+
+  it("card_058 特技封じ prevents only the lower monster command", () => {
+    let game = createGameWithPlayerHand([{ cardId: "card_058", instanceId: "seal" }]);
+    game.players.player.stones = magicCost("card_058");
+    game.slots.cpu_front_left.monster = createActiveMonster("card_020", "cpu");
+    game.slots.player_front_left.monster = createActiveMonster("takokke", "player");
+
+    game = playMagic(game, {
+      handInstanceId: "seal",
+      target: { kind: "monster", slotKey: "cpu_front_left" },
+    });
+
+    game.currentPlayer = "cpu";
+    game.players.cpu.stones = 3;
+
+    expect(getCommandTargets(game, "cpu_front_left", "バズーカ")).toEqual([]);
+    expect(getCommandTargets(game, "cpu_front_left", "attack")).toContainEqual({
+      kind: "monster",
+      slotKey: "player_front_left",
+    });
+  });
+
+  it("card_061 誘惑 always removes the allied bait and randomly removes the enemy", () => {
+    let game = createGameWithPlayerHand([{ cardId: "card_061", instanceId: "tempt_success" }]);
+    game.randomSeed = 7;
+    game.players.player.stones = magicCost("card_061");
+    game.slots.player_front_left.monster = createActiveMonster("takokke", "player");
+    game.slots.cpu_front_left.monster = createActiveMonster("takokke", "cpu");
+
+    game = playMagic(game, {
+      handInstanceId: "tempt_success",
+      target: { kind: "monster", slotKey: "cpu_front_left" },
+      secondaryTarget: { kind: "monster", slotKey: "player_front_left" },
+    });
+
+    expect(game.slots.player_front_left.monster).toBeUndefined();
+    expect(game.slots.cpu_front_left.monster).toBeUndefined();
+    expect(game.log.some((entry) => entry.includes("ランダム結果: 誘惑"))).toBe(true);
+
+    game = createGameWithPlayerHand([{ cardId: "card_061", instanceId: "tempt_fail" }]);
+    game.randomSeed = 1;
+    game.players.player.stones = magicCost("card_061");
+    game.slots.player_front_left.monster = createActiveMonster("takokke", "player");
+    game.slots.cpu_front_left.monster = createActiveMonster("takokke", "cpu");
+
+    game = playMagic(game, {
+      handInstanceId: "tempt_fail",
+      target: { kind: "monster", slotKey: "cpu_front_left" },
+      secondaryTarget: { kind: "monster", slotKey: "player_front_left" },
+    });
+
+    expect(game.slots.player_front_left.monster).toBeUndefined();
+    expect(game.slots.cpu_front_left.monster?.cardId).toBe("takokke");
+    expect(game.log.some((entry) => entry.includes("ランダム結果: 誘惑"))).toBe(true);
+  });
+
+  it("card_064 黄昏の風 removes all monster effects including shield and power effects", () => {
+    let game = createGameWithPlayerHand([{ cardId: "card_064", instanceId: "twilight" }]);
+    game.players.player.stones = magicCost("card_064");
+    game.slots.player_front_left.monster = createActiveMonster("takokke", "player", {
+      shielded: true,
+      powerModifier: 1,
+      cannotMove: true,
+      commandSealed: true,
+      scapegoat: true,
+    });
+    game.slots.cpu_front_left.monster = createActiveMonster("takokke", "cpu", {
+      shielded: true,
+      powerModifier: -1,
+      cannotMove: true,
+      reviveOnDefeat: true,
+    });
+
+    game = playMagic(game, {
+      handInstanceId: "twilight",
+      target: { kind: "master", playerId: "player" },
+    });
+
+    for (const slotKey of ["player_front_left", "cpu_front_left"] as const) {
+      const monster = game.slots[slotKey].monster;
+      expect(monster?.shielded).toBe(false);
+      expect(monster?.powerModifier).toBe(0);
+      expect(monster?.cannotMove).toBe(false);
+      expect(monster?.commandSealed).toBe(false);
+      expect(monster?.scapegoat).toBe(false);
+      expect(monster?.reviveOnDefeat).toBe(false);
+    }
+  });
+
+  it("card_087 浄化 removes only removable effects on the chosen field", () => {
+    let game = createGameWithPlayerHand([{ cardId: "card_087", instanceId: "cleanse" }]);
+    game.players.player.stones = magicCost("card_087");
+    game.slots.player_front_left.monster = createActiveMonster("takokke", "player", {
+      shielded: true,
+      powerModifier: 1,
+      cannotMove: true,
+      commandSealed: true,
+      scapegoat: true,
+    });
+    game.slots.cpu_front_left.monster = createActiveMonster("takokke", "cpu", {
+      cannotMove: true,
+      commandSealed: true,
+    });
+
+    game = playMagic(game, {
+      handInstanceId: "cleanse",
+      target: { kind: "master", playerId: "player" },
+    });
+
+    expect(game.slots.player_front_left.monster?.shielded).toBe(true);
+    expect(game.slots.player_front_left.monster?.powerModifier).toBe(1);
+    expect(game.slots.player_front_left.monster?.cannotMove).toBe(false);
+    expect(game.slots.player_front_left.monster?.commandSealed).toBe(false);
+    expect(game.slots.player_front_left.monster?.scapegoat).toBe(false);
+    expect(game.slots.cpu_front_left.monster?.cannotMove).toBe(true);
+    expect(game.slots.cpu_front_left.monster?.commandSealed).toBe(true);
+  });
+
+  it("card_090 墓荒らし returns the defeated monster to the top of its owner's deck", () => {
+    let game = createGameWithPlayerHand([{ cardId: "card_090", instanceId: "grave" }]);
+    game.players.player.stones = magicCost("card_090");
+    game.slots.player_front_left.monster = createActiveMonster("takokke", "player");
+    game.slots.cpu_front_left.monster = createActiveMonster("takokke", "cpu", { hp: 1 });
+
+    game = playMagic(game, {
+      handInstanceId: "grave",
+      target: { kind: "monster", slotKey: "cpu_front_left" },
+    });
+    game = attackWithCommand(game, {
+      attackerSlotKey: "player_front_left",
+      commandId: "attack",
+      target: { kind: "monster", slotKey: "cpu_front_left" },
+    });
+
+    expect(game.slots.cpu_front_left.monster).toBeUndefined();
+    expect(game.players.cpu.deck[0]?.cardId).toBe("takokke");
+    expect(game.players.cpu.discard.some((card) => card.cardId === "takokke")).toBe(false);
+  });
+
+  it("card_097 挑発 restricts a provoked monster to the bait when it can attack it", () => {
+    let game = createGameWithPlayerHand([{ cardId: "card_097", instanceId: "provoke" }]);
+    game.players.player.stones = magicCost("card_097");
+    game.slots.player_front_left.monster = createActiveMonster("takokke", "player");
+    game.slots.player_front_right.monster = createActiveMonster("takokke", "player");
+    game.slots.cpu_front_left.monster = createActiveMonster("takokke", "cpu");
+
+    game = playMagic(game, {
+      handInstanceId: "provoke",
+      target: { kind: "monster", slotKey: "cpu_front_left" },
+      secondaryTarget: { kind: "monster", slotKey: "player_front_left" },
+    });
+
+    game.currentPlayer = "cpu";
+
+    expect(getCommandTargets(game, "cpu_front_left", "attack")).toEqual([
+      { kind: "monster", slotKey: "player_front_left" },
+    ]);
+  });
+
+  it("card_098 デスチェーン links one enemy and one ally, then clears the link when one leaves", () => {
+    let game = createGameWithPlayerHand([{ cardId: "card_098", instanceId: "chain" }]);
+    game.players.player.stones = magicCost("card_098");
+    game.slots.player_front_left.monster = createActiveMonster("takokke", "player");
+    game.slots.cpu_front_left.monster = createActiveMonster("takokke", "cpu", { hp: 1 });
+
+    game = playMagic(game, {
+      handInstanceId: "chain",
+      target: { kind: "monster", slotKey: "cpu_front_left" },
+      secondaryTarget: { kind: "monster", slotKey: "player_front_left" },
+    });
+
+    expect(game.slots.cpu_front_left.monster?.deathChainSlotKey).toBe("player_front_left");
+    expect(game.slots.player_front_left.monster?.deathChainSlotKey).toBe("cpu_front_left");
+
+    game = attackWithCommand(game, {
+      attackerSlotKey: "player_front_left",
+      commandId: "attack",
+      target: { kind: "monster", slotKey: "cpu_front_left" },
+    });
+
+    expect(game.slots.cpu_front_left.monster).toBeUndefined();
+    expect(game.slots.player_front_left.monster?.deathChainSlotKey).toBeUndefined();
+  });
+
+  it("card_124 エクスチェンジ toggles the exchanged master action state", () => {
+    let game = createGameWithPlayerHand([{ cardId: "card_124", instanceId: "exchange" }]);
+    game.players.player.stones = magicCost("card_124");
+
+    game = playMagic(game, {
+      handInstanceId: "exchange",
+      target: { kind: "master", playerId: "player" },
+    });
+
+    expect(game.players.player.masterActionsExchanged).toBe(true);
+    expect(game.players.cpu.masterActionsExchanged).toBe(true);
+  });
+
+  it("card_125 かげ呪い damages the cursed monster's master when it leaves", () => {
+    let game = createGameWithPlayerHand([{ cardId: "card_125", instanceId: "shadow" }]);
+    game.players.player.stones = magicCost("card_125");
+    game.slots.player_front_left.monster = createActiveMonster("takokke", "player");
+    game.slots.cpu_front_left.monster = createActiveMonster("takokke", "cpu", { hp: 1 });
+
+    game = playMagic(game, {
+      handInstanceId: "shadow",
+      target: { kind: "monster", slotKey: "cpu_front_left" },
+    });
+    game = attackWithCommand(game, {
+      attackerSlotKey: "player_front_left",
+      commandId: "attack",
+      target: { kind: "monster", slotKey: "cpu_front_left" },
+    });
+
+    expect(game.players.cpu.masterHp).toBe(9);
+    expect(game.players.cpu.stones).toBe(2);
+  });
+
+  it("card_128 スケープゴート redirects master damage to the chosen allied monster", () => {
+    let game = createGameWithPlayerHand([{ cardId: "card_128", instanceId: "scapegoat" }]);
+    game.players.player.stones = magicCost("card_128");
+    game.slots.player_front_left.monster = createActiveMonster("takokke", "player");
+    game.slots.cpu_front_left.monster = createActiveMonster("takokke", "cpu", { level: 2, hp: 5, investedStones: 2 });
+
+    game = playMagic(game, {
+      handInstanceId: "scapegoat",
+      target: { kind: "monster", slotKey: "player_front_left" },
+    });
+    game.currentPlayer = "cpu";
+    game = attackWithCommand(game, {
+      attackerSlotKey: "cpu_front_left",
+      commandId: "attack",
+      target: { kind: "master", playerId: "player" },
+    });
+
+    expect(game.players.player.masterHp).toBe(10);
+    expect(game.slots.player_front_left.monster?.hp).toBe(2);
+  });
+
+  it("card_129 ソウルチャージ applies focus and boosts only the upper command once", () => {
+    let game = createGameWithPlayerHand([{ cardId: "card_129", instanceId: "charge" }]);
+    game.players.player.stones = magicCost("card_129");
+    game.slots.player_front_left.monster = createActiveMonster("takokke", "player");
+    game.slots.cpu_front_left.monster = createActiveMonster("takokke", "cpu");
+
+    game = playMagic(game, {
+      handInstanceId: "charge",
+      target: { kind: "monster", slotKey: "player_front_left" },
+    });
+    game = attackWithCommand(game, {
+      attackerSlotKey: "player_front_left",
+      commandId: "attack",
+      target: { kind: "monster", slotKey: "cpu_front_left" },
+    });
+
+    expect(game.slots.cpu_front_left.monster?.hp).toBe(2);
+    expect(game.slots.player_front_left.monster?.focused).toBe(false);
+  });
+
+  it("card_015 パワーホーン damages the target and raises that target's power", () => {
+    let game = createGameWithPlayerHand([]);
+    game.players.player.stones = 2;
+    game.slots.player_front_left.monster = createActiveMonster("card_015", "player");
+    game.slots.cpu_front_left.monster = createActiveMonster("takokke", "cpu");
+
+    game = attackWithCommand(game, {
+      attackerSlotKey: "player_front_left",
+      commandId: "パワーホーン",
+      target: { kind: "monster", slotKey: "cpu_front_left" },
+    });
+
+    expect(game.slots.cpu_front_left.monster?.hp).toBe(2);
+    expect(game.slots.cpu_front_left.monster?.powerModifier).toBe(1);
+  });
+
+  it("card_033 テトカ lowers a monster's level with レベルダウン", () => {
+    let game = createGameWithPlayerHand([]);
+    game.players.player.stones = 2;
+    game.slots.player_front_left.monster = createActiveMonster("card_033", "player");
+    game.slots.cpu_front_left.monster = createActiveMonster("takokke", "cpu", {
+      level: 2,
+      hp: 5,
+      investedStones: 2,
+    });
+
+    game = attackWithCommand(game, {
+      attackerSlotKey: "player_front_left",
+      commandId: "レベルダウン",
+      target: { kind: "monster", slotKey: "cpu_front_left" },
+    });
+
+    expect(game.slots.cpu_front_left.monster?.level).toBe(1);
+    expect(game.slots.cpu_front_left.monster?.investedStones).toBe(1);
+    expect(game.players.cpu.stones).toBe(1);
+  });
+
+  it("card_035 バルバス＆パフ levels up a target with 福音の花 and then resolves its revival trait", () => {
+    let game = createGameWithPlayerHand([]);
+    game.players.player.stones = 4;
+    game.slots.player_back_left.monster = createActiveMonster("card_035", "player");
+    game.slots.player_front_left.monster = createActiveMonster("takokke", "player", { hp: 1 });
+
+    game = attackWithCommand(game, {
+      attackerSlotKey: "player_back_left",
+      commandId: "福音の花",
+      target: { kind: "monster", slotKey: "player_front_left" },
+    });
+
+    expect(game.slots.player_front_left.monster?.level).toBe(2);
+    expect(game.slots.player_front_left.monster?.hp).toBe(getMonsterDef("takokke").levels[1].maxHp);
+    expect(game.slots.player_back_left.monster?.cardId).toBe("card_035");
+    expect(game.slots.player_back_left.monster?.revivedOnce).toBe(true);
+  });
+
+  it("card_039 ケントゥリアス logs and applies the random miss result for ジェミニランス", () => {
+    let game = createGameWithPlayerHand([]);
+    game.randomSeed = 7;
+    game.slots.player_front_left.monster = createActiveMonster("card_039", "player");
+    game.slots.cpu_front_left.monster = createActiveMonster("takokke", "cpu");
+
+    game = attackWithCommand(game, {
+      attackerSlotKey: "player_front_left",
+      commandId: "ジェミニランス",
+      target: { kind: "monster", slotKey: "cpu_front_left" },
+    });
+
+    expect(game.slots.cpu_front_left.monster?.hp).toBe(5);
+    expect(game.log.some((entry) => entry.includes("ランダム結果: ジェミニランス"))).toBe(true);
+    expect(game.log.some((entry) => entry.includes("空振り"))).toBe(true);
+  });
+
+  it("card_040 ゴーストシープ fixes a monster's level", () => {
+    let game = createGameWithPlayerHand([]);
+    game.players.player.stones = 2;
+    game.slots.player_back_left.monster = createActiveMonster("card_040", "player");
+    game.slots.cpu_front_left.monster = createActiveMonster("takokke", "cpu");
+
+    game = attackWithCommand(game, {
+      attackerSlotKey: "player_back_left",
+      commandId: "レベル固定",
+      target: { kind: "monster", slotKey: "cpu_front_left" },
+    });
+
+    expect(game.slots.cpu_front_left.monster?.levelFixed).toBe(true);
+  });
+
+  it("card_043 ガンプ removes a monster with ヘブンズドア", () => {
+    let game = createGameWithPlayerHand([]);
+    game.players.player.stones = 3;
+    game.slots.player_back_left.monster = createActiveMonster("card_043", "player", {
+      level: 2,
+      hp: 5,
+      investedStones: 2,
+    });
+    game.slots.cpu_front_left.monster = createActiveMonster("takokke", "cpu");
+
+    game = attackWithCommand(game, {
+      attackerSlotKey: "player_back_left",
+      commandId: "ヘブンズドア",
+      target: { kind: "monster", slotKey: "cpu_front_left" },
+    });
+
+    expect(game.slots.cpu_front_left.monster).toBeUndefined();
+  });
+
+  it("card_052 クレア clears effects from the damaged target with ウォッシュ", () => {
+    let game = createGameWithPlayerHand([]);
+    game.players.player.stones = 2;
+    game.slots.player_back_left.monster = createActiveMonster("card_052", "player", {
+      level: 2,
+      hp: 4,
+      investedStones: 2,
+    });
+    game.slots.cpu_front_left.monster = createActiveMonster("takokke", "cpu", {
+      shielded: true,
+      powerModifier: 1,
+      cannotMove: true,
+    });
+
+    game = attackWithCommand(game, {
+      attackerSlotKey: "player_back_left",
+      commandId: "ウォッシュ",
+      target: { kind: "monster", slotKey: "cpu_front_left" },
+    });
+
+    expect(game.slots.cpu_front_left.monster?.shielded).toBe(false);
+    expect(game.slots.cpu_front_left.monster?.powerModifier).toBe(0);
+    expect(game.slots.cpu_front_left.monster?.cannotMove).toBe(false);
+  });
+
+  it("card_053 ラティーヌ heals masters with Lv2 癒しの光", () => {
+    let game = createGameWithPlayerHand([]);
+    game.players.player.stones = 2;
+    game.players.player.masterHp = 9;
+    game.slots.player_back_left.monster = createActiveMonster("card_053", "player", {
+      level: 2,
+      hp: 3,
+      investedStones: 2,
+    });
+
+    game = attackWithCommand(game, {
+      attackerSlotKey: "player_back_left",
+      commandId: "癒しの光",
+      target: { kind: "master", playerId: "player" },
+    });
+
+    expect(game.players.player.masterHp).toBe(10);
+  });
+
+  it("card_066 ディン resolves 爆雷撃 as seeded random damage and matching recoil", () => {
+    let game = createGameWithPlayerHand([]);
+    game.randomSeed = 1;
+    game.players.player.stones = 1;
+    game.slots.player_front_left.monster = createActiveMonster("card_066", "player", { hp: 10 });
+    game.slots.cpu_front_left.monster = createActiveMonster("takokke", "cpu", { hp: 10 });
+
+    game = attackWithCommand(game, {
+      attackerSlotKey: "player_front_left",
+      commandId: "爆雷撃",
+      target: { kind: "monster", slotKey: "cpu_front_left" },
+    });
+
+    expect(game.slots.cpu_front_left.monster?.hp).toBe(6);
+    expect(game.slots.player_front_left.monster?.hp).toBe(6);
+    expect(game.log.some((entry) => entry.includes("ランダム結果: 爆雷撃 -> 4P"))).toBe(true);
+  });
+
+  it("card_069 フール applies 挑発 from its command", () => {
+    let game = createGameWithPlayerHand([]);
+    game.players.player.stones = 2;
+    game.slots.player_back_left.monster = createActiveMonster("card_069", "player");
+    game.slots.cpu_front_left.monster = createActiveMonster("takokke", "cpu");
+
+    game = attackWithCommand(game, {
+      attackerSlotKey: "player_back_left",
+      commandId: "挑発",
+      target: { kind: "monster", slotKey: "cpu_front_left" },
+    });
+
+    expect(game.slots.cpu_front_left.monster?.provokeTargetSlotKey).toBe("player_back_left");
+  });
+
+  it("card_072 ブラッド伯爵 heals itself after 吸血 deals damage", () => {
+    let game = createGameWithPlayerHand([]);
+    game.players.player.stones = 2;
+    game.slots.player_front_left.monster = createActiveMonster("card_072", "player", { hp: 2 });
+    game.slots.cpu_front_left.monster = createActiveMonster("takokke", "cpu");
+
+    game = attackWithCommand(game, {
+      attackerSlotKey: "player_front_left",
+      commandId: "吸血",
+      target: { kind: "monster", slotKey: "cpu_front_left" },
+    });
+
+    expect(game.slots.cpu_front_left.monster?.hp).toBe(4);
+    expect(game.slots.player_front_left.monster?.hp).toBe(3);
+  });
+
+  it("card_074 アドラ applies cannot-act until damage with ホワイトブレス", () => {
+    let game = createGameWithPlayerHand([]);
+    game.players.player.stones = 2;
+    game.slots.player_back_left.monster = createActiveMonster("card_074", "player", {
+      level: 2,
+      hp: 5,
+      investedStones: 2,
+    });
+    game.slots.cpu_front_left.monster = createActiveMonster("takokke", "cpu");
+
+    game = attackWithCommand(game, {
+      attackerSlotKey: "player_back_left",
+      commandId: "ホワイトブレス",
+      target: { kind: "monster", slotKey: "cpu_front_left" },
+    });
+
+    game.currentPlayer = "cpu";
+    expect(game.slots.cpu_front_left.monster?.cannotActUntilDamaged).toBe(true);
+    expect(getCommandTargets(game, "cpu_front_left", "attack")).toEqual([]);
+  });
+
+  it("card_076 グングニエル moves forward before resolving なぎ払い", () => {
+    let game = createGameWithPlayerHand([]);
+    game.slots.player_back_left.monster = createActiveMonster("card_076", "player", {
+      level: 2,
+      hp: 6,
+      investedStones: 2,
+    });
+    game.slots.cpu_front_left.monster = createActiveMonster("takokke", "cpu");
+
+    game = attackWithCommand(game, {
+      attackerSlotKey: "player_back_left",
+      commandId: "なぎ払い",
+      target: { kind: "monster", slotKey: "cpu_front_left" },
+    });
+
+    expect(game.slots.player_front_left.monster?.cardId).toBe("card_076");
+    expect(game.slots.player_back_left.monster).toBeUndefined();
+    expect(game.slots.cpu_front_left.monster?.hp).toBe(3);
+  });
+
+  it("card_078 オヤコダケ spreads 爆裂キノコ damage around the target", () => {
+    let game = createGameWithPlayerHand([]);
+    game.slots.player_front_left.monster = createActiveMonster("card_078", "player", {
+      level: 2,
+      hp: 5,
+      investedStones: 2,
+    });
+    game.slots.cpu_front_left.monster = createActiveMonster("takokke", "cpu");
+    game.slots.cpu_back_left.monster = createActiveMonster("takokke", "cpu");
+
+    game = attackWithCommand(game, {
+      attackerSlotKey: "player_front_left",
+      commandId: "爆裂キノコ",
+      target: { kind: "monster", slotKey: "cpu_front_left" },
+    });
+
+    expect(game.slots.cpu_front_left.monster?.hp).toBe(2);
+    expect(game.slots.cpu_back_left.monster?.hp).toBe(3);
+  });
+
+  it("card_080 マッド・ダミー removes an ally and powers itself with マッドホール", () => {
+    let game = createGameWithPlayerHand([]);
+    game.players.player.stones = 2;
+    game.slots.player_front_left.monster = createActiveMonster("card_080", "player", { hp: 2 });
+    game.slots.player_front_right.monster = createActiveMonster("takokke", "player");
+
+    game = attackWithCommand(game, {
+      attackerSlotKey: "player_front_left",
+      commandId: "マッドホール",
+      target: { kind: "monster", slotKey: "player_front_right" },
+    });
+
+    expect(game.slots.player_front_right.monster).toBeUndefined();
+    expect(game.slots.player_front_left.monster?.hp).toBe(3);
+    expect(game.slots.player_front_left.monster?.powerModifier).toBe(1);
+  });
+
+  it("card_082 マージス deals target-level damage with 真名之書", () => {
+    let game = createGameWithPlayerHand([]);
+    game.players.player.stones = 1;
+    game.slots.player_back_left.monster = createActiveMonster("card_082", "player");
+    game.slots.cpu_front_left.monster = createActiveMonster("takokke", "cpu", {
+      level: 2,
+      hp: 5,
+      investedStones: 2,
+    });
+
+    game = attackWithCommand(game, {
+      attackerSlotKey: "player_back_left",
+      commandId: "真名之書",
+      target: { kind: "monster", slotKey: "cpu_front_left" },
+    });
+
+    expect(game.slots.cpu_front_left.monster?.hp).toBe(3);
+  });
+
+  it("card_083 and card_084 extend 双華剣 targeting when both partners are active", () => {
+    const game = createGameWithPlayerHand([]);
+    game.slots.player_front_left.monster = createActiveMonster("card_083", "player", {
+      level: 2,
+      hp: 3,
+      investedStones: 2,
+    });
+    game.slots.player_front_right.monster = createActiveMonster("card_084", "player", {
+      level: 2,
+      hp: 3,
+      investedStones: 2,
+    });
+    game.slots.cpu_back_left.monster = createActiveMonster("takokke", "cpu");
+    game.slots.cpu_front_left.monster = createActiveMonster("takokke", "cpu");
+
+    expect(getCommandTargets(game, "player_front_left", "双華剣_陽")).toContainEqual({
+      kind: "monster",
+      slotKey: "cpu_back_left",
+    });
+    expect(getCommandTargets(game, "player_front_right", "双華剣_陰")).toContainEqual({
+      kind: "monster",
+      slotKey: "cpu_front_left",
+    });
+  });
+
+  it("card_085 オーパス swaps same-side monsters with ワープ", () => {
+    let game = createGameWithPlayerHand([]);
+    game.players.player.stones = 3;
+    game.slots.player_back_left.monster = createActiveMonster("card_085", "player");
+    game.slots.cpu_front_left.monster = createActiveMonster("takokke", "cpu");
+    game.slots.cpu_front_right.monster = createActiveMonster("yanbaru", "cpu");
+
+    game = attackWithCommand(game, {
+      attackerSlotKey: "player_back_left",
+      commandId: "ワープ",
+      target: { kind: "monster", slotKey: "cpu_front_left" },
+      secondaryTarget: { kind: "monster", slotKey: "cpu_front_right" },
+    });
+
+    expect(game.slots.cpu_front_left.monster?.cardId).toBe("yanbaru");
+    expect(game.slots.cpu_front_right.monster?.cardId).toBe("takokke");
+  });
+
+  it("card_104 ユニフォーン wakes a prepared target before ブレイクホーン damage", () => {
+    let game = createGameWithPlayerHand([]);
+    game.slots.player_back_left.monster = createActiveMonster("card_104", "player", {
+      level: 2,
+      hp: 4,
+      investedStones: 2,
+    });
+    game.slots.cpu_front_left.monster = createActiveMonster("takokke", "cpu", { status: "prepared" });
+
+    game = attackWithCommand(game, {
+      attackerSlotKey: "player_back_left",
+      commandId: "ブレイクホーン",
+      target: { kind: "monster", slotKey: "cpu_front_left" },
+    });
+
+    expect(game.slots.cpu_front_left.monster?.status).toBe("active");
+    expect(game.slots.cpu_front_left.monster?.hp).toBe(3);
+  });
+
+  it("card_105 ヤミー steals up to two stones from the enemy master", () => {
+    let game = createGameWithPlayerHand([]);
+    game.players.player.stones = 1;
+    game.players.cpu.stones = 3;
+    game.slots.player_back_left.monster = createActiveMonster("card_105", "player");
+
+    game = attackWithCommand(game, {
+      attackerSlotKey: "player_back_left",
+      commandId: "それちょうだい",
+      target: { kind: "master", playerId: "cpu" },
+    });
+
+    expect(game.players.cpu.stones).toBe(1);
+    expect(game.players.player.stones).toBe(2);
+  });
+
+  it("card_106 ピュア powers the next master attack and then leaves", () => {
+    let game = createGameWithPlayerHand([]);
+    game.slots.player_back_left.monster = createActiveMonster("card_106", "player");
+
+    game = attackWithCommand(game, {
+      attackerSlotKey: "player_back_left",
+      commandId: "パワーチャージ",
+      target: { kind: "monster", slotKey: "player_back_left" },
+    });
+
+    expect(game.players.player.masterPowerBonus).toBe(1);
+    expect(game.slots.player_back_left.monster).toBeUndefined();
+  });
+
+  it("card_107 and card_108 combine their upper attack power for ドリルブレイク", () => {
+    let game = createGameWithPlayerHand([]);
+    game.slots.player_front_left.monster = createActiveMonster("card_108", "player", {
+      level: 2,
+      hp: 5,
+      investedStones: 2,
+    });
+    game.slots.player_front_right.monster = createActiveMonster("card_107", "player", {
+      level: 2,
+      hp: 5,
+      investedStones: 2,
+    });
+
+    game = attackWithCommand(game, {
+      attackerSlotKey: "player_front_right",
+      commandId: "ドリルブレイク",
+      target: { kind: "master", playerId: "cpu" },
+    });
+
+    expect(game.players.cpu.masterHp).toBe(6);
+  });
+
+  it("card_111 ダロス draws one card with ドローフォース only under the hand limit", () => {
+    let game = createGameWithPlayerHand([]);
+    game.players.player.stones = 1;
+    game.players.player.deck = [{ cardId: "takokke", instanceId: "drawn_takokke" }];
+    game.players.player.hand = [{ cardId: "yanbaru", instanceId: "keep_yanbaru" }];
+    game.slots.player_back_left.monster = createActiveMonster("card_111", "player");
+
+    game = attackWithCommand(game, {
+      attackerSlotKey: "player_back_left",
+      commandId: "ドローフォース",
+      target: { kind: "monster", slotKey: "player_back_left" },
+    });
+
+    expect(game.players.player.hand.map((card) => card.instanceId)).toContain("drawn_takokke");
+  });
+
+  it("card_112 ロブーン levels itself up or leaves when already max level", () => {
+    let game = createGameWithPlayerHand([]);
+    game.players.player.stones = 1;
+    game.slots.player_back_left.monster = createActiveMonster("card_112", "player");
+
+    game = attackWithCommand(game, {
+      attackerSlotKey: "player_back_left",
+      commandId: "レベルアップ",
+      target: { kind: "monster", slotKey: "player_back_left" },
+    });
+
+    expect(game.slots.player_back_left.monster?.level).toBe(2);
+    expect(game.players.player.stones).toBe(0);
+
+    game.players.player.stones = 0;
+    game.slots.player_back_left.monster = createActiveMonster("card_112", "player", {
+      level: 3,
+      hp: 5,
+      investedStones: 3,
+    });
+
+    game = attackWithCommand(game, {
+      attackerSlotKey: "player_back_left",
+      commandId: "レベルアップ",
+      target: { kind: "monster", slotKey: "player_back_left" },
+    });
+
+    expect(game.slots.player_back_left.monster).toBeUndefined();
+  });
+
+  it("card_134 ファントム swaps with a hand monster at the current level", () => {
+    let game = createGameWithPlayerHand([{ cardId: "takokke", instanceId: "switch_takokke" }]);
+    game.players.player.stones = 2;
+    game.slots.player_front_left.monster = createActiveMonster("card_134", "player", {
+      level: 2,
+      hp: 3,
+      investedStones: 2,
+    });
+
+    game = attackWithCommand(game, {
+      attackerSlotKey: "player_front_left",
+      commandId: "ソウルスイッチ",
+      target: { kind: "monster", slotKey: "player_front_left" },
+      secondaryHandInstanceId: "switch_takokke",
+    });
+
+    expect(game.slots.player_front_left.monster?.cardId).toBe("takokke");
+    expect(game.slots.player_front_left.monster?.level).toBe(2);
+    expect(game.players.player.discard.some((card) => card.cardId === "card_134")).toBe(true);
+  });
 });
 
 function createGameWithPlayerHand(hand: CardInstance[]): GameState {

@@ -380,6 +380,12 @@ button:disabled {
     0 0 0 4px rgba(183, 121, 31, 0.18);
 }
 
+.effect-random {
+  box-shadow:
+    inset 0 0 0 2px #7c3aed,
+    0 0 0 4px rgba(124, 58, 237, 0.18);
+}
+
 .effect-move,
 .effect-turn,
 .effect-default {
@@ -810,6 +816,12 @@ button:disabled {
 }
 
 .log-level {
+  border-left-color: #7c3aed;
+  color: #5b21b6;
+  font-weight: 700;
+}
+
+.log-random {
   border-left-color: #7c3aed;
   color: #5b21b6;
   font-weight: 700;
