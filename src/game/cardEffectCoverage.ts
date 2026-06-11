@@ -32,6 +32,15 @@ export interface SimplifiedOrPendingCardEffect {
   relatedCards?: string[];
 }
 
+export interface DeferredProductDecision {
+  id: string;
+  title: string;
+  scope: string;
+  decision: string;
+  reason: string;
+  revisitWhen: string;
+}
+
 export const IMPORTED_MAGIC_CATEGORIES = [
   "カード魔法",
   "シールド魔法",
@@ -147,6 +156,7 @@ export const CARD_EFFECT_COVERAGE_AREAS: readonly CardEffectCoverageArea[] = [
     status: "covered",
     scope: "公式攻略データにある効果文から、ズレやすいカードを1枚ずつ状態変化まで検証する。",
     coveredBy: [
+      "tests/game/cardOfficialExpectations.test.ts: every imported card has reviewed official source data snapshot",
       "tests/game/cardOfficialExpectations.test.ts: card_027 パワーダウン lowers only the next attack by 1P",
       "tests/game/cardOfficialExpectations.test.ts: card_059 パワー２ overrides the next attack power to exactly 2P",
       "tests/game/cardOfficialExpectations.test.ts: card_094 バーサクパワー adds 1P once and deals 1 recoil after the attack",
@@ -245,41 +255,31 @@ export const CARD_EFFECT_COVERAGE_AREAS: readonly CardEffectCoverageArea[] = [
   },
 ];
 
-export const SIMPLIFIED_OR_PENDING_CARD_EFFECTS: readonly SimplifiedOrPendingCardEffect[] = [
+export const SIMPLIFIED_OR_PENDING_CARD_EFFECTS: readonly SimplifiedOrPendingCardEffect[] = [];
+
+export const DEFERRED_PRODUCT_DECISIONS: readonly DeferredProductDecision[] = [
   {
     id: "super_cards_pending",
     title: "スペシャルカード",
-    status: "pending",
     scope: "公式カードのうち、スペシャルカード枠は現カードプールへ投入しない方針に決定した。",
-    currentBehavior: "通常カード126枚のみをランダムデッキ、公式一致テスト、戦闘後報酬の対象にする。",
+    decision: "通常カード126枚のみをランダムデッキ、公式一致テスト、戦闘後報酬の対象にする。",
     reason: "カードヒーローとしての通常戦闘とローグライト報酬ループを先に安定させるため。",
-    followUp: "通常カード126枚の戦闘後報酬まで完成した後、スペシャルカード導入を別Phaseで再判断する。",
-  },
-  {
-    id: "per_card_assertion_gap",
-    title: "全カード個別の期待値テスト",
-    status: "pending",
-    scope: "全カード/全技について、公式挙動と完全一致する個別期待値を1枚ずつ持つ状態にはまだしていない。",
-    currentBehavior: "効果群ごとの代表テスト、全カード/全技の合法対象テスト、全マジック/全技の解決スモークテストで大きな未接続を検出している。",
-    reason: "効果カテゴリ横断の基盤を先に固め、警告seedやバグ報告から個別期待値を増やす方針のため。",
-    followUp: "特殊効果のある技とマジックから優先度順に、1カード1期待値のケースを追加する。",
+    revisitWhen: "戦闘後報酬とカード獲得ループが入った後に、報酬専用カードとして導入可否を再判断する。",
   },
   {
     id: "cpu_magic_heuristic",
     title: "CPUの特殊効果判断",
-    status: "simplified",
     scope: "CPUがマジックや特殊技を使うかどうかの判断全般。",
-    currentBehavior: "撃破、回復、強化、シールド、ウェイクアップ、移動後攻撃、複数対象、手札/山札選択、次ターンの反撃/レベルアップ価値を浅い評価で判断する。",
+    decision: "撃破、回復、強化、シールド、ウェイクアップ、移動後攻撃、複数対象、手札/山札選択、次ターンの反撃/レベルアップ価値を浅い評価で判断する現行AIを、公式再現ではなく検証相手AIとして扱う。",
     reason: "公式AI再現ではなく、ルール破綻を起こさず検証相手として動くことを優先しているため。",
-    followUp: "公式AI再現が必要になった時点で、ヒューリスティックとは別モードとして設計する。",
+    revisitWhen: "公式CPUの打ち筋再現がゲーム体験上の要求になった時点で、別AIプロファイルとして設計する。",
   },
   {
     id: "temporary_original_icons",
     title: "攻略サイト由来の仮アイコン",
-    status: "simplified",
     scope: "カード表示用の画像アセット。",
-    currentBehavior: "テスト用として取得済み画像を表示する。",
+    decision: "現時点ではテスト用として取得済み画像を表示し、ゲームルールやPhase 4/5完了条件からは切り離す。",
     reason: "後で自作画像へ差し替える前提のため。",
-    followUp: "自作画像の命名規則と差し替えチェックを追加する。",
+    revisitWhen: "正式な自作カード画像の制作または差し替え運用が始まった時点で、命名規則と差し替えチェックを追加する。",
   },
 ];

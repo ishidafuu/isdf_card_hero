@@ -1034,15 +1034,23 @@ button:disabled {
 }
 
 .zone-card-row {
-  align-items: center;
   background: #f8faf4;
   border: 1px solid #d5ddce;
   border-radius: 6px;
+}
+
+.zone-card-row summary {
+  align-items: center;
+  cursor: pointer;
   display: grid;
   gap: 6px;
   grid-template-columns: 28px 28px minmax(0, 1fr) auto;
   min-height: 38px;
   padding: 6px;
+}
+
+.zone-card-row[open] summary {
+  border-bottom: 1px solid #d8ded2;
 }
 
 .zone-card-index {
@@ -1103,6 +1111,46 @@ button:disabled {
   display: grid;
   gap: 8px;
   padding: 8px;
+}
+
+.zone-card-row .catalog-card-detail {
+  border-top: 0;
+}
+
+.effect-history-list {
+  display: grid;
+  gap: 6px;
+  margin: 0;
+  max-height: 300px;
+  overflow: auto;
+  padding: 0;
+}
+
+.effect-history-row {
+  align-items: start;
+  background: #f8faf4;
+  border: 1px solid #d5ddce;
+  border-left-width: 4px;
+  border-radius: 6px;
+  display: grid;
+  gap: 7px;
+  grid-template-columns: 32px 96px minmax(0, 1fr);
+  list-style: none;
+  padding: 7px 8px;
+}
+
+.effect-history-kind {
+  color: #3f4946;
+  font-size: 12px;
+  font-weight: 800;
+  line-height: 1.25;
+}
+
+.effect-history-text {
+  color: #3f4946;
+  font-size: 13px;
+  line-height: 1.35;
+  overflow-wrap: anywhere;
 }
 
 @media (max-width: 860px) {

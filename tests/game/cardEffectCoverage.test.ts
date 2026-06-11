@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import {
   CARD_EFFECT_COVERAGE_AREAS,
   COMMAND_EFFECT_TRAITS,
+  DEFERRED_PRODUCT_DECISIONS,
   IMPORTED_MAGIC_CATEGORIES,
   SIMPLIFIED_OR_PENDING_CARD_EFFECTS,
   type CommandEffectTrait,
@@ -94,20 +95,19 @@ describe("card effect coverage registry", () => {
     }
   });
 
-  it("keeps simplified and pending effects explicit enough to act on", () => {
-    expect(SIMPLIFIED_OR_PENDING_CARD_EFFECTS.map((effect) => effect.id)).toEqual([
+  it("keeps Phase 4 card effect gaps closed and product deferrals explicit", () => {
+    expect(SIMPLIFIED_OR_PENDING_CARD_EFFECTS).toEqual([]);
+    expect(DEFERRED_PRODUCT_DECISIONS.map((decision) => decision.id)).toEqual([
       "super_cards_pending",
-      "per_card_assertion_gap",
       "cpu_magic_heuristic",
       "temporary_original_icons",
     ]);
 
-    for (const effect of SIMPLIFIED_OR_PENDING_CARD_EFFECTS) {
-      expect(["pending", "simplified"]).toContain(effect.status);
-      expect(effect.scope.trim(), effect.id).not.toBe("");
-      expect(effect.currentBehavior.trim(), effect.id).not.toBe("");
-      expect(effect.reason.trim(), effect.id).not.toBe("");
-      expect(effect.followUp.trim(), effect.id).not.toBe("");
+    for (const decision of DEFERRED_PRODUCT_DECISIONS) {
+      expect(decision.scope.trim(), decision.id).not.toBe("");
+      expect(decision.decision.trim(), decision.id).not.toBe("");
+      expect(decision.reason.trim(), decision.id).not.toBe("");
+      expect(decision.revisitWhen.trim(), decision.id).not.toBe("");
     }
   });
 });

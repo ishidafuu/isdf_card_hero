@@ -99,8 +99,9 @@ type PendingDropAction =
   | { kind: "move"; fromSlotKey: SlotKey; toSlotKey: SlotKey };
 
 type ZoneView =
-  | { kind: "playerZone"; playerId: PlayerId; zone: "deck" | "discard" }
-  | { kind: "catalog" };
+  | { kind: "playerZone"; playerId: PlayerId; zone: "deck" | "discard" | "hand" }
+  | { kind: "catalog" }
+  | { kind: "effects" };
 type LogFilter = "all" | "battle" | "damage" | "support" | "turn" | "cpu";
 
 const DRAG_MIME = "application/x-card-hero-drag";
@@ -892,10 +893,24 @@ export function App() {
                 </button>
                 <button
                   type="button"
+                  className={isZoneView(zoneView, "player", "hand") ? "selected" : ""}
+                  onClick={() => setZoneView(toggleZoneView(zoneView, { kind: "playerZone", playerId: "player", zone: "hand" }))}
+                >
+                  <Icon icon="🃏" /> Hand {game.players.player.hand.length}
+                </button>
+                <button
+                  type="button"
                   className={isZoneView(zoneView, "cpu", "discard") ? "selected" : ""}
                   onClick={() => setZoneView(toggleZoneView(zoneView, { kind: "playerZone", playerId: "cpu", zone: "discard" }))}
                 >
                   <Icon icon="🗂️" /> CPU {game.players.cpu.discard.length}
+                </button>
+                <button
+                  type="button"
+                  className={zoneView?.kind === "effects" ? "selected" : ""}
+                  onClick={() => setZoneView(toggleZoneView(zoneView, { kind: "effects" }))}
+                >
+                  <Icon icon="📜" /> Effects
                 </button>
                 <button
                   type="button"
@@ -1484,16 +1499,19 @@ function CardZonePanel({ game, view, onClose }: CardZonePanelProps) {
   if (view.kind === "catalog") {
     return <CardCatalogPanel onClose={onClose} />;
   }
+  if (view.kind === "effects") {
+    return <EffectHistoryPanel game={game} onClose={onClose} />;
+  }
 
   const cards = game.players[view.playerId][view.zone];
-  const title = `${playerLabel(view.playerId)} ${view.zone === "deck" ? "Deck" : "Discard"}`;
-  const helpText = view.zone === "deck" ? "上から順に引きます。" : "上から新しい順ではなく、捨てられた順に並びます。";
+  const title = `${playerLabel(view.playerId)} ${zoneLabel(view.zone)}`;
+  const helpText = zoneHelpText(view.zone);
 
   return (
     <section className="zone-panel">
       <div className="zone-panel-heading">
         <div>
-          <h3><Icon icon={view.zone === "deck" ? "🂠" : "🗂️"} /> {title}</h3>
+          <h3><Icon icon={zoneIcon(view.zone)} /> {title}</h3>
           <p>{cards.length} cards / {helpText}</p>
         </div>
         <button type="button" onClick={onClose} aria-label="閉じる">
@@ -1505,14 +1523,52 @@ function CardZonePanel({ game, view, onClose }: CardZonePanelProps) {
       ) : (
         <div className="zone-card-list">
           {cards.map((card, index) => (
-            <div className="zone-card-row" key={`${card.instanceId}_${index}`}>
-              <span className="zone-card-index">{index + 1}</span>
-              <CardIcon cardId={card.cardId} />
-              <span className="zone-card-name">{getCardName(card.cardId)}</span>
-              <span className="zone-card-type">{cardTypeLabel(card.cardId)}</span>
-            </div>
+            <details className="zone-card-row" key={`${card.instanceId}_${index}`}>
+              <summary>
+                <span className="zone-card-index">{index + 1}</span>
+                <CardIcon cardId={card.cardId} />
+                <span className="zone-card-name">{getCardName(card.cardId)}</span>
+                <span className="zone-card-type">{cardTypeLabel(card.cardId)}</span>
+              </summary>
+              <div className="catalog-card-detail">
+                <CardDetail cardId={card.cardId} showTitle={false} />
+              </div>
+            </details>
           ))}
         </div>
+      )}
+    </section>
+  );
+}
+
+function EffectHistoryPanel({ game, onClose }: { game: GameState; onClose: () => void }) {
+  const effectEntries = game.log
+    .map((entry, index) => ({ entry, index }))
+    .filter(({ entry }) => logCategoryLabel(entry) !== "通常");
+
+  return (
+    <section className="zone-panel">
+      <div className="zone-panel-heading">
+        <div>
+          <h3><Icon icon="📜" /> Effect History</h3>
+          <p>{effectEntries.length} entries / ダメージ、支援、ランダム、CPU判断を抽出</p>
+        </div>
+        <button type="button" onClick={onClose} aria-label="閉じる">
+          <Icon icon="✕" /> Close
+        </button>
+      </div>
+      {effectEntries.length === 0 ? (
+        <p className="empty-zone"><Icon icon="□" /> Empty</p>
+      ) : (
+        <ol className="effect-history-list">
+          {effectEntries.map(({ entry, index }) => (
+            <li className={`effect-history-row ${logTone(entry)}`} key={`${entry}_${index}`}>
+              <span className="zone-card-index">{index + 1}</span>
+              <span className="effect-history-kind"><Icon icon={logIcon(entry)} /> {logCategoryLabel(entry)}</span>
+              <span className="effect-history-text">{entry}</span>
+            </li>
+          ))}
+        </ol>
       )}
     </section>
   );
@@ -1943,7 +1999,40 @@ function toggleZoneView(current: ZoneView | undefined, next: ZoneView): ZoneView
   if (next.kind === "catalog") {
     return current?.kind === "catalog" ? undefined : next;
   }
+  if (next.kind === "effects") {
+    return current?.kind === "effects" ? undefined : next;
+  }
   return isZoneView(current, next.playerId, next.zone) ? undefined : next;
+}
+
+function zoneLabel(zone: Extract<ZoneView, { kind: "playerZone" }>["zone"]): string {
+  if (zone === "deck") {
+    return "Deck";
+  }
+  if (zone === "hand") {
+    return "Hand";
+  }
+  return "Discard";
+}
+
+function zoneIcon(zone: Extract<ZoneView, { kind: "playerZone" }>["zone"]): string {
+  if (zone === "deck") {
+    return "🂠";
+  }
+  if (zone === "hand") {
+    return "🃏";
+  }
+  return "🗂️";
+}
+
+function zoneHelpText(zone: Extract<ZoneView, { kind: "playerZone" }>["zone"]): string {
+  if (zone === "deck") {
+    return "上から順に引きます。";
+  }
+  if (zone === "hand") {
+    return "現在選べるカードです。";
+  }
+  return "捨てられた順に並びます。";
 }
 
 function cardTypeLabel(cardId: string): string {

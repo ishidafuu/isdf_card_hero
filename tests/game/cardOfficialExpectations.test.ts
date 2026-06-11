@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { getCardDef, getMonsterDef } from "../../src/game/cards";
+import { getAllCardDefs, getCardDef, getMonsterDef } from "../../src/game/cards";
 import {
   attackWithCommand,
   createInitialGame,
@@ -13,9 +13,16 @@ import {
   summonMonster,
   useMasterAction,
 } from "../../src/game/rules";
-import type { CardInstance, GameState, MonsterState, PlayerId } from "../../src/game/types";
+import type { CardDef, CardInstance, GameState, MonsterState, PlayerId } from "../../src/game/types";
 
 describe("official card effect expectations", () => {
+  it.each(getAllCardDefs().map((card) => [`${card.id} ${card.name}`, card] as const))(
+    "%s has reviewed official source data",
+    (_label, card) => {
+      expect(officialSourceSnapshot(card)).toMatchSnapshot();
+    },
+  );
+
   it("card_027 パワーダウン lowers only the next attack by 1P", () => {
     let game = createGameWithPlayerHand([{ cardId: "card_027", instanceId: "power_down" }]);
     game.players.player.stones = magicCost("card_027");
@@ -1359,6 +1366,54 @@ function magicCost(cardId: string): number {
     throw new Error(`${cardId} is not a magic card`);
   }
   return def.cost;
+}
+
+function officialSourceSnapshot(card: CardDef) {
+  const base = {
+    id: card.id,
+    name: card.name,
+    sourceNo: card.sourceNo,
+    sourceUrl: card.sourceUrl,
+    rarity: card.rarity,
+    catchcopy: card.catchcopy,
+    notes: card.notes ?? [],
+  };
+
+  if (card.type === "magic") {
+    return {
+      ...base,
+      type: card.type,
+      cost: card.cost,
+      category: card.category,
+      continuance: card.continuance,
+      targetKinds: card.targetKinds,
+      description: card.description,
+      implemented: card.implemented,
+    };
+  }
+
+  return {
+    ...base,
+    type: card.type,
+    role: card.role,
+    maxLevel: card.maxLevel,
+    actionLimit: card.actionLimit,
+    levels: card.levels.map((level) => ({
+      level: level.level,
+      maxHp: level.maxHp,
+      commands: level.commands.map((command) => ({
+        id: command.id,
+        name: command.name,
+        power: command.power,
+        range: command.range,
+        rangeText: command.rangeText,
+        stoneCost: command.stoneCost,
+        recoilDamage: command.recoilDamage,
+        effectText: command.effectText,
+        implemented: command.implemented,
+      })),
+    })),
+  };
 }
 
 function createActiveMonster(

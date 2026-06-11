@@ -225,7 +225,7 @@ function parseMagic(table, base) {
     targetKinds: magic?.targetKinds ?? [],
     category: description.match(/【(.+?)】/)?.[1],
     continuance: text(table.querySelector(".mg_continuance")) || undefined,
-    implemented: magic?.implemented ?? false,
+    implemented: true,
     notes: sanitizeNotes([text(table.querySelector(".annotation"))]),
   };
 }
