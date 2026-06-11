@@ -93,8 +93,25 @@ button:disabled {
 }
 
 .topbar-actions {
+  align-items: center;
   display: flex;
+  flex-wrap: wrap;
   gap: 8px;
+  justify-content: flex-end;
+}
+
+.auto-delay-control {
+  align-items: center;
+  color: #4b5652;
+  display: inline-flex;
+  font-size: 13px;
+  gap: 5px;
+}
+
+.auto-delay-control input {
+  min-height: 32px;
+  padding: 4px 6px;
+  width: 76px;
 }
 
 .status-strip {

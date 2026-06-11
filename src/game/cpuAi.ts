@@ -9,6 +9,7 @@ import {
   getMasterActionTargets,
   getMonsterCommands,
   moveMonster,
+  opponentOf,
   playMagic,
   summonMonster,
   useMasterAction,
@@ -19,14 +20,23 @@ import type {
   MagicAction,
   MasterActionId,
   MonsterState,
+  PlayerId,
   SlotKey,
   SlotState,
   Target,
 } from "./types";
 
-const CPU_FIELD_ORDER: SlotKey[] = ["cpu_back_left", "cpu_back_right", "cpu_front_left", "cpu_front_right"];
-const PLAYER_FIELD_ORDER: SlotKey[] = ["player_front_left", "player_front_right", "player_back_left", "player_back_right"];
-const CPU_SUMMON_SLOT_ORDER: SlotKey[] = ["cpu_front_left", "cpu_front_right", "cpu_back_left", "cpu_back_right"];
+const FIELD_ORDER_BY_PLAYER: Record<PlayerId, SlotKey[]> = {
+  cpu: ["cpu_back_left", "cpu_back_right", "cpu_front_left", "cpu_front_right"],
+  player: ["player_back_left", "player_back_right", "player_front_left", "player_front_right"],
+};
+
+const SUMMON_SLOT_ORDER_BY_PLAYER: Record<PlayerId, SlotKey[]> = {
+  cpu: ["cpu_front_left", "cpu_front_right", "cpu_back_left", "cpu_back_right"],
+  player: ["player_front_left", "player_front_right", "player_back_left", "player_back_right"],
+};
+
+const ALL_FIELD_ORDER: SlotKey[] = [...FIELD_ORDER_BY_PLAYER.cpu, ...FIELD_ORDER_BY_PLAYER.player];
 
 export type CpuDecision =
   | {
@@ -81,7 +91,8 @@ export function runCpuDecisionStep(state: GameState): GameState {
 
 export function chooseCpuDecision(state: GameState): CpuDecision {
   const decisions = listCpuDecisions(state);
-  const beforeScore = evaluateState(state);
+  const perspective = state.currentPlayer;
+  const beforeScore = evaluateState(state, perspective);
   let best: { decision: CpuDecision; totalScore: number; index: number } | undefined;
 
   decisions.forEach((decision, index) => {
@@ -92,7 +103,7 @@ export function chooseCpuDecision(state: GameState): CpuDecision {
       return;
     }
 
-    const totalScore = decision.score + evaluateState(after) - beforeScore;
+    const totalScore = decision.score + evaluateState(after, perspective) - beforeScore;
     if (
       !best ||
       totalScore > best.totalScore ||
@@ -106,7 +117,7 @@ export function chooseCpuDecision(state: GameState): CpuDecision {
 }
 
 export function listCpuDecisions(state: GameState): CpuDecision[] {
-  if (state.currentPlayer !== "cpu" || state.winner || state.pendingLevelUp) {
+  if (state.winner || state.pendingLevelUp) {
     return [createEndTurnDecision()];
   }
 
@@ -141,23 +152,24 @@ export function applyCpuDecision(state: GameState, decision: CpuDecision): GameS
   return endTurn(state);
 }
 
-export function evaluateState(state: GameState): number {
-  if (state.winner === "cpu") {
+export function evaluateState(state: GameState, perspective: PlayerId = "cpu"): number {
+  const opponent = opponentOf(perspective);
+  if (state.winner === perspective) {
     return 1_000_000;
   }
-  if (state.winner === "player") {
+  if (state.winner === opponent) {
     return -1_000_000;
   }
 
   let score = 0;
-  score += (state.players.cpu.masterHp - state.players.player.masterHp) * 80;
-  score += (state.players.cpu.stones - state.players.player.stones) * 6;
-  score += (state.players.cpu.hand.length - state.players.player.hand.length) * 3;
-  score += (state.players.cpu.deck.length - state.players.player.deck.length) * 1;
+  score += (state.players[perspective].masterHp - state.players[opponent].masterHp) * 80;
+  score += (state.players[perspective].stones - state.players[opponent].stones) * 6;
+  score += (state.players[perspective].hand.length - state.players[opponent].hand.length) * 3;
+  score += (state.players[perspective].deck.length - state.players[opponent].deck.length) * 1;
 
-  for (const slotKey of [...CPU_FIELD_ORDER, ...PLAYER_FIELD_ORDER]) {
+  for (const slotKey of ALL_FIELD_ORDER) {
     const value = monsterValue(state, slotKey);
-    if (state.slots[slotKey].monster?.owner === "cpu") {
+    if (state.slots[slotKey].monster?.owner === perspective) {
       score += value;
     } else {
       score -= value;
@@ -169,8 +181,9 @@ export function evaluateState(state: GameState): number {
 
 function listAttackDecisions(state: GameState): CpuDecision[] {
   const decisions: CpuDecision[] = [];
+  const playerId = state.currentPlayer;
 
-  for (const slotKey of CPU_FIELD_ORDER) {
+  for (const slotKey of FIELD_ORDER_BY_PLAYER[playerId]) {
     const monster = state.slots[slotKey].monster;
     if (!monster?.status || monster.status !== "active" || monster.actionCount >= monster.actionLimit) {
       continue;
@@ -178,7 +191,7 @@ function listAttackDecisions(state: GameState): CpuDecision[] {
 
     for (const command of getMonsterCommands(monster)) {
       for (const target of getCommandTargets(state, slotKey, command.id)) {
-        if (isCpuMonsterTarget(state, target)) {
+        if (isOwnedMonsterTarget(state, target, playerId)) {
           continue;
         }
 
@@ -213,13 +226,15 @@ function createAttackDecision(state: GameState, action: CommandAction): CpuDecis
 }
 
 function scoreAttackDecision(state: GameState, after: GameState, action: CommandAction): number {
-  if (after.winner === "cpu") {
+  const playerId = state.currentPlayer;
+  const opponent = opponentOf(playerId);
+  if (after.winner === playerId) {
     return 1_000_000;
   }
 
   const recoilPenalty = attackerWasDefeated(state, after, action.attackerSlotKey) ? -120 : 0;
   if (action.target.kind === "master") {
-    const damage = state.players.player.masterHp - after.players.player.masterHp;
+    const damage = state.players[opponent].masterHp - after.players[opponent].masterHp;
     if (damage <= 0) {
       return -100;
     }
@@ -245,7 +260,7 @@ function scoreAttackDecision(state: GameState, after: GameState, action: Command
 }
 
 function attackReason(state: GameState, after: GameState, action: CommandAction): string {
-  if (after.winner === "cpu") {
+  if (after.winner === state.currentPlayer) {
     return "相手マスターを倒せるため攻撃";
   }
   if (action.target.kind === "master") {
@@ -259,8 +274,9 @@ function attackReason(state: GameState, after: GameState, action: CommandAction)
 }
 
 function listMasterAttackDecisions(state: GameState): CpuDecision[] {
+  const playerId = state.currentPlayer;
   return getMasterActionTargets(state, "master_attack")
-    .filter((target) => target.kind === "monster" && !isCpuMonsterTarget(state, target))
+    .filter((target) => target.kind === "monster" && !isOwnedMonsterTarget(state, target, playerId))
     .map((target) => createMasterAttackDecision(state, target))
     .filter((decision): decision is CpuDecision => !!decision);
 }
@@ -300,13 +316,14 @@ function createMasterAttackDecision(state: GameState, target: Target): CpuDecisi
 
 function listSummonDecisions(state: GameState): CpuDecision[] {
   const decisions: CpuDecision[] = [];
-  for (const card of state.players.cpu.hand) {
+  const playerId = state.currentPlayer;
+  for (const card of state.players[playerId].hand) {
     const def = getCardDef(card.cardId);
     if (def.type !== "monster") {
       continue;
     }
 
-    for (const slotKey of CPU_SUMMON_SLOT_ORDER) {
+    for (const slotKey of SUMMON_SLOT_ORDER_BY_PLAYER[playerId]) {
       if (!canSummonTo(state, card.instanceId, slotKey)) {
         continue;
       }
@@ -327,7 +344,7 @@ function scoreSummon(state: GameState, cardId: string, slotKey: SlotKey): number
   const def = getMonsterDef(cardId);
   const slot = state.slots[slotKey];
   const frontFilled = slot.row === "back" && !!state.slots[frontSlotFor(slot)].monster;
-  const boardEmpty = CPU_SUMMON_SLOT_ORDER.every((key) => !state.slots[key].monster);
+  const boardEmpty = SUMMON_SLOT_ORDER_BY_PLAYER[slot.owner].every((key) => !state.slots[key].monster);
 
   let score = 0;
   if (def.role === "front") {
@@ -358,7 +375,7 @@ function summonReason(cardId: string, slotKey: SlotKey): string {
 }
 
 function listFocusDecisions(state: GameState): CpuDecision[] {
-  return CPU_FIELD_ORDER
+  return FIELD_ORDER_BY_PLAYER[state.currentPlayer]
     .filter((slotKey) => canFocusMonster(state, slotKey))
     .map((slotKey) => {
       const score = scoreFocus(state, slotKey);
@@ -471,8 +488,8 @@ function frontSlotFor(slot: SlotState): SlotKey {
   return `${slot.owner}_front_${slot.lane}`;
 }
 
-function isCpuMonsterTarget(state: GameState, target: Target): boolean {
-  return target.kind === "monster" && state.slots[target.slotKey].monster?.owner === "cpu";
+function isOwnedMonsterTarget(state: GameState, target: Target, playerId: PlayerId): boolean {
+  return target.kind === "monster" && state.slots[target.slotKey].monster?.owner === playerId;
 }
 
 function attackerWasDefeated(state: GameState, after: GameState, attackerSlotKey: SlotKey): boolean {

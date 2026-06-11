@@ -20,6 +20,7 @@ import {
   playMagic,
   playerLabel,
   resolveLevelUp,
+  runAutoStep,
   runCpuStep,
   summonMonster,
   targetToKey,
@@ -62,6 +63,10 @@ const BOARD_SLOT_KEYS = BOARD_CELLS.flatMap((row) =>
 const PLAYER_IDS: PlayerId[] = ["player", "cpu"];
 const CPU_STEP_DELAY_MS = 520;
 const VISUAL_EFFECT_DURATION_MS = 900;
+const AUTO_STEP_DELAY_MIN_MS = 100;
+const AUTO_STEP_DELAY_MAX_MS = 3000;
+const AUTO_STEP_DELAY_STEP_MS = 50;
+const AUTO_STEP_DELAY_DEFAULT_MS = 650;
 
 type Selection =
   | { kind: "hand"; instanceId: string }
@@ -118,6 +123,8 @@ export function App() {
   const [error, setError] = useState<string>("");
   const [visualEffect, setVisualEffect] = useState<VisualEffect | undefined>();
   const [pointerDragging, setPointerDragging] = useState(false);
+  const [autoPlayEnabled, setAutoPlayEnabled] = useState(false);
+  const [autoStepDelayMs, setAutoStepDelayMs] = useState(AUTO_STEP_DELAY_DEFAULT_MS);
   const previousGameRef = useRef<GameState>(game);
   const visualEffectIdRef = useRef(0);
   const pointerDragRef = useRef<{
@@ -130,8 +137,15 @@ export function App() {
   const suppressNextClickRef = useRef(false);
 
   const currentPlayer = game.players[game.currentPlayer];
-  const isCpuResolving = game.currentPlayer === "cpu" && !game.winner && !game.pendingLevelUp;
-  const controlsDisabled = game.currentPlayer !== "player" || !!game.winner || !!game.pendingLevelUp;
+  const isAutoResolving = !game.winner && (autoPlayEnabled || (game.currentPlayer === "cpu" && !game.pendingLevelUp));
+  const controlsDisabled = autoPlayEnabled || game.currentPlayer !== "player" || !!game.winner || !!game.pendingLevelUp;
+  const turnStatus = game.winner
+    ? `${playerLabel(game.winner)} win`
+    : autoPlayEnabled
+      ? `Auto playing... ${playerLabel(game.currentPlayer)}`
+      : isAutoResolving
+        ? "CPU resolving..."
+        : playerLabel(game.currentPlayer);
   const targetKeys = useMemo(() => {
     if (pendingDropAction) {
       return new Set([pendingDropActionTargetKey(pendingDropAction)]);
@@ -164,21 +178,27 @@ export function App() {
   }, [game]);
 
   useEffect(() => {
-    if (!isCpuResolving) {
+    if (!isAutoResolving) {
       return undefined;
     }
 
     const timer = window.setTimeout(() => {
       setGame((previous) => {
-        if (previous.currentPlayer !== "cpu" || previous.winner || previous.pendingLevelUp) {
+        if (previous.winner) {
           return previous;
         }
-        return runCpuStep(previous);
+        if (autoPlayEnabled) {
+          return runAutoStep(previous);
+        }
+        if (previous.currentPlayer === "cpu" && !previous.pendingLevelUp) {
+          return runCpuStep(previous);
+        }
+        return previous;
       });
-    }, CPU_STEP_DELAY_MS);
+    }, autoPlayEnabled ? autoStepDelayMs : CPU_STEP_DELAY_MS);
 
     return () => window.clearTimeout(timer);
-  }, [game, isCpuResolving]);
+  }, [autoPlayEnabled, autoStepDelayMs, game, isAutoResolving]);
 
   useEffect(() => {
     if (!visualEffect) {
@@ -311,6 +331,18 @@ export function App() {
     setPendingDropAction(undefined);
     setError("");
     setVisualEffect(undefined);
+  }
+
+  function handleAutoDelayChange(value: string) {
+    const parsed = Number(value);
+    if (!Number.isFinite(parsed)) {
+      return;
+    }
+    setAutoStepDelayMs(clampNumber(
+      Math.round(parsed / AUTO_STEP_DELAY_STEP_MS) * AUTO_STEP_DELAY_STEP_MS,
+      AUTO_STEP_DELAY_MIN_MS,
+      AUTO_STEP_DELAY_MAX_MS,
+    ));
   }
 
   function handleHandDragStart(event: DragEvent<HTMLButtonElement>, instanceId: string) {
@@ -617,9 +649,24 @@ export function App() {
       <header className="topbar">
         <div>
           <h1>Card Hero Prototype</h1>
-          <p>Turn {game.turnNumber} / {isCpuResolving ? "CPU resolving..." : playerLabel(game.currentPlayer)}</p>
+          <p>Turn {game.turnNumber} / {turnStatus}</p>
         </div>
         <div className="topbar-actions">
+          <button type="button" onClick={() => setAutoPlayEnabled((enabled) => !enabled)}>
+            <Icon icon={autoPlayEnabled ? "⏸️" : "▶️"} /> {autoPlayEnabled ? "Auto Stop" : "Auto Play"}
+          </button>
+          <label className="auto-delay-control">
+            Wait
+            <input
+              type="number"
+              min={AUTO_STEP_DELAY_MIN_MS}
+              max={AUTO_STEP_DELAY_MAX_MS}
+              step={AUTO_STEP_DELAY_STEP_MS}
+              value={autoStepDelayMs}
+              onChange={(event) => handleAutoDelayChange(event.target.value)}
+            />
+            ms
+          </label>
           <button type="button" onClick={handleNewGame}>
             <Icon icon="🔄" /> New Game
           </button>
@@ -710,6 +757,7 @@ export function App() {
                     key={level}
                     type="button"
                     onClick={() => applyChange((state) => resolveLevelUp(state, level))}
+                    disabled={autoPlayEnabled}
                   >
                     {level}
                   </button>
@@ -1479,6 +1527,10 @@ function cardIcon(cardId: string): string {
     return "⬆️";
   }
   return "◆";
+}
+
+function clampNumber(value: number, min: number, max: number): number {
+  return Math.min(max, Math.max(min, value));
 }
 
 function roleIcon(role: string): string {

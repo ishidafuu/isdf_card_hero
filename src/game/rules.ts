@@ -131,6 +131,18 @@ export function runCpuStep(state: GameState): GameState {
   return applyCpuDecision(next, chooseCpuDecision(next));
 }
 
+export function runAutoStep(state: GameState): GameState {
+  if (state.winner) {
+    return cloneState(state);
+  }
+  if (state.pendingLevelUp) {
+    return resolveLevelUp(state, state.pendingLevelUp.maxLevels);
+  }
+
+  const next = cloneState(state);
+  return applyCpuDecision(next, chooseCpuDecision(next));
+}
+
 export function summonMonster(
   state: GameState,
   handInstanceId: string,

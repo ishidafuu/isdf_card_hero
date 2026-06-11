@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { getMonsterDef } from "../../src/game/cards";
 import { applyCpuDecision, chooseCpuDecision, listCpuDecisions } from "../../src/game/cpuAi";
-import { createInitialGame, endTurn, runCpuStep } from "../../src/game/rules";
+import { attackWithCommand, createInitialGame, endTurn, runAutoStep, runCpuStep } from "../../src/game/rules";
 import type { CardInstance, GameState, MonsterState, PlayerId } from "../../src/game/types";
 
 describe("cpu ai", () => {
@@ -96,6 +96,17 @@ describe("cpu ai", () => {
     }
   });
 
+  it("can choose actions for the player side during auto play", () => {
+    const game = createPlayerAutoGame([{ cardId: "takokke", instanceId: "player_takokke_test" }]);
+
+    const decision = chooseCpuDecision(game);
+
+    expect(decision.type).toBe("summon");
+    if (decision.type === "summon") {
+      expect(decision.slotKey).toBe("player_front_left");
+    }
+  });
+
   it("summons back-role cards behind an occupied front lane", () => {
     const game = createCpuGame([{ cardId: "yanbaru", instanceId: "cpu_yanbaru_test" }]);
     game.slots.cpu_front_left.monster = createActiveMonster("takokke", "cpu");
@@ -140,6 +151,41 @@ describe("cpu ai", () => {
       expect(game.pendingLevelUp).toBeUndefined();
     }
   });
+
+  it("auto step resolves player level-up prompts without manual input", () => {
+    const game = createPlayerAutoGame([]);
+    game.players.player.stones = 2;
+    game.slots.player_front_left.monster = createActiveMonster("takokke", "player");
+    game.slots.cpu_front_left.monster = createActiveMonster("takokke", "cpu", { hp: 2 });
+
+    const pending = attackWithCommand(game, {
+      attackerSlotKey: "player_front_left",
+      commandId: "attack",
+      target: { kind: "monster", slotKey: "cpu_front_left" },
+    });
+
+    expect(pending.pendingLevelUp?.maxLevels).toBe(1);
+
+    const resolved = runAutoStep(pending);
+
+    expect(resolved.pendingLevelUp).toBeUndefined();
+    expect(resolved.slots.player_front_left.monster?.level).toBe(2);
+  });
+
+  it("runs both sides in auto play across seeds without getting stuck", () => {
+    for (let seed = 330; seed < 340; seed += 1) {
+      let game = createInitialGame(seed);
+      for (let step = 0; step < 120 && !game.winner; step += 1) {
+        game = runAutoStep(game);
+        if (game.pendingLevelUp) {
+          game = runAutoStep(game);
+          expect(game.pendingLevelUp).toBeUndefined();
+        }
+      }
+
+      expect(game.turnNumber).toBeGreaterThan(1);
+    }
+  });
 });
 
 function createCpuGame(hand: CardInstance[] = []): GameState {
@@ -149,6 +195,16 @@ function createCpuGame(hand: CardInstance[] = []): GameState {
   game.players.cpu.hand = hand;
   game.players.cpu.discard = [];
   game.players.player.hand = [];
+  return game;
+}
+
+function createPlayerAutoGame(hand: CardInstance[] = []): GameState {
+  const game = createInitialGame(251);
+  game.currentPlayer = "player";
+  game.players.player.stones = 3;
+  game.players.player.hand = hand;
+  game.players.player.discard = [];
+  game.players.cpu.hand = [];
   return game;
 }
 
