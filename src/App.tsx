@@ -859,7 +859,7 @@ export function App() {
       <section className="hand-area">
         <div className="hand-heading">
           <h2>Hand</h2>
-          <span>{currentPlayer.hand.length} cards</span>
+          <StatusIconCount label="Cards" icon="🃏" amount={currentPlayer.hand.length} cap={MAX_VISIBLE_RESOURCE_ICONS} />
         </div>
         <div className="hand-list">
           {currentPlayer.hand.map((card) => (
@@ -899,12 +899,39 @@ interface PlayerStatusProps {
 
 function PlayerStatus({ label, deck, hand, discard, active }: PlayerStatusProps) {
   return (
-    <div className={`player-status ${active ? "active" : ""}`}>
+    <div
+      className={`player-status ${active ? "active" : ""}`}
+      aria-label={`${label} Deck ${deck} Hand ${hand} Discard ${discard}`}
+    >
       <strong><Icon icon={active ? "▶️" : "👤"} /> {label}</strong>
       <span><Icon icon="🂠" /> Deck {deck}</span>
-      <span><Icon icon="✋" /> Hand {hand}</span>
+      <StatusIconCount label="Hand" icon="🃏" amount={hand} cap={MAX_VISIBLE_RESOURCE_ICONS} />
       <span><Icon icon="🗑️" /> Discard {discard}</span>
     </div>
+  );
+}
+
+interface StatusIconCountProps {
+  label: string;
+  icon: string;
+  amount: number;
+  cap?: number;
+}
+
+function StatusIconCount({ label, icon, amount, cap }: StatusIconCountProps) {
+  const visibleAmount = Math.max(0, cap ? Math.min(amount, cap) : amount);
+  const extraAmount = cap && amount > cap ? amount - cap : 0;
+
+  return (
+    <span className="status-icon-count" title={`${label}: ${amount}`}>
+      <span className="status-icon-label">{label}</span>
+      <span className="status-icons" aria-hidden="true">
+        {Array.from({ length: visibleAmount }, (_, index) => (
+          <span className="status-count-icon" key={`${label}_${index}`}>{icon}</span>
+        ))}
+        {extraAmount ? <span className="status-overflow">+{extraAmount}</span> : null}
+      </span>
+    </span>
   );
 }
 
