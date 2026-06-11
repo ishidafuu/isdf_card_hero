@@ -344,13 +344,6 @@ export function App() {
           <section className="actions">
             <h2>Actions</h2>
             <div className="button-stack">
-              <button
-                type="button"
-                onClick={() => applyChange(useMasterHpDraw)}
-                disabled={controlsDisabled || currentPlayer.deck.length === 0}
-              >
-                <Icon icon="❤️" /> HP Draw
-              </button>
               {MASTER_ACTIONS.map((action) => {
                 const targets = getMasterActionTargets(game, action.id);
                 return (
@@ -367,6 +360,13 @@ export function App() {
                   </button>
                 );
               })}
+              <button
+                type="button"
+                onClick={() => applyChange(useMasterHpDraw)}
+                disabled={controlsDisabled || currentPlayer.deck.length === 0}
+              >
+                <Icon icon="🩸" /> HP Draw
+              </button>
               <button type="button" onClick={handleEndTurn} disabled={controlsDisabled}>
                 <Icon icon="⏭️" /> End Turn
               </button>
