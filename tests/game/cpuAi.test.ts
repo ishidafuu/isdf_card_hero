@@ -159,6 +159,25 @@ describe("cpu ai", () => {
     }
   });
 
+  it("wakes up an enemy prepared monster when it can be defeated immediately", () => {
+    const game = createCpuGame([]);
+    game.players.cpu.stones = 5;
+    game.slots.cpu_front_left.monster = createActiveMonster("takokke", "cpu");
+    game.slots.player_front_left.monster = createActiveMonster("takokke", "player", {
+      hp: 2,
+      status: "prepared",
+    });
+
+    const decision = chooseCpuDecision(game);
+
+    expect(decision.type).toBe("master_action");
+    if (decision.type === "master_action") {
+      expect(decision.actionId).toBe("wake_up");
+      expect(decision.target).toEqual({ kind: "monster", slotKey: "player_front_left" });
+      expect(decision.reason).toContain("相手の準備中");
+    }
+  });
+
   it("shields a threatened valuable ally", () => {
     const game = createCpuGame([]);
     game.players.cpu.stones = 5;
@@ -175,6 +194,56 @@ describe("cpu ai", () => {
     }
   });
 
+  it("uses thunder when it can finish the opponent master", () => {
+    const game = createCpuGame([{ cardId: "thunder", instanceId: "cpu_thunder_test" }]);
+    game.players.cpu.stones = 4;
+    game.players.player.masterHp = 1;
+
+    const decision = chooseCpuDecision(game);
+
+    expect(decision.type).toBe("magic");
+    if (decision.type === "magic") {
+      expect(decision.action.target).toEqual({ kind: "master", playerId: "player" });
+      expect(decision.reason).toContain("相手マスターを倒せる");
+    }
+  });
+
+  it("uses healing for a threatened valuable ally with meaningful missing hp", () => {
+    const game = createCpuGame([{ cardId: "healing", instanceId: "cpu_healing_test" }]);
+    game.players.cpu.stones = 3;
+    game.slots.cpu_front_left.monster = createActiveMonster("takokke", "cpu", {
+      hp: 2,
+      level: 2,
+      investedStones: 2,
+    });
+    game.slots.player_front_left.monster = createActiveMonster("takokke", "player");
+
+    const decision = chooseCpuDecision(game);
+
+    expect(decision.type).toBe("magic");
+    if (decision.type === "magic") {
+      expect(decision.action.handInstanceId).toBe("cpu_healing_test");
+      expect(decision.action.target).toEqual({ kind: "monster", slotKey: "cpu_front_left" });
+      expect(decision.reason).toContain("回復");
+    }
+  });
+
+  it("uses power up when it creates an immediate monster kill", () => {
+    const game = createCpuGame([{ cardId: "power_up", instanceId: "cpu_power_up_test" }]);
+    game.players.cpu.stones = 3;
+    game.slots.cpu_front_left.monster = createActiveMonster("takokke", "cpu");
+    game.slots.player_front_left.monster = createActiveMonster("takokke", "player", { hp: 3 });
+
+    const decision = chooseCpuDecision(game);
+
+    expect(decision.type).toBe("magic");
+    if (decision.type === "magic") {
+      expect(decision.action.handInstanceId).toBe("cpu_power_up_test");
+      expect(decision.action.target).toEqual({ kind: "monster", slotKey: "cpu_front_left" });
+      expect(decision.reason).toContain("攻撃につなげられる");
+    }
+  });
+
   it("moves monsters to improve role placement", () => {
     const game = createCpuGame([]);
     game.players.cpu.stones = 0;
@@ -187,6 +256,23 @@ describe("cpu ai", () => {
       expect(decision.fromSlotKey).toBe("cpu_front_left");
       expect(decision.toSlotKey).toBe("cpu_back_left");
       expect(decision.reason).toContain("後列");
+    }
+  });
+
+  it("prioritizes a swap when it creates a stronger follow-up attack lane", () => {
+    const game = createCpuGame([]);
+    game.players.cpu.stones = 0;
+    game.slots.cpu_front_left.monster = createActiveMonster("yanbaru", "cpu");
+    game.slots.cpu_back_left.monster = createActiveMonster("takokke", "cpu");
+    game.slots.player_front_left.monster = createActiveMonster("takokke", "player", { hp: 3 });
+
+    const decision = chooseCpuDecision(game);
+
+    expect(decision.type).toBe("move");
+    if (decision.type === "move") {
+      expect(decision.fromSlotKey).toBe("cpu_front_left");
+      expect(decision.toSlotKey).toBe("cpu_back_left");
+      expect(decision.reason).toContain("攻撃筋");
     }
   });
 

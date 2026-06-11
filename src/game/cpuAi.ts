@@ -339,7 +339,7 @@ function createMasterAttackDecision(state: GameState, target: Target): CpuDecisi
 
 function listWakeUpDecisions(state: GameState): CpuDecision[] {
   return getMasterActionTargets(state, "wake_up")
-    .filter((target) => target.kind === "monster" && state.slots[target.slotKey].owner === state.currentPlayer)
+    .filter((target) => target.kind === "monster")
     .map((target) => createWakeUpDecision(state, target))
     .filter((decision): decision is CpuDecision => !!decision);
 }
@@ -353,10 +353,23 @@ function createWakeUpDecision(state: GameState, target: Target): CpuDecision | u
     return undefined;
   }
   const after = useMasterAction(state, "wake_up", target);
-  const activeMonster = after.slots[target.slotKey].monster;
-  const canActNow = !!activeMonster && getMonsterCommands(activeMonster)
-    .some((command) => getCommandTargets(after, target.slotKey, command.id).length > 0);
-  const score = 28 + monsterValue(state, target.slotKey) * 0.35 + (canActNow ? 45 : 0) - 16;
+  if (monster.owner !== state.currentPlayer) {
+    const attackScore = bestAttackOpportunityScore(after, undefined, target.slotKey);
+    if (attackScore < 260) {
+      return undefined;
+    }
+    return {
+      type: "master_action",
+      actionId: "wake_up",
+      target,
+      reason: "相手の準備中モンスターを起こして撃破できるためウェイクアップ",
+      score: 42 + attackScore * 0.7 - 16,
+    };
+  }
+
+  const bestFollowUpAttack = bestAttackOpportunityScore(after, target.slotKey);
+  const canActNow = bestFollowUpAttack > 0;
+  const score = 28 + monsterValue(state, target.slotKey) * 0.35 + bestFollowUpAttack * 0.45 + (canActNow ? 35 : 0) - 16;
   if (score < 32) {
     return undefined;
   }
@@ -387,11 +400,19 @@ function createShieldDecision(state: GameState, target: Target): CpuDecision | u
     return undefined;
   }
   const threat = incomingThreat(state, target.slotKey);
+  const shielded = useMasterAction(state, "shield", target);
+  const threatAfterShield = incomingThreat(shielded, target.slotKey);
+  const preventsLethal = threat.lethal && !threatAfterShield.lethal;
+  const reducesDamage = threatAfterShield.maxDamage < threat.maxDamage;
   const important = monster.level >= 2 || getMonsterDef(monster.cardId).role === "back" || monster.hp <= 2;
   if (!threat.threatened && !important) {
     return undefined;
   }
-  const score = 18 + monsterValue(state, target.slotKey) * 0.18 + (threat.lethal ? 55 : threat.threatened ? 24 : 0) - 14;
+  const score =
+    14 +
+    monsterValue(state, target.slotKey) * 0.18 +
+    (preventsLethal ? 90 : threat.lethal ? 42 : reducesDamage ? 28 : threat.threatened ? 18 : 0) -
+    14;
   if (score < 28) {
     return undefined;
   }
@@ -399,9 +420,11 @@ function createShieldDecision(state: GameState, target: Target): CpuDecision | u
     type: "master_action",
     actionId: "shield",
     target,
-    reason: threat.lethal
-      ? "次に倒されそうな味方を守るためシールド"
-      : "高価値の味方を守るためシールド",
+    reason: preventsLethal
+      ? "致死圏の味方を守れるためシールド"
+      : threat.lethal
+        ? "倒されそうな高価値味方を守るためシールド"
+        : "高価値の味方を守るためシールド",
     score,
   };
 }
@@ -418,20 +441,21 @@ function listMagicDecisions(state: GameState): CpuDecision[] {
     }
 
     for (const target of getMagicTargets(state, card.instanceId)) {
+      const action: MagicAction = { handInstanceId: card.instanceId, target };
       let after: GameState;
       try {
-        after = playMagic(state, { handInstanceId: card.instanceId, target });
+        after = playMagic(state, action);
       } catch {
         continue;
       }
-      const score = evaluateState(after, playerId) - beforeScore - def.cost * 8;
+      const score = scoreMagicDecision(state, after, action, beforeScore);
       if (score <= 8) {
         continue;
       }
       decisions.push({
         type: "magic",
-        action: { handInstanceId: card.instanceId, target },
-        reason: `${def.name}で局面を改善できるため使用`,
+        action,
+        reason: magicReason(state, after, action),
         score,
       });
     }
@@ -531,7 +555,7 @@ function createMoveDecision(state: GameState, fromSlotKey: SlotKey, toSlotKey: S
     type: "move",
     fromSlotKey,
     toSlotKey,
-    reason: moveReason(state, fromSlotKey, toSlotKey),
+    reason: moveReason(state, after, fromSlotKey, toSlotKey),
     score,
   };
 }
@@ -566,10 +590,18 @@ function scoreMoveDecision(state: GameState, after: GameState, fromSlotKey: Slot
   if (createsImmediateAttack(after, moverAfterSlot)) {
     score += 18;
   }
+  const beforeBestAttack = bestAttackOpportunityScore(state);
+  const afterBestAttack = bestAttackOpportunityScore(after);
+  if (afterBestAttack > beforeBestAttack) {
+    score += (afterBestAttack - beforeBestAttack) * 0.45;
+  }
   return score;
 }
 
-function moveReason(state: GameState, fromSlotKey: SlotKey, toSlotKey: SlotKey): string {
+function moveReason(state: GameState, after: GameState, fromSlotKey: SlotKey, toSlotKey: SlotKey): string {
+  if (bestAttackOpportunityScore(after) > bestAttackOpportunityScore(state) + 40) {
+    return "移動後に強い攻撃筋を作れるため移動";
+  }
   const mover = state.slots[fromSlotKey].monster;
   const role = mover ? getMonsterDef(mover.cardId).role : undefined;
   if (role === "front" && toSlotKey.includes("_front_")) {
@@ -720,10 +752,158 @@ function attackerLevelGain(state: GameState, after: GameState, attackerSlotKey: 
   return Math.max(0, current.level - before.level);
 }
 
-function incomingThreat(state: GameState, targetSlotKey: SlotKey): { threatened: boolean; lethal: boolean } {
+function scoreMagicDecision(
+  state: GameState,
+  after: GameState,
+  action: MagicAction,
+  beforeScore: number,
+): number {
+  const card = state.players[state.currentPlayer].hand.find((handCard) => handCard.instanceId === action.handInstanceId);
+  if (!card) {
+    return -100;
+  }
+  const def = getCardDef(card.cardId);
+  if (def.type !== "magic") {
+    return -100;
+  }
+
+  if (after.winner === state.currentPlayer) {
+    return 1_000_000;
+  }
+  if (def.id === "thunder" || def.id === "card_026" || def.id === "card_092" || def.id === "card_118") {
+    return scoreDamageMagicDecision(state, after, action, def.cost);
+  }
+  if (def.id === "healing" || def.id === "card_127") {
+    return scoreHealingMagicDecision(state, after, action, def.cost);
+  }
+  if (def.id === "power_up" || def.id === "card_094" || def.id === "card_150") {
+    return scorePowerMagicDecision(state, after, action, def.cost);
+  }
+
+  return evaluateState(after, state.currentPlayer) - beforeScore - def.cost * 8;
+}
+
+function scoreDamageMagicDecision(state: GameState, after: GameState, action: MagicAction, cost: number): number {
+  if (action.target.kind === "master") {
+    const beforeHp = state.players[action.target.playerId].masterHp;
+    const afterHp = after.players[action.target.playerId].masterHp;
+    const damage = beforeHp - afterHp;
+    if (damage <= 0) {
+      return -100;
+    }
+    return after.winner === state.currentPlayer ? 1_000_000 : 8;
+  }
+
+  const before = state.slots[action.target.slotKey].monster;
+  const current = after.slots[action.target.slotKey].monster;
+  if (!before) {
+    return -100;
+  }
+  if (!current || current.instanceId !== before.instanceId) {
+    return 260 + monsterValue(state, action.target.slotKey) - cost * 8;
+  }
+  const damage = before.hp - current.hp;
+  if (damage <= 0) {
+    return -100;
+  }
+  return 30 * damage - cost * 8;
+}
+
+function scoreHealingMagicDecision(state: GameState, after: GameState, action: MagicAction, cost: number): number {
+  if (action.target.kind !== "monster") {
+    return -100;
+  }
+  const before = state.slots[action.target.slotKey].monster;
+  const current = after.slots[action.target.slotKey].monster;
+  if (!before || !current || current.owner !== state.currentPlayer) {
+    return -100;
+  }
+  const healed = current.hp - before.hp;
+  if (healed < 2) {
+    return -100;
+  }
+  const threat = incomingThreat(state, action.target.slotKey);
+  const important = before.level >= 2 || getMonsterDef(before.cardId).role === "back";
+  if (!threat.threatened && !important) {
+    return 12;
+  }
+  return 26 * healed + monsterValue(state, action.target.slotKey) * 0.22 + (threat.lethal ? 95 : threat.threatened ? 36 : 0) - cost * 6;
+}
+
+function scorePowerMagicDecision(state: GameState, after: GameState, action: MagicAction, cost: number): number {
+  if (action.target.kind !== "monster") {
+    return -100;
+  }
+  const before = state.slots[action.target.slotKey].monster;
+  const current = after.slots[action.target.slotKey].monster;
+  if (!before || !current || current.owner !== state.currentPlayer) {
+    return -100;
+  }
+  const beforeBest = bestAttackOpportunityScore(state, action.target.slotKey);
+  const afterBest = bestAttackOpportunityScore(after, action.target.slotKey);
+  const improvement = afterBest - beforeBest;
+  if (afterBest < 40 || improvement <= 20) {
+    return -100;
+  }
+  return 22 + afterBest * 0.35 + improvement * 0.8 - cost * 6;
+}
+
+function magicReason(state: GameState, after: GameState, action: MagicAction): string {
+  const card = state.players[state.currentPlayer].hand.find((handCard) => handCard.instanceId === action.handInstanceId);
+  const name = card ? getCardName(card.cardId) : "マジック";
+  if (after.winner === state.currentPlayer) {
+    return `${name}で相手マスターを倒せるため使用`;
+  }
+  if (action.target.kind === "monster") {
+    const before = state.slots[action.target.slotKey].monster;
+    const current = after.slots[action.target.slotKey].monster;
+    if (before && (!current || current.instanceId !== before.instanceId)) {
+      return `${name}で敵モンスターを撃破できるため使用`;
+    }
+    if (before && current && current.hp > before.hp) {
+      return `${name}で高価値の味方を回復できるため使用`;
+    }
+    if (before && current && current.powerUp && !before.powerUp) {
+      return `${name}から攻撃につなげられるため使用`;
+    }
+  }
+  return `${name}で局面を改善できるため使用`;
+}
+
+function bestAttackOpportunityScore(
+  state: GameState,
+  onlyAttackerSlotKey?: SlotKey,
+  onlyTargetSlotKey?: SlotKey,
+): number {
+  let best = 0;
+  const playerId = state.currentPlayer;
+  const attackerSlots = onlyAttackerSlotKey ? [onlyAttackerSlotKey] : FIELD_ORDER_BY_PLAYER[playerId];
+
+  for (const slotKey of attackerSlots) {
+    const monster = state.slots[slotKey].monster;
+    if (!monster?.status || monster.status !== "active" || monster.actionCount >= monster.actionLimit) {
+      continue;
+    }
+    for (const command of getMonsterCommands(monster)) {
+      for (const target of getCommandTargets(state, slotKey, command.id)) {
+        if (isOwnedMonsterTarget(state, target, playerId)) {
+          continue;
+        }
+        if (onlyTargetSlotKey && (target.kind !== "monster" || target.slotKey !== onlyTargetSlotKey)) {
+          continue;
+        }
+        best = Math.max(best, estimateAttackScore(state, slotKey, command, target));
+      }
+    }
+  }
+
+  return best;
+}
+
+function incomingThreat(state: GameState, targetSlotKey: SlotKey): { threatened: boolean; lethal: boolean; maxDamage: number } {
   const target = state.slots[targetSlotKey].monster;
   if (!target) {
-    return { threatened: false, lethal: false };
+    return { threatened: false, lethal: false, maxDamage: 0 };
   }
   const opponent = opponentOf(target.owner);
   const opponentState = structuredClone(state) as GameState;
@@ -731,6 +911,7 @@ function incomingThreat(state: GameState, targetSlotKey: SlotKey): { threatened:
 
   let threatened = false;
   let lethal = false;
+  let maxDamage = 0;
   for (const slotKey of FIELD_ORDER_BY_PLAYER[opponent]) {
     const monster = opponentState.slots[slotKey].monster;
     if (!monster?.status || monster.status !== "active" || monster.actionCount >= monster.actionLimit) {
@@ -742,14 +923,75 @@ function incomingThreat(state: GameState, targetSlotKey: SlotKey): { threatened:
       if (!canTarget) {
         continue;
       }
-      threatened = true;
-      if (command.power >= target.hp) {
+      const damage = estimateMonsterDamage(target, monster, command);
+      if (damage > 0) {
+        threatened = true;
+        maxDamage = Math.max(maxDamage, damage);
+      }
+      if (damage >= target.hp) {
         lethal = true;
       }
     }
   }
 
-  return { threatened, lethal };
+  return { threatened, lethal, maxDamage };
+}
+
+function estimateAttackScore(state: GameState, attackerSlotKey: SlotKey, command: ReturnType<typeof getMonsterCommands>[number], target: Target): number {
+  const attacker = state.slots[attackerSlotKey].monster;
+  if (!attacker) {
+    return -100;
+  }
+  if (target.kind === "master") {
+    const damage = Math.max(0, estimateCommandPower(attacker, command) - 2);
+    return damage > 0 ? 70 * damage : -100;
+  }
+
+  const targetMonster = state.slots[target.slotKey].monster;
+  if (!targetMonster) {
+    return -100;
+  }
+  const damage = estimateMonsterDamage(targetMonster, attacker, command);
+  if (damage >= targetMonster.hp) {
+    return 300 + monsterValue(state, target.slotKey);
+  }
+  return damage > 0 ? 25 * damage : -100;
+}
+
+function estimateMonsterDamage(target: MonsterState, attacker: MonsterState, command: ReturnType<typeof getMonsterCommands>[number]): number {
+  if (target.immune) {
+    return 0;
+  }
+  let damage = estimateCommandPower(attacker, command);
+  if (target.shielded) {
+    damage = Math.max(0, damage - 1);
+  }
+  if (target.focused) {
+    damage = Math.max(0, damage - 1);
+  }
+  if (target.halfShielded) {
+    damage = Math.max(0, Math.floor(damage / 2));
+  }
+  return damage;
+}
+
+function estimateCommandPower(monster: MonsterState, command: ReturnType<typeof getMonsterCommands>[number]): number {
+  let power = command.power;
+  const upperCommand = getMonsterCommands(monster)[0];
+  if (monster.focused && upperCommand?.id === command.id) {
+    power += 1;
+  }
+  if (monster.powerUp) {
+    power += 1;
+  }
+  if (monster.powerOverride !== undefined) {
+    power = monster.powerOverride;
+  }
+  power += monster.powerModifier ?? 0;
+  if (monster.berserkPower) {
+    power += 2;
+  }
+  return Math.max(0, power);
 }
 
 function createsImmediateAttack(state: GameState, slotKey: SlotKey): boolean {

@@ -27,6 +27,7 @@
 npm install
 npm run dev
 npm test
+npm run validate:auto-play -- --seed-start 400 --count 100
 npm run build
 ```
 
