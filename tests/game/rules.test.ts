@@ -835,6 +835,52 @@ describe("battle prototype rules", () => {
     expect(game.slots.player_front_left.monster?.hp).toBe(3);
   });
 
+  it("keeps shield and power effects when cleansing a field", () => {
+    let game = createGameWithPlayerHand([{ cardId: "card_087", instanceId: "cleanse" }]);
+    game.players.player.stones = 99;
+    game.slots.player_front_left.monster = createActiveMonster("takokke", "player", {
+      shielded: true,
+      halfShielded: true,
+      oneShotShield: true,
+      dragonShield: true,
+      powerUp: true,
+      powerModifier: 1,
+      powerOverride: 2,
+      berserkPower: true,
+      cannotMove: true,
+      commandSealed: true,
+      dodgeChance: true,
+      scapegoat: true,
+      stoneCostMultiplier: 2,
+      darkHoleSlotKey: "player_front_left",
+      stoneCurse: true,
+      damageCurse: true,
+    });
+
+    game = playMagic(game, {
+      handInstanceId: "cleanse",
+      target: { kind: "master", playerId: "player" },
+    });
+
+    const monster = game.slots.player_front_left.monster;
+    expect(monster?.shielded).toBe(true);
+    expect(monster?.halfShielded).toBe(true);
+    expect(monster?.oneShotShield).toBe(true);
+    expect(monster?.dragonShield).toBe(true);
+    expect(monster?.powerUp).toBe(true);
+    expect(monster?.powerModifier).toBe(1);
+    expect(monster?.powerOverride).toBe(2);
+    expect(monster?.berserkPower).toBe(true);
+    expect(monster?.cannotMove).toBe(false);
+    expect(monster?.commandSealed).toBe(false);
+    expect(monster?.dodgeChance).toBe(false);
+    expect(monster?.scapegoat).toBe(false);
+    expect(monster?.stoneCostMultiplier).toBeUndefined();
+    expect(monster?.darkHoleSlotKey).toBeUndefined();
+    expect(monster?.stoneCurse).toBe(false);
+    expect(monster?.damageCurse).toBe(false);
+  });
+
   it("applies action restrictions from command seal, Death Sheep, provoke, stone curse, and dark hole", () => {
     let game = createGameWithPlayerHand([{ cardId: "card_058", instanceId: "seal" }]);
     game.players.player.stones = 2;

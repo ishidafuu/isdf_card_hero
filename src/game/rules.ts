@@ -2726,8 +2726,6 @@ function clearMonsterEffects(state: GameState, slotKey: SlotKey, includePowerAnd
   monster.cannotMove = false;
   monster.levelFixed = false;
   monster.immune = false;
-  monster.halfShielded = false;
-  monster.oneShotShield = false;
   monster.reviveOnDefeat = false;
   monster.shadowCursed = false;
   monster.scapegoat = false;
@@ -2735,9 +2733,7 @@ function clearMonsterEffects(state: GameState, slotKey: SlotKey, includePowerAnd
   monster.stoneCostMultiplier = undefined;
   monster.commandSealed = false;
   monster.cannotActUntilDamaged = false;
-  monster.berserkPower = false;
   monster.dodgeChance = false;
-  monster.dragonShield = false;
   monster.provokeTargetSlotKey = undefined;
   clearDeathChain(state, slotKey);
   monster.darkHoleSlotKey = undefined;
@@ -2749,6 +2745,10 @@ function clearMonsterEffects(state: GameState, slotKey: SlotKey, includePowerAnd
     monster.powerModifier = 0;
     monster.powerOverride = undefined;
     monster.shielded = false;
+    monster.halfShielded = false;
+    monster.oneShotShield = false;
+    monster.berserkPower = false;
+    monster.dragonShield = false;
   }
   appendLog(state, `${monsterName(monster)}の効果を消した`);
 }
