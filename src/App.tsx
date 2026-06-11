@@ -90,6 +90,7 @@ const MASTER_ACTIONS: Array<{ id: MasterActionId; label: string }> = [
 type EffectKind = "attack" | "damage" | "summon" | "focus" | "move" | "heal" | "turn" | "default";
 
 interface VisualEffect {
+  id: number;
   kind: EffectKind;
   slots: SlotKey[];
   masters: PlayerId[];
@@ -118,6 +119,7 @@ export function App() {
   const [visualEffect, setVisualEffect] = useState<VisualEffect | undefined>();
   const [pointerDragging, setPointerDragging] = useState(false);
   const previousGameRef = useRef<GameState>(game);
+  const visualEffectIdRef = useRef(0);
   const pointerDragRef = useRef<{
     payload: DragPayload;
     startX: number;
@@ -155,7 +157,8 @@ export function App() {
   useEffect(() => {
     const previous = previousGameRef.current;
     if (previous !== game) {
-      setVisualEffect(createVisualEffect(previous, game));
+      visualEffectIdRef.current += 1;
+      setVisualEffect(createVisualEffect(previous, game, visualEffectIdRef.current));
       previousGameRef.current = game;
     }
   }, [game]);
@@ -550,11 +553,7 @@ export function App() {
       }
     }
 
-    const commandIds = getMonsterCommands(monster)
-      .filter((candidate) =>
-        getCommandTargets(game, payload.slotKey, candidate.id).some((candidateTarget) => targetToKey(candidateTarget) === targetToKey(target)),
-      )
-      .map((command) => command.id);
+    const commandIds = getCommandsTargetingTarget(game, payload.slotKey, target).map((command) => command.id);
     if (commandIds.length === 0) {
       return undefined;
     }
@@ -647,6 +646,7 @@ export function App() {
                         selected={isSelectedSourceSlot(selection, pendingDropAction, cell.slotKey)}
                         targetable={targetKeys.has(`monster:${cell.slotKey}`)}
                         effectKind={visualEffect?.slots.includes(cell.slotKey) ? visualEffect.kind : undefined}
+                        effectId={visualEffect?.id}
                         damageFlash={visualEffect?.slotDamageFlashes.find((flash) => flash.slotKey === cell.slotKey)}
                         draggable={canDragMonsterFromSlot(cell.slotKey)}
                         onDragStart={(event) => handleMonsterDragStart(event, cell.slotKey)}
@@ -677,7 +677,7 @@ export function App() {
                       >
                         <span>{cell.label}</span>
                         <strong>HP {game.players[cell.playerId].masterHp}</strong>
-                        <DamageBubble flash={damageFlash} />
+                        <DamageBubble key={visualEffect?.id} flash={damageFlash} />
                       </button>
                     );
                   }
@@ -905,6 +905,7 @@ interface BoardSlotProps {
   selected: boolean;
   targetable: boolean;
   effectKind?: EffectKind;
+  effectId?: number;
   damageFlash?: DamageFlash;
   draggable: boolean;
   onDragStart: (event: DragEvent<HTMLButtonElement>) => void;
@@ -920,6 +921,7 @@ function BoardSlot({
   selected,
   targetable,
   effectKind,
+  effectId,
   damageFlash,
   draggable,
   onDragStart,
@@ -978,7 +980,7 @@ function BoardSlot({
       ) : (
         <span className="empty-slot"><Icon icon="□" /> Empty</span>
       )}
-      <DamageBubble flash={damageFlash} />
+      <DamageBubble key={effectId} flash={damageFlash} />
     </button>
   );
 }
@@ -1104,14 +1106,20 @@ function pendingDropActionDescription(action: PendingDropAction, game: GameState
 }
 
 function getPendingAttackCommands(game: GameState, action: Extract<PendingDropAction, { kind: "attackTarget" }>): CommandDef[] {
-  const monster = game.slots[action.attackerSlotKey].monster;
+  return getCommandsTargetingTarget(game, action.attackerSlotKey, action.target)
+    .filter((command) => action.commandIds.includes(command.id));
+}
+
+function getCommandsTargetingTarget(game: GameState, attackerSlotKey: SlotKey, target: Target): CommandDef[] {
+  const monster = game.slots[attackerSlotKey].monster;
   if (!monster) {
     return [];
   }
-  return action.commandIds.flatMap((commandId) => {
-    const command = getMonsterCommands(monster).find((item) => item.id === commandId);
-    return command ? [command] : [];
-  });
+  return getMonsterCommands(monster)
+    .filter((command) =>
+      getCommandTargets(game, attackerSlotKey, command.id)
+        .some((candidateTarget) => targetToKey(candidateTarget) === targetToKey(target)),
+    );
 }
 
 function handCardLabel(game: GameState, instanceId: string): string {
@@ -1131,10 +1139,11 @@ function targetLabel(game: GameState, target: Target): string {
   return slotMonsterLabel(game, target.slotKey);
 }
 
-function createVisualEffect(previous: GameState, next: GameState): VisualEffect {
+function createVisualEffect(previous: GameState, next: GameState, id: number): VisualEffect {
   const appendedLogs = getAppendedLogs(previous.log, next.log);
   const latestLog = appendedLogs.at(-1) ?? next.log[next.log.length - 1] ?? "";
   return {
+    id,
     kind: effectKindFromLog(latestLog),
     slots: BOARD_SLOT_KEYS.filter((slotKey) => slotSignature(previous, slotKey) !== slotSignature(next, slotKey)),
     masters: PLAYER_IDS.filter(
