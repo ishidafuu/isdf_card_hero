@@ -674,24 +674,62 @@ button:disabled {
 }
 
 .log-panel {
+  display: grid;
+  gap: 7px;
+  grid-template-rows: auto auto minmax(0, 1fr) auto;
   height: 260px;
   min-height: 0;
   overflow: hidden;
 }
 
+.log-heading {
+  align-items: center;
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.log-heading span {
+  color: #65716c;
+  font-size: 12px;
+  font-weight: 800;
+}
+
+.log-filter-row {
+  display: grid;
+  gap: 4px;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.log-filter-row button {
+  font-size: 11px;
+  min-height: 26px;
+  overflow: hidden;
+  padding: 3px 5px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.log-filter-row button.selected,
+.log-entry-button.selected {
+  border-color: #397367;
+  background: #e7f1ea;
+}
+
 .log-panel ol {
   display: flex;
   flex-direction: column;
-  gap: 5px;
-  margin: 10px 0 0;
-  max-height: calc(100% - 36px);
+  gap: 4px;
+  margin: 0;
+  min-height: 0;
   overflow: auto;
-  padding-left: 22px;
+  padding-left: 0;
 }
 
 .log-panel li {
   color: #3f4946;
   font-size: 13px;
+  list-style: none;
 }
 
 .log-entry {
@@ -702,6 +740,56 @@ button:disabled {
   gap: 2px;
   line-height: 1.35;
   padding-left: 6px;
+}
+
+.log-entry-button {
+  align-items: flex-start;
+  background: transparent;
+  border: 1px solid transparent;
+  border-radius: 5px;
+  color: inherit;
+  display: grid;
+  gap: 4px;
+  grid-template-columns: auto auto minmax(0, 1fr);
+  min-height: 0;
+  padding: 3px 4px;
+  text-align: left;
+  width: 100%;
+}
+
+.log-entry-index {
+  color: #65716c;
+  font-size: 11px;
+  font-weight: 800;
+  line-height: 1.3;
+}
+
+.log-entry-text {
+  overflow-wrap: anywhere;
+}
+
+.log-detail {
+  background: #f1f5ec;
+  border: 1px solid #d5ddce;
+  border-left-width: 4px;
+  border-radius: 6px;
+  display: grid;
+  gap: 4px;
+  max-height: 58px;
+  overflow: auto;
+  padding: 6px 7px;
+}
+
+.log-detail strong {
+  font-size: 12px;
+}
+
+.log-detail p {
+  color: #3f4946;
+  font-size: 12px;
+  line-height: 1.35;
+  margin: 0;
+  overflow-wrap: anywhere;
 }
 
 .log-turn {

@@ -100,6 +100,7 @@ export function chooseCpuDecision(state: GameState): CpuDecision {
   const decisions = listCpuDecisions(state);
   const perspective = state.currentPlayer;
   const beforeScore = evaluateState(state, perspective);
+  const beforeFutureScore = evaluateFutureTacticalValue(state, perspective);
   let best: { decision: CpuDecision; totalScore: number; index: number } | undefined;
 
   decisions.forEach((decision, index) => {
@@ -110,7 +111,12 @@ export function chooseCpuDecision(state: GameState): CpuDecision {
       return;
     }
 
-    const totalScore = decision.score + evaluateState(after, perspective) - beforeScore;
+    const totalScore =
+      decision.score +
+      evaluateState(after, perspective) -
+      beforeScore +
+      evaluateFutureTacticalValue(after, perspective) -
+      beforeFutureScore;
     if (
       !best ||
       totalScore > best.totalScore ||
@@ -197,6 +203,24 @@ export function evaluateState(state: GameState, perspective: PlayerId = "cpu"): 
   }
 
   return score;
+}
+
+function evaluateFutureTacticalValue(state: GameState, perspective: PlayerId): number {
+  if (state.winner) {
+    return 0;
+  }
+
+  const opponent = opponentOf(perspective);
+  const ownBestAttack = bestAttackOpportunityScoreForPlayer(state, perspective);
+  const opponentBestAttack = bestAttackOpportunityScoreForPlayer(state, opponent);
+  const own = state.players[perspective];
+  const enemy = state.players[opponent];
+  const ownHandPressure = Math.max(0, own.hand.length - 4) * -5;
+  const enemyHandPressure = Math.max(0, enemy.hand.length - 4) * 3;
+  const ownDeckDanger = own.deck.length <= 2 ? (3 - own.deck.length) * -18 : Math.min(own.deck.length, 12) * 0.5;
+  const enemyDeckDanger = enemy.deck.length <= 2 ? (3 - enemy.deck.length) * 12 : Math.min(enemy.deck.length, 12) * -0.35;
+
+  return ownBestAttack * 0.08 - opponentBestAttack * 0.16 + ownHandPressure + enemyHandPressure + ownDeckDanger + enemyDeckDanger;
 }
 
 function listAttackDecisions(state: GameState): CpuDecision[] {
@@ -693,7 +717,11 @@ function scoreMoveDecision(state: GameState, after: GameState, fromSlotKey: Slot
   const beforePlacement = placementValue(state, state.slots[fromSlotKey], beforeMover);
   const afterMover = after.slots[moverAfterSlot].monster;
   const afterPlacement = afterMover ? placementValue(after, after.slots[moverAfterSlot], afterMover) : beforePlacement;
-  let score = 10 + (afterPlacement - beforePlacement) * 2 - repeatedMovePenalty(state, fromSlotKey, toSlotKey, beforeMover.instanceId);
+  let score =
+    10 +
+    (afterPlacement - beforePlacement) * 2 -
+    repeatedMovePenalty(state, fromSlotKey, toSlotKey, beforeMover.instanceId) -
+    turnMoveCountPenalty(state);
 
   const swappedMonster = state.slots[toSlotKey].monster;
   if (swappedMonster) {
@@ -738,6 +766,17 @@ function repeatedMovePenalty(state: GameState, fromSlotKey: SlotKey, toSlotKey: 
   }
 
   return penalty;
+}
+
+function turnMoveCountPenalty(state: GameState): number {
+  const moveCount = (state.turnMoveHistory ?? []).filter((entry) => entry.playerId === state.currentPlayer).length;
+  if (moveCount >= 2) {
+    return 260 + (moveCount - 2) * 80;
+  }
+  if (moveCount === 1) {
+    return 35;
+  }
+  return 0;
 }
 
 function moveReason(state: GameState, after: GameState, fromSlotKey: SlotKey, toSlotKey: SlotKey): string {
@@ -1145,6 +1184,11 @@ function bestAttackOpportunityScore(
   }
 
   return best;
+}
+
+function bestAttackOpportunityScoreForPlayer(state: GameState, playerId: PlayerId): number {
+  const next = { ...state, currentPlayer: playerId };
+  return bestAttackOpportunityScore(next);
 }
 
 function incomingThreat(state: GameState, targetSlotKey: SlotKey): { threatened: boolean; lethal: boolean; maxDamage: number } {

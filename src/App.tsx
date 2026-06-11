@@ -98,8 +98,11 @@ type PendingDropAction =
   | { kind: "move"; fromSlotKey: SlotKey; toSlotKey: SlotKey };
 
 type ZoneView = { playerId: PlayerId; zone: "deck" | "discard" };
+type LogFilter = "all" | "battle" | "damage" | "support" | "turn" | "cpu";
 
 const DRAG_MIME = "application/x-card-hero-drag";
+
+const LOG_FILTERS: LogFilter[] = ["all", "battle", "damage", "support", "turn", "cpu"];
 
 const MASTER_ACTIONS: Array<{ id: MasterActionId; label: string }> = [
   { id: "master_attack", label: "Master Attack" },
@@ -141,6 +144,8 @@ export function App() {
   const [autoPlayEnabled, setAutoPlayEnabled] = useState(false);
   const [autoStepDelayMs, setAutoStepDelayMs] = useState(AUTO_STEP_DELAY_DEFAULT_MS);
   const [zoneView, setZoneView] = useState<ZoneView | undefined>();
+  const [logFilter, setLogFilter] = useState<LogFilter>("all");
+  const [selectedLogIndex, setSelectedLogIndex] = useState<number | undefined>();
   const previousGameRef = useRef<GameState>(game);
   const visualEffectIdRef = useRef(0);
   const pointerDragRef = useRef<{
@@ -189,6 +194,25 @@ export function App() {
     }
     return new Set<string>();
   }, [game, pendingDropAction, selection]);
+  const visibleLogEntries = useMemo(
+    () =>
+      game.log
+        .map((entry, index) => ({ entry, index }))
+        .filter(({ entry }) => logMatchesFilter(entry, logFilter))
+        .slice(-24),
+    [game.log, logFilter],
+  );
+  const selectedLogEntry = selectedLogIndex !== undefined ? game.log[selectedLogIndex] : undefined;
+
+  useEffect(() => {
+    if (selectedLogIndex === undefined) {
+      return;
+    }
+    const entry = game.log[selectedLogIndex];
+    if (!entry || !logMatchesFilter(entry, logFilter)) {
+      setSelectedLogIndex(undefined);
+    }
+  }, [game.log, logFilter, selectedLogIndex]);
 
   useEffect(() => {
     const previous = previousGameRef.current;
@@ -908,14 +932,43 @@ export function App() {
 
         <aside className="side-panel">
           <section className="log-panel">
-            <h2>Log</h2>
+            <div className="log-heading">
+              <h2>Log</h2>
+              <span>{visibleLogEntries.length}/{game.log.length}</span>
+            </div>
+            <div className="log-filter-row" aria-label="log filters">
+              {LOG_FILTERS.map((filter) => (
+                <button
+                  type="button"
+                  key={filter}
+                  className={filter === logFilter ? "selected" : ""}
+                  onClick={() => setLogFilter(filter)}
+                >
+                  <Icon icon={logFilterIcon(filter)} /> {logFilterLabel(filter)}
+                </button>
+              ))}
+            </div>
             <ol>
-              {game.log.slice(-18).map((entry, index) => (
+              {visibleLogEntries.map(({ entry, index }) => (
                 <li className={`log-entry ${logTone(entry)}`} key={`${entry}_${index}`}>
-                  <Icon icon={logIcon(entry)} /> {entry}
+                  <button
+                    type="button"
+                    className={`log-entry-button ${selectedLogIndex === index ? "selected" : ""}`}
+                    onClick={() => setSelectedLogIndex(selectedLogIndex === index ? undefined : index)}
+                  >
+                    <Icon icon={logIcon(entry)} />
+                    <span className="log-entry-index">#{index + 1}</span>
+                    <span className="log-entry-text">{entry}</span>
+                  </button>
                 </li>
               ))}
             </ol>
+            {selectedLogEntry && (
+              <div className={`log-detail ${logTone(selectedLogEntry)}`}>
+                <strong><Icon icon={logIcon(selectedLogEntry)} /> #{selectedLogIndex! + 1} {logCategoryLabel(selectedLogEntry)}</strong>
+                <p>{selectedLogEntry}</p>
+              </div>
+            )}
           </section>
 
           {game.winner ? (
@@ -1989,6 +2042,91 @@ function logTone(entry: string): string {
     return "log-turn";
   }
   return "log-normal";
+}
+
+function logMatchesFilter(entry: string, filter: LogFilter): boolean {
+  if (filter === "all") {
+    return true;
+  }
+  if (filter === "cpu") {
+    return entry.includes("判断:");
+  }
+  if (filter === "battle") {
+    return entry.includes("攻撃") || entry.includes("アタック") || entry.includes("倒れ") || entry.includes("撃破");
+  }
+  if (filter === "damage") {
+    return entry.includes("ダメージ") || entry.includes("HPが") || entry.includes("山札切れ");
+  }
+  if (filter === "support") {
+    return (
+      entry.includes("使った") ||
+      entry.includes("シールド") ||
+      entry.includes("ウェイクアップ") ||
+      entry.includes("回復") ||
+      entry.includes("コピー") ||
+      entry.includes("入れ替え") ||
+      entry.includes("ローテーション") ||
+      entry.includes("リフレッシュ")
+    );
+  }
+  return entry.includes("ターン") || entry.includes("引いた") || entry.includes("ストーン") || entry.includes("召喚");
+}
+
+function logFilterLabel(filter: LogFilter): string {
+  if (filter === "all") {
+    return "All";
+  }
+  if (filter === "battle") {
+    return "Battle";
+  }
+  if (filter === "damage") {
+    return "Damage";
+  }
+  if (filter === "support") {
+    return "Support";
+  }
+  if (filter === "turn") {
+    return "Turn";
+  }
+  return "CPU";
+}
+
+function logFilterIcon(filter: LogFilter): string {
+  if (filter === "battle") {
+    return "⚔️";
+  }
+  if (filter === "damage") {
+    return "💥";
+  }
+  if (filter === "support") {
+    return "🛡️";
+  }
+  if (filter === "turn") {
+    return "⏭️";
+  }
+  if (filter === "cpu") {
+    return "🧠";
+  }
+  return "•";
+}
+
+function logCategoryLabel(entry: string): string {
+  if (entry.includes("判断:")) {
+    return "CPU判断";
+  }
+  if (logMatchesFilter(entry, "damage")) {
+    return "ダメージ/HP";
+  }
+  if (logMatchesFilter(entry, "battle")) {
+    return "戦闘";
+  }
+  if (logMatchesFilter(entry, "support")) {
+    return "支援/特殊効果";
+  }
+  if (logMatchesFilter(entry, "turn")) {
+    return "ターン進行";
+  }
+  return "その他";
 }
 
 interface HandCardContentProps {

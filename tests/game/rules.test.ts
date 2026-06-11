@@ -1297,6 +1297,127 @@ describe("battle prototype rules", () => {
     expect(next.players.player.discard.map((card) => card.instanceId)).toEqual(["discard"]);
     expect(next.log.at(-1)).toContain("手札から捨てた");
   });
+
+  it("copies a selected enemy with illusion mirror while keeping current HP", () => {
+    let game = createGameWithPlayerHand([{ cardId: "card_148", instanceId: "mirror" }]);
+    game.players.player.stones = magicCost("card_148");
+    game.slots.player_front_left.monster = createActiveMonster("takokke", "player", { hp: 2 });
+    game.slots.cpu_front_left.monster = createActiveMonster("morgan", "cpu", {
+      hp: 4,
+      level: 2,
+      investedStones: 2,
+      revivedOnce: true,
+      usedCommandIds: ["arc_drive"],
+    });
+
+    game = playMagic(game, {
+      handInstanceId: "mirror",
+      target: { kind: "monster", slotKey: "player_front_left" },
+      secondaryTarget: { kind: "monster", slotKey: "cpu_front_left" },
+    });
+
+    const copied = game.slots.player_front_left.monster;
+    expect(copied?.cardId).toBe("morgan");
+    expect(copied?.level).toBe(2);
+    expect(copied?.hp).toBe(2);
+    expect(copied?.revivedOnce).toBe(true);
+    expect(copied?.usedCommandIds).toEqual(["arc_drive"]);
+  });
+
+  it("returns a prepared monster to the bottom of the owner's deck with invested stones", () => {
+    let game = createGameWithPlayerHand([{ cardId: "card_122", instanceId: "return" }]);
+    game.players.player.stones = magicCost("card_122");
+    game.players.player.deck = [];
+    game.slots.player_back_left.monster = createActiveMonster("takokke", "player", {
+      status: "prepared",
+      investedStones: 2,
+    });
+
+    game = playMagic(game, {
+      handInstanceId: "return",
+      target: { kind: "monster", slotKey: "player_back_left" },
+    });
+
+    expect(game.slots.player_back_left.monster).toBeUndefined();
+    expect(game.players.player.stones).toBe(2);
+    expect(game.players.player.deck.at(-1)).toEqual({
+      cardId: "takokke",
+      instanceId: "player_takokke_fixture",
+    });
+  });
+
+  it("uses glass shield as a one-hit half shield and clears it after damage", () => {
+    let game = createGameWithPlayerHand([{ cardId: "card_055", instanceId: "glass" }]);
+    game.players.player.stones = magicCost("card_055");
+    game.slots.player_front_left.monster = createActiveMonster("takokke", "player");
+    game.slots.cpu_front_left.monster = createActiveMonster("takokke", "cpu");
+
+    game = playMagic(game, {
+      handInstanceId: "glass",
+      target: { kind: "monster", slotKey: "player_front_left" },
+    });
+
+    expect(game.slots.player_front_left.monster?.halfShielded).toBe(true);
+    expect(game.slots.player_front_left.monster?.oneShotShield).toBe(true);
+
+    game.currentPlayer = "cpu";
+    game = attackWithCommand(game, {
+      attackerSlotKey: "cpu_front_left",
+      commandId: "attack",
+      target: { kind: "monster", slotKey: "player_front_left" },
+    });
+
+    expect(game.slots.player_front_left.monster?.hp).toBe(getMonsterDef("takokke").levels[0].maxHp - 1);
+    expect(game.slots.player_front_left.monster?.halfShielded).toBe(false);
+    expect(game.slots.player_front_left.monster?.oneShotShield).toBe(false);
+  });
+
+  it("rotates each player's monsters in their own four slots", () => {
+    let game = createGameWithPlayerHand([{ cardId: "card_093", instanceId: "rotation" }]);
+    game.players.player.stones = magicCost("card_093");
+    game.slots.player_front_left.monster = createActiveMonster("takokke", "player");
+    game.slots.player_front_right.monster = createActiveMonster("sigma", "player");
+    game.slots.player_back_left.monster = createActiveMonster("yanbaru", "player");
+    game.slots.player_back_right.monster = createActiveMonster("morgan", "player");
+    game.slots.cpu_front_left.monster = createActiveMonster("card_001", "cpu");
+    game.slots.cpu_front_right.monster = createActiveMonster("card_002", "cpu");
+    game.slots.cpu_back_left.monster = createActiveMonster("card_003", "cpu");
+    game.slots.cpu_back_right.monster = createActiveMonster("card_007", "cpu");
+
+    game = playMagic(game, {
+      handInstanceId: "rotation",
+      target: { kind: "master", playerId: "player" },
+    });
+
+    expect(game.slots.player_front_left.monster?.cardId).toBe("morgan");
+    expect(game.slots.player_front_right.monster?.cardId).toBe("takokke");
+    expect(game.slots.player_back_left.monster?.cardId).toBe("sigma");
+    expect(game.slots.player_back_right.monster?.cardId).toBe("yanbaru");
+    expect(game.slots.cpu_front_left.monster?.cardId).toBe("card_007");
+    expect(game.slots.cpu_front_right.monster?.cardId).toBe("card_001");
+    expect(game.slots.cpu_back_left.monster?.cardId).toBe("card_002");
+    expect(game.slots.cpu_back_right.monster?.cardId).toBe("card_003");
+  });
+
+  it("warps the selected same-side secondary target instead of a fallback monster", () => {
+    let game = createInitialGame(240);
+    game.players.player.stones = 3;
+    game.slots.player_back_left.monster = createActiveMonster("card_085", "player");
+    game.slots.player_front_right.monster = createActiveMonster("takokke", "player");
+    game.slots.player_back_right.monster = createActiveMonster("sigma", "player");
+    game.slots.cpu_front_left.monster = createActiveMonster("yanbaru", "cpu");
+
+    game = attackWithCommand(game, {
+      attackerSlotKey: "player_back_left",
+      commandId: "ワープ",
+      target: { kind: "monster", slotKey: "player_front_right" },
+      secondaryTarget: { kind: "monster", slotKey: "player_back_right" },
+    });
+
+    expect(game.slots.player_front_right.monster?.cardId).toBe("sigma");
+    expect(game.slots.player_back_right.monster?.cardId).toBe("takokke");
+    expect(game.slots.cpu_front_left.monster?.cardId).toBe("yanbaru");
+  });
 });
 
 function createGameWithPlayerHand(hand: CardInstance[]): GameState {
@@ -1304,6 +1425,14 @@ function createGameWithPlayerHand(hand: CardInstance[]): GameState {
   game.players.player.hand = hand;
   game.players.player.discard = [];
   return game;
+}
+
+function magicCost(cardId: string): number {
+  const def = getCardDef(cardId);
+  if (def.type !== "magic") {
+    throw new Error(`${cardId} is not a magic card`);
+  }
+  return def.cost;
 }
 
 function createActiveMonster(

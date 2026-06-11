@@ -396,6 +396,30 @@ describe("cpu ai", () => {
     ).toBe(false);
   });
 
+  it("does not choose a third same-turn move for placement-only improvement", () => {
+    const game = createCpuGame([]);
+    game.players.cpu.stones = 0;
+    game.slots.cpu_front_left.monster = createActiveMonster("yanbaru", "cpu");
+    game.turnMoveHistory = [
+      {
+        playerId: "cpu",
+        fromSlotKey: "cpu_front_left",
+        toSlotKey: "cpu_back_left",
+        moverInstanceId: "cpu_yanbaru_cpu_ai_fixture",
+      },
+      {
+        playerId: "cpu",
+        fromSlotKey: "cpu_back_left",
+        toSlotKey: "cpu_front_left",
+        moverInstanceId: "cpu_yanbaru_cpu_ai_fixture",
+      },
+    ];
+
+    const decision = chooseCpuDecision(game);
+
+    expect(decision.type).not.toBe("move");
+  });
+
   it("runs deterministic CPU turns across seeds without getting stuck", () => {
     for (let seed = 300; seed < 330; seed += 1) {
       let game = endTurn(createInitialGame(seed));
