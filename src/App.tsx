@@ -27,7 +27,7 @@ import {
   useMasterAction,
   useMasterHpDraw,
 } from "./game/rules";
-import type { CommandDef, GameState, MagicTargetKind, MasterActionId, PlayerId, SlotKey, Target } from "./game/types";
+import type { CommandDef, GameState, MagicTargetKind, MasterActionId, PlayerId, RangeTag, SlotKey, Target } from "./game/types";
 
 type BoardCell =
   | { kind: "slot"; slotKey: SlotKey }
@@ -229,6 +229,7 @@ export function App() {
       return;
     }
     if (game.currentPlayer !== "player" || game.winner || game.pendingLevelUp) {
+      selectSlotForInfo(slotKey);
       return;
     }
 
@@ -285,14 +286,13 @@ export function App() {
       return;
     }
 
-    if (slot.monster?.owner === game.currentPlayer && slot.monster.status === "active") {
-      setPendingDropAction(undefined);
-      setSelection({ kind: "monster", slotKey });
-      setError("");
-      return;
-    }
+    selectSlotForInfo(slotKey);
+  }
 
-    setSelection(undefined);
+  function selectSlotForInfo(slotKey: SlotKey) {
+    setPendingDropAction(undefined);
+    setSelection(game.slots[slotKey].monster ? { kind: "monster", slotKey } : undefined);
+    setError("");
   }
 
   function handleMasterClick(playerId: "player" | "cpu") {
@@ -1119,38 +1119,168 @@ interface MonsterCommandsProps {
 }
 
 function MonsterCommands({ game, slotKey, onCommand, onFocus, onMove }: MonsterCommandsProps) {
+  const slot = game.slots[slotKey];
   const monster = game.slots[slotKey].monster;
   if (!monster) {
     return null;
   }
+  const hidePreparedInfo = monster.status === "prepared" && monster.owner !== "player";
   const moveTargets = getMovableTargets(game, slotKey);
+  const moveDisabledReason = getMoveDisabledReason(game, slotKey, moveTargets);
+  const focusDisabledReason = getFocusDisabledReason(game, slotKey);
 
   return (
     <div className="selected-detail">
-      <h3><CardIcon cardId={monster.cardId} /> {getCardName(monster.cardId)} Lv{monster.level}</h3>
-      <div className="button-stack">
-        {getMonsterCommands(monster).map((command) => {
-          const targets = getCommandTargets(game, slotKey, command.id);
-          return (
-            <button
-              key={command.id}
-              type="button"
-              onClick={() => onCommand(command.id, targets)}
-              disabled={targets.length === 0}
-            >
-              <Icon icon={commandIcon(command)} /> {command.name} {command.power}P
-            </button>
-          );
-        })}
-        <button type="button" onClick={() => onMove(moveTargets)} disabled={moveTargets.length === 0}>
-          <Icon icon="🧭" /> Move / Swap
-        </button>
-        <button type="button" onClick={onFocus} disabled={!canFocusMonster(game, slotKey)}>
-          <Icon icon="💪" /> ためる
-        </button>
+      <h3>
+        {hidePreparedInfo ? <Icon icon="🂠" /> : <CardIcon cardId={monster.cardId} />}
+        {hidePreparedInfo ? "準備中カード" : `${getCardName(monster.cardId)} Lv${monster.level}`}
+      </h3>
+      <div className="card-meta-row">
+        <span>{playerLabel(slot.owner)}</span>
+        <span>{slotLabel(slotKey)}</span>
+        <span><Icon icon={monster.status === "prepared" ? "🕒" : "⚡"} /> {monster.status === "prepared" ? "準備中" : `${monster.actionCount}/${monster.actionLimit}行動`}</span>
+        {!hidePreparedInfo && <span><Icon icon="❤️" /> HP {monster.hp}</span>}
+        {!hidePreparedInfo && <span><Icon icon="🪨" /> 投資 {monster.investedStones}</span>}
       </div>
+      {hidePreparedInfo ? (
+        <p className="hint"><Icon icon="🔒" /> CPUの準備中カードの情報は非公開です。</p>
+      ) : (
+        <div className="board-card-detail">
+          <CardDetail cardId={monster.cardId} showTitle={false} />
+        </div>
+      )}
+      {!hidePreparedInfo && (
+        <div className="button-stack">
+          {getMonsterCommands(monster).map((command) => {
+            const targets = getCommandTargets(game, slotKey, command.id);
+            const disabledReason = getCommandDisabledReason(game, slotKey, command, targets);
+            return (
+              <button
+                className="command-button"
+                key={command.id}
+                type="button"
+                onClick={() => onCommand(command.id, targets)}
+                disabled={!!disabledReason}
+                title={disabledReason ?? `${targets.length}対象`}
+              >
+                <span className="command-button-main">
+                  <Icon icon={commandIcon(command)} />
+                  <strong>{command.name} {command.power}P</strong>
+                </span>
+                <span className="command-button-meta">{commandActionSummary(command)}</span>
+                <span className={disabledReason ? "command-button-reason" : "command-button-ready"}>
+                  {disabledReason ?? `対象 ${targets.length}`}
+                </span>
+              </button>
+            );
+          })}
+          <button
+            className="command-button"
+            type="button"
+            onClick={() => onMove(moveTargets)}
+            disabled={!!moveDisabledReason}
+            title={moveDisabledReason ?? `${moveTargets.length}マス`}
+          >
+            <span className="command-button-main"><Icon icon="🧭" /><strong>Move / Swap</strong></span>
+            <span className="command-button-meta">自陣内 / 空きマスまたは味方と入れ替え</span>
+            <span className={moveDisabledReason ? "command-button-reason" : "command-button-ready"}>
+              {moveDisabledReason ?? `候補 ${moveTargets.length}`}
+            </span>
+          </button>
+          <button
+            className="command-button"
+            type="button"
+            onClick={onFocus}
+            disabled={!!focusDisabledReason}
+            title={focusDisabledReason ?? "次の上の技+1P / 被ダメージ-1"}
+          >
+            <span className="command-button-main"><Icon icon="💪" /><strong>ためる</strong></span>
+            <span className="command-button-meta">上の技+1P / 被ダメージ-1 / 行動後に解除</span>
+            <span className={focusDisabledReason ? "command-button-reason" : "command-button-ready"}>
+              {focusDisabledReason ?? "使用可"}
+            </span>
+          </button>
+        </div>
+      )}
     </div>
   );
+}
+
+function getCommandDisabledReason(game: GameState, slotKey: SlotKey, command: CommandDef, targets: Target[]): string | undefined {
+  const actionReason = getMonsterActionDisabledReason(game, slotKey);
+  if (actionReason) {
+    return actionReason;
+  }
+
+  const player = game.players[game.currentPlayer];
+  const cost = command.stoneCost ?? 0;
+  if (cost > player.stones) {
+    return `Stone不足: 必要${cost} / 所持${player.stones}`;
+  }
+  if (!isImplementedCommandRange(command.range) || command.implemented === false) {
+    return "未実装の射程または効果";
+  }
+  if (targets.length === 0) {
+    return "射程内に対象なし";
+  }
+  return undefined;
+}
+
+function getMoveDisabledReason(game: GameState, slotKey: SlotKey, targets: SlotKey[]): string | undefined {
+  const actionReason = getMonsterActionDisabledReason(game, slotKey);
+  if (actionReason) {
+    return actionReason;
+  }
+  if (targets.length === 0) {
+    return "移動・入れ替え先なし";
+  }
+  return undefined;
+}
+
+function getFocusDisabledReason(game: GameState, slotKey: SlotKey): string | undefined {
+  const actionReason = getMonsterActionDisabledReason(game, slotKey);
+  if (actionReason) {
+    return actionReason;
+  }
+  const monster = game.slots[slotKey].monster;
+  if (monster?.focused) {
+    return "すでに気合い中";
+  }
+  if (!canFocusMonster(game, slotKey)) {
+    return "ためられない状態";
+  }
+  return undefined;
+}
+
+function getMonsterActionDisabledReason(game: GameState, slotKey: SlotKey): string | undefined {
+  if (game.winner) {
+    return "勝敗決定済み";
+  }
+  if (game.pendingLevelUp) {
+    return "レベルアップ選択中";
+  }
+  if (game.currentPlayer !== "player") {
+    return "CPUターン中";
+  }
+
+  const monster = game.slots[slotKey].monster;
+  if (!monster) {
+    return "カードがありません";
+  }
+  if (monster.owner !== game.currentPlayer) {
+    return "相手のカードです";
+  }
+  if (monster.status !== "active") {
+    return "準備中のため行動不可";
+  }
+  if (monster.actionCount >= monster.actionLimit) {
+    return "このターンは行動済み";
+  }
+  return undefined;
+}
+
+function isImplementedCommandRange(range: RangeTag): boolean {
+  return range === "adjacent" || range === "one_skip" || range === "any_monster" || range === "any_target" || range === "master";
 }
 
 function pendingDropActionTargetKey(action: PendingDropAction): string {
@@ -1429,14 +1559,15 @@ function HandCardContent({ cardId }: HandCardContentProps) {
 
 interface CardDetailProps {
   cardId: string;
+  showTitle?: boolean;
 }
 
-function CardDetail({ cardId }: CardDetailProps) {
+function CardDetail({ cardId, showTitle = true }: CardDetailProps) {
   const def = getCardDef(cardId);
   if (def.type === "magic") {
     return (
       <>
-        <h3><CardIcon cardId={def.id} /> {def.name}</h3>
+        {showTitle && <h3><CardIcon cardId={def.id} /> {def.name}</h3>}
         <div className="card-meta-row">
           <span className="card-chip magic">✨ 魔法</span>
           <span><Icon icon="🪨" /> Cost {def.cost}</span>
@@ -1449,7 +1580,7 @@ function CardDetail({ cardId }: CardDetailProps) {
 
   return (
     <>
-      <h3><CardIcon cardId={def.id} /> {def.name}</h3>
+      {showTitle && <h3><CardIcon cardId={def.id} /> {def.name}</h3>}
       <div className="card-meta-row">
         <span className="card-chip"><Icon icon={roleIcon(def.role)} /> {def.role === "front" ? "前衛" : "後衛"}</span>
         <span><Icon icon="🪨" /> 召喚 1</span>
@@ -1478,6 +1609,16 @@ function commandSummary(command: CommandDef): string {
     rangeLabel(command.range, command.rangeText),
     command.stoneCost ? `Stone ${command.stoneCost}` : "",
     command.effectText ? `効果 ${command.effectText}` : "",
+    command.recoilDamage ? `反動 ${command.recoilDamage}` : "",
+    command.implemented === false ? "未実装" : "",
+  ].filter(Boolean).join(" / ");
+}
+
+function commandActionSummary(command: CommandDef): string {
+  return [
+    rangeLabel(command.range, command.rangeText),
+    command.stoneCost ? `Stone ${command.stoneCost}` : "Stone 0",
+    command.effectText ? command.effectText : "",
     command.recoilDamage ? `反動 ${command.recoilDamage}` : "",
     command.implemented === false ? "未実装" : "",
   ].filter(Boolean).join(" / ");

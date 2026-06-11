@@ -502,10 +502,54 @@ button:disabled {
   flex-wrap: wrap;
 }
 
+.command-button {
+  align-items: flex-start;
+  display: grid;
+  gap: 4px;
+  justify-items: start;
+  padding: 8px 10px;
+  text-align: left;
+}
+
+.command-button-main {
+  align-items: center;
+  display: inline-flex;
+  font-size: 14px;
+  gap: 2px;
+  line-height: 1.2;
+}
+
+.command-button-meta,
+.command-button-reason,
+.command-button-ready {
+  font-size: 12px;
+  line-height: 1.35;
+}
+
+.command-button-meta {
+  color: #4b5652;
+}
+
+.command-button-reason {
+  color: #9b2c2c;
+  font-weight: 700;
+}
+
+.command-button-ready {
+  color: #2f6845;
+  font-weight: 700;
+}
+
 .selected-detail {
   border-top: 1px solid #d8ded2;
   margin-top: 12px;
   padding-top: 12px;
+}
+
+.board-card-detail {
+  border-top: 1px solid #d8ded2;
+  margin-top: 10px;
+  padding-top: 10px;
 }
 
 .pending-action {
