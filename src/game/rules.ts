@@ -497,6 +497,9 @@ export function getCommandTargets(
   if (command.range === "master") {
     return [{ kind: "master", playerId: opponent }];
   }
+  if (command.range !== "adjacent" && command.range !== "one_skip") {
+    return [];
+  }
 
   return activeMonsterTargets.filter((target) => {
     if (target.kind !== "monster") {

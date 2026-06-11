@@ -6,7 +6,18 @@ export type SlotKey = `${PlayerId}_${Row}_${Lane}`;
 export type CardType = "monster" | "magic";
 export type MonsterRole = "front" | "back";
 export type MonsterStatus = "prepared" | "active";
-export type RangeTag = "adjacent" | "one_skip" | "any_monster" | "any_target" | "master";
+export type RangeTag =
+  | "adjacent"
+  | "one_skip"
+  | "any_monster"
+  | "any_target"
+  | "master"
+  | "two_skip"
+  | "straight"
+  | "piercing"
+  | "decreasing_straight"
+  | "line"
+  | "unimplemented";
 export type MagicTargetKind = "ally_monster" | "enemy_monster" | "enemy_master";
 
 export interface CardInstance {
@@ -19,8 +30,11 @@ export interface CommandDef {
   name: string;
   power: number;
   range: RangeTag;
+  rangeText?: string;
   stoneCost?: number;
   recoilDamage?: number;
+  effectText?: string;
+  implemented?: boolean;
 }
 
 export interface MonsterLevelDef {
@@ -36,6 +50,12 @@ export interface MonsterCardDef {
   role: MonsterRole;
   maxLevel: number;
   actionLimit?: number;
+  sourceNo?: number;
+  sourceUrl?: string;
+  icon?: string;
+  rarity?: number;
+  catchcopy?: string;
+  notes?: string[];
   levels: MonsterLevelDef[];
 }
 
@@ -46,6 +66,15 @@ export interface MagicCardDef {
   cost: number;
   description: string;
   targetKinds: MagicTargetKind[];
+  sourceNo?: number;
+  sourceUrl?: string;
+  icon?: string;
+  rarity?: number;
+  catchcopy?: string;
+  category?: string;
+  continuance?: string;
+  implemented?: boolean;
+  notes?: string[];
 }
 
 export type CardDef = MonsterCardDef | MagicCardDef;

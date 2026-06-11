@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import type { DragEvent, PointerEvent as ReactPointerEvent } from "react";
-import { getCardDef, getCardName } from "./game/cards";
+import { getCardDef, getCardIconPath, getCardName } from "./game/cards";
 import {
   attackWithCommand,
   canFocusMonster,
@@ -895,7 +895,7 @@ function BoardSlot({
         </span>
       ) : monster ? (
         <span className="monster-card">
-          <strong><Icon icon={cardIcon(monster.cardId)} /> {getCardName(monster.cardId)}</strong>
+          <strong><CardIcon cardId={monster.cardId} /> {getCardName(monster.cardId)}</strong>
           <span><Icon icon="✨" /> Lv{monster.level} / <Icon icon="❤️" /> HP {monster.hp}</span>
           <span>
             <Icon icon={monster.status === "prepared" ? "🕒" : "⚡"} />
@@ -933,7 +933,7 @@ function MonsterCommands({ game, slotKey, onCommand, onFocus, onMove }: MonsterC
 
   return (
     <div className="selected-detail">
-      <h3><Icon icon={cardIcon(monster.cardId)} /> {getCardName(monster.cardId)} Lv{monster.level}</h3>
+      <h3><CardIcon cardId={monster.cardId} /> {getCardName(monster.cardId)} Lv{monster.level}</h3>
       <div className="button-stack">
         {getMonsterCommands(monster).map((command) => {
           const targets = getCommandTargets(game, slotKey, command.id);
@@ -1151,7 +1151,7 @@ function HandCardContent({ cardId }: HandCardContentProps) {
     return (
       <>
         <span className="hand-card-title">
-          <strong><Icon icon={cardIcon(def.id)} /> {def.name}</strong>
+          <strong><CardIcon cardId={def.id} /> {def.name}</strong>
           <span className="card-chip magic">魔法</span>
         </span>
         <span className="hand-card-meta"><Icon icon="🪨" /> Cost {def.cost} / {targetKindsLabel(def.targetKinds)}</span>
@@ -1166,7 +1166,7 @@ function HandCardContent({ cardId }: HandCardContentProps) {
   return (
     <>
       <span className="hand-card-title">
-        <strong><Icon icon={cardIcon(def.id)} /> {def.name}</strong>
+        <strong><CardIcon cardId={def.id} /> {def.name}</strong>
         <span className="card-chip"><Icon icon={roleIcon(def.role)} /> {def.role === "front" ? "前衛" : "後衛"}</span>
       </span>
       <span className="hand-card-meta"><Icon icon="🪨" /> 召喚 1 / <Icon icon="✨" /> MaxLv {def.maxLevel}</span>
@@ -1185,7 +1185,7 @@ function CardDetail({ cardId }: CardDetailProps) {
   if (def.type === "magic") {
     return (
       <>
-        <h3><Icon icon={cardIcon(def.id)} /> {def.name}</h3>
+        <h3><CardIcon cardId={def.id} /> {def.name}</h3>
         <div className="card-meta-row">
           <span className="card-chip magic">✨ 魔法</span>
           <span><Icon icon="🪨" /> Cost {def.cost}</span>
@@ -1198,7 +1198,7 @@ function CardDetail({ cardId }: CardDetailProps) {
 
   return (
     <>
-      <h3><Icon icon={cardIcon(def.id)} /> {def.name}</h3>
+      <h3><CardIcon cardId={def.id} /> {def.name}</h3>
       <div className="card-meta-row">
         <span className="card-chip"><Icon icon={roleIcon(def.role)} /> {def.role === "front" ? "前衛" : "後衛"}</span>
         <span><Icon icon="🪨" /> 召喚 1</span>
@@ -1224,13 +1224,15 @@ function CardDetail({ cardId }: CardDetailProps) {
 function commandSummary(command: CommandDef): string {
   return [
     `${commandIcon(command)} ${command.name} ${command.power}P`,
-    rangeLabel(command.range),
+    rangeLabel(command.range, command.rangeText),
     command.stoneCost ? `Stone ${command.stoneCost}` : "",
+    command.effectText ? `効果 ${command.effectText}` : "",
     command.recoilDamage ? `反動 ${command.recoilDamage}` : "",
+    command.implemented === false ? "未実装" : "",
   ].filter(Boolean).join(" / ");
 }
 
-function rangeLabel(range: string): string {
+function rangeLabel(range: string, rawRange?: string): string {
   if (range === "adjacent") {
     return "↔️ 隣接";
   }
@@ -1242,6 +1244,24 @@ function rangeLabel(range: string): string {
   }
   if (range === "any_target") {
     return "✦ 任意対象";
+  }
+  if (range === "two_skip") {
+    return "🎯 射程3";
+  }
+  if (range === "straight") {
+    return `↕️ ${rawRange ?? "まっすぐ"}`;
+  }
+  if (range === "piercing") {
+    return `⇈ ${rawRange ?? "貫通"}`;
+  }
+  if (range === "decreasing_straight") {
+    return `↘️ ${rawRange ?? "減るまっすぐ"}`;
+  }
+  if (range === "line") {
+    return `↔️ ${rawRange ?? "一直線"}`;
+  }
+  if (range === "unimplemented") {
+    return rawRange ? `未対応: ${rawRange}` : "未対応";
   }
   return "👑 マスター";
 }
@@ -1274,6 +1294,18 @@ interface IconProps {
 
 function Icon({ icon }: IconProps) {
   return <span className="ui-icon" aria-hidden="true">{icon}</span>;
+}
+
+interface CardIconProps {
+  cardId: string;
+}
+
+function CardIcon({ cardId }: CardIconProps) {
+  const iconPath = getCardIconPath(cardId);
+  if (iconPath) {
+    return <img className="card-image-icon" src={iconPath} alt="" aria-hidden="true" />;
+  }
+  return <Icon icon={cardIcon(cardId)} />;
 }
 
 function cardIcon(cardId: string): string {

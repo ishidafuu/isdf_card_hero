@@ -35,6 +35,17 @@ button {
   vertical-align: -0.08em;
 }
 
+.card-image-icon {
+  border-radius: 3px;
+  display: inline-block;
+  flex: 0 0 auto;
+  height: 24px;
+  margin-right: 5px;
+  object-fit: cover;
+  vertical-align: -0.32em;
+  width: 24px;
+}
+
 button:hover:not(:disabled) {
   border-color: #397367;
 }

@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { buildDeck, getMonsterDef, validateFixedDeck } from "../../src/game/cards";
+import { buildDeck, getAllCardDefs, getCardIconPath, getMonsterDef, validateFixedDeck } from "../../src/game/cards";
 import {
   attackWithCommand,
   canFocusMonster,
@@ -28,6 +28,17 @@ describe("battle prototype rules", () => {
 
     expect(deck).toHaveLength(30);
     expect([...counts.values()].every((count) => count <= 3)).toBe(true);
+  });
+
+  it("imports the non-super original card pool with temporary icons", () => {
+    const cards = getAllCardDefs();
+
+    expect(cards).toHaveLength(126);
+    expect(cards.filter((card) => card.type === "monster" && card.role === "front")).toHaveLength(46);
+    expect(cards.filter((card) => card.type === "monster" && card.role === "back")).toHaveLength(26);
+    expect(cards.filter((card) => card.type === "magic")).toHaveLength(54);
+    expect(cards.every((card) => card.icon?.startsWith("/card-icons/co"))).toBe(true);
+    expect(getCardIconPath("takokke")).toBe("/card-icons/co004.jpg");
   });
 
   it("skips only the first player's opening draw", () => {
