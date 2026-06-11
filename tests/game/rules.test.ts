@@ -149,6 +149,53 @@ describe("battle prototype rules", () => {
     expect(next.players.cpu.stones).toBe(1);
   });
 
+  it("lets adjacent monster attacks target the opponent master when in range", () => {
+    const game = createInitialGame(121);
+    game.slots.player_front_left.monster = createActiveMonster("takokke", "player");
+
+    expect(getCommandTargets(game, "player_front_left", "attack")).toContainEqual({
+      kind: "master",
+      playerId: "cpu",
+    });
+
+    const next = attackWithCommand(game, {
+      attackerSlotKey: "player_front_left",
+      commandId: "attack",
+      target: { kind: "master", playerId: "cpu" },
+    });
+
+    expect(next.players.cpu.masterHp).toBe(10);
+    expect(next.players.cpu.stones).toBe(0);
+  });
+
+  it("lets stronger adjacent monster attacks pierce the opponent master shield", () => {
+    const game = createInitialGame(122);
+    game.slots.player_front_right.monster = createActiveMonster("takokke", "player", {
+      hp: 4,
+      level: 2,
+    });
+
+    const next = attackWithCommand(game, {
+      attackerSlotKey: "player_front_right",
+      commandId: "attack",
+      target: { kind: "master", playerId: "cpu" },
+    });
+
+    expect(next.players.cpu.masterHp).toBe(9);
+    expect(next.players.cpu.stones).toBe(1);
+  });
+
+  it("lets CPU adjacent monster attacks target the player master when in range", () => {
+    const game = createInitialGame(123);
+    game.currentPlayer = "cpu";
+    game.slots.cpu_front_left.monster = createActiveMonster("takokke", "cpu");
+
+    expect(getCommandTargets(game, "cpu_front_left", "attack")).toContainEqual({
+      kind: "master",
+      playerId: "player",
+    });
+  });
+
   it("creates a player choice when a monster can level up after defeating a monster", () => {
     const game = createInitialGame(105);
     game.players.player.stones = 1;
@@ -368,6 +415,25 @@ describe("battle prototype rules", () => {
     });
 
     expect(next.slots.cpu_front_right.monster?.hp).toBe(3);
+  });
+
+  it("lets range-2 attacks target the opponent master coordinate", () => {
+    const game = createInitialGame(124);
+    game.slots.player_back_left.monster = createActiveMonster("yanbaru", "player");
+
+    expect(getCommandTargets(game, "player_back_left", "wild_claw")).toContainEqual({
+      kind: "master",
+      playerId: "cpu",
+    });
+
+    const next = attackWithCommand(game, {
+      attackerSlotKey: "player_back_left",
+      commandId: "wild_claw",
+      target: { kind: "master", playerId: "cpu" },
+    });
+
+    expect(next.players.cpu.masterHp).toBe(10);
+    expect(next.players.cpu.stones).toBe(0);
   });
 
   it("lets range-2 attacks reach from the right front to the opposite left front", () => {

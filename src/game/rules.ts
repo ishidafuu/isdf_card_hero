@@ -501,7 +501,7 @@ export function getCommandTargets(
     return [];
   }
 
-  return activeMonsterTargets.filter((target) => {
+  const targets = activeMonsterTargets.filter((target) => {
     if (target.kind !== "monster") {
       return false;
     }
@@ -511,6 +511,12 @@ export function getCommandTargets(
     }
     return isOneSkipTarget(slot, targetSlot);
   });
+
+  if (isOpponentMasterInCommandRange(slot, opponent, command.range)) {
+    targets.push({ kind: "master", playerId: opponent });
+  }
+
+  return targets;
 }
 
 export function getMasterActionTargets(state: GameState, actionId: MasterActionId): Target[] {
@@ -970,19 +976,24 @@ function getMonsterMaxHp(monster: MonsterState): number {
   return getMonsterLevelDef(monster).maxHp;
 }
 
+interface BoardCoord {
+  x: number;
+  y: number;
+}
+
 function distanceBetweenSlots(a: SlotState, b: SlotState): number {
   const ca = slotCoord(a);
   const cb = slotCoord(b);
-  return Math.abs(ca.x - cb.x) + Math.abs(ca.y - cb.y);
+  return manhattanDistance(ca, cb);
 }
 
 function rangedDistanceBetweenSlots(a: SlotState, b: SlotState): number {
   const ca = slotCoord(a);
   const cb = slotCoord(b);
-  return Math.max(Math.abs(ca.x - cb.x), Math.abs(ca.y - cb.y));
+  return rangedDistance(ca, cb);
 }
 
-function slotCoord(slot: SlotState): { x: number; y: number } {
+function slotCoord(slot: SlotState): BoardCoord {
   const x = slot.lane === "left" ? 0 : 2;
   if (slot.owner === "cpu") {
     return { x, y: slot.row === "back" ? 0 : 1 };
@@ -990,8 +1001,31 @@ function slotCoord(slot: SlotState): { x: number; y: number } {
   return { x, y: slot.row === "front" ? 2 : 3 };
 }
 
+function masterCoord(playerId: PlayerId): BoardCoord {
+  return { x: 1, y: playerId === "cpu" ? 1 : 2 };
+}
+
+function manhattanDistance(a: BoardCoord, b: BoardCoord): number {
+  return Math.abs(a.x - b.x) + Math.abs(a.y - b.y);
+}
+
+function rangedDistance(a: BoardCoord, b: BoardCoord): number {
+  return Math.max(Math.abs(a.x - b.x), Math.abs(a.y - b.y));
+}
+
 function isOneSkipTarget(attackerSlot: SlotState, targetSlot: SlotState): boolean {
   return rangedDistanceBetweenSlots(attackerSlot, targetSlot) === 2;
+}
+
+function isOpponentMasterInCommandRange(attackerSlot: SlotState, opponent: PlayerId, range: CommandDef["range"]): boolean {
+  const distance = rangedDistance(slotCoord(attackerSlot), masterCoord(opponent));
+  if (range === "adjacent") {
+    return distance === 1;
+  }
+  if (range === "one_skip") {
+    return distance === 2;
+  }
+  return false;
 }
 
 function ensureActionAllowed(state: GameState): void {
