@@ -341,6 +341,74 @@ describe("cpu ai", () => {
     }
   });
 
+  it("shields a monster that can convert survival into a next-turn level-up", () => {
+    const game = createCpuGame([]);
+    game.players.cpu.stones = 2;
+    game.slots.cpu_back_left.monster = createActiveMonster("morgan", "cpu", {
+      actionCount: 1,
+      hp: 2,
+    });
+    game.slots.player_back_left.monster = createActiveMonster("takokke", "player", {
+      level: 2,
+      hp: 2,
+      investedStones: 2,
+    });
+
+    const decision = chooseCpuDecision(game);
+
+    expect(decision.type).toBe("master_action");
+    if (decision.type === "master_action") {
+      expect(decision.actionId).toBe("shield");
+      expect(decision.target).toEqual({ kind: "monster", slotKey: "cpu_back_left" });
+      expect(decision.reason).toContain("レベルアップ");
+    }
+  });
+
+  it("does not list a redundant shield action for an ally already protected", () => {
+    const game = createCpuGame([]);
+    game.players.cpu.stones = 5;
+    game.slots.cpu_front_left.monster = createActiveMonster("takokke", "cpu", {
+      hp: 2,
+      shielded: true,
+    });
+    game.slots.player_front_left.monster = createActiveMonster("takokke", "player");
+
+    const shieldDecisions = listCpuDecisions(game).filter(
+      (decision) => decision.type === "master_action" && decision.actionId === "shield",
+    );
+
+    expect(
+      shieldDecisions.some(
+        (decision) =>
+          decision.type === "master_action" &&
+          decision.target.kind === "monster" &&
+          decision.target.slotKey === "cpu_front_left",
+      ),
+    ).toBe(false);
+  });
+
+  it("keeps high-value hand cards when evaluating refresh discard choices", () => {
+    const game = createCpuGame([
+      { cardId: "card_116", instanceId: "cpu_refresh_test" },
+      { cardId: "thunder", instanceId: "cpu_keep_thunder" },
+      { cardId: "morgan", instanceId: "cpu_keep_morgan" },
+      { cardId: "card_027", instanceId: "cpu_discard_power_down" },
+    ]);
+    game.players.cpu.stones = 5;
+    game.players.cpu.deck = [{ cardId: "morgan", instanceId: "cpu_refresh_draw" }];
+
+    const refreshDecisions = listCpuDecisions(game).filter(
+      (decision) => decision.type === "magic" && decision.action.handInstanceId === "cpu_refresh_test",
+    );
+
+    expect(refreshDecisions.length).toBeGreaterThan(0);
+    const bestRefresh = refreshDecisions.reduce((best, decision) => (decision.score > best.score ? decision : best));
+    expect(bestRefresh.type).toBe("magic");
+    if (bestRefresh.type === "magic") {
+      expect(bestRefresh.action.selectedHandInstanceIds).toEqual(["cpu_discard_power_down"]);
+    }
+  });
+
   it("moves monsters to improve role placement", () => {
     const game = createCpuGame([]);
     game.players.cpu.stones = 0;

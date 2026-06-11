@@ -213,6 +213,8 @@ function evaluateFutureTacticalValue(state: GameState, perspective: PlayerId): n
   const opponent = opponentOf(perspective);
   const ownBestAttack = bestAttackOpportunityScoreForPlayer(state, perspective);
   const opponentBestAttack = bestAttackOpportunityScoreForPlayer(state, opponent);
+  const ownLevelUpPotential = nextTurnLevelUpPotentialForPlayer(state, perspective);
+  const opponentLevelUpPotential = nextTurnLevelUpPotentialForPlayer(state, opponent);
   const own = state.players[perspective];
   const enemy = state.players[opponent];
   const ownHandPressure = Math.max(0, own.hand.length - 4) * -5;
@@ -220,7 +222,16 @@ function evaluateFutureTacticalValue(state: GameState, perspective: PlayerId): n
   const ownDeckDanger = own.deck.length <= 2 ? (3 - own.deck.length) * -18 : Math.min(own.deck.length, 12) * 0.5;
   const enemyDeckDanger = enemy.deck.length <= 2 ? (3 - enemy.deck.length) * 12 : Math.min(enemy.deck.length, 12) * -0.35;
 
-  return ownBestAttack * 0.08 - opponentBestAttack * 0.16 + ownHandPressure + enemyHandPressure + ownDeckDanger + enemyDeckDanger;
+  return (
+    ownBestAttack * 0.08 -
+    opponentBestAttack * 0.16 +
+    ownLevelUpPotential * 0.12 -
+    opponentLevelUpPotential * 0.18 +
+    ownHandPressure +
+    enemyHandPressure +
+    ownDeckDanger +
+    enemyDeckDanger
+  );
 }
 
 function listAttackDecisions(state: GameState): CpuDecision[] {
@@ -441,6 +452,9 @@ function createWakeUpDecision(state: GameState, target: Target): CpuDecision | u
 
   const bestFollowUpAttack = bestAttackOpportunityScore(after, target.slotKey);
   const canActNow = bestFollowUpAttack > 0;
+  if (!canActNow && isDeckOutRace(state)) {
+    return undefined;
+  }
   const score = 28 + monsterValue(state, target.slotKey) * 0.35 + bestFollowUpAttack * 0.45 + (canActNow ? 35 : 0) - 16;
   if (score < 32) {
     return undefined;
@@ -477,12 +491,17 @@ function createShieldDecision(state: GameState, target: Target): CpuDecision | u
   const preventsLethal = threat.lethal && !threatAfterShield.lethal;
   const reducesDamage = threatAfterShield.maxDamage < threat.maxDamage;
   const important = monster.level >= 2 || getMonsterDef(monster.cardId).role === "back" || monster.hp <= 2;
+  const levelUpPotential = nextTurnLevelUpPotential(state, target.slotKey);
+  if (!threat.threatened && isDeckOutRace(state)) {
+    return undefined;
+  }
   if (!threat.threatened && !important) {
     return undefined;
   }
   const score =
     14 +
     monsterValue(state, target.slotKey) * 0.18 +
+    levelUpPotential * 0.18 +
     (preventsLethal ? 90 : threat.lethal ? 42 : reducesDamage ? 28 : threat.threatened ? 18 : 0) -
     14;
   if (score < 28) {
@@ -496,7 +515,9 @@ function createShieldDecision(state: GameState, target: Target): CpuDecision | u
       ? "致死圏の味方を守れるためシールド"
       : threat.lethal
         ? "倒されそうな高価値味方を守るためシールド"
-        : "高価値の味方を守るためシールド",
+        : levelUpPotential > 0
+          ? "次ターンのレベルアップ筋を残すためシールド"
+          : "高価値の味方を守るためシールド",
     score,
   };
 }
@@ -1023,7 +1044,7 @@ function scoreRefreshMagicDecision(
   const drawnCards = after.players[state.currentPlayer].hand
     .filter((card) => !state.players[state.currentPlayer].hand.some((beforeCard) => beforeCard.instanceId === card.instanceId));
   const drawnValue = drawnCards.reduce((total, card) => total + handCardKeepValue(after, card), 0);
-  return evaluateState(after, state.currentPlayer) - beforeScore + drawnValue * 0.35 - discardedPenalty * 0.18 - cost * 5;
+  return evaluateState(after, state.currentPlayer) - beforeScore + drawnValue * 0.55 - discardedPenalty * 0.3 - cost * 2;
 }
 
 function scoreDamageMagicDecision(state: GameState, after: GameState, action: MagicAction, cost: number): number {
@@ -1073,7 +1094,13 @@ function scoreHealingMagicDecision(state: GameState, after: GameState, action: M
   if (!threat.threatened && !important) {
     return 12;
   }
-  return 26 * healed + monsterValue(state, action.target.slotKey) * 0.22 + (threat.lethal ? 95 : threat.threatened ? 36 : 0) - cost * 6;
+  return (
+    26 * healed +
+    monsterValue(state, action.target.slotKey) * 0.22 +
+    nextTurnLevelUpPotential(state, action.target.slotKey) * 0.16 +
+    (threat.lethal ? 95 : threat.threatened ? 36 : 0) -
+    cost * 6
+  );
 }
 
 function scorePowerMagicDecision(state: GameState, after: GameState, action: MagicAction, cost: number): number {
@@ -1189,6 +1216,65 @@ function bestAttackOpportunityScore(
 function bestAttackOpportunityScoreForPlayer(state: GameState, playerId: PlayerId): number {
   const next = { ...state, currentPlayer: playerId };
   return bestAttackOpportunityScore(next);
+}
+
+function nextTurnLevelUpPotentialForPlayer(state: GameState, playerId: PlayerId): number {
+  return FIELD_ORDER_BY_PLAYER[playerId].reduce((total, slotKey) => total + nextTurnLevelUpPotential(state, slotKey), 0);
+}
+
+function isDeckOutRace(state: GameState): boolean {
+  return state.players.player.deck.length === 0 || state.players.cpu.deck.length === 0;
+}
+
+function nextTurnLevelUpPotential(state: GameState, slotKey: SlotKey): number {
+  const monster = state.slots[slotKey].monster;
+  if (!monster || monster.status !== "active" || monster.levelFixed) {
+    return 0;
+  }
+  const levelRoom = getMonsterDef(monster.cardId).maxLevel - monster.level;
+  const availableLevels = Math.min(levelRoom, state.players[monster.owner].stones);
+  if (availableLevels <= 0) {
+    return 0;
+  }
+
+  const readyState = {
+    ...state,
+    currentPlayer: monster.owner,
+    slots: {
+      ...state.slots,
+      [slotKey]: {
+        ...state.slots[slotKey],
+        monster: {
+          ...monster,
+          actionCount: 0,
+        },
+      },
+    },
+  } as GameState;
+  const readyMonster = readyState.slots[slotKey].monster;
+  if (!readyMonster) {
+    return 0;
+  }
+
+  let best = 0;
+  for (const command of getMonsterCommands(readyMonster)) {
+    for (const target of getCommandTargets(readyState, slotKey, command.id)) {
+      if (target.kind !== "monster" || readyState.slots[target.slotKey].owner === monster.owner) {
+        continue;
+      }
+      const targetMonster = readyState.slots[target.slotKey].monster;
+      if (!targetMonster) {
+        continue;
+      }
+      const damage = estimateMonsterDamage(targetMonster, readyMonster, command);
+      if (damage < targetMonster.hp) {
+        continue;
+      }
+      const levelGain = Math.min(targetMonster.level, availableLevels);
+      best = Math.max(best, 70 * levelGain + monsterValue(readyState, target.slotKey) * 0.2);
+    }
+  }
+  return best;
 }
 
 function incomingThreat(state: GameState, targetSlotKey: SlotKey): { threatened: boolean; lethal: boolean; maxDamage: number } {

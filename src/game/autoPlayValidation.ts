@@ -328,7 +328,7 @@ function detectSuspiciousDecision(
   decisions: CpuDecision[],
   step: number,
 ): void {
-  if (decision.type === "end_turn") {
+  if (decision.type === "end_turn" && !after.winner) {
     const strongCandidate = decisions.find((candidate) => candidate.type !== "end_turn" && candidate.score >= 200);
     if (strongCandidate) {
       pushIssue(
