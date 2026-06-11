@@ -57,8 +57,8 @@ interface DefeatedMonster {
 }
 
 export function createInitialGame(seed = Date.now()): GameState {
-  const playerDeck = shuffle(buildDeck("player"), seed + 1);
-  const cpuDeck = shuffle(buildDeck("cpu"), seed + 2);
+  const playerDeck = shuffle(buildDeck("player", seed + 101), seed + 1);
+  const cpuDeck = shuffle(buildDeck("cpu", seed + 202), seed + 2);
   const state: GameState = {
     players: {
       player: createPlayer("player", playerDeck),

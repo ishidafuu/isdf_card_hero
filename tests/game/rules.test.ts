@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { buildDeck, getAllCardDefs, getCardIconPath, getMonsterDef, validateFixedDeck } from "../../src/game/cards";
+import { buildDeck, getAllCardDefs, getCardDef, getCardIconPath, getMonsterDef, validateRandomDeck } from "../../src/game/cards";
 import {
   attackWithCommand,
   canFocusMonster,
@@ -17,17 +17,30 @@ import {
 import type { CardInstance, GameState, MonsterState, PlayerId } from "../../src/game/types";
 
 describe("battle prototype rules", () => {
-  it("uses a fixed 30-card deck with at most 3 copies per card", () => {
-    expect(validateFixedDeck()).toBe(true);
-
-    const deck = buildDeck("test");
+  it("builds a 30-card random deck with guaranteed composition and copy limits", () => {
+    const deck = buildDeck("test", 123);
     const counts = new Map<string, number>();
+    const categories = { front: 0, back: 0, magic: 0 };
+
     for (const card of deck) {
       counts.set(card.cardId, (counts.get(card.cardId) ?? 0) + 1);
+      const def = getCardDef(card.cardId);
+      if (def.type === "magic") {
+        categories.magic += 1;
+      } else {
+        categories[def.role] += 1;
+      }
     }
 
+    expect(validateRandomDeck(deck)).toBe(true);
     expect(deck).toHaveLength(30);
     expect([...counts.values()].every((count) => count <= 3)).toBe(true);
+    expect(categories.front).toBeGreaterThanOrEqual(12);
+    expect(categories.back).toBeGreaterThanOrEqual(6);
+    expect(categories.magic).toBeGreaterThanOrEqual(6);
+    expect(buildDeck("test", 1).map((card) => card.cardId).join(",")).not.toBe(
+      buildDeck("test", 2).map((card) => card.cardId).join(","),
+    );
   });
 
   it("imports the non-super original card pool with temporary icons", () => {
