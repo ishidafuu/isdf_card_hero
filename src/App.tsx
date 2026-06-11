@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from "react";
+import type { DragEvent, PointerEvent as ReactPointerEvent } from "react";
 import { getCardDef, getCardName } from "./game/cards";
 import {
   attackWithCommand,
@@ -68,6 +69,18 @@ type Selection =
   | { kind: "masterAction"; actionId: MasterActionId; targets: Target[] }
   | { kind: "move"; fromSlotKey: SlotKey; targets: SlotKey[] };
 
+type DragPayload =
+  | { kind: "hand"; instanceId: string }
+  | { kind: "monster"; slotKey: SlotKey };
+
+type PendingDropAction =
+  | { kind: "summon"; handInstanceId: string; slotKey: SlotKey }
+  | { kind: "magic"; handInstanceId: string; target: Target }
+  | { kind: "attack"; attackerSlotKey: SlotKey; commandId: string; target: Target }
+  | { kind: "move"; fromSlotKey: SlotKey; toSlotKey: SlotKey };
+
+const DRAG_MIME = "application/x-card-hero-drag";
+
 const MASTER_ACTIONS: Array<{ id: MasterActionId; label: string }> = [
   { id: "master_attack", label: "Master Attack" },
   { id: "wake_up", label: "Wake Up" },
@@ -85,14 +98,27 @@ interface VisualEffect {
 export function App() {
   const [game, setGame] = useState<GameState>(() => createInitialGame());
   const [selection, setSelection] = useState<Selection | undefined>();
+  const [pendingDropAction, setPendingDropAction] = useState<PendingDropAction | undefined>();
   const [error, setError] = useState<string>("");
   const [visualEffect, setVisualEffect] = useState<VisualEffect | undefined>();
+  const [pointerDragging, setPointerDragging] = useState(false);
   const previousGameRef = useRef<GameState>(game);
+  const pointerDragRef = useRef<{
+    payload: DragPayload;
+    startX: number;
+    startY: number;
+    dragging: boolean;
+  } | undefined>(undefined);
+  const pointerDragCleanupRef = useRef<(() => void) | undefined>(undefined);
+  const suppressNextClickRef = useRef(false);
 
   const currentPlayer = game.players[game.currentPlayer];
   const isCpuResolving = game.currentPlayer === "cpu" && !game.winner && !game.pendingLevelUp;
   const controlsDisabled = game.currentPlayer !== "player" || !!game.winner || !!game.pendingLevelUp;
   const targetKeys = useMemo(() => {
+    if (pendingDropAction) {
+      return new Set([pendingDropActionTargetKey(pendingDropAction)]);
+    }
     if (!selection) {
       return new Set<string>();
     }
@@ -109,7 +135,7 @@ export function App() {
       return new Set(getMagicTargets(game, selection.instanceId).map(targetToKey));
     }
     return new Set<string>();
-  }, [game, selection]);
+  }, [game, pendingDropAction, selection]);
 
   useEffect(() => {
     const previous = previousGameRef.current;
@@ -144,10 +170,13 @@ export function App() {
     return () => window.clearTimeout(timer);
   }, [visualEffect]);
 
+  useEffect(() => () => clearPointerDrag(), []);
+
   function applyChange(change: (state: GameState) => GameState, keepSelection = false) {
     try {
       setGame(change(game));
       setError("");
+      setPendingDropAction(undefined);
       if (!keepSelection) {
         setSelection(undefined);
       }
@@ -157,11 +186,26 @@ export function App() {
   }
 
   function handleSlotClick(slotKey: SlotKey) {
+    if (consumeSuppressedClick()) {
+      return;
+    }
     if (game.currentPlayer !== "player" || game.winner || game.pendingLevelUp) {
       return;
     }
 
     const slot = game.slots[slotKey];
+    if (pendingDropAction) {
+      if (slot.monster?.owner === game.currentPlayer && slot.monster.status === "active") {
+        setPendingDropAction(undefined);
+        setSelection({ kind: "monster", slotKey });
+        setError("");
+        return;
+      }
+      setPendingDropAction(undefined);
+      setSelection(undefined);
+      return;
+    }
+
     if (selection?.kind === "hand") {
       const target: Target = { kind: "monster", slotKey };
       const handCard = getHandCard(game, selection.instanceId);
@@ -203,6 +247,7 @@ export function App() {
     }
 
     if (slot.monster?.owner === game.currentPlayer && slot.monster.status === "active") {
+      setPendingDropAction(undefined);
       setSelection({ kind: "monster", slotKey });
       setError("");
       return;
@@ -212,7 +257,13 @@ export function App() {
   }
 
   function handleMasterClick(playerId: "player" | "cpu") {
+    if (consumeSuppressedClick()) {
+      return;
+    }
     if (game.currentPlayer !== "player" || game.winner || game.pendingLevelUp) {
+      return;
+    }
+    if (pendingDropAction) {
       return;
     }
     const target: Target = { kind: "master", playerId };
@@ -239,8 +290,280 @@ export function App() {
     previousGameRef.current = next;
     setGame(next);
     setSelection(undefined);
+    setPendingDropAction(undefined);
     setError("");
     setVisualEffect(undefined);
+  }
+
+  function handleHandDragStart(event: DragEvent<HTMLButtonElement>, instanceId: string) {
+    startDrag(event, { kind: "hand", instanceId });
+  }
+
+  function handleMonsterDragStart(event: DragEvent<HTMLButtonElement>, slotKey: SlotKey) {
+    if (!canDragMonsterFromSlot(slotKey)) {
+      event.preventDefault();
+      return;
+    }
+    startDrag(event, { kind: "monster", slotKey });
+  }
+
+  function startDrag(event: DragEvent<HTMLElement>, payload: DragPayload) {
+    if (controlsDisabled) {
+      event.preventDefault();
+      return;
+    }
+    event.dataTransfer.effectAllowed = "move";
+    event.dataTransfer.setData(DRAG_MIME, JSON.stringify(payload));
+  }
+
+  function handleHandPointerDown(event: ReactPointerEvent<HTMLButtonElement>, instanceId: string) {
+    startPointerDrag(event, { kind: "hand", instanceId });
+  }
+
+  function handleMonsterPointerDown(event: ReactPointerEvent<HTMLButtonElement>, slotKey: SlotKey) {
+    if (!canDragMonsterFromSlot(slotKey)) {
+      return;
+    }
+    startPointerDrag(event, { kind: "monster", slotKey });
+  }
+
+  function startPointerDrag(event: ReactPointerEvent<HTMLElement>, payload: DragPayload) {
+    if (controlsDisabled || event.button !== 0) {
+      return;
+    }
+
+    clearPointerDrag();
+    pointerDragRef.current = {
+      payload,
+      startX: event.clientX,
+      startY: event.clientY,
+      dragging: false,
+    };
+
+    const handleMove = (nativeEvent: PointerEvent) => {
+      const current = pointerDragRef.current;
+      if (!current) {
+        return;
+      }
+      const distance = Math.hypot(nativeEvent.clientX - current.startX, nativeEvent.clientY - current.startY);
+      if (!current.dragging && distance >= 8) {
+        current.dragging = true;
+        setPointerDragging(true);
+      }
+      if (current.dragging) {
+        nativeEvent.preventDefault();
+      }
+    };
+
+    const handleUp = (nativeEvent: PointerEvent) => {
+      const current = pointerDragRef.current;
+      clearPointerDrag();
+      if (!current?.dragging) {
+        return;
+      }
+      nativeEvent.preventDefault();
+      suppressNextClick();
+
+      const target = dropTargetFromPoint(nativeEvent.clientX, nativeEvent.clientY);
+      if (!target) {
+        setPendingDropAction(undefined);
+        setError("この移動に対応する行動がありません");
+        return;
+      }
+      selectPendingDropAction(current.payload, target);
+    };
+
+    const handleCancel = () => {
+      clearPointerDrag();
+    };
+
+    window.addEventListener("pointermove", handleMove);
+    window.addEventListener("pointerup", handleUp, { once: true });
+    window.addEventListener("pointercancel", handleCancel, { once: true });
+    pointerDragCleanupRef.current = () => {
+      window.removeEventListener("pointermove", handleMove);
+      window.removeEventListener("pointerup", handleUp);
+      window.removeEventListener("pointercancel", handleCancel);
+    };
+  }
+
+  function clearPointerDrag() {
+    pointerDragCleanupRef.current?.();
+    pointerDragCleanupRef.current = undefined;
+    pointerDragRef.current = undefined;
+    setPointerDragging(false);
+  }
+
+  function suppressNextClick() {
+    suppressNextClickRef.current = true;
+    window.setTimeout(() => {
+      suppressNextClickRef.current = false;
+    }, 0);
+  }
+
+  function consumeSuppressedClick(): boolean {
+    if (!suppressNextClickRef.current) {
+      return false;
+    }
+    suppressNextClickRef.current = false;
+    return true;
+  }
+
+  function dropTargetFromPoint(x: number, y: number): Target | undefined {
+    const element = document.elementFromPoint(x, y)?.closest<HTMLElement>("[data-slot-key], [data-master-id]");
+    if (!element) {
+      return undefined;
+    }
+    const slotKey = element.dataset.slotKey;
+    if (slotKey && slotKey in game.slots) {
+      return { kind: "monster", slotKey: slotKey as SlotKey };
+    }
+    const masterId = element.dataset.masterId;
+    if (masterId === "player" || masterId === "cpu") {
+      return { kind: "master", playerId: masterId };
+    }
+    return undefined;
+  }
+
+  function handleDragOver(event: DragEvent<HTMLElement>) {
+    if (!Array.from(event.dataTransfer.types).includes(DRAG_MIME)) {
+      return;
+    }
+    event.preventDefault();
+    event.dataTransfer.dropEffect = "move";
+  }
+
+  function handleSlotDrop(event: DragEvent<HTMLElement>, slotKey: SlotKey) {
+    event.preventDefault();
+    const payload = readDragPayload(event);
+    if (!payload) {
+      return;
+    }
+    selectPendingDropAction(payload, { kind: "monster", slotKey });
+  }
+
+  function handleMasterDrop(event: DragEvent<HTMLElement>, playerId: PlayerId) {
+    event.preventDefault();
+    const payload = readDragPayload(event);
+    if (!payload) {
+      return;
+    }
+    selectPendingDropAction(payload, { kind: "master", playerId });
+  }
+
+  function readDragPayload(event: DragEvent<HTMLElement>): DragPayload | undefined {
+    const raw = event.dataTransfer.getData(DRAG_MIME);
+    if (!raw) {
+      return undefined;
+    }
+    try {
+      const parsed = JSON.parse(raw) as Partial<DragPayload>;
+      if (parsed.kind === "hand" && typeof parsed.instanceId === "string") {
+        return { kind: "hand", instanceId: parsed.instanceId };
+      }
+      if (parsed.kind === "monster" && typeof parsed.slotKey === "string" && parsed.slotKey in game.slots) {
+        return { kind: "monster", slotKey: parsed.slotKey as SlotKey };
+      }
+    } catch {
+      return undefined;
+    }
+    return undefined;
+  }
+
+  function selectPendingDropAction(payload: DragPayload, target: Target) {
+    const action = createPendingDropAction(payload, target);
+    if (!action) {
+      setPendingDropAction(undefined);
+      setError("この移動に対応する行動がありません");
+      return;
+    }
+    setPendingDropAction(action);
+    setSelection(selectionFromPendingDropAction(action));
+    setError("");
+  }
+
+  function createPendingDropAction(payload: DragPayload, target: Target): PendingDropAction | undefined {
+    if (controlsDisabled) {
+      return undefined;
+    }
+
+    if (payload.kind === "hand") {
+      const handCard = getHandCard(game, payload.instanceId);
+      if (!handCard) {
+        return undefined;
+      }
+      const def = getCardDef(handCard.cardId);
+      if (target.kind === "monster" && def.type === "monster" && canSummonTo(game, payload.instanceId, target.slotKey)) {
+        return { kind: "summon", handInstanceId: payload.instanceId, slotKey: target.slotKey };
+      }
+      if (def.type === "magic" && getMagicTargets(game, payload.instanceId).some((candidate) => targetToKey(candidate) === targetToKey(target))) {
+        return { kind: "magic", handInstanceId: payload.instanceId, target };
+      }
+      return undefined;
+    }
+
+    const source = game.slots[payload.slotKey];
+    const monster = source.monster;
+    if (!monster || monster.owner !== game.currentPlayer || monster.status !== "active" || monster.actionCount >= monster.actionLimit) {
+      return undefined;
+    }
+
+    if (target.kind === "monster") {
+      const targetSlot = game.slots[target.slotKey];
+      if (targetSlot.owner === game.currentPlayer && getMovableTargets(game, payload.slotKey).includes(target.slotKey)) {
+        return { kind: "move", fromSlotKey: payload.slotKey, toSlotKey: target.slotKey };
+      }
+    }
+
+    const command = getMonsterCommands(monster).find((candidate) =>
+      getCommandTargets(game, payload.slotKey, candidate.id).some((candidateTarget) => targetToKey(candidateTarget) === targetToKey(target)),
+    );
+    if (!command) {
+      return undefined;
+    }
+    return { kind: "attack", attackerSlotKey: payload.slotKey, commandId: command.id, target };
+  }
+
+  function canDragMonsterFromSlot(slotKey: SlotKey): boolean {
+    const monster = game.slots[slotKey].monster;
+    return (
+      !controlsDisabled &&
+      !!monster &&
+      monster.owner === game.currentPlayer &&
+      monster.status === "active" &&
+      monster.actionCount < monster.actionLimit
+    );
+  }
+
+  function handleConfirmPendingDropAction() {
+    if (!pendingDropAction) {
+      return;
+    }
+    if (pendingDropAction.kind === "summon") {
+      applyChange((state) => summonMonster(state, pendingDropAction.handInstanceId, pendingDropAction.slotKey));
+      return;
+    }
+    if (pendingDropAction.kind === "magic") {
+      applyChange((state) => playMagic(state, { handInstanceId: pendingDropAction.handInstanceId, target: pendingDropAction.target }));
+      return;
+    }
+    if (pendingDropAction.kind === "move") {
+      applyChange((state) => moveMonster(state, pendingDropAction.fromSlotKey, pendingDropAction.toSlotKey));
+      return;
+    }
+    applyChange((state) =>
+      attackWithCommand(state, {
+        attackerSlotKey: pendingDropAction.attackerSlotKey,
+        commandId: pendingDropAction.commandId,
+        target: pendingDropAction.target,
+      }),
+    );
+  }
+
+  function handleCancelPendingDropAction() {
+    setPendingDropAction(undefined);
+    setSelection(undefined);
+    setError("");
   }
 
   const selectedMonster =
@@ -249,7 +572,7 @@ export function App() {
     selection?.kind === "hand" ? currentPlayer.hand.find((card) => card.instanceId === selection.instanceId) : undefined;
 
   return (
-    <main className="app-shell">
+    <main className={`app-shell ${pointerDragging ? "dragging" : ""}`}>
       <header className="topbar">
         <div>
           <h1>Card Hero Prototype</h1>
@@ -279,9 +602,14 @@ export function App() {
                         key={cell.slotKey}
                         slotKey={cell.slotKey}
                         game={game}
-                        selected={selection?.kind === "monster" && selection.slotKey === cell.slotKey}
+                        selected={isSelectedSourceSlot(selection, pendingDropAction, cell.slotKey)}
                         targetable={targetKeys.has(`monster:${cell.slotKey}`)}
                         effectKind={visualEffect?.slots.includes(cell.slotKey) ? visualEffect.kind : undefined}
+                        draggable={canDragMonsterFromSlot(cell.slotKey)}
+                        onDragStart={(event) => handleMonsterDragStart(event, cell.slotKey)}
+                        onPointerDown={(event) => handleMonsterPointerDown(event, cell.slotKey)}
+                        onDragOver={handleDragOver}
+                        onDrop={(event) => handleSlotDrop(event, cell.slotKey)}
                         onClick={() => handleSlotClick(cell.slotKey)}
                       />
                     );
@@ -297,6 +625,9 @@ export function App() {
                           targetKeys.has(`master:${cell.playerId}`) ? "targetable" : "",
                           visualEffect?.masters.includes(cell.playerId) ? `effect-active effect-${visualEffect.kind}` : "",
                         ].join(" ")}
+                        onDragOver={handleDragOver}
+                        onDrop={(event) => handleMasterDrop(event, cell.playerId)}
+                        data-master-id={cell.playerId}
                         onClick={() => handleMasterClick(cell.playerId)}
                       >
                         <span>{cell.label}</span>
@@ -351,6 +682,7 @@ export function App() {
                     key={action.id}
                     type="button"
                     onClick={() => {
+                      setPendingDropAction(undefined);
                       setSelection({ kind: "masterAction", actionId: action.id, targets });
                       setError("");
                     }}
@@ -371,13 +703,27 @@ export function App() {
                 <Icon icon="⏭️" /> End Turn
               </button>
             </div>
+            {pendingDropAction && (
+              <PendingDropActionPanel
+                action={pendingDropAction}
+                game={game}
+                onConfirm={handleConfirmPendingDropAction}
+                onCancel={handleCancelPendingDropAction}
+              />
+            )}
             {selectedMonster && selection?.kind === "monster" && (
               <MonsterCommands
                 game={game}
                 slotKey={selection.slotKey}
-                onCommand={(commandId, targets) => setSelection({ kind: "command", attackerSlotKey: selection.slotKey, commandId, targets })}
+                onCommand={(commandId, targets) => {
+                  setPendingDropAction(undefined);
+                  setSelection({ kind: "command", attackerSlotKey: selection.slotKey, commandId, targets });
+                }}
                 onFocus={() => applyChange((state) => focusMonster(state, selection.slotKey))}
-                onMove={(targets) => setSelection({ kind: "move", fromSlotKey: selection.slotKey, targets })}
+                onMove={(targets) => {
+                  setPendingDropAction(undefined);
+                  setSelection({ kind: "move", fromSlotKey: selection.slotKey, targets });
+                }}
               />
             )}
             {selectedHand && (
@@ -420,8 +766,15 @@ export function App() {
             <button
               type="button"
               key={card.instanceId}
-              className={`hand-card ${selection?.kind === "hand" && selection.instanceId === card.instanceId ? "selected" : ""}`}
+              className={`hand-card ${isSelectedSourceHand(selection, pendingDropAction, card.instanceId) ? "selected" : ""}`}
+              draggable={!controlsDisabled}
+              onDragStart={(event) => handleHandDragStart(event, card.instanceId)}
+              onPointerDown={(event) => handleHandPointerDown(event, card.instanceId)}
               onClick={() => {
+                if (consumeSuppressedClick()) {
+                  return;
+                }
+                setPendingDropAction(undefined);
                 setSelection({ kind: "hand", instanceId: card.instanceId });
                 setError("");
               }}
@@ -459,16 +812,57 @@ function PlayerStatus({ label, hp, stones, deck, hand, discard, active }: Player
   );
 }
 
+interface PendingDropActionPanelProps {
+  action: PendingDropAction;
+  game: GameState;
+  onConfirm: () => void;
+  onCancel: () => void;
+}
+
+function PendingDropActionPanel({ action, game, onConfirm, onCancel }: PendingDropActionPanelProps) {
+  return (
+    <div className="pending-action">
+      <h3><Icon icon={pendingDropActionIcon(action)} /> 選択中: {pendingDropActionTitle(action)}</h3>
+      <p>{pendingDropActionDescription(action, game)}</p>
+      <div className="button-row">
+        <button type="button" onClick={onConfirm}>
+          <Icon icon="✅" /> 確定
+        </button>
+        <button type="button" onClick={onCancel}>
+          <Icon icon="✕" /> キャンセル
+        </button>
+      </div>
+    </div>
+  );
+}
+
 interface BoardSlotProps {
   slotKey: SlotKey;
   game: GameState;
   selected: boolean;
   targetable: boolean;
   effectKind?: EffectKind;
+  draggable: boolean;
+  onDragStart: (event: DragEvent<HTMLButtonElement>) => void;
+  onPointerDown: (event: ReactPointerEvent<HTMLButtonElement>) => void;
+  onDragOver: (event: DragEvent<HTMLButtonElement>) => void;
+  onDrop: (event: DragEvent<HTMLButtonElement>) => void;
   onClick: () => void;
 }
 
-function BoardSlot({ slotKey, game, selected, targetable, effectKind, onClick }: BoardSlotProps) {
+function BoardSlot({
+  slotKey,
+  game,
+  selected,
+  targetable,
+  effectKind,
+  draggable,
+  onDragStart,
+  onPointerDown,
+  onDragOver,
+  onDrop,
+  onClick,
+}: BoardSlotProps) {
   const slot = game.slots[slotKey];
   const monster = slot.monster;
   const hidePreparedInfo = monster?.status === "prepared" && monster.owner !== "player";
@@ -485,6 +879,12 @@ function BoardSlot({ slotKey, game, selected, targetable, effectKind, onClick }:
         monster?.status === "prepared" ? "prepared" : "",
         effectKind ? `effect-active effect-${effectKind}` : "",
       ].join(" ")}
+      data-slot-key={slotKey}
+      draggable={draggable}
+      onDragStart={onDragStart}
+      onPointerDown={onPointerDown}
+      onDragOver={onDragOver}
+      onDrop={onDrop}
       onClick={onClick}
     >
       <span className="slot-label">{label}</span>
@@ -557,6 +957,105 @@ function MonsterCommands({ game, slotKey, onCommand, onFocus, onMove }: MonsterC
       </div>
     </div>
   );
+}
+
+function pendingDropActionTargetKey(action: PendingDropAction): string {
+  if (action.kind === "summon") {
+    return `monster:${action.slotKey}`;
+  }
+  if (action.kind === "move") {
+    return `monster:${action.toSlotKey}`;
+  }
+  return targetToKey(action.target);
+}
+
+function selectionFromPendingDropAction(action: PendingDropAction): Selection {
+  if (action.kind === "summon" || action.kind === "magic") {
+    return { kind: "hand", instanceId: action.handInstanceId };
+  }
+  if (action.kind === "move") {
+    return { kind: "monster", slotKey: action.fromSlotKey };
+  }
+  return { kind: "monster", slotKey: action.attackerSlotKey };
+}
+
+function isSelectedSourceSlot(selection: Selection | undefined, action: PendingDropAction | undefined, slotKey: SlotKey): boolean {
+  if (action?.kind === "move") {
+    return action.fromSlotKey === slotKey;
+  }
+  if (action?.kind === "attack") {
+    return action.attackerSlotKey === slotKey;
+  }
+  return selection?.kind === "monster" && selection.slotKey === slotKey;
+}
+
+function isSelectedSourceHand(selection: Selection | undefined, action: PendingDropAction | undefined, instanceId: string): boolean {
+  if ((action?.kind === "summon" || action?.kind === "magic") && action.handInstanceId === instanceId) {
+    return true;
+  }
+  return selection?.kind === "hand" && selection.instanceId === instanceId;
+}
+
+function pendingDropActionIcon(action: PendingDropAction): string {
+  if (action.kind === "summon") {
+    return "🪨";
+  }
+  if (action.kind === "magic") {
+    return "✨";
+  }
+  if (action.kind === "move") {
+    return "🧭";
+  }
+  return "⚔️";
+}
+
+function pendingDropActionTitle(action: PendingDropAction): string {
+  if (action.kind === "summon") {
+    return "召喚";
+  }
+  if (action.kind === "magic") {
+    return "マジック";
+  }
+  if (action.kind === "move") {
+    return "Move / Swap";
+  }
+  return "アタック";
+}
+
+function pendingDropActionDescription(action: PendingDropAction, game: GameState): string {
+  if (action.kind === "summon") {
+    return `${handCardLabel(game, action.handInstanceId)} -> ${slotLabel(action.slotKey)}`;
+  }
+  if (action.kind === "magic") {
+    return `${handCardLabel(game, action.handInstanceId)} -> ${targetLabel(game, action.target)}`;
+  }
+  if (action.kind === "move") {
+    return `${slotMonsterLabel(game, action.fromSlotKey)} -> ${targetLabel(game, { kind: "monster", slotKey: action.toSlotKey })}`;
+  }
+  return `${slotMonsterLabel(game, action.attackerSlotKey)}: ${commandLabel(game, action.attackerSlotKey, action.commandId)} -> ${targetLabel(game, action.target)}`;
+}
+
+function handCardLabel(game: GameState, instanceId: string): string {
+  const card = getHandCard(game, instanceId);
+  return card ? getCardName(card.cardId) : "カード";
+}
+
+function slotMonsterLabel(game: GameState, slotKey: SlotKey): string {
+  const monster = game.slots[slotKey].monster;
+  return monster ? `${slotLabel(slotKey)} ${getCardName(monster.cardId)}` : slotLabel(slotKey);
+}
+
+function targetLabel(game: GameState, target: Target): string {
+  if (target.kind === "master") {
+    return `${playerLabel(target.playerId)}マスター`;
+  }
+  return slotMonsterLabel(game, target.slotKey);
+}
+
+function commandLabel(game: GameState, slotKey: SlotKey, commandId: string): string {
+  const monster = game.slots[slotKey].monster;
+  const command = monster ? getMonsterCommands(monster).find((item) => item.id === commandId) : undefined;
+  return command ? command.name : "アタック";
 }
 
 function createVisualEffect(previous: GameState, next: GameState): VisualEffect {
