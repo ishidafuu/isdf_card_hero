@@ -1173,9 +1173,7 @@ export const CARD_DEFS = {
     ],
     "category": "攻撃魔法",
     "implemented": true,
-    "notes": [
-      "超レア（入手困難）"
-    ]
+    "notes": []
   },
   "card_033": {
     "id": "card_033",
@@ -1251,11 +1249,6 @@ export const CARD_DEFS = {
     "maxLevel": 2,
     "notes": [
       "性格： 転生 倒れた後「パフ」として復活",
-      "（バルバス）",
-      "（バルバス）",
-      "（パフ）",
-      "（パフ）",
-      "（パフ）",
       "Lv2からレベルアップで フルール になれる"
     ],
     "levels": [
@@ -1676,12 +1669,7 @@ export const CARD_DEFS = {
     "type": "monster",
     "role": "front",
     "maxLevel": 2,
-    "notes": [
-      "（アーシュ＆ロロ）",
-      "（アーシュ＆ロロ）",
-      "（アーシュ）",
-      "（アーシュ）"
-    ],
+    "notes": [],
     "levels": [
       {
         "level": 1,
@@ -2407,10 +2395,6 @@ export const CARD_DEFS = {
     "maxLevel": 2,
     "notes": [
       "性格： 復活 １回だけ復活する ただしパワーがダウンしている",
-      "（ゾンビ）",
-      "（ゾンビ）",
-      "（ゾンビ・再）",
-      "（ゾンビ・再）",
       "Lv2からレベルアップで 邪神ヤヌー になれる"
     ],
     "levels": [
@@ -4029,9 +4013,7 @@ export const CARD_DEFS = {
     "targetKinds": [],
     "category": "ストーン魔法",
     "implemented": true,
-    "notes": [
-      "Ｓｐｄ使用不可"
-    ]
+    "notes": []
   },
   "card_114": {
     "id": "card_114",
@@ -4047,9 +4029,7 @@ export const CARD_DEFS = {
     "targetKinds": [],
     "category": "カード魔法",
     "implemented": true,
-    "notes": [
-      "Ｓｐｄ使用不可"
-    ]
+    "notes": []
   },
   "card_115": {
     "id": "card_115",
@@ -4065,9 +4045,7 @@ export const CARD_DEFS = {
     "targetKinds": [],
     "category": "カード魔法",
     "implemented": true,
-    "notes": [
-      "Ｓｐｄ使用不可"
-    ]
+    "notes": []
   },
   "card_116": {
     "id": "card_116",
@@ -4083,9 +4061,7 @@ export const CARD_DEFS = {
     "targetKinds": [],
     "category": "カード魔法",
     "implemented": true,
-    "notes": [
-      "Ｓｐｄ使用不可"
-    ]
+    "notes": []
   },
   "card_117": {
     "id": "card_117",
@@ -4101,9 +4077,7 @@ export const CARD_DEFS = {
     "targetKinds": [],
     "category": "カード魔法",
     "implemented": true,
-    "notes": [
-      "Ｓｐｄ使用不可"
-    ]
+    "notes": []
   },
   "card_118": {
     "id": "card_118",
@@ -4136,9 +4110,7 @@ export const CARD_DEFS = {
     "category": "特殊魔法",
     "continuance": "効果は１ターン",
     "implemented": true,
-    "notes": [
-      "Ｓｐｄ使用不可"
-    ]
+    "notes": []
   },
   "card_120": {
     "id": "card_120",
@@ -4154,9 +4126,7 @@ export const CARD_DEFS = {
     "targetKinds": [],
     "category": "カード魔法",
     "implemented": true,
-    "notes": [
-      "Ｓｐｄ使用不可"
-    ]
+    "notes": []
   },
   "card_121": {
     "id": "card_121",
@@ -4172,9 +4142,7 @@ export const CARD_DEFS = {
     "targetKinds": [],
     "category": "ストーン魔法",
     "implemented": true,
-    "notes": [
-      "Ｓｐｄ使用不可"
-    ]
+    "notes": []
   },
   "card_122": {
     "id": "card_122",
@@ -4190,9 +4158,7 @@ export const CARD_DEFS = {
     "targetKinds": [],
     "category": "カード魔法",
     "implemented": true,
-    "notes": [
-      "Ｓｐｄ使用不可"
-    ]
+    "notes": []
   },
   "card_123": {
     "id": "card_123",
@@ -4208,9 +4174,7 @@ export const CARD_DEFS = {
     "targetKinds": [],
     "category": "カード魔法",
     "implemented": true,
-    "notes": [
-      "Ｓｐｄ使用不可"
-    ]
+    "notes": []
   },
   "card_124": {
     "id": "card_124",
@@ -4227,9 +4191,7 @@ export const CARD_DEFS = {
     "category": "特殊魔法",
     "continuance": "効果は１ターン",
     "implemented": true,
-    "notes": [
-      "Ｓｐｄ使用不可"
-    ]
+    "notes": []
   },
   "card_125": {
     "id": "card_125",
@@ -4245,9 +4207,7 @@ export const CARD_DEFS = {
     "targetKinds": [],
     "category": "呪印魔法",
     "implemented": true,
-    "notes": [
-      "Ｓｐｄ使用不可"
-    ]
+    "notes": []
   },
   "card_126": {
     "id": "card_126",
@@ -4263,9 +4223,7 @@ export const CARD_DEFS = {
     "targetKinds": [],
     "category": "攻撃魔法",
     "implemented": true,
-    "notes": [
-      "Ｓｐｄ使用不可"
-    ]
+    "notes": []
   },
   "card_127": {
     "id": "card_127",
@@ -4298,9 +4256,7 @@ export const CARD_DEFS = {
     "category": "特殊魔法",
     "continuance": "効果は１ターン",
     "implemented": true,
-    "notes": [
-      "Ｓｐｄ使用不可"
-    ]
+    "notes": []
   },
   "card_129": {
     "id": "card_129",
@@ -4316,9 +4272,7 @@ export const CARD_DEFS = {
     "targetKinds": [],
     "category": "特殊魔法",
     "implemented": true,
-    "notes": [
-      "Ｓｐｄ使用不可"
-    ]
+    "notes": []
   },
   "card_130": {
     "id": "card_130",
@@ -4791,8 +4745,6 @@ export const CARD_DEFS = {
     "targetKinds": [],
     "category": "パワー魔法",
     "implemented": true,
-    "notes": [
-      "流出モノ！（珍品）"
-    ]
+    "notes": []
   }
 } satisfies Record<string, CardDef>;

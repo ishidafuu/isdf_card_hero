@@ -100,6 +100,17 @@ describe("card effect coverage registry", () => {
     }
   });
 
+  it("keeps non-gameplay source annotations out of visible card notes", () => {
+    for (const card of getAllCardDefs()) {
+      for (const note of card.notes ?? []) {
+        const normalized = note.normalize("NFKC").toLowerCase();
+        expect(normalized, `${card.id}: ${note}`).not.toContain("spd使用不可");
+        expect(note, card.id).not.toMatch(/限定版|非売品|超レア|入手困難|流出モノ|珍品/);
+        expect(note, card.id).not.toMatch(/^（[^）]+）$/);
+      }
+    }
+  });
+
   it("keeps simplified and pending effects explicit enough to act on", () => {
     expect(SIMPLIFIED_OR_PENDING_CARD_EFFECTS.map((effect) => effect.id)).toEqual([
       "super_cards_pending",

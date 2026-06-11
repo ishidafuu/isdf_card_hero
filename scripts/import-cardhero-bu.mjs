@@ -61,6 +61,26 @@ function numericValue(raw) {
   return match ? Number.parseInt(match[0], 10) : 0;
 }
 
+function sanitizeNotes(notes) {
+  return notes
+    .map((note) => note.replace(/\s+/g, " ").trim())
+    .filter((note) => note && !isNonGameplayNote(note));
+}
+
+function isNonGameplayNote(note) {
+  const normalized = note.normalize("NFKC").toLowerCase();
+  return (
+    normalized.includes("spd使用不可") ||
+    note.includes("限定版") ||
+    note.includes("非売品") ||
+    note.includes("超レア") ||
+    note.includes("入手困難") ||
+    note.includes("流出モノ") ||
+    note.includes("珍品") ||
+    /^（[^）]+）$/.test(note)
+  );
+}
+
 function commandRange(rawRange, cardName, commandName, hasPower) {
   const normalized = rawRange.normalize("NFKC");
   if (!normalized) {
@@ -183,12 +203,12 @@ function parseMonsterLevels(table, cardName) {
 }
 
 function parseNotes(table) {
-  return [
+  return sanitizeNotes([
     ...[...table.querySelectorAll(".mn_cha_desc")].map((element) => text(element)),
     ...[...table.querySelectorAll(".mn_condition")].map((element) => text(element)),
     ...[...table.querySelectorAll(".mn_name_super")].map((element) => text(element)),
     ...[...table.querySelectorAll(".mn_name_seed")].map((element) => text(element)),
-  ].filter(Boolean);
+  ]);
 }
 
 function parseMagic(table, base) {
@@ -203,7 +223,7 @@ function parseMagic(table, base) {
     category: description.match(/【(.+?)】/)?.[1],
     continuance: text(table.querySelector(".mg_continuance")) || undefined,
     implemented: magic?.implemented ?? false,
-    notes: [text(table.querySelector(".annotation"))].filter(Boolean),
+    notes: sanitizeNotes([text(table.querySelector(".annotation"))]),
   };
 }
 
