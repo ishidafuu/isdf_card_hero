@@ -799,6 +799,9 @@ function scoreDamageMagicDecision(state: GameState, after: GameState, action: Ma
   if (!before) {
     return -100;
   }
+  if (before.owner === state.currentPlayer) {
+    return -100;
+  }
   if (!current || current.instanceId !== before.instanceId) {
     return 260 + monsterValue(state, action.target.slotKey) - cost * 8;
   }
@@ -857,7 +860,7 @@ function magicReason(state: GameState, after: GameState, action: MagicAction): s
   if (action.target.kind === "monster") {
     const before = state.slots[action.target.slotKey].monster;
     const current = after.slots[action.target.slotKey].monster;
-    if (before && (!current || current.instanceId !== before.instanceId)) {
+    if (before && !current) {
       return `${name}で敵モンスターを撃破できるため使用`;
     }
     if (before && current && current.hp > before.hp) {

@@ -244,6 +244,16 @@ describe("cpu ai", () => {
     }
   });
 
+  it("does not use damage magic to defeat its own monster", () => {
+    const game = createCpuGame([{ cardId: "card_026", instanceId: "cpu_spark_test" }]);
+    game.players.cpu.stones = 1;
+    game.slots.cpu_front_left.monster = createActiveMonster("takokke", "cpu", { hp: 1 });
+
+    const decision = chooseCpuDecision(game);
+
+    expect(decision.type).not.toBe("magic");
+  });
+
   it("moves monsters to improve role placement", () => {
     const game = createCpuGame([]);
     game.players.cpu.stones = 0;

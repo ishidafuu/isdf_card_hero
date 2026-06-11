@@ -34,4 +34,23 @@ describe("auto play validation", () => {
     expect(result.issues[0].stateSummary.slots).toHaveLength(8);
     expect(result.issues[0].history.length).toBeGreaterThan(0);
   });
+
+  it("keeps per-decision new log entries after the game log reaches its cap", () => {
+    const result = validateAutoPlay({
+      seedStart: 404,
+      count: 1,
+      maxSteps: 140,
+      maxTurns: 120,
+      historyLimit: 140,
+    });
+
+    expect(result.ok).toBe(false);
+    expect(result.issues[0]).toMatchObject({
+      kind: "step_limit",
+      severity: "failure",
+      seed: 404,
+    });
+    expect(result.issues[0].history.length).toBeGreaterThan(120);
+    expect(result.issues[0].history.every((event) => event.newLog.length > 0)).toBe(true);
+  }, 20_000);
 });

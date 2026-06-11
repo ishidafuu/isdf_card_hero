@@ -299,7 +299,7 @@ function runDecisionStepWithTrace(
   const decisions = listCpuDecisions(game);
   const decision = chooseCpuDecision(game);
   const beforeSummary = summarizeGameState(game);
-  const logLengthBefore = game.log.length;
+  const logBefore = game.log;
   const next = applyCpuDecision(game, decision);
   const event: AutoPlayDecisionEvent = {
     seed: context.seed,
@@ -313,7 +313,7 @@ function runDecisionStepWithTrace(
     nonEndDecisionCount: decisions.filter((candidate) => candidate.type !== "end_turn").length,
     before: beforeSummary,
     after: summarizeGameState(next),
-    newLog: next.log.slice(logLengthBefore),
+    newLog: newLogEntries(logBefore, next.log),
   };
   pushHistory(context, event, options.historyLimit);
   detectSuspiciousDecision(context, game, next, decision, decisions, step);
@@ -397,6 +397,19 @@ function pushIssue(
     stateSummary: summarizeGameState(game),
     history: structuredClone(context.history) as AutoPlayDecisionEvent[],
   });
+}
+
+function newLogEntries(before: string[], after: string[]): string[] {
+  const maxOverlap = Math.min(before.length, after.length);
+  for (let overlap = maxOverlap; overlap > 0; overlap -= 1) {
+    const beforeStart = before.length - overlap;
+    const beforeSuffix = before.slice(beforeStart);
+    const afterPrefix = after.slice(0, overlap);
+    if (beforeSuffix.every((entry, index) => entry === afterPrefix[index])) {
+      return after.slice(overlap);
+    }
+  }
+  return after;
 }
 
 export function summarizeGameState(game: GameState): GameStateSummary {

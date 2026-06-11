@@ -37,9 +37,9 @@ npm run validate:auto-play -- --seed-start 400 --count 100 --out-dir artifacts/a
 検証結果:
 
 - PASS
-- `tests/game/cpuAi.test.ts` は22件すべて成功した。
-- 100戦オートプレイ検証の実行時間は約32.4秒。
-- CPU AIテスト全体の実行時間は約34.5秒。
+- `tests/game/cpuAi.test.ts` は23件すべて成功した。
+- 100戦オートプレイ検証の実行時間は約32.8秒。
+- CPU AIテスト全体の実行時間は約35.1秒。
 - 100戦すべてで勝敗が確定した。
 - 例外は発生していない。
 - `pendingLevelUp` が未解決で残った戦闘はない。
@@ -51,8 +51,8 @@ npm run validate:auto-play -- --seed-start 400 --count 100 --out-dir artifacts/a
 
 - PASS
 - seed `400` から `499` までの100戦を実行した。
-- 勝者内訳はプレイヤー53勝、CPU47勝。
-- 最大344 auto step / 28 turn。
+- 勝者内訳はプレイヤー50勝、CPU50勝。
+- 最大344 auto step / 27 turn。
 - failureは0件。
 - warningは14件。
 - warningは長期戦または同一ターン内の3回以上移動としてartifactへ保存した。
