@@ -81,6 +81,7 @@ describe("battle prototype rules", () => {
     const game = createInitialGame(100);
 
     expect(game.currentPlayer).toBe("player");
+    expect(game.firstPlayer).toBe("player");
     expect(game.players.player.stones).toBe(3);
     expect(game.players.player.hand).toHaveLength(5);
     expect(game.players.player.deck).toHaveLength(25);
@@ -90,6 +91,24 @@ describe("battle prototype rules", () => {
     expect(cpuTurn.players.cpu.stones).toBe(3);
     expect(cpuTurn.players.cpu.hand).toHaveLength(6);
     expect(cpuTurn.players.cpu.deck).toHaveLength(24);
+  });
+
+  it("skips the CPU opening draw when CPU is configured as the first player", () => {
+    const game = createInitialGame(100, { firstPlayer: "cpu" });
+
+    expect(game.currentPlayer).toBe("cpu");
+    expect(game.firstPlayer).toBe("cpu");
+    expect(game.turnNumber).toBe(1);
+    expect(game.players.cpu.stones).toBe(3);
+    expect(game.players.cpu.hand).toHaveLength(5);
+    expect(game.players.cpu.deck).toHaveLength(25);
+
+    const playerTurn = endTurn(game);
+    expect(playerTurn.currentPlayer).toBe("player");
+    expect(playerTurn.turnNumber).toBe(1);
+    expect(playerTurn.players.player.stones).toBe(3);
+    expect(playerTurn.players.player.hand).toHaveLength(6);
+    expect(playerTurn.players.player.deck).toHaveLength(24);
   });
 
   it("spends master HP to draw and converts the HP loss into stone", () => {

@@ -159,6 +159,7 @@ export interface GameState {
   players: Record<PlayerId, PlayerState>;
   slots: Record<SlotKey, SlotState>;
   currentPlayer: PlayerId;
+  firstPlayer: PlayerId;
   turnNumber: number;
   randomSeed: number;
   log: string[];

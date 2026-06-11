@@ -34,7 +34,7 @@ import {
   useMasterAction,
   useMasterHpDraw,
 } from "./game/rules";
-import type { CardInstance, CommandDef, GameState, MagicAction, MagicTargetKind, MasterActionId, PlayerId, SlotKey, Target } from "./game/types";
+import type { CardInstance, CommandDef, GameState, MagicAction, MagicCardDef, MagicTargetKind, MasterActionId, PlayerId, SlotKey, Target } from "./game/types";
 
 type BoardCell =
   | { kind: "slot"; slotKey: SlotKey }
@@ -75,6 +75,7 @@ const AUTO_STEP_DELAY_MAX_MS = 3000;
 const AUTO_STEP_DELAY_STEP_MS = 50;
 const AUTO_STEP_DELAY_DEFAULT_MS = 650;
 const MAX_VISIBLE_RESOURCE_ICONS = 10;
+const DEFAULT_BATTLE_SEED = 20260612;
 
 type Selection =
   | { kind: "hand"; instanceId: string }
@@ -103,6 +104,15 @@ type ZoneView =
   | { kind: "catalog" }
   | { kind: "effects" };
 type LogFilter = "all" | "battle" | "damage" | "support" | "turn" | "cpu";
+type BattleMode = "player-vs-cpu" | "cpu-vs-cpu";
+type TargetRole = "ally" | "enemy" | "move" | "summon" | "empty" | "master";
+
+interface BattleSettings {
+  seed: number;
+  seedInput: string;
+  firstPlayer: PlayerId;
+  mode: BattleMode;
+}
 
 const DRAG_MIME = "application/x-card-hero-drag";
 
@@ -138,8 +148,30 @@ interface MasterDamageFlash extends DamageFlash {
   playerId: PlayerId;
 }
 
+function createBattleSettings(seed: number): BattleSettings {
+  return {
+    seed,
+    seedInput: String(seed),
+    firstPlayer: "player",
+    mode: "player-vs-cpu",
+  };
+}
+
+function createGameFromSettings(settings: BattleSettings): GameState {
+  return createInitialGame(settings.seed, { firstPlayer: settings.firstPlayer });
+}
+
+function normalizeSeedInput(value: string, fallback: number): number {
+  const parsed = Number(value);
+  if (!Number.isFinite(parsed)) {
+    return fallback;
+  }
+  return Math.max(0, Math.floor(parsed)) >>> 0;
+}
+
 export function App() {
-  const [game, setGame] = useState<GameState>(() => createInitialGame());
+  const [battleSettings, setBattleSettings] = useState<BattleSettings>(() => createBattleSettings(DEFAULT_BATTLE_SEED));
+  const [game, setGame] = useState<GameState>(() => createGameFromSettings(createBattleSettings(DEFAULT_BATTLE_SEED)));
   const [selection, setSelection] = useState<Selection | undefined>();
   const [pendingDropAction, setPendingDropAction] = useState<PendingDropAction | undefined>();
   const [error, setError] = useState<string>("");
@@ -162,11 +194,14 @@ export function App() {
   const suppressNextClickRef = useRef(false);
 
   const currentPlayer = game.players[game.currentPlayer];
-  const isAutoResolving = !game.winner && (autoPlayEnabled || (game.currentPlayer === "cpu" && !game.pendingLevelUp));
-  const controlsDisabled = autoPlayEnabled || game.currentPlayer !== "player" || !!game.winner || !!game.pendingLevelUp;
+  const cpuVsCpu = battleSettings.mode === "cpu-vs-cpu";
+  const isAutoResolving = !game.winner && (cpuVsCpu || autoPlayEnabled || (game.currentPlayer === "cpu" && !game.pendingLevelUp));
+  const controlsDisabled = cpuVsCpu || autoPlayEnabled || game.currentPlayer !== "player" || !!game.winner || !!game.pendingLevelUp;
   const turnStatus = game.winner
     ? `${playerLabel(game.winner)} win`
-    : autoPlayEnabled
+    : cpuVsCpu
+      ? `CPU vs CPU... ${playerLabel(game.currentPlayer)}`
+      : autoPlayEnabled
       ? `Auto playing... ${playerLabel(game.currentPlayer)}`
       : isAutoResolving
         ? "CPU resolving..."
@@ -194,7 +229,19 @@ export function App() {
       return new Set(selection.targets.map((slotKey) => `monster:${slotKey}`));
     }
     if (selection.kind === "hand") {
-      return new Set(getMagicTargets(game, selection.instanceId).map(targetToKey));
+      const handCard = getHandCard(game, selection.instanceId);
+      if (!handCard) {
+        return new Set<string>();
+      }
+      const def = getCardDef(handCard.cardId);
+      if (def.type === "magic") {
+        return new Set(getMagicTargets(game, selection.instanceId).map(targetToKey));
+      }
+      return new Set(
+        BOARD_SLOT_KEYS
+          .filter((slotKey) => canSummonTo(game, selection.instanceId, slotKey))
+          .map((slotKey) => `monster:${slotKey}`),
+      );
     }
     return new Set<string>();
   }, [game, pendingDropAction, selection]);
@@ -237,7 +284,7 @@ export function App() {
         if (previous.winner) {
           return previous;
         }
-        if (autoPlayEnabled) {
+        if (cpuVsCpu || autoPlayEnabled) {
           return runAutoStep(previous);
         }
         if (previous.currentPlayer === "cpu" && !previous.pendingLevelUp) {
@@ -245,10 +292,10 @@ export function App() {
         }
         return previous;
       });
-    }, autoPlayEnabled ? autoStepDelayMs : CPU_STEP_DELAY_MS);
+    }, cpuVsCpu || autoPlayEnabled ? autoStepDelayMs : CPU_STEP_DELAY_MS);
 
     return () => window.clearTimeout(timer);
-  }, [autoPlayEnabled, autoStepDelayMs, game, isAutoResolving]);
+  }, [autoPlayEnabled, autoStepDelayMs, cpuVsCpu, game, isAutoResolving]);
 
   useEffect(() => {
     if (!visualEffect) {
@@ -463,7 +510,7 @@ export function App() {
   }
 
   function handleNewGame() {
-    const next = createInitialGame();
+    const next = createGameFromSettings(battleSettings);
     previousGameRef.current = next;
     setGame(next);
     setSelection(undefined);
@@ -472,6 +519,31 @@ export function App() {
     setError("");
     setVisualEffect(undefined);
     setAutoPlayEnabled(false);
+  }
+
+  function handleBattleSeedChange(value: string) {
+    const parsed = normalizeSeedInput(value, battleSettings.seed);
+    setBattleSettings({ ...battleSettings, seedInput: value, seed: parsed });
+  }
+
+  function handleBattleFirstPlayerChange(value: string) {
+    if (value !== "player" && value !== "cpu") {
+      return;
+    }
+    setBattleSettings({ ...battleSettings, firstPlayer: value });
+  }
+
+  function handleBattleModeChange(value: string) {
+    if (value !== "player-vs-cpu" && value !== "cpu-vs-cpu") {
+      return;
+    }
+    setBattleSettings({ ...battleSettings, mode: value });
+    setAutoPlayEnabled(false);
+  }
+
+  function handleRandomSeed() {
+    const seed = Math.floor(Math.random() * 1_000_000_000);
+    setBattleSettings({ ...battleSettings, seed, seedInput: String(seed) });
   }
 
   function handleAutoDelayChange(value: string) {
@@ -787,7 +859,36 @@ export function App() {
           <p>Turn {game.turnNumber} / {turnStatus}</p>
         </div>
         <div className="topbar-actions">
-          <button type="button" onClick={() => setAutoPlayEnabled((enabled) => !enabled)}>
+          <label className="battle-setting-control">
+            Seed
+            <input
+              type="number"
+              min={0}
+              value={battleSettings.seedInput}
+              onChange={(event) => handleBattleSeedChange(event.target.value)}
+            />
+          </label>
+          <label className="battle-setting-control">
+            First
+            <select
+              value={battleSettings.firstPlayer}
+              onChange={(event) => handleBattleFirstPlayerChange(event.target.value)}
+            >
+              <option value="player">Player</option>
+              <option value="cpu">CPU</option>
+            </select>
+          </label>
+          <label className="battle-setting-control">
+            Mode
+            <select
+              value={battleSettings.mode}
+              onChange={(event) => handleBattleModeChange(event.target.value)}
+            >
+              <option value="player-vs-cpu">Player vs CPU</option>
+              <option value="cpu-vs-cpu">CPU vs CPU</option>
+            </select>
+          </label>
+          <button type="button" onClick={() => setAutoPlayEnabled((enabled) => !enabled)} disabled={cpuVsCpu}>
             <Icon icon={autoPlayEnabled ? "⏸️" : "▶️"} /> {autoPlayEnabled ? "Auto Stop" : "Auto Play"}
           </button>
           <label className="auto-delay-control">
@@ -802,6 +903,9 @@ export function App() {
             />
             ms
           </label>
+          <button type="button" onClick={handleRandomSeed}>
+            <Icon icon="🎲" /> Seed
+          </button>
           <button type="button" onClick={handleNewGame}>
             <Icon icon="🔄" /> New Game
           </button>
@@ -822,6 +926,7 @@ export function App() {
                         game={game}
                         selected={isSelectedSourceSlot(selection, pendingDropAction, cell.slotKey)}
                         targetable={targetKeys.has(`monster:${cell.slotKey}`)}
+                        targetRole={targetRoleForTarget(game, { kind: "monster", slotKey: cell.slotKey }, targetKeys, selection, pendingDropAction)}
                         effectKind={visualEffect?.slots.includes(cell.slotKey) ? visualEffect.kind : undefined}
                         effectId={visualEffect?.id}
                         damageFlash={visualEffect?.slotDamageFlashes.find((flash) => flash.slotKey === cell.slotKey)}
@@ -836,6 +941,7 @@ export function App() {
                   }
                   if (cell.kind === "master") {
                     const damageFlash = visualEffect?.masterDamageFlashes.find((flash) => flash.playerId === cell.playerId);
+                    const targetRole = targetRoleForTarget(game, { kind: "master", playerId: cell.playerId }, targetKeys, selection, pendingDropAction);
                     return (
                       <button
                         key={cell.playerId}
@@ -844,6 +950,7 @@ export function App() {
                           "master",
                           cell.playerId === "cpu" ? "master-cpu" : "master-player",
                           targetKeys.has(`master:${cell.playerId}`) ? "targetable" : "",
+                          targetRole ? `target-${targetRole}` : "",
                           visualEffect?.masters.includes(cell.playerId) ? `effect-active effect-${visualEffect.kind}` : "",
                           damageFlash?.defeated ? "effect-defeated" : "",
                         ].join(" ")}
@@ -861,6 +968,7 @@ export function App() {
                           deck={game.players[cell.playerId].deck.length}
                           hand={game.players[cell.playerId].hand.length}
                         />
+                        {targetRole && <span className="target-badge">{targetRoleLabel(targetRole)}</span>}
                         <DamageBubble key={visualEffect?.id} flash={damageFlash} />
                       </button>
                     );
@@ -1154,6 +1262,7 @@ export function App() {
           ) : (
             <section className="actions">
               <h2>Actions</h2>
+              <TargetSelectionSummary selection={selection} game={game} />
               <div className="button-stack">
                 {MASTER_ACTIONS.map((action) => {
                   const targets = getMasterActionTargets(game, action.id);
@@ -1198,6 +1307,60 @@ export function App() {
         </aside>
       </section>
     </main>
+  );
+}
+
+function TargetSelectionSummary({ selection, game }: { selection: Selection | undefined; game: GameState }) {
+  if (selection?.kind === "command") {
+    const monster = game.slots[selection.attackerSlotKey].monster;
+    const command = monster ? getMonsterCommands(monster).find((candidate) => candidate.id === selection.commandId) : undefined;
+    if (!command) {
+      return null;
+    }
+    return (
+      <div className="target-summary">
+        <strong><Icon icon={commandIcon(command)} /> {command.name} {command.power}P</strong>
+        <span>{slotMonsterLabel(game, selection.attackerSlotKey)}</span>
+        <span>{commandActionSummary(command)}</span>
+        <TargetChipList game={game} targets={selection.targets} />
+      </div>
+    );
+  }
+
+  if (selection?.kind === "move") {
+    return (
+      <div className="target-summary">
+        <strong><Icon icon="🧭" /> Move / Swap</strong>
+        <span>{slotMonsterLabel(game, selection.fromSlotKey)}</span>
+        <span>自陣内の空き枠または味方と入れ替え</span>
+        <TargetChipList game={game} targets={selection.targets.map((slotKey) => ({ kind: "monster", slotKey }))} />
+      </div>
+    );
+  }
+
+  if (selection?.kind === "masterAction") {
+    return (
+      <div className="target-summary">
+        <strong><Icon icon={masterActionIcon(selection.actionId)} /> {masterActionLabel(selection.actionId)}</strong>
+        <span>Cost {getMasterActionCost(selection.actionId)}</span>
+        <TargetChipList game={game} targets={selection.targets} />
+      </div>
+    );
+  }
+
+  return null;
+}
+
+function TargetChipList({ game, targets }: { game: GameState; targets: Target[] }) {
+  const visibleTargets = targets.slice(0, 8);
+  return (
+    <span className="target-chip-list">
+      <span className="target-count">候補 {targets.length}</span>
+      {visibleTargets.map((target) => (
+        <span className="target-chip" key={targetToKey(target)}>{targetLabel(game, target)}</span>
+      ))}
+      {targets.length > visibleTargets.length && <span className="target-chip">+{targets.length - visibleTargets.length}</span>}
+    </span>
   );
 }
 
@@ -1612,6 +1775,7 @@ interface BoardSlotProps {
   game: GameState;
   selected: boolean;
   targetable: boolean;
+  targetRole?: TargetRole;
   effectKind?: EffectKind;
   effectId?: number;
   damageFlash?: DamageFlash;
@@ -1628,6 +1792,7 @@ function BoardSlot({
   game,
   selected,
   targetable,
+  targetRole,
   effectKind,
   effectId,
   damageFlash,
@@ -1651,6 +1816,7 @@ function BoardSlot({
         slot.owner,
         selected ? "selected" : "",
         targetable ? "targetable" : "",
+        targetRole ? `target-${targetRole}` : "",
         monster?.status === "prepared" ? "prepared" : "",
         effectKind ? `effect-active effect-${effectKind}` : "",
         damageFlash?.defeated ? "effect-defeated" : "",
@@ -1664,6 +1830,7 @@ function BoardSlot({
       onClick={onClick}
     >
       <span className="slot-label">{label}</span>
+      {targetRole && <span className="target-badge">{targetRoleLabel(targetRole)}</span>}
       {monster && hidePreparedInfo ? (
         <span className="monster-card hidden-prepared">
           <strong><Icon icon="🂠" /> 準備中カード</strong>
@@ -1990,6 +2157,54 @@ function targetLabel(game: GameState, target: Target): string {
     return `${playerLabel(target.playerId)}マスター`;
   }
   return slotMonsterLabel(game, target.slotKey);
+}
+
+function targetRoleForTarget(
+  game: GameState,
+  target: Target,
+  targetKeys: Set<string>,
+  selection: Selection | undefined,
+  action: PendingDropAction | undefined,
+): TargetRole | undefined {
+  if (!targetKeys.has(targetToKey(target))) {
+    return undefined;
+  }
+  if (selection?.kind === "move" || action?.kind === "move") {
+    return "move";
+  }
+  if (selection?.kind === "hand") {
+    const handCard = getHandCard(game, selection.instanceId);
+    if (handCard && getCardDef(handCard.cardId).type === "monster") {
+      return "summon";
+    }
+  }
+  if (target.kind === "master") {
+    return "master";
+  }
+  const slot = game.slots[target.slotKey];
+  if (!slot.monster) {
+    return "empty";
+  }
+  return slot.monster.owner === game.currentPlayer ? "ally" : "enemy";
+}
+
+function targetRoleLabel(role: TargetRole): string {
+  if (role === "ally") {
+    return "味方対象";
+  }
+  if (role === "enemy") {
+    return "敵対象";
+  }
+  if (role === "move") {
+    return "移動先";
+  }
+  if (role === "summon") {
+    return "召喚先";
+  }
+  if (role === "master") {
+    return "マスター";
+  }
+  return "空き枠";
 }
 
 function isZoneView(view: ZoneView | undefined, playerId: PlayerId, zone: Extract<ZoneView, { kind: "playerZone" }>["zone"]): boolean {
@@ -2362,6 +2577,13 @@ function CardDetail({ cardId, showTitle = true }: CardDetailProps) {
           <span><Icon icon="🪨" /> Cost {def.cost}</span>
           <span>{targetKindsLabel(def.targetKinds)}</span>
         </div>
+        <EffectBreakdown
+          items={[
+            { label: "条件", text: `手札から使用 / Stone ${def.cost}` },
+            { label: "対象", text: targetKindsLabel(def.targetKinds) },
+            { label: "持続", text: magicDurationText(def) },
+          ]}
+        />
         <p>{def.description}</p>
         <CardNotes card={def} />
       </>
@@ -2384,13 +2606,42 @@ function CardDetail({ cardId, showTitle = true }: CardDetailProps) {
             <strong><Icon icon="✨" /> Lv{level.level} / <Icon icon="❤️" /> HP {level.maxHp}</strong>
             <ul>
               {level.commands.map((command) => (
-                <li key={command.id}>{commandSummary(command)}</li>
+                <li key={command.id}>
+                  <span>{commandSummary(command)}</span>
+                  <EffectBreakdown
+                    compact
+                    items={[
+                      { label: "条件", text: commandConditionText(command) },
+                      { label: "対象", text: rangeLabel(command.range, command.rangeText) },
+                      { label: "持続", text: commandDurationText(command) },
+                    ]}
+                  />
+                </li>
               ))}
             </ul>
           </div>
         ))}
       </div>
     </>
+  );
+}
+
+function EffectBreakdown({
+  items,
+  compact = false,
+}: {
+  items: Array<{ label: string; text: string }>;
+  compact?: boolean;
+}) {
+  return (
+    <span className={`effect-breakdown ${compact ? "compact" : ""}`}>
+      {items.map((item) => (
+        <span className="effect-breakdown-chip" key={`${item.label}_${item.text}`}>
+          <span>{item.label}</span>
+          <strong>{item.text}</strong>
+        </span>
+      ))}
+    </span>
   );
 }
 
@@ -2508,6 +2759,43 @@ function targetKindsLabel(targetKinds: MagicTargetKind[]): string {
     .join(" / ");
 }
 
+function magicDurationText(def: MagicCardDef): string {
+  if (def.continuance) {
+    return def.continuance;
+  }
+  if (def.description.includes("次のターン") || def.description.includes("次ターン")) {
+    return "次ターンまで";
+  }
+  if (def.description.includes("ずっと") || def.description.includes("永続")) {
+    return "継続";
+  }
+  return "即時";
+}
+
+function commandConditionText(command: CommandDef): string {
+  const conditions = [];
+  if (command.stoneCost) {
+    conditions.push(`Stone ${command.stoneCost}`);
+  }
+  if (command.recoilDamage) {
+    conditions.push(`反動 ${command.recoilDamage}`);
+  }
+  if (command.implemented === false) {
+    conditions.push("要確認");
+  }
+  return conditions.length > 0 ? conditions.join(" / ") : "行動可能時";
+}
+
+function commandDurationText(command: CommandDef): string {
+  if (command.effectText?.includes("次")) {
+    return "次回/次ターン";
+  }
+  if (command.effectText?.includes("ずっと") || command.effectText?.includes("継続")) {
+    return "継続";
+  }
+  return command.effectText ? "効果依存" : "即時";
+}
+
 function slotLabel(slotKey: SlotKey): string {
   const [owner, row, lane] = slotKey.split("_");
   const ownerLabel = owner === "player" ? "P" : "C";
@@ -2599,6 +2887,16 @@ function masterActionIcon(actionId: MasterActionId): string {
     return "⏰";
   }
   return "🛡️";
+}
+
+function masterActionLabel(actionId: MasterActionId): string {
+  if (actionId === "master_attack") {
+    return "Master Attack";
+  }
+  if (actionId === "wake_up") {
+    return "Wake Up";
+  }
+  return "Shield";
 }
 
 function logIcon(entry: string): string {

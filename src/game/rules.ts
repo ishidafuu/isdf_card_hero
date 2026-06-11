@@ -33,6 +33,10 @@ const PLAYER_ORDER: PlayerId[] = ["player", "cpu"];
 const ROW_ORDER: Row[] = ["front", "back"];
 const LANE_ORDER: Lane[] = ["left", "right"];
 
+export interface CreateInitialGameOptions {
+  firstPlayer?: PlayerId;
+}
+
 export const PLAYER_SLOT_ORDER: Record<PlayerId, SlotKey[]> = {
   player: ["player_front_left", "player_front_right", "player_back_left", "player_back_right"],
   cpu: ["cpu_front_left", "cpu_front_right", "cpu_back_left", "cpu_back_right"],
@@ -64,16 +68,18 @@ interface DamageContext {
   ignoreDeathChain?: boolean;
 }
 
-export function createInitialGame(seed = Date.now()): GameState {
+export function createInitialGame(seed = Date.now(), options: CreateInitialGameOptions = {}): GameState {
   const playerDeck = shuffle(buildDeck("player", seed + 101), seed + 1);
   const cpuDeck = shuffle(buildDeck("cpu", seed + 202), seed + 2);
+  const firstPlayer = options.firstPlayer ?? "player";
   const state: GameState = {
     players: {
       player: createPlayer("player", playerDeck),
       cpu: createPlayer("cpu", cpuDeck),
     },
     slots: createSlots(),
-    currentPlayer: "player",
+    currentPlayer: firstPlayer,
+    firstPlayer,
     turnNumber: 0,
     randomSeed: seed >>> 0,
     log: ["バトル開始"],
@@ -81,7 +87,7 @@ export function createInitialGame(seed = Date.now()): GameState {
 
   drawOpeningHand(state.players.player);
   drawOpeningHand(state.players.cpu);
-  return startTurn(state, "player");
+  return startTurn(state, firstPlayer);
 }
 
 export function startTurn(state: GameState, playerId: PlayerId): GameState {
@@ -91,7 +97,7 @@ export function startTurn(state: GameState, playerId: PlayerId): GameState {
   }
 
   next.currentPlayer = playerId;
-  if (playerId === "player") {
+  if (playerId === next.firstPlayer) {
     next.turnNumber += 1;
   }
 
@@ -107,7 +113,7 @@ export function startTurn(state: GameState, playerId: PlayerId): GameState {
   appendLog(next, `${playerLabel(playerId)}はストーンを3個得た`);
   clearExpiredStartTurnEffects(next, playerId);
 
-  const shouldDraw = !(playerId === "player" && player.turnsStarted === 0);
+  const shouldDraw = !(playerId === next.firstPlayer && player.turnsStarted === 0);
   player.turnsStarted += 1;
   if (shouldDraw) {
     forceDraw(next, playerId, "ターン開始");
