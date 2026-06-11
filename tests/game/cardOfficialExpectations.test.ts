@@ -8,6 +8,7 @@ import {
   getMagicTargets,
   getMovableTargets,
   playMagic,
+  useMasterAction,
 } from "../../src/game/rules";
 import type { CardInstance, GameState, MonsterState, PlayerId } from "../../src/game/types";
 
@@ -939,6 +940,37 @@ describe("official card effect expectations", () => {
     expect(game.players.player.stones).toBe(2);
   });
 
+  it("card_109 ナッツロックル auto-counters the monster directly in front after taking damage", () => {
+    let game = createGameWithPlayerHand([]);
+    game.currentPlayer = "cpu";
+    game.players.cpu.stones = 3;
+    game.slots.player_front_left.monster = createActiveMonster("card_109", "player", { hp: 6 });
+    game.slots.cpu_front_left.monster = createActiveMonster("takokke", "cpu");
+
+    game = useMasterAction(game, "master_attack", { kind: "monster", slotKey: "player_front_left" });
+
+    expect(game.slots.player_front_left.monster?.hp).toBe(4);
+    expect(game.slots.cpu_front_left.monster?.hp).toBe(3);
+    expect(game.log.some((entry) => entry.includes("やつあたりが発動した"))).toBe(true);
+  });
+
+  it("card_109 ナッツロックル does not recursively trigger another auto-counter", () => {
+    let game = createGameWithPlayerHand([]);
+    game.currentPlayer = "cpu";
+    game.slots.player_front_left.monster = createActiveMonster("card_109", "player", { hp: 6 });
+    game.slots.cpu_front_left.monster = createActiveMonster("card_109", "cpu", { hp: 6 });
+
+    game = attackWithCommand(game, {
+      attackerSlotKey: "cpu_front_left",
+      commandId: "attack",
+      target: { kind: "monster", slotKey: "player_front_left" },
+    });
+
+    expect(game.slots.player_front_left.monster?.hp).toBe(4);
+    expect(game.slots.cpu_front_left.monster?.hp).toBe(4);
+    expect(game.log.filter((entry) => entry.includes("やつあたりが発動した"))).toHaveLength(1);
+  });
+
   it("card_106 ピュア powers the next master attack and then leaves", () => {
     let game = createGameWithPlayerHand([]);
     game.slots.player_back_left.monster = createActiveMonster("card_106", "player");
@@ -951,6 +983,20 @@ describe("official card effect expectations", () => {
 
     expect(game.players.player.masterPowerBonus).toBe(1);
     expect(game.slots.player_back_left.monster).toBeUndefined();
+  });
+
+  it("card_133 デスシープ seals only the lower command of the monster directly in front", () => {
+    const game = createGameWithPlayerHand([]);
+    game.currentPlayer = "cpu";
+    game.players.cpu.stones = 3;
+    game.slots.player_front_left.monster = createActiveMonster("card_133", "player");
+    game.slots.cpu_front_left.monster = createActiveMonster("card_020", "cpu");
+
+    expect(getCommandTargets(game, "cpu_front_left", "バズーカ")).toEqual([]);
+    expect(getCommandTargets(game, "cpu_front_left", "attack")).toContainEqual({
+      kind: "monster",
+      slotKey: "player_front_left",
+    });
   });
 
   it("card_107 and card_108 combine their upper attack power for ドリルブレイク", () => {

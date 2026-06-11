@@ -6,7 +6,7 @@ import {
   SIMPLIFIED_OR_PENDING_CARD_EFFECTS,
   type CommandEffectTrait,
 } from "../../src/game/cardEffectCoverage";
-import { getAllCardDefs } from "../../src/game/cards";
+import { getAllCardDefs, getMonsterDef } from "../../src/game/cards";
 import type { CommandDef } from "../../src/game/types";
 
 describe("card effect coverage registry", () => {
@@ -62,6 +62,41 @@ describe("card effect coverage registry", () => {
         area.coveredBy.every((path) => path.includes(".test.ts") || path.startsWith("npm run ")),
         area.id,
       ).toBe(true);
+    }
+  });
+
+  it("keeps implemented monster personality effects visible in card notes", () => {
+    const implementedPersonalityCards = [
+      "bomuzo",
+      "polyspinner",
+      "card_035",
+      "card_039",
+      "card_044",
+      "card_046",
+      "card_048",
+      "card_051",
+      "card_052",
+      "card_067",
+      "card_072",
+      "card_073",
+      "card_077",
+      "card_078",
+      "card_080",
+      "card_081",
+      "card_099",
+      "card_100",
+      "card_102",
+      "card_106",
+      "card_109",
+      "card_112",
+      "card_132",
+      "card_133",
+      "card_144",
+    ] as const;
+
+    for (const cardId of implementedPersonalityCards) {
+      const notes = getMonsterDef(cardId).notes ?? [];
+      expect(notes.some((note) => note.trim().startsWith("性格")), cardId).toBe(true);
     }
   });
 

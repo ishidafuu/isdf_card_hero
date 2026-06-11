@@ -477,6 +477,31 @@ button:disabled {
   gap: 2px;
 }
 
+.monster-card .monster-trait-line {
+  color: #46544e;
+  line-height: 1.25;
+}
+
+.card-notes {
+  color: #4b5652;
+  display: grid;
+  font-size: 13px;
+  gap: 4px;
+  line-height: 1.35;
+  margin-top: 8px;
+}
+
+.card-notes.compact {
+  gap: 2px;
+  margin-top: 0;
+}
+
+.card-notes > span {
+  align-items: flex-start;
+  display: inline-flex;
+  gap: 4px;
+}
+
 .side-panel {
   align-self: start;
   display: grid;
@@ -920,6 +945,13 @@ button:disabled {
 .hand-card-text {
   display: -webkit-box;
   min-height: 36px;
+  overflow: hidden;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+}
+
+.hand-card .card-notes > span {
+  display: -webkit-box;
   overflow: hidden;
   -webkit-box-orient: vertical;
   -webkit-line-clamp: 2;

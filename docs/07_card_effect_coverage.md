@@ -60,7 +60,7 @@
 - `card_149` 福音の鐘
 - `card_150` スパルタス覚醒
 - 特殊魔法/呪印魔法: `card_057`, `card_058`, `card_061`, `card_064`, `card_087`, `card_090`, `card_097`, `card_098`, `card_124`, `card_125`, `card_128`, `card_129`
-- モンスター固有技: `card_015`, `card_033`, `card_035`, `card_039`, `card_040`, `card_043`, `card_052`, `card_053`, `card_066`, `card_069`, `card_072`, `card_074`, `card_076`, `card_078`, `card_080`, `card_082`, `card_083`, `card_084`, `card_085`, `card_104`, `card_105`, `card_106`, `card_107`, `card_108`, `card_111`, `card_112`, `card_134`
+- モンスター固有技/性格: `card_015`, `card_033`, `card_035`, `card_039`, `card_040`, `card_043`, `card_052`, `card_053`, `card_066`, `card_069`, `card_072`, `card_074`, `card_076`, `card_078`, `card_080`, `card_082`, `card_083`, `card_084`, `card_085`, `card_104`, `card_105`, `card_106`, `card_107`, `card_108`, `card_109`, `card_111`, `card_112`, `card_133`, `card_134`
 
 ## 公式攻略データと実装期待値の差分表
 

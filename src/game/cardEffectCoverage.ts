@@ -160,7 +160,7 @@ export const CARD_EFFECT_COVERAGE_AREAS: readonly CardEffectCoverageArea[] = [
       "tests/game/cardOfficialExpectations.test.ts: card_149 福音の鐘 levels up an eligible ally by spending one stone",
       "tests/game/cardOfficialExpectations.test.ts: card_150 スパルタス覚醒 powers up Spartas and levels it up when a stone is available",
       "tests/game/cardOfficialExpectations.test.ts: special magic and curse cards from card_057/card_058/card_061/card_064/card_087/card_090/card_097/card_098/card_124/card_125/card_128/card_129",
-      "tests/game/cardOfficialExpectations.test.ts: monster signature commands including Power Horn, Gemini Lance, Heaven's Door, Burst Mushroom, Drill Break, and Soul Switch",
+      "tests/game/cardOfficialExpectations.test.ts: monster signature commands and traits including Power Horn, Gemini Lance, Nuts Rockle counter, Death Sheep seal, Drill Break, and Soul Switch",
     ],
     magicCategories: ["パワー魔法", "特殊魔法", "攻撃魔法", "回復魔法", "カード魔法", "空間魔法", "特殊防御魔法"],
     commandTraits: ["stoneCost", "effectText"],

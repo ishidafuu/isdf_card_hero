@@ -1574,6 +1574,7 @@ function BoardSlot({
             <Icon icon={monster.status === "prepared" ? "🕒" : "⚡"} />
             {monster.status === "prepared" ? "準備中" : `${monster.actionCount}/${monster.actionLimit}行動`}
           </span>
+          <MonsterTraitSummary cardId={monster.cardId} />
           <span>
             {[
               monster.focused ? "💪 気合い 上技+1/被ダメ-1" : "",
@@ -2184,6 +2185,7 @@ function HandCardContent({ cardId }: HandCardContentProps) {
         </span>
         <span className="hand-card-meta"><Icon icon="🪨" /> Cost {def.cost} / {targetKindsLabel(def.targetKinds)}</span>
         <span className="hand-card-text">{def.description}</span>
+        <CardNotes notes={def.notes} compact />
       </>
     );
   }
@@ -2200,6 +2202,7 @@ function HandCardContent({ cardId }: HandCardContentProps) {
       <span className="hand-card-meta"><Icon icon="🪨" /> 召喚 1 / <Icon icon="✨" /> MaxLv {def.maxLevel}</span>
       <span className="hand-card-meta"><Icon icon="❤️" /> {maxHpText}</span>
       <span className="hand-card-text">{commandText}</span>
+      <CardNotes notes={def.notes} compact />
     </>
   );
 }
@@ -2221,6 +2224,7 @@ function CardDetail({ cardId, showTitle = true }: CardDetailProps) {
           <span>{targetKindsLabel(def.targetKinds)}</span>
         </div>
         <p>{def.description}</p>
+        <CardNotes notes={def.notes} />
       </>
     );
   }
@@ -2234,6 +2238,7 @@ function CardDetail({ cardId, showTitle = true }: CardDetailProps) {
         <span><Icon icon="✨" /> MaxLv {def.maxLevel}</span>
         {def.actionLimit && <span><Icon icon="⚡" /> {def.actionLimit}回行動</span>}
       </div>
+      <CardNotes notes={def.notes} />
       <div className="level-detail-list">
         {def.levels.map((level) => (
           <div className="level-detail" key={level.level}>
@@ -2247,6 +2252,41 @@ function CardDetail({ cardId, showTitle = true }: CardDetailProps) {
         ))}
       </div>
     </>
+  );
+}
+
+function CardNotes({ notes, compact = false }: { notes?: string[]; compact?: boolean }) {
+  const visibleNotes = notes?.filter((note) => note.trim()) ?? [];
+  if (visibleNotes.length === 0) {
+    return null;
+  }
+
+  return (
+    <span className={`card-notes ${compact ? "compact" : ""}`}>
+      {visibleNotes.map((note, index) => (
+        <span key={`${note}_${index}`}><Icon icon="🧬" /> {note}</span>
+      ))}
+    </span>
+  );
+}
+
+function MonsterTraitSummary({ cardId }: { cardId: string }) {
+  const def = getCardDef(cardId);
+  if (def.type !== "monster") {
+    return null;
+  }
+
+  const traitNotes = def.notes
+    ?.filter((note) => note.trim().startsWith("性格"))
+    .map((note) => note.replace(/^性格[:：]\s*/, ""));
+  if (!traitNotes?.length) {
+    return null;
+  }
+
+  return (
+    <span className="monster-trait-line" title={traitNotes.join("\n")}>
+      <Icon icon="🧬" /> {traitNotes.join(" / ")}
+    </span>
   );
 }
 

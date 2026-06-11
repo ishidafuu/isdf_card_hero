@@ -2493,16 +2493,8 @@ function applyAfterDamageTraits(
     }
   }
 
-  if (monster.cardId === "card_109") {
-    const frontSlotKey = slotInFrontOf(state.slots[targetSlotKey]);
-    if (frontSlotKey && state.slots[frontSlotKey].monster?.status === "active") {
-      damageMonster(state, frontSlotKey, getMonsterCommands(monster)[0]?.power ?? 1, {
-        source: "やつあたり",
-        kind: "effect",
-        attackerSlotKey: targetSlotKey,
-        ignoreCounter: true,
-      });
-    }
+  if (!context.ignoreCounter && monster.cardId === "card_109") {
+    applyNutsRockleAutoCounter(state, targetSlotKey, monster);
   }
 
   if (context.ignoreCounter || !context.attackerSlotKey || !state.slots[context.attackerSlotKey].monster) {
@@ -2528,6 +2520,21 @@ function applyAfterDamageTraits(
       ignoreDeathChain: true,
     });
   }
+}
+
+function applyNutsRockleAutoCounter(state: GameState, targetSlotKey: SlotKey, monster: MonsterState): void {
+  const frontSlotKey = slotInFrontOf(state.slots[targetSlotKey]);
+  const frontMonster = frontSlotKey ? state.slots[frontSlotKey].monster : undefined;
+  if (!frontSlotKey || frontMonster?.status !== "active") {
+    return;
+  }
+  appendLog(state, `${monsterName(monster)}のやつあたりが発動した`);
+  damageMonster(state, frontSlotKey, getMonsterCommands(monster)[0]?.power ?? 1, {
+    source: "やつあたり",
+    kind: "effect",
+    attackerSlotKey: targetSlotKey,
+    ignoreCounter: true,
+  });
 }
 
 function applyDeathChainDamage(

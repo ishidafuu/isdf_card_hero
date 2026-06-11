@@ -4760,10 +4760,7 @@ export const CARD_DEFS = {
     "targetKinds": [],
     "category": "最高位魔法",
     "continuance": "効果は１ターン",
-    "implemented": true,
-    "notes": [
-      "限定版（非売品）"
-    ]
+    "implemented": true
   },
   "card_149": {
     "id": "card_149",
@@ -4778,10 +4775,7 @@ export const CARD_DEFS = {
     "description": "【最高位魔法】 モンスターをレベルアップさせる",
     "targetKinds": [],
     "category": "最高位魔法",
-    "implemented": true,
-    "notes": [
-      "限定版（非売品）"
-    ]
+    "implemented": true
   },
   "card_150": {
     "id": "card_150",
