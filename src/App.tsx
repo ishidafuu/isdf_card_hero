@@ -314,10 +314,15 @@ export function App() {
           target,
         }),
       );
+      return;
     }
     if (selection?.kind === "hand" && targetKeys.has(targetToKey(target))) {
       applyChange((state) => playMagic(state, { handInstanceId: selection.instanceId, target }));
+      return;
     }
+    setPendingDropAction(undefined);
+    setSelection(undefined);
+    setError("");
   }
 
   function handleEndTurn() {
@@ -740,17 +745,55 @@ export function App() {
               </div>
             ))}
           </div>
+          <section className="hand-area">
+            <div className="hand-heading">
+              <h2>Hand</h2>
+              <StatusIconCount label="Cards" icon="🃏" amount={currentPlayer.hand.length} cap={MAX_VISIBLE_RESOURCE_ICONS} />
+            </div>
+            <div className="hand-list">
+              {currentPlayer.hand.map((card) => (
+                <button
+                  type="button"
+                  key={card.instanceId}
+                  className={`hand-card ${isSelectedSourceHand(selection, pendingDropAction, card.instanceId) ? "selected" : ""}`}
+                  draggable={!controlsDisabled}
+                  onDragStart={(event) => handleHandDragStart(event, card.instanceId)}
+                  onPointerDown={(event) => handleHandPointerDown(event, card.instanceId)}
+                  onClick={() => {
+                    if (consumeSuppressedClick()) {
+                      return;
+                    }
+                    setPendingDropAction(undefined);
+                    setSelection({ kind: "hand", instanceId: card.instanceId });
+                    setError("");
+                  }}
+                  disabled={controlsDisabled}
+                >
+                  <HandCardContent cardId={card.cardId} />
+                </button>
+              ))}
+            </div>
+          </section>
         </div>
 
         <aside className="side-panel">
-          {game.winner && (
+          <section className="log-panel">
+            <h2>Log</h2>
+            <ol>
+              {game.log.slice(-18).map((entry, index) => (
+                <li className={`log-entry ${logTone(entry)}`} key={`${entry}_${index}`}>
+                  <Icon icon={logIcon(entry)} /> {entry}
+                </li>
+              ))}
+            </ol>
+          </section>
+
+          {game.winner ? (
             <section className="notice">
               <h2><Icon icon="🏆" /> {playerLabel(game.winner)} Win</h2>
               <button type="button" onClick={handleNewGame}><Icon icon="🔄" /> もう一戦</button>
             </section>
-          )}
-
-          {game.pendingLevelUp && (
+          ) : game.pendingLevelUp ? (
             <section className="notice">
               <h2><Icon icon="✨" /> Level Up</h2>
               <p>上げるレベル数を選択</p>
@@ -767,40 +810,8 @@ export function App() {
                 ))}
               </div>
             </section>
-          )}
-
-          <section className="actions">
-            <h2>Actions</h2>
-            <div className="button-stack">
-              {MASTER_ACTIONS.map((action) => {
-                const targets = getMasterActionTargets(game, action.id);
-                return (
-                  <button
-                    key={action.id}
-                    type="button"
-                    onClick={() => {
-                      setPendingDropAction(undefined);
-                      setSelection({ kind: "masterAction", actionId: action.id, targets });
-                      setError("");
-                    }}
-                    disabled={controlsDisabled || targets.length === 0}
-                  >
-                    <Icon icon={masterActionIcon(action.id)} /> {action.label} {getMasterActionCost(action.id)}
-                  </button>
-                );
-              })}
-              <button
-                type="button"
-                onClick={() => applyChange(useMasterHpDraw)}
-                disabled={controlsDisabled || currentPlayer.deck.length === 0}
-              >
-                <Icon icon="🩸" /> HP Draw
-              </button>
-              <button type="button" onClick={handleEndTurn} disabled={controlsDisabled}>
-                <Icon icon="⏭️" /> End Turn
-              </button>
-            </div>
-            {pendingDropAction && (
+          ) : pendingDropAction ? (
+            <section className="side-context-panel">
               <PendingDropActionPanel
                 action={pendingDropAction}
                 game={game}
@@ -808,8 +819,10 @@ export function App() {
                 onConfirm={handleConfirmPendingDropAction}
                 onCancel={handleCancelPendingDropAction}
               />
-            )}
-            {selectedMonster && selection?.kind === "monster" && (
+              {error && <p className="error">{error}</p>}
+            </section>
+          ) : selectedMonster && selection?.kind === "monster" ? (
+            <section className="side-context-panel card-info-panel">
               <MonsterCommands
                 game={game}
                 slotKey={selection.slotKey}
@@ -823,65 +836,58 @@ export function App() {
                   setSelection({ kind: "move", fromSlotKey: selection.slotKey, targets });
                 }}
               />
-            )}
-            {selectedHand && (
-              <div className="selected-detail">
-                <CardDetail cardId={selectedHand.cardId} />
+              {error && <p className="error">{error}</p>}
+            </section>
+          ) : selectedHand ? (
+            <section className="side-context-panel card-info-panel">
+              <CardDetail cardId={selectedHand.cardId} />
+              {error && <p className="error">{error}</p>}
+            </section>
+          ) : (
+            <section className="actions">
+              <h2>Actions</h2>
+              <div className="button-stack">
+                {MASTER_ACTIONS.map((action) => {
+                  const targets = getMasterActionTargets(game, action.id);
+                  return (
+                    <button
+                      key={action.id}
+                      type="button"
+                      onClick={() => {
+                        setPendingDropAction(undefined);
+                        setSelection({ kind: "masterAction", actionId: action.id, targets });
+                        setError("");
+                      }}
+                      disabled={controlsDisabled || targets.length === 0}
+                    >
+                      <Icon icon={masterActionIcon(action.id)} /> {action.label} {getMasterActionCost(action.id)}
+                    </button>
+                  );
+                })}
+                <button
+                  type="button"
+                  onClick={() => applyChange(useMasterHpDraw)}
+                  disabled={controlsDisabled || currentPlayer.deck.length === 0}
+                >
+                  <Icon icon="🩸" /> HP Draw
+                </button>
+                <button type="button" onClick={handleEndTurn} disabled={controlsDisabled}>
+                  <Icon icon="⏭️" /> End Turn
+                </button>
               </div>
-            )}
-            {selection?.kind === "command" && (
-              <p className="hint">攻撃対象を選択してください。</p>
-            )}
-            {selection?.kind === "move" && (
-              <p className="hint">移動先または入れ替え先を選択してください。</p>
-            )}
-            {selection?.kind === "masterAction" && (
-              <p className="hint">マスター特技の対象を選択してください。</p>
-            )}
-            {error && <p className="error">{error}</p>}
-          </section>
-
-          <section className="log-panel">
-            <h2>Log</h2>
-            <ol>
-              {game.log.slice(-18).map((entry, index) => (
-                <li className={`log-entry ${logTone(entry)}`} key={`${entry}_${index}`}>
-                  <Icon icon={logIcon(entry)} /> {entry}
-                </li>
-              ))}
-            </ol>
-          </section>
+              {selection?.kind === "command" && (
+                <p className="hint">攻撃対象を選択してください。</p>
+              )}
+              {selection?.kind === "move" && (
+                <p className="hint">移動先または入れ替え先を選択してください。</p>
+              )}
+              {selection?.kind === "masterAction" && (
+                <p className="hint">マスター特技の対象を選択してください。</p>
+              )}
+              {error && <p className="error">{error}</p>}
+            </section>
+          )}
         </aside>
-      </section>
-
-      <section className="hand-area">
-        <div className="hand-heading">
-          <h2>Hand</h2>
-          <StatusIconCount label="Cards" icon="🃏" amount={currentPlayer.hand.length} cap={MAX_VISIBLE_RESOURCE_ICONS} />
-        </div>
-        <div className="hand-list">
-          {currentPlayer.hand.map((card) => (
-            <button
-              type="button"
-              key={card.instanceId}
-              className={`hand-card ${isSelectedSourceHand(selection, pendingDropAction, card.instanceId) ? "selected" : ""}`}
-              draggable={!controlsDisabled}
-              onDragStart={(event) => handleHandDragStart(event, card.instanceId)}
-              onPointerDown={(event) => handleHandPointerDown(event, card.instanceId)}
-              onClick={() => {
-                if (consumeSuppressedClick()) {
-                  return;
-                }
-                setPendingDropAction(undefined);
-                setSelection({ kind: "hand", instanceId: card.instanceId });
-                setError("");
-              }}
-              disabled={controlsDisabled}
-            >
-              <HandCardContent cardId={card.cardId} />
-            </button>
-          ))}
-        </div>
       </section>
     </main>
   );

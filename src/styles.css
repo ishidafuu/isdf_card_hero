@@ -168,6 +168,12 @@ button:disabled {
   min-width: 0;
 }
 
+.battle-area > .hand-area {
+  margin: 0 auto;
+  max-width: 860px;
+  width: 100%;
+}
+
 .master {
   align-items: center;
   display: grid;
@@ -466,9 +472,10 @@ button:disabled {
 }
 
 .side-panel {
-  display: flex;
-  flex-direction: column;
+  align-self: start;
+  display: grid;
   gap: 12px;
+  grid-template-rows: 260px minmax(0, auto);
   min-height: 0;
   min-width: 0;
 }
@@ -476,7 +483,8 @@ button:disabled {
 .actions,
 .log-panel,
 .notice,
-.hand-area {
+.hand-area,
+.side-context-panel {
   background: #f8faf4;
   border: 1px solid #cbd5c5;
   border-radius: 8px;
@@ -544,6 +552,12 @@ button:disabled {
   border-top: 1px solid #d8ded2;
   margin-top: 12px;
   padding-top: 12px;
+}
+
+.card-info-panel .selected-detail {
+  border-top: 0;
+  margin-top: 0;
+  padding-top: 0;
 }
 
 .board-card-detail {
@@ -655,7 +669,8 @@ button:disabled {
 }
 
 .log-panel {
-  min-height: 240px;
+  height: 260px;
+  min-height: 0;
   overflow: hidden;
 }
 
@@ -664,7 +679,7 @@ button:disabled {
   flex-direction: column;
   gap: 5px;
   margin: 10px 0 0;
-  max-height: 320px;
+  max-height: calc(100% - 36px);
   overflow: auto;
   padding-left: 22px;
 }
