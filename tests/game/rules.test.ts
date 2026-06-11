@@ -7,6 +7,7 @@ import {
   endTurn,
   focusMonster,
   getCommandTargets,
+  getMagicTargets,
   getMasterActionTargets,
   resolveLevelUp,
   startTurn,
@@ -52,6 +53,21 @@ describe("battle prototype rules", () => {
     expect(cards.filter((card) => card.type === "magic")).toHaveLength(54);
     expect(cards.every((card) => card.icon?.startsWith("/card-icons/co"))).toBe(true);
     expect(getCardIconPath("takokke")).toBe("/card-icons/co004.jpg");
+  });
+
+  it("does not keep imported cards marked as unimplemented", () => {
+    for (const card of getAllCardDefs()) {
+      if (card.type === "magic") {
+        expect(card.implemented).not.toBe(false);
+        continue;
+      }
+      for (const level of card.levels) {
+        for (const command of level.commands) {
+          expect(command.implemented).not.toBe(false);
+          expect(command.range).not.toBe("unimplemented");
+        }
+      }
+    }
   });
 
   it("skips only the first player's opening draw", () => {
@@ -466,6 +482,68 @@ describe("battle prototype rules", () => {
     });
 
     expect(next.slots.cpu_front_left.monster?.hp).toBe(3);
+  });
+
+  it("lets range-3 attacks reach from the bottom right to the top left", () => {
+    const game = createInitialGame(126);
+    game.players.player.stones = 3;
+    game.slots.player_back_right.monster = createActiveMonster("card_022", "player");
+    game.slots.cpu_back_left.monster = createActiveMonster("takokke", "cpu");
+
+    expect(getCommandTargets(game, "player_back_right", "キラーニードル")).toContainEqual({
+      kind: "monster",
+      slotKey: "cpu_back_left",
+    });
+  });
+
+  it("gives every imported magic card at least one playable target in a populated board", () => {
+    const magicCards = getAllCardDefs().filter((card) => card.type === "magic");
+
+    for (const magic of magicCards) {
+      const game = createInitialGame(127);
+      game.players.player.stones = 99;
+      game.players.player.hand = [
+        { cardId: magic.id, instanceId: `magic_${magic.id}` },
+        { cardId: "takokke", instanceId: `extra_${magic.id}` },
+      ];
+      game.slots.player_front_left.monster = createActiveMonster("card_001", "player");
+      game.slots.player_front_right.monster = createActiveMonster("takokke", "player");
+      game.slots.player_back_left.monster = createActiveMonster("sigma", "player", { status: "prepared" });
+      game.slots.player_back_right.monster = createActiveMonster("card_083", "player");
+      game.slots.cpu_front_left.monster = createActiveMonster("takokke", "cpu");
+      game.slots.cpu_front_right.monster = createActiveMonster("card_084", "cpu");
+      game.slots.cpu_back_left.monster = createActiveMonster("sigma", "cpu", { status: "prepared" });
+      game.slots.cpu_back_right.monster = createActiveMonster("takokke", "cpu", { level: 2, investedStones: 2 });
+
+      expect(getMagicTargets(game, `magic_${magic.id}`).length, magic.name).toBeGreaterThan(0);
+    }
+  });
+
+  it("gives every imported monster command at least one playable target in a populated board", () => {
+    const monsters = getAllCardDefs().filter((card) => card.type === "monster");
+
+    for (const card of monsters) {
+      for (const level of card.levels) {
+        for (const command of level.commands) {
+          const game = createInitialGame(128);
+          game.players.player.stones = 99;
+          game.slots.player_back_right.monster = createActiveMonster(card.id, "player", {
+            hp: level.maxHp,
+            level: level.level,
+            investedStones: level.level,
+          });
+          game.slots.player_front_right.monster = createActiveMonster("takokke", "player", { level: 2, investedStones: 2 });
+          game.slots.player_front_left.monster = createActiveMonster("card_084", "player");
+          game.slots.player_back_left.monster = createActiveMonster("sigma", "player", { status: "prepared" });
+          game.slots.cpu_front_right.monster = createActiveMonster("takokke", "cpu", { level: 2, investedStones: 2 });
+          game.slots.cpu_front_left.monster = createActiveMonster("card_083", "cpu");
+          game.slots.cpu_back_right.monster = createActiveMonster("sigma", "cpu", { level: 2, investedStones: 2 });
+          game.slots.cpu_back_left.monster = createActiveMonster("takokke", "cpu", { status: "prepared" });
+
+          expect(getCommandTargets(game, "player_back_right", command.id).length, `${card.name} Lv${level.level} ${command.name}`).toBeGreaterThan(0);
+        }
+      }
+    }
   });
 
   it("allows attacks against allied monsters", () => {

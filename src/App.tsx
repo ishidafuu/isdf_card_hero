@@ -27,7 +27,7 @@ import {
   useMasterAction,
   useMasterHpDraw,
 } from "./game/rules";
-import type { CommandDef, GameState, MagicTargetKind, MasterActionId, PlayerId, RangeTag, SlotKey, Target } from "./game/types";
+import type { CommandDef, GameState, MagicTargetKind, MasterActionId, PlayerId, SlotKey, Target } from "./game/types";
 
 type BoardCell =
   | { kind: "slot"; slotKey: SlotKey }
@@ -1223,9 +1223,6 @@ function getCommandDisabledReason(game: GameState, slotKey: SlotKey, command: Co
   if (cost > player.stones) {
     return `Stone不足: 必要${cost} / 所持${player.stones}`;
   }
-  if (!isImplementedCommandRange(command.range) || command.implemented === false) {
-    return "未実装の射程または効果";
-  }
   if (targets.length === 0) {
     return "射程内に対象なし";
   }
@@ -1283,10 +1280,6 @@ function getMonsterActionDisabledReason(game: GameState, slotKey: SlotKey): stri
     return "このターンは行動済み";
   }
   return undefined;
-}
-
-function isImplementedCommandRange(range: RangeTag): boolean {
-  return range === "adjacent" || range === "one_skip" || range === "any_monster" || range === "any_target" || range === "master";
 }
 
 function pendingDropActionTargetKey(action: PendingDropAction): string {
@@ -1616,7 +1609,6 @@ function commandSummary(command: CommandDef): string {
     command.stoneCost ? `Stone ${command.stoneCost}` : "",
     command.effectText ? `効果 ${command.effectText}` : "",
     command.recoilDamage ? `反動 ${command.recoilDamage}` : "",
-    command.implemented === false ? "未実装" : "",
   ].filter(Boolean).join(" / ");
 }
 
@@ -1626,7 +1618,6 @@ function commandActionSummary(command: CommandDef): string {
     command.stoneCost ? `Stone ${command.stoneCost}` : "Stone 0",
     command.effectText ? command.effectText : "",
     command.recoilDamage ? `反動 ${command.recoilDamage}` : "",
-    command.implemented === false ? "未実装" : "",
   ].filter(Boolean).join(" / ");
 }
 
@@ -1658,13 +1649,16 @@ function rangeLabel(range: string, rawRange?: string): string {
   if (range === "line") {
     return `↔️ ${rawRange ?? "一直線"}`;
   }
-  if (range === "unimplemented") {
-    return rawRange ? `未対応: ${rawRange}` : "未対応";
+  if (range === "special") {
+    return rawRange ? `✨ ${rawRange}` : "✨ 特殊";
   }
   return "👑 マスター";
 }
 
 function targetKindsLabel(targetKinds: MagicTargetKind[]): string {
+  if (targetKinds.length === 0) {
+    return "カード効果";
+  }
   return targetKinds
     .map((kind) => {
       if (kind === "ally_monster") {

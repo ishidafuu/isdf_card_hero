@@ -6,6 +6,7 @@ import {
   endTurn,
   focusMonster,
   getCommandTargets,
+  getMagicTargets,
   getMasterActionTargets,
   getMonsterCommands,
   moveMonster,
@@ -124,6 +125,7 @@ export function listCpuDecisions(state: GameState): CpuDecision[] {
   return [
     ...listAttackDecisions(state),
     ...listMasterAttackDecisions(state),
+    ...listMagicDecisions(state),
     ...listSummonDecisions(state),
     ...listFocusDecisions(state),
     createEndTurnDecision(),
@@ -314,6 +316,40 @@ function createMasterAttackDecision(state: GameState, target: Target): CpuDecisi
   };
 }
 
+function listMagicDecisions(state: GameState): CpuDecision[] {
+  const decisions: CpuDecision[] = [];
+  const playerId = state.currentPlayer;
+  const beforeScore = evaluateState(state, playerId);
+
+  for (const card of state.players[playerId].hand) {
+    const def = getCardDef(card.cardId);
+    if (def.type !== "magic") {
+      continue;
+    }
+
+    for (const target of getMagicTargets(state, card.instanceId)) {
+      let after: GameState;
+      try {
+        after = playMagic(state, { handInstanceId: card.instanceId, target });
+      } catch {
+        continue;
+      }
+      const score = evaluateState(after, playerId) - beforeScore - def.cost * 8;
+      if (score <= 8) {
+        continue;
+      }
+      decisions.push({
+        type: "magic",
+        action: { handInstanceId: card.instanceId, target },
+        reason: `${def.name}で局面を改善できるため使用`,
+        score,
+      });
+    }
+  }
+
+  return decisions;
+}
+
 function listSummonDecisions(state: GameState): CpuDecision[] {
   const decisions: CpuDecision[] = [];
   const playerId = state.currentPlayer;
@@ -437,6 +473,9 @@ function decisionPriority(decision: CpuDecision): number {
   }
   if (decision.type === "summon") {
     return 50;
+  }
+  if (decision.type === "magic") {
+    return 45;
   }
   if (decision.type === "attack") {
     return 40;

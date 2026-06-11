@@ -264,7 +264,7 @@ export const CARD_DEFS = {
             "range": "straight",
             "stoneCost": 1,
             "rangeText": "まっすぐ",
-            "implemented": false
+            "implemented": true
           }
         ]
       },
@@ -286,7 +286,7 @@ export const CARD_DEFS = {
             "range": "straight",
             "stoneCost": 1,
             "rangeText": "まっすぐ",
-            "implemented": false
+            "implemented": true
           }
         ]
       },
@@ -308,7 +308,7 @@ export const CARD_DEFS = {
             "range": "straight",
             "stoneCost": 1,
             "rangeText": "まっすぐ",
-            "implemented": false
+            "implemented": true
           }
         ]
       }
@@ -345,7 +345,7 @@ export const CARD_DEFS = {
             "range": "piercing",
             "stoneCost": 1,
             "rangeText": "貫通",
-            "implemented": false
+            "implemented": true
           }
         ]
       },
@@ -367,7 +367,7 @@ export const CARD_DEFS = {
             "range": "piercing",
             "stoneCost": 1,
             "rangeText": "貫通",
-            "implemented": false
+            "implemented": true
           }
         ]
       }
@@ -406,7 +406,7 @@ export const CARD_DEFS = {
             "range": "straight",
             "stoneCost": 2,
             "rangeText": "まっすぐ",
-            "implemented": false
+            "implemented": true
           }
         ]
       },
@@ -428,7 +428,7 @@ export const CARD_DEFS = {
             "range": "straight",
             "stoneCost": 2,
             "rangeText": "まっすぐ",
-            "implemented": false
+            "implemented": true
           }
         ]
       }
@@ -511,7 +511,7 @@ export const CARD_DEFS = {
             "power": 2,
             "range": "decreasing_straight",
             "rangeText": "減るまっすぐ",
-            "implemented": false
+            "implemented": true
           }
         ]
       },
@@ -532,7 +532,7 @@ export const CARD_DEFS = {
             "power": 3,
             "range": "decreasing_straight",
             "rangeText": "減るまっすぐ",
-            "implemented": false
+            "implemented": true
           }
         ]
       }
@@ -918,7 +918,7 @@ export const CARD_DEFS = {
             "range": "two_skip",
             "stoneCost": 1,
             "rangeText": "２つ飛び",
-            "implemented": false
+            "implemented": true
           }
         ]
       },
@@ -939,7 +939,7 @@ export const CARD_DEFS = {
             "power": 3,
             "range": "two_skip",
             "rangeText": "２つ飛び",
-            "implemented": false
+            "implemented": true
           }
         ]
       },
@@ -960,7 +960,7 @@ export const CARD_DEFS = {
             "power": 3,
             "range": "two_skip",
             "rangeText": "２つ&桂馬飛び",
-            "implemented": false
+            "implemented": true
           }
         ]
       }
@@ -996,7 +996,7 @@ export const CARD_DEFS = {
             "power": 1,
             "range": "line",
             "rangeText": "一直線",
-            "implemented": false
+            "implemented": true
           }
         ]
       },
@@ -1017,7 +1017,7 @@ export const CARD_DEFS = {
             "power": 2,
             "range": "line",
             "rangeText": "一直線",
-            "implemented": false
+            "implemented": true
           }
         ]
       }
@@ -1055,7 +1055,7 @@ export const CARD_DEFS = {
     "targetKinds": [],
     "category": "シールド魔法",
     "continuance": "効果は１ターン",
-    "implemented": false,
+    "implemented": true,
     "notes": []
   },
   "card_026": {
@@ -1071,7 +1071,7 @@ export const CARD_DEFS = {
     "description": "【攻撃魔法】 好きなところに１パワーの電撃で攻撃する",
     "targetKinds": [],
     "category": "攻撃魔法",
-    "implemented": false,
+    "implemented": true,
     "notes": []
   },
   "card_027": {
@@ -1088,7 +1088,7 @@ export const CARD_DEFS = {
     "targetKinds": [],
     "category": "パワー魔法",
     "continuance": "効果は１ターン 効果は１度だけ",
-    "implemented": false,
+    "implemented": true,
     "notes": []
   },
   "card_028": {
@@ -1104,7 +1104,7 @@ export const CARD_DEFS = {
     "description": "【レベル魔法】 モンスターのレベルをランダムで１つ変化させる",
     "targetKinds": [],
     "category": "レベル魔法",
-    "implemented": false,
+    "implemented": true,
     "notes": []
   },
   "card_029": {
@@ -1120,7 +1120,7 @@ export const CARD_DEFS = {
     "description": "【レベル魔法】 モンスターをレベルダウンさせる",
     "targetKinds": [],
     "category": "レベル魔法",
-    "implemented": false,
+    "implemented": true,
     "notes": []
   },
   "card_030": {
@@ -1137,7 +1137,7 @@ export const CARD_DEFS = {
     "targetKinds": [],
     "category": "シールド魔法",
     "continuance": "効果は１ターン",
-    "implemented": false,
+    "implemented": true,
     "notes": []
   },
   "card_031": {
@@ -1153,7 +1153,7 @@ export const CARD_DEFS = {
     "description": "【空間魔法】 相手同士または自分同士のモンスターの場所を入れ換える",
     "targetKinds": [],
     "category": "空間魔法",
-    "implemented": false,
+    "implemented": true,
     "notes": []
   },
   "thunder": {
@@ -1207,9 +1207,9 @@ export const CARD_DEFS = {
             "id": "レベルダウン",
             "name": "レベルダウン",
             "power": 0,
-            "range": "unimplemented",
+            "range": "special",
             "stoneCost": 2,
-            "implemented": false
+            "implemented": true
           }
         ]
       },
@@ -1566,7 +1566,7 @@ export const CARD_DEFS = {
             "range": "piercing",
             "stoneCost": 2,
             "rangeText": "貫通",
-            "implemented": false
+            "implemented": true
           }
         ]
       }
@@ -1613,10 +1613,10 @@ export const CARD_DEFS = {
             "id": "ヘブンズドア",
             "name": "ヘブンズドア",
             "power": 0,
-            "range": "unimplemented",
+            "range": "special",
             "stoneCost": 3,
             "effectText": "モンスターをフィールドから消す",
-            "implemented": false
+            "implemented": true
           }
         ]
       }
@@ -1927,7 +1927,7 @@ export const CARD_DEFS = {
             "power": 2,
             "range": "two_skip",
             "rangeText": "２つ飛び",
-            "implemented": false
+            "implemented": true
           }
         ]
       },
@@ -1948,7 +1948,7 @@ export const CARD_DEFS = {
             "power": 3,
             "range": "two_skip",
             "rangeText": "２つ&桂馬飛び",
-            "implemented": false
+            "implemented": true
           }
         ]
       }
@@ -1982,9 +1982,9 @@ export const CARD_DEFS = {
             "id": "デスブーメラン",
             "name": "デスブーメラン",
             "power": 3,
-            "range": "unimplemented",
+            "range": "special",
             "rangeText": "桂馬飛び",
-            "implemented": false
+            "implemented": true
           }
         ]
       }
@@ -2044,7 +2044,7 @@ export const CARD_DEFS = {
             "power": 1,
             "range": "two_skip",
             "rangeText": "１つ＆２つ飛び",
-            "implemented": false
+            "implemented": true
           }
         ]
       }
@@ -2189,7 +2189,7 @@ export const CARD_DEFS = {
     "targetKinds": [],
     "category": "シールド魔法",
     "continuance": "効果は１ターン 効果は１度だけ",
-    "implemented": false,
+    "implemented": true,
     "notes": []
   },
   "card_056": {
@@ -2205,7 +2205,7 @@ export const CARD_DEFS = {
     "description": "【攻撃魔法】 フィールド全体を１パワーで攻撃する",
     "targetKinds": [],
     "category": "攻撃魔法",
-    "implemented": false,
+    "implemented": true,
     "notes": []
   },
   "card_057": {
@@ -2221,7 +2221,7 @@ export const CARD_DEFS = {
     "description": "【特殊魔法】 自分のモンスターをフィールドから消す",
     "targetKinds": [],
     "category": "特殊魔法",
-    "implemented": false,
+    "implemented": true,
     "notes": []
   },
   "card_058": {
@@ -2238,7 +2238,7 @@ export const CARD_DEFS = {
     "targetKinds": [],
     "category": "特殊魔法",
     "continuance": "効果は１ターン",
-    "implemented": false,
+    "implemented": true,
     "notes": []
   },
   "card_059": {
@@ -2255,7 +2255,7 @@ export const CARD_DEFS = {
     "targetKinds": [],
     "category": "パワー魔法",
     "continuance": "効果は１ターン 効果は１度だけ",
-    "implemented": false,
+    "implemented": true,
     "notes": []
   },
   "card_060": {
@@ -2272,7 +2272,7 @@ export const CARD_DEFS = {
     "targetKinds": [],
     "category": "レベル魔法",
     "continuance": "効果は１ターン",
-    "implemented": false,
+    "implemented": true,
     "notes": []
   },
   "card_061": {
@@ -2288,7 +2288,7 @@ export const CARD_DEFS = {
     "description": "【特殊魔法】 味方モンスター１体と敵モンスター１体を消す 誘惑された方は消えないこともある",
     "targetKinds": [],
     "category": "特殊魔法",
-    "implemented": false,
+    "implemented": true,
     "notes": []
   },
   "card_062": {
@@ -2305,7 +2305,7 @@ export const CARD_DEFS = {
     "targetKinds": [],
     "category": "特殊防御魔法",
     "continuance": "効果は１ターン",
-    "implemented": false,
+    "implemented": true,
     "notes": []
   },
   "card_063": {
@@ -2322,7 +2322,7 @@ export const CARD_DEFS = {
     "targetKinds": [],
     "category": "特殊魔法",
     "continuance": "効果は１ターン 効果は１度だけ",
-    "implemented": false,
+    "implemented": true,
     "notes": []
   },
   "card_064": {
@@ -2338,7 +2338,7 @@ export const CARD_DEFS = {
     "description": "【特殊魔法】 フィールド上の全員に付いている全ての効果を消す",
     "targetKinds": [],
     "category": "特殊魔法",
-    "implemented": false,
+    "implemented": true,
     "notes": []
   },
   "card_065": {
@@ -2354,7 +2354,7 @@ export const CARD_DEFS = {
     "description": "【空間魔法】 フィールドのモンスターと手札のモンスターを入れ換える",
     "targetKinds": [],
     "category": "空間魔法",
-    "implemented": false,
+    "implemented": true,
     "notes": []
   },
   "card_066": {
@@ -2770,10 +2770,10 @@ export const CARD_DEFS = {
             "id": "ホワイトブレス",
             "name": "ホワイトブレス",
             "power": 0,
-            "range": "unimplemented",
+            "range": "special",
             "stoneCost": 2,
             "effectText": "相手モンスターは、ダメージを受けるまで行動できなくなる",
-            "implemented": false
+            "implemented": true
           }
         ]
       }
@@ -2954,10 +2954,10 @@ export const CARD_DEFS = {
             "id": "マッドホール",
             "name": "マッドホール",
             "power": 0,
-            "range": "unimplemented",
+            "range": "special",
             "stoneCost": 2,
             "effectText": "味方モンスターをフィールドから消す 自分はＨＰが１回復 パワーも１上がる",
-            "implemented": false
+            "implemented": true
           }
         ]
       }
@@ -3067,9 +3067,9 @@ export const CARD_DEFS = {
             "id": "双華剣_陽",
             "name": "双華剣 陽",
             "power": 2,
-            "range": "unimplemented",
+            "range": "special",
             "rangeText": "前衛攻撃",
-            "implemented": false
+            "implemented": true
           }
         ]
       },
@@ -3088,10 +3088,10 @@ export const CARD_DEFS = {
             "id": "双華剣_陽",
             "name": "双華剣 陽",
             "power": 3,
-            "range": "unimplemented",
+            "range": "special",
             "rangeText": "前衛攻撃",
             "effectText": "ムータンがいれば特技がどこにでも届くようになる",
-            "implemented": false
+            "implemented": true
           }
         ]
       }
@@ -3125,9 +3125,9 @@ export const CARD_DEFS = {
             "id": "双華剣_陰",
             "name": "双華剣 陰",
             "power": 2,
-            "range": "unimplemented",
+            "range": "special",
             "rangeText": "後衛攻撃",
-            "implemented": false
+            "implemented": true
           }
         ]
       },
@@ -3146,10 +3146,10 @@ export const CARD_DEFS = {
             "id": "双華剣_陰",
             "name": "双華剣 陰",
             "power": 3,
-            "range": "unimplemented",
+            "range": "special",
             "rangeText": "後衛攻撃",
             "effectText": "フーヨウがいれば特技がどこにでも届くようになる",
-            "implemented": false
+            "implemented": true
           }
         ]
       }
@@ -3207,7 +3207,7 @@ export const CARD_DEFS = {
     "targetKinds": [],
     "category": "空間魔法",
     "continuance": "効果は１ターン",
-    "implemented": false,
+    "implemented": true,
     "notes": []
   },
   "card_087": {
@@ -3223,7 +3223,7 @@ export const CARD_DEFS = {
     "description": "【特殊魔法】 どちらかのフィールド全体の魔法効果を消す ただしシールドとパワー系は消せない",
     "targetKinds": [],
     "category": "特殊魔法",
-    "implemented": false,
+    "implemented": true,
     "notes": []
   },
   "card_088": {
@@ -3240,7 +3240,7 @@ export const CARD_DEFS = {
     "targetKinds": [],
     "category": "シールド魔法",
     "continuance": "効果は１ターン",
-    "implemented": false,
+    "implemented": true,
     "notes": []
   },
   "card_089": {
@@ -3257,7 +3257,7 @@ export const CARD_DEFS = {
     "targetKinds": [],
     "category": "シールド魔法",
     "continuance": "効果は１ターン",
-    "implemented": false,
+    "implemented": true,
     "notes": []
   },
   "card_090": {
@@ -3273,7 +3273,7 @@ export const CARD_DEFS = {
     "description": "【特殊魔法】 倒されたモンスターが山札の先頭に戻る スピードバトルではストーンゲージが回復する",
     "targetKinds": [],
     "category": "特殊魔法",
-    "implemented": false,
+    "implemented": true,
     "notes": []
   },
   "card_091": {
@@ -3290,7 +3290,7 @@ export const CARD_DEFS = {
     "targetKinds": [],
     "category": "特殊防御魔法",
     "continuance": "効果は１ターン",
-    "implemented": false,
+    "implemented": true,
     "notes": []
   },
   "card_092": {
@@ -3306,7 +3306,7 @@ export const CARD_DEFS = {
     "description": "【攻撃魔法】 好きなところに２パワーで攻撃 攻撃はその周囲にもおよぶことがある",
     "targetKinds": [],
     "category": "攻撃魔法",
-    "implemented": false,
+    "implemented": true,
     "notes": []
   },
   "card_093": {
@@ -3322,7 +3322,7 @@ export const CARD_DEFS = {
     "description": "【空間魔法】 フィールド上のモンスターの場所を１つずつ回す",
     "targetKinds": [],
     "category": "空間魔法",
-    "implemented": false,
+    "implemented": true,
     "notes": []
   },
   "card_094": {
@@ -3339,7 +3339,7 @@ export const CARD_DEFS = {
     "targetKinds": [],
     "category": "パワー魔法",
     "continuance": "効果は１ターン 効果は１度だけ",
-    "implemented": false,
+    "implemented": true,
     "notes": []
   },
   "card_095": {
@@ -3356,7 +3356,7 @@ export const CARD_DEFS = {
     "targetKinds": [],
     "category": "空間魔法",
     "continuance": "効果は１ターン 効果は１度だけ",
-    "implemented": false,
+    "implemented": true,
     "notes": []
   },
   "power_up": {
@@ -3392,7 +3392,7 @@ export const CARD_DEFS = {
     "targetKinds": [],
     "category": "特殊魔法",
     "continuance": "効果は１ターン 効果は１度だけ",
-    "implemented": false,
+    "implemented": true,
     "notes": []
   },
   "card_098": {
@@ -3409,7 +3409,7 @@ export const CARD_DEFS = {
     "targetKinds": [],
     "category": "特殊魔法",
     "continuance": "効果は１ターン 効果は１度だけ",
-    "implemented": false,
+    "implemented": true,
     "notes": []
   },
   "card_099": {
@@ -3630,9 +3630,9 @@ export const CARD_DEFS = {
             "id": "それちょうだい",
             "name": "それちょうだい",
             "power": 0,
-            "range": "unimplemented",
+            "range": "special",
             "stoneCost": 1,
-            "implemented": false
+            "implemented": true
           }
         ]
       },
@@ -3651,10 +3651,10 @@ export const CARD_DEFS = {
             "id": "それちょうだい",
             "name": "それちょうだい",
             "power": 0,
-            "range": "unimplemented",
+            "range": "special",
             "stoneCost": 1,
             "effectText": "マスターのストーンを２コ吸収する",
-            "implemented": false
+            "implemented": true
           }
         ]
       }
@@ -3690,8 +3690,8 @@ export const CARD_DEFS = {
             "id": "パワーチャージ",
             "name": "パワーチャージ",
             "power": 0,
-            "range": "unimplemented",
-            "implemented": false
+            "range": "special",
+            "implemented": true
           }
         ]
       },
@@ -3710,9 +3710,9 @@ export const CARD_DEFS = {
             "id": "パワーチャージ",
             "name": "パワーチャージ",
             "power": 0,
-            "range": "unimplemented",
+            "range": "special",
             "effectText": "マスターのパワーを上げフィールドを去る",
-            "implemented": false
+            "implemented": true
           }
         ]
       }
@@ -3739,9 +3739,9 @@ export const CARD_DEFS = {
             "id": "attack",
             "name": "アタック",
             "power": 2,
-            "range": "unimplemented",
+            "range": "special",
             "rangeText": "ラオンソード",
-            "implemented": false
+            "implemented": true
           },
           {
             "id": "ドリルブレイク",
@@ -3760,9 +3760,9 @@ export const CARD_DEFS = {
             "id": "attack",
             "name": "アタック",
             "power": 3,
-            "range": "unimplemented",
+            "range": "special",
             "rangeText": "ラオンソード",
-            "implemented": false
+            "implemented": true
           },
           {
             "id": "ドリルブレイク",
@@ -3797,9 +3797,9 @@ export const CARD_DEFS = {
             "id": "attack",
             "name": "アタック",
             "power": 2,
-            "range": "unimplemented",
+            "range": "special",
             "rangeText": "レオンソード",
-            "implemented": false
+            "implemented": true
           },
           {
             "id": "ドリルブレイク",
@@ -3818,9 +3818,9 @@ export const CARD_DEFS = {
             "id": "attack",
             "name": "アタック",
             "power": 3,
-            "range": "unimplemented",
+            "range": "special",
             "rangeText": "レオンソード",
-            "implemented": false
+            "implemented": true
           },
           {
             "id": "ドリルブレイク",
@@ -3929,10 +3929,10 @@ export const CARD_DEFS = {
             "id": "ドローフォース",
             "name": "ドローフォース",
             "power": 0,
-            "range": "unimplemented",
+            "range": "special",
             "stoneCost": 1,
             "effectText": "手札が４枚以下ならカードを１枚ドローできる",
-            "implemented": false
+            "implemented": true
           }
         ]
       }
@@ -3968,8 +3968,8 @@ export const CARD_DEFS = {
             "id": "レベルアップ",
             "name": "レベルアップ",
             "power": 0,
-            "range": "unimplemented",
-            "implemented": false
+            "range": "special",
+            "implemented": true
           }
         ]
       },
@@ -3988,8 +3988,8 @@ export const CARD_DEFS = {
             "id": "レベルアップ",
             "name": "レベルアップ",
             "power": 0,
-            "range": "unimplemented",
-            "implemented": false
+            "range": "special",
+            "implemented": true
           }
         ]
       },
@@ -4008,8 +4008,8 @@ export const CARD_DEFS = {
             "id": "レベルアップ",
             "name": "レベルアップ",
             "power": 0,
-            "range": "unimplemented",
-            "implemented": false
+            "range": "special",
+            "implemented": true
           }
         ]
       }
@@ -4028,7 +4028,7 @@ export const CARD_DEFS = {
     "description": "【ストーン魔法】 マスターのストーンを半分に減らす",
     "targetKinds": [],
     "category": "ストーン魔法",
-    "implemented": false,
+    "implemented": true,
     "notes": [
       "Ｓｐｄ使用不可"
     ]
@@ -4046,7 +4046,7 @@ export const CARD_DEFS = {
     "description": "【カード魔法】 手札を山札に戻しシャッフルして引き直す",
     "targetKinds": [],
     "category": "カード魔法",
-    "implemented": false,
+    "implemented": true,
     "notes": [
       "Ｓｐｄ使用不可"
     ]
@@ -4064,7 +4064,7 @@ export const CARD_DEFS = {
     "description": "【カード魔法】 今後ドローするカードを５枚目まで見た後並べ替えができる",
     "targetKinds": [],
     "category": "カード魔法",
-    "implemented": false,
+    "implemented": true,
     "notes": [
       "Ｓｐｄ使用不可"
     ]
@@ -4082,7 +4082,7 @@ export const CARD_DEFS = {
     "description": "【カード魔法】 カードを捨て捨てた枚数分新しくドローしてくることができる",
     "targetKinds": [],
     "category": "カード魔法",
-    "implemented": false,
+    "implemented": true,
     "notes": [
       "Ｓｐｄ使用不可"
     ]
@@ -4100,7 +4100,7 @@ export const CARD_DEFS = {
     "description": "【カード魔法】 準備中のモンスターを登場させる",
     "targetKinds": [],
     "category": "カード魔法",
-    "implemented": false,
+    "implemented": true,
     "notes": [
       "Ｓｐｄ使用不可"
     ]
@@ -4118,7 +4118,7 @@ export const CARD_DEFS = {
     "description": "【攻撃魔法】 相手または味方の前衛を１パワーで攻撃する",
     "targetKinds": [],
     "category": "攻撃魔法",
-    "implemented": false,
+    "implemented": true,
     "notes": []
   },
   "card_119": {
@@ -4135,7 +4135,7 @@ export const CARD_DEFS = {
     "targetKinds": [],
     "category": "特殊魔法",
     "continuance": "効果は１ターン",
-    "implemented": false,
+    "implemented": true,
     "notes": [
       "Ｓｐｄ使用不可"
     ]
@@ -4153,7 +4153,7 @@ export const CARD_DEFS = {
     "description": "【カード魔法】 手札が５枚になるまでカードをドローする",
     "targetKinds": [],
     "category": "カード魔法",
-    "implemented": false,
+    "implemented": true,
     "notes": [
       "Ｓｐｄ使用不可"
     ]
@@ -4171,7 +4171,7 @@ export const CARD_DEFS = {
     "description": "【ストーン魔法】 マスターのストーンを１～３コ増やす",
     "targetKinds": [],
     "category": "ストーン魔法",
-    "implemented": false,
+    "implemented": true,
     "notes": [
       "Ｓｐｄ使用不可"
     ]
@@ -4189,7 +4189,7 @@ export const CARD_DEFS = {
     "description": "【カード魔法】 準備中モンスターを山札の最後に戻す",
     "targetKinds": [],
     "category": "カード魔法",
-    "implemented": false,
+    "implemented": true,
     "notes": [
       "Ｓｐｄ使用不可"
     ]
@@ -4207,7 +4207,7 @@ export const CARD_DEFS = {
     "description": "【カード魔法】 前衛、後衛、魔法、スーパーを指定し一枚手札に入れる",
     "targetKinds": [],
     "category": "カード魔法",
-    "implemented": false,
+    "implemented": true,
     "notes": [
       "Ｓｐｄ使用不可"
     ]
@@ -4226,7 +4226,7 @@ export const CARD_DEFS = {
     "targetKinds": [],
     "category": "特殊魔法",
     "continuance": "効果は１ターン",
-    "implemented": false,
+    "implemented": true,
     "notes": [
       "Ｓｐｄ使用不可"
     ]
@@ -4244,7 +4244,7 @@ export const CARD_DEFS = {
     "description": "【呪印魔法】 フィールドから去る時、マスターが１ダメージ受ける呪いをモンスターにかける",
     "targetKinds": [],
     "category": "呪印魔法",
-    "implemented": false,
+    "implemented": true,
     "notes": [
       "Ｓｐｄ使用不可"
     ]
@@ -4262,7 +4262,7 @@ export const CARD_DEFS = {
     "description": "【攻撃魔法】 フィールド全体を３パワーで攻撃する",
     "targetKinds": [],
     "category": "攻撃魔法",
-    "implemented": false,
+    "implemented": true,
     "notes": [
       "Ｓｐｄ使用不可"
     ]
@@ -4280,7 +4280,7 @@ export const CARD_DEFS = {
     "description": "【回復魔法】 マスターまたはモンスターのＨＰを１回復",
     "targetKinds": [],
     "category": "回復魔法",
-    "implemented": false,
+    "implemented": true,
     "notes": []
   },
   "card_128": {
@@ -4297,7 +4297,7 @@ export const CARD_DEFS = {
     "targetKinds": [],
     "category": "特殊魔法",
     "continuance": "効果は１ターン",
-    "implemented": false,
+    "implemented": true,
     "notes": [
       "Ｓｐｄ使用不可"
     ]
@@ -4315,7 +4315,7 @@ export const CARD_DEFS = {
     "description": "【特殊魔法】 モンスター１体に気合いだめをさせる",
     "targetKinds": [],
     "category": "特殊魔法",
-    "implemented": false,
+    "implemented": true,
     "notes": [
       "Ｓｐｄ使用不可"
     ]
@@ -4333,7 +4333,7 @@ export const CARD_DEFS = {
     "description": "【最高位魔法】 モンスターを登場時の状態に戻す",
     "targetKinds": [],
     "category": "最高位魔法",
-    "implemented": false,
+    "implemented": true,
     "notes": []
   },
   "card_132": {
@@ -4450,9 +4450,9 @@ export const CARD_DEFS = {
             "id": "ソウルスイッチ",
             "name": "ソウルスイッチ",
             "power": 0,
-            "range": "unimplemented",
+            "range": "special",
             "stoneCost": 2,
-            "implemented": false
+            "implemented": true
           }
         ]
       },
@@ -4471,10 +4471,10 @@ export const CARD_DEFS = {
             "id": "ソウルスイッチ",
             "name": "ソウルスイッチ",
             "power": 0,
-            "range": "unimplemented",
+            "range": "special",
             "stoneCost": 2,
             "effectText": "手札のモンスターと同じレベルで入れ替わる",
-            "implemented": false
+            "implemented": true
           }
         ]
       }
@@ -4760,7 +4760,7 @@ export const CARD_DEFS = {
     "targetKinds": [],
     "category": "最高位魔法",
     "continuance": "効果は１ターン",
-    "implemented": false,
+    "implemented": true,
     "notes": [
       "限定版（非売品）"
     ]
@@ -4778,7 +4778,7 @@ export const CARD_DEFS = {
     "description": "【最高位魔法】 モンスターをレベルアップさせる",
     "targetKinds": [],
     "category": "最高位魔法",
-    "implemented": false,
+    "implemented": true,
     "notes": [
       "限定版（非売品）"
     ]
@@ -4796,7 +4796,7 @@ export const CARD_DEFS = {
     "description": "【パワー魔法】 スパルタスにのみ使用可能 スパルタスが真の力を発揮する",
     "targetKinds": [],
     "category": "パワー魔法",
-    "implemented": false,
+    "implemented": true,
     "notes": [
       "流出モノ！（珍品）"
     ]

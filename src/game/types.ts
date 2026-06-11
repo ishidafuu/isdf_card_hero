@@ -17,7 +17,7 @@ export type RangeTag =
   | "piercing"
   | "decreasing_straight"
   | "line"
-  | "unimplemented";
+  | "special";
 export type MagicTargetKind = "ally_monster" | "enemy_monster" | "enemy_master";
 
 export interface CardInstance {
@@ -92,6 +92,17 @@ export interface MonsterState {
   focused: boolean;
   powerUp: boolean;
   shielded: boolean;
+  powerModifier?: number;
+  powerOverride?: number;
+  cannotMove?: boolean;
+  levelFixed?: boolean;
+  immune?: boolean;
+  oneShotShield?: boolean;
+  reviveOnDefeat?: boolean;
+  shadowCursed?: boolean;
+  scapegoat?: boolean;
+  canAttackAnywhere?: boolean;
+  stoneCostMultiplier?: number;
 }
 
 export interface SlotState {
@@ -106,6 +117,7 @@ export interface PlayerState {
   id: PlayerId;
   masterHp: number;
   stones: number;
+  masterPowerBonus?: number;
   deck: CardInstance[];
   hand: CardInstance[];
   discard: CardInstance[];
