@@ -64,7 +64,7 @@ function numericValue(raw) {
 function commandRange(rawRange, cardName, commandName, hasPower) {
   const normalized = rawRange.normalize("NFKC");
   if (!normalized) {
-    return hasPower ? "adjacent" : "unimplemented";
+    return hasPower ? "adjacent" : "special";
   }
   if (normalized.includes("1つ飛び")) {
     return "one_skip";
@@ -90,11 +90,23 @@ function commandRange(rawRange, cardName, commandName, hasPower) {
   if (normalized.includes("一直線")) {
     return "line";
   }
-  return "unimplemented";
+  return "special";
 }
 
 function isImplementedRange(range) {
-  return ["adjacent", "one_skip", "any_monster", "any_target", "master"].includes(range);
+  return [
+    "adjacent",
+    "one_skip",
+    "any_monster",
+    "any_target",
+    "master",
+    "two_skip",
+    "straight",
+    "piercing",
+    "decreasing_straight",
+    "line",
+    "special",
+  ].includes(range);
 }
 
 function parseMonsterLevels(table, cardName) {
@@ -127,7 +139,7 @@ function parseMonsterLevels(table, cardName) {
         id: commandIdFor(text(element)),
         name: text(element),
         power: 0,
-        range: "unimplemented",
+        range: "special",
       };
       currentLevel.commands.push(currentCommand);
       continue;
@@ -157,7 +169,7 @@ function parseMonsterLevels(table, cardName) {
   return levels.map((level) => ({
     ...level,
     commands: level.commands.map((command) => {
-      const range = command.range === "unimplemented"
+      const range = command.range === "special"
         ? commandRange(command.rangeText ?? "", cardName, command.name, command.power > 0)
         : command.range;
       return {

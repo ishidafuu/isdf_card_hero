@@ -97,12 +97,27 @@ export interface MonsterState {
   cannotMove?: boolean;
   levelFixed?: boolean;
   immune?: boolean;
+  halfShielded?: boolean;
   oneShotShield?: boolean;
   reviveOnDefeat?: boolean;
   shadowCursed?: boolean;
   scapegoat?: boolean;
   canAttackAnywhere?: boolean;
   stoneCostMultiplier?: number;
+  commandSealed?: boolean;
+  cannotActUntilDamaged?: boolean;
+  berserkPower?: boolean;
+  dodgeChance?: boolean;
+  dragonShield?: boolean;
+  provokeTargetSlotKey?: SlotKey;
+  deathChainSlotKey?: SlotKey;
+  darkHoleSlotKey?: SlotKey;
+  stoneCurse?: boolean;
+  damageCurse?: boolean;
+  hollow?: boolean;
+  damageGuarded?: boolean;
+  revivedOnce?: boolean;
+  usedCommandIds?: string[];
 }
 
 export interface SlotState {
@@ -122,6 +137,7 @@ export interface PlayerState {
   hand: CardInstance[];
   discard: CardInstance[];
   turnsStarted: number;
+  masterActionsExchanged?: boolean;
 }
 
 export interface PendingLevelUp {
@@ -136,6 +152,7 @@ export interface GameState {
   slots: Record<SlotKey, SlotState>;
   currentPlayer: PlayerId;
   turnNumber: number;
+  randomSeed: number;
   log: string[];
   winner?: PlayerId;
   pendingLevelUp?: PendingLevelUp;
@@ -149,11 +166,17 @@ export interface CommandAction {
   attackerSlotKey: SlotKey;
   commandId: string;
   target: Target;
+  secondaryTarget?: Target;
+  secondaryHandInstanceId?: string;
 }
 
 export interface MagicAction {
   handInstanceId: string;
   target: Target;
+  secondaryTarget?: Target;
+  secondaryHandInstanceId?: string;
+  selectedHandInstanceIds?: string[];
+  searchCategory?: "front" | "back" | "magic";
 }
 
 export type MasterActionId = "master_attack" | "wake_up" | "shield";
