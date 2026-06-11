@@ -21,7 +21,7 @@ import {
   useMasterAction,
   useMasterHpDraw,
 } from "../../src/game/rules";
-import type { CardInstance, GameState, MonsterState, PlayerId } from "../../src/game/types";
+import type { CardInstance, GameState, MonsterState, PlayerId, SlotKey } from "../../src/game/types";
 
 describe("battle prototype rules", () => {
   it("builds a 30-card random deck with guaranteed composition and copy limits", () => {
@@ -520,6 +520,135 @@ describe("battle prototype rules", () => {
     expect(targets).not.toContainEqual({ kind: "monster", slotKey: "player_front_right" });
   });
 
+  it("can miss with Kentaurus Gemini Lance", () => {
+    const game = createInitialGame(130);
+    game.randomSeed = 0;
+    game.slots.player_front_left.monster = createActiveMonster("card_039", "player");
+    game.slots.cpu_front_left.monster = createActiveMonster("takokke", "cpu");
+
+    const next = attackWithCommand(game, {
+      attackerSlotKey: "player_front_left",
+      commandId: "ジェミニランス",
+      target: { kind: "monster", slotKey: "cpu_front_left" },
+    });
+
+    expect(next.slots.cpu_front_left.monster?.hp).toBe(5);
+    expect(next.log.some((entry) => entry.includes("ジェミニランスは空振りした"))).toBe(true);
+  });
+
+  it("uses Raon and Leon combined power only for Drill Break against the master", () => {
+    const game = createInitialGame(131);
+    game.slots.player_front_right.monster = createActiveMonster("card_107", "player", {
+      level: 2,
+      hp: 5,
+      investedStones: 2,
+    });
+    game.slots.player_front_left.monster = createActiveMonster("card_108", "player", {
+      level: 2,
+      hp: 5,
+      investedStones: 2,
+    });
+    game.slots.cpu_front_right.monster = createActiveMonster("takokke", "cpu");
+
+    expect(getCommandTargets(game, "player_front_right", "ドリルブレイク")).toEqual([
+      { kind: "master", playerId: "cpu" },
+    ]);
+
+    const next = attackWithCommand(game, {
+      attackerSlotKey: "player_front_right",
+      commandId: "ドリルブレイク",
+      target: { kind: "master", playerId: "cpu" },
+    });
+
+    expect(next.players.cpu.masterHp).toBe(6);
+    expect(next.players.cpu.stones).toBe(4);
+  });
+
+  it("moves Gungnir forward before sweep attacking", () => {
+    const game = createInitialGame(132);
+    game.slots.player_back_left.monster = createActiveMonster("card_076", "player", {
+      level: 2,
+      hp: 5,
+      investedStones: 2,
+    });
+    game.slots.player_front_left.monster = createActiveMonster("takokke", "player", {
+      instanceId: "front_ally",
+    });
+    game.slots.cpu_front_left.monster = createActiveMonster("takokke", "cpu");
+
+    expect(getCommandTargets(game, "player_back_left", "なぎ払い")).toContainEqual({
+      kind: "monster",
+      slotKey: "cpu_front_left",
+    });
+
+    const next = attackWithCommand(game, {
+      attackerSlotKey: "player_back_left",
+      commandId: "なぎ払い",
+      target: { kind: "monster", slotKey: "cpu_front_left" },
+    });
+
+    expect(next.slots.player_front_left.monster?.cardId).toBe("card_076");
+    expect(next.slots.player_back_left.monster?.instanceId).toBe("front_ally");
+    expect(next.slots.cpu_front_left.monster?.hp).toBe(3);
+  });
+
+  it("limits once-only Ro Ro and special attack targets from card text", () => {
+    let game = createInitialGame(133);
+    game.slots.player_back_left.monster = createActiveMonster("card_045", "player");
+    game.slots.cpu_front_left.monster = createActiveMonster("takokke", "cpu");
+
+    game = attackWithCommand(game, {
+      attackerSlotKey: "player_back_left",
+      commandId: "飛竜ロロ",
+      target: { kind: "monster", slotKey: "cpu_front_left" },
+    });
+    const arshu = game.slots.player_back_left.monster;
+    if (!arshu) {
+      throw new Error("Arshu should remain on the field");
+    }
+    arshu.actionCount = 0;
+
+    expect(getCommandTargets(game, "player_back_left", "飛竜ロロ")).toEqual([]);
+
+    game = createInitialGame(134);
+    game.slots.player_front_left.monster = createActiveMonster("card_078", "player", {
+      level: 2,
+      hp: 5,
+      investedStones: 2,
+    });
+    game.slots.player_back_left.monster = createActiveMonster("takokke", "player");
+    game.slots.cpu_back_right.monster = createActiveMonster("takokke", "cpu");
+    game.slots.cpu_front_right.monster = createActiveMonster("takokke", "cpu");
+
+    expect(getCommandTargets(game, "player_front_left", "爆裂キノコ")).toContainEqual({
+      kind: "monster",
+      slotKey: "cpu_back_right",
+    });
+    expect(getCommandTargets(game, "player_front_left", "爆裂キノコ")).not.toContainEqual({
+      kind: "monster",
+      slotKey: "player_back_left",
+    });
+
+    game = attackWithCommand(game, {
+      attackerSlotKey: "player_front_left",
+      commandId: "爆裂キノコ",
+      target: { kind: "monster", slotKey: "cpu_back_right" },
+    });
+
+    expect(game.slots.cpu_back_right.monster?.hp).toBe(2);
+    expect(game.slots.cpu_front_right.monster?.hp).toBe(3);
+
+    game = createInitialGame(135);
+    game.players.player.stones = 1;
+    game.slots.player_front_left.monster = createActiveMonster("card_082", "player");
+    game.slots.player_front_right.monster = createActiveMonster("takokke", "player", { level: 2, investedStones: 2 });
+    game.slots.cpu_front_left.monster = createActiveMonster("takokke", "cpu", { level: 2, investedStones: 2 });
+
+    expect(getCommandTargets(game, "player_front_left", "真名之書")).toEqual([
+      { kind: "monster", slotKey: "cpu_front_left" },
+    ]);
+  });
+
   it("gives every imported magic card at least one playable target in a populated board", () => {
     const magicCards = getAllCardDefs().filter((card) => card.type === "magic");
 
@@ -551,6 +680,7 @@ describe("battle prototype rules", () => {
         for (const command of level.commands) {
           const game = createInitialGame(128);
           game.players.player.stones = 99;
+          let attackerSlotKey: SlotKey = "player_back_right";
           game.slots.player_back_right.monster = createActiveMonster(card.id, "player", {
             hp: level.maxHp,
             level: level.level,
@@ -564,7 +694,34 @@ describe("battle prototype rules", () => {
           game.slots.cpu_back_right.monster = createActiveMonster("sigma", "cpu", { level: 2, investedStones: 2 });
           game.slots.cpu_back_left.monster = createActiveMonster("takokke", "cpu", { status: "prepared" });
 
-          expect(getCommandTargets(game, "player_back_right", command.id).length, `${card.name} Lv${level.level} ${command.name}`).toBeGreaterThan(0);
+          if (command.name === "ドリルブレイク" && card.id === "card_107") {
+            attackerSlotKey = "player_front_right";
+            game.slots.player_front_right.monster = createActiveMonster(card.id, "player", {
+              hp: level.maxHp,
+              level: level.level,
+              investedStones: level.level,
+            });
+            game.slots.player_front_left.monster = createActiveMonster("card_108", "player", {
+              level: level.level,
+              investedStones: level.level,
+            });
+            delete game.slots.player_back_right.monster;
+          }
+          if (command.name === "ドリルブレイク" && card.id === "card_108") {
+            attackerSlotKey = "player_front_left";
+            game.slots.player_front_left.monster = createActiveMonster(card.id, "player", {
+              hp: level.maxHp,
+              level: level.level,
+              investedStones: level.level,
+            });
+            game.slots.player_front_right.monster = createActiveMonster("card_107", "player", {
+              level: level.level,
+              investedStones: level.level,
+            });
+            delete game.slots.player_back_right.monster;
+          }
+
+          expect(getCommandTargets(game, attackerSlotKey, command.id).length, `${card.name} Lv${level.level} ${command.name}`).toBeGreaterThan(0);
         }
       }
     }

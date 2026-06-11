@@ -323,15 +323,19 @@ export function attackWithCommand(state: GameState, action: CommandAction): Game
     }
   }
 
+  const resolvedAttackerSlotKey = command.name === "なぎ払い"
+    ? advanceSweepingAttacker(next, action.attackerSlotKey)
+    : action.attackerSlotKey;
+
   if (action.target.kind === "master") {
     damageMasterByPower(next, action.target.playerId, power, {
       source: command.name,
       kind: "command",
-      attackerSlotKey: action.attackerSlotKey,
+      attackerSlotKey: resolvedAttackerSlotKey,
     });
-    finishCommandSideEffects(next, action.attackerSlotKey, command, hadBerserkPower, hadDamageCurse);
+    finishCommandSideEffects(next, resolvedAttackerSlotKey, command, hadBerserkPower, hadDamageCurse);
     if (!next.winner && command.recoilDamage) {
-      applyRecoil(next, action.attackerSlotKey, command.recoilDamage);
+      applyRecoil(next, resolvedAttackerSlotKey, command.recoilDamage);
     }
     return next;
   }
@@ -339,32 +343,32 @@ export function attackWithCommand(state: GameState, action: CommandAction): Game
   const defeated = damageMonster(next, action.target.slotKey, power, {
     source: command.name,
     kind: "command",
-    attackerSlotKey: action.attackerSlotKey,
+    attackerSlotKey: resolvedAttackerSlotKey,
   });
-  applyPostDamageCommandEffect(next, action.attackerSlotKey, command, action.target, power, !!defeated);
+  applyPostDamageCommandEffect(next, resolvedAttackerSlotKey, command, action.target, power, !!defeated);
   if (!defeated) {
-    finishCommandSideEffects(next, action.attackerSlotKey, command, hadBerserkPower, hadDamageCurse);
+    finishCommandSideEffects(next, resolvedAttackerSlotKey, command, hadBerserkPower, hadDamageCurse);
     const recoilDamage = getCommandRecoilDamage(command, power);
     if (recoilDamage) {
-      applyRecoil(next, action.attackerSlotKey, recoilDamage);
+      applyRecoil(next, resolvedAttackerSlotKey, recoilDamage);
     }
     return next;
   }
 
   if (defeated.owner === attacker.owner) {
     decreaseMasterHp(next, attacker.owner, 1, "味方撃破ペナルティ");
-    finishCommandSideEffects(next, action.attackerSlotKey, command, hadBerserkPower, hadDamageCurse);
+    finishCommandSideEffects(next, resolvedAttackerSlotKey, command, hadBerserkPower, hadDamageCurse);
     const recoilDamage = getCommandRecoilDamage(command, power);
     if (!next.winner && recoilDamage) {
-      applyRecoil(next, action.attackerSlotKey, recoilDamage);
+      applyRecoil(next, resolvedAttackerSlotKey, recoilDamage);
     }
     return next;
   }
 
-  const levelUpSlotKey = getLevelUpRecipientSlotKey(next, action.attackerSlotKey, defeated.level);
+  const levelUpSlotKey = getLevelUpRecipientSlotKey(next, resolvedAttackerSlotKey, defeated.level);
   const maxLevels = getLevelUpCapacity(next, levelUpSlotKey, defeated.level);
   if (maxLevels > 0 && next.currentPlayer === "player") {
-    finishCommandSideEffects(next, action.attackerSlotKey, command, hadBerserkPower, hadDamageCurse);
+    finishCommandSideEffects(next, resolvedAttackerSlotKey, command, hadBerserkPower, hadDamageCurse);
     if (!next.slots[levelUpSlotKey].monster) {
       return next;
     }
@@ -381,10 +385,10 @@ export function attackWithCommand(state: GameState, action: CommandAction): Game
   if (maxLevels > 0) {
     performLevelUp(next, levelUpSlotKey, maxLevels);
   }
-  finishCommandSideEffects(next, action.attackerSlotKey, command, hadBerserkPower, hadDamageCurse);
+  finishCommandSideEffects(next, resolvedAttackerSlotKey, command, hadBerserkPower, hadDamageCurse);
   const recoilDamage = getCommandRecoilDamage(command, power);
   if (recoilDamage) {
-    applyRecoil(next, action.attackerSlotKey, recoilDamage);
+    applyRecoil(next, resolvedAttackerSlotKey, recoilDamage);
   }
   return next;
 }
@@ -536,6 +540,9 @@ export function getCommandTargets(
   if (!monster || monster.owner !== state.currentPlayer || monster.status !== "active") {
     return [];
   }
+  if (monster.cardId === "card_045" && commandId === "飛竜ロロ" && monster.usedCommandIds?.includes("飛竜ロロ")) {
+    return [];
+  }
   if (monster.actionCount >= monster.actionLimit) {
     return [];
   }
@@ -630,6 +637,15 @@ function getCommandTargetsUnchecked(
   if (command.name === "挑発") {
     return activeMonsterTargets.filter((target) => target.kind === "monster" && target.slotKey !== attackerSlotKey);
   }
+  if (command.name === "爆裂キノコ") {
+    return activeMonsterTargets.filter((target) => target.kind === "monster" && state.slots[target.slotKey].owner === opponent);
+  }
+  if (command.name === "真名之書") {
+    return activeMonsterTargets.filter((target) => target.kind === "monster" && state.slots[target.slotKey].owner === opponent);
+  }
+  if (command.name === "ドリルブレイク") {
+    return drillBreakPartnerSlotKey(state, slot) ? [{ kind: "master", playerId: opponent }] : [];
+  }
   if (command.rangeText === "前衛攻撃") {
     if (hasActiveAllyCard(state, monster.owner, "card_084")) {
       return activeMonsterTargets;
@@ -644,6 +660,9 @@ function getCommandTargetsUnchecked(
   }
   if (command.rangeText === "ラオンソード" || command.rangeText === "レオンソード") {
     return rangeTargets(state, slot, command, activeMonsterTargets, opponent, "adjacent");
+  }
+  if (command.name === "なぎ払い") {
+    return rangeTargets(state, sweepingAttackSlot(state, attackerSlotKey), command, activeMonsterTargets, opponent, "adjacent");
   }
 
   if (command.range === "any_monster") {
@@ -2143,8 +2162,8 @@ function getCommandBasePower(
     const distance = rangedDistanceBetweenSlots(attackerSlot, state.slots[target.slotKey]);
     return Math.max(1, command.power - Math.max(0, distance - 1));
   }
-  if ((command.rangeText === "ラオンソード" || command.rangeText === "レオンソード") && command.name === "アタック") {
-    return command.power + partnerSwordPower(state, attackerSlot.monster);
+  if (command.name === "ドリルブレイク") {
+    return drillBreakPower(state, attackerSlot);
   }
   return command.power;
 }
@@ -2662,21 +2681,74 @@ function consumeAttackPowerBonuses(monster: MonsterState, command: CommandDef, b
   return power;
 }
 
-function partnerSwordPower(state: GameState, attacker: MonsterState | undefined): number {
+function drillBreakPower(state: GameState, attackerSlot: SlotState): number {
+  const attacker = attackerSlot.monster;
+  const partnerSlotKey = drillBreakPartnerSlotKey(state, attackerSlot);
+  if (!attacker || !partnerSlotKey) {
+    return 0;
+  }
+  const partner = state.slots[partnerSlotKey].monster;
+  if (!partner) {
+    return 0;
+  }
+  return (getMonsterCommands(attacker)[0]?.power ?? 0) + (getMonsterCommands(partner)[0]?.power ?? 0);
+}
+
+function drillBreakPartnerSlotKey(state: GameState, attackerSlot: SlotState): SlotKey | undefined {
+  const attacker = attackerSlot.monster;
   if (!attacker) {
-    return 0;
+    return undefined;
   }
-  const partnerCardId = attacker.cardId === "card_107" ? "card_108" : attacker.cardId === "card_108" ? "card_107" : undefined;
-  if (!partnerCardId) {
-    return 0;
+  const requirement = attacker.cardId === "card_107"
+    ? { partnerCardId: "card_108", attackerLane: "right" as const, partnerLane: "left" as const }
+    : attacker.cardId === "card_108"
+      ? { partnerCardId: "card_107", attackerLane: "left" as const, partnerLane: "right" as const }
+      : undefined;
+  if (!requirement || attackerSlot.row !== "front" || attackerSlot.lane !== requirement.attackerLane) {
+    return undefined;
   }
-  for (const slotKey of PLAYER_SLOT_ORDER[attacker.owner]) {
-    const partner = state.slots[slotKey].monster;
-    if (partner?.cardId === partnerCardId && partner.status === "active") {
-      return getMonsterCommands(partner)[0]?.power ?? 0;
-    }
+  const partnerSlotKey = makeSlotKey(attacker.owner, "front", requirement.partnerLane);
+  const partner = state.slots[partnerSlotKey].monster;
+  return partner?.cardId === requirement.partnerCardId && partner.status === "active"
+    ? partnerSlotKey
+    : undefined;
+}
+
+function sweepingAttackSlot(state: GameState, attackerSlotKey: SlotKey): SlotState {
+  const attackerSlot = state.slots[attackerSlotKey];
+  const destinationSlotKey = sweepingDestinationSlotKey(attackerSlot);
+  return destinationSlotKey ? state.slots[destinationSlotKey] : attackerSlot;
+}
+
+function advanceSweepingAttacker(state: GameState, attackerSlotKey: SlotKey): SlotKey {
+  const from = state.slots[attackerSlotKey];
+  const attacker = from.monster;
+  const destinationSlotKey = sweepingDestinationSlotKey(from);
+  if (!attacker || !destinationSlotKey) {
+    return attackerSlotKey;
   }
-  return 0;
+
+  const to = state.slots[destinationSlotKey];
+  clearDarkHoleIfMoved(attacker, destinationSlotKey);
+  if (to.monster) {
+    const other = to.monster;
+    clearDarkHoleIfMoved(other, attackerSlotKey);
+    to.monster = attacker;
+    from.monster = other;
+    appendLog(state, `${monsterName(attacker)}は前方へ瞬間移動し、${monsterName(other)}と入れ替わった`);
+  } else {
+    to.monster = attacker;
+    delete from.monster;
+    appendLog(state, `${monsterName(attacker)}は前方へ瞬間移動した`);
+  }
+  return destinationSlotKey;
+}
+
+function sweepingDestinationSlotKey(attackerSlot: SlotState): SlotKey | undefined {
+  if (attackerSlot.row !== "back") {
+    return undefined;
+  }
+  return makeSlotKey(attackerSlot.owner, "front", attackerSlot.lane);
 }
 
 function levelDownMonster(state: GameState, slotKey: SlotKey): void {
