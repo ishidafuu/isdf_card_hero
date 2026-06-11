@@ -1,6 +1,5 @@
 import {
   buildDeck,
-  createDeckFromCardIds,
   getCardDef,
   getCardName,
   getMonsterDef,
@@ -10,7 +9,6 @@ import type {
   CardInstance,
   CommandAction,
   CommandDef,
-  DefeatedMonsterRecord,
   GameState,
   MagicAction,
   MasterActionId,
@@ -34,11 +32,6 @@ const SHIELD_COST = 2;
 const PLAYER_ORDER: PlayerId[] = ["player", "cpu"];
 const ROW_ORDER: Row[] = ["front", "back"];
 const LANE_ORDER: Lane[] = ["left", "right"];
-
-export interface CreateInitialGameOptions {
-  playerDeckCardIds?: string[];
-  cpuDeckCardIds?: string[];
-}
 
 export const PLAYER_SLOT_ORDER: Record<PlayerId, SlotKey[]> = {
   player: ["player_front_left", "player_front_right", "player_back_left", "player_back_right"],
@@ -71,15 +64,9 @@ interface DamageContext {
   ignoreDeathChain?: boolean;
 }
 
-export function createInitialGame(seed = Date.now(), options: CreateInitialGameOptions = {}): GameState {
-  const playerBaseDeck = options.playerDeckCardIds
-    ? createDeckFromCardIds("player", options.playerDeckCardIds)
-    : buildDeck("player", seed + 101);
-  const cpuBaseDeck = options.cpuDeckCardIds
-    ? createDeckFromCardIds("cpu", options.cpuDeckCardIds)
-    : buildDeck("cpu", seed + 202);
-  const playerDeck = shuffle(playerBaseDeck, seed + 1);
-  const cpuDeck = shuffle(cpuBaseDeck, seed + 2);
+export function createInitialGame(seed = Date.now()): GameState {
+  const playerDeck = shuffle(buildDeck("player", seed + 101), seed + 1);
+  const cpuDeck = shuffle(buildDeck("cpu", seed + 202), seed + 2);
   const state: GameState = {
     players: {
       player: createPlayer("player", playerDeck),
@@ -90,7 +77,6 @@ export function createInitialGame(seed = Date.now(), options: CreateInitialGameO
     turnNumber: 0,
     randomSeed: seed >>> 0,
     log: ["バトル開始"],
-    defeatedMonsters: [],
   };
 
   drawOpeningHand(state.players.player);
@@ -2164,28 +2150,8 @@ function defeatMonster(
     level: monster.level,
     investedStones: monster.investedStones,
   };
-  recordDefeatedMonster(state, defeated, defeatedByPlayer(state, context));
   delete slot.monster;
   return defeated;
-}
-
-function recordDefeatedMonster(state: GameState, defeated: DefeatedMonster, defeatedBy?: PlayerId): void {
-  const record: DefeatedMonsterRecord = {
-    ...defeated,
-    defeatedBy,
-    turnNumber: state.turnNumber,
-  };
-  state.defeatedMonsters.push(record);
-}
-
-function defeatedByPlayer(state: GameState, context: DamageContext): PlayerId | undefined {
-  if (context.attackerSlotKey) {
-    return state.slots[context.attackerSlotKey].monster?.owner;
-  }
-  if (context.kind === "magic" || context.kind === "master") {
-    return state.currentPlayer;
-  }
-  return undefined;
 }
 
 function getLevelUpCapacity(state: GameState, attackerSlotKey: SlotKey, defeatedLevel: number): number {

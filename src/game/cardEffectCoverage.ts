@@ -262,9 +262,9 @@ export const DEFERRED_PRODUCT_DECISIONS: readonly DeferredProductDecision[] = [
     id: "super_cards_pending",
     title: "スペシャルカード",
     scope: "公式カードのうち、スペシャルカード枠は現カードプールへ投入しない方針に決定した。",
-    decision: "通常カード126枚のみをランダムデッキ、公式一致テスト、戦闘後報酬の対象にする。",
-    reason: "カードヒーローとしての通常戦闘とローグライト報酬ループを先に安定させるため。",
-    revisitWhen: "戦闘後報酬とカード獲得ループが入った後に、報酬専用カードとして導入可否を再判断する。",
+    decision: "通常カード126枚のみをランダムデッキ、公式一致テスト、通常戦検証の対象にする。",
+    reason: "カードヒーローとしての通常戦闘を先に安定させるため。",
+    revisitWhen: "通常戦の完成度向上後に、スペシャルカードとして導入可否を再判断する。",
   },
   {
     id: "cpu_magic_heuristic",

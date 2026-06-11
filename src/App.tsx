@@ -6,6 +6,7 @@ import {
   attackWithCommand,
   canFocusMonster,
   canSummonTo,
+  createInitialGame,
   discardHandCard,
   endTurn,
   focusMonster,
@@ -33,14 +34,7 @@ import {
   useMasterAction,
   useMasterHpDraw,
 } from "./game/rules";
-import {
-  applyRunReward,
-  createBattleFromRun,
-  createInitialRun,
-  generateBattleRewards,
-} from "./game/runProgression";
 import type { CardInstance, CommandDef, GameState, MagicAction, MagicTargetKind, MasterActionId, PlayerId, SlotKey, Target } from "./game/types";
-import type { RunRewardCandidate, RunState } from "./game/runProgression";
 
 type BoardCell =
   | { kind: "slot"; slotKey: SlotKey }
@@ -144,23 +138,8 @@ interface MasterDamageFlash extends DamageFlash {
   playerId: PlayerId;
 }
 
-interface AppInitialState {
-  run: RunState;
-  game: GameState;
-}
-
-function createInitialAppState(seed = Date.now()): AppInitialState {
-  const run = createInitialRun(seed);
-  return {
-    run,
-    game: createBattleFromRun(run),
-  };
-}
-
 export function App() {
-  const [initialAppState] = useState(() => createInitialAppState());
-  const [run, setRun] = useState<RunState>(initialAppState.run);
-  const [game, setGame] = useState<GameState>(initialAppState.game);
+  const [game, setGame] = useState<GameState>(() => createInitialGame());
   const [selection, setSelection] = useState<Selection | undefined>();
   const [pendingDropAction, setPendingDropAction] = useState<PendingDropAction | undefined>();
   const [error, setError] = useState<string>("");
@@ -183,10 +162,6 @@ export function App() {
   const suppressNextClickRef = useRef(false);
 
   const currentPlayer = game.players[game.currentPlayer];
-  const rewardCandidates = useMemo(
-    () => (game.winner === "player" ? generateBattleRewards(game, run) : []),
-    [game, run],
-  );
   const isAutoResolving = !game.winner && (autoPlayEnabled || (game.currentPlayer === "cpu" && !game.pendingLevelUp));
   const controlsDisabled = autoPlayEnabled || game.currentPlayer !== "player" || !!game.winner || !!game.pendingLevelUp;
   const turnStatus = game.winner
@@ -488,34 +463,15 @@ export function App() {
   }
 
   function handleNewGame() {
-    const next = createInitialAppState();
-    previousGameRef.current = next.game;
-    setRun(next.run);
-    setGame(next.game);
+    const next = createInitialGame();
+    previousGameRef.current = next;
+    setGame(next);
     setSelection(undefined);
     setPendingDropAction(undefined);
     setZoneView(undefined);
     setError("");
     setVisualEffect(undefined);
     setAutoPlayEnabled(false);
-  }
-
-  function handleChooseReward(reward: RunRewardCandidate) {
-    try {
-      const nextRun = applyRunReward(run, reward);
-      const nextGame = createBattleFromRun(nextRun);
-      previousGameRef.current = nextGame;
-      setRun(nextRun);
-      setGame(nextGame);
-      setSelection(undefined);
-      setPendingDropAction(undefined);
-      setZoneView(undefined);
-      setError("");
-      setVisualEffect(undefined);
-      setAutoPlayEnabled(false);
-    } catch (caught) {
-      setError(caught instanceof Error ? caught.message : "報酬の適用に失敗しました");
-    }
   }
 
   function handleAutoDelayChange(value: string) {
@@ -828,7 +784,7 @@ export function App() {
       <header className="topbar">
         <div>
           <h1>Card Hero Prototype</h1>
-          <p>Battle {run.battleNumber} / Turn {game.turnNumber} / {turnStatus}</p>
+          <p>Turn {game.turnNumber} / {turnStatus}</p>
         </div>
         <div className="topbar-actions">
           <button type="button" onClick={() => setAutoPlayEnabled((enabled) => !enabled)}>
@@ -847,7 +803,7 @@ export function App() {
             ms
           </label>
           <button type="button" onClick={handleNewGame}>
-            <Icon icon="🔄" /> New Run
+            <Icon icon="🔄" /> New Game
           </button>
         </div>
       </header>
@@ -1041,19 +997,10 @@ export function App() {
             )}
           </section>
 
-          {game.winner === "player" ? (
-            <RewardPanel
-              game={game}
-              run={run}
-              rewards={rewardCandidates}
-              onChoose={handleChooseReward}
-              onNewRun={handleNewGame}
-            />
-          ) : game.winner ? (
+          {game.winner ? (
             <section className="notice">
               <h2><Icon icon="🏆" /> {playerLabel(game.winner)} Win</h2>
-              <p className="hint">ランはここで終了です。</p>
-              <button type="button" onClick={handleNewGame}><Icon icon="🔄" /> 新しいラン</button>
+              <button type="button" onClick={handleNewGame}><Icon icon="🔄" /> もう一戦</button>
             </section>
           ) : game.pendingLevelUp ? (
             <section className="notice">
@@ -1756,84 +1703,6 @@ function DamageBubble({ flash }: { flash?: DamageFlash }) {
     <span className={`damage-bubble ${flash.defeated ? "damage-bubble-ko" : ""}`} aria-hidden="true">
       <span className="damage-value">-{flash.amount}</span>
       {flash.defeated && <strong className="damage-ko-label">KO</strong>}
-    </span>
-  );
-}
-
-interface RewardPanelProps {
-  game: GameState;
-  run: RunState;
-  rewards: RunRewardCandidate[];
-  onChoose: (reward: RunRewardCandidate) => void;
-  onNewRun: () => void;
-}
-
-function RewardPanel({ game, run, rewards, onChoose, onNewRun }: RewardPanelProps) {
-  const defeatedCount = game.defeatedMonsters.filter((record) => record.owner === "cpu" && record.defeatedBy === "player").length;
-
-  return (
-    <section className="notice reward-panel">
-      <div className="reward-heading">
-        <div>
-          <h2><Icon icon="🏆" /> Battle {run.battleNumber} Win</h2>
-          <p>{defeatedCount}体撃破 / 報酬を1つ選んで次戦へ進む</p>
-        </div>
-        <span className="run-chip"><Icon icon="🃏" /> Deck 30</span>
-      </div>
-      <div className="reward-list">
-        {rewards.map((reward) => (
-          <button
-            type="button"
-            className={`reward-choice reward-${reward.kind}`}
-            key={reward.id}
-            onClick={() => onChoose(reward)}
-          >
-            <span className="reward-choice-title">
-              <Icon icon={reward.kind === "meat" ? "🥩" : "🃏"} />
-              <strong>{reward.label}</strong>
-            </span>
-            <span className="reward-choice-description">{reward.description}</span>
-            <RewardPreview reward={reward} />
-          </button>
-        ))}
-      </div>
-      {run.rewardHistory.length > 0 && (
-        <div className="reward-history">
-          <strong><Icon icon="📜" /> Run History</strong>
-          <ol>
-            {run.rewardHistory.slice(-4).map((entry, index) => (
-              <li key={`${entry.battleNumber}_${entry.gainedCardId}_${index}`}>
-                B{entry.battleNumber}: {entry.label} / {getCardName(entry.replacedCardId)} → {getCardName(entry.gainedCardId)}
-              </li>
-            ))}
-          </ol>
-        </div>
-      )}
-      <button type="button" className="danger-button" onClick={onNewRun}>
-        <Icon icon="🔄" /> 新しいラン
-      </button>
-    </section>
-  );
-}
-
-function RewardPreview({ reward }: { reward: RunRewardCandidate }) {
-  if (reward.kind === "card") {
-    return (
-      <span className="reward-preview">
-        <span><CardIcon cardId={reward.replacedCardId} /> {getCardName(reward.replacedCardId)}</span>
-        <span className="reward-arrow">→</span>
-        <span><CardIcon cardId={reward.cardId} /> {getCardName(reward.cardId)}</span>
-      </span>
-    );
-  }
-
-  return (
-    <span className="reward-preview">
-      <span><CardIcon cardId={reward.sourceCardId} /> 肉</span>
-      <span className="reward-arrow">:</span>
-      <span><CardIcon cardId={reward.fromCardId} /> {getCardName(reward.fromCardId)}</span>
-      <span className="reward-arrow">→</span>
-      <span><CardIcon cardId={reward.toCardId} /> {getCardName(reward.toCardId)}</span>
     </span>
   );
 }

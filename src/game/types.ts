@@ -155,15 +155,6 @@ export interface PendingLevelUp {
   recoilDamage: number;
 }
 
-export interface DefeatedMonsterRecord {
-  owner: PlayerId;
-  cardId: string;
-  level: number;
-  investedStones: number;
-  defeatedBy?: PlayerId;
-  turnNumber: number;
-}
-
 export interface GameState {
   players: Record<PlayerId, PlayerState>;
   slots: Record<SlotKey, SlotState>;
@@ -171,7 +162,6 @@ export interface GameState {
   turnNumber: number;
   randomSeed: number;
   log: string[];
-  defeatedMonsters: DefeatedMonsterRecord[];
   winner?: PlayerId;
   pendingLevelUp?: PendingLevelUp;
   turnMoveHistory?: MoveHistoryEntry[];

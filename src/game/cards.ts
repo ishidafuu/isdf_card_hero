@@ -4,12 +4,12 @@ import type { CardDef, CardInstance, MonsterCardDef } from "./types";
 export { CARD_DEFS };
 
 const CARD_DEFS_BY_ID: Record<string, CardDef> = CARD_DEFS;
-export const RANDOM_DECK_SIZE = 30;
-export const RANDOM_DECK_MAX_COPIES = 3;
+const RANDOM_DECK_SIZE = 30;
+const RANDOM_DECK_MAX_COPIES = 3;
 const RANDOM_DECK_MIN_FRONT = 12;
 const RANDOM_DECK_MIN_BACK = 6;
 const RANDOM_DECK_MIN_MAGIC = 6;
-export type DeckCategory = "front" | "back" | "magic";
+type DeckCategory = "front" | "back" | "magic";
 
 export function buildDeck(owner: string, seed = hashString(owner)): CardInstance[] {
   const selected: string[] = [];
@@ -22,16 +22,6 @@ export function buildDeck(owner: string, seed = hashString(owner)): CardInstance
   addRandomCards(selected, counts, Object.keys(CARD_DEFS_BY_ID), RANDOM_DECK_SIZE - selected.length, random);
 
   return createCardInstances(owner, selected);
-}
-
-export function createDeckFromCardIds(owner: string, cardIds: string[]): CardInstance[] {
-  if (cardIds.length !== RANDOM_DECK_SIZE) {
-    throw new Error(`デッキは${RANDOM_DECK_SIZE}枚である必要があります`);
-  }
-  for (const cardId of cardIds) {
-    getCardDef(cardId);
-  }
-  return createCardInstances(owner, cardIds);
 }
 
 export function getAllCardDefs(): CardDef[] {
@@ -72,7 +62,7 @@ export function validateRandomDeck(deck: CardInstance[] = buildDeck("validation"
       return false;
     }
     counts.set(card.cardId, (counts.get(card.cardId) ?? 0) + 1);
-    categories[getDeckCategory(def)] += 1;
+    categories[deckCategory(def)] += 1;
   }
 
   return (
@@ -104,11 +94,11 @@ function addRandomCards(
 
 function cardIdsByCategory(category: DeckCategory): string[] {
   return Object.values(CARD_DEFS_BY_ID)
-    .filter((def) => getDeckCategory(def) === category)
+    .filter((def) => deckCategory(def) === category)
     .map((def) => def.id);
 }
 
-export function getDeckCategory(def: CardDef): DeckCategory {
+function deckCategory(def: CardDef): DeckCategory {
   return def.type === "magic" ? "magic" : def.role;
 }
 
