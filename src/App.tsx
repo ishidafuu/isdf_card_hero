@@ -76,7 +76,7 @@ type DragPayload =
 
 type PendingDropAction =
   | { kind: "magic"; handInstanceId: string; target: Target }
-  | { kind: "attack"; attackerSlotKey: SlotKey; commandId: string; target: Target }
+  | { kind: "attackTarget"; attackerSlotKey: SlotKey; target: Target; commandIds: string[] }
   | { kind: "move"; fromSlotKey: SlotKey; toSlotKey: SlotKey };
 
 const DRAG_MIME = "application/x-card-hero-drag";
@@ -550,13 +550,15 @@ export function App() {
       }
     }
 
-    const command = getMonsterCommands(monster).find((candidate) =>
-      getCommandTargets(game, payload.slotKey, candidate.id).some((candidateTarget) => targetToKey(candidateTarget) === targetToKey(target)),
-    );
-    if (!command) {
+    const commandIds = getMonsterCommands(monster)
+      .filter((candidate) =>
+        getCommandTargets(game, payload.slotKey, candidate.id).some((candidateTarget) => targetToKey(candidateTarget) === targetToKey(target)),
+      )
+      .map((command) => command.id);
+    if (commandIds.length === 0) {
       return undefined;
     }
-    return { kind: "attack", attackerSlotKey: payload.slotKey, commandId: command.id, target };
+    return { kind: "attackTarget", attackerSlotKey: payload.slotKey, commandIds, target };
   }
 
   function canDragMonsterFromSlot(slotKey: SlotKey): boolean {
@@ -574,6 +576,9 @@ export function App() {
     if (!pendingDropAction) {
       return;
     }
+    if (pendingDropAction.kind === "attackTarget") {
+      return;
+    }
     if (pendingDropAction.kind === "magic") {
       applyChange((state) => playMagic(state, { handInstanceId: pendingDropAction.handInstanceId, target: pendingDropAction.target }));
       return;
@@ -582,10 +587,16 @@ export function App() {
       applyChange((state) => moveMonster(state, pendingDropAction.fromSlotKey, pendingDropAction.toSlotKey));
       return;
     }
+  }
+
+  function handlePendingAttackCommand(commandId: string) {
+    if (!pendingDropAction || pendingDropAction.kind !== "attackTarget") {
+      return;
+    }
     applyChange((state) =>
       attackWithCommand(state, {
         attackerSlotKey: pendingDropAction.attackerSlotKey,
-        commandId: pendingDropAction.commandId,
+        commandId,
         target: pendingDropAction.target,
       }),
     );
@@ -742,6 +753,7 @@ export function App() {
               <PendingDropActionPanel
                 action={pendingDropAction}
                 game={game}
+                onAttackCommand={handlePendingAttackCommand}
                 onConfirm={handleConfirmPendingDropAction}
                 onCancel={handleCancelPendingDropAction}
               />
@@ -850,23 +862,39 @@ function PlayerStatus({ label, hp, stones, deck, hand, discard, active }: Player
 interface PendingDropActionPanelProps {
   action: PendingDropAction;
   game: GameState;
+  onAttackCommand: (commandId: string) => void;
   onConfirm: () => void;
   onCancel: () => void;
 }
 
-function PendingDropActionPanel({ action, game, onConfirm, onCancel }: PendingDropActionPanelProps) {
+function PendingDropActionPanel({ action, game, onAttackCommand, onConfirm, onCancel }: PendingDropActionPanelProps) {
+  const attackCommands = action.kind === "attackTarget" ? getPendingAttackCommands(game, action) : [];
+
   return (
     <div className="pending-action">
       <h3><Icon icon={pendingDropActionIcon(action)} /> 選択中: {pendingDropActionTitle(action)}</h3>
       <p>{pendingDropActionDescription(action, game)}</p>
-      <div className="button-row">
-        <button type="button" onClick={onConfirm}>
-          <Icon icon="✅" /> 確定
-        </button>
-        <button type="button" onClick={onCancel}>
-          <Icon icon="✕" /> キャンセル
-        </button>
-      </div>
+      {action.kind === "attackTarget" ? (
+        <div className="button-stack">
+          {attackCommands.map((command) => (
+            <button type="button" key={command.id} onClick={() => onAttackCommand(command.id)}>
+              <Icon icon={commandIcon(command)} /> {command.name} {command.power}P
+            </button>
+          ))}
+          <button type="button" onClick={onCancel}>
+            <Icon icon="✕" /> キャンセル
+          </button>
+        </div>
+      ) : (
+        <div className="button-row">
+          <button type="button" onClick={onConfirm}>
+            <Icon icon="✅" /> 確定
+          </button>
+          <button type="button" onClick={onCancel}>
+            <Icon icon="✕" /> キャンセル
+          </button>
+        </div>
+      )}
     </div>
   );
 }
@@ -1032,7 +1060,7 @@ function isSelectedSourceSlot(selection: Selection | undefined, action: PendingD
   if (action?.kind === "move") {
     return action.fromSlotKey === slotKey;
   }
-  if (action?.kind === "attack") {
+  if (action?.kind === "attackTarget") {
     return action.attackerSlotKey === slotKey;
   }
   return selection?.kind === "monster" && selection.slotKey === slotKey;
@@ -1062,7 +1090,7 @@ function pendingDropActionTitle(action: PendingDropAction): string {
   if (action.kind === "move") {
     return "Move / Swap";
   }
-  return "アタック";
+  return "技を選択";
 }
 
 function pendingDropActionDescription(action: PendingDropAction, game: GameState): string {
@@ -1072,7 +1100,18 @@ function pendingDropActionDescription(action: PendingDropAction, game: GameState
   if (action.kind === "move") {
     return `${slotMonsterLabel(game, action.fromSlotKey)} -> ${targetLabel(game, { kind: "monster", slotKey: action.toSlotKey })}`;
   }
-  return `${slotMonsterLabel(game, action.attackerSlotKey)}: ${commandLabel(game, action.attackerSlotKey, action.commandId)} -> ${targetLabel(game, action.target)}`;
+  return `${slotMonsterLabel(game, action.attackerSlotKey)} -> ${targetLabel(game, action.target)}`;
+}
+
+function getPendingAttackCommands(game: GameState, action: Extract<PendingDropAction, { kind: "attackTarget" }>): CommandDef[] {
+  const monster = game.slots[action.attackerSlotKey].monster;
+  if (!monster) {
+    return [];
+  }
+  return action.commandIds.flatMap((commandId) => {
+    const command = getMonsterCommands(monster).find((item) => item.id === commandId);
+    return command ? [command] : [];
+  });
 }
 
 function handCardLabel(game: GameState, instanceId: string): string {
@@ -1090,12 +1129,6 @@ function targetLabel(game: GameState, target: Target): string {
     return `${playerLabel(target.playerId)}マスター`;
   }
   return slotMonsterLabel(game, target.slotKey);
-}
-
-function commandLabel(game: GameState, slotKey: SlotKey, commandId: string): string {
-  const monster = game.slots[slotKey].monster;
-  const command = monster ? getMonsterCommands(monster).find((item) => item.id === commandId) : undefined;
-  return command ? command.name : "アタック";
 }
 
 function createVisualEffect(previous: GameState, next: GameState): VisualEffect {
