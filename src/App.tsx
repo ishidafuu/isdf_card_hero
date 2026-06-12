@@ -49,6 +49,7 @@ import {
   useMasterHpDraw,
 } from "./game/rules";
 import { getMasterActionDef, getMasterName, MASTER_IDS } from "./game/masters";
+import { evaluateBoardUnit, evaluateCard, type UnitEvaluation } from "./game/unitEvaluation";
 import type { CardInstance, CardPool, CommandDef, GameState, MagicAction, MagicCardDef, MagicTargetKind, MasterActionId, MasterId, PlayerId, SlotKey, Target } from "./game/types";
 import type { DeckValidationSummary } from "./game/cards";
 
@@ -2183,7 +2184,7 @@ function HandCardPanel({ card, game, disabled, onDiscard }: HandCardPanelProps) 
 
   return (
     <div className="selected-detail">
-      <CardDetail cardId={card.cardId} />
+      <CardDetail cardId={card.cardId} game={game} />
       <div className="hand-action-panel">
         <span className="hint"><Icon icon={def.type === "monster" ? "🂠" : "🎯"} /> {actionHint}</span>
         <button type="button" className="danger-button" onClick={onDiscard} disabled={disabled}>
@@ -2432,7 +2433,7 @@ function DeckCardList({
 
 function CardZonePanel({ game, view, onClose }: CardZonePanelProps) {
   if (view.kind === "catalog") {
-    return <CardCatalogPanel onClose={onClose} />;
+    return <CardCatalogPanel game={game} onClose={onClose} />;
   }
   if (view.kind === "effects") {
     return <EffectHistoryPanel game={game} onClose={onClose} />;
@@ -2469,7 +2470,7 @@ function CardZonePanel({ game, view, onClose }: CardZonePanelProps) {
                 <span className="zone-card-type">{cardTypeLabel(card.cardId)}</span>
               </summary>
               <div className="catalog-card-detail">
-                <CardDetail cardId={card.cardId} showTitle={false} />
+                <CardDetail cardId={card.cardId} game={game} showTitle={false} />
               </div>
             </details>
           ))}
@@ -2570,7 +2571,7 @@ function EffectHistoryPanel({ game, onClose }: { game: GameState; onClose: () =>
   );
 }
 
-function CardCatalogPanel({ onClose }: { onClose: () => void }) {
+function CardCatalogPanel({ game, onClose }: { game: GameState; onClose: () => void }) {
   const [poolFilter, setPoolFilter] = useState<CardPool | "all">("normal");
   const cards = getCardDefsByPool(poolFilter);
 
@@ -2598,19 +2599,25 @@ function CardCatalogPanel({ onClose }: { onClose: () => void }) {
         ))}
       </div>
       <div className="catalog-card-list">
-        {cards.map((card) => (
-          <details className="catalog-card-row" key={card.id}>
-            <summary>
-              <CardIcon cardId={card.id} />
-              <span className="catalog-card-name">{card.name}</span>
-              <span className="zone-card-type">{cardTypeLabel(card.id)}</span>
-              <CardPoolChip cardId={card.id} compact />
-            </summary>
-            <div className="catalog-card-detail">
-              <CardDetail cardId={card.id} showTitle={false} />
-            </div>
-          </details>
-        ))}
+        {cards.map((card) => {
+          const evaluation = evaluateCard(card.id);
+          return (
+            <details className="catalog-card-row" key={card.id}>
+              <summary>
+                <CardIcon cardId={card.id} />
+                <span className="catalog-card-name">{card.name}</span>
+                <span className="catalog-card-eval" title="カード単体評価">
+                  <Icon icon="📈" /> {evaluation.grade} {evaluation.total}
+                </span>
+                <span className="zone-card-type">{cardTypeLabel(card.id)}</span>
+                <CardPoolChip cardId={card.id} compact />
+              </summary>
+              <div className="catalog-card-detail">
+                <CardDetail cardId={card.id} game={game} showTitle={false} />
+              </div>
+            </details>
+          );
+        })}
         {cards.length === 0 && (
           <p className="empty-zone"><Icon icon="□" /> 該当カードはまだありません。</p>
         )}
@@ -2760,7 +2767,7 @@ function MonsterCommands({ game, slotKey, onCommand, onFocus, onMove }: MonsterC
         <p className="hint"><Icon icon="🔒" /> CPUの準備中カードの情報は非公開です。</p>
       ) : (
         <div className="board-card-detail">
-          <CardDetail cardId={monster.cardId} showTitle={false} />
+          <CardDetail cardId={monster.cardId} game={game} slotKey={slotKey} showTitle={false} />
         </div>
       )}
       {!hidePreparedInfo && (
@@ -3498,11 +3505,16 @@ function HandCardContent({ cardId }: HandCardContentProps) {
 
 interface CardDetailProps {
   cardId: string;
+  game?: GameState;
+  slotKey?: SlotKey;
   showTitle?: boolean;
 }
 
-function CardDetail({ cardId, showTitle = true }: CardDetailProps) {
+function CardDetail({ cardId, game, slotKey, showTitle = true }: CardDetailProps) {
   const def = getCardDef(cardId);
+  const cardEvaluation = evaluateCard(cardId);
+  const boardEvaluation = game && slotKey ? evaluateBoardUnit(game, slotKey) : undefined;
+  const evaluation = boardEvaluation ?? cardEvaluation;
   if (def.type === "magic") {
     return (
       <>
@@ -3522,6 +3534,7 @@ function CardDetail({ cardId, showTitle = true }: CardDetailProps) {
         />
         <p>{def.description}</p>
         <CardNotes card={def} />
+        <UnitEvaluationPanel evaluation={evaluation} title="カード評価" />
       </>
     );
   }
@@ -3537,6 +3550,7 @@ function CardDetail({ cardId, showTitle = true }: CardDetailProps) {
         {def.actionLimit && <span><Icon icon="⚡" /> {def.actionLimit}回行動</span>}
       </div>
       <CardNotes card={def} />
+      <UnitEvaluationPanel evaluation={evaluation} title={boardEvaluation ? "盤面評価" : "カード評価"} />
       <div className="level-detail-list">
         {def.levels.map((level, index) => (
           <div className="level-detail" key={`${def.id}_${level.level}_${index}`}>
@@ -3561,6 +3575,41 @@ function CardDetail({ cardId, showTitle = true }: CardDetailProps) {
       </div>
     </>
   );
+}
+
+function UnitEvaluationPanel({ evaluation, title }: { evaluation: UnitEvaluation; title: string }) {
+  return (
+    <div className="unit-evaluation-panel">
+      <div className="unit-evaluation-heading">
+        <strong><Icon icon="📈" /> {title}</strong>
+        <span className="unit-evaluation-total">
+          {evaluation.grade} {evaluation.total}
+        </span>
+      </div>
+      <div className="unit-evaluation-grid">
+        {evaluation.breakdown.map((item) => (
+          <span className={`unit-evaluation-chip ${item.tone}`} title={item.reason} key={item.key}>
+            <span>{item.label}</span>
+            <strong>{formatEvaluationValue(item.value)}</strong>
+          </span>
+        ))}
+      </div>
+      {evaluation.reasons.length > 0 && (
+        <ul className="unit-evaluation-reasons">
+          {evaluation.reasons.slice(0, 4).map((reason) => (
+            <li key={reason}>{reason}</li>
+          ))}
+        </ul>
+      )}
+    </div>
+  );
+}
+
+function formatEvaluationValue(value: number): string {
+  if (value > 0) {
+    return `+${value}`;
+  }
+  return String(value);
 }
 
 function EffectBreakdown({

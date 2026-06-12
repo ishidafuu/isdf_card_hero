@@ -8,7 +8,8 @@
     "build": "tsc -b && vite build",
     "preview": "vite preview",
     "test": "vitest run --environment jsdom",
-    "validate:auto-play": "vite-node scripts/auto-play-validation.ts"
+    "validate:auto-play": "vite-node scripts/auto-play-validation.ts",
+    "evaluate:units": "vite-node scripts/unit-evaluation.ts"
   },
   "dependencies": {
     "react": "^19.2.7",

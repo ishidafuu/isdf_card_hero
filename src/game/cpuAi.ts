@@ -22,6 +22,12 @@ import {
   summonMonster,
   useMasterAction,
 } from "./rules";
+import {
+  cpuMonsterValue as monsterValue,
+  cpuPlacementValue as placementValue,
+  evaluateHandCardKeepValue as handCardKeepValue,
+  evaluateHandMonsterPlacementValue as handMonsterPlacementValue,
+} from "./unitEvaluation";
 import type {
   CommandAction,
   GameState,
@@ -730,51 +736,6 @@ function scoreSummon(state: GameState, cardId: string, slotKey: SlotKey): number
   return score;
 }
 
-function handCardKeepValue(state: GameState, card: { cardId: string }): number {
-  const def = getCardDef(card.cardId);
-  if (def.type === "magic") {
-    if (def.id === "thunder" || def.id === "card_026" || def.id === "card_092" || def.id === "card_118") {
-      return 48;
-    }
-    if (def.id === "healing" || def.id === "card_127" || def.id === "power_up") {
-      return 42;
-    }
-    if (def.id === "card_030" || def.id === "card_031" || def.id === "card_123") {
-      return 34;
-    }
-    return 24;
-  }
-
-  if (getCardPool(def) === "special") {
-    const hasSeedInPlay = FIELD_ORDER_BY_PLAYER[state.currentPlayer].some((slotKey) =>
-      def.evolvesFrom?.includes(state.slots[slotKey].monster?.cardId ?? ""),
-    );
-    return hasSeedInPlay ? 58 + def.maxLevel * 8 : 8;
-  }
-
-  const ownSlots = FIELD_ORDER_BY_PLAYER[state.currentPlayer];
-  const frontCount = ownSlots.filter((slotKey) => state.slots[slotKey].row === "front" && state.slots[slotKey].monster).length;
-  const backCount = ownSlots.filter((slotKey) => state.slots[slotKey].row === "back" && state.slots[slotKey].monster).length;
-  const roleNeed = def.role === "front" ? Math.max(0, 2 - frontCount) : Math.max(0, 2 - backCount);
-  return 30 + def.maxLevel * 12 + (def.role === "front" ? 8 : 10) + roleNeed * 14;
-}
-
-function handMonsterPlacementValue(state: GameState, cardId: string, slotKey: SlotKey): number {
-  const def = getCardDef(cardId);
-  if (def.type !== "monster") {
-    return handCardKeepValue(state, { cardId });
-  }
-  if (getCardPool(def) === "special") {
-    return handCardKeepValue(state, { cardId });
-  }
-
-  const firstLevel = def.levels[0];
-  const slot = state.slots[slotKey];
-  const placement = def.role === slot.row ? 22 : -18;
-  const laneSupport = def.role === "back" && slot.row === "back" && state.slots[frontSlotFor(slot)].monster ? 10 : 0;
-  return 30 + def.maxLevel * 12 + firstLevel.maxHp * 6 + placement + laneSupport;
-}
-
 function summonReason(playerId: PlayerId, cardId: string, slotKey: SlotKey): string {
   const def = getMonsterDef(cardId);
   const slotLabel = stateSlotLabel(slotKey);
@@ -1035,40 +996,6 @@ function decisionPriority(decision: CpuDecision): number {
     return 10;
   }
   return 20;
-}
-
-function monsterValue(state: GameState, slotKey: SlotKey): number {
-  const slot = state.slots[slotKey];
-  const monster = slot.monster;
-  if (!monster) {
-    return 0;
-  }
-
-  const statusFactor = monster.status === "prepared" ? 0.6 : 1;
-  const value =
-    30 +
-    monster.level * 35 +
-    monster.hp * 6 +
-    monster.investedStones * 8 +
-    (monster.actionCount < monster.actionLimit ? 12 : 0) +
-    (monster.focused ? 18 : 0) +
-    (monster.powerUp ? 16 : 0) +
-    (monster.shielded ? 12 : 0) +
-    placementValue(state, slot, monster);
-  return value * statusFactor;
-}
-
-function placementValue(state: GameState, slot: SlotState, monster: MonsterState): number {
-  const def = getMonsterDef(monster.cardId);
-  if (def.role === "front") {
-    return slot.row === "front" ? 12 : -8;
-  }
-
-  if (slot.row === "front") {
-    return -12;
-  }
-
-  return 16 + (state.slots[frontSlotFor(slot)].monster ? 10 : -12);
 }
 
 function frontSlotFor(slot: SlotState): SlotKey {

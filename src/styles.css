@@ -1500,7 +1500,7 @@ button:disabled {
   cursor: pointer;
   display: grid;
   gap: 6px;
-  grid-template-columns: 28px minmax(0, 1fr) auto auto;
+  grid-template-columns: 28px minmax(0, 1fr) auto auto auto;
   min-height: 38px;
   padding: 6px 8px;
 }
@@ -1509,6 +1509,18 @@ button:disabled {
   font-size: 13px;
   font-weight: 800;
   overflow-wrap: anywhere;
+}
+
+.catalog-card-eval {
+  background: #eef4f8;
+  border: 1px solid #c8d8e4;
+  border-radius: 999px;
+  color: #29445a;
+  font-size: 11px;
+  font-weight: 800;
+  line-height: 1;
+  padding: 4px 6px;
+  white-space: nowrap;
 }
 
 .catalog-card-detail {
@@ -1520,6 +1532,86 @@ button:disabled {
 
 .zone-card-row .catalog-card-detail {
   border-top: 0;
+}
+
+.unit-evaluation-panel {
+  background: #f6f8f1;
+  border: 1px solid #d3dccd;
+  border-radius: 6px;
+  display: grid;
+  gap: 7px;
+  padding: 8px;
+}
+
+.unit-evaluation-heading {
+  align-items: center;
+  display: flex;
+  gap: 8px;
+  justify-content: space-between;
+}
+
+.unit-evaluation-heading strong {
+  color: #26302e;
+  font-size: 13px;
+}
+
+.unit-evaluation-total {
+  background: #26302e;
+  border-radius: 999px;
+  color: #ffffff;
+  font-size: 12px;
+  font-weight: 900;
+  line-height: 1;
+  padding: 5px 7px;
+  white-space: nowrap;
+}
+
+.unit-evaluation-grid {
+  display: grid;
+  gap: 5px;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+}
+
+.unit-evaluation-chip {
+  background: #ffffff;
+  border: 1px solid #d5ddce;
+  border-radius: 6px;
+  display: grid;
+  gap: 3px;
+  min-width: 0;
+  padding: 6px;
+}
+
+.unit-evaluation-chip span {
+  color: #5a665f;
+  font-size: 10px;
+  font-weight: 800;
+  line-height: 1;
+  overflow-wrap: anywhere;
+}
+
+.unit-evaluation-chip strong {
+  color: #26302e;
+  font-size: 12px;
+  line-height: 1;
+}
+
+.unit-evaluation-chip.good strong {
+  color: #1f6b41;
+}
+
+.unit-evaluation-chip.bad strong {
+  color: #9a2f2f;
+}
+
+.unit-evaluation-reasons {
+  color: #4b5852;
+  display: grid;
+  font-size: 12px;
+  gap: 3px;
+  line-height: 1.3;
+  margin: 0;
+  padding-left: 18px;
 }
 
 .effect-history-list {
