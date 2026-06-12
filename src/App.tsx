@@ -114,6 +114,7 @@ type ZoneView =
   | { kind: "playerZone"; playerId: PlayerId; zone: "deck" | "discard" | "hand" }
   | { kind: "catalog" }
   | { kind: "effects" }
+  | { kind: "cpuHistory" }
   | { kind: "deckSetup" };
 type LogFilter = "all" | "battle" | "damage" | "support" | "turn" | "cpu";
 type BattleMode = "player-vs-cpu" | "cpu-vs-cpu";
@@ -136,6 +137,13 @@ interface DeckDraft {
   fixed: boolean;
   cardIds: string[];
   summary: DeckValidationSummary;
+}
+
+interface DeckCardOption {
+  id: string;
+  name: string;
+  typeLabel: string;
+  sortValue: number;
 }
 
 const DRAG_MIME = "application/x-card-hero-drag";
@@ -236,6 +244,11 @@ function generatedDeckText(playerId: PlayerId, seed: number): string {
   return deckTextFromCardIds(generatedDeckCardIds(playerId, seed));
 }
 
+function createDeckPickerIds(): Record<PlayerId, string> {
+  const firstCardId = getAllCardDefs()[0]?.id ?? "";
+  return { player: firstCardId, cpu: firstCardId };
+}
+
 function normalizeSeedInput(value: string, fallback: number): number {
   const parsed = Number(value);
   if (!Number.isFinite(parsed)) {
@@ -247,6 +260,7 @@ function normalizeSeedInput(value: string, fallback: number): number {
 export function App() {
   const [battleSettings, setBattleSettings] = useState<BattleSettings>(() => createBattleSettings(DEFAULT_BATTLE_SEED));
   const [deckSettings, setDeckSettings] = useState<DeckSettings>(() => createDeckSettings(DEFAULT_BATTLE_SEED));
+  const [deckPickerIds, setDeckPickerIds] = useState<Record<PlayerId, string>>(() => createDeckPickerIds());
   const [game, setGame] = useState<GameState>(() =>
     createGameFromSettings(createBattleSettings(DEFAULT_BATTLE_SEED), createDeckSettings(DEFAULT_BATTLE_SEED)),
   );
@@ -272,6 +286,7 @@ export function App() {
   const suppressNextClickRef = useRef(false);
 
   const deckDrafts = useMemo(() => createDeckDrafts(battleSettings, deckSettings), [battleSettings, deckSettings]);
+  const deckCardOptions = useMemo(() => getDeckCardOptions(), []);
   const fixedDeckError = PLAYER_IDS.some((playerId) => deckSettings.fixed[playerId] && !deckDrafts[playerId].summary.valid);
   const currentPlayer = game.players[game.currentPlayer];
   const cpuVsCpu = battleSettings.mode === "cpu-vs-cpu";
@@ -666,6 +681,35 @@ export function App() {
     setDeckSettings((previous) => ({
       fixed: { ...previous.fixed, [playerId]: true },
       text: { ...previous.text, [playerId]: generatedDeckText(playerId, battleSettings.seed) },
+    }));
+  }
+
+  function handleDeckPickerChange(playerId: PlayerId, cardId: string) {
+    setDeckPickerIds((previous) => ({ ...previous, [playerId]: cardId }));
+  }
+
+  function handleAddDeckCard(playerId: PlayerId, cardId: string) {
+    const parsed = parseDeckText(deckSettings.text[playerId]);
+    const currentCount = parsed.cardIds.filter((id) => id === cardId).length;
+    if (parsed.cardIds.length >= 30 || currentCount >= 3) {
+      return;
+    }
+    setDeckSettings((previous) => ({
+      fixed: { ...previous.fixed, [playerId]: true },
+      text: { ...previous.text, [playerId]: deckTextFromCardIds([...parsed.cardIds, cardId]) },
+    }));
+  }
+
+  function handleRemoveDeckCard(playerId: PlayerId, cardId: string) {
+    const parsed = parseDeckText(deckSettings.text[playerId]);
+    const removeIndex = parsed.cardIds.indexOf(cardId);
+    if (removeIndex < 0) {
+      return;
+    }
+    const nextCardIds = parsed.cardIds.filter((_, index) => index !== removeIndex);
+    setDeckSettings((previous) => ({
+      fixed: { ...previous.fixed, [playerId]: true },
+      text: { ...previous.text, [playerId]: deckTextFromCardIds(nextCardIds) },
     }));
   }
 
@@ -1153,6 +1197,13 @@ export function App() {
                 </button>
                 <button
                   type="button"
+                  className={zoneView?.kind === "cpuHistory" ? "selected" : ""}
+                  onClick={() => setZoneView(toggleZoneView(zoneView, { kind: "cpuHistory" }))}
+                >
+                  <Icon icon="🧠" /> CPU
+                </button>
+                <button
+                  type="button"
                   className={zoneView?.kind === "catalog" ? "selected" : ""}
                   onClick={() => setZoneView(toggleZoneView(zoneView, { kind: "catalog" }))}
                 >
@@ -1189,10 +1240,15 @@ export function App() {
                 battleSettings={battleSettings}
                 deckSettings={deckSettings}
                 drafts={deckDrafts}
+                cardOptions={deckCardOptions}
+                pickerIds={deckPickerIds}
                 onClose={() => setZoneView(undefined)}
                 onFixedChange={handleDeckFixedChange}
                 onTextChange={handleDeckTextChange}
                 onUseGeneratedDeck={handleUseGeneratedDeckAsFixed}
+                onPickerChange={handleDeckPickerChange}
+                onAddCard={handleAddDeckCard}
+                onRemoveCard={handleRemoveDeckCard}
               />
             ) : zoneView ? (
               <CardZonePanel
@@ -1253,6 +1309,7 @@ export function App() {
                 Seed {battleSettings.seed} / 先攻 {playerLabel(battleSettings.firstPlayer)} /
                 {battleSettings.mode === "cpu-vs-cpu" ? " CPU vs CPU" : " Player vs CPU"}
               </p>
+              <BattleResultSummary game={game} />
               <div className="button-stack">
                 <button type="button" onClick={handleNewGame} disabled={fixedDeckError}>
                   <Icon icon="🔄" /> 同じ条件で再戦
@@ -1291,7 +1348,7 @@ export function App() {
                 onConfirm={handleConfirmPendingDropAction}
                 onCancel={handleCancelPendingDropAction}
               />
-              {error && <p className="error">{error}</p>}
+              <OperationReasonPanel game={game} selection={selection} pendingDropAction={pendingDropAction} error={error} />
             </section>
           ) : isAdditionalChoiceSelection(selection) ? (
             <section className="side-context-panel card-info-panel">
@@ -1385,7 +1442,7 @@ export function App() {
                   );
                 }}
               />
-              {error && <p className="error">{error}</p>}
+              <OperationReasonPanel game={game} selection={selection} pendingDropAction={pendingDropAction} error={error} />
             </section>
           ) : selectedMonster && selection?.kind === "monster" ? (
             <section className="side-context-panel card-info-panel">
@@ -1402,7 +1459,7 @@ export function App() {
                   setSelection({ kind: "move", fromSlotKey: selection.slotKey, targets });
                 }}
               />
-              {error && <p className="error">{error}</p>}
+              <OperationReasonPanel game={game} selection={selection} pendingDropAction={pendingDropAction} error={error} />
             </section>
           ) : selectedHand ? (
             <section className="side-context-panel card-info-panel">
@@ -1412,12 +1469,13 @@ export function App() {
                 disabled={controlsDisabled}
                 onDiscard={() => applyChange((state) => discardHandCard(state, selectedHand.instanceId))}
               />
-              {error && <p className="error">{error}</p>}
+              <OperationReasonPanel game={game} selection={selection} pendingDropAction={pendingDropAction} error={error} />
             </section>
           ) : (
             <section className="actions">
               <h2>Actions</h2>
               <TargetSelectionSummary selection={selection} game={game} />
+              <OperationReasonPanel game={game} selection={selection} pendingDropAction={pendingDropAction} error={error} />
               <div className="button-stack">
                 {MASTER_ACTIONS.map((action) => {
                   const targets = getMasterActionTargets(game, action.id);
@@ -1456,7 +1514,6 @@ export function App() {
               {selection?.kind === "masterAction" && (
                 <p className="hint">マスター特技の対象を選択してください。</p>
               )}
-              {error && <p className="error">{error}</p>}
             </section>
           )}
         </aside>
@@ -1528,6 +1585,216 @@ function LatestEventSummary({ log }: { log: string[] }) {
     <div className={`latest-event ${logTone(latest)}`}>
       <strong><Icon icon={logIcon(latest)} /> Latest: {logCategoryLabel(latest)}</strong>
       <p>{latest}</p>
+    </div>
+  );
+}
+
+interface OperationReasonPanelProps {
+  game: GameState;
+  selection: Selection | undefined;
+  pendingDropAction: PendingDropAction | undefined;
+  error: string;
+}
+
+interface OperationReasonItem {
+  icon: string;
+  label: string;
+  text: string;
+  tone?: "ok" | "warn" | "danger";
+}
+
+function OperationReasonPanel({ game, selection, pendingDropAction, error }: OperationReasonPanelProps) {
+  const items = getOperationReasonItems(game, selection, pendingDropAction, error);
+  if (items.length === 0) {
+    return null;
+  }
+
+  return (
+    <div className="operation-reason-panel">
+      <strong><Icon icon="ℹ️" /> 操作理由</strong>
+      <ul>
+        {items.map((item, index) => (
+          <li className={item.tone ? `operation-reason-${item.tone}` : ""} key={`${item.label}_${index}`}>
+            <span><Icon icon={item.icon} /> {item.label}</span>
+            <p>{item.text}</p>
+          </li>
+        ))}
+      </ul>
+    </div>
+  );
+}
+
+function getOperationReasonItems(
+  game: GameState,
+  selection: Selection | undefined,
+  pendingDropAction: PendingDropAction | undefined,
+  error: string,
+): OperationReasonItem[] {
+  const items: OperationReasonItem[] = [];
+  if (error) {
+    items.push({ icon: "⚠️", label: "操作不可", text: error, tone: "danger" });
+  }
+  if (game.pendingLevelUp) {
+    items.push({ icon: "✨", label: "割り込み", text: "レベルアップ数の選択が完了するまで他の行動はできません。", tone: "warn" });
+    return items;
+  }
+  if (game.winner) {
+    items.push({ icon: "🏆", label: "勝敗決定済み", text: "再戦するか、条件を変えて新しい試合を開始してください。", tone: "ok" });
+    return items;
+  }
+  if (pendingDropAction) {
+    items.push(operationReasonFromPendingDrop(game, pendingDropAction));
+    return items;
+  }
+  if (!selection) {
+    items.push({
+      icon: "☝️",
+      label: "未選択",
+      text: game.currentPlayer === "player"
+        ? "手札、味方モンスター、またはマスター特技を選ぶと候補が盤面に表示されます。"
+        : "CPUターン中です。ログのCPUフィルタかCPU履歴で判断理由を確認できます。",
+    });
+    return items;
+  }
+  if (selection.kind === "hand") {
+    return [...items, ...operationReasonsForHand(game, selection.instanceId)];
+  }
+  if (selection.kind === "monster") {
+    return [...items, ...operationReasonsForMonster(game, selection.slotKey)];
+  }
+  if (selection.kind === "command") {
+    const monster = game.slots[selection.attackerSlotKey].monster;
+    const command = monster ? getMonsterCommands(monster).find((candidate) => candidate.id === selection.commandId) : undefined;
+    items.push({
+      icon: command ? commandIcon(command) : "⚔️",
+      label: "対象選択",
+      text: command
+        ? `${command.name}は${commandActionSummary(command)}。候補${selection.targets.length}件から対象を選ぶと発動します。`
+        : `候補${selection.targets.length}件から対象を選んでください。`,
+      tone: selection.targets.length > 0 ? "ok" : "warn",
+    });
+    return items;
+  }
+  if (selection.kind === "move") {
+    items.push({
+      icon: "🧭",
+      label: "移動/入れ替え",
+      text: `${slotMonsterLabel(game, selection.fromSlotKey)}の移動先候補は${selection.targets.length}件です。味方がいるマスは入れ替えになります。`,
+      tone: selection.targets.length > 0 ? "ok" : "warn",
+    });
+    return items;
+  }
+  if (selection.kind === "masterAction") {
+    items.push({
+      icon: masterActionIcon(selection.actionId),
+      label: "マスター特技",
+      text: `${masterActionLabel(selection.actionId)}はStone ${getMasterActionCost(selection.actionId)}を消費します。候補${selection.targets.length}件から対象を選んでください。`,
+      tone: selection.targets.length > 0 ? "ok" : "warn",
+    });
+    return items;
+  }
+  items.push({
+    icon: "🎯",
+    label: "追加選択",
+    text: "この効果は追加対象または手札選択が必要です。表示された候補から選ぶと解決します。",
+  });
+  return items;
+}
+
+function operationReasonFromPendingDrop(game: GameState, action: PendingDropAction): OperationReasonItem {
+  if (action.kind === "attackTarget") {
+    const commands = getPendingAttackCommands(game, action);
+    return {
+      icon: "⚔️",
+      label: "ドラッグ攻撃",
+      text: `${targetLabel(game, action.target)}を先に指定済みです。発動する技を${commands.length}件から選んでください。`,
+      tone: commands.length > 0 ? "ok" : "warn",
+    };
+  }
+  if (action.kind === "magic") {
+    return {
+      icon: "✨",
+      label: "ドラッグマジック",
+      text: `${handCardLabel(game, action.handInstanceId)}の対象は${targetLabel(game, action.target)}です。確定すると発動します。`,
+      tone: "ok",
+    };
+  }
+  return {
+    icon: "🧭",
+    label: "ドラッグ移動",
+    text: `${slotMonsterLabel(game, action.fromSlotKey)}を${slotLabel(action.toSlotKey)}へ移動または入れ替えます。`,
+    tone: "ok",
+  };
+}
+
+function operationReasonsForHand(game: GameState, instanceId: string): OperationReasonItem[] {
+  const card = getHandCard(game, instanceId);
+  if (!card) {
+    return [{ icon: "⚠️", label: "手札なし", text: "選択した手札が見つかりません。", tone: "danger" }];
+  }
+  const def = getCardDef(card.cardId);
+  if (game.currentPlayer !== "player") {
+    return [{ icon: "🧠", label: "CPUターン中", text: "手札は確認できますが、プレイヤー操作はできません。", tone: "warn" }];
+  }
+  if (def.type === "monster") {
+    const summonTargets = BOARD_SLOT_KEYS.filter((slotKey) => canSummonTo(game, instanceId, slotKey));
+    return [{
+      icon: "🂠",
+      label: "召喚候補",
+      text: summonTargets.length > 0
+        ? `空き枠${summonTargets.length}件に召喚できます。召喚はStone 1を消費します。`
+        : "召喚できる空き枠がありません。自陣の左右前後を確認してください。",
+      tone: summonTargets.length > 0 ? "ok" : "warn",
+    }];
+  }
+  const targets = getMagicTargets(game, instanceId);
+  const costReason = def.cost > game.players.player.stones
+    ? `Stone不足: 必要${def.cost} / 所持${game.players.player.stones}。`
+    : `Stone ${def.cost}を消費します。`;
+  return [{
+    icon: "✨",
+    label: "マジック対象",
+    text: targets.length > 0
+      ? `${costReason} 対象候補は${targets.length}件です。`
+      : `${costReason} 現在は対象候補がありません。`,
+    tone: targets.length > 0 && def.cost <= game.players.player.stones ? "ok" : "warn",
+  }];
+}
+
+function operationReasonsForMonster(game: GameState, slotKey: SlotKey): OperationReasonItem[] {
+  const monster = game.slots[slotKey].monster;
+  if (!monster) {
+    return [{ icon: "□", label: "空きマス", text: "このマスにはカードがありません。" }];
+  }
+  const actionReason = getMonsterActionDisabledReason(game, slotKey);
+  if (actionReason) {
+    return [{ icon: "🚫", label: "行動不可", text: actionReason, tone: "warn" }];
+  }
+
+  const commands = getMonsterCommands(monster).map((command) => {
+    const targets = getCommandTargets(game, slotKey, command.id);
+    const reason = getCommandDisabledReason(game, slotKey, command, targets);
+    return `${command.name}: ${reason ?? `対象${targets.length}件`}`;
+  });
+  const moveTargets = getMovableTargets(game, slotKey);
+  return [{
+    icon: "⚡",
+    label: "行動可能",
+    text: `${slotMonsterLabel(game, slotKey)}は${monster.actionLimit - monster.actionCount}回行動できます。${commands.join(" / ")} / Move ${moveTargets.length}件。`,
+    tone: "ok",
+  }];
+}
+
+function BattleResultSummary({ game }: { game: GameState }) {
+  const deckout = game.log.some((entry) => entry.includes("山札切れ"));
+  const longGame = game.turnNumber >= 25;
+  return (
+    <div className="battle-result-summary">
+      <span><Icon icon="⏱️" /> Turn {game.turnNumber}</span>
+      <span><Icon icon="🂠" /> P {game.players.player.deck.length} / C {game.players.cpu.deck.length}</span>
+      <span><Icon icon="❤️" /> P {game.players.player.masterHp} / C {game.players.cpu.masterHp}</span>
+      {deckout && <span className="result-warning"><Icon icon="🩸" /> 山札切れあり</span>}
+      {longGame && <span className="result-warning"><Icon icon="⌛" /> 長期戦</span>}
     </div>
   );
 }
@@ -1831,20 +2098,30 @@ interface DeckSetupPanelProps {
   battleSettings: BattleSettings;
   deckSettings: DeckSettings;
   drafts: Record<PlayerId, DeckDraft>;
+  cardOptions: DeckCardOption[];
+  pickerIds: Record<PlayerId, string>;
   onClose: () => void;
   onFixedChange: (playerId: PlayerId, fixed: boolean) => void;
   onTextChange: (playerId: PlayerId, text: string) => void;
   onUseGeneratedDeck: (playerId: PlayerId) => void;
+  onPickerChange: (playerId: PlayerId, cardId: string) => void;
+  onAddCard: (playerId: PlayerId, cardId: string) => void;
+  onRemoveCard: (playerId: PlayerId, cardId: string) => void;
 }
 
 function DeckSetupPanel({
   battleSettings,
   deckSettings,
   drafts,
+  cardOptions,
+  pickerIds,
   onClose,
   onFixedChange,
   onTextChange,
   onUseGeneratedDeck,
+  onPickerChange,
+  onAddCard,
+  onRemoveCard,
 }: DeckSetupPanelProps) {
   return (
     <section className="zone-panel deck-setup-panel">
@@ -1890,16 +2167,33 @@ function DeckSetupPanel({
                 )}
               </div>
               {fixed ? (
-                <textarea
-                  className="deck-editor-textarea"
-                  value={deckSettings.text[playerId]}
-                  onChange={(event) => onTextChange(playerId, event.target.value)}
-                  spellCheck={false}
-                />
+                <>
+                  <DeckBuilderControls
+                    cardOptions={cardOptions}
+                    selectedCardId={pickerIds[playerId]}
+                    disabled={summary.total >= 30 || draft.cardIds.filter((cardId) => cardId === pickerIds[playerId]).length >= 3}
+                    onSelect={(cardId) => onPickerChange(playerId, cardId)}
+                    onAdd={() => onAddCard(playerId, pickerIds[playerId])}
+                  />
+                  <DeckCardList
+                    cardIds={draft.cardIds}
+                    editable
+                    onAddCard={(cardId) => onAddCard(playerId, cardId)}
+                    onRemoveCard={(cardId) => onRemoveCard(playerId, cardId)}
+                  />
+                  <details className="deck-raw-editor">
+                    <summary><Icon icon="✎" /> テキストで直接編集</summary>
+                    <textarea
+                      className="deck-editor-textarea"
+                      value={deckSettings.text[playerId]}
+                      onChange={(event) => onTextChange(playerId, event.target.value)}
+                      spellCheck={false}
+                    />
+                  </details>
+                </>
               ) : (
                 <DeckCardList cardIds={draft.cardIds} />
               )}
-              {fixed && <DeckCardList cardIds={draft.cardIds} />}
               {!summary.valid && (
                 <ul className="deck-errors">
                   {summary.errors.map((message) => (
@@ -1912,6 +2206,35 @@ function DeckSetupPanel({
         })}
       </div>
     </section>
+  );
+}
+
+function DeckBuilderControls({
+  cardOptions,
+  selectedCardId,
+  disabled,
+  onSelect,
+  onAdd,
+}: {
+  cardOptions: DeckCardOption[];
+  selectedCardId: string;
+  disabled: boolean;
+  onSelect: (cardId: string) => void;
+  onAdd: () => void;
+}) {
+  return (
+    <div className="deck-builder-controls">
+      <select value={selectedCardId} onChange={(event) => onSelect(event.target.value)}>
+        {cardOptions.map((option) => (
+          <option value={option.id} key={option.id}>
+            {option.typeLabel} / {option.name}
+          </option>
+        ))}
+      </select>
+      <button type="button" onClick={onAdd} disabled={disabled || !selectedCardId}>
+        <Icon icon="＋" /> 追加
+      </button>
+    </div>
   );
 }
 
@@ -1934,7 +2257,17 @@ function DeckSummaryView({ summary }: { summary: DeckValidationSummary }) {
   );
 }
 
-function DeckCardList({ cardIds }: { cardIds: string[] }) {
+function DeckCardList({
+  cardIds,
+  editable = false,
+  onAddCard,
+  onRemoveCard,
+}: {
+  cardIds: string[];
+  editable?: boolean;
+  onAddCard?: (cardId: string) => void;
+  onRemoveCard?: (cardId: string) => void;
+}) {
   const counts = new Map<string, number>();
   for (const cardId of cardIds) {
     counts.set(cardId, (counts.get(cardId) ?? 0) + 1);
@@ -1954,6 +2287,16 @@ function DeckCardList({ cardIds }: { cardIds: string[] }) {
           <span className="deck-card-chip" key={cardId}>
             <CardIcon cardId={cardId} />
             {def.name} x{count}
+            {editable && (
+              <span className="deck-card-chip-actions">
+                <button type="button" onClick={() => onRemoveCard?.(cardId)} aria-label={`${def.name}を1枚減らす`}>
+                  −
+                </button>
+                <button type="button" onClick={() => onAddCard?.(cardId)} disabled={cardIds.length >= 30 || count >= 3} aria-label={`${def.name}を1枚増やす`}>
+                  ＋
+                </button>
+              </span>
+            )}
           </span>
         ))}
       </div>
@@ -1967,6 +2310,9 @@ function CardZonePanel({ game, view, onClose }: CardZonePanelProps) {
   }
   if (view.kind === "effects") {
     return <EffectHistoryPanel game={game} onClose={onClose} />;
+  }
+  if (view.kind === "cpuHistory") {
+    return <CpuDecisionHistoryPanel game={game} onClose={onClose} />;
   }
 
   const cards = game.players[view.playerId][view.zone];
@@ -2005,6 +2351,64 @@ function CardZonePanel({ game, view, onClose }: CardZonePanelProps) {
       )}
     </section>
   );
+}
+
+interface CpuDecisionEntry {
+  index: number;
+  actor: string;
+  selected: string;
+  rejected?: string;
+}
+
+function CpuDecisionHistoryPanel({ game, onClose }: { game: GameState; onClose: () => void }) {
+  const decisions = game.log
+    .map((entry, index) => parseCpuDecisionEntry(entry, index))
+    .filter((entry): entry is CpuDecisionEntry => !!entry);
+
+  return (
+    <section className="zone-panel cpu-history-panel">
+      <div className="zone-panel-heading">
+        <div>
+          <h3><Icon icon="🧠" /> CPU Decision History</h3>
+          <p>{decisions.length} decisions / 選択理由と上位見送り候補</p>
+        </div>
+        <button type="button" onClick={onClose} aria-label="閉じる">
+          <Icon icon="✕" /> Close
+        </button>
+      </div>
+      {decisions.length === 0 ? (
+        <p className="empty-zone"><Icon icon="□" /> CPU判断ログはまだありません。</p>
+      ) : (
+        <ol className="cpu-decision-list">
+          {decisions.map((decision) => (
+            <li className="cpu-decision-row" key={`${decision.actor}_${decision.index}`}>
+              <span className="zone-card-index">{decision.index + 1}</span>
+              <span className="cpu-decision-actor">{decision.actor}</span>
+              <span className="cpu-decision-main"><Icon icon="✅" /> {decision.selected}</span>
+              {decision.rejected && <span className="cpu-decision-rejected"><Icon icon="↩️" /> {decision.rejected}</span>}
+            </li>
+          ))}
+        </ol>
+      )}
+    </section>
+  );
+}
+
+function parseCpuDecisionEntry(entry: string, index: number): CpuDecisionEntry | undefined {
+  const marker = "判断:";
+  const markerIndex = entry.indexOf(marker);
+  if (markerIndex < 0) {
+    return undefined;
+  }
+  const actor = entry.slice(0, markerIndex).trim() || "CPU";
+  const detail = entry.slice(markerIndex + marker.length).trim();
+  const [selected, rejected] = detail.split(" / 見送り: ");
+  return {
+    index,
+    actor,
+    selected: selected.trim(),
+    rejected: rejected?.trim(),
+  };
 }
 
 function EffectHistoryPanel({ game, onClose }: { game: GameState; onClose: () => void }) {
@@ -2520,6 +2924,9 @@ function toggleZoneView(current: ZoneView | undefined, next: ZoneView): ZoneView
   if (next.kind === "effects") {
     return current?.kind === "effects" ? undefined : next;
   }
+  if (next.kind === "cpuHistory") {
+    return current?.kind === "cpuHistory" ? undefined : next;
+  }
   if (next.kind === "deckSetup") {
     return current?.kind === "deckSetup" ? undefined : next;
   }
@@ -2589,6 +2996,17 @@ function deckCategorySortValue(def: ReturnType<typeof getCardDef>): number {
     return 3;
   }
   return def.role === "front" ? 1 : 2;
+}
+
+function getDeckCardOptions(): DeckCardOption[] {
+  return getAllCardDefs()
+    .map((def) => ({
+      id: def.id,
+      name: def.name,
+      typeLabel: def.type === "magic" ? "魔法" : def.role === "front" ? "前衛" : "後衛",
+      sortValue: deckCategorySortValue(def),
+    }))
+    .sort((a, b) => a.sortValue - b.sortValue || a.name.localeCompare(b.name, "ja"));
 }
 
 function createVisualEffect(previous: GameState, next: GameState, id: number): VisualEffect {

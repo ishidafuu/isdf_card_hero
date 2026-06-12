@@ -89,6 +89,8 @@ src/game/ruleEngine/random.ts      seed乱数、shuffle。
 
 ### Step 2: 盤面/射程
 
+状態: 完了。ただし、対象列挙に近い `rangeTargets`、`targetToKey`、`isSameTarget` はStep 3側で扱う。
+
 移動候補:
 
 - `slotCoord`
@@ -101,11 +103,8 @@ src/game/ruleEngine/random.ts      seed乱数、shuffle。
 - `isLineTarget`
 - `isKnightTarget`
 - `isForward`
-- `rangeTargets`
 - `isTargetInCommandRange`
 - `isOpponentMasterInCommandRange`
-- `targetToKey`
-- `isSameTarget`
 
 注意点:
 
@@ -116,6 +115,9 @@ src/game/ruleEngine/random.ts      seed乱数、shuffle。
 
 移動候補:
 
+- `rangeTargets`
+- `targetToKey`
+- `isSameTarget`
 - `getCommandTargets`
 - `getMasterActionTargets`
 - `getMagicTargets`
@@ -213,5 +215,5 @@ git diff --check
 
 ## 次に進めるなら
 
-次の実装ステップは Step 2 の盤面/射程。
-射程は過去に不具合が出ているため、移動前後で既存テストに加えて射程3、ピグミィ、ヤンバル、ケントゥリアスの代表テストを確認する。
+次の実装ステップは Step 3 の対象選択。
+`getCommandTargets`、`getMagicTargets`、マスター特技対象、追加対象、手札/山札選択候補を `ruleEngine/targeting.ts` へ段階的に移し、UI/CPU/testの import 先は引き続き `rules.ts` に固定する。
