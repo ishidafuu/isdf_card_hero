@@ -1461,6 +1461,13 @@ export function getMonsterCommands(monster: MonsterState): CommandDef[] {
   return getMonsterLevelDef(monster).commands;
 }
 
+export function getMonsterDisplayName(monster: Pick<MonsterState, "cardId" | "usedCommandIds">): string {
+  if (monster.cardId === "card_045" && monster.usedCommandIds?.includes("飛竜ロロ")) {
+    return "アーシュ";
+  }
+  return getCardName(monster.cardId);
+}
+
 export function getMasterActionCost(actionId: MasterActionId): number {
   return getMasterActionCostFromTargeting(actionId);
 }
@@ -2340,8 +2347,9 @@ function finishCommandSideEffects(
   }
 
   if (command.name === "飛竜ロロ") {
+    const previousName = monsterName(attacker);
     attacker.usedCommandIds = [...new Set([...(attacker.usedCommandIds ?? []), command.id])];
-    appendLog(state, `${monsterName(attacker)}の飛竜ロロは使い切った`);
+    appendLog(state, `${previousName}の飛竜ロロは飛び去り、${monsterName(attacker)}になった`);
   }
 
   if (attacker.cardId === "card_048" && !isUpperCommand(attacker, command)) {
@@ -2917,7 +2925,7 @@ function ensureActionAllowed(state: GameState): void {
 }
 
 function monsterName(monster: MonsterState): string {
-  return `${getCardName(monster.cardId)} Lv${monster.level}`;
+  return `${getMonsterDisplayName(monster)} Lv${monster.level}`;
 }
 
 function isSameTarget(a: Target, b: Target): boolean {

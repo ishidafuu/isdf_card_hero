@@ -35,6 +35,7 @@ import {
   getMasterActionCost,
   getMasterActionTargets,
   getMonsterCommands,
+  getMonsterDisplayName,
   getMovableTargets,
   moveMonster,
   opponentOf,
@@ -3156,7 +3157,7 @@ function BoardSlot({
         </span>
       ) : monster ? (
         <span className="monster-card">
-          <strong><CardIcon cardId={monster.cardId} /> {getCardName(monster.cardId)}</strong>
+          <strong><CardIcon cardId={monster.cardId} /> {getMonsterDisplayName(monster)}</strong>
           <span><Icon icon="✨" /> Lv{monster.level} / <Icon icon="❤️" /> HP {monster.hp}</span>
           <span>
             <Icon icon={monster.status === "prepared" ? "🕒" : "⚡"} />
@@ -3216,7 +3217,7 @@ function MonsterCommands({ game, slotKey, onCommand, onFocus, onMove }: MonsterC
     <div className="selected-detail">
       <h3>
         {hidePreparedInfo ? <Icon icon="🂠" /> : <CardIcon cardId={monster.cardId} />}
-        {hidePreparedInfo ? "準備中カード" : `${getCardName(monster.cardId)} Lv${monster.level}`}
+        {hidePreparedInfo ? "準備中カード" : `${getMonsterDisplayName(monster)} Lv${monster.level}`}
       </h3>
       <div className="card-meta-row">
         <span>{playerLabel(slot.owner)}</span>
@@ -3468,7 +3469,7 @@ function handCardLabel(game: GameState, instanceId: string): string {
 
 function slotMonsterLabel(game: GameState, slotKey: SlotKey): string {
   const monster = game.slots[slotKey].monster;
-  return monster ? `${slotLabel(slotKey)} ${getCardName(monster.cardId)}` : slotLabel(slotKey);
+  return monster ? `${slotLabel(slotKey)} ${getMonsterDisplayName(monster)}` : slotLabel(slotKey);
 }
 
 function targetLabel(game: GameState, target: Target): string {

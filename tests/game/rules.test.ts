@@ -30,6 +30,8 @@ import {
   getCurrentMasterActionIds,
   getMasterActionTargets,
   getMovableTargets,
+  getMonsterCommands,
+  getMonsterDisplayName,
   playMagic,
   resolveLevelUp,
   startTurn,
@@ -872,10 +874,20 @@ describe("battle prototype rules", () => {
     expect(next.slots.cpu_front_left.monster?.hp).toBe(3);
   });
 
-  it("limits once-only Ro Ro and special attack targets from card text", () => {
+  it("turns Arshu & Ro Ro into Arshu after the once-only Ro Ro attack", () => {
     let game = createInitialGame(133);
     game.slots.player_back_left.monster = createActiveMonster("card_045", "player");
     game.slots.cpu_front_left.monster = createActiveMonster("takokke", "cpu");
+    const beforeArshu = game.slots.player_back_left.monster;
+    if (!beforeArshu) {
+      throw new Error("Arshu should be on the field");
+    }
+
+    expect(getMonsterDisplayName(beforeArshu)).toBe("アーシュ＆ロロ");
+    expect(getMonsterCommands(beforeArshu).map((command) => command.id)).toEqual([
+      "attack",
+      "飛竜ロロ",
+    ]);
 
     game = attackWithCommand(game, {
       attackerSlotKey: "player_back_left",
@@ -888,9 +900,42 @@ describe("battle prototype rules", () => {
     }
     arshu.actionCount = 0;
 
+    expect(getMonsterDisplayName(arshu)).toBe("アーシュ");
+    expect(getMonsterCommands(arshu).map((command) => command.id)).toEqual(["attack"]);
     expect(getCommandTargets(game, "player_back_left", "飛竜ロロ")).toEqual([]);
+    expect(game.log.at(-1)).toContain("飛び去り");
+  });
 
-    game = createInitialGame(134);
+  it("keeps Arshu without Ro Ro after leveling up from the once-only attack", () => {
+    let game = createInitialGame(134);
+    game.slots.player_back_left.monster = createActiveMonster("card_045", "player");
+    game.slots.cpu_front_left.monster = createActiveMonster("takokke", "cpu", { hp: 2 });
+
+    game = attackWithCommand(game, {
+      attackerSlotKey: "player_back_left",
+      commandId: "飛竜ロロ",
+      target: { kind: "monster", slotKey: "cpu_front_left" },
+    });
+
+    expect(game.pendingLevelUp?.maxLevels).toBe(1);
+    game = resolveLevelUp(game, 1);
+
+    const arshu = game.slots.player_back_left.monster;
+    if (!arshu) {
+      throw new Error("Arshu should remain on the field");
+    }
+    arshu.actionCount = 0;
+
+    expect(arshu.level).toBe(2);
+    expect(arshu.hp).toBe(5);
+    expect(arshu.investedStones).toBe(2);
+    expect(getMonsterDisplayName(arshu)).toBe("アーシュ");
+    expect(getMonsterCommands(arshu).map((command) => `${command.id}:${command.power}`)).toEqual(["attack:3"]);
+    expect(getCommandTargets(game, "player_back_left", "飛竜ロロ")).toEqual([]);
+  });
+
+  it("limits special attack targets from card text", () => {
+    let game = createInitialGame(135);
     game.slots.player_front_left.monster = createActiveMonster("card_078", "player", {
       level: 2,
       hp: 5,
