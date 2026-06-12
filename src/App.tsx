@@ -1,7 +1,17 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import type { DragEvent, PointerEvent as ReactPointerEvent } from "react";
 import { getCardNoteDisplays } from "./game/cardAnnotations";
-import { getAllCardDefs, getCardDef, getCardIconPath, getCardName } from "./game/cards";
+import {
+  buildDeckCardIds,
+  deckCategoryLabel,
+  deckTextFromCardIds,
+  getAllCardDefs,
+  getCardDef,
+  getCardIconPath,
+  getCardName,
+  parseDeckText,
+  summarizeDeckCardIds,
+} from "./game/cards";
 import {
   attackWithCommand,
   canFocusMonster,
@@ -35,6 +45,7 @@ import {
   useMasterHpDraw,
 } from "./game/rules";
 import type { CardInstance, CommandDef, GameState, MagicAction, MagicCardDef, MagicTargetKind, MasterActionId, PlayerId, SlotKey, Target } from "./game/types";
+import type { DeckValidationSummary } from "./game/cards";
 
 type BoardCell =
   | { kind: "slot"; slotKey: SlotKey }
@@ -102,7 +113,8 @@ type PendingDropAction =
 type ZoneView =
   | { kind: "playerZone"; playerId: PlayerId; zone: "deck" | "discard" | "hand" }
   | { kind: "catalog" }
-  | { kind: "effects" };
+  | { kind: "effects" }
+  | { kind: "deckSetup" };
 type LogFilter = "all" | "battle" | "damage" | "support" | "turn" | "cpu";
 type BattleMode = "player-vs-cpu" | "cpu-vs-cpu";
 type TargetRole = "ally" | "enemy" | "move" | "summon" | "empty" | "master";
@@ -112,6 +124,18 @@ interface BattleSettings {
   seedInput: string;
   firstPlayer: PlayerId;
   mode: BattleMode;
+}
+
+interface DeckSettings {
+  fixed: Record<PlayerId, boolean>;
+  text: Record<PlayerId, string>;
+}
+
+interface DeckDraft {
+  playerId: PlayerId;
+  fixed: boolean;
+  cardIds: string[];
+  summary: DeckValidationSummary;
 }
 
 const DRAG_MIME = "application/x-card-hero-drag";
@@ -157,8 +181,59 @@ function createBattleSettings(seed: number): BattleSettings {
   };
 }
 
-function createGameFromSettings(settings: BattleSettings): GameState {
-  return createInitialGame(settings.seed, { firstPlayer: settings.firstPlayer });
+function createDeckSettings(seed: number): DeckSettings {
+  return {
+    fixed: { player: false, cpu: false },
+    text: {
+      player: generatedDeckText("player", seed),
+      cpu: generatedDeckText("cpu", seed),
+    },
+  };
+}
+
+function createGameFromSettings(settings: BattleSettings, deckSettings: DeckSettings): GameState {
+  const playerDeck = createDeckDraft(settings, deckSettings, "player");
+  const cpuDeck = createDeckDraft(settings, deckSettings, "cpu");
+  return createInitialGame(settings.seed, {
+    firstPlayer: settings.firstPlayer,
+    playerDeckCardIds: deckSettings.fixed.player ? playerDeck.cardIds : undefined,
+    cpuDeckCardIds: deckSettings.fixed.cpu ? cpuDeck.cardIds : undefined,
+  });
+}
+
+function createDeckDraft(settings: BattleSettings, deckSettings: DeckSettings, playerId: PlayerId): DeckDraft {
+  if (!deckSettings.fixed[playerId]) {
+    const cardIds = generatedDeckCardIds(playerId, settings.seed);
+    return {
+      playerId,
+      fixed: false,
+      cardIds,
+      summary: summarizeDeckCardIds(cardIds),
+    };
+  }
+
+  const parsed = parseDeckText(deckSettings.text[playerId]);
+  return {
+    playerId,
+    fixed: true,
+    cardIds: parsed.cardIds,
+    summary: summarizeDeckCardIds(parsed.cardIds, parsed.unknownTokens),
+  };
+}
+
+function createDeckDrafts(settings: BattleSettings, deckSettings: DeckSettings): Record<PlayerId, DeckDraft> {
+  return {
+    player: createDeckDraft(settings, deckSettings, "player"),
+    cpu: createDeckDraft(settings, deckSettings, "cpu"),
+  };
+}
+
+function generatedDeckCardIds(playerId: PlayerId, seed: number): string[] {
+  return buildDeckCardIds(seed + (playerId === "player" ? 101 : 202));
+}
+
+function generatedDeckText(playerId: PlayerId, seed: number): string {
+  return deckTextFromCardIds(generatedDeckCardIds(playerId, seed));
 }
 
 function normalizeSeedInput(value: string, fallback: number): number {
@@ -171,7 +246,10 @@ function normalizeSeedInput(value: string, fallback: number): number {
 
 export function App() {
   const [battleSettings, setBattleSettings] = useState<BattleSettings>(() => createBattleSettings(DEFAULT_BATTLE_SEED));
-  const [game, setGame] = useState<GameState>(() => createGameFromSettings(createBattleSettings(DEFAULT_BATTLE_SEED)));
+  const [deckSettings, setDeckSettings] = useState<DeckSettings>(() => createDeckSettings(DEFAULT_BATTLE_SEED));
+  const [game, setGame] = useState<GameState>(() =>
+    createGameFromSettings(createBattleSettings(DEFAULT_BATTLE_SEED), createDeckSettings(DEFAULT_BATTLE_SEED)),
+  );
   const [selection, setSelection] = useState<Selection | undefined>();
   const [pendingDropAction, setPendingDropAction] = useState<PendingDropAction | undefined>();
   const [error, setError] = useState<string>("");
@@ -193,6 +271,8 @@ export function App() {
   const pointerDragCleanupRef = useRef<(() => void) | undefined>(undefined);
   const suppressNextClickRef = useRef(false);
 
+  const deckDrafts = useMemo(() => createDeckDrafts(battleSettings, deckSettings), [battleSettings, deckSettings]);
+  const fixedDeckError = PLAYER_IDS.some((playerId) => deckSettings.fixed[playerId] && !deckDrafts[playerId].summary.valid);
   const currentPlayer = game.players[game.currentPlayer];
   const cpuVsCpu = battleSettings.mode === "cpu-vs-cpu";
   const isAutoResolving = !game.winner && (cpuVsCpu || autoPlayEnabled || (game.currentPlayer === "cpu" && !game.pendingLevelUp));
@@ -509,8 +589,16 @@ export function App() {
     applyChange(endTurn);
   }
 
-  function handleNewGame() {
-    const next = createGameFromSettings(battleSettings);
+  function startNewGame(settings: BattleSettings, decks: DeckSettings) {
+    const drafts = createDeckDrafts(settings, decks);
+    const invalidPlayer = PLAYER_IDS.find((playerId) => decks.fixed[playerId] && !drafts[playerId].summary.valid);
+    if (invalidPlayer) {
+      setZoneView({ kind: "deckSetup" });
+      setError(`${playerLabel(invalidPlayer)}の固定デッキを修正してください`);
+      return;
+    }
+
+    const next = createGameFromSettings(settings, decks);
     previousGameRef.current = next;
     setGame(next);
     setSelection(undefined);
@@ -519,6 +607,17 @@ export function App() {
     setError("");
     setVisualEffect(undefined);
     setAutoPlayEnabled(false);
+  }
+
+  function handleNewGame() {
+    startNewGame(battleSettings, deckSettings);
+  }
+
+  function handleRandomSeedNewGame() {
+    const seed = Math.floor(Math.random() * 1_000_000_000);
+    const nextSettings = { ...battleSettings, seed, seedInput: String(seed) };
+    setBattleSettings(nextSettings);
+    startNewGame(nextSettings, deckSettings);
   }
 
   function handleBattleSeedChange(value: string) {
@@ -544,6 +643,30 @@ export function App() {
   function handleRandomSeed() {
     const seed = Math.floor(Math.random() * 1_000_000_000);
     setBattleSettings({ ...battleSettings, seed, seedInput: String(seed) });
+  }
+
+  function handleDeckFixedChange(playerId: PlayerId, fixed: boolean) {
+    setDeckSettings((previous) => ({
+      fixed: { ...previous.fixed, [playerId]: fixed },
+      text: {
+        ...previous.text,
+        [playerId]: previous.text[playerId] || generatedDeckText(playerId, battleSettings.seed),
+      },
+    }));
+  }
+
+  function handleDeckTextChange(playerId: PlayerId, text: string) {
+    setDeckSettings((previous) => ({
+      ...previous,
+      text: { ...previous.text, [playerId]: text },
+    }));
+  }
+
+  function handleUseGeneratedDeckAsFixed(playerId: PlayerId) {
+    setDeckSettings((previous) => ({
+      fixed: { ...previous.fixed, [playerId]: true },
+      text: { ...previous.text, [playerId]: generatedDeckText(playerId, battleSettings.seed) },
+    }));
   }
 
   function handleAutoDelayChange(value: string) {
@@ -906,7 +1029,14 @@ export function App() {
           <button type="button" onClick={handleRandomSeed}>
             <Icon icon="🎲" /> Seed
           </button>
-          <button type="button" onClick={handleNewGame}>
+          <button
+            type="button"
+            className={zoneView?.kind === "deckSetup" ? "selected" : ""}
+            onClick={() => setZoneView(toggleZoneView(zoneView, { kind: "deckSetup" }))}
+          >
+            <Icon icon="🧩" /> Decks
+          </button>
+          <button type="button" onClick={handleNewGame} disabled={fixedDeckError}>
             <Icon icon="🔄" /> New Game
           </button>
         </div>
@@ -1054,13 +1184,23 @@ export function App() {
                 </button>
               ))}
             </div>
-            {zoneView && (
+            {zoneView?.kind === "deckSetup" ? (
+              <DeckSetupPanel
+                battleSettings={battleSettings}
+                deckSettings={deckSettings}
+                drafts={deckDrafts}
+                onClose={() => setZoneView(undefined)}
+                onFixedChange={handleDeckFixedChange}
+                onTextChange={handleDeckTextChange}
+                onUseGeneratedDeck={handleUseGeneratedDeckAsFixed}
+              />
+            ) : zoneView ? (
               <CardZonePanel
                 game={game}
                 view={zoneView}
                 onClose={() => setZoneView(undefined)}
               />
-            )}
+            ) : null}
           </section>
         </div>
 
@@ -1103,12 +1243,27 @@ export function App() {
                 <p>{selectedLogEntry}</p>
               </div>
             )}
+            <LatestEventSummary log={game.log} />
           </section>
 
           {game.winner ? (
             <section className="notice">
               <h2><Icon icon="🏆" /> {playerLabel(game.winner)} Win</h2>
-              <button type="button" onClick={handleNewGame}><Icon icon="🔄" /> もう一戦</button>
+              <p>
+                Seed {battleSettings.seed} / 先攻 {playerLabel(battleSettings.firstPlayer)} /
+                {battleSettings.mode === "cpu-vs-cpu" ? " CPU vs CPU" : " Player vs CPU"}
+              </p>
+              <div className="button-stack">
+                <button type="button" onClick={handleNewGame} disabled={fixedDeckError}>
+                  <Icon icon="🔄" /> 同じ条件で再戦
+                </button>
+                <button type="button" onClick={handleRandomSeedNewGame} disabled={fixedDeckError}>
+                  <Icon icon="🎲" /> Seedを変えて再戦
+                </button>
+                <button type="button" onClick={() => setZoneView({ kind: "deckSetup" })}>
+                  <Icon icon="🧩" /> デッキ設定
+                </button>
+              </div>
             </section>
           ) : game.pendingLevelUp ? (
             <section className="notice">
@@ -1361,6 +1516,19 @@ function TargetChipList({ game, targets }: { game: GameState; targets: Target[] 
       ))}
       {targets.length > visibleTargets.length && <span className="target-chip">+{targets.length - visibleTargets.length}</span>}
     </span>
+  );
+}
+
+function LatestEventSummary({ log }: { log: string[] }) {
+  const latest = log.at(-1);
+  if (!latest) {
+    return null;
+  }
+  return (
+    <div className={`latest-event ${logTone(latest)}`}>
+      <strong><Icon icon={logIcon(latest)} /> Latest: {logCategoryLabel(latest)}</strong>
+      <p>{latest}</p>
+    </div>
   );
 }
 
@@ -1655,8 +1823,142 @@ function HandCardPanel({ card, game, disabled, onDiscard }: HandCardPanelProps) 
 
 interface CardZonePanelProps {
   game: GameState;
-  view: ZoneView;
+  view: Exclude<ZoneView, { kind: "deckSetup" }>;
   onClose: () => void;
+}
+
+interface DeckSetupPanelProps {
+  battleSettings: BattleSettings;
+  deckSettings: DeckSettings;
+  drafts: Record<PlayerId, DeckDraft>;
+  onClose: () => void;
+  onFixedChange: (playerId: PlayerId, fixed: boolean) => void;
+  onTextChange: (playerId: PlayerId, text: string) => void;
+  onUseGeneratedDeck: (playerId: PlayerId) => void;
+}
+
+function DeckSetupPanel({
+  battleSettings,
+  deckSettings,
+  drafts,
+  onClose,
+  onFixedChange,
+  onTextChange,
+  onUseGeneratedDeck,
+}: DeckSetupPanelProps) {
+  return (
+    <section className="zone-panel deck-setup-panel">
+      <div className="zone-panel-heading">
+        <div>
+          <h3><Icon icon="🧩" /> Deck Setup</h3>
+          <p>30枚固定、同名3枚まで、前衛12 / 後衛6 / 魔法6以上。山札順はseedで再現されます。</p>
+        </div>
+        <button type="button" onClick={onClose} aria-label="閉じる">
+          <Icon icon="✕" /> Close
+        </button>
+      </div>
+      <div className="deck-setup-grid">
+        {PLAYER_IDS.map((playerId) => {
+          const draft = drafts[playerId];
+          const summary = draft.summary;
+          const fixed = deckSettings.fixed[playerId];
+          return (
+            <section className={`deck-editor-card ${summary.valid ? "" : "invalid"}`} key={playerId}>
+              <div className="deck-editor-heading">
+                <div>
+                  <h4>{playerLabel(playerId)} Deck</h4>
+                  <p>{fixed ? "固定デッキ" : `ランダム生成 / seed ${battleSettings.seed}`}</p>
+                </div>
+                <label className="deck-mode-toggle">
+                  <input
+                    type="checkbox"
+                    checked={fixed}
+                    onChange={(event) => onFixedChange(playerId, event.target.checked)}
+                  />
+                  固定
+                </label>
+              </div>
+              <DeckSummaryView summary={summary} />
+              <div className="deck-editor-actions">
+                <button type="button" onClick={() => onUseGeneratedDeck(playerId)}>
+                  <Icon icon="📌" /> 現在seedの内容を固定
+                </button>
+                {fixed && (
+                  <button type="button" onClick={() => onFixedChange(playerId, false)}>
+                    <Icon icon="🎲" /> ランダムに戻す
+                  </button>
+                )}
+              </div>
+              {fixed ? (
+                <textarea
+                  className="deck-editor-textarea"
+                  value={deckSettings.text[playerId]}
+                  onChange={(event) => onTextChange(playerId, event.target.value)}
+                  spellCheck={false}
+                />
+              ) : (
+                <DeckCardList cardIds={draft.cardIds} />
+              )}
+              {fixed && <DeckCardList cardIds={draft.cardIds} />}
+              {!summary.valid && (
+                <ul className="deck-errors">
+                  {summary.errors.map((message) => (
+                    <li key={message}>{message}</li>
+                  ))}
+                </ul>
+              )}
+            </section>
+          );
+        })}
+      </div>
+    </section>
+  );
+}
+
+function DeckSummaryView({ summary }: { summary: DeckValidationSummary }) {
+  return (
+    <div className="deck-summary-row">
+      <span className={summary.total === 30 ? "ok" : "ng"}><Icon icon="🃏" /> {summary.total}/30</span>
+      {(["front", "back", "magic"] as const).map((category) => (
+        <span
+          key={category}
+          className={deckCategoryValid(summary, category) ? "ok" : "ng"}
+        >
+          {deckCategoryIcon(category)} {deckCategoryLabel(category)} {summary.categories[category]}
+        </span>
+      ))}
+      <span className={summary.duplicateViolations.length === 0 ? "ok" : "ng"}>
+        <Icon icon="🔢" /> 3枚制限
+      </span>
+    </div>
+  );
+}
+
+function DeckCardList({ cardIds }: { cardIds: string[] }) {
+  const counts = new Map<string, number>();
+  for (const cardId of cardIds) {
+    counts.set(cardId, (counts.get(cardId) ?? 0) + 1);
+  }
+  const rows = [...counts.entries()]
+    .map(([cardId, count]) => ({ cardId, count, def: getCardDef(cardId) }))
+    .sort((a, b) => {
+      const categoryDiff = deckCategorySortValue(a.def) - deckCategorySortValue(b.def);
+      return categoryDiff || a.def.name.localeCompare(b.def.name, "ja");
+    });
+
+  return (
+    <details className="deck-card-list">
+      <summary><Icon icon="📋" /> 内容 {cardIds.length}枚 / {rows.length}種類</summary>
+      <div className="deck-card-grid">
+        {rows.map(({ cardId, count, def }) => (
+          <span className="deck-card-chip" key={cardId}>
+            <CardIcon cardId={cardId} />
+            {def.name} x{count}
+          </span>
+        ))}
+      </div>
+    </details>
+  );
 }
 
 function CardZonePanel({ game, view, onClose }: CardZonePanelProps) {
@@ -2218,6 +2520,9 @@ function toggleZoneView(current: ZoneView | undefined, next: ZoneView): ZoneView
   if (next.kind === "effects") {
     return current?.kind === "effects" ? undefined : next;
   }
+  if (next.kind === "deckSetup") {
+    return current?.kind === "deckSetup" ? undefined : next;
+  }
   return isZoneView(current, next.playerId, next.zone) ? undefined : next;
 }
 
@@ -2257,6 +2562,33 @@ function cardTypeLabel(cardId: string): string {
     return "魔法";
   }
   return def.role === "front" ? "前衛" : "後衛";
+}
+
+function deckCategoryValid(summary: DeckValidationSummary, category: "front" | "back" | "magic"): boolean {
+  if (category === "front") {
+    return summary.categories.front >= 12;
+  }
+  if (category === "back") {
+    return summary.categories.back >= 6;
+  }
+  return summary.categories.magic >= 6;
+}
+
+function deckCategoryIcon(category: "front" | "back" | "magic"): string {
+  if (category === "front") {
+    return "🛡️";
+  }
+  if (category === "back") {
+    return "🏹";
+  }
+  return "✨";
+}
+
+function deckCategorySortValue(def: ReturnType<typeof getCardDef>): number {
+  if (def.type === "magic") {
+    return 3;
+  }
+  return def.role === "front" ? 1 : 2;
 }
 
 function createVisualEffect(previous: GameState, next: GameState, id: number): VisualEffect {

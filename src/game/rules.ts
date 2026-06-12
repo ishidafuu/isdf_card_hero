@@ -1,8 +1,10 @@
 import {
   buildDeck,
+  createDeckFromCardIds,
   getCardDef,
   getCardName,
   getMonsterDef,
+  summarizeDeckCardIds,
 } from "./cards";
 import { applyCpuDecision, chooseCpuDecision } from "./cpuAi";
 import {
@@ -18,6 +20,9 @@ import {
   SHIELD_COST,
   WAKE_UP_COST,
 } from "./ruleEngine/constants";
+import { appendLog, appendRandomResultLog } from "./ruleEngine/log";
+import { randomChance, randomInt, shuffle } from "./ruleEngine/random";
+import { cloneState } from "./ruleEngine/state";
 import type {
   CardInstance,
   CommandAction,
@@ -40,6 +45,8 @@ export { FIELD_ORDER, PLAYER_SLOT_ORDER } from "./ruleEngine/constants";
 
 export interface CreateInitialGameOptions {
   firstPlayer?: PlayerId;
+  playerDeckCardIds?: string[];
+  cpuDeckCardIds?: string[];
 }
 
 interface DefeatedMonster {
@@ -58,8 +65,21 @@ interface DamageContext {
 }
 
 export function createInitialGame(seed = Date.now(), options: CreateInitialGameOptions = {}): GameState {
-  const playerDeck = shuffle(buildDeck("player", seed + 101), seed + 1);
-  const cpuDeck = shuffle(buildDeck("cpu", seed + 202), seed + 2);
+  if (options.playerDeckCardIds) {
+    ensureInitialDeckValid("プレイヤー", options.playerDeckCardIds);
+  }
+  if (options.cpuDeckCardIds) {
+    ensureInitialDeckValid("CPU", options.cpuDeckCardIds);
+  }
+
+  const playerDeck = shuffle(
+    options.playerDeckCardIds ? createDeckFromCardIds("player", options.playerDeckCardIds) : buildDeck("player", seed + 101),
+    seed + 1,
+  );
+  const cpuDeck = shuffle(
+    options.cpuDeckCardIds ? createDeckFromCardIds("cpu", options.cpuDeckCardIds) : buildDeck("cpu", seed + 202),
+    seed + 2,
+  );
   const firstPlayer = options.firstPlayer ?? "player";
   const state: GameState = {
     players: {
@@ -77,6 +97,13 @@ export function createInitialGame(seed = Date.now(), options: CreateInitialGameO
   drawOpeningHand(state.players.player);
   drawOpeningHand(state.players.cpu);
   return startTurn(state, firstPlayer);
+}
+
+function ensureInitialDeckValid(label: string, cardIds: string[]): void {
+  const summary = summarizeDeckCardIds(cardIds);
+  if (!summary.valid) {
+    throw new Error(`${label}の固定デッキが不正です: ${summary.errors.join(" / ")}`);
+  }
 }
 
 export function startTurn(state: GameState, playerId: PlayerId): GameState {
@@ -3122,17 +3149,6 @@ function ensureActionAllowed(state: GameState): void {
   }
 }
 
-function appendLog(state: GameState, message: string): void {
-  state.log.push(message);
-  if (state.log.length > 120) {
-    state.log = state.log.slice(-120);
-  }
-}
-
-function appendRandomResultLog(state: GameState, label: string, result: string): void {
-  appendLog(state, `ランダム結果: ${label} -> ${result}`);
-}
-
 function monsterName(monster: MonsterState): string {
   return `${getCardName(monster.cardId)} Lv${monster.level}`;
 }
@@ -3150,31 +3166,11 @@ function isSameTarget(a: Target, b: Target): boolean {
   return false;
 }
 
-function cloneState(state: GameState): GameState {
-  return structuredClone(state) as GameState;
-}
-
 function damageContext(sourceOrContext: string | DamageContext): DamageContext {
   if (typeof sourceOrContext === "string") {
     return { source: sourceOrContext, kind: "effect" };
   }
   return sourceOrContext;
-}
-
-function randomChance(state: GameState, probability: number): boolean {
-  return nextRandom(state) < probability;
-}
-
-function randomInt(state: GameState, min: number, max: number): number {
-  return min + Math.floor(nextRandom(state) * (max - min + 1));
-}
-
-function nextRandom(state: GameState): number {
-  state.randomSeed = (state.randomSeed + 0x6d2b79f5) >>> 0;
-  let next = state.randomSeed;
-  next = Math.imul(next ^ (next >>> 15), next | 1);
-  next ^= next + Math.imul(next ^ (next >>> 7), next | 61);
-  return ((next ^ (next >>> 14)) >>> 0) / 4294967296;
 }
 
 function categoryLabel(category: NonNullable<MagicAction["searchCategory"]>): string {
@@ -3185,25 +3181,4 @@ function categoryLabel(category: NonNullable<MagicAction["searchCategory"]>): st
     return "後衛";
   }
   return "魔法";
-}
-
-function shuffle(deck: CardInstance[], seed: number): CardInstance[] {
-  const result = [...deck];
-  const random = seededRandom(seed);
-  for (let i = result.length - 1; i > 0; i -= 1) {
-    const j = Math.floor(random() * (i + 1));
-    [result[i], result[j]] = [result[j], result[i]];
-  }
-  return result;
-}
-
-function seededRandom(seed: number): () => number {
-  let value = seed >>> 0;
-  return () => {
-    value += 0x6d2b79f5;
-    let next = value;
-    next = Math.imul(next ^ (next >>> 15), next | 1);
-    next ^= next + Math.imul(next ^ (next >>> 7), next | 61);
-    return ((next ^ (next >>> 14)) >>> 0) / 4294967296;
-  };
 }

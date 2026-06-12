@@ -102,6 +102,7 @@ export function chooseCpuDecision(state: GameState): CpuDecision {
   const beforeScore = evaluateState(state, perspective);
   const beforeFutureScore = evaluateFutureTacticalValue(state, perspective);
   let best: { decision: CpuDecision; totalScore: number; index: number } | undefined;
+  const evaluated: Array<{ decision: CpuDecision; totalScore: number; index: number }> = [];
 
   decisions.forEach((decision, index) => {
     let after: GameState;
@@ -117,6 +118,7 @@ export function chooseCpuDecision(state: GameState): CpuDecision {
       beforeScore +
       evaluateFutureTacticalValue(after, perspective) -
       beforeFutureScore;
+    evaluated.push({ decision, totalScore, index });
     if (
       !best ||
       totalScore > best.totalScore ||
@@ -126,7 +128,7 @@ export function chooseCpuDecision(state: GameState): CpuDecision {
     }
   });
 
-  return best?.decision ?? createEndTurnDecision();
+  return best ? attachDecisionTrace(best, evaluated) : createEndTurnDecision();
 }
 
 export function listCpuDecisions(state: GameState): CpuDecision[] {
@@ -856,6 +858,49 @@ function createEndTurnDecision(): CpuDecision {
     reason: "有効な行動がないためターン終了",
     score: 0,
   };
+}
+
+function attachDecisionTrace(
+  selected: { decision: CpuDecision; totalScore: number; index: number },
+  evaluated: Array<{ decision: CpuDecision; totalScore: number; index: number }>,
+): CpuDecision {
+  const rejected = evaluated
+    .filter((candidate) => candidate.index !== selected.index && candidate.decision.type !== "end_turn")
+    .sort((a, b) => b.totalScore - a.totalScore || a.index - b.index)
+    .slice(0, 2);
+  if (rejected.length === 0) {
+    return selected.decision;
+  }
+
+  const rejectedText = rejected
+    .map((candidate) => `${decisionShortLabel(candidate.decision)}は${Math.max(1, Math.round(selected.totalScore - candidate.totalScore))}点差で見送り`)
+    .join("、");
+  return {
+    ...selected.decision,
+    reason: `${selected.decision.reason} / 見送り: ${rejectedText}`,
+  } as CpuDecision;
+}
+
+function decisionShortLabel(decision: CpuDecision): string {
+  if (decision.type === "attack") {
+    return "攻撃";
+  }
+  if (decision.type === "master_action") {
+    return "マスター特技";
+  }
+  if (decision.type === "summon") {
+    return "召喚";
+  }
+  if (decision.type === "magic") {
+    return "マジック";
+  }
+  if (decision.type === "move") {
+    return "移動";
+  }
+  if (decision.type === "focus") {
+    return "ためる";
+  }
+  return "ターン終了";
 }
 
 function compareTieBreak(a: CpuDecision, b: CpuDecision, aIndex: number, bIndex: number): number {

@@ -1,5 +1,15 @@
 import { describe, expect, it } from "vitest";
-import { buildDeck, getAllCardDefs, getCardDef, getCardIconPath, getMonsterDef, validateRandomDeck } from "../../src/game/cards";
+import {
+  buildDeck,
+  deckTextFromCardIds,
+  getAllCardDefs,
+  getCardDef,
+  getCardIconPath,
+  getMonsterDef,
+  parseDeckText,
+  summarizeDeckCardIds,
+  validateRandomDeck,
+} from "../../src/game/cards";
 import {
   attackWithCommand,
   canFocusMonster,
@@ -49,6 +59,26 @@ describe("battle prototype rules", () => {
     expect(buildDeck("test", 1).map((card) => card.cardId).join(",")).not.toBe(
       buildDeck("test", 2).map((card) => card.cardId).join(","),
     );
+  });
+
+  it("validates editable fixed deck text by card name and card id", () => {
+    const randomCardIds = buildDeck("fixed", 321).map((card) => card.cardId);
+    const text = `${deckTextFromCardIds(randomCardIds.slice(0, 29))}\n${randomCardIds[29]}`;
+    const parsed = parseDeckText(text);
+    const summary = summarizeDeckCardIds(parsed.cardIds, parsed.unknownTokens);
+
+    expect(parsed.cardIds).toEqual(randomCardIds);
+    expect(summary.valid).toBe(true);
+    expect(summary.total).toBe(30);
+  });
+
+  it("reports fixed deck composition and copy limit violations", () => {
+    const invalidCardIds = Array.from({ length: 30 }, () => "card_001");
+    const summary = summarizeDeckCardIds(invalidCardIds);
+
+    expect(summary.valid).toBe(false);
+    expect(summary.duplicateViolations).toEqual([{ cardId: "card_001", count: 30 }]);
+    expect(summary.errors).toContain("同名カードは3枚までです");
   });
 
   it("imports the non-super original card pool with temporary icons", () => {
@@ -109,6 +139,22 @@ describe("battle prototype rules", () => {
     expect(playerTurn.players.player.stones).toBe(3);
     expect(playerTurn.players.player.hand).toHaveLength(6);
     expect(playerTurn.players.player.deck).toHaveLength(24);
+  });
+
+  it("starts a battle with fixed player and CPU deck contents", () => {
+    const playerDeckCardIds = buildDeck("player_fixed", 10).map((card) => card.cardId);
+    const cpuDeckCardIds = buildDeck("cpu_fixed", 20).map((card) => card.cardId);
+    const game = createInitialGame(200, { playerDeckCardIds, cpuDeckCardIds });
+    const playerBattleCards = [...game.players.player.hand, ...game.players.player.deck].map((card) => card.cardId).sort();
+    const cpuBattleCards = [...game.players.cpu.hand, ...game.players.cpu.deck].map((card) => card.cardId).sort();
+
+    expect(playerBattleCards).toEqual([...playerDeckCardIds].sort());
+    expect(cpuBattleCards).toEqual([...cpuDeckCardIds].sort());
+  });
+
+  it("rejects invalid fixed decks at battle creation", () => {
+    expect(() => createInitialGame(200, { playerDeckCardIds: Array.from({ length: 30 }, () => "card_001") }))
+      .toThrow("プレイヤーの固定デッキが不正です");
   });
 
   it("spends master HP to draw and converts the HP loss into stone", () => {
