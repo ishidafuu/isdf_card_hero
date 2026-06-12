@@ -306,6 +306,58 @@ exports[`official card effect expectations > card_003 ポップル has reviewed 
 }
 `;
 
+exports[`official card effect expectations > card_006 ボムキング has reviewed official super source data 1`] = `
+{
+  "actionLimit": undefined,
+  "catchcopy": "爆発力無限大",
+  "evolvesFrom": [
+    "bomuzo",
+  ],
+  "id": "card_006",
+  "levels": [
+    {
+      "commands": [
+        {
+          "effectText": undefined,
+          "id": "大爆発",
+          "implemented": true,
+          "name": "大爆発",
+          "power": 6,
+          "range": "adjacent",
+          "rangeText": undefined,
+          "recoilDamage": 1,
+          "stoneCost": undefined,
+        },
+        {
+          "effectText": undefined,
+          "id": "トルネードボム",
+          "implemented": true,
+          "name": "トルネードボム",
+          "power": 3,
+          "range": "one_skip",
+          "rangeText": "１つ飛び",
+          "recoilDamage": undefined,
+          "stoneCost": undefined,
+        },
+      ],
+      "level": 3,
+      "maxHp": 4,
+    },
+  ],
+  "maxLevel": 3,
+  "name": "ボムキング",
+  "notes": [
+    "性格： 自爆 通常攻撃時に自分もダメージを受ける",
+  ],
+  "pool": "special",
+  "rarity": 5,
+  "role": "front",
+  "sourceNo": 6,
+  "sourceUrl": "https://www.cardhero-bu.com/card/detail.php?id=6",
+  "type": "monster",
+}
+`;
+
 exports[`official card effect expectations > card_007 ゲイラ has reviewed official source data 1`] = `
 {
   "actionLimit": undefined,
@@ -556,6 +608,97 @@ exports[`official card effect expectations > card_009 神斬丸 has reviewed off
 }
 `;
 
+exports[`official card effect expectations > card_010 牙王バサラ has reviewed official super source data 1`] = `
+{
+  "actionLimit": undefined,
+  "catchcopy": "大刀の阿修羅",
+  "evolvesFrom": [
+    "card_009",
+  ],
+  "id": "card_010",
+  "levels": [
+    {
+      "commands": [
+        {
+          "effectText": undefined,
+          "id": "牙王斬",
+          "implemented": true,
+          "name": "牙王斬",
+          "power": 5,
+          "range": "adjacent",
+          "rangeText": undefined,
+          "recoilDamage": undefined,
+          "stoneCost": undefined,
+        },
+        {
+          "effectText": undefined,
+          "id": "衝撃波",
+          "implemented": true,
+          "name": "衝撃波",
+          "power": 3,
+          "range": "straight",
+          "rangeText": "まっすぐ",
+          "recoilDamage": undefined,
+          "stoneCost": 2,
+        },
+      ],
+      "level": 3,
+      "maxHp": 5,
+    },
+  ],
+  "maxLevel": 3,
+  "name": "牙王バサラ",
+  "notes": [],
+  "pool": "special",
+  "rarity": 6,
+  "role": "front",
+  "sourceNo": 10,
+  "sourceUrl": "https://www.cardhero-bu.com/card/detail.php?id=10",
+  "type": "monster",
+}
+`;
+
+exports[`official card effect expectations > card_012 Ｔ３－００ has reviewed official super source data 1`] = `
+{
+  "actionLimit": 3,
+  "catchcopy": "究極の３行動",
+  "evolvesFrom": [
+    "polyspinner",
+  ],
+  "id": "card_012",
+  "levels": [
+    {
+      "commands": [
+        {
+          "effectText": undefined,
+          "id": "attack",
+          "implemented": true,
+          "name": "アタック",
+          "power": 3,
+          "range": "adjacent",
+          "rangeText": undefined,
+          "recoilDamage": undefined,
+          "stoneCost": undefined,
+        },
+      ],
+      "level": 3,
+      "maxHp": 3,
+    },
+  ],
+  "maxLevel": 3,
+  "name": "Ｔ３－００",
+  "notes": [
+    "性格： ３行動 １ターン中に３回行動できる",
+  ],
+  "pool": "special",
+  "rarity": 6,
+  "role": "front",
+  "sourceNo": 12,
+  "sourceUrl": "https://www.cardhero-bu.com/card/detail.php?id=12",
+  "type": "monster",
+}
+`;
+
 exports[`official card effect expectations > card_013 ラッフィー has reviewed official source data 1`] = `
 {
   "actionLimit": undefined,
@@ -626,6 +769,56 @@ exports[`official card effect expectations > card_013 ラッフィー has review
   "role": "front",
   "sourceNo": 13,
   "sourceUrl": "https://www.cardhero-bu.com/card/detail.php?id=13",
+  "type": "monster",
+}
+`;
+
+exports[`official card effect expectations > card_014 聖獣ラフィオー has reviewed official super source data 1`] = `
+{
+  "actionLimit": undefined,
+  "catchcopy": "紅き炎と猛き爪",
+  "evolvesFrom": [
+    "card_013",
+  ],
+  "id": "card_014",
+  "levels": [
+    {
+      "commands": [
+        {
+          "effectText": undefined,
+          "id": "ソニックパンチ",
+          "implemented": true,
+          "name": "ソニックパンチ",
+          "power": 5,
+          "range": "adjacent",
+          "rangeText": undefined,
+          "recoilDamage": undefined,
+          "stoneCost": undefined,
+        },
+        {
+          "effectText": undefined,
+          "id": "ソニックフレア",
+          "implemented": true,
+          "name": "ソニックフレア",
+          "power": 5,
+          "range": "decreasing_straight",
+          "rangeText": "減るまっすぐ",
+          "recoilDamage": undefined,
+          "stoneCost": undefined,
+        },
+      ],
+      "level": 3,
+      "maxHp": 5,
+    },
+  ],
+  "maxLevel": 3,
+  "name": "聖獣ラフィオー",
+  "notes": [],
+  "pool": "special",
+  "rarity": 6,
+  "role": "front",
+  "sourceNo": 14,
+  "sourceUrl": "https://www.cardhero-bu.com/card/detail.php?id=14",
   "type": "monster",
 }
 `;
@@ -848,6 +1041,56 @@ exports[`official card effect expectations > card_020 ガンタス has reviewed 
   "role": "back",
   "sourceNo": 20,
   "sourceUrl": "https://www.cardhero-bu.com/card/detail.php?id=20",
+  "type": "monster",
+}
+`;
+
+exports[`official card effect expectations > card_021 メガンタス has reviewed official super source data 1`] = `
+{
+  "actionLimit": undefined,
+  "catchcopy": "重装機動生命体",
+  "evolvesFrom": [
+    "card_020",
+  ],
+  "id": "card_021",
+  "levels": [
+    {
+      "commands": [
+        {
+          "effectText": undefined,
+          "id": "attack",
+          "implemented": true,
+          "name": "アタック",
+          "power": 2,
+          "range": "adjacent",
+          "rangeText": undefined,
+          "recoilDamage": undefined,
+          "stoneCost": undefined,
+        },
+        {
+          "effectText": undefined,
+          "id": "メガバスター",
+          "implemented": true,
+          "name": "メガバスター",
+          "power": 5,
+          "range": "one_skip",
+          "rangeText": "１つ飛び",
+          "recoilDamage": undefined,
+          "stoneCost": undefined,
+        },
+      ],
+      "level": 3,
+      "maxHp": 4,
+    },
+  ],
+  "maxLevel": 3,
+  "name": "メガンタス",
+  "notes": [],
+  "pool": "special",
+  "rarity": 5,
+  "role": "back",
+  "sourceNo": 21,
+  "sourceUrl": "https://www.cardhero-bu.com/card/detail.php?id=21",
   "type": "monster",
 }
 `;
@@ -1235,6 +1478,45 @@ exports[`official card effect expectations > card_033 テトカ has reviewed off
 }
 `;
 
+exports[`official card effect expectations > card_034 ガンガガンガ has reviewed official super source data 1`] = `
+{
+  "actionLimit": undefined,
+  "catchcopy": "すべてはここに",
+  "evolvesFrom": [
+    "card_033",
+  ],
+  "id": "card_034",
+  "levels": [
+    {
+      "commands": [
+        {
+          "effectText": undefined,
+          "id": "attack",
+          "implemented": true,
+          "name": "アタック",
+          "power": 3,
+          "range": "adjacent",
+          "rangeText": undefined,
+          "recoilDamage": undefined,
+          "stoneCost": undefined,
+        },
+      ],
+      "level": 3,
+      "maxHp": 8,
+    },
+  ],
+  "maxLevel": 3,
+  "name": "ガンガガンガ",
+  "notes": [],
+  "pool": "special",
+  "rarity": 5,
+  "role": "front",
+  "sourceNo": 34,
+  "sourceUrl": "https://www.cardhero-bu.com/card/detail.php?id=34",
+  "type": "monster",
+}
+`;
+
 exports[`official card effect expectations > card_035 バルバス＆パフ has reviewed official source data 1`] = `
 {
   "actionLimit": undefined,
@@ -1345,6 +1627,56 @@ exports[`official card effect expectations > card_035 バルバス＆パフ has 
 }
 `;
 
+exports[`official card effect expectations > card_036 フルール has reviewed official super source data 1`] = `
+{
+  "actionLimit": undefined,
+  "catchcopy": "進化を司る精霊",
+  "evolvesFrom": [
+    "card_035",
+  ],
+  "id": "card_036",
+  "levels": [
+    {
+      "commands": [
+        {
+          "effectText": undefined,
+          "id": "attack",
+          "implemented": true,
+          "name": "アタック",
+          "power": 3,
+          "range": "adjacent",
+          "rangeText": undefined,
+          "recoilDamage": undefined,
+          "stoneCost": undefined,
+        },
+        {
+          "effectText": "モンスターをレベルアップさせるが最高レベルの者は消える",
+          "id": "夢幻の光",
+          "implemented": true,
+          "name": "夢幻の光",
+          "power": 0,
+          "range": "any_monster",
+          "rangeText": "どこでもモンスター",
+          "recoilDamage": undefined,
+          "stoneCost": 1,
+        },
+      ],
+      "level": 3,
+      "maxHp": 5,
+    },
+  ],
+  "maxLevel": 3,
+  "name": "フルール",
+  "notes": [],
+  "pool": "special",
+  "rarity": 5,
+  "role": "front",
+  "sourceNo": 36,
+  "sourceUrl": "https://www.cardhero-bu.com/card/detail.php?id=36",
+  "type": "monster",
+}
+`;
+
 exports[`official card effect expectations > card_037 ドノマンティス has reviewed official source data 1`] = `
 {
   "actionLimit": undefined,
@@ -1404,6 +1736,58 @@ exports[`official card effect expectations > card_037 ドノマンティス has 
   "role": "front",
   "sourceNo": 37,
   "sourceUrl": "https://www.cardhero-bu.com/card/detail.php?id=37",
+  "type": "monster",
+}
+`;
+
+exports[`official card effect expectations > card_038 ファレイナ has reviewed official super source data 1`] = `
+{
+  "actionLimit": undefined,
+  "catchcopy": "命を糧に、そして剣に",
+  "evolvesFrom": [
+    "card_037",
+  ],
+  "id": "card_038",
+  "levels": [
+    {
+      "commands": [
+        {
+          "effectText": undefined,
+          "id": "ライフドレイン",
+          "implemented": true,
+          "name": "ライフドレイン",
+          "power": 2,
+          "range": "adjacent",
+          "rangeText": undefined,
+          "recoilDamage": undefined,
+          "stoneCost": undefined,
+        },
+        {
+          "effectText": "マスターまたはモンスターのＨＰを吸収する",
+          "id": "ライフドレイン_2",
+          "implemented": true,
+          "name": "ライフドレイン",
+          "power": 2,
+          "range": "any_monster",
+          "rangeText": "どこでも",
+          "recoilDamage": undefined,
+          "stoneCost": undefined,
+        },
+      ],
+      "level": 3,
+      "maxHp": 6,
+    },
+  ],
+  "maxLevel": 3,
+  "name": "ファレイナ",
+  "notes": [
+    "性格： 吸収 与えたダメージ分のＨＰを吸収する",
+  ],
+  "pool": "special",
+  "rarity": 5,
+  "role": "front",
+  "sourceNo": 38,
+  "sourceUrl": "https://www.cardhero-bu.com/card/detail.php?id=38",
   "type": "monster",
 }
 `;
@@ -1645,6 +2029,56 @@ exports[`official card effect expectations > card_041 ジャレス has reviewed 
   "role": "front",
   "sourceNo": 41,
   "sourceUrl": "https://www.cardhero-bu.com/card/detail.php?id=41",
+  "type": "monster",
+}
+`;
+
+exports[`official card effect expectations > card_042 ジャレット has reviewed official super source data 1`] = `
+{
+  "actionLimit": undefined,
+  "catchcopy": "華麗なる射手",
+  "evolvesFrom": [
+    "card_041",
+  ],
+  "id": "card_042",
+  "levels": [
+    {
+      "commands": [
+        {
+          "effectText": undefined,
+          "id": "ショット",
+          "implemented": true,
+          "name": "ショット",
+          "power": 2,
+          "range": "adjacent",
+          "rangeText": undefined,
+          "recoilDamage": undefined,
+          "stoneCost": undefined,
+        },
+        {
+          "effectText": undefined,
+          "id": "シャインアロー",
+          "implemented": true,
+          "name": "シャインアロー",
+          "power": 5,
+          "range": "piercing",
+          "rangeText": "貫通",
+          "recoilDamage": undefined,
+          "stoneCost": undefined,
+        },
+      ],
+      "level": 3,
+      "maxHp": 5,
+    },
+  ],
+  "maxLevel": 3,
+  "name": "ジャレット",
+  "notes": [],
+  "pool": "special",
+  "rarity": 6,
+  "role": "front",
+  "sourceNo": 42,
+  "sourceUrl": "https://www.cardhero-bu.com/card/detail.php?id=42",
   "type": "monster",
 }
 `;
@@ -2402,6 +2836,57 @@ exports[`official card effect expectations > card_053 ラティーヌ has review
 }
 `;
 
+exports[`official card effect expectations > card_054 聖天ソフィアス has reviewed official super source data 1`] = `
+{
+  "actionLimit": undefined,
+  "catchcopy": "生命を司る女神",
+  "evolvesFrom": [
+    "card_052",
+    "card_053",
+  ],
+  "id": "card_054",
+  "levels": [
+    {
+      "commands": [
+        {
+          "effectText": undefined,
+          "id": "attack",
+          "implemented": true,
+          "name": "アタック",
+          "power": 2,
+          "range": "adjacent",
+          "rangeText": undefined,
+          "recoilDamage": undefined,
+          "stoneCost": undefined,
+        },
+        {
+          "effectText": "モンスターを登場時の状態に戻す",
+          "id": "再生",
+          "implemented": true,
+          "name": "再生",
+          "power": 0,
+          "range": "any_monster",
+          "rangeText": "どこでもモンスター",
+          "recoilDamage": undefined,
+          "stoneCost": 4,
+        },
+      ],
+      "level": 3,
+      "maxHp": 5,
+    },
+  ],
+  "maxLevel": 3,
+  "name": "聖天ソフィアス",
+  "notes": [],
+  "pool": "special",
+  "rarity": 6,
+  "role": "back",
+  "sourceNo": 54,
+  "sourceUrl": "https://www.cardhero-bu.com/card/detail.php?id=54",
+  "type": "monster",
+}
+`;
+
 exports[`official card effect expectations > card_055 ガラスの盾 has reviewed official source data 1`] = `
 {
   "catchcopy": "一度きりの盾",
@@ -2741,6 +3226,56 @@ exports[`official card effect expectations > card_067 ゾンビ has reviewed off
   "role": "front",
   "sourceNo": 67,
   "sourceUrl": "https://www.cardhero-bu.com/card/detail.php?id=67",
+  "type": "monster",
+}
+`;
+
+exports[`official card effect expectations > card_068 邪神ヤヌー has reviewed official super source data 1`] = `
+{
+  "actionLimit": undefined,
+  "catchcopy": "断末魔の一撃",
+  "evolvesFrom": [
+    "card_067",
+  ],
+  "id": "card_068",
+  "levels": [
+    {
+      "commands": [
+        {
+          "effectText": undefined,
+          "id": "attack",
+          "implemented": true,
+          "name": "アタック",
+          "power": 3,
+          "range": "adjacent",
+          "rangeText": undefined,
+          "recoilDamage": undefined,
+          "stoneCost": undefined,
+        },
+        {
+          "effectText": "受けたダメージ分のダメージ攻撃をしフィールドを去る",
+          "id": "最後の叫び",
+          "implemented": true,
+          "name": "最後の叫び",
+          "power": 0,
+          "range": "adjacent",
+          "rangeText": undefined,
+          "recoilDamage": undefined,
+          "stoneCost": undefined,
+        },
+      ],
+      "level": 3,
+      "maxHp": 6,
+    },
+  ],
+  "maxLevel": 3,
+  "name": "邪神ヤヌー",
+  "notes": [],
+  "pool": "special",
+  "rarity": 5,
+  "role": "front",
+  "sourceNo": 68,
+  "sourceUrl": "https://www.cardhero-bu.com/card/detail.php?id=68",
   "type": "monster",
 }
 `;
@@ -3132,6 +3667,45 @@ exports[`official card effect expectations > card_074 アドラ has reviewed off
 }
 `;
 
+exports[`official card effect expectations > card_075 戦帝ブリドラ has reviewed official super source data 1`] = `
+{
+  "actionLimit": undefined,
+  "catchcopy": "純枠、凶悪な戦闘力",
+  "evolvesFrom": [
+    "card_074",
+  ],
+  "id": "card_075",
+  "levels": [
+    {
+      "commands": [
+        {
+          "effectText": undefined,
+          "id": "ドラゴンテイル",
+          "implemented": true,
+          "name": "ドラゴンテイル",
+          "power": 5,
+          "range": "adjacent",
+          "rangeText": undefined,
+          "recoilDamage": undefined,
+          "stoneCost": undefined,
+        },
+      ],
+      "level": 3,
+      "maxHp": 6,
+    },
+  ],
+  "maxLevel": 3,
+  "name": "戦帝ブリドラ",
+  "notes": [],
+  "pool": "special",
+  "rarity": 6,
+  "role": "front",
+  "sourceNo": 75,
+  "sourceUrl": "https://www.cardhero-bu.com/card/detail.php?id=75",
+  "type": "monster",
+}
+`;
+
 exports[`official card effect expectations > card_076 グングニエル has reviewed official source data 1`] = `
 {
   "actionLimit": undefined,
@@ -3315,6 +3889,56 @@ exports[`official card effect expectations > card_078 オヤコダケ has review
   "role": "back",
   "sourceNo": 78,
   "sourceUrl": "https://www.cardhero-bu.com/card/detail.php?id=78",
+  "type": "monster",
+}
+`;
+
+exports[`official card effect expectations > card_079 樹聖オリント has reviewed official super source data 1`] = `
+{
+  "actionLimit": undefined,
+  "catchcopy": "偉大なる年輪",
+  "evolvesFrom": [
+    "card_078",
+  ],
+  "id": "card_079",
+  "levels": [
+    {
+      "commands": [
+        {
+          "effectText": undefined,
+          "id": "attack",
+          "implemented": true,
+          "name": "アタック",
+          "power": 3,
+          "range": "adjacent",
+          "rangeText": undefined,
+          "recoilDamage": undefined,
+          "stoneCost": undefined,
+        },
+        {
+          "effectText": "味方フィールド全体を回復するか相手フィールド全体をダメージ攻撃する",
+          "id": "神秘のキノコ",
+          "implemented": true,
+          "name": "神秘のキノコ",
+          "power": 2,
+          "range": "adjacent",
+          "rangeText": undefined,
+          "recoilDamage": undefined,
+          "stoneCost": undefined,
+        },
+      ],
+      "level": 3,
+      "maxHp": 4,
+    },
+  ],
+  "maxLevel": 3,
+  "name": "樹聖オリント",
+  "notes": [],
+  "pool": "special",
+  "rarity": 6,
+  "role": "back",
+  "sourceNo": 79,
+  "sourceUrl": "https://www.cardhero-bu.com/card/detail.php?id=79",
   "type": "monster",
 }
 `;
@@ -3991,6 +4615,47 @@ exports[`official card effect expectations > card_100 カムロ has reviewed off
 }
 `;
 
+exports[`official card effect expectations > card_101 妖姫ヨシノ has reviewed official super source data 1`] = `
+{
+  "actionLimit": undefined,
+  "catchcopy": "妖気漂う復讐",
+  "evolvesFrom": [
+    "card_100",
+  ],
+  "id": "card_101",
+  "levels": [
+    {
+      "commands": [
+        {
+          "effectText": undefined,
+          "id": "火の魂",
+          "implemented": true,
+          "name": "火の魂",
+          "power": 4,
+          "range": "adjacent",
+          "rangeText": undefined,
+          "recoilDamage": undefined,
+          "stoneCost": undefined,
+        },
+      ],
+      "level": 3,
+      "maxHp": 4,
+    },
+  ],
+  "maxLevel": 3,
+  "name": "妖姫ヨシノ",
+  "notes": [
+    "性格： ダメージ呪 攻撃した相手を呪う 呪われた相手は行動するとＨＰが１になる",
+  ],
+  "pool": "special",
+  "rarity": 5,
+  "role": "front",
+  "sourceNo": 101,
+  "sourceUrl": "https://www.cardhero-bu.com/card/detail.php?id=101",
+  "type": "monster",
+}
+`;
+
 exports[`official card effect expectations > card_102 赤竜キバ has reviewed official source data 1`] = `
 {
   "actionLimit": undefined,
@@ -4041,6 +4706,64 @@ exports[`official card effect expectations > card_102 赤竜キバ has reviewed 
   "role": "front",
   "sourceNo": 102,
   "sourceUrl": "https://www.cardhero-bu.com/card/detail.php?id=102",
+  "type": "monster",
+}
+`;
+
+exports[`official card effect expectations > card_103 灼牙竜アギト has reviewed official super source data 1`] = `
+{
+  "actionLimit": undefined,
+  "catchcopy": "神話の中のドラゴン",
+  "evolvesFrom": [
+    "card_102",
+  ],
+  "id": "card_103",
+  "levels": [
+    {
+      "commands": [
+        {
+          "effectText": undefined,
+          "id": "attack",
+          "implemented": true,
+          "name": "アタック",
+          "power": 3,
+          "range": "adjacent",
+          "rangeText": undefined,
+          "recoilDamage": undefined,
+          "stoneCost": undefined,
+        },
+      ],
+      "level": 3,
+      "maxHp": 5,
+    },
+    {
+      "commands": [
+        {
+          "effectText": undefined,
+          "id": "メキドフレイム",
+          "implemented": true,
+          "name": "メキドフレイム",
+          "power": 8,
+          "range": "adjacent",
+          "rangeText": undefined,
+          "recoilDamage": undefined,
+          "stoneCost": undefined,
+        },
+      ],
+      "level": 4,
+      "maxHp": 4,
+    },
+  ],
+  "maxLevel": 4,
+  "name": "灼牙竜アギト",
+  "notes": [
+    "性格： 反撃ＬＶ３ ＬＶ３の時に自分を攻撃した相手に反撃をする",
+  ],
+  "pool": "special",
+  "rarity": 6,
+  "role": "front",
+  "sourceNo": 103,
+  "sourceUrl": "https://www.cardhero-bu.com/card/detail.php?id=103",
   "type": "monster",
 }
 `;
@@ -4992,6 +5715,56 @@ exports[`official card effect expectations > card_130 再生 has reviewed offici
 }
 `;
 
+exports[`official card effect expectations > card_131 パパトット has reviewed official super source data 1`] = `
+{
+  "actionLimit": undefined,
+  "catchcopy": "マナトット界の王者",
+  "evolvesFrom": [
+    "card_002",
+  ],
+  "id": "card_131",
+  "levels": [
+    {
+      "commands": [
+        {
+          "effectText": undefined,
+          "id": "attack",
+          "implemented": true,
+          "name": "アタック",
+          "power": 3,
+          "range": "adjacent",
+          "rangeText": undefined,
+          "recoilDamage": undefined,
+          "stoneCost": undefined,
+        },
+        {
+          "effectText": "モンスターを永久にマナトットにするがＨＰは変わらない",
+          "id": "マナ変化",
+          "implemented": true,
+          "name": "マナ変化",
+          "power": 0,
+          "range": "any_monster",
+          "rangeText": "どこでもモンスター",
+          "recoilDamage": undefined,
+          "stoneCost": undefined,
+        },
+      ],
+      "level": 3,
+      "maxHp": 6,
+    },
+  ],
+  "maxLevel": 3,
+  "name": "パパトット",
+  "notes": [],
+  "pool": "special",
+  "rarity": 5,
+  "role": "front",
+  "sourceNo": 131,
+  "sourceUrl": "https://www.cardhero-bu.com/card/detail.php?id=131",
+  "type": "monster",
+}
+`;
+
 exports[`official card effect expectations > card_132 オクトロス has reviewed official source data 1`] = `
 {
   "actionLimit": undefined,
@@ -5272,6 +6045,388 @@ exports[`official card effect expectations > card_135 ノワール has reviewed 
   "role": "back",
   "sourceNo": 135,
   "sourceUrl": "https://www.cardhero-bu.com/card/detail.php?id=135",
+  "type": "monster",
+}
+`;
+
+exports[`official card effect expectations > card_136 ビョーグル has reviewed official super source data 1`] = `
+{
+  "actionLimit": undefined,
+  "catchcopy": "大地を揺るがす脚技",
+  "evolvesFrom": [
+    "beyond",
+  ],
+  "id": "card_136",
+  "levels": [
+    {
+      "commands": [
+        {
+          "effectText": undefined,
+          "id": "attack",
+          "implemented": true,
+          "name": "アタック",
+          "power": 0,
+          "range": "adjacent",
+          "rangeText": undefined,
+          "recoilDamage": undefined,
+          "stoneCost": undefined,
+        },
+        {
+          "effectText": "相手フィールド上のモンスターの場所を１つずつ回す",
+          "id": "エアロターン",
+          "implemented": true,
+          "name": "エアロターン",
+          "power": 4,
+          "range": "one_skip",
+          "rangeText": "１つ飛び",
+          "recoilDamage": undefined,
+          "stoneCost": undefined,
+        },
+      ],
+      "level": 3,
+      "maxHp": 4,
+    },
+  ],
+  "maxLevel": 3,
+  "name": "ビョーグル",
+  "notes": [],
+  "pool": "special",
+  "rarity": 6,
+  "role": "back",
+  "sourceNo": 136,
+  "sourceUrl": "https://www.cardhero-bu.com/card/detail.php?id=136",
+  "type": "monster",
+}
+`;
+
+exports[`official card effect expectations > card_137 ギガンタス has reviewed official super source data 1`] = `
+{
+  "actionLimit": undefined,
+  "catchcopy": "近距離型機動生命体",
+  "evolvesFrom": [
+    "card_020",
+  ],
+  "id": "card_137",
+  "levels": [
+    {
+      "commands": [
+        {
+          "effectText": undefined,
+          "id": "アストロホーン",
+          "implemented": true,
+          "name": "アストロホーン",
+          "power": 5,
+          "range": "adjacent",
+          "rangeText": undefined,
+          "recoilDamage": undefined,
+          "stoneCost": undefined,
+        },
+        {
+          "effectText": undefined,
+          "id": "バズーカ",
+          "implemented": true,
+          "name": "バズーカ",
+          "power": 3,
+          "range": "one_skip",
+          "rangeText": "１つ飛び",
+          "recoilDamage": undefined,
+          "stoneCost": undefined,
+        },
+      ],
+      "level": 3,
+      "maxHp": 5,
+    },
+  ],
+  "maxLevel": 3,
+  "name": "ギガンタス",
+  "notes": [],
+  "pool": "special",
+  "rarity": 6,
+  "role": "back",
+  "sourceNo": 137,
+  "sourceUrl": "https://www.cardhero-bu.com/card/detail.php?id=137",
+  "type": "monster",
+}
+`;
+
+exports[`official card effect expectations > card_138 ドンガドンガ has reviewed official super source data 1`] = `
+{
+  "actionLimit": undefined,
+  "catchcopy": "力の分配者",
+  "evolvesFrom": [
+    "card_033",
+  ],
+  "id": "card_138",
+  "levels": [
+    {
+      "commands": [
+        {
+          "effectText": undefined,
+          "id": "attack",
+          "implemented": true,
+          "name": "アタック",
+          "power": 3,
+          "range": "adjacent",
+          "rangeText": undefined,
+          "recoilDamage": undefined,
+          "stoneCost": undefined,
+        },
+        {
+          "effectText": "モンスター１体をレベルダウンさせ別のモンスターをレベルアップさせる",
+          "id": "レベルムーブ",
+          "implemented": true,
+          "name": "レベルムーブ",
+          "power": 0,
+          "range": "any_monster",
+          "rangeText": "どこでもモンスター",
+          "recoilDamage": undefined,
+          "stoneCost": 1,
+        },
+      ],
+      "level": 3,
+      "maxHp": 6,
+    },
+  ],
+  "maxLevel": 3,
+  "name": "ドンガドンガ",
+  "notes": [],
+  "pool": "special",
+  "rarity": 6,
+  "role": "front",
+  "sourceNo": 138,
+  "sourceUrl": "https://www.cardhero-bu.com/card/detail.php?id=138",
+  "type": "monster",
+}
+`;
+
+exports[`official card effect expectations > card_139 メサイア has reviewed official super source data 1`] = `
+{
+  "actionLimit": undefined,
+  "catchcopy": "千年の女王",
+  "evolvesFrom": [
+    "card_037",
+  ],
+  "id": "card_139",
+  "levels": [
+    {
+      "commands": [
+        {
+          "effectText": undefined,
+          "id": "attack",
+          "implemented": true,
+          "name": "アタック",
+          "power": 2,
+          "range": "adjacent",
+          "rangeText": undefined,
+          "recoilDamage": undefined,
+          "stoneCost": undefined,
+        },
+        {
+          "effectText": "マスターまたはモンスターのＨＰを回復させる",
+          "id": "癒しの羽",
+          "implemented": true,
+          "name": "癒しの羽",
+          "power": 2,
+          "range": "any_monster",
+          "rangeText": "どこでも",
+          "recoilDamage": undefined,
+          "stoneCost": undefined,
+        },
+      ],
+      "level": 3,
+      "maxHp": 5,
+    },
+  ],
+  "maxLevel": 3,
+  "name": "メサイア",
+  "notes": [],
+  "pool": "special",
+  "rarity": 6,
+  "role": "front",
+  "sourceNo": 139,
+  "sourceUrl": "https://www.cardhero-bu.com/card/detail.php?id=139",
+  "type": "monster",
+}
+`;
+
+exports[`official card effect expectations > card_140 氷帝コルドラ has reviewed official super source data 1`] = `
+{
+  "actionLimit": undefined,
+  "catchcopy": "白銀の波動",
+  "evolvesFrom": [
+    "card_074",
+  ],
+  "id": "card_140",
+  "levels": [
+    {
+      "commands": [
+        {
+          "effectText": undefined,
+          "id": "attack",
+          "implemented": true,
+          "name": "アタック",
+          "power": 3,
+          "range": "adjacent",
+          "rangeText": undefined,
+          "recoilDamage": undefined,
+          "stoneCost": undefined,
+        },
+        {
+          "effectText": "マスターでもモンスターでも、ダメージを受けるまでは動けないようにする",
+          "id": "コールドブレス",
+          "implemented": true,
+          "name": "コールドブレス",
+          "power": 0,
+          "range": "any_monster",
+          "rangeText": "どこでも",
+          "recoilDamage": undefined,
+          "stoneCost": 3,
+        },
+      ],
+      "level": 3,
+      "maxHp": 6,
+    },
+  ],
+  "maxLevel": 3,
+  "name": "氷帝コルドラ",
+  "notes": [],
+  "pool": "special",
+  "rarity": 7,
+  "role": "front",
+  "sourceNo": 140,
+  "sourceUrl": "https://www.cardhero-bu.com/card/detail.php?id=140",
+  "type": "monster",
+}
+`;
+
+exports[`official card effect expectations > card_141 ラガポップル has reviewed official super source data 1`] = `
+{
+  "actionLimit": undefined,
+  "catchcopy": "お菓子の妖精",
+  "evolvesFrom": [
+    "card_003",
+  ],
+  "id": "card_141",
+  "levels": [
+    {
+      "commands": [
+        {
+          "effectText": undefined,
+          "id": "attack",
+          "implemented": true,
+          "name": "アタック",
+          "power": 2,
+          "range": "adjacent",
+          "rangeText": undefined,
+          "recoilDamage": undefined,
+          "stoneCost": undefined,
+        },
+        {
+          "effectText": "マスターのストーンを４コ増やす",
+          "id": "ジャックポット",
+          "implemented": true,
+          "name": "ジャックポット",
+          "power": 0,
+          "range": "special",
+          "rangeText": undefined,
+          "recoilDamage": undefined,
+          "stoneCost": undefined,
+        },
+      ],
+      "level": 3,
+      "maxHp": 5,
+    },
+  ],
+  "maxLevel": 3,
+  "name": "ラガポップル",
+  "notes": [],
+  "pool": "special",
+  "rarity": 6,
+  "role": "front",
+  "sourceNo": 141,
+  "sourceUrl": "https://www.cardhero-bu.com/card/detail.php?id=141",
+  "type": "monster",
+}
+`;
+
+exports[`official card effect expectations > card_142 アラポップル has reviewed official super source data 1`] = `
+{
+  "actionLimit": undefined,
+  "catchcopy": "悠久なる繁栄",
+  "evolvesFrom": [
+    "card_003",
+  ],
+  "id": "card_142",
+  "levels": [
+    {
+      "commands": [
+        {
+          "effectText": undefined,
+          "id": "attack",
+          "implemented": true,
+          "name": "アタック",
+          "power": 2,
+          "range": "adjacent",
+          "rangeText": undefined,
+          "recoilDamage": undefined,
+          "stoneCost": undefined,
+        },
+      ],
+      "level": 3,
+      "maxHp": 5,
+    },
+  ],
+  "maxLevel": 3,
+  "name": "アラポップル",
+  "notes": [
+    "性格： 自己犠牲 ダメージを受けた時ストーンを２コ増やす",
+  ],
+  "pool": "special",
+  "rarity": 6,
+  "role": "front",
+  "sourceNo": 142,
+  "sourceUrl": "https://www.cardhero-bu.com/card/detail.php?id=142",
+  "type": "monster",
+}
+`;
+
+exports[`official card effect expectations > card_143 エルスピナー has reviewed official super source data 1`] = `
+{
+  "actionLimit": 2,
+  "catchcopy": "奇襲にして強襲",
+  "evolvesFrom": [
+    "polyspinner",
+  ],
+  "id": "card_143",
+  "levels": [
+    {
+      "commands": [
+        {
+          "effectText": undefined,
+          "id": "ヒートブレード",
+          "implemented": true,
+          "name": "ヒートブレード",
+          "power": 5,
+          "range": "adjacent",
+          "rangeText": undefined,
+          "recoilDamage": undefined,
+          "stoneCost": undefined,
+        },
+      ],
+      "level": 3,
+      "maxHp": 3,
+    },
+  ],
+  "maxLevel": 3,
+  "name": "エルスピナー",
+  "notes": [
+    "性格： ２行動 １ターン中に２回行動できる",
+  ],
+  "pool": "special",
+  "rarity": 8,
+  "role": "front",
+  "sourceNo": 143,
+  "sourceUrl": "https://www.cardhero-bu.com/card/detail.php?id=143",
   "type": "monster",
 }
 `;

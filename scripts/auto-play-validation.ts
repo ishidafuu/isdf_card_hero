@@ -6,6 +6,7 @@ import {
   type AutoPlayIssue,
   type AutoPlayValidationOptions,
 } from "../src/game/autoPlayValidation";
+import { DECK_PRESET_IDS, type DeckPresetId } from "../src/game/deckPresets";
 
 interface CliOptions extends AutoPlayValidationOptions {
   outDir: string;
@@ -42,6 +43,9 @@ function parseArgs(args: string[]): CliOptions {
       i += 1;
     } else if (arg === "--count") {
       parsed.count = readNumber(arg, next);
+      i += 1;
+    } else if (arg === "--deck-preset") {
+      parsed.deckPreset = readDeckPreset(next);
       i += 1;
     } else if (arg === "--max-steps") {
       parsed.maxSteps = readNumber(arg, next);
@@ -80,6 +84,16 @@ function parseArgs(args: string[]): CliOptions {
   }
 
   return parsed;
+}
+
+function readDeckPreset(value: string | undefined): "random" | DeckPresetId {
+  if (!value) {
+    throw new Error("--deck-preset requires a value");
+  }
+  if (value === "random" || (DECK_PRESET_IDS as string[]).includes(value)) {
+    return value as "random" | DeckPresetId;
+  }
+  throw new Error(`--deck-preset must be one of: random, ${DECK_PRESET_IDS.join(", ")}`);
 }
 
 function readNumber(name: string, value: string | undefined): number {
@@ -128,6 +142,7 @@ Options:
   --seed-start <n>        First seed. Default: 400
   --seed-end <n>          Last seed, inclusive. Overrides --count.
   --count <n>             Number of games. Default: 100
+  --deck-preset <id>      Deck preset. Default: random. Values: random, ${DECK_PRESET_IDS.join(", ")}
   --max-steps <n>         Failure threshold per game. Default: 500
   --max-turns <n>         Failure threshold per game. Default: 120
   --long-game-steps <n>   Warning threshold per game. Default: 300

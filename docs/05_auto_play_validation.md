@@ -26,6 +26,7 @@ npm run validate:auto-play -- --seed-start 400 --count 100 --out-dir artifacts/a
 - `--seed-start <n>`: 開始seed
 - `--seed-end <n>`: 終了seed。指定した場合は `--count` より優先
 - `--count <n>`: 戦数
+- `--deck-preset <id>`: 検証用固定デッキプリセット。既定は `random`。スペシャルON検証は `special-showcase`
 - `--max-steps <n>`: 1戦あたりstep上限
 - `--max-turns <n>`: 1戦あたりturn上限
 - `--long-game-steps <n>`: 長期戦警告step
@@ -83,5 +84,31 @@ artifact内容:
 
 - テスト側の100戦検証は `tests/game/cpuAi.test.ts` の `finishes 100 auto-play games without exceptions, unresolved prompts, or extreme length` で固定している。
 - 任意seed範囲の反復検証は `npm run validate:auto-play` を使う。
+- スペシャルONの再現検証は `npm run validate:auto-play -- --seed-start 620 --count 100 --deck-preset special-showcase --max-steps 600 --max-turns 140` を使う。
 - 失敗した場合は、artifactのseedで同じ条件を再実行できる。
 - CPU判断理由ログは `CPU判断: ...` または `プレイヤーAI判断: ...` として通常ログに残る。
+
+## 2026-06-12 スペシャルONプリセット検証
+
+対象:
+
+- 両者CPUオートプレイ
+- `special-showcase` 固定デッキプリセット
+- seed `620` から `719` までの100戦
+- 1戦あたり最大600 auto step
+- 1戦あたり最大140 turn
+
+検証コマンド:
+
+```sh
+npm run validate:auto-play -- --seed-start 620 --count 100 --deck-preset special-showcase --max-steps 600 --max-turns 140
+```
+
+検証結果:
+
+- PASS
+- 勝者内訳はプレイヤー51勝、CPU49勝。
+- 最大276 auto step / 27 turn。
+- failureは0件。
+- warningは0件。
+- 例外、進行不能、未解決レベルアップは発生していない。

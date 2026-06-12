@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { getAllCardDefs, getCardDef, getMonsterDef } from "../../src/game/cards";
+import { getAllCardDefs, getCardDef, getMonsterDef, getSpecialCardDefs } from "../../src/game/cards";
 import {
   attackWithCommand,
   createInitialGame,
@@ -13,7 +13,21 @@ import {
   summonMonster,
   useMasterAction,
 } from "../../src/game/rules";
-import type { CardDef, CardInstance, GameState, MonsterState, PlayerId } from "../../src/game/types";
+import type { CardDef, CardInstance, GameState, MonsterCardDef, MonsterState, PlayerId } from "../../src/game/types";
+
+const SPECIAL_LEVEL_UP_CASES = getSpecialCardDefs().flatMap((card) => {
+  if (card.type !== "monster") {
+    return [];
+  }
+  const special = card as MonsterCardDef;
+  const entryLevel = Math.min(...special.levels.map((level) => level.level));
+  return (special.evolvesFrom ?? []).map((seedCardId) => [
+    `${special.id} ${special.name} from ${seedCardId}`,
+    special,
+    seedCardId,
+    entryLevel,
+  ] as const);
+});
 
 describe("official card effect expectations", () => {
   it.each(getAllCardDefs().map((card) => [`${card.id} ${card.name}`, card] as const))(
@@ -22,6 +36,379 @@ describe("official card effect expectations", () => {
       expect(officialSourceSnapshot(card)).toMatchSnapshot();
     },
   );
+
+  it.each(getSpecialCardDefs().map((card) => [`${card.id} ${card.name}`, card] as const))(
+    "%s has reviewed official super source data",
+    (_label, card) => {
+      expect(officialSourceSnapshot(card)).toMatchSnapshot();
+    },
+  );
+
+  it.each(SPECIAL_LEVEL_UP_CASES)(
+    "%s can enter through a matching super level-up",
+    (_label, special, seedCardId, entryLevel) => {
+      const game = createGameWithPlayerHand([{ cardId: special.id, instanceId: "super_card" }]);
+      const startLevel = Math.max(1, entryLevel - 1);
+      const requiredLevels = entryLevel - startLevel;
+      const expectedHp = special.levels.find((level) => level.level === entryLevel)?.maxHp;
+      game.players.player.stones = requiredLevels;
+      game.slots.player_front_left.monster = createActiveMonster(seedCardId, "player", {
+        level: startLevel,
+        hp: 1,
+        investedStones: startLevel,
+      });
+      game.pendingLevelUp = {
+        playerId: "player",
+        attackerSlotKey: "player_front_left",
+        maxLevels: requiredLevels,
+        recoilDamage: 0,
+        superOptions: [{ handInstanceId: "super_card", cardId: special.id }],
+      };
+
+      const next = resolveLevelUp(game, requiredLevels, "super_card");
+
+      expect(next.pendingLevelUp).toBeUndefined();
+      expect(next.slots.player_front_left.monster).toMatchObject({
+        cardId: special.id,
+        level: entryLevel,
+        hp: expectedHp,
+        investedStones: entryLevel,
+      });
+      expect(next.players.player.hand).toEqual([]);
+      expect(next.players.player.discard.some((card) => card.cardId === seedCardId)).toBe(true);
+    },
+  );
+
+  it("super action-limit traits allow T3-00 three actions and El Spinner two actions", () => {
+    let game = createGameWithPlayerHand([]);
+    game.slots.player_front_left.monster = createActiveMonster("card_012", "player");
+    game.slots.cpu_front_left.monster = createActiveMonster("takokke", "cpu", { hp: 10 });
+
+    for (let i = 0; i < 3; i += 1) {
+      expect(getCommandTargets(game, "player_front_left", "attack")).toContainEqual({
+        kind: "monster",
+        slotKey: "cpu_front_left",
+      });
+      game = attackWithCommand(game, {
+        attackerSlotKey: "player_front_left",
+        commandId: "attack",
+        target: { kind: "monster", slotKey: "cpu_front_left" },
+      });
+    }
+    expect(getCommandTargets(game, "player_front_left", "attack")).toEqual([]);
+
+    game = createGameWithPlayerHand([]);
+    game.slots.player_front_left.monster = createActiveMonster("card_143", "player");
+    game.slots.cpu_front_left.monster = createActiveMonster("takokke", "cpu", { hp: 11 });
+
+    for (let i = 0; i < 2; i += 1) {
+      game = attackWithCommand(game, {
+        attackerSlotKey: "player_front_left",
+        commandId: "ヒートブレード",
+        target: { kind: "monster", slotKey: "cpu_front_left" },
+      });
+    }
+    expect(getCommandTargets(game, "player_front_left", "ヒートブレード")).toEqual([]);
+  });
+
+  it("super recoil, piercing, and life drain commands resolve their official side effects", () => {
+    let game = createGameWithPlayerHand([]);
+    game.slots.player_front_left.monster = createActiveMonster("card_006", "player");
+    game.slots.cpu_front_left.monster = createActiveMonster("takokke", "cpu", { hp: 10 });
+
+    game = attackWithCommand(game, {
+      attackerSlotKey: "player_front_left",
+      commandId: "大爆発",
+      target: { kind: "monster", slotKey: "cpu_front_left" },
+    });
+
+    expect(game.slots.player_front_left.monster?.hp).toBe(3);
+    expect(game.slots.cpu_front_left.monster?.hp).toBe(4);
+
+    game = createGameWithPlayerHand([]);
+    game.slots.player_front_left.monster = createActiveMonster("card_042", "player");
+    game.slots.cpu_front_left.monster = createActiveMonster("takokke", "cpu", { hp: 7 });
+    game.slots.cpu_back_left.monster = createActiveMonster("yanbaru", "cpu", { hp: 6 });
+
+    game = attackWithCommand(game, {
+      attackerSlotKey: "player_front_left",
+      commandId: "シャインアロー",
+      target: { kind: "monster", slotKey: "cpu_front_left" },
+    });
+
+    expect(game.slots.cpu_front_left.monster?.hp).toBe(2);
+    expect(game.slots.cpu_back_left.monster?.hp).toBe(1);
+
+    game = createGameWithPlayerHand([]);
+    game.slots.player_front_left.monster = createActiveMonster("card_038", "player", { hp: 3 });
+    game.slots.cpu_back_right.monster = createActiveMonster("takokke", "cpu", { hp: 5 });
+
+    game = attackWithCommand(game, {
+      attackerSlotKey: "player_front_left",
+      commandId: "ライフドレイン_2",
+      target: { kind: "monster", slotKey: "cpu_back_right" },
+    });
+
+    expect(game.slots.player_front_left.monster?.hp).toBe(5);
+    expect(game.slots.cpu_back_right.monster?.hp).toBe(3);
+  });
+
+  it("super utility commands level, reset, rotate, and transform monsters", () => {
+    let game = createGameWithPlayerHand([]);
+    game.players.player.stones = 2;
+    game.slots.player_front_left.monster = createActiveMonster("card_036", "player");
+    game.slots.player_front_right.monster = createActiveMonster("takokke", "player");
+
+    game = attackWithCommand(game, {
+      attackerSlotKey: "player_front_left",
+      commandId: "夢幻の光",
+      target: { kind: "monster", slotKey: "player_front_right" },
+    });
+
+    expect(game.slots.player_front_right.monster?.level).toBe(2);
+
+    game = createGameWithPlayerHand([]);
+    game.players.player.stones = 1;
+    game.slots.player_front_left.monster = createActiveMonster("card_036", "player");
+    game.slots.player_front_right.monster = createActiveMonster("takokke", "player", {
+      level: 2,
+      investedStones: 2,
+    });
+
+    game = attackWithCommand(game, {
+      attackerSlotKey: "player_front_left",
+      commandId: "夢幻の光",
+      target: { kind: "monster", slotKey: "player_front_right" },
+    });
+
+    expect(game.slots.player_front_right.monster).toBeUndefined();
+
+    game = createGameWithPlayerHand([]);
+    game.players.player.stones = 4;
+    game.slots.player_back_left.monster = createActiveMonster("card_054", "player");
+    game.slots.player_front_left.monster = createActiveMonster("sigma", "player", {
+      level: 3,
+      hp: 1,
+      investedStones: 3,
+      powerUp: true,
+      shielded: true,
+    });
+
+    game = attackWithCommand(game, {
+      attackerSlotKey: "player_back_left",
+      commandId: "再生",
+      target: { kind: "monster", slotKey: "player_front_left" },
+    });
+
+    expect(game.slots.player_front_left.monster).toMatchObject({
+      level: 1,
+      hp: 6,
+      investedStones: 1,
+      powerUp: false,
+      shielded: false,
+    });
+    expect(game.players.player.stones).toBe(2);
+
+    game = createGameWithPlayerHand([]);
+    game.slots.player_back_left.monster = createActiveMonster("card_136", "player");
+    game.slots.cpu_front_left.monster = createActiveMonster("takokke", "cpu", { hp: 8 });
+    game.slots.cpu_front_right.monster = createActiveMonster("bomuzo", "cpu");
+    game.slots.cpu_back_left.monster = createActiveMonster("yanbaru", "cpu");
+    game.slots.cpu_back_right.monster = createActiveMonster("sigma", "cpu");
+
+    game = attackWithCommand(game, {
+      attackerSlotKey: "player_back_left",
+      commandId: "エアロターン",
+      target: { kind: "monster", slotKey: "cpu_front_left" },
+    });
+
+    expect(game.slots.cpu_front_left.monster?.cardId).toBe("sigma");
+    expect(game.slots.cpu_front_right.monster?.cardId).toBe("takokke");
+    expect(game.slots.cpu_back_left.monster?.cardId).toBe("bomuzo");
+    expect(game.slots.cpu_back_right.monster?.cardId).toBe("yanbaru");
+
+    game = createGameWithPlayerHand([]);
+    game.slots.player_front_left.monster = createActiveMonster("card_131", "player");
+    game.slots.cpu_front_left.monster = createActiveMonster("sigma", "cpu", {
+      level: 3,
+      hp: 2,
+      investedStones: 3,
+    });
+
+    game = attackWithCommand(game, {
+      attackerSlotKey: "player_front_left",
+      commandId: "マナ変化",
+      target: { kind: "monster", slotKey: "cpu_front_left" },
+    });
+
+    expect(game.slots.cpu_front_left.monster).toMatchObject({
+      cardId: "card_002",
+      level: 2,
+      hp: 2,
+    });
+  });
+
+  it("super field-wide, freeze, level-move, and self-sacrifice effects resolve", () => {
+    let game = createGameWithPlayerHand([]);
+    game.slots.player_back_left.monster = createActiveMonster("card_079", "player");
+    game.slots.player_front_left.monster = createActiveMonster("takokke", "player", { hp: 3 });
+    game.slots.player_front_right.monster = createActiveMonster("bomuzo", "player", { hp: 2 });
+
+    game = attackWithCommand(game, {
+      attackerSlotKey: "player_back_left",
+      commandId: "神秘のキノコ",
+      target: { kind: "master", playerId: "player" },
+    });
+
+    expect(game.slots.player_front_left.monster?.hp).toBe(5);
+    expect(game.slots.player_front_right.monster?.hp).toBe(4);
+
+    game = createGameWithPlayerHand([]);
+    game.slots.player_back_left.monster = createActiveMonster("card_079", "player");
+    game.slots.cpu_front_left.monster = createActiveMonster("takokke", "cpu", { hp: 5 });
+    game.slots.cpu_front_right.monster = createActiveMonster("bomuzo", "cpu", { hp: 6 });
+
+    game = attackWithCommand(game, {
+      attackerSlotKey: "player_back_left",
+      commandId: "神秘のキノコ",
+      target: { kind: "master", playerId: "cpu" },
+    });
+
+    expect(game.slots.cpu_front_left.monster?.hp).toBe(3);
+    expect(game.slots.cpu_front_right.monster?.hp).toBe(4);
+
+    game = createGameWithPlayerHand([]);
+    game.players.player.stones = 4;
+    game.players.cpu.stones = 4;
+    game.slots.player_front_left.monster = createActiveMonster("card_140", "player");
+    game.slots.cpu_front_left.monster = createActiveMonster("takokke", "cpu");
+
+    game = attackWithCommand(game, {
+      attackerSlotKey: "player_front_left",
+      commandId: "コールドブレス",
+      target: { kind: "monster", slotKey: "cpu_front_left" },
+    });
+    expect(game.slots.cpu_front_left.monster?.cannotActUntilDamaged).toBe(true);
+
+    game.currentPlayer = "cpu";
+    expect(getCommandTargets(game, "cpu_front_left", "attack")).toEqual([]);
+
+    game.currentPlayer = "player";
+    game.slots.player_front_left.monster = createActiveMonster("card_140", "player");
+    game.players.player.stones = 3;
+    game = attackWithCommand(game, {
+      attackerSlotKey: "player_front_left",
+      commandId: "コールドブレス",
+      target: { kind: "master", playerId: "cpu" },
+    });
+    expect(game.players.cpu.masterFrozen).toBe(true);
+
+    game = createGameWithPlayerHand([]);
+    game.players.player.stones = 1;
+    game.slots.player_back_left.monster = createActiveMonster("card_138", "player");
+    game.slots.cpu_front_left.monster = createActiveMonster("sigma", "cpu", {
+      level: 2,
+      investedStones: 2,
+    });
+    game.slots.cpu_front_right.monster = createActiveMonster("takokke", "cpu");
+
+    game = attackWithCommand(game, {
+      attackerSlotKey: "player_back_left",
+      commandId: "レベルムーブ",
+      target: { kind: "monster", slotKey: "cpu_front_left" },
+      secondaryTarget: { kind: "monster", slotKey: "cpu_front_right" },
+    });
+
+    expect(game.slots.cpu_front_left.monster?.level).toBe(1);
+    expect(game.slots.cpu_front_right.monster?.level).toBe(2);
+
+    game = createGameWithPlayerHand([]);
+    game.players.player.stones = 0;
+    game.slots.player_front_left.monster = createActiveMonster("card_142", "player", { hp: 5 });
+    game.slots.cpu_front_left.monster = createActiveMonster("takokke", "cpu");
+    game.currentPlayer = "cpu";
+
+    game = attackWithCommand(game, {
+      attackerSlotKey: "cpu_front_left",
+      commandId: "attack",
+      target: { kind: "monster", slotKey: "player_front_left" },
+    });
+
+    expect(game.players.player.stones).toBe(2);
+  });
+
+  it("super damage curse, counter, last scream, healing feather, and jackpot resolve", () => {
+    let game = createGameWithPlayerHand([]);
+    game.slots.player_front_left.monster = createActiveMonster("card_101", "player");
+    game.slots.cpu_front_left.monster = createActiveMonster("takokke", "cpu", { hp: 5 });
+
+    game = attackWithCommand(game, {
+      attackerSlotKey: "player_front_left",
+      commandId: "火の魂",
+      target: { kind: "monster", slotKey: "cpu_front_left" },
+    });
+
+    expect(game.slots.cpu_front_left.monster?.damageCurse).toBe(true);
+    game.currentPlayer = "cpu";
+    game.slots.player_front_left.monster = createActiveMonster("card_101", "player", { hp: 10 });
+    game = attackWithCommand(game, {
+      attackerSlotKey: "cpu_front_left",
+      commandId: "attack",
+      target: { kind: "monster", slotKey: "player_front_left" },
+    });
+    expect(game.slots.cpu_front_left.monster?.hp).toBe(1);
+
+    game = createGameWithPlayerHand([]);
+    game.currentPlayer = "cpu";
+    game.slots.player_front_left.monster = createActiveMonster("card_103", "player", {
+      level: 3,
+      hp: 5,
+      investedStones: 3,
+    });
+    game.slots.cpu_front_left.monster = createActiveMonster("takokke", "cpu", { hp: 5 });
+
+    game = attackWithCommand(game, {
+      attackerSlotKey: "cpu_front_left",
+      commandId: "attack",
+      target: { kind: "monster", slotKey: "player_front_left" },
+    });
+    expect(game.slots.cpu_front_left.monster?.hp).toBe(2);
+
+    game = createGameWithPlayerHand([]);
+    game.slots.player_front_left.monster = createActiveMonster("card_068", "player", { hp: 2 });
+    game.slots.cpu_front_left.monster = createActiveMonster("takokke", "cpu", { hp: 6 });
+
+    game = attackWithCommand(game, {
+      attackerSlotKey: "player_front_left",
+      commandId: "最後の叫び",
+      target: { kind: "monster", slotKey: "cpu_front_left" },
+    });
+    expect(game.slots.cpu_front_left.monster?.hp).toBe(2);
+    expect(game.slots.player_front_left.monster).toBeUndefined();
+
+    game = createGameWithPlayerHand([]);
+    game.slots.player_front_left.monster = createActiveMonster("card_139", "player");
+    game.slots.cpu_front_left.monster = createActiveMonster("takokke", "cpu", { hp: 3 });
+    game.players.cpu.masterHp = 7;
+
+    game = attackWithCommand(game, {
+      attackerSlotKey: "player_front_left",
+      commandId: "癒しの羽",
+      target: { kind: "master", playerId: "cpu" },
+    });
+    expect(game.players.cpu.masterHp).toBe(9);
+
+    game = createGameWithPlayerHand([]);
+    game.players.player.stones = 0;
+    game.slots.player_front_left.monster = createActiveMonster("card_141", "player");
+
+    game = attackWithCommand(game, {
+      attackerSlotKey: "player_front_left",
+      commandId: "ジャックポット",
+      target: { kind: "monster", slotKey: "player_front_left" },
+    });
+    expect(game.players.player.stones).toBe(4);
+  });
 
   it("card_027 パワーダウン lowers only the next attack by 1P", () => {
     let game = createGameWithPlayerHand([{ cardId: "card_027", instanceId: "power_down" }]);
@@ -1372,6 +1759,7 @@ function officialSourceSnapshot(card: CardDef) {
   const base = {
     id: card.id,
     name: card.name,
+    ...(card.pool ? { pool: card.pool } : {}),
     sourceNo: card.sourceNo,
     sourceUrl: card.sourceUrl,
     rarity: card.rarity,
@@ -1396,6 +1784,7 @@ function officialSourceSnapshot(card: CardDef) {
     ...base,
     type: card.type,
     role: card.role,
+    ...(card.evolvesFrom ? { evolvesFrom: card.evolvesFrom } : {}),
     maxLevel: card.maxLevel,
     actionLimit: card.actionLimit,
     levels: card.levels.map((level) => ({

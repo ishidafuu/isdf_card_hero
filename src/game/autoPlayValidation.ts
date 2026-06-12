@@ -1,5 +1,6 @@
 import { getCardName } from "./cards";
 import { applyCpuDecision, chooseCpuDecision, listCpuDecisions, type CpuDecision } from "./cpuAi";
+import { buildDeckPresetCardIds, deckPresetAllowsSpecial, type DeckPresetId } from "./deckPresets";
 import { createInitialGame, runAutoStep, targetToKey } from "./rules";
 import type { GameState, PlayerId, SlotKey } from "./types";
 
@@ -18,6 +19,7 @@ export interface AutoPlayValidationOptions {
   seedStart?: number;
   seedEnd?: number;
   count?: number;
+  deckPreset?: "random" | DeckPresetId;
   maxSteps?: number;
   maxTurns?: number;
   stagnationLimit?: number;
@@ -126,6 +128,7 @@ const DEFAULT_OPTIONS = {
   longGameTurns: 80,
   historyLimit: 30,
   failOnWarnings: false,
+  deckPreset: "random" as const,
 };
 
 export function validateAutoPlay(options: AutoPlayValidationOptions = {}): AutoPlayValidationResult {
@@ -173,6 +176,7 @@ export function formatAutoPlayValidationSummary(result: AutoPlayValidationResult
   const lines = [
     `Auto play validation: ${result.ok ? "PASS" : "FAIL"}`,
     `Seeds: ${result.options.seedStart}-${result.options.seedEnd} (${result.summary.games} games)`,
+    `Deck preset: ${result.options.deckPreset}`,
     `Winners: player ${result.summary.winners.player}, cpu ${result.summary.winners.cpu}`,
     `Max: ${result.summary.maxSteps} steps / ${result.summary.maxTurns} turns`,
     `Issues: ${result.summary.failures} failures, ${result.summary.warnings} warnings`,
@@ -208,6 +212,7 @@ function resolveOptions(options: AutoPlayValidationOptions): AutoPlayValidationR
     longGameTurns: integerOption(options.longGameTurns, DEFAULT_OPTIONS.longGameTurns),
     historyLimit: integerOption(options.historyLimit, DEFAULT_OPTIONS.historyLimit),
     failOnWarnings: options.failOnWarnings ?? DEFAULT_OPTIONS.failOnWarnings,
+    deckPreset: options.deckPreset ?? DEFAULT_OPTIONS.deckPreset,
   };
 }
 
@@ -225,7 +230,7 @@ function runAutoPlayGame(
     issues: [],
     moveCountsByTurn: new Map(),
   };
-  let game = createInitialGame(seed);
+  let game = createAutoPlayInitialGame(seed, options.deckPreset);
   let repeatedSignatureCount = 0;
   let previousSignature = progressSignature(game);
   let step = 0;
@@ -288,6 +293,19 @@ function runAutoPlayGame(
     },
     issues: context.issues,
   };
+}
+
+function createAutoPlayInitialGame(seed: number, deckPreset: AutoPlayValidationResult["options"]["deckPreset"]): GameState {
+  if (deckPreset === "random") {
+    return createInitialGame(seed);
+  }
+  const cardIds = buildDeckPresetCardIds(deckPreset);
+  const allowSpecial = deckPresetAllowsSpecial(deckPreset);
+  return createInitialGame(seed, {
+    playerDeckCardIds: cardIds,
+    cpuDeckCardIds: cardIds,
+    allowSpecialDecks: { player: allowSpecial, cpu: allowSpecial },
+  });
 }
 
 function runDecisionStepWithTrace(
