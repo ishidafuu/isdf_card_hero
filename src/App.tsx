@@ -1307,7 +1307,110 @@ export function App() {
         </div>
       </header>
 
-      <section className={`play-layout ${zoneView?.kind === "catalog" ? "catalog-open" : ""}`}>
+      <section className={`play-layout ${zoneView ? "info-open" : ""} ${zoneView?.kind === "catalog" ? "catalog-open" : ""}`}>
+        <aside className="info-panel">
+          <section className="info-switcher-panel">
+            <div className="info-switcher-heading">
+              <h2>Info</h2>
+              <StatusIconCount label="Cards" icon="🃏" amount={currentPlayer.hand.length} cap={MAX_VISIBLE_RESOURCE_ICONS} />
+            </div>
+            <div className="info-tools" aria-label="info panels">
+              <button
+                type="button"
+                className={isZoneView(zoneView, "player", "deck") ? "selected" : ""}
+                onClick={() => setZoneView(toggleZoneView(zoneView, { kind: "playerZone", playerId: "player", zone: "deck" }))}
+              >
+                <Icon icon="🂠" /> Deck {game.players.player.deck.length}
+              </button>
+              <button
+                type="button"
+                className={isZoneView(zoneView, "player", "discard") ? "selected" : ""}
+                onClick={() => setZoneView(toggleZoneView(zoneView, { kind: "playerZone", playerId: "player", zone: "discard" }))}
+              >
+                <Icon icon="🗂️" /> Discard {game.players.player.discard.length}
+              </button>
+              <button
+                type="button"
+                className={isZoneView(zoneView, "player", "hand") ? "selected" : ""}
+                onClick={() => setZoneView(toggleZoneView(zoneView, { kind: "playerZone", playerId: "player", zone: "hand" }))}
+              >
+                <Icon icon="🃏" /> Hand {game.players.player.hand.length}
+              </button>
+              <button
+                type="button"
+                className={isZoneView(zoneView, "cpu", "discard") ? "selected" : ""}
+                onClick={() => setZoneView(toggleZoneView(zoneView, { kind: "playerZone", playerId: "cpu", zone: "discard" }))}
+              >
+                <Icon icon="🗂️" /> CPU {game.players.cpu.discard.length}
+              </button>
+              <button
+                type="button"
+                className={zoneView?.kind === "effects" ? "selected" : ""}
+                onClick={() => setZoneView(toggleZoneView(zoneView, { kind: "effects" }))}
+              >
+                <Icon icon="📜" /> Effects
+              </button>
+              <button
+                type="button"
+                className={zoneView?.kind === "cpuHistory" ? "selected" : ""}
+                onClick={() => setZoneView(toggleZoneView(zoneView, { kind: "cpuHistory" }))}
+              >
+                <Icon icon="🧠" /> CPU AI
+              </button>
+              <button
+                type="button"
+                className={zoneView?.kind === "deckSetup" ? "selected" : ""}
+                onClick={() => setZoneView(toggleZoneView(zoneView, { kind: "deckSetup" }))}
+              >
+                <Icon icon="🧩" /> Decks
+              </button>
+              <button
+                type="button"
+                className={zoneView?.kind === "catalog" ? "selected" : ""}
+                onClick={() => setZoneView(toggleZoneView(zoneView, { kind: "catalog" }))}
+              >
+                <Icon icon="📚" /> Card Library
+              </button>
+            </div>
+          </section>
+
+          <div className="info-panel-body">
+            {zoneView?.kind === "deckSetup" ? (
+              <DeckSetupPanel
+                battleSettings={battleSettings}
+                deckSettings={deckSettings}
+                drafts={deckDrafts}
+                cardOptions={deckCardOptions}
+                pickerIds={deckPickerIds}
+                onClose={() => setZoneView(undefined)}
+                onFixedChange={handleDeckFixedChange}
+                onAllowSpecialChange={handleDeckAllowSpecialChange}
+                onTextChange={handleDeckTextChange}
+                onUseGeneratedDeck={handleUseGeneratedDeckAsFixed}
+                onPickerChange={handleDeckPickerChange}
+                onAddCard={handleAddDeckCard}
+                onRemoveCard={handleRemoveDeckCard}
+              />
+            ) : zoneView ? (
+              <CardZonePanel
+                game={game}
+                view={zoneView}
+                onClose={() => setZoneView(undefined)}
+              />
+            ) : (
+              <section className="zone-panel zone-empty-panel">
+                <div className="zone-panel-heading">
+                  <div>
+                    <h3><Icon icon="ℹ️" /> Info Panel</h3>
+                    <p>Deck、Effects、CPU、Card Libraryをここに表示します。</p>
+                  </div>
+                </div>
+                <p className="empty-zone"><Icon icon="☝️" /> 上のボタンから確認したい情報を選択してください。</p>
+              </section>
+            )}
+          </div>
+        </aside>
+
         <div className="battle-area">
           <div className="battle-primary">
             <div className="board" aria-label="field">
@@ -1385,55 +1488,6 @@ export function App() {
             <div className="hand-heading">
               <h2>Hand</h2>
               <div className="hand-tools">
-                <button
-                  type="button"
-                  className={isZoneView(zoneView, "player", "deck") ? "selected" : ""}
-                  onClick={() => setZoneView(toggleZoneView(zoneView, { kind: "playerZone", playerId: "player", zone: "deck" }))}
-                >
-                  <Icon icon="🂠" /> Deck {game.players.player.deck.length}
-                </button>
-                <button
-                  type="button"
-                  className={isZoneView(zoneView, "player", "discard") ? "selected" : ""}
-                  onClick={() => setZoneView(toggleZoneView(zoneView, { kind: "playerZone", playerId: "player", zone: "discard" }))}
-                >
-                  <Icon icon="🗂️" /> Discard {game.players.player.discard.length}
-                </button>
-                <button
-                  type="button"
-                  className={isZoneView(zoneView, "player", "hand") ? "selected" : ""}
-                  onClick={() => setZoneView(toggleZoneView(zoneView, { kind: "playerZone", playerId: "player", zone: "hand" }))}
-                >
-                  <Icon icon="🃏" /> Hand {game.players.player.hand.length}
-                </button>
-                <button
-                  type="button"
-                  className={isZoneView(zoneView, "cpu", "discard") ? "selected" : ""}
-                  onClick={() => setZoneView(toggleZoneView(zoneView, { kind: "playerZone", playerId: "cpu", zone: "discard" }))}
-                >
-                  <Icon icon="🗂️" /> CPU {game.players.cpu.discard.length}
-                </button>
-                <button
-                  type="button"
-                  className={zoneView?.kind === "effects" ? "selected" : ""}
-                  onClick={() => setZoneView(toggleZoneView(zoneView, { kind: "effects" }))}
-                >
-                  <Icon icon="📜" /> Effects
-                </button>
-                <button
-                  type="button"
-                  className={zoneView?.kind === "cpuHistory" ? "selected" : ""}
-                  onClick={() => setZoneView(toggleZoneView(zoneView, { kind: "cpuHistory" }))}
-                >
-                  <Icon icon="🧠" /> CPU
-                </button>
-                <button
-                  type="button"
-                  className={zoneView?.kind === "catalog" ? "selected" : ""}
-                  onClick={() => setZoneView(toggleZoneView(zoneView, { kind: "catalog" }))}
-                >
-                  <Icon icon="📚" /> Card Library
-                </button>
                 <StatusIconCount label="Cards" icon="🃏" amount={currentPlayer.hand.length} cap={MAX_VISIBLE_RESOURCE_ICONS} />
               </div>
             </div>
@@ -1460,29 +1514,6 @@ export function App() {
                 </button>
               ))}
             </div>
-            {zoneView?.kind === "deckSetup" ? (
-              <DeckSetupPanel
-                battleSettings={battleSettings}
-                deckSettings={deckSettings}
-                drafts={deckDrafts}
-                cardOptions={deckCardOptions}
-                pickerIds={deckPickerIds}
-                onClose={() => setZoneView(undefined)}
-                onFixedChange={handleDeckFixedChange}
-                onAllowSpecialChange={handleDeckAllowSpecialChange}
-                onTextChange={handleDeckTextChange}
-                onUseGeneratedDeck={handleUseGeneratedDeckAsFixed}
-                onPickerChange={handleDeckPickerChange}
-                onAddCard={handleAddDeckCard}
-                onRemoveCard={handleRemoveDeckCard}
-              />
-            ) : zoneView && zoneView.kind !== "catalog" ? (
-              <CardZonePanel
-                game={game}
-                view={zoneView}
-                onClose={() => setZoneView(undefined)}
-              />
-            ) : null}
             </section>
           </div>
         </div>
@@ -1767,13 +1798,6 @@ export function App() {
             <BattleHistoryPanel history={battleHistory} onReplay={handleReplayHistory} />
           )}
         </aside>
-        {zoneView?.kind === "catalog" && (
-          <CardZonePanel
-            game={game}
-            view={zoneView}
-            onClose={() => setZoneView(undefined)}
-          />
-        )}
       </section>
     </main>
   );

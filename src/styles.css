@@ -77,6 +77,7 @@ button:disabled {
 .topbar h1,
 .topbar p,
 .hand-heading h2,
+.info-switcher-heading h2,
 .side-panel h2,
 .selected-detail h3,
 .level-detail ul {
@@ -181,20 +182,32 @@ button:disabled {
 .play-layout {
   align-items: start;
   display: grid;
-  gap: 16px;
-  grid-template-columns: minmax(420px, 1fr) minmax(280px, 360px);
+  gap: 10px;
+  grid-template-areas: "info battle side";
+  grid-template-columns: minmax(220px, 340px) minmax(390px, 860px) minmax(240px, 360px);
+  justify-content: center;
   min-height: 0;
   min-width: 0;
 }
 
 .play-layout.catalog-open {
-  grid-template-columns: minmax(420px, 0.9fr) minmax(260px, 320px) minmax(500px, 1fr);
+  grid-template-columns: minmax(280px, 560px) minmax(360px, 760px) minmax(240px, 340px);
+}
+
+.info-panel {
+  align-self: start;
+  display: grid;
+  gap: 12px;
+  grid-area: info;
+  min-height: 0;
+  min-width: 0;
 }
 
 .battle-area {
   align-items: start;
   display: grid;
   gap: 12px;
+  grid-area: battle;
   min-width: 0;
 }
 
@@ -624,12 +637,14 @@ button:disabled {
   align-self: start;
   display: grid;
   gap: 12px;
+  grid-area: side;
   grid-template-rows: 260px minmax(0, auto);
   min-height: 0;
   min-width: 0;
 }
 
 .actions,
+.info-switcher-panel,
 .log-panel,
 .notice,
 .hand-area,
@@ -643,6 +658,48 @@ button:disabled {
 
 .notice {
   border-color: #b56323;
+}
+
+.info-switcher-panel {
+  display: grid;
+  gap: 10px;
+}
+
+.info-switcher-heading {
+  align-items: center;
+  display: flex;
+  gap: 10px;
+  justify-content: space-between;
+}
+
+.info-tools {
+  display: grid;
+  gap: 6px;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.info-tools button {
+  align-items: center;
+  display: inline-flex;
+  font-size: 12px;
+  justify-content: center;
+  min-height: 30px;
+  overflow: hidden;
+  padding: 5px 7px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.info-tools button.selected {
+  border-color: #2f5f91;
+  box-shadow: inset 0 0 0 1px #2f5f91;
+}
+
+.info-panel-body {
+  display: grid;
+  gap: 10px;
+  min-height: 0;
+  min-width: 0;
 }
 
 .button-stack,
@@ -1211,6 +1268,21 @@ button:disabled {
   padding: 10px;
 }
 
+.info-panel-body > .zone-panel {
+  max-height: calc(100vh - 210px);
+  min-width: 0;
+  overflow: auto;
+}
+
+.info-panel-body > .catalog-library-panel {
+  overflow: hidden;
+}
+
+.zone-empty-panel {
+  align-content: start;
+  min-height: 160px;
+}
+
 .deck-setup-panel {
   gap: 12px;
 }
@@ -1542,7 +1614,7 @@ button:disabled {
   align-items: start;
   display: grid;
   gap: 10px;
-  grid-template-columns: minmax(240px, 0.9fr) minmax(260px, 1fr);
+  grid-template-columns: minmax(210px, 0.9fr) minmax(220px, 1fr);
   min-height: 0;
   overflow: hidden;
 }
@@ -2025,27 +2097,17 @@ button:disabled {
   margin-bottom: 6px;
 }
 
-@media (max-width: 860px) {
+@media (max-width: 1180px) {
   .app-shell {
     padding: 10px;
-  }
-
-  .play-layout {
-    grid-template-columns: 1fr;
   }
 
   .catalog-library-layout {
     grid-template-columns: 1fr;
   }
 
-  .catalog-library-panel,
-  .catalog-card-grid,
-  .catalog-selected-panel {
-    max-height: none;
-  }
-
   .play-layout {
-    gap: 12px;
+    gap: 10px;
   }
 
   .board-slot {
@@ -2055,6 +2117,39 @@ button:disabled {
   .master,
   .blocked-cell {
     min-height: 96px;
+  }
+}
+
+@media (max-width: 900px) {
+  .play-layout,
+  .play-layout.catalog-open {
+    grid-template-areas:
+      "battle"
+      "info"
+      "side";
+    grid-template-columns: 1fr;
+  }
+
+  .info-panel {
+    order: 2;
+  }
+
+  .battle-area {
+    order: 1;
+  }
+
+  .side-panel {
+    order: 3;
+  }
+
+  .info-panel-body > .zone-panel {
+    max-height: none;
+  }
+
+  .catalog-library-panel,
+  .catalog-card-grid,
+  .catalog-selected-panel {
+    max-height: none;
   }
 }
 
