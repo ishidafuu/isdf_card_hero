@@ -46,6 +46,20 @@ describe("auto play validation", () => {
     expect(result.summary.failures).toBe(0);
   }, 20_000);
 
+  it("runs auto play with black masters", () => {
+    const result = validateAutoPlay({
+      seedStart: 640,
+      count: 5,
+      masterIds: { player: "black", cpu: "black" },
+      maxSteps: 650,
+      maxTurns: 140,
+    });
+
+    expect(result.options.masterIds).toEqual({ player: "black", cpu: "black" });
+    expect(result.ok).toBe(true);
+    expect(result.summary.failures).toBe(0);
+  }, 20_000);
+
   it("captures reproducible state, log tail, and decision history for failures", () => {
     const result = validateAutoPlay({
       seedStart: 410,

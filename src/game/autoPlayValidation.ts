@@ -2,7 +2,7 @@ import { getCardName } from "./cards";
 import { applyCpuDecision, chooseCpuDecision, listCpuDecisions, type CpuDecision } from "./cpuAi";
 import { buildDeckPresetCardIds, deckPresetAllowsSpecial, type DeckPresetId } from "./deckPresets";
 import { createInitialGame, runAutoStep, targetToKey } from "./rules";
-import type { GameState, PlayerId, SlotKey } from "./types";
+import type { GameState, MasterId, PlayerId, SlotKey } from "./types";
 
 export type AutoPlayIssueKind =
   | "exception"
@@ -20,6 +20,7 @@ export interface AutoPlayValidationOptions {
   seedEnd?: number;
   count?: number;
   deckPreset?: "random" | DeckPresetId;
+  masterIds?: Partial<Record<PlayerId, MasterId>>;
   maxSteps?: number;
   maxTurns?: number;
   stagnationLimit?: number;
@@ -50,6 +51,7 @@ export interface GameStateSummary {
   winner?: PlayerId;
   pendingLevelUp?: boolean;
   players: Record<PlayerId, {
+    masterId: MasterId;
     hp: number;
     stones: number;
     hand: number;
@@ -66,6 +68,7 @@ export interface GameStateSummary {
     status?: string;
     actions?: string;
     focused?: boolean;
+    berserkPower?: boolean;
     shielded?: boolean;
   }>;
 }
@@ -95,9 +98,10 @@ export interface AutoPlayGameResult {
 export interface AutoPlayValidationResult {
   ok: boolean;
   seeds: number[];
-  options: Required<Omit<AutoPlayValidationOptions, "seedEnd" | "failOnWarnings">> & {
+  options: Required<Omit<AutoPlayValidationOptions, "seedEnd" | "failOnWarnings" | "masterIds">> & {
     seedEnd: number;
     failOnWarnings: boolean;
+    masterIds: Record<PlayerId, MasterId>;
   };
   games: AutoPlayGameResult[];
   issues: AutoPlayIssue[];
@@ -129,6 +133,7 @@ const DEFAULT_OPTIONS = {
   historyLimit: 30,
   failOnWarnings: false,
   deckPreset: "random" as const,
+  masterIds: { player: "white", cpu: "white" } satisfies Record<PlayerId, MasterId>,
 };
 
 export function validateAutoPlay(options: AutoPlayValidationOptions = {}): AutoPlayValidationResult {
@@ -177,6 +182,7 @@ export function formatAutoPlayValidationSummary(result: AutoPlayValidationResult
     `Auto play validation: ${result.ok ? "PASS" : "FAIL"}`,
     `Seeds: ${result.options.seedStart}-${result.options.seedEnd} (${result.summary.games} games)`,
     `Deck preset: ${result.options.deckPreset}`,
+    `Masters: player ${result.options.masterIds.player}, cpu ${result.options.masterIds.cpu}`,
     `Winners: player ${result.summary.winners.player}, cpu ${result.summary.winners.cpu}`,
     `Max: ${result.summary.maxSteps} steps / ${result.summary.maxTurns} turns`,
     `Issues: ${result.summary.failures} failures, ${result.summary.warnings} warnings`,
@@ -213,6 +219,10 @@ function resolveOptions(options: AutoPlayValidationOptions): AutoPlayValidationR
     historyLimit: integerOption(options.historyLimit, DEFAULT_OPTIONS.historyLimit),
     failOnWarnings: options.failOnWarnings ?? DEFAULT_OPTIONS.failOnWarnings,
     deckPreset: options.deckPreset ?? DEFAULT_OPTIONS.deckPreset,
+    masterIds: {
+      player: options.masterIds?.player ?? DEFAULT_OPTIONS.masterIds.player,
+      cpu: options.masterIds?.cpu ?? DEFAULT_OPTIONS.masterIds.cpu,
+    },
   };
 }
 
@@ -230,7 +240,7 @@ function runAutoPlayGame(
     issues: [],
     moveCountsByTurn: new Map(),
   };
-  let game = createAutoPlayInitialGame(seed, options.deckPreset);
+  let game = createAutoPlayInitialGame(seed, options.deckPreset, options.masterIds);
   let repeatedSignatureCount = 0;
   let previousSignature = progressSignature(game);
   let step = 0;
@@ -295,13 +305,18 @@ function runAutoPlayGame(
   };
 }
 
-function createAutoPlayInitialGame(seed: number, deckPreset: AutoPlayValidationResult["options"]["deckPreset"]): GameState {
+function createAutoPlayInitialGame(
+  seed: number,
+  deckPreset: AutoPlayValidationResult["options"]["deckPreset"],
+  masterIds: Record<PlayerId, MasterId>,
+): GameState {
   if (deckPreset === "random") {
-    return createInitialGame(seed);
+    return createInitialGame(seed, { masterIds });
   }
   const cardIds = buildDeckPresetCardIds(deckPreset);
   const allowSpecial = deckPresetAllowsSpecial(deckPreset);
   return createInitialGame(seed, {
+    masterIds,
     playerDeckCardIds: cardIds,
     cpuDeckCardIds: cardIds,
     allowSpecialDecks: { player: allowSpecial, cpu: allowSpecial },
@@ -452,6 +467,7 @@ export function summarizeGameState(game: GameState): GameStateSummary {
         status: monster?.status,
         actions: monster ? `${monster.actionCount}/${monster.actionLimit}` : undefined,
         focused: monster?.focused,
+        berserkPower: monster?.berserkPower,
         shielded: monster?.shielded,
       };
     }),
@@ -461,6 +477,7 @@ export function summarizeGameState(game: GameState): GameStateSummary {
 function summarizePlayer(game: GameState, playerId: PlayerId): GameStateSummary["players"][PlayerId] {
   const player = game.players[playerId];
   return {
+    masterId: player.masterId,
     hp: player.masterHp,
     stones: player.stones,
     hand: player.hand.length,

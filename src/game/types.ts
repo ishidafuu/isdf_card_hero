@@ -1,4 +1,5 @@
 export type PlayerId = "player" | "cpu";
+export type MasterId = "white" | "black";
 export type Row = "front" | "back";
 export type Lane = "left" | "right";
 export type SlotKey = `${PlayerId}_${Row}_${Lane}`;
@@ -134,6 +135,7 @@ export interface SlotState {
 
 export interface PlayerState {
   id: PlayerId;
+  masterId: MasterId;
   masterHp: number;
   stones: number;
   masterPowerBonus?: number;
@@ -200,4 +202,4 @@ export interface MagicAction {
   searchCategory?: "front" | "back" | "magic" | "special";
 }
 
-export type MasterActionId = "master_attack" | "wake_up" | "shield";
+export type MasterActionId = "master_attack" | "wake_up" | "shield" | "berserk_power" | "earth_anger";

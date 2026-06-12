@@ -7,6 +7,8 @@ import {
   type AutoPlayValidationOptions,
 } from "../src/game/autoPlayValidation";
 import { DECK_PRESET_IDS, type DeckPresetId } from "../src/game/deckPresets";
+import { MASTER_IDS } from "../src/game/masters";
+import type { MasterId } from "../src/game/types";
 
 interface CliOptions extends AutoPlayValidationOptions {
   outDir: string;
@@ -47,6 +49,12 @@ function parseArgs(args: string[]): CliOptions {
     } else if (arg === "--deck-preset") {
       parsed.deckPreset = readDeckPreset(next);
       i += 1;
+    } else if (arg === "--player-master") {
+      parsed.masterIds = { ...parsed.masterIds, player: readMasterId(arg, next) };
+      i += 1;
+    } else if (arg === "--cpu-master") {
+      parsed.masterIds = { ...parsed.masterIds, cpu: readMasterId(arg, next) };
+      i += 1;
     } else if (arg === "--max-steps") {
       parsed.maxSteps = readNumber(arg, next);
       i += 1;
@@ -84,6 +92,16 @@ function parseArgs(args: string[]): CliOptions {
   }
 
   return parsed;
+}
+
+function readMasterId(name: string, value: string | undefined): MasterId {
+  if (!value) {
+    throw new Error(`${name} requires a value`);
+  }
+  if ((MASTER_IDS as string[]).includes(value)) {
+    return value as MasterId;
+  }
+  throw new Error(`${name} must be one of: ${MASTER_IDS.join(", ")}`);
 }
 
 function readDeckPreset(value: string | undefined): "random" | DeckPresetId {
@@ -143,6 +161,8 @@ Options:
   --seed-end <n>          Last seed, inclusive. Overrides --count.
   --count <n>             Number of games. Default: 100
   --deck-preset <id>      Deck preset. Default: random. Values: random, ${DECK_PRESET_IDS.join(", ")}
+  --player-master <id>    Player master. Default: white. Values: ${MASTER_IDS.join(", ")}
+  --cpu-master <id>       CPU master. Default: white. Values: ${MASTER_IDS.join(", ")}
   --max-steps <n>         Failure threshold per game. Default: 500
   --max-turns <n>         Failure threshold per game. Default: 120
   --long-game-steps <n>   Warning threshold per game. Default: 300

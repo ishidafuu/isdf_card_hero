@@ -9,18 +9,16 @@ import {
   summarizeDeckCardIds,
 } from "./cards";
 import { applyCpuDecision, chooseCpuDecision } from "./cpuAi";
+import { getMasterActionDef, getMasterActionIds } from "./masters";
 import {
   FIELD_ORDER,
   HAND_LIMIT,
   LANE_ORDER,
-  MASTER_ATTACK_COST,
   MASTER_ATTACK_POWER,
   MASTER_HP,
   PLAYER_ORDER,
   PLAYER_SLOT_ORDER,
   ROW_ORDER,
-  SHIELD_COST,
-  WAKE_UP_COST,
 } from "./ruleEngine/constants";
 import {
   distanceBetweenSlots,
@@ -38,6 +36,7 @@ import type {
   GameState,
   MagicAction,
   MasterActionId,
+  MasterId,
   MonsterCardDef,
   MonsterState,
   PlayerState,
@@ -54,6 +53,7 @@ export { FIELD_ORDER, PLAYER_SLOT_ORDER } from "./ruleEngine/constants";
 
 export interface CreateInitialGameOptions {
   firstPlayer?: PlayerId;
+  masterIds?: Partial<Record<PlayerId, MasterId>>;
   playerDeckCardIds?: string[];
   cpuDeckCardIds?: string[];
   allowSpecialDecks?: Partial<Record<PlayerId, boolean>>;
@@ -93,8 +93,8 @@ export function createInitialGame(seed = Date.now(), options: CreateInitialGameO
   const firstPlayer = options.firstPlayer ?? "player";
   const state: GameState = {
     players: {
-      player: createPlayer("player", playerDeck),
-      cpu: createPlayer("cpu", cpuDeck),
+      player: createPlayer("player", playerDeck, options.masterIds?.player ?? "white"),
+      cpu: createPlayer("cpu", cpuDeck, options.masterIds?.cpu ?? "white"),
     },
     slots: createSlots(),
     currentPlayer: firstPlayer,
@@ -567,6 +567,9 @@ export function useMasterAction(
 
   const player = next.players[next.currentPlayer];
   const cost = getMasterActionCost(actionId);
+  if (!getMasterActionIdsForPlayer(next, next.currentPlayer).includes(actionId)) {
+    throw new Error("このマスターはその特技を使えません");
+  }
   if (player.stones < cost) {
     throw new Error("マスター特技に必要なストーンが足りません");
   }
@@ -586,6 +589,15 @@ export function useMasterAction(
     return next;
   }
 
+  if (actionId === "earth_anger") {
+    if (target.kind !== "master" || target.playerId !== next.currentPlayer) {
+      throw new Error("大地の怒りの対象が不正です");
+    }
+    appendLog(next, `${playerLabel(next.currentPlayer)}の大地の怒り`);
+    damageAllMonsters(next, 3, "大地の怒り");
+    return next;
+  }
+
   if (target.kind !== "monster") {
     throw new Error("マスター特技の対象が不正です");
   }
@@ -599,6 +611,12 @@ export function useMasterAction(
     monster.actionCount = 0;
     monster.actionLimit = getMonsterDef(monster.cardId).actionLimit ?? 1;
     appendLog(next, `${playerLabel(next.currentPlayer)}は${monsterName(monster)}をウェイクアップした`);
+    return next;
+  }
+
+  if (actionId === "berserk_power") {
+    monster.berserkPower = true;
+    appendLog(next, `${playerLabel(next.currentPlayer)}は${monsterName(monster)}をバーサクパワー状態にした`);
     return next;
   }
 
@@ -841,6 +859,9 @@ export function getMasterActionTargets(state: GameState, actionId: MasterActionI
   if (player.masterFrozen) {
     return [];
   }
+  if (!getMasterActionIdsForPlayer(state, state.currentPlayer).includes(actionId)) {
+    return [];
+  }
   if (player.stones < getMasterActionCost(actionId)) {
     return [];
   }
@@ -858,6 +879,18 @@ export function getMasterActionTargets(state: GameState, actionId: MasterActionI
     return FIELD_ORDER
       .filter((slotKey) => state.slots[slotKey].monster?.status === "prepared")
       .map<Target>((slotKey) => ({ kind: "monster", slotKey }));
+  }
+
+  if (actionId === "berserk_power") {
+    return FIELD_ORDER
+      .filter((slotKey) => state.slots[slotKey].monster?.status === "active")
+      .map<Target>((slotKey) => ({ kind: "monster", slotKey }));
+  }
+
+  if (actionId === "earth_anger") {
+    return FIELD_ORDER.some((slotKey) => state.slots[slotKey].monster?.status === "active")
+      ? [{ kind: "master", playerId: state.currentPlayer }]
+      : [];
   }
 
   return PLAYER_SLOT_ORDER[state.currentPlayer]
@@ -1399,7 +1432,7 @@ function applyMagicEffect(state: GameState, cardId: string, action: MagicAction)
   if (cardId === "card_124") {
     state.players.player.masterActionsExchanged = !state.players.player.masterActionsExchanged;
     state.players.cpu.masterActionsExchanged = !state.players.cpu.masterActionsExchanged;
-    appendLog(state, "マスター特技を入れ替えた（同一マスター同士のため見た目は変わらない）");
+    appendLog(state, "マスター特技を入れ替えた");
     return;
   }
 
@@ -1834,13 +1867,16 @@ export function getMonsterCommands(monster: MonsterState): CommandDef[] {
 }
 
 export function getMasterActionCost(actionId: MasterActionId): number {
-  if (actionId === "master_attack") {
-    return MASTER_ATTACK_COST;
-  }
-  if (actionId === "wake_up") {
-    return WAKE_UP_COST;
-  }
-  return SHIELD_COST;
+  return getMasterActionDef(actionId).cost;
+}
+
+export function getMasterActionIdsForPlayer(state: GameState, playerId: PlayerId): MasterActionId[] {
+  const actionOwner = state.players[playerId].masterActionsExchanged ? opponentOf(playerId) : playerId;
+  return getMasterActionIds(state.players[actionOwner].masterId);
+}
+
+export function getCurrentMasterActionIds(state: GameState): MasterActionId[] {
+  return getMasterActionIdsForPlayer(state, state.currentPlayer);
 }
 
 export function getHandCard(state: GameState, instanceId: string): CardInstance | undefined {
@@ -1870,9 +1906,10 @@ export function playerLabel(playerId: PlayerId): string {
   return playerId === "player" ? "プレイヤー" : "CPU";
 }
 
-function createPlayer(id: PlayerId, deck: CardInstance[]): PlayerState {
+function createPlayer(id: PlayerId, deck: CardInstance[], masterId: MasterId): PlayerState {
   return {
     id,
+    masterId,
     masterHp: MASTER_HP,
     stones: 0,
     masterPowerBonus: 0,

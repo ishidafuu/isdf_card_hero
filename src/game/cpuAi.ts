@@ -12,6 +12,7 @@ import {
   getMagicSearchCategories,
   getMagicSecondaryTargets,
   getMagicTargets,
+  getCurrentMasterActionIds,
   getMasterActionTargets,
   getMonsterCommands,
   getMovableTargets,
@@ -386,11 +387,24 @@ function attackReason(state: GameState, after: GameState, action: CommandAction)
 }
 
 function listMasterActionDecisions(state: GameState): CpuDecision[] {
-  return [
-    ...listMasterAttackDecisions(state),
-    ...listWakeUpDecisions(state),
-    ...listShieldDecisions(state),
-  ];
+  return getCurrentMasterActionIds(state).flatMap((actionId) => {
+    if (actionId === "master_attack") {
+      return listMasterAttackDecisions(state);
+    }
+    if (actionId === "wake_up") {
+      return listWakeUpDecisions(state);
+    }
+    if (actionId === "shield") {
+      return listShieldDecisions(state);
+    }
+    if (actionId === "berserk_power") {
+      return listBerserkPowerDecisions(state);
+    }
+    if (actionId === "earth_anger") {
+      return listEarthAngerDecisions(state);
+    }
+    return [];
+  });
 }
 
 function listMasterAttackDecisions(state: GameState): CpuDecision[] {
@@ -532,6 +546,65 @@ function createShieldDecision(state: GameState, target: Target): CpuDecision | u
         : levelUpPotential > 0
           ? "次ターンのレベルアップ筋を残すためシールド"
           : "高価値の味方を守るためシールド",
+    score,
+  };
+}
+
+function listBerserkPowerDecisions(state: GameState): CpuDecision[] {
+  return getMasterActionTargets(state, "berserk_power")
+    .filter((target) => target.kind === "monster" && state.slots[target.slotKey].owner === state.currentPlayer)
+    .map((target) => createBerserkPowerDecision(state, target))
+    .filter((decision): decision is CpuDecision => !!decision);
+}
+
+function createBerserkPowerDecision(state: GameState, target: Target): CpuDecision | undefined {
+  if (target.kind !== "monster") {
+    return undefined;
+  }
+  const monster = state.slots[target.slotKey].monster;
+  if (!monster || monster.status !== "active" || monster.berserkPower || monster.actionCount >= monster.actionLimit) {
+    return undefined;
+  }
+
+  const after = useMasterAction(state, "berserk_power", target);
+  const beforeBest = bestAttackOpportunityScore(state, target.slotKey);
+  const afterBest = bestAttackOpportunityScore(after, target.slotKey);
+  const improvement = afterBest - beforeBest;
+  if (afterBest < 55 || improvement <= 18) {
+    return undefined;
+  }
+
+  return {
+    type: "master_action",
+    actionId: "berserk_power",
+    target,
+    reason: "バーサクパワーで次の攻撃価値を上げられるため使用",
+    score: 20 + afterBest * 0.32 + improvement * 0.75 - 18,
+  };
+}
+
+function listEarthAngerDecisions(state: GameState): CpuDecision[] {
+  return getMasterActionTargets(state, "earth_anger")
+    .map((target) => createEarthAngerDecision(state, target))
+    .filter((decision): decision is CpuDecision => !!decision);
+}
+
+function createEarthAngerDecision(state: GameState, target: Target): CpuDecision | undefined {
+  if (target.kind !== "master" || target.playerId !== state.currentPlayer) {
+    return undefined;
+  }
+  const beforeScore = evaluateState(state, state.currentPlayer);
+  const after = useMasterAction(state, "earth_anger", target);
+  const score = evaluateState(after, state.currentPlayer) - beforeScore - 28;
+  if (score < 45) {
+    return undefined;
+  }
+
+  return {
+    type: "master_action",
+    actionId: "earth_anger",
+    target,
+    reason: "大地の怒りで盤面全体の交換が有利になるため使用",
     score,
   };
 }
@@ -1439,7 +1512,7 @@ function estimateCommandPower(monster: MonsterState, command: ReturnType<typeof 
   }
   power += monster.powerModifier ?? 0;
   if (monster.berserkPower) {
-    power += 2;
+    power += 1;
   }
   return Math.max(0, power);
 }

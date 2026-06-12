@@ -27,6 +27,7 @@ import {
   getMagicSearchCategories,
   getMagicSecondaryTargets,
   getMagicTargets,
+  getCurrentMasterActionIds,
   getMasterActionTargets,
   getMovableTargets,
   playMagic,
@@ -562,6 +563,75 @@ describe("battle prototype rules", () => {
 
     const cleared = startTurn(attacked, "player");
     expect(cleared.slots.player_front_left.monster?.shielded).toBe(false);
+  });
+
+  it("uses only berserk power and earth anger as black master specialty actions", () => {
+    let game = createInitialGame(111, { masterIds: { player: "black" } });
+    game.players.player.stones = 6;
+    game.slots.player_front_left.monster = createActiveMonster("takokke", "player", { hp: 5 });
+    game.slots.cpu_front_left.monster = createActiveMonster("takokke", "cpu", { hp: 5 });
+    game.slots.cpu_back_left.monster = createActiveMonster("yanbaru", "cpu", {
+      status: "prepared",
+      hp: 3,
+    });
+
+    expect(getCurrentMasterActionIds(game)).toEqual(["master_attack", "berserk_power", "earth_anger"]);
+    expect(getMasterActionTargets(game, "wake_up")).toEqual([]);
+    expect(getMasterActionTargets(game, "shield")).toEqual([]);
+    expect(getMasterActionTargets(game, "berserk_power")).toEqual([
+      { kind: "monster", slotKey: "cpu_front_left" },
+      { kind: "monster", slotKey: "player_front_left" },
+    ]);
+    expect(getMasterActionTargets(game, "earth_anger")).toEqual([{ kind: "master", playerId: "player" }]);
+
+    game = useMasterAction(game, "berserk_power", { kind: "monster", slotKey: "player_front_left" });
+    expect(game.players.player.stones).toBe(3);
+    expect(game.slots.player_front_left.monster?.berserkPower).toBe(true);
+
+    game = attackWithCommand(game, {
+      attackerSlotKey: "player_front_left",
+      commandId: "attack",
+      target: { kind: "monster", slotKey: "cpu_front_left" },
+    });
+
+    expect(game.slots.cpu_front_left.monster?.hp).toBe(2);
+    expect(game.slots.player_front_left.monster?.hp).toBe(4);
+    expect(game.slots.player_front_left.monster?.berserkPower).toBe(false);
+  });
+
+  it("damages every active monster but not prepared cards with black master earth anger", () => {
+    const game = createInitialGame(112, { masterIds: { player: "black" } });
+    game.players.player.stones = 6;
+    game.slots.player_front_left.monster = createActiveMonster("takokke", "player", { hp: 5 });
+    game.slots.player_back_left.monster = createActiveMonster("yanbaru", "player", {
+      status: "prepared",
+      hp: 3,
+    });
+    game.slots.cpu_front_left.monster = createActiveMonster("takokke", "cpu", { hp: 5 });
+    game.slots.cpu_back_left.monster = createActiveMonster("yanbaru", "cpu", { hp: 4 });
+
+    const next = useMasterAction(game, "earth_anger", { kind: "master", playerId: "player" });
+
+    expect(next.players.player.stones).toBe(0);
+    expect(next.slots.player_front_left.monster?.hp).toBe(2);
+    expect(next.slots.player_back_left.monster?.hp).toBe(3);
+    expect(next.slots.cpu_front_left.monster?.hp).toBe(2);
+    expect(next.slots.cpu_back_left.monster?.hp).toBe(1);
+  });
+
+  it("exchanges white and black master action sets", () => {
+    let game = createInitialGame(113, { masterIds: { player: "white", cpu: "black" } });
+    game.players.player.hand = [{ cardId: "card_124", instanceId: "exchange" }];
+    game.players.player.stones = magicCost("card_124");
+
+    game = playMagic(game, {
+      handInstanceId: "exchange",
+      target: { kind: "master", playerId: "player" },
+    });
+
+    expect(getCurrentMasterActionIds(game)).toEqual(["master_attack", "berserk_power", "earth_anger"]);
+    game.currentPlayer = "cpu";
+    expect(getCurrentMasterActionIds(game)).toEqual(["master_attack", "wake_up", "shield"]);
   });
 
   it("lets a two-action monster spend its remaining action to focus", () => {

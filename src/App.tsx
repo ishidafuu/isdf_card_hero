@@ -26,6 +26,7 @@ import {
   getCommandTargets,
   getCommandHandChoices,
   getCommandSecondaryTargets,
+  getCurrentMasterActionIds,
   getHandCard,
   getMagicHandChoices,
   getMagicSearchCategories,
@@ -47,7 +48,8 @@ import {
   useMasterAction,
   useMasterHpDraw,
 } from "./game/rules";
-import type { CardInstance, CardPool, CommandDef, GameState, MagicAction, MagicCardDef, MagicTargetKind, MasterActionId, PlayerId, SlotKey, Target } from "./game/types";
+import { getMasterActionDef, getMasterName, MASTER_IDS } from "./game/masters";
+import type { CardInstance, CardPool, CommandDef, GameState, MagicAction, MagicCardDef, MagicTargetKind, MasterActionId, MasterId, PlayerId, SlotKey, Target } from "./game/types";
 import type { DeckValidationSummary } from "./game/cards";
 
 type BoardCell =
@@ -128,6 +130,7 @@ interface BattleSettings {
   seedInput: string;
   firstPlayer: PlayerId;
   mode: BattleMode;
+  masterIds: Record<PlayerId, MasterId>;
 }
 
 interface DeckSettings {
@@ -154,12 +157,6 @@ interface DeckCardOption {
 const DRAG_MIME = "application/x-card-hero-drag";
 
 const LOG_FILTERS: LogFilter[] = ["all", "battle", "damage", "support", "turn", "cpu"];
-
-const MASTER_ACTIONS: Array<{ id: MasterActionId; label: string }> = [
-  { id: "master_attack", label: "Master Attack" },
-  { id: "wake_up", label: "Wake Up" },
-  { id: "shield", label: "Shield" },
-];
 
 type EffectKind = "attack" | "damage" | "summon" | "focus" | "move" | "heal" | "turn" | "random" | "default";
 
@@ -191,6 +188,7 @@ function createBattleSettings(seed: number): BattleSettings {
     seedInput: String(seed),
     firstPlayer: "player",
     mode: "player-vs-cpu",
+    masterIds: { player: "white", cpu: "white" },
   };
 }
 
@@ -210,6 +208,7 @@ function createGameFromSettings(settings: BattleSettings, deckSettings: DeckSett
   const cpuDeck = createDeckDraft(settings, deckSettings, "cpu");
   return createInitialGame(settings.seed, {
     firstPlayer: settings.firstPlayer,
+    masterIds: settings.masterIds,
     playerDeckCardIds: deckSettings.fixed.player ? playerDeck.cardIds : undefined,
     cpuDeckCardIds: deckSettings.fixed.cpu ? cpuDeck.cardIds : undefined,
     allowSpecialDecks: deckSettings.allowSpecial,
@@ -604,6 +603,10 @@ export function App() {
       return;
     }
     const target: Target = { kind: "master", playerId };
+    if (selection?.kind === "masterAction" && targetKeys.has(targetToKey(target))) {
+      applyChange((state) => useMasterAction(state, selection.actionId, target));
+      return;
+    }
     if (selection?.kind === "command" && targetKeys.has(targetToKey(target))) {
       resolveCommandPrimaryTarget(selection.attackerSlotKey, selection.commandId, target);
       return;
@@ -670,6 +673,16 @@ export function App() {
     }
     setBattleSettings({ ...battleSettings, mode: value });
     setAutoPlayEnabled(false);
+  }
+
+  function handleBattleMasterChange(playerId: PlayerId, masterId: string) {
+    if (!MASTER_IDS.includes(masterId as MasterId)) {
+      return;
+    }
+    setBattleSettings({
+      ...battleSettings,
+      masterIds: { ...battleSettings.masterIds, [playerId]: masterId as MasterId },
+    });
   }
 
   function handleRandomSeed() {
@@ -1093,6 +1106,28 @@ export function App() {
               <option value="cpu-vs-cpu">CPU vs CPU</option>
             </select>
           </label>
+          <label className="battle-setting-control">
+            P Master
+            <select
+              value={battleSettings.masterIds.player}
+              onChange={(event) => handleBattleMasterChange("player", event.target.value)}
+            >
+              {MASTER_IDS.map((masterId) => (
+                <option value={masterId} key={masterId}>{getMasterName(masterId)}</option>
+              ))}
+            </select>
+          </label>
+          <label className="battle-setting-control">
+            C Master
+            <select
+              value={battleSettings.masterIds.cpu}
+              onChange={(event) => handleBattleMasterChange("cpu", event.target.value)}
+            >
+              {MASTER_IDS.map((masterId) => (
+                <option value={masterId} key={masterId}>{getMasterName(masterId)}</option>
+              ))}
+            </select>
+          </label>
           <button type="button" onClick={() => setAutoPlayEnabled((enabled) => !enabled)} disabled={cpuVsCpu}>
             <Icon icon={autoPlayEnabled ? "⏸️" : "▶️"} /> {autoPlayEnabled ? "Auto Stop" : "Auto Play"}
           </button>
@@ -1154,6 +1189,8 @@ export function App() {
                   if (cell.kind === "master") {
                     const damageFlash = visualEffect?.masterDamageFlashes.find((flash) => flash.playerId === cell.playerId);
                     const targetRole = targetRoleForTarget(game, { kind: "master", playerId: cell.playerId }, targetKeys, selection, pendingDropAction);
+                    const masterId = game.players[cell.playerId].masterId;
+                    const masterLabel = `${cell.playerId === "cpu" ? "CPU" : "Player"} ${getMasterName(masterId)}`;
                     return (
                       <button
                         key={cell.playerId}
@@ -1161,6 +1198,7 @@ export function App() {
                         className={[
                           "master",
                           cell.playerId === "cpu" ? "master-cpu" : "master-player",
+                          `master-${masterId}`,
                           targetKeys.has(`master:${cell.playerId}`) ? "targetable" : "",
                           targetRole ? `target-${targetRole}` : "",
                           visualEffect?.masters.includes(cell.playerId) ? `effect-active effect-${visualEffect.kind}` : "",
@@ -1170,10 +1208,10 @@ export function App() {
                         onDrop={(event) => handleMasterDrop(event, cell.playerId)}
                         data-master-id={cell.playerId}
                         onClick={() => handleMasterClick(cell.playerId)}
-                        aria-label={`${cell.label} HP ${game.players[cell.playerId].masterHp} Stone ${game.players[cell.playerId].stones} Deck ${game.players[cell.playerId].deck.length} Hand ${game.players[cell.playerId].hand.length}`}
+                        aria-label={`${masterLabel} HP ${game.players[cell.playerId].masterHp} Stone ${game.players[cell.playerId].stones} Deck ${game.players[cell.playerId].deck.length} Hand ${game.players[cell.playerId].hand.length}`}
                       >
                         <MasterResourceDisplay
-                          label={cell.label}
+                          label={masterLabel}
                           active={game.currentPlayer === cell.playerId}
                           hp={game.players[cell.playerId].masterHp}
                           stones={game.players[cell.playerId].stones}
@@ -1533,20 +1571,22 @@ export function App() {
               <TargetSelectionSummary selection={selection} game={game} />
               <OperationReasonPanel game={game} selection={selection} pendingDropAction={pendingDropAction} error={error} />
               <div className="button-stack">
-                {MASTER_ACTIONS.map((action) => {
-                  const targets = getMasterActionTargets(game, action.id);
+                {getCurrentMasterActionIds(game).map((actionId) => {
+                  const action = getMasterActionDef(actionId);
+                  const targets = getMasterActionTargets(game, actionId);
                   return (
                     <button
-                      key={action.id}
+                      key={actionId}
                       type="button"
                       onClick={() => {
                         setPendingDropAction(undefined);
-                        setSelection({ kind: "masterAction", actionId: action.id, targets });
+                        setSelection({ kind: "masterAction", actionId, targets });
                         setError("");
                       }}
                       disabled={controlsDisabled || targets.length === 0}
+                      title={action.summary}
                     >
-                      <Icon icon={masterActionIcon(action.id)} /> {action.label} {getMasterActionCost(action.id)}
+                      <Icon icon={masterActionIcon(actionId)} /> {action.name} {getMasterActionCost(actionId)}
                     </button>
                   );
                 })}
@@ -2658,6 +2698,7 @@ function BoardSlot({
             {[
               monster.focused ? "💪 気合い 上技+1/被ダメ-1" : "",
               monster.powerUp ? "⬆️ P+1" : "",
+              monster.berserkPower ? "🔥 バーサク" : "",
               monster.shielded ? "🛡️ 盾" : "",
             ].filter(Boolean).join(" ")}
           </span>
@@ -3782,24 +3823,24 @@ function masterActionIcon(actionId: MasterActionId): string {
   if (actionId === "wake_up") {
     return "⏰";
   }
-  return "🛡️";
+  if (actionId === "shield") {
+    return "🛡️";
+  }
+  if (actionId === "berserk_power") {
+    return "🔥";
+  }
+  return "🌋";
 }
 
 function masterActionLabel(actionId: MasterActionId): string {
-  if (actionId === "master_attack") {
-    return "Master Attack";
-  }
-  if (actionId === "wake_up") {
-    return "Wake Up";
-  }
-  return "Shield";
+  return getMasterActionDef(actionId).name;
 }
 
 function logIcon(entry: string): string {
   if (entry.includes("勝利") || entry.includes("敗北")) {
     return "🏆";
   }
-  if (entry.includes("倒れ") || entry.includes("ダメージ") || entry.includes("攻撃") || entry.includes("アタック")) {
+  if (entry.includes("倒れ") || entry.includes("ダメージ") || entry.includes("攻撃") || entry.includes("アタック") || entry.includes("大地の怒り")) {
     return "⚔️";
   }
   if (entry.includes("HPが") || entry.includes("山札切れ")) {
@@ -3813,6 +3854,9 @@ function logIcon(entry: string): string {
   }
   if (entry.includes("ため") || entry.includes("気合い")) {
     return "💪";
+  }
+  if (entry.includes("バーサク")) {
+    return "🔥";
   }
   if (entry.includes("シールド") || entry.includes("ウェイクアップ") || entry.includes("回復")) {
     return "🛡️";

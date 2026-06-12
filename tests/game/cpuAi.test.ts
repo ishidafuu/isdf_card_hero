@@ -85,6 +85,65 @@ describe("cpu ai", () => {
     }
   });
 
+  it("uses black master berserk power when it creates a monster kill", () => {
+    const game = createCpuGame();
+    game.players.cpu.masterId = "black";
+    game.players.cpu.hand = [];
+    game.players.cpu.stones = 3;
+    game.slots.cpu_front_left.monster = createActiveMonster("takokke", "cpu");
+    game.slots.player_front_left.monster = createActiveMonster("takokke", "player", { hp: 3 });
+
+    const decision = chooseCpuDecision(game);
+
+    expect(decision.type).toBe("master_action");
+    if (decision.type === "master_action") {
+      expect(decision.actionId).toBe("berserk_power");
+      expect(decision.target).toEqual({ kind: "monster", slotKey: "cpu_front_left" });
+    }
+  });
+
+  it("does not overvalue black master berserk power as a two-power boost", () => {
+    const game = createCpuGame();
+    game.players.cpu.masterId = "black";
+    game.players.cpu.hand = [];
+    game.players.cpu.stones = 3;
+    game.slots.cpu_front_left.monster = createActiveMonster("sigma", "cpu");
+    game.slots.player_front_left.monster = createActiveMonster("takokke", "player", { hp: 3 });
+
+    const decisions = listCpuDecisions(game);
+
+    expect(
+      decisions.some(
+        (decision) =>
+          decision.type === "master_action" &&
+          decision.actionId === "berserk_power" &&
+          decision.target.kind === "monster" &&
+          decision.target.slotKey === "cpu_front_left",
+      ),
+    ).toBe(false);
+  });
+
+  it("lists black master earth anger when the field-wide exchange is favorable", () => {
+    const game = createCpuGame();
+    game.players.cpu.masterId = "black";
+    game.players.cpu.hand = [];
+    game.players.cpu.stones = 6;
+    game.slots.player_front_left.monster = createActiveMonster("takokke", "player", { hp: 3 });
+    game.slots.player_front_right.monster = createActiveMonster("sigma", "player", { hp: 3 });
+
+    const decisions = listCpuDecisions(game);
+
+    expect(
+      decisions.some(
+        (decision) =>
+          decision.type === "master_action" &&
+          decision.actionId === "earth_anger" &&
+          decision.target.kind === "master" &&
+          decision.target.playerId === "cpu",
+      ),
+    ).toBe(true);
+  });
+
   it("summons front-role cards to the front row", () => {
     const game = createCpuGame([{ cardId: "takokke", instanceId: "cpu_takokke_test" }]);
 
