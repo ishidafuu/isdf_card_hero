@@ -6,6 +6,7 @@ import {
   type AutoPlayIssue,
   type AutoPlayValidationOptions,
 } from "../src/game/autoPlayValidation";
+import { CPU_AI_PROFILES, type CpuAiProfile } from "../src/game/cpuAi";
 import { DECK_PRESET_IDS, type DeckPresetId } from "../src/game/deckPresets";
 import { MASTER_IDS } from "../src/game/masters";
 import type { MasterId } from "../src/game/types";
@@ -73,6 +74,9 @@ function parseArgs(args: string[]): CliOptions {
     } else if (arg === "--history-limit") {
       parsed.historyLimit = readNumber(arg, next);
       i += 1;
+    } else if (arg === "--ai-profile") {
+      parsed.aiProfile = readAiProfile(arg, next);
+      i += 1;
     } else if (arg === "--out-dir") {
       if (!next) {
         throw new Error("--out-dir requires a value");
@@ -92,6 +96,16 @@ function parseArgs(args: string[]): CliOptions {
   }
 
   return parsed;
+}
+
+function readAiProfile(name: string, value: string | undefined): CpuAiProfile {
+  if (!value) {
+    throw new Error(`${name} requires a value`);
+  }
+  if ((CPU_AI_PROFILES as readonly string[]).includes(value)) {
+    return value as CpuAiProfile;
+  }
+  throw new Error(`${name} must be one of: ${CPU_AI_PROFILES.join(", ")}`);
 }
 
 function readMasterId(name: string, value: string | undefined): MasterId {
@@ -169,6 +183,7 @@ Options:
   --long-game-turns <n>   Warning threshold per game. Default: 80
   --stagnation-limit <n>  Failure threshold for repeated state signatures. Default: 8
   --history-limit <n>     Decision history saved per issue. Default: 30
+  --ai-profile <id>       AI profile. Default: stable. Values: ${CPU_AI_PROFILES.join(", ")}
   --out-dir <path>        Artifact output directory.
   --write-artifacts       Write artifact directory even when no issues are detected.
   --fail-on-warnings      Exit non-zero when warnings are detected.

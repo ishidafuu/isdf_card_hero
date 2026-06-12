@@ -1,5 +1,11 @@
 import { getCardName } from "./cards";
-import { applyCpuDecision, chooseCpuDecision, listCpuDecisions, type CpuDecision } from "./cpuAi";
+import {
+  applyCpuDecision,
+  chooseCpuDecision,
+  listCpuDecisions,
+  type CpuAiProfile,
+  type CpuDecision,
+} from "./cpuAi";
 import { buildDeckPresetCardIds, deckPresetAllowsSpecial, type DeckPresetId } from "./deckPresets";
 import { createInitialGame, runAutoStep, targetToKey } from "./rules";
 import type { GameState, MasterId, PlayerId, SlotKey } from "./types";
@@ -28,6 +34,7 @@ export interface AutoPlayValidationOptions {
   longGameTurns?: number;
   historyLimit?: number;
   failOnWarnings?: boolean;
+  aiProfile?: CpuAiProfile;
 }
 
 export interface AutoPlayDecisionEvent {
@@ -134,6 +141,7 @@ const DEFAULT_OPTIONS = {
   failOnWarnings: false,
   deckPreset: "random" as const,
   masterIds: { player: "white", cpu: "white" } satisfies Record<PlayerId, MasterId>,
+  aiProfile: "stable" as const satisfies CpuAiProfile,
 };
 
 export function validateAutoPlay(options: AutoPlayValidationOptions = {}): AutoPlayValidationResult {
@@ -183,6 +191,7 @@ export function formatAutoPlayValidationSummary(result: AutoPlayValidationResult
     `Seeds: ${result.options.seedStart}-${result.options.seedEnd} (${result.summary.games} games)`,
     `Deck preset: ${result.options.deckPreset}`,
     `Masters: player ${result.options.masterIds.player}, cpu ${result.options.masterIds.cpu}`,
+    `AI profile: ${result.options.aiProfile}`,
     `Winners: player ${result.summary.winners.player}, cpu ${result.summary.winners.cpu}`,
     `Max: ${result.summary.maxSteps} steps / ${result.summary.maxTurns} turns`,
     `Issues: ${result.summary.failures} failures, ${result.summary.warnings} warnings`,
@@ -219,6 +228,7 @@ function resolveOptions(options: AutoPlayValidationOptions): AutoPlayValidationR
     historyLimit: integerOption(options.historyLimit, DEFAULT_OPTIONS.historyLimit),
     failOnWarnings: options.failOnWarnings ?? DEFAULT_OPTIONS.failOnWarnings,
     deckPreset: options.deckPreset ?? DEFAULT_OPTIONS.deckPreset,
+    aiProfile: options.aiProfile ?? DEFAULT_OPTIONS.aiProfile,
     masterIds: {
       player: options.masterIds?.player ?? DEFAULT_OPTIONS.masterIds.player,
       cpu: options.masterIds?.cpu ?? DEFAULT_OPTIONS.masterIds.cpu,
@@ -253,7 +263,7 @@ function runAutoPlayGame(
       }
 
       if (game.pendingLevelUp) {
-        game = runAutoStep(game);
+        game = runAutoStep(game, { profile: options.aiProfile });
         if (game.pendingLevelUp) {
           pushIssue(context, "unresolved_level_up", "failure", game, step, "level-up prompt remained after auto resolution");
           break;
@@ -330,7 +340,7 @@ function runDecisionStepWithTrace(
   context: RunContext,
 ): GameState {
   const decisions = listCpuDecisions(game);
-  const decision = chooseCpuDecision(game);
+  const decision = chooseCpuDecision(game, { profile: options.aiProfile });
   const beforeSummary = summarizeGameState(game);
   const logBefore = game.log;
   const next = applyCpuDecision(game, decision);

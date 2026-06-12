@@ -51,9 +51,6 @@ const SUMMON_SLOT_ORDER_BY_PLAYER: Record<PlayerId, SlotKey[]> = {
 };
 
 const ALL_FIELD_ORDER: SlotKey[] = [...FIELD_ORDER_BY_PLAYER.cpu, ...FIELD_ORDER_BY_PLAYER.player];
-const SAME_TURN_LOOKAHEAD_DEPTH = 1;
-const SAME_TURN_LOOKAHEAD_WIDTH = 2;
-const SAME_TURN_LOOKAHEAD_DISCOUNT = 0.55;
 
 type EvaluatedDecision = { decision: CpuDecision; totalScore: number; index: number; after: GameState };
 type IncomingThreat = { threatened: boolean; lethal: boolean; maxDamage: number };
@@ -61,8 +58,39 @@ type ThreatModel = {
   masterDamage: Record<PlayerId, number>;
   monsterThreats: Partial<Record<SlotKey, IncomingThreat>>;
 };
+type CpuAiProfileConfig = {
+  detailedWidth: number;
+  sameTurnSearchDepth: number;
+  sameTurnSearchWidth: number;
+  sameTurnSearchDiscount: number;
+  beamScoreThreshold: number;
+};
 
 const NO_THREAT: IncomingThreat = { threatened: false, lethal: false, maxDamage: 0 };
+
+export const CPU_AI_PROFILES = ["stable", "strong"] as const;
+export type CpuAiProfile = (typeof CPU_AI_PROFILES)[number];
+
+export interface CpuAiOptions {
+  profile?: CpuAiProfile;
+}
+
+const CPU_AI_PROFILE_CONFIG: Record<CpuAiProfile, CpuAiProfileConfig> = {
+  stable: {
+    detailedWidth: 2,
+    sameTurnSearchDepth: 1,
+    sameTurnSearchWidth: 2,
+    sameTurnSearchDiscount: 0.55,
+    beamScoreThreshold: 0,
+  },
+  strong: {
+    detailedWidth: 4,
+    sameTurnSearchDepth: 3,
+    sameTurnSearchWidth: 4,
+    sameTurnSearchDiscount: 0.5,
+    beamScoreThreshold: 8,
+  },
+};
 
 export type CpuDecision =
   | {
@@ -110,18 +138,16 @@ export type CpuDecision =
       score: number;
     };
 
-export function runCpuDecisionStep(state: GameState): GameState {
-  const decision = chooseCpuDecision(state);
+export function runCpuDecisionStep(state: GameState, options: CpuAiOptions = {}): GameState {
+  const decision = chooseCpuDecision(state, options);
   return applyCpuDecision(state, decision);
 }
 
-export function chooseCpuDecision(state: GameState): CpuDecision {
+export function chooseCpuDecision(state: GameState, options: CpuAiOptions = {}): CpuDecision {
   const perspective = state.currentPlayer;
+  const config = CPU_AI_PROFILE_CONFIG[options.profile ?? "stable"];
   let best: EvaluatedDecision | undefined;
-  const evaluated = evaluateCpuDecisions(state, perspective, {
-    depth: SAME_TURN_LOOKAHEAD_DEPTH,
-    width: SAME_TURN_LOOKAHEAD_WIDTH,
-  });
+  const evaluated = evaluateCpuDecisions(state, perspective, config);
 
   evaluated.forEach((candidate) => {
     if (
@@ -140,7 +166,7 @@ export function chooseCpuDecision(state: GameState): CpuDecision {
 function evaluateCpuDecisions(
   state: GameState,
   perspective: PlayerId,
-  options: { depth: number; width: number },
+  config: CpuAiProfileConfig,
 ): EvaluatedDecision[] {
   const beforeScore = evaluateState(state, perspective);
   const beforeFutureScore = evaluateFutureTacticalValue(state, perspective, false);
@@ -155,7 +181,7 @@ function evaluateCpuDecisions(
     return [{ decision, totalScore: transition.totalScore, index, after: transition.after }];
   });
 
-  if (options.depth <= 0) {
+  if (config.sameTurnSearchDepth <= 0) {
     return evaluated;
   }
 
@@ -166,7 +192,7 @@ function evaluateCpuDecisions(
         (a, b) =>
           b.totalScore - a.totalScore || compareTieBreak(a.decision, b.decision, a.index, b.index),
       )
-      .slice(0, options.width)
+      .slice(0, config.detailedWidth)
       .map((candidate) => candidate.index),
   );
   const beforeDetailedFutureScore = evaluateFutureTacticalValue(state, perspective, true);
@@ -181,9 +207,11 @@ function evaluateCpuDecisions(
       beforeScore +
       evaluateFutureTacticalValue(candidate.after, perspective, true) -
       beforeDetailedFutureScore;
-    const lookaheadBonus =
-      SAME_TURN_LOOKAHEAD_DISCOUNT *
-      evaluateSameTurnContinuation(candidate.after, perspective, beforeFollowUpScore);
+    const continuation =
+      config.sameTurnSearchDepth > 1
+        ? evaluateSameTurnBeamContinuation(candidate.after, perspective, config.sameTurnSearchDepth - 1, config)
+        : evaluateSameTurnContinuation(candidate.after, perspective, beforeFollowUpScore);
+    const lookaheadBonus = config.sameTurnSearchDiscount * continuation;
     return { ...candidate, totalScore: detailedScore + lookaheadBonus };
   });
 }
@@ -219,6 +247,44 @@ function evaluateSameTurnContinuation(state: GameState, perspective: PlayerId, b
     return 0;
   }
   return Math.max(0, bestAttackOpportunityScore(state) - beforeFollowUpScore);
+}
+
+function evaluateSameTurnBeamContinuation(
+  state: GameState,
+  perspective: PlayerId,
+  depth: number,
+  config: CpuAiProfileConfig,
+): number {
+  if (depth <= 0 || state.winner || state.pendingLevelUp || state.currentPlayer !== perspective) {
+    return 0;
+  }
+
+  const candidates = evaluateImmediateCpuDecisions(state, perspective)
+    .filter((candidate) => candidate.decision.type !== "end_turn" && candidate.totalScore > config.beamScoreThreshold)
+    .sort(
+      (a, b) =>
+        b.totalScore - a.totalScore || compareTieBreak(a.decision, b.decision, a.index, b.index),
+    )
+    .slice(0, config.sameTurnSearchWidth);
+
+  let best = 0;
+  for (const candidate of candidates) {
+    const continuation =
+      candidate.totalScore +
+      config.sameTurnSearchDiscount *
+        evaluateSameTurnBeamContinuation(candidate.after, perspective, depth - 1, config);
+    best = Math.max(best, continuation);
+  }
+  return best;
+}
+
+function evaluateImmediateCpuDecisions(state: GameState, perspective: PlayerId): EvaluatedDecision[] {
+  const beforeScore = evaluateState(state, perspective);
+  const beforeFutureScore = evaluateFutureTacticalValue(state, perspective, false);
+  return listCpuDecisions(state).flatMap((decision, index) => {
+    const transition = evaluateDecisionTransition(state, decision, perspective, beforeScore, beforeFutureScore, false);
+    return transition ? [{ decision, totalScore: transition.totalScore, index, after: transition.after }] : [];
+  });
 }
 
 export function listCpuDecisions(state: GameState): CpuDecision[] {

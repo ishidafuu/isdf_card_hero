@@ -49,6 +49,7 @@ import {
   useMasterHpDraw,
 } from "./game/rules";
 import { getMasterActionDef, getMasterName, MASTER_IDS } from "./game/masters";
+import { CPU_AI_PROFILES, type CpuAiProfile } from "./game/cpuAi";
 import { evaluateBoardUnit, evaluateCard, type UnitEvaluation } from "./game/unitEvaluation";
 import type { CardInstance, CardPool, CommandDef, GameState, MagicAction, MagicCardDef, MagicTargetKind, MasterActionId, MasterId, PlayerId, SlotKey, Target } from "./game/types";
 import type { DeckValidationSummary } from "./game/cards";
@@ -125,6 +126,8 @@ type ZoneView =
 type LogFilter = "all" | "battle" | "damage" | "support" | "turn" | "cpu";
 type BattleMode = "player-vs-cpu" | "cpu-vs-cpu";
 type TargetRole = "ally" | "enemy" | "move" | "summon" | "empty" | "master";
+type CatalogCategoryFilter = "all" | "front" | "back" | "magic";
+type CatalogSortKey = "source" | "evaluation" | "name" | "offense" | "defense" | "synergy" | "hp" | "cost";
 
 interface BattleSettings {
   seed: number;
@@ -132,12 +135,31 @@ interface BattleSettings {
   firstPlayer: PlayerId;
   mode: BattleMode;
   masterIds: Record<PlayerId, MasterId>;
+  aiProfile: CpuAiProfile;
 }
 
 interface DeckSettings {
   fixed: Record<PlayerId, boolean>;
   allowSpecial: Record<PlayerId, boolean>;
   text: Record<PlayerId, string>;
+}
+
+interface BattleHistoryEntry {
+  id: string;
+  seed: number;
+  firstPlayer: PlayerId;
+  mode: BattleMode;
+  masterIds: Record<PlayerId, MasterId>;
+  aiProfile: CpuAiProfile;
+  deckSettings: DeckSettings;
+  winner: PlayerId;
+  turns: number;
+  playerHp: number;
+  cpuHp: number;
+  playerDeck: number;
+  cpuDeck: number;
+  deckout: boolean;
+  longGame: boolean;
 }
 
 interface DeckDraft {
@@ -190,6 +212,7 @@ function createBattleSettings(seed: number): BattleSettings {
     firstPlayer: "player",
     mode: "player-vs-cpu",
     masterIds: { player: "white", cpu: "white" },
+    aiProfile: "stable",
   };
 }
 
@@ -247,6 +270,49 @@ function createDeckDrafts(settings: BattleSettings, deckSettings: DeckSettings):
   };
 }
 
+function cloneDeckSettings(settings: DeckSettings): DeckSettings {
+  return {
+    fixed: { ...settings.fixed },
+    allowSpecial: { ...settings.allowSpecial },
+    text: { ...settings.text },
+  };
+}
+
+function cloneBattleSettings(settings: BattleSettings): BattleSettings {
+  return {
+    ...settings,
+    masterIds: { ...settings.masterIds },
+  };
+}
+
+function createBattleHistoryEntry(
+  game: GameState,
+  settings: BattleSettings,
+  deckSettings: DeckSettings,
+): BattleHistoryEntry | undefined {
+  if (!game.winner) {
+    return undefined;
+  }
+  const deckout = game.log.some((entry) => entry.includes("山札切れ"));
+  return {
+    id: `${settings.seed}_${game.turnNumber}_${game.winner}_${game.log.length}`,
+    seed: settings.seed,
+    firstPlayer: settings.firstPlayer,
+    mode: settings.mode,
+    masterIds: { ...settings.masterIds },
+    aiProfile: settings.aiProfile,
+    deckSettings: cloneDeckSettings(deckSettings),
+    winner: game.winner,
+    turns: game.turnNumber,
+    playerHp: game.players.player.masterHp,
+    cpuHp: game.players.cpu.masterHp,
+    playerDeck: game.players.player.deck.length,
+    cpuDeck: game.players.cpu.deck.length,
+    deckout,
+    longGame: game.turnNumber >= 25,
+  };
+}
+
 function generatedDeckCardIds(playerId: PlayerId, seed: number): string[] {
   return buildDeckCardIds(seed + (playerId === "player" ? 101 : 202));
 }
@@ -285,8 +351,12 @@ export function App() {
   const [zoneView, setZoneView] = useState<ZoneView | undefined>();
   const [logFilter, setLogFilter] = useState<LogFilter>("all");
   const [selectedLogIndex, setSelectedLogIndex] = useState<number | undefined>();
+  const [battleHistory, setBattleHistory] = useState<BattleHistoryEntry[]>([]);
   const previousGameRef = useRef<GameState>(game);
   const visualEffectIdRef = useRef(0);
+  const recordedResultKeyRef = useRef<string | undefined>(undefined);
+  const activeBattleSettingsRef = useRef<BattleSettings>(cloneBattleSettings(battleSettings));
+  const activeDeckSettingsRef = useRef<DeckSettings>(cloneDeckSettings(deckSettings));
   const pointerDragRef = useRef<{
     payload: DragPayload;
     startX: number;
@@ -309,6 +379,7 @@ export function App() {
   const cpuVsCpu = battleSettings.mode === "cpu-vs-cpu";
   const isAutoResolving = !game.winner && (cpuVsCpu || autoPlayEnabled || (game.currentPlayer === "cpu" && !game.pendingLevelUp));
   const controlsDisabled = cpuVsCpu || autoPlayEnabled || game.currentPlayer !== "player" || !!game.winner || !!game.pendingLevelUp;
+  const activeBattleSettings = activeBattleSettingsRef.current;
   const turnStatus = game.winner
     ? `${playerLabel(game.winner)} win`
     : cpuVsCpu
@@ -397,17 +468,17 @@ export function App() {
           return previous;
         }
         if (cpuVsCpu || autoPlayEnabled) {
-          return runAutoStep(previous);
+          return runAutoStep(previous, { profile: battleSettings.aiProfile });
         }
         if (previous.currentPlayer === "cpu" && !previous.pendingLevelUp) {
-          return runCpuStep(previous);
+          return runCpuStep(previous, { profile: battleSettings.aiProfile });
         }
         return previous;
       });
     }, cpuVsCpu || autoPlayEnabled ? autoStepDelayMs : CPU_STEP_DELAY_MS);
 
     return () => window.clearTimeout(timer);
-  }, [autoPlayEnabled, autoStepDelayMs, cpuVsCpu, game, isAutoResolving]);
+  }, [autoPlayEnabled, autoStepDelayMs, battleSettings.aiProfile, cpuVsCpu, game, isAutoResolving]);
 
   useEffect(() => {
     if (!visualEffect) {
@@ -416,6 +487,22 @@ export function App() {
     const timer = window.setTimeout(() => setVisualEffect(undefined), VISUAL_EFFECT_DURATION_MS);
     return () => window.clearTimeout(timer);
   }, [visualEffect]);
+
+  useEffect(() => {
+    const entry = createBattleHistoryEntry(game, activeBattleSettingsRef.current, activeDeckSettingsRef.current);
+    if (!entry) {
+      recordedResultKeyRef.current = undefined;
+      return;
+    }
+    if (recordedResultKeyRef.current === entry.id) {
+      return;
+    }
+    recordedResultKeyRef.current = entry.id;
+    setBattleHistory((previous) => [
+      entry,
+      ...previous.filter((candidate) => candidate.id !== entry.id),
+    ].slice(0, 10));
+  }, [game]);
 
   useEffect(() => () => clearPointerDrag(), []);
 
@@ -635,6 +722,8 @@ export function App() {
     }
 
     const next = createGameFromSettings(settings, decks);
+    activeBattleSettingsRef.current = cloneBattleSettings(settings);
+    activeDeckSettingsRef.current = cloneDeckSettings(decks);
     previousGameRef.current = next;
     setGame(next);
     setSelection(undefined);
@@ -656,6 +745,21 @@ export function App() {
     startNewGame(nextSettings, deckSettings);
   }
 
+  function handleReplayHistory(entry: BattleHistoryEntry) {
+    const nextSettings: BattleSettings = {
+      seed: entry.seed,
+      seedInput: String(entry.seed),
+      firstPlayer: entry.firstPlayer,
+      mode: entry.mode,
+      masterIds: { ...entry.masterIds },
+      aiProfile: entry.aiProfile,
+    };
+    const nextDeckSettings = cloneDeckSettings(entry.deckSettings);
+    setBattleSettings(nextSettings);
+    setDeckSettings(nextDeckSettings);
+    startNewGame(nextSettings, nextDeckSettings);
+  }
+
   function handleBattleSeedChange(value: string) {
     const parsed = normalizeSeedInput(value, battleSettings.seed);
     setBattleSettings({ ...battleSettings, seedInput: value, seed: parsed });
@@ -674,6 +778,13 @@ export function App() {
     }
     setBattleSettings({ ...battleSettings, mode: value });
     setAutoPlayEnabled(false);
+  }
+
+  function handleBattleAiProfileChange(value: string) {
+    if (!CPU_AI_PROFILES.includes(value as CpuAiProfile)) {
+      return;
+    }
+    setBattleSettings({ ...battleSettings, aiProfile: value as CpuAiProfile });
   }
 
   function handleBattleMasterChange(playerId: PlayerId, masterId: string) {
@@ -1108,6 +1219,16 @@ export function App() {
             </select>
           </label>
           <label className="battle-setting-control">
+            AI
+            <select
+              value={battleSettings.aiProfile}
+              onChange={(event) => handleBattleAiProfileChange(event.target.value)}
+            >
+              <option value="stable">Stable</option>
+              <option value="strong">Strong</option>
+            </select>
+          </label>
+          <label className="battle-setting-control">
             P Master
             <select
               value={battleSettings.masterIds.player}
@@ -1384,8 +1505,8 @@ export function App() {
             <section className="notice">
               <h2><Icon icon="🏆" /> {playerLabel(game.winner)} Win</h2>
               <p>
-                Seed {battleSettings.seed} / 先攻 {playerLabel(battleSettings.firstPlayer)} /
-                {battleSettings.mode === "cpu-vs-cpu" ? " CPU vs CPU" : " Player vs CPU"}
+                Seed {activeBattleSettings.seed} / 先攻 {playerLabel(activeBattleSettings.firstPlayer)} /
+                {activeBattleSettings.mode === "cpu-vs-cpu" ? " CPU vs CPU" : " Player vs CPU"} / AI {activeBattleSettings.aiProfile}
               </p>
               <BattleResultSummary game={game} />
               <div className="button-stack">
@@ -1612,6 +1733,9 @@ export function App() {
                 <p className="hint">マスター特技の対象を選択してください。</p>
               )}
             </section>
+          )}
+          {battleHistory.length > 0 && (
+            <BattleHistoryPanel history={battleHistory} onReplay={handleReplayHistory} />
           )}
         </aside>
       </section>
@@ -1901,6 +2025,50 @@ function BattleResultSummary({ game }: { game: GameState }) {
       {deckout && <span className="result-warning"><Icon icon="🩸" /> 山札切れあり</span>}
       {longGame && <span className="result-warning"><Icon icon="⌛" /> 長期戦</span>}
     </div>
+  );
+}
+
+function BattleHistoryPanel({
+  history,
+  onReplay,
+}: {
+  history: BattleHistoryEntry[];
+  onReplay: (entry: BattleHistoryEntry) => void;
+}) {
+  return (
+    <section className="battle-history-panel">
+      <div className="battle-history-heading">
+        <h2><Icon icon="🧾" /> Battle History</h2>
+        <span>{history.length}/10</span>
+      </div>
+      <ol className="battle-history-list">
+        {history.map((entry) => (
+          <li className="battle-history-row" key={entry.id}>
+            <div>
+              <strong>
+                <Icon icon="🏆" /> {playerLabel(entry.winner)} / Seed {entry.seed}
+              </strong>
+              <div className="battle-history-meta">
+                <span>{entry.mode === "cpu-vs-cpu" ? "CPU vs CPU" : "Player vs CPU"}</span>
+                <span>先攻 {playerLabel(entry.firstPlayer)}</span>
+                <span>AI {entry.aiProfile}</span>
+                <span>P {getMasterName(entry.masterIds.player)} / C {getMasterName(entry.masterIds.cpu)}</span>
+              </div>
+              <div className="battle-result-summary">
+                <span><Icon icon="⏱️" /> Turn {entry.turns}</span>
+                <span><Icon icon="❤️" /> P {entry.playerHp} / C {entry.cpuHp}</span>
+                <span><Icon icon="🂠" /> P {entry.playerDeck} / C {entry.cpuDeck}</span>
+                {entry.deckout && <span className="result-warning"><Icon icon="🩸" /> 山札切れ</span>}
+                {entry.longGame && <span className="result-warning"><Icon icon="⌛" /> 長期戦</span>}
+              </div>
+            </div>
+            <button type="button" onClick={() => onReplay(entry)}>
+              <Icon icon="🔁" /> 再現
+            </button>
+          </li>
+        ))}
+      </ol>
+    </section>
   );
 }
 
@@ -2573,14 +2741,21 @@ function EffectHistoryPanel({ game, onClose }: { game: GameState; onClose: () =>
 
 function CardCatalogPanel({ game, onClose }: { game: GameState; onClose: () => void }) {
   const [poolFilter, setPoolFilter] = useState<CardPool | "all">("normal");
-  const cards = getCardDefsByPool(poolFilter);
+  const [categoryFilter, setCategoryFilter] = useState<CatalogCategoryFilter>("all");
+  const [sortKey, setSortKey] = useState<CatalogSortKey>("source");
+  const rows = useMemo(() => {
+    return getCardDefsByPool(poolFilter)
+      .map((card) => ({ card, evaluation: evaluateCard(card.id) }))
+      .filter(({ card }) => categoryFilter === "all" || catalogCategory(card) === categoryFilter)
+      .sort((a, b) => compareCatalogRows(a, b, sortKey));
+  }, [categoryFilter, poolFilter, sortKey]);
 
   return (
     <section className="zone-panel">
       <div className="zone-panel-heading">
         <div>
           <h3><Icon icon="📚" /> Card List</h3>
-          <p>{cards.length} cards / {cardPoolFilterLabel(poolFilter)}</p>
+          <p>{rows.length} cards / {cardPoolFilterLabel(poolFilter)} / {catalogCategoryFilterLabel(categoryFilter)}</p>
         </div>
         <button type="button" onClick={onClose} aria-label="閉じる">
           <Icon icon="✕" /> Close
@@ -2598,9 +2773,33 @@ function CardCatalogPanel({ game, onClose }: { game: GameState; onClose: () => v
           </button>
         ))}
       </div>
+      <div className="catalog-filter-row" aria-label="card category filter">
+        {(["all", "front", "back", "magic"] as const).map((filter) => (
+          <button
+            type="button"
+            className={categoryFilter === filter ? "selected" : ""}
+            key={filter}
+            onClick={() => setCategoryFilter(filter)}
+          >
+            {catalogCategoryFilterLabel(filter)}
+          </button>
+        ))}
+        <label className="catalog-sort-control">
+          Sort
+          <select value={sortKey} onChange={(event) => setSortKey(event.target.value as CatalogSortKey)}>
+            <option value="source">No.</option>
+            <option value="evaluation">評価</option>
+            <option value="offense">攻撃</option>
+            <option value="defense">耐久</option>
+            <option value="synergy">効果</option>
+            <option value="hp">HP</option>
+            <option value="cost">Cost</option>
+            <option value="name">名前</option>
+          </select>
+        </label>
+      </div>
       <div className="catalog-card-list">
-        {cards.map((card) => {
-          const evaluation = evaluateCard(card.id);
+        {rows.map(({ card, evaluation }) => {
           return (
             <details className="catalog-card-row" key={card.id}>
               <summary>
@@ -2608,6 +2807,9 @@ function CardCatalogPanel({ game, onClose }: { game: GameState; onClose: () => v
                 <span className="catalog-card-name">{card.name}</span>
                 <span className="catalog-card-eval" title="カード単体評価">
                   <Icon icon="📈" /> {evaluation.grade} {evaluation.total}
+                </span>
+                <span className="catalog-card-stats" title="主要評価データ">
+                  {catalogStatSummary(card, evaluation)}
                 </span>
                 <span className="zone-card-type">{cardTypeLabel(card.id)}</span>
                 <CardPoolChip cardId={card.id} compact />
@@ -2618,12 +2820,93 @@ function CardCatalogPanel({ game, onClose }: { game: GameState; onClose: () => v
             </details>
           );
         })}
-        {cards.length === 0 && (
+        {rows.length === 0 && (
           <p className="empty-zone"><Icon icon="□" /> 該当カードはまだありません。</p>
         )}
       </div>
     </section>
   );
+}
+
+function compareCatalogRows(
+  a: { card: ReturnType<typeof getCardDef>; evaluation: ReturnType<typeof evaluateCard> },
+  b: { card: ReturnType<typeof getCardDef>; evaluation: ReturnType<typeof evaluateCard> },
+  sortKey: CatalogSortKey,
+): number {
+  if (sortKey === "name") {
+    return a.card.name.localeCompare(b.card.name, "ja");
+  }
+  if (sortKey === "evaluation") {
+    return b.evaluation.total - a.evaluation.total || sourceOrder(a.card) - sourceOrder(b.card);
+  }
+  if (sortKey === "offense") {
+    return b.evaluation.offense - a.evaluation.offense || b.evaluation.total - a.evaluation.total;
+  }
+  if (sortKey === "defense") {
+    return b.evaluation.defense - a.evaluation.defense || b.evaluation.total - a.evaluation.total;
+  }
+  if (sortKey === "synergy") {
+    return b.evaluation.synergy - a.evaluation.synergy || b.evaluation.total - a.evaluation.total;
+  }
+  if (sortKey === "hp") {
+    return catalogHpValue(b.card) - catalogHpValue(a.card) || b.evaluation.total - a.evaluation.total;
+  }
+  if (sortKey === "cost") {
+    return catalogCostValue(b.card) - catalogCostValue(a.card) || b.evaluation.total - a.evaluation.total;
+  }
+  return sourceOrder(a.card) - sourceOrder(b.card) || a.card.name.localeCompare(b.card.name, "ja");
+}
+
+function catalogCategory(card: ReturnType<typeof getCardDef>): CatalogCategoryFilter {
+  if (card.type === "magic") {
+    return "magic";
+  }
+  return card.role;
+}
+
+function catalogCategoryFilterLabel(filter: CatalogCategoryFilter): string {
+  if (filter === "front") {
+    return "前衛";
+  }
+  if (filter === "back") {
+    return "後衛";
+  }
+  if (filter === "magic") {
+    return "魔法";
+  }
+  return "全種";
+}
+
+function catalogStatSummary(card: ReturnType<typeof getCardDef>, evaluation: ReturnType<typeof evaluateCard>): string {
+  if (card.type === "magic") {
+    return `Cost ${card.cost} / 攻${evaluation.offense} 耐${evaluation.defense} 効${evaluation.synergy}`;
+  }
+  return `HP ${catalogHpText(card)} / Lv${card.maxLevel} / 攻${evaluation.offense} 耐${evaluation.defense} 効${evaluation.synergy}`;
+}
+
+function catalogHpText(card: ReturnType<typeof getCardDef>): string {
+  if (card.type === "magic") {
+    return "-";
+  }
+  const hpValues = card.levels.map((level) => level.maxHp);
+  const min = Math.min(...hpValues);
+  const max = Math.max(...hpValues);
+  return min === max ? String(max) : `${min}-${max}`;
+}
+
+function catalogHpValue(card: ReturnType<typeof getCardDef>): number {
+  if (card.type === "magic") {
+    return -1;
+  }
+  return Math.max(...card.levels.map((level) => level.maxHp));
+}
+
+function catalogCostValue(card: ReturnType<typeof getCardDef>): number {
+  return card.type === "magic" ? card.cost : -1;
+}
+
+function sourceOrder(card: ReturnType<typeof getCardDef>): number {
+  return card.sourceNo ?? 9999;
 }
 
 interface BoardSlotProps {

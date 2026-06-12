@@ -69,6 +69,25 @@ describe("unit evaluation", () => {
     expect(morgan.offense).toBeGreaterThan(takokke.offense);
   });
 
+  it("keeps high-HP front units ordered by growth and combat ceiling for catalog sorting", () => {
+    const sigma = evaluateCard("sigma");
+    const takokke = evaluateCard("takokke");
+
+    expect(sigma.defense).toBeGreaterThanOrEqual(takokke.defense);
+    expect(sigma.levelUp).toBeGreaterThan(takokke.levelUp);
+    expect(sigma.total).toBeGreaterThan(takokke.total);
+    expect(sigma.breakdown.map((item) => item.key)).toEqual([
+      "base",
+      "offense",
+      "defense",
+      "position",
+      "tempo",
+      "levelUp",
+      "risk",
+      "synergy",
+    ]);
+  });
+
   it("can evaluate every card for catalog and statistics display", () => {
     const evaluations = evaluateAllCards();
 

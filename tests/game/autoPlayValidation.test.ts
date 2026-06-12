@@ -60,6 +60,20 @@ describe("auto play validation", () => {
     expect(result.summary.failures).toBe(0);
   }, 20_000);
 
+  it("runs auto play with the strong AI profile", () => {
+    const result = validateAutoPlay({
+      seedStart: 430,
+      count: 1,
+      aiProfile: "strong",
+      maxSteps: 600,
+      maxTurns: 140,
+    });
+
+    expect(result.options.aiProfile).toBe("strong");
+    expect(result.ok).toBe(true);
+    expect(result.summary.failures).toBe(0);
+  }, 20_000);
+
   it("captures reproducible state, log tail, and decision history for failures", () => {
     const result = validateAutoPlay({
       seedStart: 410,

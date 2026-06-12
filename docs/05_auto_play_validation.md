@@ -85,6 +85,7 @@ artifact内容:
 
 - テスト側の100戦検証は `tests/game/cpuAi.test.ts` の `finishes 100 auto-play games without exceptions, unresolved prompts, or extreme length` で固定している。
 - 任意seed範囲の反復検証は `npm run validate:auto-play` を使う。
+- 強化AIの検証は `npm run validate:auto-play -- --ai-profile strong` を使う。
 - スペシャルONの再現検証は `npm run validate:auto-play -- --seed-start 620 --count 100 --deck-preset special-showcase --max-steps 600 --max-turns 140` を使う。
 - ブラックマスター検証は `npm run validate:auto-play -- --seed-start 640 --count 100 --player-master black --cpu-master black --max-steps 650 --max-turns 140` を使う。
 - 失敗した場合は、artifactのseedで同じ条件を再実行できる。
@@ -164,3 +165,29 @@ npm run validate:auto-play -- --seed-start 400 --count 100
 - warningは4件。
 - warningはすべてlong gameで、移動多発warningは0件。
 - artifact: `artifacts/auto-play-validation/2026-06-12T09-35-02-089Z/`
+
+## 2026-06-12 strong AIプロファイル導入後の少数seed検証
+
+対象:
+
+- 両者CPUオートプレイ
+- AI profile `strong`
+- ホワイトマスター同士
+- ランダムデッキ
+- seed `430` から `434` までの5戦
+- 1戦あたり最大700 auto step
+- 1戦あたり最大160 turn
+
+検証コマンド:
+
+```sh
+npm run validate:auto-play -- --seed-start 430 --count 5 --ai-profile strong --max-steps 700 --max-turns 160
+```
+
+検証結果:
+
+- PASS
+- 勝者内訳はプレイヤー2勝、CPU3勝。
+- 最大212 auto step / 18 turn。
+- failureは0件。
+- warningは0件。

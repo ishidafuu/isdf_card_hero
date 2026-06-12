@@ -102,6 +102,21 @@ describe("cpu ai", () => {
     }
   });
 
+  it("can choose a legal decision with the strong AI profile", () => {
+    const game = createCpuGame();
+    game.players.cpu.masterId = "black";
+    game.players.cpu.hand = [];
+    game.players.cpu.stones = 3;
+    game.slots.cpu_front_left.monster = createActiveMonster("takokke", "cpu");
+    game.slots.player_front_left.monster = createActiveMonster("takokke", "player", { hp: 3 });
+
+    const decision = chooseCpuDecision(game, { profile: "strong" });
+    const next = applyCpuDecision(game, decision);
+
+    expect(next.currentPlayer).toBeDefined();
+    expect(next.log.some((entry) => entry.startsWith("CPU判断:"))).toBe(true);
+  });
+
   it("does not overvalue black master berserk power as a two-power boost", () => {
     const game = createCpuGame();
     game.players.cpu.masterId = "black";
@@ -608,6 +623,21 @@ describe("cpu ai", () => {
       expect(game.turnNumber).toBeGreaterThan(1);
     }
   });
+
+  it("runs both sides with the strong AI profile across seeds without getting stuck", () => {
+    for (let seed = 340; seed < 342; seed += 1) {
+      let game = createInitialGame(seed);
+      for (let step = 0; step < 80 && !game.winner; step += 1) {
+        game = runAutoStep(game, { profile: "strong" });
+        if (game.pendingLevelUp) {
+          game = runAutoStep(game, { profile: "strong" });
+          expect(game.pendingLevelUp).toBeUndefined();
+        }
+      }
+
+      expect(game.turnNumber).toBeGreaterThan(1);
+    }
+  }, 20_000);
 
   it("finishes 100 auto-play games without exceptions, unresolved prompts, or extreme length", () => {
     const results: Array<{ seed: number; steps: number; turns: number; winner: PlayerId | undefined }> = [];

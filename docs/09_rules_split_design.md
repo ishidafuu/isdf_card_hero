@@ -113,6 +113,8 @@ src/game/ruleEngine/random.ts      seed乱数、shuffle。
 
 ### Step 3: 対象選択
 
+状態: 完了。
+
 移動候補:
 
 - `rangeTargets`
@@ -215,5 +217,5 @@ git diff --check
 
 ## 次に進めるなら
 
-次の実装ステップは Step 3 の対象選択。
-`getCommandTargets`、`getMagicTargets`、マスター特技対象、追加対象、手札/山札選択候補を `ruleEngine/targeting.ts` へ段階的に移し、UI/CPU/testの import 先は引き続き `rules.ts` に固定する。
+次の実装ステップは Step 4 のダメージ/撃破。
+`damageMonster`、`damageMasterByPower`、`defeatMonster`、`resolveLevelUp` 周辺を小さく分け、反撃、死亡時、レベルアップ、ストーン返却のテストを先に固定してから `ruleEngine/damage.ts` へ移す。
