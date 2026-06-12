@@ -87,6 +87,7 @@ artifact内容:
 - 100戦以上の任意seed範囲の反復検証は `npm run validate:auto-play` を使う。
 - 強化AIの検証は `npm run validate:auto-play -- --ai-profile strong` を使う。
 - 陣営別のAI比較は `npm run validate:auto-play -- --player-ai stable --cpu-ai strong` を使う。
+- 同一seedで両向きのAI比較ベンチを取る場合は `npm run benchmark:ai -- --baseline-ai stable --challenger-ai strong` を使う。
 - スペシャルONの再現検証は `npm run validate:auto-play -- --seed-start 620 --count 100 --deck-preset special-showcase --max-steps 600 --max-turns 140` を使う。
 - ブラックマスター検証は `npm run validate:auto-play -- --seed-start 640 --count 100 --player-master black --cpu-master black --max-steps 650 --max-turns 140` を使う。
 - 失敗した場合は、artifactのseedで同じ条件を再実行できる。
@@ -217,3 +218,31 @@ npm run validate:auto-play -- --seed-start 430 --count 3 --player-ai stable --cp
 - 勝者内訳はプレイヤー2勝、CPU1勝。
 - 最大201 auto step / 17 turn。
 - failure / warningは0件。
+
+## 2026-06-13 AI比較ベンチ導入後の少数seed検証
+
+対象:
+
+- baseline AI `stable`
+- challenger AI `strong`
+- challengerをplayer側/cpu側の両向きで配置
+- ホワイトマスター同士
+- ランダムデッキ
+- seed `430` から `431` までの2 seed、合計4戦
+- 1戦あたり最大700 auto step
+- 1戦あたり最大160 turn
+
+検証コマンド:
+
+```sh
+npm run benchmark:ai -- --seed-start 430 --count 2 --max-steps 700 --max-turns 160
+```
+
+検証結果:
+
+- PASS
+- 合算勝者内訳は `stable` 4勝、`strong` 0勝。
+- 平均158.8 auto step / 13.8 turn。
+- 最大185 auto step / 16 turn。
+- failure / warningは0件。
+- `strong` の負けseedサンプルは 430 / 431 の両向き。次のAI改善では、このseedの判断ログから「探索で評価が上がったが実際には悪い手」を確認する。

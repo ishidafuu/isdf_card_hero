@@ -508,6 +508,7 @@ sameTurnSearchDiscount: 0.5
 
 画面では `P AI` / `C AI` セレクトから `Stable` / `Strong` を切り替える。
 オートプレイ検証では `--ai-profile stable|strong` で両陣営をまとめて指定し、`--player-ai stable|strong` / `--cpu-ai stable|strong` で片側だけ上書きする。
+AI比較ベンチでは `npm run benchmark:ai -- --baseline-ai stable --challenger-ai strong` を使い、challengerをplayer側/cpu側の両向きに置いて、勝率、平均turn、悪化seedを集計する。
 
 `stable` は進行不能やwarning分類の基準として扱う。
 `strong` は今後、同一ターン探索、相手ターンの浅いminimax、終盤戦略評価を追加する実験先として扱う。
