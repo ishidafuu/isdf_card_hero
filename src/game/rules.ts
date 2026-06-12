@@ -5,6 +5,19 @@ import {
   getMonsterDef,
 } from "./cards";
 import { applyCpuDecision, chooseCpuDecision } from "./cpuAi";
+import {
+  FIELD_ORDER,
+  HAND_LIMIT,
+  LANE_ORDER,
+  MASTER_ATTACK_COST,
+  MASTER_ATTACK_POWER,
+  MASTER_HP,
+  PLAYER_ORDER,
+  PLAYER_SLOT_ORDER,
+  ROW_ORDER,
+  SHIELD_COST,
+  WAKE_UP_COST,
+} from "./ruleEngine/constants";
 import type {
   CardInstance,
   CommandAction,
@@ -23,35 +36,11 @@ import type {
   Target,
 } from "./types";
 
-const MASTER_HP = 10;
-const HAND_LIMIT = 5;
-const MASTER_ATTACK_COST = 3;
-const MASTER_ATTACK_POWER = 2;
-const WAKE_UP_COST = 2;
-const SHIELD_COST = 2;
-const PLAYER_ORDER: PlayerId[] = ["player", "cpu"];
-const ROW_ORDER: Row[] = ["front", "back"];
-const LANE_ORDER: Lane[] = ["left", "right"];
+export { FIELD_ORDER, PLAYER_SLOT_ORDER } from "./ruleEngine/constants";
 
 export interface CreateInitialGameOptions {
   firstPlayer?: PlayerId;
 }
-
-export const PLAYER_SLOT_ORDER: Record<PlayerId, SlotKey[]> = {
-  player: ["player_front_left", "player_front_right", "player_back_left", "player_back_right"],
-  cpu: ["cpu_front_left", "cpu_front_right", "cpu_back_left", "cpu_back_right"],
-};
-
-export const FIELD_ORDER: SlotKey[] = [
-  "cpu_back_left",
-  "cpu_back_right",
-  "cpu_front_left",
-  "cpu_front_right",
-  "player_front_left",
-  "player_front_right",
-  "player_back_left",
-  "player_back_right",
-];
 
 interface DefeatedMonster {
   owner: PlayerId;
