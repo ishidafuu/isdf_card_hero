@@ -77,6 +77,12 @@ function parseArgs(args: string[]): CliOptions {
     } else if (arg === "--ai-profile") {
       parsed.aiProfile = readAiProfile(arg, next);
       i += 1;
+    } else if (arg === "--player-ai") {
+      parsed.aiProfiles = { ...parsed.aiProfiles, player: readAiProfile(arg, next) };
+      i += 1;
+    } else if (arg === "--cpu-ai") {
+      parsed.aiProfiles = { ...parsed.aiProfiles, cpu: readAiProfile(arg, next) };
+      i += 1;
     } else if (arg === "--out-dir") {
       if (!next) {
         throw new Error("--out-dir requires a value");
@@ -183,7 +189,9 @@ Options:
   --long-game-turns <n>   Warning threshold per game. Default: 80
   --stagnation-limit <n>  Failure threshold for repeated state signatures. Default: 8
   --history-limit <n>     Decision history saved per issue. Default: 30
-  --ai-profile <id>       AI profile. Default: stable. Values: ${CPU_AI_PROFILES.join(", ")}
+  --ai-profile <id>       AI profile for both sides. Default: stable. Values: ${CPU_AI_PROFILES.join(", ")}
+  --player-ai <id>        Player-side auto AI profile. Default: --ai-profile. Values: ${CPU_AI_PROFILES.join(", ")}
+  --cpu-ai <id>           CPU-side AI profile. Default: --ai-profile. Values: ${CPU_AI_PROFILES.join(", ")}
   --out-dir <path>        Artifact output directory.
   --write-artifacts       Write artifact directory even when no issues are detected.
   --fail-on-warnings      Exit non-zero when warnings are detected.

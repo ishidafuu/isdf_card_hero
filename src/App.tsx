@@ -49,7 +49,7 @@ import {
   useMasterHpDraw,
 } from "./game/rules";
 import { getMasterActionDef, getMasterName, MASTER_IDS } from "./game/masters";
-import { CPU_AI_PROFILES, type CpuAiProfile } from "./game/cpuAi";
+import { CPU_AI_PROFILES, type CpuAiProfile, type CpuAiProfiles } from "./game/cpuAi";
 import { evaluateBoardUnit, evaluateCard, type UnitEvaluation } from "./game/unitEvaluation";
 import type { CardInstance, CardPool, CommandDef, GameState, MagicAction, MagicCardDef, MagicTargetKind, MasterActionId, MasterId, PlayerId, SlotKey, Target } from "./game/types";
 import type { DeckValidationSummary } from "./game/cards";
@@ -135,7 +135,7 @@ interface BattleSettings {
   firstPlayer: PlayerId;
   mode: BattleMode;
   masterIds: Record<PlayerId, MasterId>;
-  aiProfile: CpuAiProfile;
+  aiProfiles: CpuAiProfiles;
 }
 
 interface DeckSettings {
@@ -150,7 +150,7 @@ interface BattleHistoryEntry {
   firstPlayer: PlayerId;
   mode: BattleMode;
   masterIds: Record<PlayerId, MasterId>;
-  aiProfile: CpuAiProfile;
+  aiProfiles: CpuAiProfiles;
   deckSettings: DeckSettings;
   winner: PlayerId;
   turns: number;
@@ -205,6 +205,18 @@ interface MasterDamageFlash extends DamageFlash {
   playerId: PlayerId;
 }
 
+function createDefaultAiProfiles(): CpuAiProfiles {
+  return { player: "stable", cpu: "stable" };
+}
+
+function cloneAiProfiles(profiles: CpuAiProfiles): CpuAiProfiles {
+  return { player: profiles.player, cpu: profiles.cpu };
+}
+
+function aiProfileSummary(profiles: CpuAiProfiles): string {
+  return `P ${profiles.player} / C ${profiles.cpu}`;
+}
+
 function createBattleSettings(seed: number): BattleSettings {
   return {
     seed,
@@ -212,7 +224,7 @@ function createBattleSettings(seed: number): BattleSettings {
     firstPlayer: "player",
     mode: "player-vs-cpu",
     masterIds: { player: "white", cpu: "white" },
-    aiProfile: "stable",
+    aiProfiles: createDefaultAiProfiles(),
   };
 }
 
@@ -282,6 +294,7 @@ function cloneBattleSettings(settings: BattleSettings): BattleSettings {
   return {
     ...settings,
     masterIds: { ...settings.masterIds },
+    aiProfiles: cloneAiProfiles(settings.aiProfiles),
   };
 }
 
@@ -300,7 +313,7 @@ function createBattleHistoryEntry(
     firstPlayer: settings.firstPlayer,
     mode: settings.mode,
     masterIds: { ...settings.masterIds },
-    aiProfile: settings.aiProfile,
+    aiProfiles: cloneAiProfiles(settings.aiProfiles),
     deckSettings: cloneDeckSettings(deckSettings),
     winner: game.winner,
     turns: game.turnNumber,
@@ -468,17 +481,17 @@ export function App() {
           return previous;
         }
         if (cpuVsCpu || autoPlayEnabled) {
-          return runAutoStep(previous, { profile: battleSettings.aiProfile });
+          return runAutoStep(previous, { profiles: battleSettings.aiProfiles });
         }
         if (previous.currentPlayer === "cpu" && !previous.pendingLevelUp) {
-          return runCpuStep(previous, { profile: battleSettings.aiProfile });
+          return runCpuStep(previous, { profiles: battleSettings.aiProfiles });
         }
         return previous;
       });
     }, cpuVsCpu || autoPlayEnabled ? autoStepDelayMs : CPU_STEP_DELAY_MS);
 
     return () => window.clearTimeout(timer);
-  }, [autoPlayEnabled, autoStepDelayMs, battleSettings.aiProfile, cpuVsCpu, game, isAutoResolving]);
+  }, [autoPlayEnabled, autoStepDelayMs, battleSettings.aiProfiles, cpuVsCpu, game, isAutoResolving]);
 
   useEffect(() => {
     if (!visualEffect) {
@@ -752,7 +765,7 @@ export function App() {
       firstPlayer: entry.firstPlayer,
       mode: entry.mode,
       masterIds: { ...entry.masterIds },
-      aiProfile: entry.aiProfile,
+      aiProfiles: cloneAiProfiles(entry.aiProfiles),
     };
     const nextDeckSettings = cloneDeckSettings(entry.deckSettings);
     setBattleSettings(nextSettings);
@@ -780,11 +793,14 @@ export function App() {
     setAutoPlayEnabled(false);
   }
 
-  function handleBattleAiProfileChange(value: string) {
+  function handleBattleAiProfileChange(playerId: PlayerId, value: string) {
     if (!CPU_AI_PROFILES.includes(value as CpuAiProfile)) {
       return;
     }
-    setBattleSettings({ ...battleSettings, aiProfile: value as CpuAiProfile });
+    setBattleSettings({
+      ...battleSettings,
+      aiProfiles: { ...battleSettings.aiProfiles, [playerId]: value as CpuAiProfile },
+    });
   }
 
   function handleBattleMasterChange(playerId: PlayerId, masterId: string) {
@@ -1219,10 +1235,20 @@ export function App() {
             </select>
           </label>
           <label className="battle-setting-control">
-            AI
+            P AI
             <select
-              value={battleSettings.aiProfile}
-              onChange={(event) => handleBattleAiProfileChange(event.target.value)}
+              value={battleSettings.aiProfiles.player}
+              onChange={(event) => handleBattleAiProfileChange("player", event.target.value)}
+            >
+              <option value="stable">Stable</option>
+              <option value="strong">Strong</option>
+            </select>
+          </label>
+          <label className="battle-setting-control">
+            C AI
+            <select
+              value={battleSettings.aiProfiles.cpu}
+              onChange={(event) => handleBattleAiProfileChange("cpu", event.target.value)}
             >
               <option value="stable">Stable</option>
               <option value="strong">Strong</option>
@@ -1508,7 +1534,8 @@ export function App() {
               <h2><Icon icon="🏆" /> {playerLabel(game.winner)} Win</h2>
               <p>
                 Seed {activeBattleSettings.seed} / 先攻 {playerLabel(activeBattleSettings.firstPlayer)} /
-                {activeBattleSettings.mode === "cpu-vs-cpu" ? " CPU vs CPU" : " Player vs CPU"} / AI {activeBattleSettings.aiProfile}
+                {activeBattleSettings.mode === "cpu-vs-cpu" ? " CPU vs CPU" : " Player vs CPU"} /
+                AI {aiProfileSummary(activeBattleSettings.aiProfiles)}
               </p>
               <BattleResultSummary game={game} />
               <div className="button-stack">
@@ -2060,7 +2087,7 @@ function BattleHistoryPanel({
               <div className="battle-history-meta">
                 <span>{entry.mode === "cpu-vs-cpu" ? "CPU vs CPU" : "Player vs CPU"}</span>
                 <span>先攻 {playerLabel(entry.firstPlayer)}</span>
-                <span>AI {entry.aiProfile}</span>
+                <span>AI {aiProfileSummary(entry.aiProfiles)}</span>
                 <span>P {getMasterName(entry.masterIds.player)} / C {getMasterName(entry.masterIds.cpu)}</span>
               </div>
               <div className="battle-result-summary">

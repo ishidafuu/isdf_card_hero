@@ -503,9 +503,11 @@ sameTurnSearchWidth: 4
 sameTurnSearchDiscount: 0.5
 ```
 
-プロファイルは `chooseCpuDecision(state, { profile })`、`runCpuStep(state, { profile })`、`runAutoStep(state, { profile })` で渡す。
-画面では `AI` セレクトから `Stable` / `Strong` を切り替える。
-オートプレイ検証では `--ai-profile stable|strong` を使う。
+プロファイルは `chooseCpuDecision(state, { profile })`、`runCpuStep(state, { profile })`、`runAutoStep(state, { profile })` で両陣営に同じ値を渡せる。
+比較検証では `chooseCpuDecision(state, { profiles: { player, cpu } })` のように、現在手番の陣営ごとに `stable` / `strong` を切り替えられる。
+
+画面では `P AI` / `C AI` セレクトから `Stable` / `Strong` を切り替える。
+オートプレイ検証では `--ai-profile stable|strong` で両陣営をまとめて指定し、`--player-ai stable|strong` / `--cpu-ai stable|strong` で片側だけ上書きする。
 
 `stable` は進行不能やwarning分類の基準として扱う。
 `strong` は今後、同一ターン探索、相手ターンの浅いminimax、終盤戦略評価を追加する実験先として扱う。

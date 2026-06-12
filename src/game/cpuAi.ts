@@ -70,9 +70,11 @@ const NO_THREAT: IncomingThreat = { threatened: false, lethal: false, maxDamage:
 
 export const CPU_AI_PROFILES = ["stable", "strong"] as const;
 export type CpuAiProfile = (typeof CPU_AI_PROFILES)[number];
+export type CpuAiProfiles = Record<PlayerId, CpuAiProfile>;
 
 export interface CpuAiOptions {
   profile?: CpuAiProfile;
+  profiles?: Partial<CpuAiProfiles>;
 }
 
 const CPU_AI_PROFILE_CONFIG: Record<CpuAiProfile, CpuAiProfileConfig> = {
@@ -145,7 +147,7 @@ export function runCpuDecisionStep(state: GameState, options: CpuAiOptions = {})
 
 export function chooseCpuDecision(state: GameState, options: CpuAiOptions = {}): CpuDecision {
   const perspective = state.currentPlayer;
-  const config = CPU_AI_PROFILE_CONFIG[options.profile ?? "stable"];
+  const config = CPU_AI_PROFILE_CONFIG[resolveCpuAiProfile(state, options)];
   let best: EvaluatedDecision | undefined;
   const evaluated = evaluateCpuDecisions(state, perspective, config);
 
@@ -161,6 +163,10 @@ export function chooseCpuDecision(state: GameState, options: CpuAiOptions = {}):
   });
 
   return best ? attachDecisionTrace(best, evaluated) : createEndTurnDecision();
+}
+
+function resolveCpuAiProfile(state: GameState, options: CpuAiOptions): CpuAiProfile {
+  return options.profiles?.[state.currentPlayer] ?? options.profile ?? "stable";
 }
 
 function evaluateCpuDecisions(
