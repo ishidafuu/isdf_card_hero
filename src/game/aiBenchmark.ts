@@ -1,7 +1,9 @@
 import {
   validateAutoPlay,
+  type AutoPlayDecisionEvent,
   type AutoPlayValidationOptions,
   type AutoPlayValidationResult,
+  type GameStateSummary,
 } from "./autoPlayValidation";
 import { CPU_AI_PROFILES, type CpuAiProfile, type CpuAiProfiles } from "./cpuAi";
 import type { MasterId, PlayerId } from "./types";
@@ -23,6 +25,9 @@ export interface AiBenchmarkGameOutcome {
   turns: number;
   issueCount: number;
   warningCount: number;
+  logTail?: string[];
+  stateSummary?: GameStateSummary;
+  history?: AutoPlayDecisionEvent[];
 }
 
 export interface AiBenchmarkRun {
@@ -202,6 +207,9 @@ function runBenchmarkDirection(
       turns: game.turns,
       issueCount: game.issueCount,
       warningCount: game.warningCount,
+      logTail: game.logTail,
+      stateSummary: game.stateSummary,
+      history: game.history,
     };
   });
 

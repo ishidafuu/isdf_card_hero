@@ -37,6 +37,7 @@ export interface AutoPlayValidationOptions {
   failOnWarnings?: boolean;
   aiProfile?: CpuAiProfile;
   aiProfiles?: Partial<CpuAiProfiles>;
+  includeGameHistory?: boolean;
 }
 
 type ResolvedAutoPlayValidationOptions = Required<
@@ -111,6 +112,9 @@ export interface AutoPlayGameResult {
   winner?: PlayerId;
   issueCount: number;
   warningCount: number;
+  logTail?: string[];
+  stateSummary?: GameStateSummary;
+  history?: AutoPlayDecisionEvent[];
 }
 
 export interface AutoPlayValidationResult {
@@ -146,6 +150,7 @@ const DEFAULT_OPTIONS = {
   longGameTurns: 80,
   historyLimit: 30,
   failOnWarnings: false,
+  includeGameHistory: false,
   deckPreset: "random" as const,
   masterIds: { player: "white", cpu: "white" } satisfies Record<PlayerId, MasterId>,
   aiProfile: "stable" as const satisfies CpuAiProfile,
@@ -235,6 +240,7 @@ function resolveOptions(options: AutoPlayValidationOptions): AutoPlayValidationR
     longGameTurns: integerOption(options.longGameTurns, DEFAULT_OPTIONS.longGameTurns),
     historyLimit: integerOption(options.historyLimit, DEFAULT_OPTIONS.historyLimit),
     failOnWarnings: options.failOnWarnings ?? DEFAULT_OPTIONS.failOnWarnings,
+    includeGameHistory: options.includeGameHistory ?? DEFAULT_OPTIONS.includeGameHistory,
     deckPreset: options.deckPreset ?? DEFAULT_OPTIONS.deckPreset,
     aiProfile: fallbackAiProfile,
     aiProfiles: {
@@ -322,6 +328,13 @@ function runAutoPlayGame(
       winner: game.winner,
       issueCount,
       warningCount,
+      ...(options.includeGameHistory
+        ? {
+            logTail: game.log.slice(-20),
+            stateSummary: summarizeGameState(game),
+            history: [...context.history],
+          }
+        : {}),
     },
     issues: context.issues,
   };

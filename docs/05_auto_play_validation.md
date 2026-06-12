@@ -246,3 +246,42 @@ npm run benchmark:ai -- --seed-start 430 --count 2 --max-steps 700 --max-turns 1
 - 最大185 auto step / 16 turn。
 - failure / warningは0件。
 - `strong` の負けseedサンプルは 430 / 431 の両向き。次のAI改善では、このseedの判断ログから「探索で評価が上がったが実際には悪い手」を確認する。
+
+## 2026-06-13 マスター打点評価強化後のAI比較ベンチ
+
+対象:
+
+- baseline AI `stable`
+- challenger AI `strong`
+- challengerをplayer側/cpu側の両向きで配置
+- ホワイトマスター同士
+- ランダムデッキ
+- seed `430` から `434` までの5 seed、合計10戦
+- 1戦あたり最大700 auto step
+- 1戦あたり最大160 turn
+
+検証コマンド:
+
+```sh
+npm run benchmark:ai -- --seed-start 430 --count 5 --max-steps 700 --max-turns 160
+```
+
+検証結果:
+
+- PASS
+- 合算勝者内訳は `stable` 5勝、`strong` 5勝。
+- `challenger-as-cpu` では `strong` 3勝、`stable` 2勝。
+- `challenger-as-player` では `strong` 2勝、`stable` 3勝。
+- 平均172.1 auto step / 14.7 turn。
+- 最大238 auto step / 20 turn。
+- failure / warningは0件。
+
+判断差分レビュー:
+
+```sh
+npm run diff:ai -- --seed 430 --direction challenger-as-cpu --max-diffs 12
+```
+
+- 補正前は seed 430 / 431 の4戦で `strong` が0勝。
+- 補正後は seed 430 / 431 の4戦で `strong` が3勝。
+- seed 431など、まだ `strong` がシールド、移動、非撃破攻撃の探索価値に引っ張られる局面は残る。

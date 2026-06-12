@@ -67,6 +67,7 @@ type CpuAiProfileConfig = {
 };
 
 const NO_THREAT: IncomingThreat = { threatened: false, lethal: false, maxDamage: 0 };
+const MASTER_DAMAGE_SCORE = 90;
 
 export const CPU_AI_PROFILES = ["stable", "strong"] as const;
 export type CpuAiProfile = (typeof CPU_AI_PROFILES)[number];
@@ -191,6 +192,9 @@ function evaluateCpuDecisions(
     return evaluated;
   }
 
+  const hasDirectMasterPressure = evaluated.some((candidate) =>
+    masterDamageFromTransition(state, candidate.after, perspective) > 0,
+  );
   const lookaheadIndexes = new Set(
     evaluated
       .filter((candidate) => candidate.decision.type !== "end_turn")
@@ -218,8 +222,43 @@ function evaluateCpuDecisions(
         ? evaluateSameTurnBeamContinuation(candidate.after, perspective, config.sameTurnSearchDepth - 1, config)
         : evaluateSameTurnContinuation(candidate.after, perspective, beforeFollowUpScore);
     const lookaheadBonus = config.sameTurnSearchDiscount * continuation;
-    return { ...candidate, totalScore: detailedScore + lookaheadBonus };
+    const adjustedLookaheadBonus = shouldDampenLookaheadForMasterRace(
+      state,
+      candidate,
+      perspective,
+      hasDirectMasterPressure,
+    )
+      ? lookaheadBonus * 0.25
+      : lookaheadBonus;
+    return { ...candidate, totalScore: detailedScore + adjustedLookaheadBonus };
   });
+}
+
+function shouldDampenLookaheadForMasterRace(
+  before: GameState,
+  candidate: EvaluatedDecision,
+  perspective: PlayerId,
+  hasDirectMasterPressure: boolean,
+): boolean {
+  if (!hasDirectMasterPressure || masterDamageFromTransition(before, candidate.after, perspective) > 0) {
+    return false;
+  }
+  const opponent = opponentOf(perspective);
+  if (before.players[perspective].masterHp >= before.players[opponent].masterHp) {
+    return false;
+  }
+  if (candidate.decision.type === "master_action" && candidate.decision.actionId === "shield") {
+    return false;
+  }
+  if (candidate.decision.type === "attack" && candidate.decision.action.target.kind === "monster") {
+    return !!candidate.after.slots[candidate.decision.action.target.slotKey].monster;
+  }
+  return candidate.decision.type === "move" || candidate.decision.type === "focus" || candidate.decision.type === "summon";
+}
+
+function masterDamageFromTransition(before: GameState, after: GameState, perspective: PlayerId): number {
+  const opponent = opponentOf(perspective);
+  return Math.max(0, before.players[opponent].masterHp - after.players[opponent].masterHp);
 }
 
 function evaluateDecisionTransition(
@@ -511,7 +550,7 @@ function scoreAttackDecision(state: GameState, after: GameState, action: Command
     if (damage <= 0) {
       return stateDelta > 8 ? 30 + stateDelta + recoilPenalty : -100;
     }
-    return 70 * damage + recoilPenalty;
+    return masterDamageScore(state, playerId, damage) + recoilPenalty;
   }
 
   const targetBefore = state.slots[action.target.slotKey].monster;
@@ -543,6 +582,15 @@ function scoreCommandHandChoiceDecision(
     return -100;
   }
   return 24 + stateDelta + handMonsterPlacementValue(state, selectedCard.cardId, action.attackerSlotKey) * 0.35 + recoilPenalty;
+}
+
+function masterDamageScore(state: GameState, playerId: PlayerId, damage: number): number {
+  const opponent = opponentOf(playerId);
+  const ownHp = state.players[playerId].masterHp;
+  const opponentHp = state.players[opponent].masterHp;
+  const raceGapBonus = Math.min(60, Math.max(0, opponentHp - ownHp) * 16);
+  const closeoutBonus = opponentHp <= 4 ? (5 - opponentHp) * 12 : 0;
+  return (MASTER_DAMAGE_SCORE + raceGapBonus + closeoutBonus) * damage;
 }
 
 function attackReason(state: GameState, after: GameState, action: CommandAction): string {
@@ -1693,7 +1741,7 @@ function estimateAttackScore(state: GameState, attackerSlotKey: SlotKey, command
   }
   if (target.kind === "master") {
     const damage = Math.max(0, estimateCommandPower(attacker, command) - 2);
-    return damage > 0 ? 70 * damage : -100;
+    return damage > 0 ? masterDamageScore(state, attacker.owner, damage) : -100;
   }
 
   const targetMonster = state.slots[target.slotKey].monster;

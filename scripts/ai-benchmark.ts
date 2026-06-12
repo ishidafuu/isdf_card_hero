@@ -1,8 +1,12 @@
+import { mkdir, writeFile } from "node:fs/promises";
+import { join } from "node:path";
 import {
   benchmarkAiProfiles,
   formatAiBenchmarkSummary,
+  type AiBenchmarkGameOutcome,
   type AiBenchmarkDirection,
   type AiBenchmarkOptions,
+  type AiBenchmarkResult,
 } from "../src/game/aiBenchmark";
 import { CPU_AI_PROFILES, type CpuAiProfile } from "../src/game/cpuAi";
 import { DECK_PRESET_IDS, type DeckPresetId } from "../src/game/deckPresets";
@@ -11,16 +15,32 @@ import type { MasterId } from "../src/game/types";
 
 const BENCHMARK_DIRECTIONS: AiBenchmarkDirection[] = ["challenger-as-cpu", "challenger-as-player"];
 
+interface CliOptions extends AiBenchmarkOptions {
+  outDir: string;
+  writeArtifacts: boolean;
+}
+
 const options = parseArgs(process.argv.slice(2));
+if (options.writeArtifacts) {
+  options.includeGameHistory = true;
+}
 const result = benchmarkAiProfiles(options);
 console.log(formatAiBenchmarkSummary(result));
+
+if (options.writeArtifacts) {
+  await writeArtifacts(options.outDir, result);
+  console.log(`Artifacts: ${options.outDir}`);
+}
 
 if (!result.ok) {
   process.exitCode = 1;
 }
 
-function parseArgs(args: string[]): AiBenchmarkOptions {
-  const parsed: AiBenchmarkOptions = {};
+function parseArgs(args: string[]): CliOptions {
+  const parsed: CliOptions = {
+    outDir: defaultOutDir(),
+    writeArtifacts: false,
+  };
 
   for (let i = 0; i < args.length; i += 1) {
     const arg = args[i];
@@ -70,6 +90,14 @@ function parseArgs(args: string[]): AiBenchmarkOptions {
     } else if (arg === "--direction") {
       parsed.directions = readDirections(next);
       i += 1;
+    } else if (arg === "--out-dir") {
+      if (!next) {
+        throw new Error("--out-dir requires a value");
+      }
+      parsed.outDir = next;
+      i += 1;
+    } else if (arg === "--write-artifacts") {
+      parsed.writeArtifacts = true;
     } else if (arg === "--fail-on-warnings") {
       parsed.failOnWarnings = true;
     } else if (arg === "--help" || arg === "-h") {
@@ -81,6 +109,62 @@ function parseArgs(args: string[]): AiBenchmarkOptions {
   }
 
   return parsed;
+}
+
+async function writeArtifacts(outDir: string, result: AiBenchmarkResult): Promise<void> {
+  await mkdir(outDir, { recursive: true });
+  await writeFile(join(outDir, "benchmark-summary.json"), JSON.stringify(benchmarkSummary(result), null, 2));
+  await Promise.all(
+    result.summary.challengerLosses.map((outcome, index) => {
+      const filename = `${String(index + 1).padStart(3, "0")}_seed-${outcome.seed}_${outcome.direction}_challenger-loss.json`;
+      return writeFile(join(outDir, filename), JSON.stringify(outcomeDetail(outcome), null, 2));
+    }),
+  );
+}
+
+function benchmarkSummary(result: AiBenchmarkResult): object {
+  return {
+    ok: result.ok,
+    options: result.options,
+    summary: {
+      ...result.summary,
+      challengerLosses: result.summary.challengerLosses.map((outcome) => ({
+        direction: outcome.direction,
+        seed: outcome.seed,
+        winner: outcome.winner,
+        winnerProfile: outcome.winnerProfile,
+        steps: outcome.steps,
+        turns: outcome.turns,
+        issueCount: outcome.issueCount,
+        warningCount: outcome.warningCount,
+      })),
+    },
+    runs: result.runs.map((run) => ({
+      direction: run.direction,
+      label: run.label,
+      profiles: run.profiles,
+      profileWins: run.profileWins,
+      undecided: run.undecided,
+      averageSteps: run.averageSteps,
+      averageTurns: run.averageTurns,
+    })),
+  };
+}
+
+function outcomeDetail(outcome: AiBenchmarkGameOutcome): object {
+  return {
+    direction: outcome.direction,
+    seed: outcome.seed,
+    winner: outcome.winner,
+    winnerProfile: outcome.winnerProfile,
+    steps: outcome.steps,
+    turns: outcome.turns,
+    issueCount: outcome.issueCount,
+    warningCount: outcome.warningCount,
+    finalState: outcome.stateSummary,
+    logTail: outcome.logTail,
+    history: outcome.history,
+  };
 }
 
 function readAiProfile(name: string, value: string | undefined): CpuAiProfile {
@@ -137,6 +221,11 @@ function readNumber(name: string, value: string | undefined): number {
   return number;
 }
 
+function defaultOutDir(): string {
+  const stamp = new Date().toISOString().replace(/[:.]/g, "-");
+  return join("artifacts", "ai-benchmark", stamp);
+}
+
 function printHelp(): void {
   console.log(`
 Usage:
@@ -158,6 +247,8 @@ Options:
   --baseline-ai <id>      Baseline AI profile. Default: stable. Values: ${CPU_AI_PROFILES.join(", ")}
   --challenger-ai <id>    Challenger AI profile. Default: strong. Values: ${CPU_AI_PROFILES.join(", ")}
   --direction <id>        Direction. Default: both. Values: both, ${BENCHMARK_DIRECTIONS.join(", ")}
+  --out-dir <path>        Artifact output directory.
+  --write-artifacts       Write benchmark summary and challenger-loss histories.
   --fail-on-warnings      Exit non-zero when warnings are detected.
 `);
 }

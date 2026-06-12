@@ -509,9 +509,14 @@ sameTurnSearchDiscount: 0.5
 画面では `P AI` / `C AI` セレクトから `Stable` / `Strong` を切り替える。
 オートプレイ検証では `--ai-profile stable|strong` で両陣営をまとめて指定し、`--player-ai stable|strong` / `--cpu-ai stable|strong` で片側だけ上書きする。
 AI比較ベンチでは `npm run benchmark:ai -- --baseline-ai stable --challenger-ai strong` を使い、challengerをplayer側/cpu側の両向きに置いて、勝率、平均turn、悪化seedを集計する。
+AI判断差分レビューでは `npm run diff:ai -- --seed 430 --direction challenger-as-cpu` を使い、同じ盤面で `stable` と `strong` の選択が分かれた局面を確認する。
 
 `stable` は進行不能やwarning分類の基準として扱う。
 `strong` は今後、同一ターン探索、相手ターンの浅いminimax、終盤戦略評価を追加する実験先として扱う。
+
+2026-06-13時点では、`strong` が同一ターン探索で非撃破のモンスター削りを過大評価し、HPレースで直接マスター打点を逃すseedが見つかった。
+対策として、通常攻撃のマスター打点基礎点を非撃破の3点モンスター削りより高くし、さらに自分がマスターHPで遅れているほど直接打点を高く評価する。
+同時に、HPレース中に直接マスター打点候補がある場合は、非撃破の削り、移動、ためる、召喚の同一ターン探索ボーナスを抑える。
 
 ## ログとデバッグ
 

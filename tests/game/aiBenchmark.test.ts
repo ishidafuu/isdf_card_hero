@@ -34,6 +34,21 @@ describe("ai benchmark", () => {
     expect(summary).toContain("challenger as cpu: player stable, cpu strong");
   });
 
+  it("can include final game history for benchmark artifacts", () => {
+    const result = benchmarkAiProfiles({
+      seedStart: 430,
+      count: 1,
+      maxSteps: 1,
+      maxTurns: 160,
+      includeGameHistory: true,
+      directions: ["challenger-as-cpu"],
+    });
+
+    expect(result.runs[0].outcomes[0].history?.length).toBeGreaterThan(0);
+    expect(result.runs[0].outcomes[0].stateSummary?.currentPlayer).toBeDefined();
+    expect(result.runs[0].outcomes[0].logTail?.length).toBeGreaterThan(0);
+  });
+
   it("rejects identical baseline and challenger profiles", () => {
     expect(() =>
       benchmarkAiProfiles({

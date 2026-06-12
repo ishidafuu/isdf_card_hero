@@ -40,6 +40,29 @@ describe("cpu ai", () => {
     }
   });
 
+  it("prioritizes direct master damage over non-lethal monster damage when behind in the HP race", () => {
+    const game = createCpuGame();
+    game.players.cpu.hand = [];
+    game.players.cpu.stones = 0;
+    game.players.cpu.masterHp = 6;
+    game.players.player.masterHp = 10;
+    game.slots.cpu_front_left.monster = createActiveMonster("morgan", "cpu", {
+      hp: 4,
+      level: 2,
+    });
+    game.slots.player_front_left.monster = createActiveMonster("morgan", "player", {
+      hp: 4,
+      level: 2,
+    });
+
+    const decision = chooseCpuDecision(game, { profile: "strong" });
+
+    expect(decision.type).toBe("attack");
+    if (decision.type === "attack") {
+      expect(decision.action.target).toEqual({ kind: "master", playerId: "player" });
+    }
+  });
+
   it("does not list attacks against allied monsters", () => {
     const game = createCpuGame();
     game.players.cpu.hand = [];

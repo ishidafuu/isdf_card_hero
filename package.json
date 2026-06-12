@@ -9,6 +9,7 @@
     "preview": "vite preview",
     "test": "vitest run --environment jsdom",
     "benchmark:ai": "vite-node scripts/ai-benchmark.ts",
+    "diff:ai": "vite-node scripts/ai-decision-diff.ts",
     "validate:auto-play": "vite-node scripts/auto-play-validation.ts",
     "evaluate:units": "vite-node scripts/unit-evaluation.ts"
   },
