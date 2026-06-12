@@ -1281,9 +1281,10 @@ export function App() {
         </div>
       </header>
 
-      <section className="play-layout">
+      <section className={`play-layout ${zoneView?.kind === "catalog" ? "catalog-open" : ""}`}>
         <div className="battle-area">
-          <div className="board" aria-label="field">
+          <div className="battle-primary">
+            <div className="board" aria-label="field">
             {BOARD_CELLS.map((row, rowIndex) => (
               <div className="board-row" key={rowIndex}>
                 {row.map((cell) => {
@@ -1353,8 +1354,8 @@ export function App() {
                 })}
               </div>
             ))}
-          </div>
-          <section className="hand-area">
+            </div>
+            <section className="hand-area">
             <div className="hand-heading">
               <h2>Hand</h2>
               <div className="hand-tools">
@@ -1405,7 +1406,7 @@ export function App() {
                   className={zoneView?.kind === "catalog" ? "selected" : ""}
                   onClick={() => setZoneView(toggleZoneView(zoneView, { kind: "catalog" }))}
                 >
-                  <Icon icon="📚" /> Card List
+                  <Icon icon="📚" /> Card Library
                 </button>
                 <StatusIconCount label="Cards" icon="🃏" amount={currentPlayer.hand.length} cap={MAX_VISIBLE_RESOURCE_ICONS} />
               </div>
@@ -1449,14 +1450,15 @@ export function App() {
                 onAddCard={handleAddDeckCard}
                 onRemoveCard={handleRemoveDeckCard}
               />
-            ) : zoneView ? (
+            ) : zoneView && zoneView.kind !== "catalog" ? (
               <CardZonePanel
                 game={game}
                 view={zoneView}
                 onClose={() => setZoneView(undefined)}
               />
             ) : null}
-          </section>
+            </section>
+          </div>
         </div>
 
         <aside className="side-panel">
@@ -1738,6 +1740,13 @@ export function App() {
             <BattleHistoryPanel history={battleHistory} onReplay={handleReplayHistory} />
           )}
         </aside>
+        {zoneView?.kind === "catalog" && (
+          <CardZonePanel
+            game={game}
+            view={zoneView}
+            onClose={() => setZoneView(undefined)}
+          />
+        )}
       </section>
     </main>
   );
@@ -2743,47 +2752,67 @@ function CardCatalogPanel({ game, onClose }: { game: GameState; onClose: () => v
   const [poolFilter, setPoolFilter] = useState<CardPool | "all">("normal");
   const [categoryFilter, setCategoryFilter] = useState<CatalogCategoryFilter>("all");
   const [sortKey, setSortKey] = useState<CatalogSortKey>("source");
+  const [searchText, setSearchText] = useState("");
+  const [selectedCardId, setSelectedCardId] = useState<string | undefined>();
   const rows = useMemo(() => {
+    const normalizedSearch = normalizeCatalogSearch(searchText);
     return getCardDefsByPool(poolFilter)
       .map((card) => ({ card, evaluation: evaluateCard(card.id) }))
       .filter(({ card }) => categoryFilter === "all" || catalogCategory(card) === categoryFilter)
+      .filter(({ card }) => !normalizedSearch || catalogSearchText(card).includes(normalizedSearch))
       .sort((a, b) => compareCatalogRows(a, b, sortKey));
-  }, [categoryFilter, poolFilter, sortKey]);
+  }, [categoryFilter, poolFilter, searchText, sortKey]);
+  const selectedRow = rows.find(({ card }) => card.id === selectedCardId) ?? rows[0];
 
   return (
-    <section className="zone-panel">
-      <div className="zone-panel-heading">
+    <section className="zone-panel catalog-library-panel">
+      <div className="zone-panel-heading catalog-library-heading">
         <div>
-          <h3><Icon icon="📚" /> Card List</h3>
-          <p>{rows.length} cards / {cardPoolFilterLabel(poolFilter)} / {catalogCategoryFilterLabel(categoryFilter)}</p>
+          <h3><Icon icon="📚" /> Card Library</h3>
+          <p>
+            {rows.length} cards / {cardPoolFilterLabel(poolFilter)} / {catalogCategoryFilterLabel(categoryFilter)}
+            {searchText.trim() ? ` / "${searchText.trim()}"` : ""}
+          </p>
         </div>
         <button type="button" onClick={onClose} aria-label="閉じる">
           <Icon icon="✕" /> Close
         </button>
       </div>
-      <div className="catalog-filter-row" aria-label="card pool filter">
-        {(["normal", "special", "all"] as const).map((filter) => (
-          <button
-            type="button"
-            className={poolFilter === filter ? "selected" : ""}
-            key={filter}
-            onClick={() => setPoolFilter(filter)}
-          >
-            {cardPoolFilterLabel(filter)}
-          </button>
-        ))}
-      </div>
-      <div className="catalog-filter-row" aria-label="card category filter">
-        {(["all", "front", "back", "magic"] as const).map((filter) => (
-          <button
-            type="button"
-            className={categoryFilter === filter ? "selected" : ""}
-            key={filter}
-            onClick={() => setCategoryFilter(filter)}
-          >
-            {catalogCategoryFilterLabel(filter)}
-          </button>
-        ))}
+
+      <div className="catalog-library-controls">
+        <label className="catalog-search-control">
+          Search
+          <input
+            type="search"
+            value={searchText}
+            onChange={(event) => setSearchText(event.target.value)}
+            placeholder="カード名、技、効果"
+          />
+        </label>
+        <div className="catalog-filter-row" aria-label="card pool filter">
+          {(["normal", "special", "all"] as const).map((filter) => (
+            <button
+              type="button"
+              className={poolFilter === filter ? "selected" : ""}
+              key={filter}
+              onClick={() => setPoolFilter(filter)}
+            >
+              {cardPoolFilterLabel(filter)}
+            </button>
+          ))}
+        </div>
+        <div className="catalog-filter-row" aria-label="card category filter">
+          {(["all", "front", "back", "magic"] as const).map((filter) => (
+            <button
+              type="button"
+              className={categoryFilter === filter ? "selected" : ""}
+              key={filter}
+              onClick={() => setCategoryFilter(filter)}
+            >
+              {catalogCategoryFilterLabel(filter)}
+            </button>
+          ))}
+        </div>
         <label className="catalog-sort-control">
           Sort
           <select value={sortKey} onChange={(event) => setSortKey(event.target.value as CatalogSortKey)}>
@@ -2798,31 +2827,69 @@ function CardCatalogPanel({ game, onClose }: { game: GameState; onClose: () => v
           </select>
         </label>
       </div>
-      <div className="catalog-card-list">
-        {rows.map(({ card, evaluation }) => {
-          return (
-            <details className="catalog-card-row" key={card.id}>
-              <summary>
+
+      <div className="catalog-library-layout">
+        <div className="catalog-card-grid" aria-label="card library cards">
+          {rows.map(({ card, evaluation }) => {
+            const selected = selectedRow?.card.id === card.id;
+            return (
+              <button
+                type="button"
+                className={`catalog-card-tile ${selected ? "selected" : ""}`}
+                key={card.id}
+                onClick={() => setSelectedCardId(card.id)}
+                aria-pressed={selected}
+              >
+                <span className="catalog-card-no">{catalogNoText(card)}</span>
                 <CardIcon cardId={card.id} />
-                <span className="catalog-card-name">{card.name}</span>
+                <span className="catalog-card-main">
+                  <strong>{card.name}</strong>
+                  <span>{catalogTileSubtitle(card)}</span>
+                </span>
                 <span className="catalog-card-eval" title="カード単体評価">
                   <Icon icon="📈" /> {evaluation.grade} {evaluation.total}
+                </span>
+                <span className="catalog-card-tags">
+                  <span className="zone-card-type">{cardTypeLabel(card.id)}</span>
+                  <CardPoolChip cardId={card.id} compact />
                 </span>
                 <span className="catalog-card-stats" title="主要評価データ">
                   {catalogStatSummary(card, evaluation)}
                 </span>
-                <span className="zone-card-type">{cardTypeLabel(card.id)}</span>
-                <CardPoolChip cardId={card.id} compact />
-              </summary>
-              <div className="catalog-card-detail">
-                <CardDetail cardId={card.id} game={game} showTitle={false} />
+                <span className="catalog-card-preview">{catalogCommandPreview(card)}</span>
+              </button>
+            );
+          })}
+          {rows.length === 0 && (
+            <p className="empty-zone"><Icon icon="□" /> 該当カードはまだありません。</p>
+          )}
+        </div>
+
+        <aside className="catalog-selected-panel">
+          {selectedRow ? (
+            <>
+              <div className="catalog-selected-heading">
+                <div>
+                  <span className="catalog-card-no">{catalogNoText(selectedRow.card)}</span>
+                  <h3><CardIcon cardId={selectedRow.card.id} /> {selectedRow.card.name}</h3>
+                </div>
+                <span className="catalog-card-eval">
+                  <Icon icon="📈" /> {selectedRow.evaluation.grade} {selectedRow.evaluation.total}
+                </span>
               </div>
-            </details>
-          );
-        })}
-        {rows.length === 0 && (
-          <p className="empty-zone"><Icon icon="□" /> 該当カードはまだありません。</p>
-        )}
+              <div className="catalog-selected-summary">
+                <span>{catalogTileSubtitle(selectedRow.card)}</span>
+                <span>{catalogStatSummary(selectedRow.card, selectedRow.evaluation)}</span>
+                <span>{catalogRarityText(selectedRow.card)}</span>
+              </div>
+              <div className="catalog-card-detail">
+                <CardDetail cardId={selectedRow.card.id} game={game} showTitle={false} />
+              </div>
+            </>
+          ) : (
+            <p className="empty-zone"><Icon icon="□" /> カードを選択してください。</p>
+          )}
+        </aside>
       </div>
     </section>
   );
@@ -2877,11 +2944,72 @@ function catalogCategoryFilterLabel(filter: CatalogCategoryFilter): string {
   return "全種";
 }
 
+function normalizeCatalogSearch(value: string): string {
+  return value.trim().toLocaleLowerCase("ja");
+}
+
+function catalogSearchText(card: ReturnType<typeof getCardDef>): string {
+  const parts = [
+    card.id,
+    card.name,
+    card.catchcopy ?? "",
+    ...(card.notes ?? []),
+  ];
+  if (card.type === "magic") {
+    parts.push(card.description, card.category ?? "", card.continuance ?? "", ...card.targetKinds);
+  } else {
+    parts.push(card.role, String(card.maxLevel));
+    for (const level of card.levels) {
+      parts.push(
+        String(level.level),
+        String(level.maxHp),
+        ...level.commands.flatMap((command) => [
+          command.id,
+          command.name,
+          String(command.power),
+          command.range,
+          command.rangeText ?? "",
+          command.effectText ?? "",
+        ]),
+      );
+    }
+  }
+  return parts.join(" ").toLocaleLowerCase("ja");
+}
+
 function catalogStatSummary(card: ReturnType<typeof getCardDef>, evaluation: ReturnType<typeof evaluateCard>): string {
   if (card.type === "magic") {
     return `Cost ${card.cost} / 攻${evaluation.offense} 耐${evaluation.defense} 効${evaluation.synergy}`;
   }
   return `HP ${catalogHpText(card)} / Lv${card.maxLevel} / 攻${evaluation.offense} 耐${evaluation.defense} 効${evaluation.synergy}`;
+}
+
+function catalogTileSubtitle(card: ReturnType<typeof getCardDef>): string {
+  if (card.type === "magic") {
+    return `魔法 / Cost ${card.cost}`;
+  }
+  const pool = getCardPool(card);
+  if (pool === "special") {
+    return `スーパー / ${superEvolutionText(card)} / MaxLv ${card.maxLevel}`;
+  }
+  return `${card.role === "front" ? "前衛" : "後衛"} / 召喚 1 / MaxLv ${card.maxLevel}`;
+}
+
+function catalogCommandPreview(card: ReturnType<typeof getCardDef>): string {
+  if (card.type === "magic") {
+    return card.description;
+  }
+  return card.levels
+    .map((level) => `Lv${level.level}: ${level.commands.map(commandSummary).join(" / ")}`)
+    .join("  ");
+}
+
+function catalogNoText(card: ReturnType<typeof getCardDef>): string {
+  return card.sourceNo ? `No.${String(card.sourceNo).padStart(3, "0")}` : "No.--";
+}
+
+function catalogRarityText(card: ReturnType<typeof getCardDef>): string {
+  return card.rarity ? `Rarity ${card.rarity}` : "Rarity -";
 }
 
 function catalogHpText(card: ReturnType<typeof getCardDef>): string {
