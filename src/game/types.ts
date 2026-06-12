@@ -4,6 +4,7 @@ export type Lane = "left" | "right";
 export type SlotKey = `${PlayerId}_${Row}_${Lane}`;
 
 export type CardType = "monster" | "magic";
+export type CardPool = "normal" | "special";
 export type MonsterRole = "front" | "back";
 export type MonsterStatus = "prepared" | "active";
 export type RangeTag =
@@ -47,6 +48,7 @@ export interface MonsterCardDef {
   id: string;
   name: string;
   type: "monster";
+  pool?: CardPool;
   role: MonsterRole;
   maxLevel: number;
   actionLimit?: number;
@@ -63,6 +65,7 @@ export interface MagicCardDef {
   id: string;
   name: string;
   type: "magic";
+  pool?: CardPool;
   cost: number;
   description: string;
   targetKinds: MagicTargetKind[];

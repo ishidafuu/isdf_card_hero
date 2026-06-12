@@ -5,10 +5,12 @@ import {
   buildDeckCardIds,
   deckCategoryLabel,
   deckTextFromCardIds,
+  getCardDefsByPool,
   getAllCardDefs,
   getCardDef,
   getCardIconPath,
   getCardName,
+  getCardPool,
   parseDeckText,
   summarizeDeckCardIds,
 } from "./game/cards";
@@ -44,7 +46,7 @@ import {
   useMasterAction,
   useMasterHpDraw,
 } from "./game/rules";
-import type { CardInstance, CommandDef, GameState, MagicAction, MagicCardDef, MagicTargetKind, MasterActionId, PlayerId, SlotKey, Target } from "./game/types";
+import type { CardInstance, CardPool, CommandDef, GameState, MagicAction, MagicCardDef, MagicTargetKind, MasterActionId, PlayerId, SlotKey, Target } from "./game/types";
 import type { DeckValidationSummary } from "./game/cards";
 
 type BoardCell =
@@ -129,6 +131,7 @@ interface BattleSettings {
 
 interface DeckSettings {
   fixed: Record<PlayerId, boolean>;
+  allowSpecial: Record<PlayerId, boolean>;
   text: Record<PlayerId, string>;
 }
 
@@ -142,6 +145,7 @@ interface DeckDraft {
 interface DeckCardOption {
   id: string;
   name: string;
+  pool: CardPool;
   typeLabel: string;
   sortValue: number;
 }
@@ -192,6 +196,7 @@ function createBattleSettings(seed: number): BattleSettings {
 function createDeckSettings(seed: number): DeckSettings {
   return {
     fixed: { player: false, cpu: false },
+    allowSpecial: { player: false, cpu: false },
     text: {
       player: generatedDeckText("player", seed),
       cpu: generatedDeckText("cpu", seed),
@@ -206,6 +211,7 @@ function createGameFromSettings(settings: BattleSettings, deckSettings: DeckSett
     firstPlayer: settings.firstPlayer,
     playerDeckCardIds: deckSettings.fixed.player ? playerDeck.cardIds : undefined,
     cpuDeckCardIds: deckSettings.fixed.cpu ? cpuDeck.cardIds : undefined,
+    allowSpecialDecks: deckSettings.allowSpecial,
   });
 }
 
@@ -220,12 +226,16 @@ function createDeckDraft(settings: BattleSettings, deckSettings: DeckSettings, p
     };
   }
 
-  const parsed = parseDeckText(deckSettings.text[playerId]);
+  const allowSpecial = deckSettings.allowSpecial[playerId];
+  const parsed = parseDeckText(deckSettings.text[playerId], { allowSpecial });
   return {
     playerId,
     fixed: true,
     cardIds: parsed.cardIds,
-    summary: summarizeDeckCardIds(parsed.cardIds, parsed.unknownTokens),
+    summary: summarizeDeckCardIds(parsed.cardIds, parsed.unknownTokens, {
+      allowSpecial,
+      disallowedSpecialTokens: parsed.disallowedSpecialTokens,
+    }),
   };
 }
 
@@ -286,7 +296,13 @@ export function App() {
   const suppressNextClickRef = useRef(false);
 
   const deckDrafts = useMemo(() => createDeckDrafts(battleSettings, deckSettings), [battleSettings, deckSettings]);
-  const deckCardOptions = useMemo(() => getDeckCardOptions(), []);
+  const deckCardOptions = useMemo(
+    () => ({
+      player: getDeckCardOptions(deckSettings.allowSpecial.player),
+      cpu: getDeckCardOptions(deckSettings.allowSpecial.cpu),
+    }),
+    [deckSettings.allowSpecial.cpu, deckSettings.allowSpecial.player],
+  );
   const fixedDeckError = PLAYER_IDS.some((playerId) => deckSettings.fixed[playerId] && !deckDrafts[playerId].summary.valid);
   const currentPlayer = game.players[game.currentPlayer];
   const cpuVsCpu = battleSettings.mode === "cpu-vs-cpu";
@@ -662,12 +678,27 @@ export function App() {
 
   function handleDeckFixedChange(playerId: PlayerId, fixed: boolean) {
     setDeckSettings((previous) => ({
+      ...previous,
       fixed: { ...previous.fixed, [playerId]: fixed },
       text: {
         ...previous.text,
         [playerId]: previous.text[playerId] || generatedDeckText(playerId, battleSettings.seed),
       },
     }));
+  }
+
+  function handleDeckAllowSpecialChange(playerId: PlayerId, allowSpecial: boolean) {
+    setDeckSettings((previous) => ({
+      ...previous,
+      allowSpecial: { ...previous.allowSpecial, [playerId]: allowSpecial },
+    }));
+    setDeckPickerIds((previous) => {
+      const options = getDeckCardOptions(allowSpecial);
+      if (options.some((option) => option.id === previous[playerId])) {
+        return previous;
+      }
+      return { ...previous, [playerId]: options[0]?.id ?? "" };
+    });
   }
 
   function handleDeckTextChange(playerId: PlayerId, text: string) {
@@ -679,6 +710,7 @@ export function App() {
 
   function handleUseGeneratedDeckAsFixed(playerId: PlayerId) {
     setDeckSettings((previous) => ({
+      ...previous,
       fixed: { ...previous.fixed, [playerId]: true },
       text: { ...previous.text, [playerId]: generatedDeckText(playerId, battleSettings.seed) },
     }));
@@ -689,25 +721,30 @@ export function App() {
   }
 
   function handleAddDeckCard(playerId: PlayerId, cardId: string) {
-    const parsed = parseDeckText(deckSettings.text[playerId]);
+    if (!isDeckCardAllowed(playerId, cardId, deckSettings)) {
+      return;
+    }
+    const parsed = parseDeckText(deckSettings.text[playerId], { allowSpecial: true });
     const currentCount = parsed.cardIds.filter((id) => id === cardId).length;
     if (parsed.cardIds.length >= 30 || currentCount >= 3) {
       return;
     }
     setDeckSettings((previous) => ({
+      ...previous,
       fixed: { ...previous.fixed, [playerId]: true },
       text: { ...previous.text, [playerId]: deckTextFromCardIds([...parsed.cardIds, cardId]) },
     }));
   }
 
   function handleRemoveDeckCard(playerId: PlayerId, cardId: string) {
-    const parsed = parseDeckText(deckSettings.text[playerId]);
+    const parsed = parseDeckText(deckSettings.text[playerId], { allowSpecial: true });
     const removeIndex = parsed.cardIds.indexOf(cardId);
     if (removeIndex < 0) {
       return;
     }
     const nextCardIds = parsed.cardIds.filter((_, index) => index !== removeIndex);
     setDeckSettings((previous) => ({
+      ...previous,
       fixed: { ...previous.fixed, [playerId]: true },
       text: { ...previous.text, [playerId]: deckTextFromCardIds(nextCardIds) },
     }));
@@ -1244,6 +1281,7 @@ export function App() {
                 pickerIds={deckPickerIds}
                 onClose={() => setZoneView(undefined)}
                 onFixedChange={handleDeckFixedChange}
+                onAllowSpecialChange={handleDeckAllowSpecialChange}
                 onTextChange={handleDeckTextChange}
                 onUseGeneratedDeck={handleUseGeneratedDeckAsFixed}
                 onPickerChange={handleDeckPickerChange}
@@ -2098,10 +2136,11 @@ interface DeckSetupPanelProps {
   battleSettings: BattleSettings;
   deckSettings: DeckSettings;
   drafts: Record<PlayerId, DeckDraft>;
-  cardOptions: DeckCardOption[];
+  cardOptions: Record<PlayerId, DeckCardOption[]>;
   pickerIds: Record<PlayerId, string>;
   onClose: () => void;
   onFixedChange: (playerId: PlayerId, fixed: boolean) => void;
+  onAllowSpecialChange: (playerId: PlayerId, allowSpecial: boolean) => void;
   onTextChange: (playerId: PlayerId, text: string) => void;
   onUseGeneratedDeck: (playerId: PlayerId) => void;
   onPickerChange: (playerId: PlayerId, cardId: string) => void;
@@ -2117,6 +2156,7 @@ function DeckSetupPanel({
   pickerIds,
   onClose,
   onFixedChange,
+  onAllowSpecialChange,
   onTextChange,
   onUseGeneratedDeck,
   onPickerChange,
@@ -2144,16 +2184,29 @@ function DeckSetupPanel({
               <div className="deck-editor-heading">
                 <div>
                   <h4>{playerLabel(playerId)} Deck</h4>
-                  <p>{fixed ? "固定デッキ" : `ランダム生成 / seed ${battleSettings.seed}`}</p>
+                  <p>
+                    {fixed ? "固定デッキ" : `ランダム生成 / seed ${battleSettings.seed}`} /
+                    Special {deckSettings.allowSpecial[playerId] ? "ON" : "OFF"}
+                  </p>
                 </div>
-                <label className="deck-mode-toggle">
-                  <input
-                    type="checkbox"
-                    checked={fixed}
-                    onChange={(event) => onFixedChange(playerId, event.target.checked)}
-                  />
-                  固定
-                </label>
+                <div className="deck-toggle-group">
+                  <label className="deck-mode-toggle">
+                    <input
+                      type="checkbox"
+                      checked={fixed}
+                      onChange={(event) => onFixedChange(playerId, event.target.checked)}
+                    />
+                    固定
+                  </label>
+                  <label className="deck-mode-toggle">
+                    <input
+                      type="checkbox"
+                      checked={deckSettings.allowSpecial[playerId]}
+                      onChange={(event) => onAllowSpecialChange(playerId, event.target.checked)}
+                    />
+                    Special
+                  </label>
+                </div>
               </div>
               <DeckSummaryView summary={summary} />
               <div className="deck-editor-actions">
@@ -2169,7 +2222,7 @@ function DeckSetupPanel({
               {fixed ? (
                 <>
                   <DeckBuilderControls
-                    cardOptions={cardOptions}
+                    cardOptions={cardOptions[playerId]}
                     selectedCardId={pickerIds[playerId]}
                     disabled={summary.total >= 30 || draft.cardIds.filter((cardId) => cardId === pickerIds[playerId]).length >= 3}
                     onSelect={(cardId) => onPickerChange(playerId, cardId)}
@@ -2227,7 +2280,7 @@ function DeckBuilderControls({
       <select value={selectedCardId} onChange={(event) => onSelect(event.target.value)}>
         {cardOptions.map((option) => (
           <option value={option.id} key={option.id}>
-            {option.typeLabel} / {option.name}
+            {option.pool === "special" ? "Special / " : ""}{option.typeLabel} / {option.name}
           </option>
         ))}
       </select>
@@ -2445,18 +2498,31 @@ function EffectHistoryPanel({ game, onClose }: { game: GameState; onClose: () =>
 }
 
 function CardCatalogPanel({ onClose }: { onClose: () => void }) {
-  const cards = getAllCardDefs();
+  const [poolFilter, setPoolFilter] = useState<CardPool | "all">("normal");
+  const cards = getCardDefsByPool(poolFilter);
 
   return (
     <section className="zone-panel">
       <div className="zone-panel-heading">
         <div>
           <h3><Icon icon="📚" /> Card List</h3>
-          <p>{cards.length} cards / 通常カードのみ</p>
+          <p>{cards.length} cards / {cardPoolFilterLabel(poolFilter)}</p>
         </div>
         <button type="button" onClick={onClose} aria-label="閉じる">
           <Icon icon="✕" /> Close
         </button>
+      </div>
+      <div className="catalog-filter-row" aria-label="card pool filter">
+        {(["normal", "special", "all"] as const).map((filter) => (
+          <button
+            type="button"
+            className={poolFilter === filter ? "selected" : ""}
+            key={filter}
+            onClick={() => setPoolFilter(filter)}
+          >
+            {cardPoolFilterLabel(filter)}
+          </button>
+        ))}
       </div>
       <div className="catalog-card-list">
         {cards.map((card) => (
@@ -2465,12 +2531,16 @@ function CardCatalogPanel({ onClose }: { onClose: () => void }) {
               <CardIcon cardId={card.id} />
               <span className="catalog-card-name">{card.name}</span>
               <span className="zone-card-type">{cardTypeLabel(card.id)}</span>
+              <CardPoolChip cardId={card.id} compact />
             </summary>
             <div className="catalog-card-detail">
               <CardDetail cardId={card.id} showTitle={false} />
             </div>
           </details>
         ))}
+        {cards.length === 0 && (
+          <p className="empty-zone"><Icon icon="□" /> 該当カードはまだありません。</p>
+        )}
       </div>
     </section>
   );
@@ -2971,6 +3041,23 @@ function cardTypeLabel(cardId: string): string {
   return def.role === "front" ? "前衛" : "後衛";
 }
 
+function CardPoolChip({ cardId, compact = false }: { cardId: string; compact?: boolean }) {
+  if (getCardPool(cardId) !== "special") {
+    return null;
+  }
+  return <span className={`card-chip special${compact ? " compact" : ""}`}><Icon icon="★" /> Special</span>;
+}
+
+function cardPoolFilterLabel(pool: CardPool | "all"): string {
+  if (pool === "normal") {
+    return "Normal";
+  }
+  if (pool === "special") {
+    return "Special";
+  }
+  return "All";
+}
+
 function deckCategoryValid(summary: DeckValidationSummary, category: "front" | "back" | "magic"): boolean {
   if (category === "front") {
     return summary.categories.front >= 12;
@@ -2998,15 +3085,20 @@ function deckCategorySortValue(def: ReturnType<typeof getCardDef>): number {
   return def.role === "front" ? 1 : 2;
 }
 
-function getDeckCardOptions(): DeckCardOption[] {
-  return getAllCardDefs()
+function getDeckCardOptions(allowSpecial: boolean): DeckCardOption[] {
+  return getCardDefsByPool(allowSpecial ? "all" : "normal")
     .map((def) => ({
       id: def.id,
       name: def.name,
+      pool: getCardPool(def),
       typeLabel: def.type === "magic" ? "魔法" : def.role === "front" ? "前衛" : "後衛",
       sortValue: deckCategorySortValue(def),
     }))
-    .sort((a, b) => a.sortValue - b.sortValue || a.name.localeCompare(b.name, "ja"));
+    .sort((a, b) => a.sortValue - b.sortValue || a.pool.localeCompare(b.pool) || a.name.localeCompare(b.name, "ja"));
+}
+
+function isDeckCardAllowed(playerId: PlayerId, cardId: string, deckSettings: DeckSettings): boolean {
+  return deckSettings.allowSpecial[playerId] || getCardPool(cardId) !== "special";
 }
 
 function createVisualEffect(previous: GameState, next: GameState, id: number): VisualEffect {
@@ -3286,6 +3378,7 @@ function HandCardContent({ cardId }: HandCardContentProps) {
         <span className="hand-card-title">
           <strong><CardIcon cardId={def.id} /> {def.name}</strong>
           <span className="card-chip magic">魔法</span>
+          <CardPoolChip cardId={def.id} compact />
         </span>
         <span className="hand-card-meta"><Icon icon="🪨" /> Cost {def.cost} / {targetKindsLabel(def.targetKinds)}</span>
         <span className="hand-card-text">{def.description}</span>
@@ -3302,6 +3395,7 @@ function HandCardContent({ cardId }: HandCardContentProps) {
       <span className="hand-card-title">
         <strong><CardIcon cardId={def.id} /> {def.name}</strong>
         <span className="card-chip"><Icon icon={roleIcon(def.role)} /> {def.role === "front" ? "前衛" : "後衛"}</span>
+        <CardPoolChip cardId={def.id} compact />
       </span>
       <span className="hand-card-meta"><Icon icon="🪨" /> 召喚 1 / <Icon icon="✨" /> MaxLv {def.maxLevel}</span>
       <span className="hand-card-meta"><Icon icon="❤️" /> {maxHpText}</span>
@@ -3323,6 +3417,7 @@ function CardDetail({ cardId, showTitle = true }: CardDetailProps) {
       <>
         {showTitle && <h3><CardIcon cardId={def.id} /> {def.name}</h3>}
         <div className="card-meta-row">
+          <CardPoolChip cardId={def.id} />
           <span className="card-chip magic">✨ 魔法</span>
           <span><Icon icon="🪨" /> Cost {def.cost}</span>
           <span>{targetKindsLabel(def.targetKinds)}</span>
@@ -3344,6 +3439,7 @@ function CardDetail({ cardId, showTitle = true }: CardDetailProps) {
     <>
       {showTitle && <h3><CardIcon cardId={def.id} /> {def.name}</h3>}
       <div className="card-meta-row">
+        <CardPoolChip cardId={def.id} />
         <span className="card-chip"><Icon icon={roleIcon(def.role)} /> {def.role === "front" ? "前衛" : "後衛"}</span>
         <span><Icon icon="🪨" /> 召喚 1</span>
         <span><Icon icon="✨" /> MaxLv {def.maxLevel}</span>
@@ -3351,8 +3447,8 @@ function CardDetail({ cardId, showTitle = true }: CardDetailProps) {
       </div>
       <CardNotes card={def} />
       <div className="level-detail-list">
-        {def.levels.map((level) => (
-          <div className="level-detail" key={level.level}>
+        {def.levels.map((level, index) => (
+          <div className="level-detail" key={`${def.id}_${level.level}_${index}`}>
             <strong><Icon icon="✨" /> Lv{level.level} / <Icon icon="❤️" /> HP {level.maxHp}</strong>
             <ul>
               {level.commands.map((command) => (

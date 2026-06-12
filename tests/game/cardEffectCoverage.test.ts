@@ -98,7 +98,7 @@ describe("card effect coverage registry", () => {
   it("keeps Phase 4 card effect gaps closed and product deferrals explicit", () => {
     expect(SIMPLIFIED_OR_PENDING_CARD_EFFECTS).toEqual([]);
     expect(DEFERRED_PRODUCT_DECISIONS.map((decision) => decision.id)).toEqual([
-      "super_cards_pending",
+      "special_cards_planned",
       "cpu_magic_heuristic",
       "temporary_original_icons",
     ]);

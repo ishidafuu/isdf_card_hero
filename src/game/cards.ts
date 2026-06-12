@@ -1,5 +1,5 @@
 import { CARD_DEFS } from "./cardData";
-import type { CardDef, CardInstance, MonsterCardDef } from "./types";
+import type { CardDef, CardInstance, CardPool, MonsterCardDef } from "./types";
 
 export { CARD_DEFS };
 
@@ -10,12 +10,27 @@ export const DECK_MIN_FRONT = 12;
 export const DECK_MIN_BACK = 6;
 export const DECK_MIN_MAGIC = 6;
 export type DeckCategory = "front" | "back" | "magic";
+export type CardPoolFilter = CardPool | "all";
+
+export interface BuildDeckOptions {
+  includeSpecial?: boolean;
+}
+
+export interface DeckTextParseOptions {
+  allowSpecial?: boolean;
+}
+
+export interface DeckValidationOptions {
+  allowSpecial?: boolean;
+  disallowedSpecialTokens?: string[];
+}
 
 export interface DeckValidationSummary {
   total: number;
   categories: Record<DeckCategory, number>;
   duplicateViolations: Array<{ cardId: string; count: number }>;
   unknownTokens: string[];
+  specialViolations: string[];
   errors: string[];
   valid: boolean;
 }
@@ -23,21 +38,23 @@ export interface DeckValidationSummary {
 export interface ParsedDeckText {
   cardIds: string[];
   unknownTokens: string[];
+  disallowedSpecialTokens: string[];
 }
 
-export function buildDeck(owner: string, seed = hashString(owner)): CardInstance[] {
-  return createCardInstances(owner, buildDeckCardIds(seed));
+export function buildDeck(owner: string, seed = hashString(owner), options: BuildDeckOptions = {}): CardInstance[] {
+  return createCardInstances(owner, buildDeckCardIds(seed, options));
 }
 
-export function buildDeckCardIds(seed = hashString("deck")): string[] {
+export function buildDeckCardIds(seed = hashString("deck"), options: BuildDeckOptions = {}): string[] {
   const selected: string[] = [];
   const counts = new Map<string, number>();
   const random = createSeededRandom(seed);
+  const cardPool = getCardDefsByPool(options.includeSpecial ? "all" : "normal");
 
-  addRandomCards(selected, counts, cardIdsByCategory("front"), DECK_MIN_FRONT, random);
-  addRandomCards(selected, counts, cardIdsByCategory("back"), DECK_MIN_BACK, random);
-  addRandomCards(selected, counts, cardIdsByCategory("magic"), DECK_MIN_MAGIC, random);
-  addRandomCards(selected, counts, Object.keys(CARD_DEFS_BY_ID), DECK_SIZE - selected.length, random);
+  addRandomCards(selected, counts, cardIdsByCategory("front", cardPool), DECK_MIN_FRONT, random);
+  addRandomCards(selected, counts, cardIdsByCategory("back", cardPool), DECK_MIN_BACK, random);
+  addRandomCards(selected, counts, cardIdsByCategory("magic", cardPool), DECK_MIN_MAGIC, random);
+  addRandomCards(selected, counts, cardPool.map((def) => def.id), DECK_SIZE - selected.length, random);
 
   return selected;
 }
@@ -47,7 +64,28 @@ export function createDeckFromCardIds(owner: string, cardIds: string[]): CardIns
 }
 
 export function getAllCardDefs(): CardDef[] {
-  return Object.values(CARD_DEFS_BY_ID);
+  return getCardDefsByPool("normal");
+}
+
+export function getCardDefsByPool(pool: CardPoolFilter = "normal"): CardDef[] {
+  const defs = Object.values(CARD_DEFS_BY_ID);
+  if (pool === "all") {
+    return defs;
+  }
+  return defs.filter((def) => getCardPool(def) === pool);
+}
+
+export function getSpecialCardDefs(): CardDef[] {
+  return getCardDefsByPool("special");
+}
+
+export function getCardPool(defOrCardId: CardDef | string): CardPool {
+  const def = typeof defOrCardId === "string" ? getCardDef(defOrCardId) : defOrCardId;
+  return def.pool ?? "normal";
+}
+
+export function isCardAllowedInDeck(cardId: string, options: DeckValidationOptions = {}): boolean {
+  return options.allowSpecial || getCardPool(cardId) !== "special";
 }
 
 export function getCardDef(cardId: string): CardDef {
@@ -74,13 +112,14 @@ export function getCardIconPath(cardId: string): string | undefined {
   return getCardDef(cardId).icon;
 }
 
-export function validateRandomDeck(deck: CardInstance[] = buildDeck("validation", 0)): boolean {
-  return summarizeDeckCardIds(deck.map((card) => card.cardId)).valid;
+export function validateRandomDeck(deck: CardInstance[] = buildDeck("validation", 0), options: DeckValidationOptions = {}): boolean {
+  return summarizeDeckCardIds(deck.map((card) => card.cardId), [], options).valid;
 }
 
-export function parseDeckText(text: string): ParsedDeckText {
+export function parseDeckText(text: string, options: DeckTextParseOptions = {}): ParsedDeckText {
   const cardIds: string[] = [];
   const unknownTokens: string[] = [];
+  const disallowedSpecialTokens: string[] = [];
   for (const rawLine of text.split(/\r?\n/)) {
     const token = rawLine.replace(/#.*/, "").trim();
     if (!token) {
@@ -91,26 +130,38 @@ export function parseDeckText(text: string): ParsedDeckText {
       unknownTokens.push(token);
       continue;
     }
+    if (!options.allowSpecial && getCardPool(def) === "special") {
+      disallowedSpecialTokens.push(token);
+      continue;
+    }
     cardIds.push(def.id);
   }
-  return { cardIds, unknownTokens };
+  return { cardIds, unknownTokens, disallowedSpecialTokens };
 }
 
 export function deckTextFromCardIds(cardIds: string[]): string {
   return cardIds.map((cardId) => getCardName(cardId)).join("\n");
 }
 
-export function summarizeDeckCardIds(cardIds: string[], unknownTokens: string[] = []): DeckValidationSummary {
+export function summarizeDeckCardIds(
+  cardIds: string[],
+  unknownTokens: string[] = [],
+  options: DeckValidationOptions = {},
+): DeckValidationSummary {
   const counts = new Map<string, number>();
   const categories = { front: 0, back: 0, magic: 0 };
   const errors: string[] = [];
   const duplicateViolations: Array<{ cardId: string; count: number }> = [];
+  const specialViolations = [...(options.disallowedSpecialTokens ?? [])];
 
   for (const cardId of cardIds) {
     const def = CARD_DEFS_BY_ID[cardId];
     if (!def) {
       errors.push(`不明なカードID: ${cardId}`);
       continue;
+    }
+    if (!options.allowSpecial && getCardPool(def) === "special") {
+      specialViolations.push(def.name);
     }
     counts.set(cardId, (counts.get(cardId) ?? 0) + 1);
     categories[deckCategory(def)] += 1;
@@ -124,6 +175,9 @@ export function summarizeDeckCardIds(cardIds: string[], unknownTokens: string[] 
 
   if (unknownTokens.length > 0) {
     errors.push(`不明な入力: ${unknownTokens.join(", ")}`);
+  }
+  if (specialViolations.length > 0) {
+    errors.push(`スペシャルカードは許可されていません: ${specialViolations.join(", ")}`);
   }
   if (cardIds.length !== DECK_SIZE) {
     errors.push(`デッキは${DECK_SIZE}枚にしてください（現在${cardIds.length}枚）`);
@@ -146,6 +200,7 @@ export function summarizeDeckCardIds(cardIds: string[], unknownTokens: string[] 
     categories,
     duplicateViolations,
     unknownTokens,
+    specialViolations,
     errors,
     valid: errors.length === 0,
   };
@@ -179,8 +234,8 @@ function addRandomCards(
   }
 }
 
-function cardIdsByCategory(category: DeckCategory): string[] {
-  return Object.values(CARD_DEFS_BY_ID)
+function cardIdsByCategory(category: DeckCategory, cardPool: CardDef[]): string[] {
+  return cardPool
     .filter((def) => deckCategory(def) === category)
     .map((def) => def.id);
 }

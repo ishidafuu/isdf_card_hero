@@ -808,6 +808,17 @@ button:disabled {
   color: #3d3f75;
 }
 
+.card-chip.special {
+  background: #fff4db;
+  border-color: #d7b76f;
+  color: #7a4f0e;
+}
+
+.card-chip.special.compact {
+  font-size: 11px;
+  padding: 4px 6px;
+}
+
 .level-detail-list {
   display: grid;
   gap: 8px;
@@ -1252,6 +1263,14 @@ button:disabled {
   white-space: nowrap;
 }
 
+.deck-toggle-group {
+  align-items: center;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  justify-content: flex-end;
+}
+
 .deck-builder-controls {
   align-items: stretch;
   display: flex;
@@ -1442,6 +1461,23 @@ button:disabled {
   overflow: auto;
 }
 
+.catalog-filter-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.catalog-filter-row button {
+  font-size: 12px;
+  min-height: 30px;
+  padding: 5px 8px;
+}
+
+.catalog-filter-row button.selected {
+  border-color: #2f5f91;
+  box-shadow: inset 0 0 0 1px #2f5f91;
+}
+
 .catalog-card-row {
   background: #f8faf4;
   border: 1px solid #d5ddce;
@@ -1453,7 +1489,7 @@ button:disabled {
   cursor: pointer;
   display: grid;
   gap: 6px;
-  grid-template-columns: 28px minmax(0, 1fr) auto;
+  grid-template-columns: 28px minmax(0, 1fr) auto auto;
   min-height: 38px;
   padding: 6px 8px;
 }

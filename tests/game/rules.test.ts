@@ -3,9 +3,12 @@ import {
   buildDeck,
   deckTextFromCardIds,
   getAllCardDefs,
+  getCardDefsByPool,
   getCardDef,
   getCardIconPath,
+  getCardPool,
   getMonsterDef,
+  getSpecialCardDefs,
   parseDeckText,
   summarizeDeckCardIds,
   validateRandomDeck,
@@ -53,6 +56,7 @@ describe("battle prototype rules", () => {
     expect(validateRandomDeck(deck)).toBe(true);
     expect(deck).toHaveLength(30);
     expect([...counts.values()].every((count) => count <= 3)).toBe(true);
+    expect(deck.every((card) => getCardPool(card.cardId) === "normal")).toBe(true);
     expect(categories.front).toBeGreaterThanOrEqual(12);
     expect(categories.back).toBeGreaterThanOrEqual(6);
     expect(categories.magic).toBeGreaterThanOrEqual(6);
@@ -68,8 +72,10 @@ describe("battle prototype rules", () => {
     const summary = summarizeDeckCardIds(parsed.cardIds, parsed.unknownTokens);
 
     expect(parsed.cardIds).toEqual(randomCardIds);
+    expect(parsed.disallowedSpecialTokens).toEqual([]);
     expect(summary.valid).toBe(true);
     expect(summary.total).toBe(30);
+    expect(summary.specialViolations).toEqual([]);
   });
 
   it("reports fixed deck composition and copy limit violations", () => {
@@ -85,6 +91,9 @@ describe("battle prototype rules", () => {
     const cards = getAllCardDefs();
 
     expect(cards).toHaveLength(126);
+    expect(getCardDefsByPool("all")).toHaveLength(126);
+    expect(getSpecialCardDefs()).toHaveLength(0);
+    expect(cards.every((card) => getCardPool(card) === "normal")).toBe(true);
     expect(cards.filter((card) => card.type === "monster" && card.role === "front")).toHaveLength(46);
     expect(cards.filter((card) => card.type === "monster" && card.role === "back")).toHaveLength(26);
     expect(cards.filter((card) => card.type === "magic")).toHaveLength(54);

@@ -53,6 +53,7 @@ export interface CreateInitialGameOptions {
   firstPlayer?: PlayerId;
   playerDeckCardIds?: string[];
   cpuDeckCardIds?: string[];
+  allowSpecialDecks?: Partial<Record<PlayerId, boolean>>;
 }
 
 interface DefeatedMonster {
@@ -72,10 +73,10 @@ interface DamageContext {
 
 export function createInitialGame(seed = Date.now(), options: CreateInitialGameOptions = {}): GameState {
   if (options.playerDeckCardIds) {
-    ensureInitialDeckValid("プレイヤー", options.playerDeckCardIds);
+    ensureInitialDeckValid("プレイヤー", options.playerDeckCardIds, { allowSpecial: !!options.allowSpecialDecks?.player });
   }
   if (options.cpuDeckCardIds) {
-    ensureInitialDeckValid("CPU", options.cpuDeckCardIds);
+    ensureInitialDeckValid("CPU", options.cpuDeckCardIds, { allowSpecial: !!options.allowSpecialDecks?.cpu });
   }
 
   const playerDeck = shuffle(
@@ -105,8 +106,8 @@ export function createInitialGame(seed = Date.now(), options: CreateInitialGameO
   return startTurn(state, firstPlayer);
 }
 
-function ensureInitialDeckValid(label: string, cardIds: string[]): void {
-  const summary = summarizeDeckCardIds(cardIds);
+function ensureInitialDeckValid(label: string, cardIds: string[], options: { allowSpecial: boolean }): void {
+  const summary = summarizeDeckCardIds(cardIds, [], options);
   if (!summary.valid) {
     throw new Error(`${label}の固定デッキが不正です: ${summary.errors.join(" / ")}`);
   }
