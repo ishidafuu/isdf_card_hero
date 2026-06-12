@@ -184,17 +184,20 @@ button:disabled {
   display: grid;
   gap: 10px;
   grid-template-areas: "side battle info";
-  grid-template-columns: minmax(240px, 360px) minmax(390px, 860px) minmax(500px, 560px);
+  grid-template-columns: minmax(240px, 360px) minmax(390px, 860px) minmax(500px, 1fr);
   justify-content: start;
   min-height: 0;
   min-width: 0;
 }
 
 .info-panel {
-  align-self: start;
+  align-self: stretch;
   display: grid;
   gap: 12px;
   grid-area: info;
+  grid-template-rows: auto minmax(0, 1fr);
+  height: calc(100vh - 96px);
+  max-height: calc(100vh - 96px);
   min-height: 0;
   min-width: 0;
 }
@@ -694,6 +697,7 @@ button:disabled {
 .info-panel-body {
   display: grid;
   gap: 10px;
+  grid-template-rows: minmax(0, 1fr);
   min-height: 0;
   min-width: 0;
 }
@@ -1271,7 +1275,11 @@ button:disabled {
 }
 
 .info-panel-body > .catalog-library-panel {
-  overflow: auto;
+  display: grid;
+  grid-template-rows: auto auto minmax(0, 1fr);
+  height: 100%;
+  max-height: none;
+  overflow: hidden;
 }
 
 .zone-empty-panel {
@@ -1617,16 +1625,19 @@ button:disabled {
 }
 
 .info-panel .catalog-library-layout {
+  align-items: stretch;
   grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
-  overflow: visible;
+  overflow: hidden;
 }
 
 .info-panel .catalog-card-grid {
-  max-height: clamp(220px, calc(100vh - 360px), 360px);
+  height: 100%;
+  max-height: none;
   min-height: 0;
 }
 
 .info-panel .catalog-selected-panel {
+  height: 100%;
   max-height: none;
   min-height: 0;
 }
@@ -2139,6 +2150,8 @@ button:disabled {
   }
 
   .info-panel {
+    height: auto;
+    max-height: none;
     order: 3;
   }
 
