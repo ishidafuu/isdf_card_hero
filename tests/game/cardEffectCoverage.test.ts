@@ -12,14 +12,14 @@ import {
   IMPLEMENTED_PERSONALITY_CARD_IDS,
   isNonGameplayNote,
 } from "../../src/game/cardAnnotations";
-import { getAllCardDefs, getMonsterDef } from "../../src/game/cards";
+import { getCardDefsByPool, getMonsterDef } from "../../src/game/cards";
 import type { CommandDef } from "../../src/game/types";
 
 describe("card effect coverage registry", () => {
   it("tracks every imported magic category", () => {
     const actualCategories = [
       ...new Set(
-        getAllCardDefs()
+        getCardDefsByPool("all")
           .filter((card) => card.type === "magic")
           .map((card) => card.category ?? "未分類"),
       ),
@@ -36,7 +36,7 @@ describe("card effect coverage registry", () => {
   it("tracks every special command trait used by imported monster commands", () => {
     const actualTraits = new Set<CommandEffectTrait>();
 
-    for (const card of getAllCardDefs()) {
+    for (const card of getCardDefsByPool("all")) {
       if (card.type !== "monster") {
         continue;
       }
@@ -79,7 +79,7 @@ describe("card effect coverage registry", () => {
   });
 
   it("keeps every visible personality note backed by an implemented personality effect", () => {
-    const visiblePersonalityCards = getAllCardDefs()
+    const visiblePersonalityCards = getCardDefsByPool("all")
       .filter((card) => getCardNoteDisplays(card).some((note) => note.kind === "personality"))
       .map((card) => card.id)
       .sort();
@@ -88,7 +88,7 @@ describe("card effect coverage registry", () => {
   });
 
   it("keeps non-gameplay source annotations out of visible card notes", () => {
-    for (const card of getAllCardDefs()) {
+    for (const card of getCardDefsByPool("all")) {
       for (const note of card.notes ?? []) {
         expect(isNonGameplayNote(note), `${card.id}: ${note}`).toBe(false);
       }
@@ -98,7 +98,6 @@ describe("card effect coverage registry", () => {
   it("keeps Phase 4 card effect gaps closed and product deferrals explicit", () => {
     expect(SIMPLIFIED_OR_PENDING_CARD_EFFECTS).toEqual([]);
     expect(DEFERRED_PRODUCT_DECISIONS.map((decision) => decision.id)).toEqual([
-      "special_cards_planned",
       "cpu_magic_heuristic",
       "temporary_original_icons",
     ]);

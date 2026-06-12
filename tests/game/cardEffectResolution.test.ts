@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { getAllCardDefs, getMonsterDef } from "../../src/game/cards";
+import { getCardDefsByPool, getMonsterDef } from "../../src/game/cards";
 import {
   attackWithCommand,
   createInitialGame,
@@ -13,7 +13,7 @@ let monsterInstanceSequence = 0;
 
 describe("card effect resolution coverage", () => {
   it("resolves every imported magic card effect at least once", () => {
-    const magicCards = getAllCardDefs().filter((card) => card.type === "magic");
+    const magicCards = getCardDefsByPool("all").filter((card) => card.type === "magic");
 
     for (const magic of magicCards) {
       const game = createMagicResolutionGame(magic.id);
@@ -31,7 +31,7 @@ describe("card effect resolution coverage", () => {
   });
 
   it("resolves every imported monster command at least once", () => {
-    const monsterCards = getAllCardDefs().filter((card) => card.type === "monster");
+    const monsterCards = getCardDefsByPool("all").filter((card) => card.type === "monster");
 
     for (const card of monsterCards) {
       for (const level of card.levels) {

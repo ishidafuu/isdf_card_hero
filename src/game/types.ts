@@ -49,6 +49,7 @@ export interface MonsterCardDef {
   name: string;
   type: "monster";
   pool?: CardPool;
+  evolvesFrom?: string[];
   role: MonsterRole;
   maxLevel: number;
   actionLimit?: number;
@@ -136,6 +137,7 @@ export interface PlayerState {
   masterHp: number;
   stones: number;
   masterPowerBonus?: number;
+  masterFrozen?: boolean;
   deck: CardInstance[];
   hand: CardInstance[];
   discard: CardInstance[];
@@ -156,6 +158,12 @@ export interface PendingLevelUp {
   attackerSlotKey: SlotKey;
   maxLevels: number;
   recoilDamage: number;
+  superOptions?: SuperLevelUpOption[];
+}
+
+export interface SuperLevelUpOption {
+  handInstanceId: string;
+  cardId: string;
 }
 
 export interface GameState {
@@ -189,7 +197,7 @@ export interface MagicAction {
   secondaryTarget?: Target;
   secondaryHandInstanceId?: string;
   selectedHandInstanceIds?: string[];
-  searchCategory?: "front" | "back" | "magic";
+  searchCategory?: "front" | "back" | "magic" | "special";
 }
 
 export type MasterActionId = "master_attack" | "wake_up" | "shield";

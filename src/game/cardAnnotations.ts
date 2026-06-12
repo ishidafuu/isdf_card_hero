@@ -3,7 +3,10 @@ import type { CardDef } from "./types";
 export const IMPLEMENTED_PERSONALITY_CARD_IDS = [
   "bomuzo",
   "polyspinner",
+  "card_006",
+  "card_012",
   "card_035",
+  "card_038",
   "card_039",
   "card_044",
   "card_046",
@@ -19,12 +22,16 @@ export const IMPLEMENTED_PERSONALITY_CARD_IDS = [
   "card_081",
   "card_099",
   "card_100",
+  "card_101",
   "card_102",
+  "card_103",
   "card_106",
   "card_109",
   "card_112",
   "card_132",
   "card_133",
+  "card_142",
+  "card_143",
   "card_144",
 ] as const;
 

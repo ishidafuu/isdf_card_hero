@@ -16,6 +16,7 @@ import {
 import {
   attackWithCommand,
   canFocusMonster,
+  canSummonTo,
   createInitialGame,
   discardHandCard,
   endTurn,
@@ -87,18 +88,65 @@ describe("battle prototype rules", () => {
     expect(summary.errors).toContain("同名カードは3枚までです");
   });
 
-  it("imports the non-super original card pool with temporary icons", () => {
+  it("imports the normal and special original card pools with temporary icons", () => {
     const cards = getAllCardDefs();
+    const specialCards = getSpecialCardDefs();
 
     expect(cards).toHaveLength(126);
-    expect(getCardDefsByPool("all")).toHaveLength(126);
-    expect(getSpecialCardDefs()).toHaveLength(0);
+    expect(getCardDefsByPool("all")).toHaveLength(150);
+    expect(specialCards).toHaveLength(24);
     expect(cards.every((card) => getCardPool(card) === "normal")).toBe(true);
+    expect(specialCards.every((card) => getCardPool(card) === "special")).toBe(true);
+    expect(specialCards.every((card) => card.type === "monster" && card.evolvesFrom && card.evolvesFrom.length > 0)).toBe(true);
     expect(cards.filter((card) => card.type === "monster" && card.role === "front")).toHaveLength(46);
     expect(cards.filter((card) => card.type === "monster" && card.role === "back")).toHaveLength(26);
     expect(cards.filter((card) => card.type === "magic")).toHaveLength(54);
-    expect(cards.every((card) => card.icon?.startsWith("/card-icons/co"))).toBe(true);
+    expect(getCardDefsByPool("all").every((card) => card.icon?.startsWith("/card-icons/co"))).toBe(true);
     expect(getCardIconPath("takokke")).toBe("/card-icons/co004.jpg");
+    expect(getCardIconPath("card_006")).toBe("/card-icons/co006.jpg");
+  });
+
+  it("keeps command ids unique within each monster level", () => {
+    const duplicateCommandIds: string[] = [];
+
+    for (const card of getCardDefsByPool("all")) {
+      if (card.type !== "monster") {
+        continue;
+      }
+      for (const level of card.levels) {
+        const seen = new Set<string>();
+        for (const command of level.commands) {
+          if (seen.has(command.id)) {
+            duplicateCommandIds.push(`${card.name} Lv${level.level} ${command.id}`);
+          }
+          seen.add(command.id);
+        }
+      }
+    }
+
+    expect(duplicateCommandIds).toEqual([]);
+  });
+
+  it("requires an explicit special deck opt-in for super cards", () => {
+    const base = buildDeck("special", 555).map((card) => card.cardId);
+    const replaceIndex = base.findIndex((_, index) =>
+      summarizeDeckCardIds(base.map((cardId, candidateIndex) => (candidateIndex === index ? "card_006" : cardId)), [], { allowSpecial: true }).valid,
+    );
+    expect(replaceIndex).toBeGreaterThanOrEqual(0);
+    const withSuper = base.map((cardId, index) => (index === replaceIndex ? "card_006" : cardId));
+    const parsedOff = parseDeckText(deckTextFromCardIds(withSuper));
+    const summaryOff = summarizeDeckCardIds(parsedOff.cardIds, parsedOff.unknownTokens, {
+      disallowedSpecialTokens: parsedOff.disallowedSpecialTokens,
+    });
+    const parsedOn = parseDeckText(deckTextFromCardIds(withSuper), { allowSpecial: true });
+    const summaryOn = summarizeDeckCardIds(parsedOn.cardIds, parsedOn.unknownTokens, { allowSpecial: true });
+
+    expect(parsedOff.disallowedSpecialTokens).toEqual(["ボムキング"]);
+    expect(summaryOff.valid).toBe(false);
+    expect(summaryOff.specialViolations).toEqual(["ボムキング"]);
+    expect(parsedOn.cardIds).toContain("card_006");
+    expect(summaryOn.categories.special).toBe(1);
+    expect(summaryOn.valid).toBe(true);
   });
 
   it("does not keep imported cards marked as unimplemented", () => {
@@ -352,6 +400,93 @@ describe("battle prototype rules", () => {
     expect(attacker?.level).toBe(3);
     expect(attacker?.investedStones).toBe(3);
     expect(next.players.player.stones).toBe(0);
+  });
+
+  it("uses a matching super card from hand when resolving level up", () => {
+    let game = createGameWithPlayerHand([{ cardId: "card_006", instanceId: "bombking" }]);
+    game.players.player.stones = 1;
+    game.slots.player_front_left.monster = createActiveMonster("bomuzo", "player", {
+      level: 2,
+      hp: 5,
+      investedStones: 2,
+    });
+    game.slots.cpu_front_left.monster = createActiveMonster("takokke", "cpu", { hp: 3 });
+
+    game = attackWithCommand(game, {
+      attackerSlotKey: "player_front_left",
+      commandId: "self_bomb",
+      target: { kind: "monster", slotKey: "cpu_front_left" },
+    });
+
+    expect(game.pendingLevelUp?.maxLevels).toBe(1);
+    expect(game.pendingLevelUp?.superOptions).toEqual([{ handInstanceId: "bombking", cardId: "card_006" }]);
+
+    game = resolveLevelUp(game, 1, "bombking");
+
+    const superMonster = game.slots.player_front_left.monster;
+    expect(superMonster?.cardId).toBe("card_006");
+    expect(superMonster?.level).toBe(3);
+    expect(superMonster?.hp).toBe(3);
+    expect(superMonster?.investedStones).toBe(3);
+    expect(game.players.player.hand).toEqual([]);
+    expect(game.players.player.discard.some((card) => card.cardId === "bomuzo")).toBe(true);
+  });
+
+  it("does not allow super cards to be summoned directly", () => {
+    const game = createGameWithPlayerHand([{ cardId: "card_006", instanceId: "bombking" }]);
+    game.players.player.stones = 1;
+
+    expect(canSummonTo(game, "bombking", "player_front_left")).toBe(false);
+    expect(() => summonMonster(game, "bombking", "player_front_left")).toThrow("スーパーカード");
+  });
+
+  it("applies representative super command effects", () => {
+    let game = createInitialGame(108);
+    game.players.player.stones = 10;
+    game.players.cpu.stones = 10;
+    game.slots.player_front_left.monster = createActiveMonster("card_140", "player");
+    game.slots.player_back_left.monster = createActiveMonster("card_141", "player");
+    game.slots.player_front_right.monster = createActiveMonster("card_131", "player");
+    game.slots.player_back_right.monster = createActiveMonster("card_138", "player");
+    game.slots.cpu_front_left.monster = createActiveMonster("takokke", "cpu");
+    game.slots.cpu_back_left.monster = createActiveMonster("sigma", "cpu", {
+      level: 2,
+      investedStones: 2,
+    });
+    game.slots.cpu_front_right.monster = createActiveMonster("card_003", "cpu");
+
+    game = attackWithCommand(game, {
+      attackerSlotKey: "player_front_left",
+      commandId: "コールドブレス",
+      target: { kind: "master", playerId: "cpu" },
+    });
+    expect(game.players.cpu.masterFrozen).toBe(true);
+    game.currentPlayer = "cpu";
+    expect(getMasterActionTargets(game, "master_attack")).toEqual([]);
+    game.currentPlayer = "player";
+
+    game = attackWithCommand(game, {
+      attackerSlotKey: "player_back_left",
+      commandId: "ジャックポット",
+      target: { kind: "monster", slotKey: "player_back_left" },
+    });
+    expect(game.players.player.stones).toBe(11);
+
+    game = attackWithCommand(game, {
+      attackerSlotKey: "player_front_right",
+      commandId: "マナ変化",
+      target: { kind: "monster", slotKey: "cpu_front_left" },
+    });
+    expect(game.slots.cpu_front_left.monster?.cardId).toBe("card_002");
+
+    game = attackWithCommand(game, {
+      attackerSlotKey: "player_back_right",
+      commandId: "レベルムーブ",
+      target: { kind: "monster", slotKey: "cpu_back_left" },
+      secondaryTarget: { kind: "monster", slotKey: "cpu_front_right" },
+    });
+    expect(game.slots.cpu_back_left.monster?.level).toBe(1);
+    expect(game.slots.cpu_front_right.monster?.level).toBe(2);
   });
 
   it("returns all invested stones when a level 3 monster is defeated", () => {
@@ -931,19 +1066,20 @@ describe("battle prototype rules", () => {
       { cardId: "takokke", instanceId: "front_card" },
       { cardId: "yanbaru", instanceId: "back_card" },
       { cardId: "healing", instanceId: "magic_card" },
+      { cardId: "card_006", instanceId: "super_card" },
     ];
     game.players.player.stones = 2;
 
-    expect(getMagicSearchCategories(game, "search")).toEqual(["front", "back", "magic"]);
+    expect(getMagicSearchCategories(game, "search")).toEqual(["front", "back", "magic", "special"]);
 
     game = playMagic(game, {
       handInstanceId: "search",
       target: { kind: "master", playerId: "player" },
-      searchCategory: "back",
+      searchCategory: "special",
     });
 
-    expect(game.players.player.hand.some((card) => card.instanceId === "back_card")).toBe(true);
-    expect(game.players.player.deck.some((card) => card.instanceId === "back_card")).toBe(false);
+    expect(game.players.player.hand.some((card) => card.instanceId === "super_card")).toBe(true);
+    expect(game.players.player.deck.some((card) => card.instanceId === "super_card")).toBe(false);
   });
 
   it("honors selected secondary targets and hand choices instead of defaulting to the first candidate", () => {

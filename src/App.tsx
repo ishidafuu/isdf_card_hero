@@ -11,6 +11,7 @@ import {
   getCardIconPath,
   getCardName,
   getCardPool,
+  getMonsterDef,
   parseDeckText,
   summarizeDeckCardIds,
 } from "./game/cards";
@@ -1376,6 +1377,23 @@ export function App() {
                   </button>
                 ))}
               </div>
+              {game.pendingLevelUp.superOptions && game.pendingLevelUp.superOptions.length > 0 && (
+                <>
+                  <p>スーパーカードで変身</p>
+                  <div className="button-row">
+                    {game.pendingLevelUp.superOptions.map((option) => (
+                      <button
+                        key={option.handInstanceId}
+                        type="button"
+                        onClick={() => applyChange((state) => resolveLevelUp(state, game.pendingLevelUp!.maxLevels, option.handInstanceId))}
+                        disabled={autoPlayEnabled}
+                      >
+                        <CardIcon cardId={option.cardId} /> {getCardName(option.cardId)}
+                      </button>
+                    ))}
+                  </div>
+                </>
+              )}
             </section>
           ) : pendingDropAction ? (
             <section className="side-context-panel">
@@ -1775,6 +1793,14 @@ function operationReasonsForHand(game: GameState, instanceId: string): Operation
     return [{ icon: "🧠", label: "CPUターン中", text: "手札は確認できますが、プレイヤー操作はできません。", tone: "warn" }];
   }
   if (def.type === "monster") {
+    if (getCardPool(def) === "special") {
+      return [{
+        icon: "★",
+        label: "スーパー",
+        text: "対応モンスターがレベルアップ条件を満たした時に変身できます。通常召喚はできません。",
+        tone: "warn",
+      }];
+    }
     const summonTargets = BOARD_SLOT_KEYS.filter((slotKey) => canSummonTo(game, instanceId, slotKey));
     return [{
       icon: "🂠",
@@ -1938,8 +1964,8 @@ function PendingDropActionPanel({ action, game, onAttackCommand, onConfirm, onCa
       <p>{pendingDropActionDescription(action, game)}</p>
       {action.kind === "attackTarget" ? (
         <div className="button-stack">
-          {attackCommands.map((command) => (
-            <button type="button" key={command.id} onClick={() => onAttackCommand(command.id)}>
+          {attackCommands.map((command, index) => (
+            <button type="button" key={`${command.id}_${index}`} onClick={() => onAttackCommand(command.id)}>
               <Icon icon={commandIcon(command)} /> {command.name} {command.power}P
             </button>
           ))}
@@ -2091,7 +2117,7 @@ function AdditionalChoicePanel({
       <div className="button-row">
         {selection.categories.map((category) => (
           <button type="button" key={category} onClick={() => onSearch(category)}>
-            {category === "front" ? "🛡️ 前衛" : category === "back" ? "🏹 後衛" : "✨ 魔法"}
+            {category === "front" ? "🛡️ 前衛" : category === "back" ? "🏹 後衛" : category === "special" ? "★ スーパー" : "✨ 魔法"}
           </button>
         ))}
         <button type="button" onClick={onCancel}><Icon icon="✕" /> キャンセル</button>
@@ -2110,7 +2136,9 @@ interface HandCardPanelProps {
 function HandCardPanel({ card, game, disabled, onDiscard }: HandCardPanelProps) {
   const def = getCardDef(card.cardId);
   const actionHint = def.type === "monster"
-    ? `召喚可能 ${BOARD_SLOT_KEYS.filter((slotKey) => canSummonTo(game, card.instanceId, slotKey)).length}枠`
+    ? getCardPool(def) === "special"
+      ? "スーパー化条件を満たしたレベルアップ時に使用"
+      : `召喚可能 ${BOARD_SLOT_KEYS.filter((slotKey) => canSummonTo(game, card.instanceId, slotKey)).length}枠`
     : `対象 ${getMagicTargets(game, card.instanceId).length}`;
 
   return (
@@ -2303,6 +2331,11 @@ function DeckSummaryView({ summary }: { summary: DeckValidationSummary }) {
           {deckCategoryIcon(category)} {deckCategoryLabel(category)} {summary.categories[category]}
         </span>
       ))}
+      {summary.categories.special > 0 && (
+        <span className="ok">
+          {deckCategoryIcon("special")} {deckCategoryLabel("special")} {summary.categories.special}
+        </span>
+      )}
       <span className={summary.duplicateViolations.length === 0 ? "ok" : "ng"}>
         <Icon icon="🔢" /> 3枚制限
       </span>
@@ -2691,13 +2724,13 @@ function MonsterCommands({ game, slotKey, onCommand, onFocus, onMove }: MonsterC
       )}
       {!hidePreparedInfo && (
         <div className="button-stack">
-          {getMonsterCommands(monster).map((command) => {
+          {getMonsterCommands(monster).map((command, index) => {
             const targets = getCommandTargets(game, slotKey, command.id);
             const disabledReason = getCommandDisabledReason(game, slotKey, command, targets);
             return (
               <button
                 className="command-button"
-                key={command.id}
+                key={`${command.id}_${index}`}
                 type="button"
                 onClick={() => onCommand(command.id, targets)}
                 disabled={!!disabledReason}
@@ -3038,6 +3071,9 @@ function cardTypeLabel(cardId: string): string {
   if (def.type === "magic") {
     return "魔法";
   }
+  if (getCardPool(def) === "special") {
+    return "スーパー";
+  }
   return def.role === "front" ? "前衛" : "後衛";
 }
 
@@ -3058,6 +3094,11 @@ function cardPoolFilterLabel(pool: CardPool | "all"): string {
   return "All";
 }
 
+function superEvolutionText(def: ReturnType<typeof getMonsterDef>): string {
+  const seeds = def.evolvesFrom?.map((cardId) => getCardName(cardId)).join(" / ");
+  return seeds ? `${seeds}から変身` : "レベルアップで変身";
+}
+
 function deckCategoryValid(summary: DeckValidationSummary, category: "front" | "back" | "magic"): boolean {
   if (category === "front") {
     return summary.categories.front >= 12;
@@ -3068,17 +3109,23 @@ function deckCategoryValid(summary: DeckValidationSummary, category: "front" | "
   return summary.categories.magic >= 6;
 }
 
-function deckCategoryIcon(category: "front" | "back" | "magic"): string {
+function deckCategoryIcon(category: "front" | "back" | "magic" | "special"): string {
   if (category === "front") {
     return "🛡️";
   }
   if (category === "back") {
     return "🏹";
   }
+  if (category === "special") {
+    return "★";
+  }
   return "✨";
 }
 
 function deckCategorySortValue(def: ReturnType<typeof getCardDef>): number {
+  if (getCardPool(def) === "special") {
+    return 4;
+  }
   if (def.type === "magic") {
     return 3;
   }
@@ -3091,7 +3138,7 @@ function getDeckCardOptions(allowSpecial: boolean): DeckCardOption[] {
       id: def.id,
       name: def.name,
       pool: getCardPool(def),
-      typeLabel: def.type === "magic" ? "魔法" : def.role === "front" ? "前衛" : "後衛",
+      typeLabel: getCardPool(def) === "special" ? "スーパー" : def.type === "magic" ? "魔法" : def.role === "front" ? "前衛" : "後衛",
       sortValue: deckCategorySortValue(def),
     }))
     .sort((a, b) => a.sortValue - b.sortValue || a.pool.localeCompare(b.pool) || a.name.localeCompare(b.name, "ja"));
@@ -3390,14 +3437,17 @@ function HandCardContent({ cardId }: HandCardContentProps) {
   const firstLevel = def.levels[0];
   const maxHpText = def.levels.map((level) => `Lv${level.level} HP${level.maxHp}`).join(" / ");
   const commandText = firstLevel.commands.map(commandSummary).join(" / ");
+  const isSpecial = getCardPool(def) === "special";
   return (
     <>
       <span className="hand-card-title">
         <strong><CardIcon cardId={def.id} /> {def.name}</strong>
-        <span className="card-chip"><Icon icon={roleIcon(def.role)} /> {def.role === "front" ? "前衛" : "後衛"}</span>
+        <span className="card-chip"><Icon icon={isSpecial ? "★" : roleIcon(def.role)} /> {isSpecial ? "スーパー" : def.role === "front" ? "前衛" : "後衛"}</span>
         <CardPoolChip cardId={def.id} compact />
       </span>
-      <span className="hand-card-meta"><Icon icon="🪨" /> 召喚 1 / <Icon icon="✨" /> MaxLv {def.maxLevel}</span>
+      <span className="hand-card-meta">
+        {isSpecial ? <><Icon icon="✨" /> {superEvolutionText(def)}</> : <><Icon icon="🪨" /> 召喚 1</>} / <Icon icon="✨" /> MaxLv {def.maxLevel}
+      </span>
       <span className="hand-card-meta"><Icon icon="❤️" /> {maxHpText}</span>
       <span className="hand-card-text">{commandText}</span>
       <CardNotes card={def} compact />
@@ -3440,8 +3490,8 @@ function CardDetail({ cardId, showTitle = true }: CardDetailProps) {
       {showTitle && <h3><CardIcon cardId={def.id} /> {def.name}</h3>}
       <div className="card-meta-row">
         <CardPoolChip cardId={def.id} />
-        <span className="card-chip"><Icon icon={roleIcon(def.role)} /> {def.role === "front" ? "前衛" : "後衛"}</span>
-        <span><Icon icon="🪨" /> 召喚 1</span>
+        <span className="card-chip"><Icon icon={getCardPool(def) === "special" ? "★" : roleIcon(def.role)} /> {getCardPool(def) === "special" ? "スーパー" : def.role === "front" ? "前衛" : "後衛"}</span>
+        <span>{getCardPool(def) === "special" ? <><Icon icon="✨" /> {superEvolutionText(def)}</> : <><Icon icon="🪨" /> 召喚 1</>}</span>
         <span><Icon icon="✨" /> MaxLv {def.maxLevel}</span>
         {def.actionLimit && <span><Icon icon="⚡" /> {def.actionLimit}回行動</span>}
       </div>
@@ -3451,8 +3501,8 @@ function CardDetail({ cardId, showTitle = true }: CardDetailProps) {
           <div className="level-detail" key={`${def.id}_${level.level}_${index}`}>
             <strong><Icon icon="✨" /> Lv{level.level} / <Icon icon="❤️" /> HP {level.maxHp}</strong>
             <ul>
-              {level.commands.map((command) => (
-                <li key={command.id}>
+              {level.commands.map((command, commandIndex) => (
+                <li key={`${command.id}_${commandIndex}`}>
                   <span>{commandSummary(command)}</span>
                   <EffectBreakdown
                     compact

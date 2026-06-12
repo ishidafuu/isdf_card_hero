@@ -9,7 +9,7 @@ export const DECK_MAX_COPIES = 3;
 export const DECK_MIN_FRONT = 12;
 export const DECK_MIN_BACK = 6;
 export const DECK_MIN_MAGIC = 6;
-export type DeckCategory = "front" | "back" | "magic";
+export type DeckCategory = "front" | "back" | "magic" | "special";
 export type CardPoolFilter = CardPool | "all";
 
 export interface BuildDeckOptions {
@@ -88,6 +88,11 @@ export function isCardAllowedInDeck(cardId: string, options: DeckValidationOptio
   return options.allowSpecial || getCardPool(cardId) !== "special";
 }
 
+export function isSummonableMonsterCard(cardId: string): boolean {
+  const def = getCardDef(cardId);
+  return def.type === "monster" && getCardPool(def) === "normal";
+}
+
 export function getCardDef(cardId: string): CardDef {
   const def = CARD_DEFS_BY_ID[cardId];
   if (!def) {
@@ -149,7 +154,7 @@ export function summarizeDeckCardIds(
   options: DeckValidationOptions = {},
 ): DeckValidationSummary {
   const counts = new Map<string, number>();
-  const categories = { front: 0, back: 0, magic: 0 };
+  const categories: Record<DeckCategory, number> = { front: 0, back: 0, magic: 0, special: 0 };
   const errors: string[] = [];
   const duplicateViolations: Array<{ cardId: string; count: number }> = [];
   const specialViolations = [...(options.disallowedSpecialTokens ?? [])];
@@ -213,6 +218,9 @@ export function deckCategoryLabel(category: DeckCategory): string {
   if (category === "back") {
     return "後衛";
   }
+  if (category === "special") {
+    return "スーパー";
+  }
   return "魔法";
 }
 
@@ -241,6 +249,9 @@ function cardIdsByCategory(category: DeckCategory, cardPool: CardDef[]): string[
 }
 
 function deckCategory(def: CardDef): DeckCategory {
+  if (getCardPool(def) === "special") {
+    return "special";
+  }
   return def.type === "magic" ? "magic" : def.role;
 }
 

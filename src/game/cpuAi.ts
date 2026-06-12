@@ -1,4 +1,4 @@
-import { getCardDef, getCardName, getMonsterDef } from "./cards";
+import { getCardDef, getCardName, getCardPool, getMonsterDef } from "./cards";
 import {
   attackWithCommand,
   canFocusMonster,
@@ -270,6 +270,18 @@ function listAttackDecisions(state: GameState): CpuDecision[] {
 }
 
 function canUseOwnedMonsterTargetForCommand(state: GameState, attackerSlotKey: SlotKey, commandId: string): boolean {
+  const monster = state.slots[attackerSlotKey].monster;
+  const command = monster ? getMonsterCommands(monster).find((item) => item.id === commandId) : undefined;
+  if (
+    command?.name === "癒しの羽" ||
+    command?.name === "夢幻の光" ||
+    command?.name === "レベルムーブ" ||
+    command?.name === "再生" ||
+    command?.name === "マナ変化" ||
+    command?.name === "コールドブレス"
+  ) {
+    return true;
+  }
   return getCommandHandChoices(state, attackerSlotKey, commandId).length > 0;
 }
 
@@ -660,6 +672,13 @@ function handCardKeepValue(state: GameState, card: { cardId: string }): number {
     return 24;
   }
 
+  if (getCardPool(def) === "special") {
+    const hasSeedInPlay = FIELD_ORDER_BY_PLAYER[state.currentPlayer].some((slotKey) =>
+      def.evolvesFrom?.includes(state.slots[slotKey].monster?.cardId ?? ""),
+    );
+    return hasSeedInPlay ? 58 + def.maxLevel * 8 : 8;
+  }
+
   const ownSlots = FIELD_ORDER_BY_PLAYER[state.currentPlayer];
   const frontCount = ownSlots.filter((slotKey) => state.slots[slotKey].row === "front" && state.slots[slotKey].monster).length;
   const backCount = ownSlots.filter((slotKey) => state.slots[slotKey].row === "back" && state.slots[slotKey].monster).length;
@@ -670,6 +689,9 @@ function handCardKeepValue(state: GameState, card: { cardId: string }): number {
 function handMonsterPlacementValue(state: GameState, cardId: string, slotKey: SlotKey): number {
   const def = getCardDef(cardId);
   if (def.type !== "monster") {
+    return handCardKeepValue(state, { cardId });
+  }
+  if (getCardPool(def) === "special") {
     return handCardKeepValue(state, { cardId });
   }
 
@@ -1064,10 +1086,13 @@ function scoreSearchMagicDecision(state: GameState, action: MagicAction, cost: n
   const category = action.searchCategory ?? "front";
   const searchedCard = state.players[state.currentPlayer].deck.find((card) => {
     const def = getCardDef(card.cardId);
+    if (category === "special") {
+      return getCardPool(def) === "special";
+    }
     if (category === "magic") {
       return def.type === "magic";
     }
-    return def.type === "monster" && def.role === category;
+    return def.type === "monster" && getCardPool(def) === "normal" && def.role === category;
   });
   if (!searchedCard) {
     return -100;
@@ -1224,6 +1249,9 @@ function searchCategoryReasonLabel(category: NonNullable<MagicAction["searchCate
   }
   if (category === "back") {
     return "後衛カード";
+  }
+  if (category === "special") {
+    return "スーパーカード";
   }
   return "マジックカード";
 }

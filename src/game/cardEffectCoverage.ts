@@ -72,9 +72,10 @@ export const CARD_EFFECT_COVERAGE_AREAS: readonly CardEffectCoverageArea[] = [
     id: "card_pool_import",
     title: "カードプール投入状態",
     status: "covered",
-    scope: "スペシャルカードを除く公式カード126枚、仮アイコン、未実装フラグの混入を検出する。",
+    scope: "通常カード126枚とスーパーカード24枚、仮アイコン、未実装フラグの混入を検出する。",
     coveredBy: [
-      "tests/game/rules.test.ts: imports the non-super original card pool with temporary icons",
+      "tests/game/rules.test.ts: imports the normal and special original card pools with temporary icons",
+      "tests/game/rules.test.ts: requires an explicit special deck opt-in for super cards",
       "tests/game/rules.test.ts: does not keep imported cards marked as unimplemented",
     ],
   },
@@ -128,6 +129,7 @@ export const CARD_EFFECT_COVERAGE_AREAS: readonly CardEffectCoverageArea[] = [
       "tests/game/rules.test.ts: spends master HP to draw and converts the HP loss into stone",
       "tests/game/rules.test.ts: applies deck-out penalty on forced draw and grants stone from HP loss",
       "tests/game/rules.test.ts: can raise a level 1 monster by two levels after defeating a level 2 monster",
+      "tests/game/rules.test.ts: uses a matching super card from hand when resolving level up",
       "tests/game/rules.test.ts: returns all invested stones when a level 3 monster is defeated",
       "tests/game/rules.test.ts: applies deterministic random effects for level change, plastone, and Din blast",
     ],
@@ -172,6 +174,7 @@ export const CARD_EFFECT_COVERAGE_AREAS: readonly CardEffectCoverageArea[] = [
       "tests/game/cardOfficialExpectations.test.ts: special magic and curse cards from card_057/card_058/card_061/card_064/card_087/card_090/card_097/card_098/card_124/card_125/card_128/card_129",
       "tests/game/cardOfficialExpectations.test.ts: monster signature commands and traits including Power Horn, Gemini Lance, Nuts Rockle counter, Death Sheep seal, Drill Break, and Soul Switch",
       "tests/game/cardOfficialExpectations.test.ts: monster personality traits including self-bomb, double action, heal up, assist, retreat, suspended animation, devotion, curses, Lv2 counter, whim, and hollow",
+      "tests/game/rules.test.ts: applies representative super command effects",
     ],
     magicCategories: ["パワー魔法", "特殊魔法", "攻撃魔法", "回復魔法", "カード魔法", "空間魔法", "特殊防御魔法"],
     commandTraits: ["stoneCost", "effectText"],
@@ -258,14 +261,6 @@ export const CARD_EFFECT_COVERAGE_AREAS: readonly CardEffectCoverageArea[] = [
 export const SIMPLIFIED_OR_PENDING_CARD_EFFECTS: readonly SimplifiedOrPendingCardEffect[] = [];
 
 export const DEFERRED_PRODUCT_DECISIONS: readonly DeferredProductDecision[] = [
-  {
-    id: "special_cards_planned",
-    title: "スペシャルカード",
-    scope: "公式カードのうち、スペシャルカード枠を通常カード126枚とは別プールとして導入する。",
-    decision: "Deck Setupで明示的に許可した場合だけ固定デッキへ投入し、デフォルトのランダムデッキには混ぜない。",
-    reason: "通常カード126枚の検証基準を維持したまま、スペシャルカードの追加検証を分離するため。",
-    revisitWhen: "CardPoolとDeck Setup許可トグル実装後、公式スペシャルカードデータを取り込む時点。",
-  },
   {
     id: "cpu_magic_heuristic",
     title: "CPUの特殊効果判断",

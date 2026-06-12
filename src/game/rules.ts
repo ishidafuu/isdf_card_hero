@@ -3,7 +3,9 @@ import {
   createDeckFromCardIds,
   getCardDef,
   getCardName,
+  getCardPool,
   getMonsterDef,
+  isSummonableMonsterCard,
   summarizeDeckCardIds,
 } from "./cards";
 import { applyCpuDecision, chooseCpuDecision } from "./cpuAi";
@@ -44,6 +46,7 @@ import type {
   Lane,
   SlotKey,
   SlotState,
+  SuperLevelUpOption,
   Target,
 } from "./types";
 
@@ -177,7 +180,11 @@ export function runAutoStep(state: GameState): GameState {
     return cloneState(state);
   }
   if (state.pendingLevelUp) {
-    return resolveLevelUp(state, state.pendingLevelUp.maxLevels);
+    return resolveLevelUp(
+      state,
+      state.pendingLevelUp.maxLevels,
+      chooseSuperLevelUpOption(state, state.pendingLevelUp)?.handInstanceId,
+    );
   }
 
   const next = cloneState(state);
@@ -202,6 +209,9 @@ export function summonMonster(
   const def = getCardDef(card.cardId);
   if (def.type !== "monster") {
     throw new Error("モンスターカードだけ召喚できます");
+  }
+  if (!isSummonableMonsterCard(card.cardId)) {
+    throw new Error("スーパーカードはレベルアップ時だけ登場できます");
   }
 
   const slot = next.slots[slotKey];
@@ -358,11 +368,15 @@ export function attackWithCommand(state: GameState, action: CommandAction): Game
     : action.attackerSlotKey;
 
   if (action.target.kind === "master") {
+    const beforeHp = next.players[action.target.playerId].masterHp;
     damageMasterByPower(next, action.target.playerId, power, {
       source: command.name,
       kind: "command",
       attackerSlotKey: resolvedAttackerSlotKey,
     });
+    if (command.name === "ライフドレイン" && next.slots[resolvedAttackerSlotKey].monster) {
+      healMonster(next, resolvedAttackerSlotKey, Math.max(0, beforeHp - next.players[action.target.playerId].masterHp));
+    }
     finishCommandSideEffects(next, resolvedAttackerSlotKey, command, hadBerserkPower, hadDamageCurse);
     if (!next.winner && command.recoilDamage) {
       applyRecoil(next, resolvedAttackerSlotKey, command.recoilDamage);
@@ -370,11 +384,16 @@ export function attackWithCommand(state: GameState, action: CommandAction): Game
     return next;
   }
 
+  const targetHpBefore = next.slots[action.target.slotKey].monster?.hp ?? 0;
   const defeated = damageMonster(next, action.target.slotKey, power, {
     source: command.name,
     kind: "command",
     attackerSlotKey: resolvedAttackerSlotKey,
   });
+  if (command.name === "ライフドレイン" && next.slots[resolvedAttackerSlotKey].monster) {
+    const targetHpAfter = next.slots[action.target.slotKey].monster?.hp ?? 0;
+    healMonster(next, resolvedAttackerSlotKey, Math.max(0, targetHpBefore - targetHpAfter));
+  }
   applyPostDamageCommandEffect(next, resolvedAttackerSlotKey, command, action.target, power, !!defeated);
   if (!defeated) {
     finishCommandSideEffects(next, resolvedAttackerSlotKey, command, hadBerserkPower, hadDamageCurse);
@@ -402,18 +421,25 @@ export function attackWithCommand(state: GameState, action: CommandAction): Game
     if (!next.slots[levelUpSlotKey].monster) {
       return next;
     }
+    const superOptions = getSuperLevelUpOptions(next, levelUpSlotKey, maxLevels);
     next.pendingLevelUp = {
       playerId: "player",
       attackerSlotKey: levelUpSlotKey,
       maxLevels,
       recoilDamage: getCommandRecoilDamage(command, power),
+      superOptions: superOptions.length > 0 ? superOptions : undefined,
     };
     appendLog(next, `${monsterName(attacker)}は${maxLevels}レベルまで上げられる`);
     return next;
   }
 
   if (maxLevels > 0) {
-    performLevelUp(next, levelUpSlotKey, maxLevels);
+    const superOption = chooseSuperLevelUpOption(next, { superOptions: getSuperLevelUpOptions(next, levelUpSlotKey, maxLevels) });
+    if (superOption) {
+      performSuperLevelUp(next, levelUpSlotKey, superOption.handInstanceId);
+    } else {
+      performLevelUp(next, levelUpSlotKey, maxLevels);
+    }
   }
   finishCommandSideEffects(next, resolvedAttackerSlotKey, command, hadBerserkPower, hadDamageCurse);
   const recoilDamage = getCommandRecoilDamage(command, power);
@@ -423,7 +449,7 @@ export function attackWithCommand(state: GameState, action: CommandAction): Game
   return next;
 }
 
-export function resolveLevelUp(state: GameState, levels: number): GameState {
+export function resolveLevelUp(state: GameState, levels: number, superHandInstanceId?: string): GameState {
   const next = cloneState(state);
   const pending = next.pendingLevelUp;
   if (!pending) {
@@ -433,7 +459,12 @@ export function resolveLevelUp(state: GameState, levels: number): GameState {
     throw new Error("選択できないレベルアップ数です");
   }
 
-  if (levels > 0) {
+  if (superHandInstanceId) {
+    if (!pending.superOptions?.some((option) => option.handInstanceId === superHandInstanceId)) {
+      throw new Error("選択できないスーパーカードです");
+    }
+    performSuperLevelUp(next, pending.attackerSlotKey, superHandInstanceId);
+  } else if (levels > 0) {
     performLevelUp(next, pending.attackerSlotKey, levels);
   } else {
     appendLog(next, "レベルアップしなかった");
@@ -504,6 +535,9 @@ export function useMasterHpDraw(state: GameState): GameState {
   ensureActionAllowed(next);
 
   const player = next.players[next.currentPlayer];
+  if (player.masterFrozen) {
+    throw new Error("マスターは行動できません");
+  }
   if (player.deck.length === 0) {
     throw new Error("山札が0枚のため、マスターHPドローは使えません");
   }
@@ -641,6 +675,12 @@ function getCommandTargetsUnchecked(
       return !!targetMonster && targetMonster.level > 1 && !targetMonster.levelFixed;
     });
   }
+  if (command.name === "レベルムーブ") {
+    return activeMonsterTargets.filter((target) => {
+      const targetMonster = target.kind === "monster" ? state.slots[target.slotKey].monster : undefined;
+      return !!targetMonster && targetMonster.level > 1 && !targetMonster.levelFixed;
+    });
+  }
   if (command.name === "ヘブンズドア") {
     return activeMonsterTargets;
   }
@@ -657,6 +697,19 @@ function getCommandTargetsUnchecked(
     return [
       ...activeMonsterTargets.filter((target) => target.kind === "monster"),
       { kind: "master", playerId: monster.owner },
+    ];
+  }
+  if (command.name === "癒しの羽" || command.name === "コールドブレス") {
+    return [
+      ...activeMonsterTargets.filter((target) => target.kind === "monster"),
+      { kind: "master", playerId: monster.owner },
+      { kind: "master", playerId: opponent },
+    ];
+  }
+  if (command.name === "神秘のキノコ") {
+    return [
+      { kind: "master", playerId: monster.owner },
+      { kind: "master", playerId: opponent },
     ];
   }
   if (command.name === "ウォッシュ" || command.name === "レベル固定") {
@@ -768,7 +821,8 @@ function isSelfTargetCommand(command: CommandDef): boolean {
     command.name === "パワーチャージ" ||
     command.name === "ドローフォース" ||
     command.name === "レベルアップ" ||
-    command.name === "ソウルスイッチ"
+    command.name === "ソウルスイッチ" ||
+    command.name === "ジャックポット"
   );
 }
 
@@ -784,6 +838,9 @@ export function getMasterActionTargets(state: GameState, actionId: MasterActionI
     return [];
   }
   const player = state.players[state.currentPlayer];
+  if (player.masterFrozen) {
+    return [];
+  }
   if (player.stones < getMasterActionCost(actionId)) {
     return [];
   }
@@ -867,6 +924,12 @@ export function getCommandSecondaryTargets(
   const primarySlotKey = action.target.slotKey;
   const command = getCommand(monster, action.commandId);
   if (command.name !== "ワープ") {
+    if (command.name === "レベルムーブ") {
+      return monsterTargets(state, { excludeSlotKey: primarySlotKey, activeOnly: true }).filter((target) => {
+        const targetMonster = target.kind === "monster" ? state.slots[target.slotKey].monster : undefined;
+        return !!targetMonster && !targetMonster.levelFixed && targetMonster.level < getMonsterDef(targetMonster.cardId).maxLevel;
+      });
+    }
     return [];
   }
   return PLAYER_SLOT_ORDER[state.slots[primarySlotKey].owner]
@@ -880,7 +943,7 @@ export function getMagicHandChoices(state: GameState, handInstanceId: string): C
     return [];
   }
   if (card.cardId === "card_065") {
-    return state.players[state.currentPlayer].hand.filter((handCard) => getCardDef(handCard.cardId).type === "monster");
+    return state.players[state.currentPlayer].hand.filter((handCard) => isSummonableMonsterCard(handCard.cardId));
   }
   if (card.cardId === "card_116") {
     return state.players[state.currentPlayer].hand.filter((handCard) => handCard.instanceId !== handInstanceId);
@@ -897,12 +960,12 @@ export function getCommandHandChoices(state: GameState, attackerSlotKey: SlotKey
   if (command.name !== "ソウルスイッチ") {
     return [];
   }
-  return state.players[monster.owner].hand.filter((card) => getCardDef(card.cardId).type === "monster");
+  return state.players[monster.owner].hand.filter((card) => isSummonableMonsterCard(card.cardId));
 }
 
 export function getMagicSearchCategories(state: GameState, handInstanceId: string): Array<NonNullable<MagicAction["searchCategory"]>> {
   const card = state.players[state.currentPlayer].hand.find((handCard) => handCard.instanceId === handInstanceId);
-  return card?.cardId === "card_123" ? ["front", "back", "magic"] : [];
+  return card?.cardId === "card_123" ? ["front", "back", "magic", "special"] : [];
 }
 
 function getMagicTargetsByCardId(state: GameState, cardId: string): Target[] {
@@ -951,7 +1014,7 @@ function getMagicTargetsByCardId(state: GameState, cardId: string): Target[] {
     return ownMaster;
   }
   if (cardId === "card_057" || cardId === "card_063" || cardId === "card_065" || cardId === "card_128") {
-    if (cardId === "card_065" && !state.players[playerId].hand.some((card) => getCardDef(card.cardId).type === "monster")) {
+    if (cardId === "card_065" && !state.players[playerId].hand.some((card) => isSummonableMonsterCard(card.cardId))) {
       return [];
     }
     return allyActive;
@@ -1470,6 +1533,33 @@ function firstActiveSlotOf(state: GameState, playerId: PlayerId): SlotKey | unde
   return PLAYER_SLOT_ORDER[playerId].find((slotKey) => state.slots[slotKey].monster?.status === "active");
 }
 
+function firstLevelUpCandidateSlot(state: GameState, excludeSlotKey?: SlotKey): SlotKey | undefined {
+  return FIELD_ORDER.find((slotKey) => {
+    if (slotKey === excludeSlotKey) {
+      return false;
+    }
+    const monster = state.slots[slotKey].monster;
+    return !!monster && monster.status === "active" && !monster.levelFixed && monster.level < getMonsterDef(monster.cardId).maxLevel;
+  });
+}
+
+function healPlayerMonsters(state: GameState, playerId: PlayerId, amount: number): void {
+  for (const slotKey of PLAYER_SLOT_ORDER[playerId]) {
+    if (state.slots[slotKey].monster?.status === "active") {
+      healMonster(state, slotKey, amount);
+    }
+  }
+}
+
+function damagePlayerMonsters(state: GameState, playerId: PlayerId, power: number, source: string, attackerSlotKey?: SlotKey): void {
+  const targets = PLAYER_SLOT_ORDER[playerId].filter((slotKey) => state.slots[slotKey].monster?.status === "active");
+  for (const slotKey of targets) {
+    if (state.slots[slotKey].monster) {
+      damageMonster(state, slotKey, power, { source, kind: "effect", attackerSlotKey });
+    }
+  }
+}
+
 function shiftChangeWithHandMonster(state: GameState, slotKey: SlotKey, handInstanceId?: string): void {
   const slot = state.slots[slotKey];
   const current = slot.monster;
@@ -1478,8 +1568,8 @@ function shiftChangeWithHandMonster(state: GameState, slotKey: SlotKey, handInst
   }
   const player = state.players[current.owner];
   const handIndex = handInstanceId
-    ? player.hand.findIndex((card) => card.instanceId === handInstanceId && getCardDef(card.cardId).type === "monster")
-    : player.hand.findIndex((card) => getCardDef(card.cardId).type === "monster");
+    ? player.hand.findIndex((card) => card.instanceId === handInstanceId && isSummonableMonsterCard(card.cardId))
+    : player.hand.findIndex((card) => isSummonableMonsterCard(card.cardId));
   if (handIndex < 0) {
     throw new Error("手札にモンスターがありません");
   }
@@ -1506,6 +1596,19 @@ function shiftChangeWithHandMonster(state: GameState, slotKey: SlotKey, handInst
   appendLog(state, `${monsterName(current)}と手札の${def.name}を入れ替えた`);
 }
 
+function transformMonsterKeepingHp(state: GameState, slotKey: SlotKey, nextCardId: string): void {
+  const monster = requireTargetMonster(state, slotKey);
+  const previousName = monsterName(monster);
+  const nextDef = getMonsterDef(nextCardId);
+  const nextLevel = Math.min(monster.level, nextDef.maxLevel);
+  monster.cardId = nextCardId;
+  monster.level = nextLevel;
+  monster.actionLimit = nextDef.actionLimit ?? 1;
+  monster.usedCommandIds = undefined;
+  monster.revivedOnce = false;
+  appendLog(state, `${previousName}は${nextDef.name}になった（HPはそのまま）`);
+}
+
 function adjacentSlotKeys(slot: SlotState): SlotKey[] {
   return FIELD_ORDER.filter((slotKey) => distanceBetweenSlots(slot, stateSlotPlaceholder(slot, slotKey)) === 1);
 }
@@ -1517,19 +1620,26 @@ function stateSlotPlaceholder(origin: SlotState, slotKey: SlotKey): SlotState {
 
 function rotateFieldMonsters(state: GameState): void {
   for (const playerId of PLAYER_ORDER) {
-    const order = PLAYER_SLOT_ORDER[playerId];
-    const monsters = order.map((slotKey) => state.slots[slotKey].monster);
-    for (let i = 0; i < order.length; i += 1) {
-      const fromIndex = (i - 1 + order.length) % order.length;
-      const nextMonster = monsters[fromIndex];
-      if (nextMonster) {
-        state.slots[order[i]].monster = nextMonster;
-      } else {
-        delete state.slots[order[i]].monster;
-      }
-    }
+    rotatePlayerMonsters(state, playerId, false);
   }
   appendLog(state, "フィールドのモンスターをローテーションした");
+}
+
+function rotatePlayerMonsters(state: GameState, playerId: PlayerId, withLog = true): void {
+  const order = PLAYER_SLOT_ORDER[playerId];
+  const monsters = order.map((slotKey) => state.slots[slotKey].monster);
+  for (let i = 0; i < order.length; i += 1) {
+    const fromIndex = (i - 1 + order.length) % order.length;
+    const nextMonster = monsters[fromIndex];
+    if (nextMonster) {
+      state.slots[order[i]].monster = nextMonster;
+    } else {
+      delete state.slots[order[i]].monster;
+    }
+  }
+  if (withLog) {
+    appendLog(state, `${playerLabel(playerId)}フィールドのモンスターをローテーションした`);
+  }
 }
 
 function reshuffleHand(state: GameState, playerId: PlayerId): void {
@@ -1608,10 +1718,13 @@ function searchCardToHand(
   const player = state.players[playerId];
   const deckIndex = player.deck.findIndex((card) => {
     const def = getCardDef(card.cardId);
+    if (category === "special") {
+      return getCardPool(def) === "special";
+    }
     if (category === "magic") {
       return def.type === "magic";
     }
-    return def.type === "monster" && def.role === category;
+    return def.type === "monster" && getCardPool(def) === "normal" && def.role === category;
   });
   if (deckIndex < 0) {
     appendLog(state, `${categoryLabel(category)}のカードは山札になかった`);
@@ -1742,7 +1855,7 @@ export function canSummonTo(state: GameState, handInstanceId: string, slotKey: S
   }
   const def = getCardDef(card.cardId);
   const slot = state.slots[slotKey];
-  return def.type === "monster" && slot.owner === state.currentPlayer && !slot.monster && player.stones >= 1;
+  return isSummonableMonsterCard(card.cardId) && def.type === "monster" && slot.owner === state.currentPlayer && !slot.monster && player.stones >= 1;
 }
 
 export function targetToKey(target: Target): string {
@@ -2031,6 +2144,10 @@ function decreaseMasterHp(state: GameState, playerId: PlayerId, amount: number, 
   const player = state.players[playerId];
   const actual = Math.min(player.masterHp, amount);
   player.masterHp -= actual;
+  if (actual > 0 && player.masterFrozen) {
+    player.masterFrozen = false;
+    appendLog(state, `${playerLabel(playerId)}のマスターは動けるようになった`);
+  }
   player.stones += actual;
   appendLog(state, `${playerLabel(playerId)}のマスターHPが${actual}減った（${source}）。ストーン+${actual}`);
   if (player.masterHp <= 0) {
@@ -2159,8 +2276,17 @@ function getLevelUpCapacity(state: GameState, attackerSlotKey: SlotKey, defeated
     return 0;
   }
   const def = getMonsterDef(attacker.cardId);
-  const room = def.maxLevel - attacker.level;
+  const room = getPotentialMaxLevel(state, attacker) - attacker.level;
   return Math.max(0, Math.min(defeatedLevel, state.players[attacker.owner].stones, room));
+}
+
+function getPotentialMaxLevel(state: GameState, monster: MonsterState): number {
+  const def = getMonsterDef(monster.cardId);
+  const superEntryLevels = state.players[monster.owner].hand
+    .map((card) => getCardDef(card.cardId))
+    .filter((card): card is MonsterCardDef => card.type === "monster" && getCardPool(card) === "special" && !!card.evolvesFrom?.includes(monster.cardId))
+    .map(superEntryLevel);
+  return Math.max(def.maxLevel, ...superEntryLevels);
 }
 
 function performLevelUp(state: GameState, attackerSlotKey: SlotKey, levels: number): void {
@@ -2183,6 +2309,83 @@ function performLevelUp(state: GameState, attackerSlotKey: SlotKey, levels: numb
   player.stones -= actual;
   monster.hp = getMonsterMaxHp(monster);
   appendLog(state, `${monsterName(monster)}はLv${monster.level}になり、HPが全回復した`);
+}
+
+function getSuperLevelUpOptions(state: GameState, slotKey: SlotKey, maxLevels: number): SuperLevelUpOption[] {
+  const monster = state.slots[slotKey].monster;
+  if (!monster || monster.levelFixed) {
+    return [];
+  }
+  const player = state.players[monster.owner];
+  return player.hand
+    .filter((card) => {
+      const def = getCardDef(card.cardId);
+      if (def.type !== "monster" || getCardPool(def) !== "special" || !def.evolvesFrom?.includes(monster.cardId)) {
+        return false;
+      }
+      const requiredLevels = superEntryLevel(def) - monster.level;
+      return requiredLevels > 0 && requiredLevels <= maxLevels && requiredLevels <= player.stones;
+    })
+    .map((card) => ({ handInstanceId: card.instanceId, cardId: card.cardId }));
+}
+
+function chooseSuperLevelUpOption(
+  state: GameState,
+  pending: Pick<NonNullable<GameState["pendingLevelUp"]>, "superOptions">,
+): SuperLevelUpOption | undefined {
+  return [...(pending.superOptions ?? [])]
+    .sort((a, b) => superLevelUpScore(b.cardId) - superLevelUpScore(a.cardId) || getCardName(a.cardId).localeCompare(getCardName(b.cardId), "ja"))[0];
+}
+
+function performSuperLevelUp(state: GameState, slotKey: SlotKey, handInstanceId: string): void {
+  const slot = state.slots[slotKey];
+  const monster = slot.monster;
+  if (!monster) {
+    throw new Error("スーパー化するモンスターがいません");
+  }
+  const player = state.players[monster.owner];
+  const handIndex = player.hand.findIndex((card) => card.instanceId === handInstanceId);
+  if (handIndex < 0) {
+    throw new Error("選択したスーパーカードが手札にありません");
+  }
+  const superCard = player.hand[handIndex];
+  const superDef = getMonsterDef(superCard.cardId);
+  if (getCardPool(superDef) !== "special" || !superDef.evolvesFrom?.includes(monster.cardId)) {
+    throw new Error("対応していないスーパーカードです");
+  }
+  const entryLevel = superEntryLevel(superDef);
+  const requiredLevels = entryLevel - monster.level;
+  if (requiredLevels <= 0 || player.stones < requiredLevels) {
+    throw new Error("スーパー化に必要なレベルアップ条件を満たしていません");
+  }
+
+  const previousName = monsterName(monster);
+  player.hand.splice(handIndex, 1);
+  player.discard.push({ cardId: monster.cardId, instanceId: monster.instanceId });
+  player.stones -= requiredLevels;
+  monster.cardId = superCard.cardId;
+  monster.instanceId = superCard.instanceId;
+  monster.level = entryLevel;
+  monster.hp = superDef.levels.find((level) => level.level === entryLevel)?.maxHp ?? superDef.levels[0].maxHp;
+  monster.investedStones += requiredLevels;
+  monster.actionLimit = superDef.actionLimit ?? 1;
+  monster.revivedOnce = false;
+  monster.usedCommandIds = undefined;
+  appendLog(state, `${previousName}は${superDef.name}にスーパー化した`);
+}
+
+function superEntryLevel(def: MonsterCardDef): number {
+  return Math.min(...def.levels.map((level) => level.level));
+}
+
+function superLevelUpScore(cardId: string): number {
+  const def = getMonsterDef(cardId);
+  return Math.max(
+    ...def.levels.map((level) =>
+      level.maxHp * 8 +
+      level.commands.reduce((total, command) => total + command.power * 12 + (command.stoneCost ? -command.stoneCost * 4 : 0), 0),
+    ),
+  ) + (def.rarity ?? 0);
 }
 
 function applyRecoil(state: GameState, slotKey: SlotKey, damage: number): void {
@@ -2210,6 +2413,10 @@ function getCommandBasePower(
     appendRandomResultLog(state, "爆雷撃", `${power}P`);
     return power;
   }
+  if (command.name === "最後の叫び") {
+    const attacker = attackerSlot.monster;
+    return attacker ? Math.max(0, getMonsterMaxHp(attacker) - attacker.hp) : 0;
+  }
   if (command.range === "decreasing_straight" && target.kind === "monster") {
     const distance = rangedDistanceBetweenSlots(attackerSlot, state.slots[target.slotKey]);
     return Math.max(1, command.power - Math.max(0, distance - 1));
@@ -2235,6 +2442,18 @@ function applyUtilityCommandEffect(
 
   if (command.name === "レベルダウン" && target.kind === "monster") {
     levelDownMonster(state, target.slotKey);
+    return true;
+  }
+
+  if (command.name === "レベルムーブ" && target.kind === "monster") {
+    const recipientSlotKey = action.secondaryTarget?.kind === "monster"
+      ? action.secondaryTarget.slotKey
+      : firstLevelUpCandidateSlot(state, target.slotKey);
+    if (!recipientSlotKey) {
+      throw new Error("レベルムーブのレベルアップ対象がいません");
+    }
+    levelDownMonster(state, target.slotKey);
+    performLevelUp(state, recipientSlotKey, 1);
     return true;
   }
 
@@ -2296,6 +2515,19 @@ function applyUtilityCommandEffect(
     return true;
   }
 
+  if (command.name === "夢幻の光" && target.kind === "monster") {
+    const targetMonster = requireTargetMonster(state, target.slotKey);
+    const maxLevel = getMonsterDef(targetMonster.cardId).maxLevel;
+    if (targetMonster.level >= maxLevel) {
+      defeatMonster(state, target.slotKey);
+    } else if (!targetMonster.levelFixed && state.players[targetMonster.owner].stones > 0) {
+      performLevelUp(state, target.slotKey, 1);
+    } else {
+      appendLog(state, `${monsterName(targetMonster)}はレベルアップできなかった`);
+    }
+    return true;
+  }
+
   if (command.name === "ソウルスイッチ") {
     switchWithHandMonster(state, attackerSlotKey, action.secondaryHandInstanceId);
     return true;
@@ -2312,6 +2544,52 @@ function applyUtilityCommandEffect(
     } else {
       healMonster(state, target.slotKey, power);
     }
+    return true;
+  }
+
+  if (command.name === "癒しの羽") {
+    if (target.kind === "master") {
+      healMaster(state, target.playerId, power);
+    } else {
+      healMonster(state, target.slotKey, power);
+    }
+    return true;
+  }
+
+  if (command.name === "コールドブレス") {
+    if (target.kind === "master") {
+      state.players[target.playerId].masterFrozen = true;
+      appendLog(state, `${playerLabel(target.playerId)}のマスターは動けなくなった`);
+    } else {
+      const monster = requireTargetMonster(state, target.slotKey);
+      monster.cannotActUntilDamaged = true;
+      appendLog(state, `${monsterName(monster)}は行動できなくなった`);
+    }
+    return true;
+  }
+
+  if (command.name === "神秘のキノコ" && target.kind === "master") {
+    if (target.playerId === attacker.owner) {
+      healPlayerMonsters(state, attacker.owner, power);
+    } else {
+      damagePlayerMonsters(state, target.playerId, power, "神秘のキノコ", attackerSlotKey);
+    }
+    return true;
+  }
+
+  if (command.name === "マナ変化" && target.kind === "monster") {
+    transformMonsterKeepingHp(state, target.slotKey, "card_002");
+    return true;
+  }
+
+  if (command.name === "再生" && target.kind === "monster") {
+    resetMonsterToEntry(state, target.slotKey);
+    return true;
+  }
+
+  if (command.name === "ジャックポット") {
+    state.players[attacker.owner].stones += 4;
+    appendLog(state, `${playerLabel(attacker.owner)}はジャックポットでストーンを4個得た`);
     return true;
   }
 
@@ -2405,6 +2683,10 @@ function applyPostDamageCommandEffect(
   if (command.range === "piercing") {
     damagePiercedTarget(state, target.slotKey, power, command.name, attackerSlotKey);
   }
+  if (attacker.cardId === "card_101") {
+    targetMonster.damageCurse = true;
+    appendLog(state, `${monsterName(targetMonster)}はダメージ呪を受けた`);
+  }
 }
 
 function getCommandRecoilDamage(command: CommandDef, power: number): number {
@@ -2438,10 +2720,15 @@ function finishCommandSideEffects(
   if (
     (attacker.cardId === "card_073" && !isUpperCommand(attacker, command)) ||
     (attacker.cardId === "card_072" && !isUpperCommand(attacker, command) && attacker.hp >= getMonsterMaxHp(attacker)) ||
-    (attacker.cardId === "card_112" && attacker.level >= 3 && !isUpperCommand(attacker, command))
+    (attacker.cardId === "card_112" && attacker.level >= 3 && !isUpperCommand(attacker, command)) ||
+    command.name === "最後の叫び"
   ) {
     defeatMonster(state, attackerSlotKey, { source: "特技後離脱", kind: "effect" });
     return;
+  }
+
+  if (command.name === "エアロターン") {
+    rotatePlayerMonsters(state, opponentOf(attacker.owner));
   }
 
   if (hadBerserkPower) {
@@ -2489,6 +2776,11 @@ function applyAfterDamageTraits(
     }
   }
 
+  if (monster.cardId === "card_142") {
+    state.players[monster.owner].stones += 2;
+    appendLog(state, `${monsterName(monster)}の自己犠牲でストーンを2個得た`);
+  }
+
   if (!context.ignoreCounter && monster.cardId === "card_109") {
     applyNutsRockleAutoCounter(state, targetSlotKey, monster);
   }
@@ -2510,6 +2802,16 @@ function applyAfterDamageTraits(
   if (monster.cardId === "card_102" && monster.level >= 2) {
     damageMonster(state, context.attackerSlotKey, getMonsterCommands(monster)[0]?.power ?? 2, {
       source: "反撃LV2",
+      kind: "effect",
+      attackerSlotKey: targetSlotKey,
+      ignoreCounter: true,
+      ignoreDeathChain: true,
+    });
+  }
+
+  if (monster.cardId === "card_103" && monster.level >= 3) {
+    damageMonster(state, context.attackerSlotKey, getMonsterCommands(monster)[0]?.power ?? 3, {
+      source: "反撃LV3",
       kind: "effect",
       attackerSlotKey: targetSlotKey,
       ignoreCounter: true,
@@ -2824,6 +3126,13 @@ function levelDownMonster(state: GameState, slotKey: SlotKey): void {
     appendLog(state, `${monsterName(monster)}はレベルダウンしなかった`);
     return;
   }
+  const def = getMonsterDef(monster.cardId);
+  const nextLevel = monster.level - 1;
+  if (!def.levels.some((level) => level.level === nextLevel) && getCardPool(def) === "special") {
+    appendLog(state, `${monsterName(monster)}はレベルダウンでスーパー化を保てなかった`);
+    defeatMonster(state, slotKey, { source: "レベルダウン", kind: "effect" });
+    return;
+  }
   monster.level -= 1;
   const returnedStone = Math.min(monster.investedStones - 1, 1);
   monster.investedStones -= returnedStone;
@@ -2897,8 +3206,8 @@ function switchWithHandMonster(state: GameState, slotKey: SlotKey, handInstanceI
   }
   const player = state.players[current.owner];
   const handIndex = handInstanceId
-    ? player.hand.findIndex((card) => card.instanceId === handInstanceId && getCardDef(card.cardId).type === "monster")
-    : player.hand.findIndex((card) => getCardDef(card.cardId).type === "monster");
+    ? player.hand.findIndex((card) => card.instanceId === handInstanceId && isSummonableMonsterCard(card.cardId))
+    : player.hand.findIndex((card) => isSummonableMonsterCard(card.cardId));
   if (handIndex < 0) {
     appendLog(state, "手札に入れ替えられるモンスターがいない");
     return;
@@ -3044,6 +3353,9 @@ function categoryLabel(category: NonNullable<MagicAction["searchCategory"]>): st
   }
   if (category === "back") {
     return "後衛";
+  }
+  if (category === "special") {
+    return "スーパー";
   }
   return "魔法";
 }
