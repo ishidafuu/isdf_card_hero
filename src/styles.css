@@ -185,7 +185,7 @@ button:disabled {
   gap: 10px;
   grid-template-areas: "side battle info";
   grid-template-columns: minmax(240px, 360px) minmax(390px, 860px) minmax(220px, 340px);
-  justify-content: center;
+  justify-content: start;
   min-height: 0;
   min-width: 0;
 }
