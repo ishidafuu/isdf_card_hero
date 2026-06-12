@@ -253,6 +253,21 @@ describe("cpu ai", () => {
     }
   });
 
+  it("treats an enemy that acted last turn as a next-turn shield threat", () => {
+    const game = createCpuGame([]);
+    game.players.cpu.stones = 5;
+    game.slots.cpu_front_left.monster = createActiveMonster("beyond", "cpu", { hp: 2 });
+    game.slots.player_front_left.monster = createActiveMonster("takokke", "player", { actionCount: 1 });
+
+    const decision = chooseCpuDecision(game);
+
+    expect(decision.type).toBe("master_action");
+    if (decision.type === "master_action") {
+      expect(decision.actionId).toBe("shield");
+      expect(decision.target).toEqual({ kind: "monster", slotKey: "cpu_front_left" });
+    }
+  });
+
   it("uses thunder when it can finish the opponent master", () => {
     const game = createCpuGame([{ cardId: "thunder", instanceId: "cpu_thunder_test" }]);
     game.players.cpu.stones = 4;

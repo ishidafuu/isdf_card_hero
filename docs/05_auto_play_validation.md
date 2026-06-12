@@ -139,3 +139,28 @@ npm run validate:auto-play -- --seed-start 640 --count 100 --player-master black
 - failureは0件。
 - warningは0件。
 - 例外、進行不能、未解決レベルアップは発生していない。
+
+## 2026-06-12 CPU追撃/脅威評価後の通常100戦検証
+
+対象:
+
+- 両者CPUオートプレイ
+- ホワイトマスター同士
+- ランダムデッキ
+- seed `400` から `499` までの100戦
+
+検証コマンド:
+
+```sh
+npm run validate:auto-play -- --seed-start 400 --count 100
+```
+
+検証結果:
+
+- PASS
+- 勝者内訳はプレイヤー58勝、CPU42勝。
+- 最大312 auto step / 26 turn。
+- failureは0件。
+- warningは4件。
+- warningはすべてlong gameで、移動多発warningは0件。
+- artifact: `artifacts/auto-play-validation/2026-06-12T09-35-02-089Z/`

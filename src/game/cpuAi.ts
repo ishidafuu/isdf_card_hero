@@ -51,6 +51,18 @@ const SUMMON_SLOT_ORDER_BY_PLAYER: Record<PlayerId, SlotKey[]> = {
 };
 
 const ALL_FIELD_ORDER: SlotKey[] = [...FIELD_ORDER_BY_PLAYER.cpu, ...FIELD_ORDER_BY_PLAYER.player];
+const SAME_TURN_LOOKAHEAD_DEPTH = 1;
+const SAME_TURN_LOOKAHEAD_WIDTH = 2;
+const SAME_TURN_LOOKAHEAD_DISCOUNT = 0.55;
+
+type EvaluatedDecision = { decision: CpuDecision; totalScore: number; index: number; after: GameState };
+type IncomingThreat = { threatened: boolean; lethal: boolean; maxDamage: number };
+type ThreatModel = {
+  masterDamage: Record<PlayerId, number>;
+  monsterThreats: Partial<Record<SlotKey, IncomingThreat>>;
+};
+
+const NO_THREAT: IncomingThreat = { threatened: false, lethal: false, maxDamage: 0 };
 
 export type CpuDecision =
   | {
@@ -104,38 +116,109 @@ export function runCpuDecisionStep(state: GameState): GameState {
 }
 
 export function chooseCpuDecision(state: GameState): CpuDecision {
-  const decisions = listCpuDecisions(state);
   const perspective = state.currentPlayer;
-  const beforeScore = evaluateState(state, perspective);
-  const beforeFutureScore = evaluateFutureTacticalValue(state, perspective);
-  let best: { decision: CpuDecision; totalScore: number; index: number } | undefined;
-  const evaluated: Array<{ decision: CpuDecision; totalScore: number; index: number }> = [];
+  let best: EvaluatedDecision | undefined;
+  const evaluated = evaluateCpuDecisions(state, perspective, {
+    depth: SAME_TURN_LOOKAHEAD_DEPTH,
+    width: SAME_TURN_LOOKAHEAD_WIDTH,
+  });
 
-  decisions.forEach((decision, index) => {
-    let after: GameState;
-    try {
-      after = applyCpuDecision(state, decision);
-    } catch {
-      return;
-    }
-
-    const totalScore =
-      decision.score +
-      evaluateState(after, perspective) -
-      beforeScore +
-      evaluateFutureTacticalValue(after, perspective) -
-      beforeFutureScore;
-    evaluated.push({ decision, totalScore, index });
+  evaluated.forEach((candidate) => {
     if (
       !best ||
-      totalScore > best.totalScore ||
-      (totalScore === best.totalScore && compareTieBreak(decision, best.decision, index, best.index) < 0)
+      candidate.totalScore > best.totalScore ||
+      (candidate.totalScore === best.totalScore &&
+        compareTieBreak(candidate.decision, best.decision, candidate.index, best.index) < 0)
     ) {
-      best = { decision, totalScore, index };
+      best = candidate;
     }
   });
 
   return best ? attachDecisionTrace(best, evaluated) : createEndTurnDecision();
+}
+
+function evaluateCpuDecisions(
+  state: GameState,
+  perspective: PlayerId,
+  options: { depth: number; width: number },
+): EvaluatedDecision[] {
+  const beforeScore = evaluateState(state, perspective);
+  const beforeFutureScore = evaluateFutureTacticalValue(state, perspective, false);
+  const beforeFollowUpScore = bestAttackOpportunityScore(state);
+  const decisions = listCpuDecisions(state);
+
+  const evaluated = decisions.flatMap((decision, index) => {
+    const transition = evaluateDecisionTransition(state, decision, perspective, beforeScore, beforeFutureScore, false);
+    if (!transition) {
+      return [];
+    }
+    return [{ decision, totalScore: transition.totalScore, index, after: transition.after }];
+  });
+
+  if (options.depth <= 0) {
+    return evaluated;
+  }
+
+  const lookaheadIndexes = new Set(
+    evaluated
+      .filter((candidate) => candidate.decision.type !== "end_turn")
+      .sort(
+        (a, b) =>
+          b.totalScore - a.totalScore || compareTieBreak(a.decision, b.decision, a.index, b.index),
+      )
+      .slice(0, options.width)
+      .map((candidate) => candidate.index),
+  );
+  const beforeDetailedFutureScore = evaluateFutureTacticalValue(state, perspective, true);
+
+  return evaluated.map((candidate) => {
+    if (!lookaheadIndexes.has(candidate.index)) {
+      return candidate;
+    }
+    const detailedScore =
+      candidate.decision.score +
+      evaluateState(candidate.after, perspective) -
+      beforeScore +
+      evaluateFutureTacticalValue(candidate.after, perspective, true) -
+      beforeDetailedFutureScore;
+    const lookaheadBonus =
+      SAME_TURN_LOOKAHEAD_DISCOUNT *
+      evaluateSameTurnContinuation(candidate.after, perspective, beforeFollowUpScore);
+    return { ...candidate, totalScore: detailedScore + lookaheadBonus };
+  });
+}
+
+function evaluateDecisionTransition(
+  state: GameState,
+  decision: CpuDecision,
+  perspective: PlayerId,
+  beforeScore: number,
+  beforeFutureScore: number,
+  detailedFuture: boolean,
+): { after: GameState; totalScore: number } | undefined {
+  let after: GameState;
+  try {
+    after = applyCpuDecision(state, decision);
+  } catch {
+    return undefined;
+  }
+
+  return {
+    after,
+    totalScore:
+      decision.score +
+      evaluateState(after, perspective) -
+      beforeScore +
+      evaluateFutureTacticalValue(after, perspective, detailedFuture) -
+      beforeFutureScore,
+  };
+}
+
+function evaluateSameTurnContinuation(state: GameState, perspective: PlayerId, beforeFollowUpScore: number): number {
+  if (state.winner || state.pendingLevelUp || state.currentPlayer !== perspective) {
+    return 0;
+  }
+  return Math.max(0, bestAttackOpportunityScore(state) - beforeFollowUpScore);
 }
 
 export function listCpuDecisions(state: GameState): CpuDecision[] {
@@ -214,14 +297,14 @@ export function evaluateState(state: GameState, perspective: PlayerId = "cpu"): 
   return score;
 }
 
-function evaluateFutureTacticalValue(state: GameState, perspective: PlayerId): number {
+function evaluateFutureTacticalValue(state: GameState, perspective: PlayerId, detailed = true): number {
   if (state.winner) {
     return 0;
   }
 
   const opponent = opponentOf(perspective);
-  const ownBestAttack = bestAttackOpportunityScoreForPlayer(state, perspective);
-  const opponentBestAttack = bestAttackOpportunityScoreForPlayer(state, opponent);
+  const ownBestAttack = bestAttackOpportunityScoreForPlayer(state, perspective, detailed);
+  const opponentBestAttack = bestAttackOpportunityScoreForPlayer(state, opponent, detailed);
   const ownLevelUpPotential = nextTurnLevelUpPotentialForPlayer(state, perspective);
   const opponentLevelUpPotential = nextTurnLevelUpPotentialForPlayer(state, opponent);
   const own = state.players[perspective];
@@ -230,12 +313,30 @@ function evaluateFutureTacticalValue(state: GameState, perspective: PlayerId): n
   const enemyHandPressure = Math.max(0, enemy.hand.length - 4) * 3;
   const ownDeckDanger = own.deck.length <= 2 ? (3 - own.deck.length) * -18 : Math.min(own.deck.length, 12) * 0.5;
   const enemyDeckDanger = enemy.deck.length <= 2 ? (3 - enemy.deck.length) * 12 : Math.min(enemy.deck.length, 12) * -0.35;
+  let detailedScore = 0;
+  if (detailed) {
+    const ownThreatModel = buildThreatModel(state, perspective);
+    const opponentThreatModel = buildThreatModel(state, opponent);
+    const ownMasterDamage = ownThreatModel.masterDamage[opponent];
+    const opponentMasterDamage = opponentThreatModel.masterDamage[perspective];
+    const ownThreatenedMonsterValue = threatenedMonsterValueForPlayer(state, perspective, opponentThreatModel);
+    const opponentThreatenedMonsterValue = threatenedMonsterValueForPlayer(state, opponent, ownThreatModel);
+    const ownLethalPressure = ownMasterDamage >= enemy.masterHp ? 900 : ownMasterDamage * 42;
+    const opponentLethalThreat =
+      opponentMasterDamage >= own.masterHp ? 1_100 : opponentMasterDamage >= 3 ? 190 + opponentMasterDamage * 36 : opponentMasterDamage * 38;
+    detailedScore =
+      ownLethalPressure -
+      opponentLethalThreat +
+      opponentThreatenedMonsterValue * 0.16 -
+      ownThreatenedMonsterValue * 0.24;
+  }
 
   return (
     ownBestAttack * 0.08 -
     opponentBestAttack * 0.16 +
     ownLevelUpPotential * 0.12 -
     opponentLevelUpPotential * 0.18 +
+    detailedScore +
     ownHandPressure +
     enemyHandPressure +
     ownDeckDanger +
@@ -815,13 +916,16 @@ function scoreMoveDecision(state: GameState, after: GameState, fromSlotKey: Slot
     }
   }
 
-  if (createsImmediateAttack(after, moverAfterSlot)) {
-    score += 18;
-  }
   const beforeBestAttack = bestAttackOpportunityScore(state);
   const afterBestAttack = bestAttackOpportunityScore(after);
+  const afterMoverAttack = bestAttackOpportunityScore(after, moverAfterSlot);
+  if (afterMoverAttack > 0) {
+    score += 12 + Math.min(34, afterMoverAttack * 0.1);
+  }
   if (afterBestAttack > beforeBestAttack) {
     score += (afterBestAttack - beforeBestAttack) * 0.45;
+  } else if (currentTurnMoveCount(state) > 0) {
+    score -= 28;
   }
   return score;
 }
@@ -848,7 +952,7 @@ function repeatedMovePenalty(state: GameState, fromSlotKey: SlotKey, toSlotKey: 
 }
 
 function turnMoveCountPenalty(state: GameState): number {
-  const moveCount = (state.turnMoveHistory ?? []).filter((entry) => entry.playerId === state.currentPlayer).length;
+  const moveCount = currentTurnMoveCount(state);
   if (moveCount >= 2) {
     return 260 + (moveCount - 2) * 80;
   }
@@ -856,6 +960,10 @@ function turnMoveCountPenalty(state: GameState): number {
     return 35;
   }
   return 0;
+}
+
+function currentTurnMoveCount(state: GameState): number {
+  return (state.turnMoveHistory ?? []).filter((entry) => entry.playerId === state.currentPlayer).length;
 }
 
 function moveReason(state: GameState, after: GameState, fromSlotKey: SlotKey, toSlotKey: SlotKey): string {
@@ -1286,9 +1394,156 @@ function bestAttackOpportunityScore(
   return best;
 }
 
-function bestAttackOpportunityScoreForPlayer(state: GameState, playerId: PlayerId): number {
-  const next = { ...state, currentPlayer: playerId };
+function bestAttackOpportunityScoreForPlayer(state: GameState, playerId: PlayerId, readyForNextTurn = false): number {
+  const next = readyForNextTurn ? readyPlayerForTacticalEvaluation(state, playerId) : ({ ...state, currentPlayer: playerId } as GameState);
   return bestAttackOpportunityScore(next);
+}
+
+function readyPlayerForTacticalEvaluation(state: GameState, playerId: PlayerId): GameState {
+  const next = structuredClone(state) as GameState;
+  next.currentPlayer = playerId;
+  for (const slotKey of FIELD_ORDER_BY_PLAYER[playerId]) {
+    const monster = next.slots[slotKey].monster;
+    if (!monster) {
+      continue;
+    }
+    if (monster.status === "prepared") {
+      monster.status = "active";
+      monster.actionCount = 0;
+    } else if (monster.status === "active") {
+      monster.actionCount = 0;
+    }
+  }
+  return next;
+}
+
+function buildThreatModel(state: GameState, attackerId: PlayerId): ThreatModel {
+  const readyState = readyPlayerForTacticalEvaluation(state, attackerId);
+  const masterDamage: Record<PlayerId, number> = { player: 0, cpu: 0 };
+  const monsterThreats: Partial<Record<SlotKey, IncomingThreat>> = {};
+
+  for (const slotKey of FIELD_ORDER_BY_PLAYER[attackerId]) {
+    const monster = readyState.slots[slotKey].monster;
+    if (!monster?.status || monster.status !== "active" || monster.actionCount >= monster.actionLimit) {
+      continue;
+    }
+
+    const bestMasterDamage: Record<PlayerId, number> = { player: 0, cpu: 0 };
+    for (const command of getMonsterCommands(monster)) {
+      for (const target of getCommandTargets(readyState, slotKey, command.id)) {
+        if (target.kind === "master" && target.playerId !== attackerId) {
+          bestMasterDamage[target.playerId] = Math.max(bestMasterDamage[target.playerId], Math.max(0, estimateCommandPower(monster, command) - 2));
+          continue;
+        }
+        if (target.kind !== "monster" || readyState.slots[target.slotKey].owner === attackerId) {
+          continue;
+        }
+        const targetMonster = readyState.slots[target.slotKey].monster;
+        if (!targetMonster) {
+          continue;
+        }
+        updateMonsterThreat(monsterThreats, target.slotKey, estimateMonsterDamage(targetMonster, monster, command), targetMonster.hp);
+      }
+    }
+    const actionCount = Math.max(1, monster.actionLimit - monster.actionCount);
+    masterDamage.player += bestMasterDamage.player * actionCount;
+    masterDamage.cpu += bestMasterDamage.cpu * actionCount;
+  }
+
+  let remainingStones = readyState.players[attackerId].stones;
+  const magicMasterDamages = readyState.players[attackerId].hand
+    .map((card) => {
+      const def = getCardDef(card.cardId);
+      if (def.type !== "magic") {
+        return undefined;
+      }
+      const power = estimateDamageMagicPower(card.cardId);
+      if (power <= 0 || remainingStones < def.cost) {
+        return undefined;
+      }
+      const targets = getMagicTargets(readyState, card.instanceId);
+      const masterTargets = targets
+        .filter((target): target is Extract<Target, { kind: "master" }> => target.kind === "master" && target.playerId !== attackerId)
+        .map((target) => ({ playerId: target.playerId, damage: Math.max(0, power - 2), cost: def.cost }));
+
+      for (const target of targets) {
+        if (target.kind !== "monster" || readyState.slots[target.slotKey].owner === attackerId) {
+          continue;
+        }
+        const targetMonster = readyState.slots[target.slotKey].monster;
+        if (targetMonster) {
+          updateMonsterThreat(monsterThreats, target.slotKey, estimatePowerDamageToMonster(targetMonster, power), targetMonster.hp);
+        }
+      }
+
+      return masterTargets;
+    })
+    .flat()
+    .filter((item): item is { playerId: PlayerId; damage: number; cost: number } => !!item && item.damage > 0)
+    .sort((a, b) => b.damage - a.damage || a.cost - b.cost);
+
+  for (const magic of magicMasterDamages) {
+    if (remainingStones < magic.cost) {
+      continue;
+    }
+    masterDamage[magic.playerId] += magic.damage;
+    remainingStones -= magic.cost;
+  }
+
+  return { masterDamage, monsterThreats };
+}
+
+function updateMonsterThreat(
+  threats: Partial<Record<SlotKey, IncomingThreat>>,
+  slotKey: SlotKey,
+  damage: number,
+  targetHp: number,
+): void {
+  if (damage <= 0) {
+    return;
+  }
+  const current = threats[slotKey] ?? NO_THREAT;
+  threats[slotKey] = {
+    threatened: true,
+    lethal: current.lethal || damage >= targetHp,
+    maxDamage: Math.max(current.maxDamage, damage),
+  };
+}
+
+function estimateDamageMagicPower(cardId: string): number {
+  return cardId === "thunder" ? 3 : cardId === "card_092" ? 2 : cardId === "card_026" || cardId === "card_118" ? 1 : 0;
+}
+
+function estimatePowerDamageToMonster(target: MonsterState, power: number): number {
+  if (target.immune) {
+    return 0;
+  }
+  let damage = power;
+  if (target.shielded) {
+    damage = Math.max(0, damage - 1);
+  }
+  if (target.focused) {
+    damage = Math.max(0, damage - 1);
+  }
+  if (target.halfShielded) {
+    damage = Math.max(0, Math.floor(damage / 2));
+  }
+  return damage;
+}
+
+function threatenedMonsterValueForPlayer(state: GameState, playerId: PlayerId, threatModel = buildThreatModel(state, opponentOf(playerId))): number {
+  return FIELD_ORDER_BY_PLAYER[playerId].reduce((total, slotKey) => {
+    const monster = state.slots[slotKey].monster;
+    if (!monster) {
+      return total;
+    }
+    const threat = threatModel.monsterThreats[slotKey] ?? NO_THREAT;
+    if (!threat.threatened) {
+      return total;
+    }
+    const value = monsterValue(state, slotKey);
+    return total + (threat.lethal ? value * 0.85 + 70 : Math.min(monster.hp, threat.maxDamage) * 18 + value * 0.18);
+  }, 0);
 }
 
 function nextTurnLevelUpPotentialForPlayer(state: GameState, playerId: PlayerId): number {
@@ -1350,41 +1605,13 @@ function nextTurnLevelUpPotential(state: GameState, slotKey: SlotKey): number {
   return best;
 }
 
-function incomingThreat(state: GameState, targetSlotKey: SlotKey): { threatened: boolean; lethal: boolean; maxDamage: number } {
+function incomingThreat(state: GameState, targetSlotKey: SlotKey): IncomingThreat {
   const target = state.slots[targetSlotKey].monster;
   if (!target) {
-    return { threatened: false, lethal: false, maxDamage: 0 };
+    return NO_THREAT;
   }
   const opponent = opponentOf(target.owner);
-  const opponentState = structuredClone(state) as GameState;
-  opponentState.currentPlayer = opponent;
-
-  let threatened = false;
-  let lethal = false;
-  let maxDamage = 0;
-  for (const slotKey of FIELD_ORDER_BY_PLAYER[opponent]) {
-    const monster = opponentState.slots[slotKey].monster;
-    if (!monster?.status || monster.status !== "active" || monster.actionCount >= monster.actionLimit) {
-      continue;
-    }
-    for (const command of getMonsterCommands(monster)) {
-      const canTarget = getCommandTargets(opponentState, slotKey, command.id)
-        .some((candidate) => candidate.kind === "monster" && candidate.slotKey === targetSlotKey);
-      if (!canTarget) {
-        continue;
-      }
-      const damage = estimateMonsterDamage(target, monster, command);
-      if (damage > 0) {
-        threatened = true;
-        maxDamage = Math.max(maxDamage, damage);
-      }
-      if (damage >= target.hp) {
-        lethal = true;
-      }
-    }
-  }
-
-  return { threatened, lethal, maxDamage };
+  return buildThreatModel(state, opponent).monsterThreats[targetSlotKey] ?? NO_THREAT;
 }
 
 function estimateAttackScore(state: GameState, attackerSlotKey: SlotKey, command: ReturnType<typeof getMonsterCommands>[number], target: Target): number {
@@ -1442,14 +1669,6 @@ function estimateCommandPower(monster: MonsterState, command: ReturnType<typeof 
     power += 1;
   }
   return Math.max(0, power);
-}
-
-function createsImmediateAttack(state: GameState, slotKey: SlotKey): boolean {
-  const monster = state.slots[slotKey].monster;
-  if (!monster?.status || monster.status !== "active" || monster.actionCount >= monster.actionLimit) {
-    return false;
-  }
-  return getMonsterCommands(monster).some((command) => getCommandTargets(state, slotKey, command.id).length > 0);
 }
 
 function findMonsterSlot(state: GameState, instanceId: string): SlotKey | undefined {
