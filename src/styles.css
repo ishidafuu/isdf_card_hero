@@ -183,15 +183,15 @@ button:disabled {
   align-items: start;
   display: grid;
   gap: 10px;
-  grid-template-areas: "info battle side";
-  grid-template-columns: minmax(220px, 340px) minmax(390px, 860px) minmax(240px, 360px);
+  grid-template-areas: "side battle info";
+  grid-template-columns: minmax(240px, 360px) minmax(390px, 860px) minmax(220px, 340px);
   justify-content: center;
   min-height: 0;
   min-width: 0;
 }
 
 .play-layout.catalog-open {
-  grid-template-columns: minmax(280px, 560px) minmax(360px, 760px) minmax(240px, 340px);
+  grid-template-columns: minmax(240px, 340px) minmax(360px, 760px) minmax(280px, 560px);
 }
 
 .info-panel {
@@ -2125,13 +2125,13 @@ button:disabled {
   .play-layout.catalog-open {
     grid-template-areas:
       "battle"
-      "info"
-      "side";
+      "side"
+      "info";
     grid-template-columns: 1fr;
   }
 
   .info-panel {
-    order: 2;
+    order: 3;
   }
 
   .battle-area {
@@ -2139,7 +2139,7 @@ button:disabled {
   }
 
   .side-panel {
-    order: 3;
+    order: 2;
   }
 
   .info-panel-body > .zone-panel {
