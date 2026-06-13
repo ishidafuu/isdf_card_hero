@@ -209,8 +209,14 @@ function evaluateCpuDecisions(
   const beforeDetailedFutureScore = evaluateFutureTacticalValue(state, perspective, true);
 
   return evaluated.map((candidate) => {
+    const directMasterDetourPenalty = directMasterDamageDetourPenalty(
+      state,
+      candidate,
+      perspective,
+      hasDirectMasterPressure,
+    );
     if (!lookaheadIndexes.has(candidate.index)) {
-      return candidate;
+      return { ...candidate, totalScore: candidate.totalScore - directMasterDetourPenalty };
     }
     const detailedScore =
       candidate.decision.score +
@@ -231,7 +237,7 @@ function evaluateCpuDecisions(
     )
       ? lookaheadBonus * 0.25
       : lookaheadBonus;
-    return { ...candidate, totalScore: detailedScore + adjustedLookaheadBonus };
+    return { ...candidate, totalScore: detailedScore + adjustedLookaheadBonus - directMasterDetourPenalty };
   });
 }
 
@@ -244,13 +250,7 @@ function shouldDampenLookaheadForMasterRace(
   if (!hasDirectMasterPressure || masterDamageFromTransition(before, candidate.after, perspective) > 0) {
     return false;
   }
-  const opponent = opponentOf(perspective);
-  const isMasterRaceRelevant =
-    before.players[perspective].masterHp < before.players[opponent].masterHp ||
-    before.players[opponent].masterHp <= 8 ||
-    before.players[perspective].deck.length <= 3 ||
-    before.players[opponent].deck.length <= 3;
-  if (!isMasterRaceRelevant) {
+  if (!isMasterRaceRelevant(before, perspective)) {
     return false;
   }
   if (candidate.decision.type === "master_action" && candidate.decision.actionId === "shield") {
@@ -260,6 +260,50 @@ function shouldDampenLookaheadForMasterRace(
     return !!candidate.after.slots[candidate.decision.action.target.slotKey].monster;
   }
   return candidate.decision.type === "move" || candidate.decision.type === "focus" || candidate.decision.type === "summon";
+}
+
+function directMasterDamageDetourPenalty(
+  before: GameState,
+  candidate: EvaluatedDecision,
+  perspective: PlayerId,
+  hasDirectMasterPressure: boolean,
+): number {
+  if (
+    !hasDirectMasterPressure ||
+    masterDamageFromTransition(before, candidate.after, perspective) > 0 ||
+    !isMasterRaceRelevant(before, perspective)
+  ) {
+    return 0;
+  }
+  if (candidate.decision.type !== "attack" || candidate.decision.action.target.kind !== "monster") {
+    return 0;
+  }
+  if (!candidate.after.slots[candidate.decision.action.target.slotKey].monster) {
+    return 0;
+  }
+
+  const directDamage = bestDirectMasterDamageForPlayer(before, perspective);
+  if (directDamage <= 0) {
+    return 0;
+  }
+  const opponent = opponentOf(perspective);
+  const blackMasterPressure = before.players[perspective].masterId === "black";
+  return (
+    (blackMasterPressure ? 180 : 80) +
+    directDamage * (blackMasterPressure ? 90 : 45) +
+    (before.players[opponent].masterHp <= 5 ? 60 : 0)
+  );
+}
+
+function isMasterRaceRelevant(state: GameState, perspective: PlayerId): boolean {
+  const opponent = opponentOf(perspective);
+  return (
+    state.players[perspective].masterId === "black" ||
+    state.players[perspective].masterHp < state.players[opponent].masterHp ||
+    state.players[opponent].masterHp <= 8 ||
+    state.players[perspective].deck.length <= 3 ||
+    state.players[opponent].deck.length <= 3
+  );
 }
 
 function masterDamageFromTransition(before: GameState, after: GameState, perspective: PlayerId): number {

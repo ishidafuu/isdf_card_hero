@@ -129,3 +129,50 @@ npm run benchmark:deck-suite -- --suite stress --seed-start 430 --count 2
 4. 評価関数を小さく補正する。
 5. `core`、`holdout`、`stress` の順に確認する。
 6. 結果をAI改善ロードマップへ追記する。
+
+## Phase 5 実行メモ
+
+実行日: 2026-06-13
+
+### 監査スナップショット
+
+```sh
+npm run audit:deck-submissions -- --out-dir artifacts/deck-submission-audit/phase5 --top 12
+```
+
+- 524件を監査。
+- 上位12件に `submission-pro-no-rare8-black-493` が入り、Pro黒8なしの実戦的なアグロ/石テンポ検証デッキとして扱える。
+
+### 補正対象
+
+`submission-pro-no-rare8-black-493` / seed `430` / `challenger-as-cpu` で、強AIがバーサクパワー後に直撃1点を捨て、ポリスピナーへの非撃破削りを選んでいた。
+
+補正後は同局面のstep 14差分が消え、強AIはマスターへ直撃する。
+
+```sh
+npm run diff:ai -- --seed 430 --deck-preset submission-pro-no-rare8-black-493 --direction challenger-as-cpu --max-diffs 4
+```
+
+- 補正前: winner player、117 steps / 11 turns、step 14で非撃破削り。
+- 補正後: winner player、88 steps / 8 turns、step 14の非撃破削り差分なし。
+
+### 軽量ゲート結果
+
+```sh
+npm run benchmark:deck-suite -- --suite smoke --seed-start 430 --count 2 --max-steps 700 --max-turns 160 --json artifacts/deck-suite-benchmark/phase5-smoke.json
+npm run benchmark:deck-suite -- --suite core --seed-start 430 --count 1 --max-steps 700 --max-turns 160 --json artifacts/deck-suite-benchmark/phase5-core-count1.json
+npm run benchmark:deck-suite -- --suite holdout --seed-start 450 --count 1 --max-steps 700 --max-turns 160 --json artifacts/deck-suite-benchmark/phase5-holdout-count1.json
+npm run benchmark:deck-suite -- --suite stress --seed-start 430 --count 1 --max-steps 700 --max-turns 160 --json artifacts/deck-suite-benchmark/phase5-stress-count1.json
+```
+
+| Suite | Result | Games | Wins stable/strong | Warnings | Max |
+| --- | --- | ---: | ---: | ---: | --- |
+| smoke count2 | PASS | 32 | 19 / 13 | 2 | 165 steps / 13 turns |
+| core count1 | PASS | 80 | 34 / 46 | 7 | 355 steps / 27 turns |
+| holdout count1 | PASS | 40 | 20 / 20 | 4 | 326 steps / 24 turns |
+| stress count1 | PASS | 24 | 10 / 14 | 0 | 162 steps / 35 turns |
+
+次候補:
+
+- 終盤に「強い候補があるのにターン終了」警告が出る局面を、投稿デッキIDつきで優先レビューする。
+- 長期戦warningは `submission-pro-no-rare8-white-882` と `submission-pro-no-rare8-white-206` を個別に見る。

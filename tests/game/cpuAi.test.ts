@@ -1,6 +1,12 @@
 import { describe, expect, it } from "vitest";
 import { getMonsterDef } from "../../src/game/cards";
 import { applyCpuDecision, chooseCpuDecision, listCpuDecisions } from "../../src/game/cpuAi";
+import {
+  buildDeckPresetCardIds,
+  deckPresetAllowsSpecial,
+  getDeckPreset,
+  type DeckPresetId,
+} from "../../src/game/deckPresets";
 import { attackWithCommand, createInitialGame, endTurn, runAutoStep, runCpuStep } from "../../src/game/rules";
 import type { CardInstance, GameState, MonsterState, PlayerId } from "../../src/game/types";
 
@@ -179,6 +185,30 @@ describe("cpu ai", () => {
       ),
     ).toBe(false);
   });
+
+  it("keeps black strong AI on direct master damage after berserk power in a submission deck", () => {
+    let game = createSubmissionPresetMirrorGame("submission-pro-no-rare8-black-493", 430);
+    const profiles = { player: "stable", cpu: "strong" } as const;
+
+    for (let step = 0; step < 13; step += 1) {
+      game = runAutoStep(game, { profiles });
+    }
+
+    const berserkDecision = chooseCpuDecision(game, { profile: "strong" });
+    expect(berserkDecision.type).toBe("master_action");
+    if (berserkDecision.type !== "master_action") {
+      return;
+    }
+    expect(berserkDecision.actionId).toBe("berserk_power");
+    game = applyCpuDecision(game, berserkDecision);
+
+    const attackDecision = chooseCpuDecision(game, { profile: "strong" });
+
+    expect(attackDecision.type).toBe("attack");
+    if (attackDecision.type === "attack") {
+      expect(attackDecision.action.target).toEqual({ kind: "master", playerId: "player" });
+    }
+  }, 30_000);
 
   it("lists black master earth anger when the field-wide exchange is favorable", () => {
     const game = createCpuGame();
@@ -732,6 +762,19 @@ function createPlayerAutoGame(hand: CardInstance[] = []): GameState {
   game.players.player.discard = [];
   game.players.cpu.hand = [];
   return game;
+}
+
+function createSubmissionPresetMirrorGame(presetId: DeckPresetId, seed: number): GameState {
+  const preset = getDeckPreset(presetId);
+  const cardIds = buildDeckPresetCardIds(presetId);
+  const allowSpecial = deckPresetAllowsSpecial(presetId);
+  const masterId = preset.masterId ?? "white";
+  return createInitialGame(seed, {
+    masterIds: { player: masterId, cpu: masterId },
+    playerDeckCardIds: cardIds,
+    cpuDeckCardIds: cardIds,
+    allowSpecialDecks: { player: allowSpecial, cpu: allowSpecial },
+  });
 }
 
 function createActiveMonster(

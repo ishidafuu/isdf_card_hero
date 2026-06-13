@@ -285,20 +285,29 @@ npm run diff:ai -- --seed 432 --direction challenger-as-player --max-diffs 16
 - `stress` で特殊/極端構成のwarningと長期戦を別管理できる。
 - 悪化seedを投稿デッキIDつきで再現、diff診断できる。
 
+Phase 5 実行結果:
+
+- `submission-pro-no-rare8-black-493` / seed `430` / `challenger-as-cpu` で、バーサクパワー後に直撃1点を捨てる差分を確認。
+- 黒マスターで直撃打点がある場合は、HP同点でもマスター打点レースとして扱う。
+- 直撃可能な局面で、相手モンスターを倒せない削りに迂回する手へ追加ペナルティを入れた。
+- 補正後、同seedのstep 14差分は消え、117 steps / 11 turns から 88 steps / 8 turns に短縮。
+- `smoke` count2、`core` count1、`holdout` count1、`stress` count1 はfailure 0でPASS。
+
 ## 次のコミット候補
 
-1. 投稿テンプレデッキ検証の初回ベースライン
-   - `audit:deck-submissions`
-   - `benchmark:deck-suite -- --suite smoke`
-   - 悪化seedを `diff:ai --deck-preset` で確認する
+1. 終盤ターン終了警告の補正
+   - `core` count1で7件、`holdout` count1で4件を確認
+   - 代表例: `submission-pro-with-rare8-black-999` seed `430`、`submission-pro-no-rare8-black-408` seed `430`
+   - 「攻撃候補があるのにend_turn」を、行動済み/射程外/反動死/リーサルのどれかに分類してから補正する
 
 2. 防御判断の局面限定補正
    - seed `431 challenger-as-cpu` と `432 challenger-as-player` を対象にする
    - シールド一律強化ではなく、被リーサル/次ターンレベルアップ維持だけを扱う
 
-3. 終盤focus抑制
-   - HPが低い、相手HPが低い、山札が少ない局面で `focus` の価値を再評価
-   - seed `437` のlong game warningをレビューしてから着手する
+3. 長期戦warningの短縮
+   - `submission-pro-no-rare8-white-882` seed `430`: 355 steps / 27 turns
+   - `submission-pro-no-rare8-white-206` seed `450`: 326 steps / 24 turns
+   - HPが低い、相手HPが低い、山札が少ない局面で `focus` / 召喚 / 防御の価値を再評価する
 
 4. マスター別評価の検証
    - `--player-master black --cpu-master black` と `--player-master white --cpu-master white` で100戦検証する
