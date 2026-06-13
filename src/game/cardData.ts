@@ -11,10 +11,6 @@ export const CARD_DEFS = {
     "icon": "/card-icons/co001.jpg",
     "rarity": 1,
     "memberRatings": {
-      "spd": {
-        "average": 1.5,
-        "votes": 151
-      },
       "proBlack": {
         "average": 1.5,
         "votes": 152
@@ -66,10 +62,6 @@ export const CARD_DEFS = {
     "icon": "/card-icons/co002.jpg",
     "rarity": 1,
     "memberRatings": {
-      "spd": {
-        "average": 1.4,
-        "votes": 118
-      },
       "proBlack": {
         "average": 1.4,
         "votes": 120
@@ -121,10 +113,6 @@ export const CARD_DEFS = {
     "icon": "/card-icons/co003.jpg",
     "rarity": 1,
     "memberRatings": {
-      "spd": {
-        "average": 1.7,
-        "votes": 109
-      },
       "proBlack": {
         "average": 1.6,
         "votes": 118
@@ -176,10 +164,6 @@ export const CARD_DEFS = {
     "icon": "/card-icons/co004.jpg",
     "rarity": 1,
     "memberRatings": {
-      "spd": {
-        "average": 2,
-        "votes": 109
-      },
       "proBlack": {
         "average": 1.7,
         "votes": 109
@@ -231,10 +215,6 @@ export const CARD_DEFS = {
     "icon": "/card-icons/co005.jpg",
     "rarity": 2,
     "memberRatings": {
-      "spd": {
-        "average": 3.6,
-        "votes": 127
-      },
       "proBlack": {
         "average": 4,
         "votes": 131
@@ -310,10 +290,6 @@ export const CARD_DEFS = {
     "icon": "/card-icons/co006.jpg",
     "rarity": 5,
     "memberRatings": {
-      "spd": {
-        "average": 2.6,
-        "votes": 103
-      },
       "proBlack": {
         "average": 3.2,
         "votes": 110
@@ -363,10 +339,6 @@ export const CARD_DEFS = {
     "icon": "/card-icons/co007.jpg",
     "rarity": 3,
     "memberRatings": {
-      "spd": {
-        "average": 2.8,
-        "votes": 98
-      },
       "proBlack": {
         "average": 1.6,
         "votes": 95
@@ -458,10 +430,6 @@ export const CARD_DEFS = {
     "icon": "/card-icons/co008.jpg",
     "rarity": 3,
     "memberRatings": {
-      "spd": {
-        "average": 3.6,
-        "votes": 105
-      },
       "proBlack": {
         "average": 2.3,
         "votes": 98
@@ -531,10 +499,6 @@ export const CARD_DEFS = {
     "icon": "/card-icons/co009.jpg",
     "rarity": 5,
     "memberRatings": {
-      "spd": {
-        "average": 2.9,
-        "votes": 101
-      },
       "proBlack": {
         "average": 2.4,
         "votes": 101
@@ -608,10 +572,6 @@ export const CARD_DEFS = {
     "icon": "/card-icons/co010.jpg",
     "rarity": 6,
     "memberRatings": {
-      "spd": {
-        "average": 3,
-        "votes": 90
-      },
       "proBlack": {
         "average": 2.4,
         "votes": 92
@@ -659,10 +619,6 @@ export const CARD_DEFS = {
     "icon": "/card-icons/co011.jpg",
     "rarity": 5,
     "memberRatings": {
-      "spd": {
-        "average": 3,
-        "votes": 125
-      },
       "proBlack": {
         "average": 4.6,
         "votes": 137
@@ -721,10 +677,6 @@ export const CARD_DEFS = {
     "icon": "/card-icons/co012.jpg",
     "rarity": 6,
     "memberRatings": {
-      "spd": {
-        "average": 2.7,
-        "votes": 105
-      },
       "proBlack": {
         "average": 2.8,
         "votes": 108
@@ -766,10 +718,6 @@ export const CARD_DEFS = {
     "icon": "/card-icons/co013.jpg",
     "rarity": 5,
     "memberRatings": {
-      "spd": {
-        "average": 4.3,
-        "votes": 113
-      },
       "proBlack": {
         "average": 3,
         "votes": 105
@@ -841,10 +789,6 @@ export const CARD_DEFS = {
     "icon": "/card-icons/co014.jpg",
     "rarity": 6,
     "memberRatings": {
-      "spd": {
-        "average": 4.6,
-        "votes": 105
-      },
       "proBlack": {
         "average": 3,
         "votes": 97
@@ -891,10 +835,6 @@ export const CARD_DEFS = {
     "icon": "/card-icons/co015.jpg",
     "rarity": 5,
     "memberRatings": {
-      "spd": {
-        "average": 2.2,
-        "votes": 78
-      },
       "proBlack": {
         "average": 2.5,
         "votes": 79
@@ -942,10 +882,6 @@ export const CARD_DEFS = {
     "icon": "/card-icons/co016.jpg",
     "rarity": 6,
     "memberRatings": {
-      "spd": {
-        "average": 2.6,
-        "votes": 95
-      },
       "proBlack": {
         "average": 3.2,
         "votes": 96
@@ -1010,10 +946,6 @@ export const CARD_DEFS = {
     "icon": "/card-icons/co017.jpg",
     "rarity": 1,
     "memberRatings": {
-      "spd": {
-        "average": 1.8,
-        "votes": 87
-      },
       "proBlack": {
         "average": 1.8,
         "votes": 88
@@ -1081,10 +1013,6 @@ export const CARD_DEFS = {
     "icon": "/card-icons/co018.jpg",
     "rarity": 1,
     "memberRatings": {
-      "spd": {
-        "average": 1.5,
-        "votes": 85
-      },
       "proBlack": {
         "average": 1.4,
         "votes": 86
@@ -1176,10 +1104,6 @@ export const CARD_DEFS = {
     "icon": "/card-icons/co019.jpg",
     "rarity": 2,
     "memberRatings": {
-      "spd": {
-        "average": 3.3,
-        "votes": 90
-      },
       "proBlack": {
         "average": 3.3,
         "votes": 93
@@ -1247,10 +1171,6 @@ export const CARD_DEFS = {
     "icon": "/card-icons/co020.jpg",
     "rarity": 2,
     "memberRatings": {
-      "spd": {
-        "average": 2.6,
-        "votes": 77
-      },
       "proBlack": {
         "average": 2.5,
         "votes": 79
@@ -1324,10 +1244,6 @@ export const CARD_DEFS = {
     "icon": "/card-icons/co021.jpg",
     "rarity": 5,
     "memberRatings": {
-      "spd": {
-        "average": 2.8,
-        "votes": 71
-      },
       "proBlack": {
         "average": 2.8,
         "votes": 71
@@ -1374,10 +1290,6 @@ export const CARD_DEFS = {
     "icon": "/card-icons/co022.jpg",
     "rarity": 4,
     "memberRatings": {
-      "spd": {
-        "average": 3,
-        "votes": 82
-      },
       "proBlack": {
         "average": 2.5,
         "votes": 78
@@ -1467,10 +1379,6 @@ export const CARD_DEFS = {
     "icon": "/card-icons/co023.jpg",
     "rarity": 6,
     "memberRatings": {
-      "spd": {
-        "average": 4.4,
-        "votes": 105
-      },
       "proBlack": {
         "average": 1.8,
         "votes": 95
@@ -1538,10 +1446,6 @@ export const CARD_DEFS = {
     "icon": "/card-icons/co024.jpg",
     "rarity": 1,
     "memberRatings": {
-      "spd": {
-        "average": 1.6,
-        "votes": 65
-      },
       "proBlack": {
         "average": 1.5,
         "votes": 70
@@ -1570,10 +1474,6 @@ export const CARD_DEFS = {
     "icon": "/card-icons/co025.jpg",
     "rarity": 1,
     "memberRatings": {
-      "spd": {
-        "average": 1.9,
-        "votes": 78
-      },
       "proBlack": {
         "average": 1.6,
         "votes": 80
@@ -1601,10 +1501,6 @@ export const CARD_DEFS = {
     "icon": "/card-icons/co026.jpg",
     "rarity": 1,
     "memberRatings": {
-      "spd": {
-        "average": 3.5,
-        "votes": 84
-      },
       "proBlack": {
         "average": 1.8,
         "votes": 75
@@ -1631,10 +1527,6 @@ export const CARD_DEFS = {
     "icon": "/card-icons/co027.jpg",
     "rarity": 2,
     "memberRatings": {
-      "spd": {
-        "average": 2,
-        "votes": 60
-      },
       "proBlack": {
         "average": 1.8,
         "votes": 66
@@ -1662,10 +1554,6 @@ export const CARD_DEFS = {
     "icon": "/card-icons/co028.jpg",
     "rarity": 3,
     "memberRatings": {
-      "spd": {
-        "average": 2.2,
-        "votes": 69
-      },
       "proBlack": {
         "average": 2.1,
         "votes": 74
@@ -1692,10 +1580,6 @@ export const CARD_DEFS = {
     "icon": "/card-icons/co029.jpg",
     "rarity": 4,
     "memberRatings": {
-      "spd": {
-        "average": 3.2,
-        "votes": 74
-      },
       "proBlack": {
         "average": 3.4,
         "votes": 77
@@ -1722,10 +1606,6 @@ export const CARD_DEFS = {
     "icon": "/card-icons/co030.jpg",
     "rarity": 5,
     "memberRatings": {
-      "spd": {
-        "average": 2.8,
-        "votes": 69
-      },
       "proBlack": {
         "average": 2.4,
         "votes": 73
@@ -1753,10 +1633,6 @@ export const CARD_DEFS = {
     "icon": "/card-icons/co031.jpg",
     "rarity": 6,
     "memberRatings": {
-      "spd": {
-        "average": 3.2,
-        "votes": 75
-      },
       "proBlack": {
         "average": 3.4,
         "votes": 82
@@ -1783,10 +1659,6 @@ export const CARD_DEFS = {
     "icon": "/card-icons/co032.jpg",
     "rarity": 7,
     "memberRatings": {
-      "spd": {
-        "average": 4.3,
-        "votes": 104
-      },
       "proBlack": {
         "average": 3.3,
         "votes": 104
@@ -1816,10 +1688,6 @@ export const CARD_DEFS = {
     "icon": "/card-icons/co033.jpg",
     "rarity": 1,
     "memberRatings": {
-      "spd": {
-        "average": 2.2,
-        "votes": 62
-      },
       "proBlack": {
         "average": 1.9,
         "votes": 66
@@ -1893,10 +1761,6 @@ export const CARD_DEFS = {
     "icon": "/card-icons/co034.jpg",
     "rarity": 5,
     "memberRatings": {
-      "spd": {
-        "average": 3.1,
-        "votes": 64
-      },
       "proBlack": {
         "average": 2.2,
         "votes": 64
@@ -1935,10 +1799,6 @@ export const CARD_DEFS = {
     "icon": "/card-icons/co035.jpg",
     "rarity": 3,
     "memberRatings": {
-      "spd": {
-        "average": 2.1,
-        "votes": 62
-      },
       "proBlack": {
         "average": 2.3,
         "votes": 70
@@ -2041,10 +1901,6 @@ export const CARD_DEFS = {
     "icon": "/card-icons/co036.jpg",
     "rarity": 5,
     "memberRatings": {
-      "spd": {
-        "average": 2.4,
-        "votes": 51
-      },
       "proBlack": {
         "average": 2.4,
         "votes": 57
@@ -2093,10 +1949,6 @@ export const CARD_DEFS = {
     "icon": "/card-icons/co037.jpg",
     "rarity": 4,
     "memberRatings": {
-      "spd": {
-        "average": 3.2,
-        "votes": 80
-      },
       "proBlack": {
         "average": 3.3,
         "votes": 83
@@ -2160,10 +2012,6 @@ export const CARD_DEFS = {
     "icon": "/card-icons/co038.jpg",
     "rarity": 5,
     "memberRatings": {
-      "spd": {
-        "average": 2.7,
-        "votes": 60
-      },
       "proBlack": {
         "average": 2,
         "votes": 59
@@ -2213,10 +2061,6 @@ export const CARD_DEFS = {
     "icon": "/card-icons/co039.jpg",
     "rarity": 4,
     "memberRatings": {
-      "spd": {
-        "average": 2.4,
-        "votes": 69
-      },
       "proBlack": {
         "average": 3.1,
         "votes": 78
@@ -2304,10 +2148,6 @@ export const CARD_DEFS = {
     "icon": "/card-icons/co040.jpg",
     "rarity": 4,
     "memberRatings": {
-      "spd": {
-        "average": 2.8,
-        "votes": 65
-      },
       "proBlack": {
         "average": 2.3,
         "votes": 66
@@ -2378,10 +2218,6 @@ export const CARD_DEFS = {
     "icon": "/card-icons/co041.jpg",
     "rarity": 5,
     "memberRatings": {
-      "spd": {
-        "average": 3,
-        "votes": 71
-      },
       "proBlack": {
         "average": 2.6,
         "votes": 74
@@ -2446,10 +2282,6 @@ export const CARD_DEFS = {
     "icon": "/card-icons/co042.jpg",
     "rarity": 6,
     "memberRatings": {
-      "spd": {
-        "average": 3.9,
-        "votes": 70
-      },
       "proBlack": {
         "average": 3.3,
         "votes": 71
@@ -2496,10 +2328,6 @@ export const CARD_DEFS = {
     "icon": "/card-icons/co043.jpg",
     "rarity": 5,
     "memberRatings": {
-      "spd": {
-        "average": 2.5,
-        "votes": 56
-      },
       "proBlack": {
         "average": 2.1,
         "votes": 63
@@ -2560,10 +2388,6 @@ export const CARD_DEFS = {
     "icon": "/card-icons/co044.jpg",
     "rarity": 5,
     "memberRatings": {
-      "spd": {
-        "average": 2.6,
-        "votes": 64
-      },
       "proBlack": {
         "average": 2.3,
         "votes": 70
@@ -2617,10 +2441,6 @@ export const CARD_DEFS = {
     "icon": "/card-icons/co045.jpg",
     "rarity": 5,
     "memberRatings": {
-      "spd": {
-        "average": 3.5,
-        "votes": 74
-      },
       "proBlack": {
         "average": 3.8,
         "votes": 75
@@ -2715,10 +2535,6 @@ export const CARD_DEFS = {
     "icon": "/card-icons/co046.jpg",
     "rarity": 6,
     "memberRatings": {
-      "spd": {
-        "average": 2.3,
-        "votes": 60
-      },
       "proBlack": {
         "average": 3.1,
         "votes": 71
@@ -2759,10 +2575,6 @@ export const CARD_DEFS = {
     "icon": "/card-icons/co047.jpg",
     "rarity": 7,
     "memberRatings": {
-      "spd": {
-        "average": 4.5,
-        "votes": 121
-      },
       "proBlack": {
         "average": 4.3,
         "votes": 124
@@ -2827,10 +2639,6 @@ export const CARD_DEFS = {
     "icon": "/card-icons/co048.jpg",
     "rarity": 1,
     "memberRatings": {
-      "spd": {
-        "average": 2.2,
-        "votes": 59
-      },
       "proBlack": {
         "average": 1.7,
         "votes": 63
@@ -2900,10 +2708,6 @@ export const CARD_DEFS = {
     "icon": "/card-icons/co049.jpg",
     "rarity": 2,
     "memberRatings": {
-      "spd": {
-        "average": 2.9,
-        "votes": 59
-      },
       "proBlack": {
         "average": 2.2,
         "votes": 61
@@ -2971,10 +2775,6 @@ export const CARD_DEFS = {
     "icon": "/card-icons/co050.jpg",
     "rarity": 2,
     "memberRatings": {
-      "spd": {
-        "average": 1.9,
-        "votes": 56
-      },
       "proBlack": {
         "average": 3.4,
         "votes": 66
@@ -3021,10 +2821,6 @@ export const CARD_DEFS = {
     "icon": "/card-icons/co051.jpg",
     "rarity": 3,
     "memberRatings": {
-      "spd": {
-        "average": 3.3,
-        "votes": 68
-      },
       "proBlack": {
         "average": 3.5,
         "votes": 71
@@ -3095,10 +2891,6 @@ export const CARD_DEFS = {
     "icon": "/card-icons/co052.jpg",
     "rarity": 5,
     "memberRatings": {
-      "spd": {
-        "average": 2.1,
-        "votes": 53
-      },
       "proBlack": {
         "average": 2.3,
         "votes": 59
@@ -3171,10 +2963,6 @@ export const CARD_DEFS = {
     "icon": "/card-icons/co053.jpg",
     "rarity": 5,
     "memberRatings": {
-      "spd": {
-        "average": 3,
-        "votes": 63
-      },
       "proBlack": {
         "average": 2.5,
         "votes": 62
@@ -3250,10 +3038,6 @@ export const CARD_DEFS = {
     "icon": "/card-icons/co054.jpg",
     "rarity": 6,
     "memberRatings": {
-      "spd": {
-        "average": 2.4,
-        "votes": 49
-      },
       "proBlack": {
         "average": 2,
         "votes": 51
@@ -3302,10 +3086,6 @@ export const CARD_DEFS = {
     "icon": "/card-icons/co055.jpg",
     "rarity": 1,
     "memberRatings": {
-      "spd": {
-        "average": 2.3,
-        "votes": 52
-      },
       "proBlack": {
         "average": 2.1,
         "votes": 57
@@ -3333,10 +3113,6 @@ export const CARD_DEFS = {
     "icon": "/card-icons/co056.jpg",
     "rarity": 1,
     "memberRatings": {
-      "spd": {
-        "average": 2.5,
-        "votes": 57
-      },
       "proBlack": {
         "average": 2.3,
         "votes": 58
@@ -3363,10 +3139,6 @@ export const CARD_DEFS = {
     "icon": "/card-icons/co057.jpg",
     "rarity": 1,
     "memberRatings": {
-      "spd": {
-        "average": 2.8,
-        "votes": 62
-      },
       "proBlack": {
         "average": 2.2,
         "votes": 60
@@ -3393,10 +3165,6 @@ export const CARD_DEFS = {
     "icon": "/card-icons/co058.jpg",
     "rarity": 2,
     "memberRatings": {
-      "spd": {
-        "average": 2.4,
-        "votes": 50
-      },
       "proBlack": {
         "average": 2.3,
         "votes": 55
@@ -3424,10 +3192,6 @@ export const CARD_DEFS = {
     "icon": "/card-icons/co059.jpg",
     "rarity": 2,
     "memberRatings": {
-      "spd": {
-        "average": 3.2,
-        "votes": 62
-      },
       "proBlack": {
         "average": 3.3,
         "votes": 66
@@ -3455,10 +3219,6 @@ export const CARD_DEFS = {
     "icon": "/card-icons/co060.jpg",
     "rarity": 3,
     "memberRatings": {
-      "spd": {
-        "average": 1.9,
-        "votes": 48
-      },
       "proBlack": {
         "average": 1.8,
         "votes": 52
@@ -3486,10 +3246,6 @@ export const CARD_DEFS = {
     "icon": "/card-icons/co061.jpg",
     "rarity": 4,
     "memberRatings": {
-      "spd": {
-        "average": 2,
-        "votes": 47
-      },
       "proBlack": {
         "average": 1.9,
         "votes": 54
@@ -3516,10 +3272,6 @@ export const CARD_DEFS = {
     "icon": "/card-icons/co062.jpg",
     "rarity": 5,
     "memberRatings": {
-      "spd": {
-        "average": 2.2,
-        "votes": 51
-      },
       "proBlack": {
         "average": 1.9,
         "votes": 58
@@ -3547,10 +3299,6 @@ export const CARD_DEFS = {
     "icon": "/card-icons/co063.jpg",
     "rarity": 5,
     "memberRatings": {
-      "spd": {
-        "average": 3.1,
-        "votes": 59
-      },
       "proBlack": {
         "average": 3,
         "votes": 64
@@ -3578,10 +3326,6 @@ export const CARD_DEFS = {
     "icon": "/card-icons/co064.jpg",
     "rarity": 6,
     "memberRatings": {
-      "spd": {
-        "average": 3.2,
-        "votes": 62
-      },
       "proBlack": {
         "average": 3.9,
         "votes": 69
@@ -3608,10 +3352,6 @@ export const CARD_DEFS = {
     "icon": "/card-icons/co065.jpg",
     "rarity": 6,
     "memberRatings": {
-      "spd": {
-        "average": 2.4,
-        "votes": 50
-      },
       "proBlack": {
         "average": 1.8,
         "votes": 55
@@ -3638,10 +3378,6 @@ export const CARD_DEFS = {
     "icon": "/card-icons/co066.jpg",
     "rarity": 1,
     "memberRatings": {
-      "spd": {
-        "average": 3,
-        "votes": 52
-      },
       "proBlack": {
         "average": 2.5,
         "votes": 55
@@ -3689,10 +3425,6 @@ export const CARD_DEFS = {
     "icon": "/card-icons/co067.jpg",
     "rarity": 1,
     "memberRatings": {
-      "spd": {
-        "average": 1.7,
-        "votes": 51
-      },
       "proBlack": {
         "average": 1.7,
         "votes": 55
@@ -3776,10 +3508,6 @@ export const CARD_DEFS = {
     "icon": "/card-icons/co068.jpg",
     "rarity": 5,
     "memberRatings": {
-      "spd": {
-        "average": 2.1,
-        "votes": 49
-      },
       "proBlack": {
         "average": 2.6,
         "votes": 53
@@ -3826,10 +3554,6 @@ export const CARD_DEFS = {
     "icon": "/card-icons/co069.jpg",
     "rarity": 2,
     "memberRatings": {
-      "spd": {
-        "average": 2.7,
-        "votes": 58
-      },
       "proBlack": {
         "average": 3.3,
         "votes": 63
@@ -3900,10 +3624,6 @@ export const CARD_DEFS = {
     "icon": "/card-icons/co070.jpg",
     "rarity": 2,
     "memberRatings": {
-      "spd": {
-        "average": 1.4,
-        "votes": 48
-      },
       "proBlack": {
         "average": 2.5,
         "votes": 59
@@ -3971,10 +3691,6 @@ export const CARD_DEFS = {
     "icon": "/card-icons/co071.jpg",
     "rarity": 3,
     "memberRatings": {
-      "spd": {
-        "average": 2.6,
-        "votes": 53
-      },
       "proBlack": {
         "average": 2.8,
         "votes": 62
@@ -4026,10 +3742,6 @@ export const CARD_DEFS = {
     "icon": "/card-icons/co072.jpg",
     "rarity": 5,
     "memberRatings": {
-      "spd": {
-        "average": 1.3,
-        "votes": 50
-      },
       "proBlack": {
         "average": 3.4,
         "votes": 67
@@ -4079,10 +3791,6 @@ export const CARD_DEFS = {
     "icon": "/card-icons/co073.jpg",
     "rarity": 5,
     "memberRatings": {
-      "spd": {
-        "average": 1.8,
-        "votes": 58
-      },
       "proBlack": {
         "average": 4.1,
         "votes": 73
@@ -4152,10 +3860,6 @@ export const CARD_DEFS = {
     "icon": "/card-icons/co074.jpg",
     "rarity": 5,
     "memberRatings": {
-      "spd": {
-        "average": 2.7,
-        "votes": 56
-      },
       "proBlack": {
         "average": 2.6,
         "votes": 59
@@ -4220,10 +3924,6 @@ export const CARD_DEFS = {
     "icon": "/card-icons/co075.jpg",
     "rarity": 6,
     "memberRatings": {
-      "spd": {
-        "average": 3.3,
-        "votes": 54
-      },
       "proBlack": {
         "average": 2.8,
         "votes": 61
@@ -4262,10 +3962,6 @@ export const CARD_DEFS = {
     "icon": "/card-icons/co076.jpg",
     "rarity": 6,
     "memberRatings": {
-      "spd": {
-        "average": 3.3,
-        "votes": 54
-      },
       "proBlack": {
         "average": 2.6,
         "votes": 61
@@ -4332,10 +4028,6 @@ export const CARD_DEFS = {
     "icon": "/card-icons/co077.jpg",
     "rarity": 6,
     "memberRatings": {
-      "spd": {
-        "average": 3.1,
-        "votes": 63
-      },
       "proBlack": {
         "average": 2.7,
         "votes": 63
@@ -4376,10 +4068,6 @@ export const CARD_DEFS = {
     "icon": "/card-icons/co078.jpg",
     "rarity": 1,
     "memberRatings": {
-      "spd": {
-        "average": 2.3,
-        "votes": 56
-      },
       "proBlack": {
         "average": 2.5,
         "votes": 63
@@ -4452,10 +4140,6 @@ export const CARD_DEFS = {
     "icon": "/card-icons/co079.jpg",
     "rarity": 6,
     "memberRatings": {
-      "spd": {
-        "average": 2.6,
-        "votes": 56
-      },
       "proBlack": {
         "average": 3,
         "votes": 64
@@ -4502,10 +4186,6 @@ export const CARD_DEFS = {
     "icon": "/card-icons/co080.jpg",
     "rarity": 2,
     "memberRatings": {
-      "spd": {
-        "average": 1.8,
-        "votes": 51
-      },
       "proBlack": {
         "average": 2.9,
         "votes": 65
@@ -4555,10 +4235,6 @@ export const CARD_DEFS = {
     "icon": "/card-icons/co081.jpg",
     "rarity": 3,
     "memberRatings": {
-      "spd": {
-        "average": 2.2,
-        "votes": 49
-      },
       "proBlack": {
         "average": 2.3,
         "votes": 54
@@ -4607,10 +4283,6 @@ export const CARD_DEFS = {
     "icon": "/card-icons/co082.jpg",
     "rarity": 5,
     "memberRatings": {
-      "spd": {
-        "average": 2.6,
-        "votes": 47
-      },
       "proBlack": {
         "average": 2.8,
         "votes": 54
@@ -4659,10 +4331,6 @@ export const CARD_DEFS = {
     "icon": "/card-icons/co083.jpg",
     "rarity": 5,
     "memberRatings": {
-      "spd": {
-        "average": 2.1,
-        "votes": 45
-      },
       "proBlack": {
         "average": 2.6,
         "votes": 53
@@ -4731,10 +4399,6 @@ export const CARD_DEFS = {
     "icon": "/card-icons/co084.jpg",
     "rarity": 5,
     "memberRatings": {
-      "spd": {
-        "average": 2.2,
-        "votes": 44
-      },
       "proBlack": {
         "average": 2.5,
         "votes": 53
@@ -4803,10 +4467,6 @@ export const CARD_DEFS = {
     "icon": "/card-icons/co085.jpg",
     "rarity": 6,
     "memberRatings": {
-      "spd": {
-        "average": 2.1,
-        "votes": 57
-      },
       "proBlack": {
         "average": 2.8,
         "votes": 64
@@ -4855,10 +4515,6 @@ export const CARD_DEFS = {
     "icon": "/card-icons/co086.jpg",
     "rarity": 1,
     "memberRatings": {
-      "spd": {
-        "average": 1.9,
-        "votes": 44
-      },
       "proBlack": {
         "average": 1.9,
         "votes": 49
@@ -4886,10 +4542,6 @@ export const CARD_DEFS = {
     "icon": "/card-icons/co087.jpg",
     "rarity": 2,
     "memberRatings": {
-      "spd": {
-        "average": 1.7,
-        "votes": 43
-      },
       "proBlack": {
         "average": 2.2,
         "votes": 50
@@ -4916,10 +4568,6 @@ export const CARD_DEFS = {
     "icon": "/card-icons/co088.jpg",
     "rarity": 3,
     "memberRatings": {
-      "spd": {
-        "average": 3.8,
-        "votes": 61
-      },
       "proBlack": {
         "average": 3.1,
         "votes": 63
@@ -4947,10 +4595,6 @@ export const CARD_DEFS = {
     "icon": "/card-icons/co089.jpg",
     "rarity": 3,
     "memberRatings": {
-      "spd": {
-        "average": 2.9,
-        "votes": 54
-      },
       "proBlack": {
         "average": 2.6,
         "votes": 58
@@ -4978,10 +4622,6 @@ export const CARD_DEFS = {
     "icon": "/card-icons/co090.jpg",
     "rarity": 3,
     "memberRatings": {
-      "spd": {
-        "average": 3.9,
-        "votes": 54
-      },
       "proBlack": {
         "average": 1.6,
         "votes": 53
@@ -5008,10 +4648,6 @@ export const CARD_DEFS = {
     "icon": "/card-icons/co091.jpg",
     "rarity": 4,
     "memberRatings": {
-      "spd": {
-        "average": 2.3,
-        "votes": 46
-      },
       "proBlack": {
         "average": 2.4,
         "votes": 51
@@ -5039,10 +4675,6 @@ export const CARD_DEFS = {
     "icon": "/card-icons/co092.jpg",
     "rarity": 4,
     "memberRatings": {
-      "spd": {
-        "average": 3.3,
-        "votes": 46
-      },
       "proBlack": {
         "average": 1.7,
         "votes": 47
@@ -5069,10 +4701,6 @@ export const CARD_DEFS = {
     "icon": "/card-icons/co093.jpg",
     "rarity": 5,
     "memberRatings": {
-      "spd": {
-        "average": 2.6,
-        "votes": 40
-      },
       "proBlack": {
         "average": 3.7,
         "votes": 53
@@ -5099,10 +4727,6 @@ export const CARD_DEFS = {
     "icon": "/card-icons/co094.jpg",
     "rarity": 5,
     "memberRatings": {
-      "spd": {
-        "average": 2.1,
-        "votes": 49
-      },
       "proBlack": {
         "average": 1.8,
         "votes": 45
@@ -5130,10 +4754,6 @@ export const CARD_DEFS = {
     "icon": "/card-icons/co095.jpg",
     "rarity": 5,
     "memberRatings": {
-      "spd": {
-        "average": 2.5,
-        "votes": 49
-      },
       "proBlack": {
         "average": 2.1,
         "votes": 54
@@ -5161,10 +4781,6 @@ export const CARD_DEFS = {
     "icon": "/card-icons/co096.jpg",
     "rarity": 6,
     "memberRatings": {
-      "spd": {
-        "average": 2.5,
-        "votes": 58
-      },
       "proBlack": {
         "average": 2.2,
         "votes": 57
@@ -5194,10 +4810,6 @@ export const CARD_DEFS = {
     "icon": "/card-icons/co097.jpg",
     "rarity": 6,
     "memberRatings": {
-      "spd": {
-        "average": 3.8,
-        "votes": 54
-      },
       "proBlack": {
         "average": 3.9,
         "votes": 62
@@ -5225,10 +4837,6 @@ export const CARD_DEFS = {
     "icon": "/card-icons/co098.jpg",
     "rarity": 6,
     "memberRatings": {
-      "spd": {
-        "average": 3.4,
-        "votes": 50
-      },
       "proBlack": {
         "average": 3.3,
         "votes": 59
@@ -5256,10 +4864,6 @@ export const CARD_DEFS = {
     "icon": "/card-icons/co099.jpg",
     "rarity": 1,
     "memberRatings": {
-      "spd": {
-        "average": 2,
-        "votes": 16
-      },
       "proBlack": {
         "average": 3,
         "votes": 54
@@ -5313,10 +4917,6 @@ export const CARD_DEFS = {
     "icon": "/card-icons/co100.jpg",
     "rarity": 1,
     "memberRatings": {
-      "spd": {
-        "average": 1.7,
-        "votes": 42
-      },
       "proBlack": {
         "average": 2.8,
         "votes": 56
@@ -5374,10 +4974,6 @@ export const CARD_DEFS = {
     "icon": "/card-icons/co101.jpg",
     "rarity": 5,
     "memberRatings": {
-      "spd": {
-        "average": 2.1,
-        "votes": 36
-      },
       "proBlack": {
         "average": 2.1,
         "votes": 47
@@ -5418,10 +5014,6 @@ export const CARD_DEFS = {
     "icon": "/card-icons/co102.jpg",
     "rarity": 1,
     "memberRatings": {
-      "spd": {
-        "average": 2.3,
-        "votes": 45
-      },
       "proBlack": {
         "average": 2.1,
         "votes": 51
@@ -5479,10 +5071,6 @@ export const CARD_DEFS = {
     "icon": "/card-icons/co103.jpg",
     "rarity": 6,
     "memberRatings": {
-      "spd": {
-        "average": 2.9,
-        "votes": 54
-      },
       "proBlack": {
         "average": 3.1,
         "votes": 60
@@ -5536,10 +5124,6 @@ export const CARD_DEFS = {
     "icon": "/card-icons/co104.jpg",
     "rarity": 2,
     "memberRatings": {
-      "spd": {
-        "average": 2.4,
-        "votes": 14
-      },
       "proBlack": {
         "average": 3.1,
         "votes": 51
@@ -5609,10 +5193,6 @@ export const CARD_DEFS = {
     "icon": "/card-icons/co105.jpg",
     "rarity": 3,
     "memberRatings": {
-      "spd": {
-        "average": 2.5,
-        "votes": 17
-      },
       "proBlack": {
         "average": 4.2,
         "votes": 67
@@ -5681,10 +5261,6 @@ export const CARD_DEFS = {
     "icon": "/card-icons/co106.jpg",
     "rarity": 4,
     "memberRatings": {
-      "spd": {
-        "average": 2.4,
-        "votes": 11
-      },
       "proBlack": {
         "average": 3.9,
         "votes": 52
@@ -5753,10 +5329,6 @@ export const CARD_DEFS = {
     "icon": "/card-icons/co107.jpg",
     "rarity": 5,
     "memberRatings": {
-      "spd": {
-        "average": 1.4,
-        "votes": 37
-      },
       "proBlack": {
         "average": 3.8,
         "votes": 63
@@ -5825,10 +5397,6 @@ export const CARD_DEFS = {
     "icon": "/card-icons/co108.jpg",
     "rarity": 5,
     "memberRatings": {
-      "spd": {
-        "average": 1.5,
-        "votes": 44
-      },
       "proBlack": {
         "average": 3.8,
         "votes": 63
@@ -5897,10 +5465,6 @@ export const CARD_DEFS = {
     "icon": "/card-icons/co109.jpg",
     "rarity": 6,
     "memberRatings": {
-      "spd": {
-        "average": 1.5,
-        "votes": 48
-      },
       "proBlack": {
         "average": 4.1,
         "votes": 73
@@ -5941,10 +5505,6 @@ export const CARD_DEFS = {
     "icon": "/card-icons/co110.jpg",
     "rarity": 2,
     "memberRatings": {
-      "spd": {
-        "average": 1.3,
-        "votes": 44
-      },
       "proBlack": {
         "average": 1.8,
         "votes": 57
@@ -5992,10 +5552,6 @@ export const CARD_DEFS = {
     "icon": "/card-icons/co111.jpg",
     "rarity": 4,
     "memberRatings": {
-      "spd": {
-        "average": 1.7,
-        "votes": 11
-      },
       "proBlack": {
         "average": 2.1,
         "votes": 48
@@ -6043,10 +5599,6 @@ export const CARD_DEFS = {
     "icon": "/card-icons/co112.jpg",
     "rarity": 4,
     "memberRatings": {
-      "spd": {
-        "average": 1.5,
-        "votes": 8
-      },
       "proBlack": {
         "average": 1.9,
         "votes": 51
@@ -6134,10 +5686,6 @@ export const CARD_DEFS = {
     "icon": "/card-icons/co113.jpg",
     "rarity": 1,
     "memberRatings": {
-      "spd": {
-        "average": 1.6,
-        "votes": 7
-      },
       "proBlack": {
         "average": 3.6,
         "votes": 45
@@ -6164,10 +5712,6 @@ export const CARD_DEFS = {
     "icon": "/card-icons/co114.jpg",
     "rarity": 1,
     "memberRatings": {
-      "spd": {
-        "average": 1.8,
-        "votes": 9
-      },
       "proBlack": {
         "average": 2,
         "votes": 44
@@ -6194,10 +5738,6 @@ export const CARD_DEFS = {
     "icon": "/card-icons/co115.jpg",
     "rarity": 1,
     "memberRatings": {
-      "spd": {
-        "average": 1.9,
-        "votes": 8
-      },
       "proBlack": {
         "average": 2.7,
         "votes": 46
@@ -6224,10 +5764,6 @@ export const CARD_DEFS = {
     "icon": "/card-icons/co116.jpg",
     "rarity": 1,
     "memberRatings": {
-      "spd": {
-        "average": 2.1,
-        "votes": 9
-      },
       "proBlack": {
         "average": 2.1,
         "votes": 46
@@ -6254,10 +5790,6 @@ export const CARD_DEFS = {
     "icon": "/card-icons/co117.jpg",
     "rarity": 2,
     "memberRatings": {
-      "spd": {
-        "average": 1.7,
-        "votes": 9
-      },
       "proBlack": {
         "average": 3,
         "votes": 50
@@ -6284,10 +5816,6 @@ export const CARD_DEFS = {
     "icon": "/card-icons/co118.jpg",
     "rarity": 2,
     "memberRatings": {
-      "spd": {
-        "average": 1.3,
-        "votes": 31
-      },
       "proBlack": {
         "average": 1.4,
         "votes": 36
@@ -6314,10 +5842,6 @@ export const CARD_DEFS = {
     "icon": "/card-icons/co119.jpg",
     "rarity": 2,
     "memberRatings": {
-      "spd": {
-        "average": 2,
-        "votes": 11
-      },
       "proBlack": {
         "average": 2,
         "votes": 41
@@ -6345,10 +5869,6 @@ export const CARD_DEFS = {
     "icon": "/card-icons/co120.jpg",
     "rarity": 3,
     "memberRatings": {
-      "spd": {
-        "average": 2.2,
-        "votes": 8
-      },
       "proBlack": {
         "average": 4.3,
         "votes": 56
@@ -6375,10 +5895,6 @@ export const CARD_DEFS = {
     "icon": "/card-icons/co121.jpg",
     "rarity": 3,
     "memberRatings": {
-      "spd": {
-        "average": 1.8,
-        "votes": 12
-      },
       "proBlack": {
         "average": 3.5,
         "votes": 70
@@ -6405,10 +5921,6 @@ export const CARD_DEFS = {
     "icon": "/card-icons/co122.jpg",
     "rarity": 4,
     "memberRatings": {
-      "spd": {
-        "average": 2,
-        "votes": 5
-      },
       "proBlack": {
         "average": 2.6,
         "votes": 44
@@ -6435,10 +5947,6 @@ export const CARD_DEFS = {
     "icon": "/card-icons/co123.jpg",
     "rarity": 4,
     "memberRatings": {
-      "spd": {
-        "average": 2,
-        "votes": 5
-      },
       "proBlack": {
         "average": 2.6,
         "votes": 46
@@ -6465,10 +5973,6 @@ export const CARD_DEFS = {
     "icon": "/card-icons/co124.jpg",
     "rarity": 5,
     "memberRatings": {
-      "spd": {
-        "average": 1.8,
-        "votes": 6
-      },
       "proBlack": {
         "average": 2.4,
         "votes": 45
@@ -6496,10 +6000,6 @@ export const CARD_DEFS = {
     "icon": "/card-icons/co125.jpg",
     "rarity": 5,
     "memberRatings": {
-      "spd": {
-        "average": 1.7,
-        "votes": 6
-      },
       "proBlack": {
         "average": 2.5,
         "votes": 50
@@ -6526,10 +6026,6 @@ export const CARD_DEFS = {
     "icon": "/card-icons/co126.jpg",
     "rarity": 5,
     "memberRatings": {
-      "spd": {
-        "average": 1.9,
-        "votes": 9
-      },
       "proBlack": {
         "average": 1.7,
         "votes": 38
@@ -6556,10 +6052,6 @@ export const CARD_DEFS = {
     "icon": "/card-icons/co127.jpg",
     "rarity": 5,
     "memberRatings": {
-      "spd": {
-        "average": 1.6,
-        "votes": 28
-      },
       "proBlack": {
         "average": 3.3,
         "votes": 47
@@ -6586,10 +6078,6 @@ export const CARD_DEFS = {
     "icon": "/card-icons/co128.jpg",
     "rarity": 6,
     "memberRatings": {
-      "spd": {
-        "average": 1.9,
-        "votes": 9
-      },
       "proBlack": {
         "average": 3.6,
         "votes": 57
@@ -6617,10 +6105,6 @@ export const CARD_DEFS = {
     "icon": "/card-icons/co129.jpg",
     "rarity": 6,
     "memberRatings": {
-      "spd": {
-        "average": 2.7,
-        "votes": 15
-      },
       "proBlack": {
         "average": 4.6,
         "votes": 89
@@ -6647,10 +6131,6 @@ export const CARD_DEFS = {
     "icon": "/card-icons/co130.jpg",
     "rarity": 6,
     "memberRatings": {
-      "spd": {
-        "average": 2.7,
-        "votes": 54
-      },
       "proBlack": {
         "average": 2.4,
         "votes": 62
@@ -6681,10 +6161,6 @@ export const CARD_DEFS = {
     "icon": "/card-icons/co131.jpg",
     "rarity": 5,
     "memberRatings": {
-      "spd": {
-        "average": 2.3,
-        "votes": 44
-      },
       "proBlack": {
         "average": 2.3,
         "votes": 51
@@ -6732,10 +6208,6 @@ export const CARD_DEFS = {
     "icon": "/card-icons/co132.jpg",
     "rarity": 6,
     "memberRatings": {
-      "spd": {
-        "average": 2.6,
-        "votes": 49
-      },
       "proBlack": {
         "average": 3.9,
         "votes": 61
@@ -6789,10 +6261,6 @@ export const CARD_DEFS = {
     "icon": "/card-icons/co133.jpg",
     "rarity": 6,
     "memberRatings": {
-      "spd": {
-        "average": 2,
-        "votes": 52
-      },
       "proBlack": {
         "average": 4.2,
         "votes": 71
@@ -6846,10 +6314,6 @@ export const CARD_DEFS = {
     "icon": "/card-icons/co134.jpg",
     "rarity": 6,
     "memberRatings": {
-      "spd": {
-        "average": 2.2,
-        "votes": 18
-      },
       "proBlack": {
         "average": 2,
         "votes": 43
@@ -6918,10 +6382,6 @@ export const CARD_DEFS = {
     "icon": "/card-icons/co135.jpg",
     "rarity": 6,
     "memberRatings": {
-      "spd": {
-        "average": 2.6,
-        "votes": 50
-      },
       "proBlack": {
         "average": 2.4,
         "votes": 57
@@ -7014,10 +6474,6 @@ export const CARD_DEFS = {
     "icon": "/card-icons/co136.jpg",
     "rarity": 6,
     "memberRatings": {
-      "spd": {
-        "average": 2.6,
-        "votes": 42
-      },
       "proBlack": {
         "average": 2.6,
         "votes": 50
@@ -7069,10 +6525,6 @@ export const CARD_DEFS = {
     "icon": "/card-icons/co137.jpg",
     "rarity": 6,
     "memberRatings": {
-      "spd": {
-        "average": 3.5,
-        "votes": 45
-      },
       "proBlack": {
         "average": 3.3,
         "votes": 50
@@ -7123,10 +6575,6 @@ export const CARD_DEFS = {
     "icon": "/card-icons/co138.jpg",
     "rarity": 6,
     "memberRatings": {
-      "spd": {
-        "average": 2.4,
-        "votes": 37
-      },
       "proBlack": {
         "average": 2.6,
         "votes": 45
@@ -7179,10 +6627,6 @@ export const CARD_DEFS = {
     "icon": "/card-icons/co139.jpg",
     "rarity": 6,
     "memberRatings": {
-      "spd": {
-        "average": 2,
-        "votes": 34
-      },
       "proBlack": {
         "average": 2.7,
         "votes": 42
@@ -7234,10 +6678,6 @@ export const CARD_DEFS = {
     "icon": "/card-icons/co140.jpg",
     "rarity": 7,
     "memberRatings": {
-      "spd": {
-        "average": 2.5,
-        "votes": 45
-      },
       "proBlack": {
         "average": 3.2,
         "votes": 51
@@ -7290,10 +6730,6 @@ export const CARD_DEFS = {
     "icon": "/card-icons/co141.jpg",
     "rarity": 6,
     "memberRatings": {
-      "spd": {
-        "average": 2,
-        "votes": 11
-      },
       "proBlack": {
         "average": 2.3,
         "votes": 46
@@ -7344,10 +6780,6 @@ export const CARD_DEFS = {
     "icon": "/card-icons/co142.jpg",
     "rarity": 6,
     "memberRatings": {
-      "spd": {
-        "average": 2,
-        "votes": 11
-      },
       "proBlack": {
         "average": 2.4,
         "votes": 47
@@ -7392,10 +6824,6 @@ export const CARD_DEFS = {
     "icon": "/card-icons/co143.jpg",
     "rarity": 8,
     "memberRatings": {
-      "spd": {
-        "average": 3.2,
-        "votes": 60
-      },
       "proBlack": {
         "average": 4.4,
         "votes": 68
@@ -7437,10 +6865,6 @@ export const CARD_DEFS = {
     "icon": "/card-icons/co144.jpg",
     "rarity": 8,
     "memberRatings": {
-      "spd": {
-        "average": 2.6,
-        "votes": 34
-      },
       "proBlack": {
         "average": 4.3,
         "votes": 76
@@ -7507,10 +6931,6 @@ export const CARD_DEFS = {
     "icon": "/card-icons/co145.jpg",
     "rarity": 8,
     "memberRatings": {
-      "spd": {
-        "average": 1.5,
-        "votes": 43
-      },
       "proBlack": {
         "average": 3.4,
         "votes": 57
@@ -7558,10 +6978,6 @@ export const CARD_DEFS = {
     "icon": "/card-icons/co146.jpg",
     "rarity": 8,
     "memberRatings": {
-      "spd": {
-        "average": 3.4,
-        "votes": 51
-      },
       "proBlack": {
         "average": 4.4,
         "votes": 57
@@ -7610,10 +7026,6 @@ export const CARD_DEFS = {
     "icon": "/card-icons/co147.jpg",
     "rarity": 8,
     "memberRatings": {
-      "spd": {
-        "average": 4.8,
-        "votes": 114
-      },
       "proBlack": {
         "average": 4.7,
         "votes": 118
@@ -7681,10 +7093,6 @@ export const CARD_DEFS = {
     "icon": "/card-icons/co148.jpg",
     "rarity": 8,
     "memberRatings": {
-      "spd": {
-        "average": 3.7,
-        "votes": 39
-      },
       "proBlack": {
         "average": 4.3,
         "votes": 51
@@ -7712,10 +7120,6 @@ export const CARD_DEFS = {
     "icon": "/card-icons/co149.jpg",
     "rarity": 8,
     "memberRatings": {
-      "spd": {
-        "average": 3.8,
-        "votes": 55
-      },
       "proBlack": {
         "average": 4.5,
         "votes": 66
@@ -7742,10 +7146,6 @@ export const CARD_DEFS = {
     "icon": "/card-icons/co150.jpg",
     "rarity": 8,
     "memberRatings": {
-      "spd": {
-        "average": 2.5,
-        "votes": 72
-      },
       "proBlack": {
         "average": 2.7,
         "votes": 75

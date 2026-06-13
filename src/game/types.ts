@@ -1,6 +1,6 @@
 export type PlayerId = "player" | "cpu";
 export type MasterId = "white" | "black";
-export type MemberRatingKey = "spd" | "proBlack" | "proWhite";
+export type MemberRatingKey = "proBlack" | "proWhite";
 export type Row = "front" | "back";
 export type Lane = "left" | "right";
 export type SlotKey = `${PlayerId}_${Row}_${Lane}`;

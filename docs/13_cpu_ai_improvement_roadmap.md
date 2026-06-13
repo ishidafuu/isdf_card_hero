@@ -13,7 +13,7 @@
 
 - `stable` / `strong` AIプロファイル
 - 陣営別AI指定
-- カードヒーロー部.comの部員評価 `Spd` / `Pro黒` / `Pro白` の構造化取り込み
+- カードヒーロー部.comの部員評価 `Pro黒` / `Pro白` の構造化取り込み
 - マスター別の部員評価を使ったランダムデッキ重み付け
 - `npm run validate:auto-play`
 - `npm run benchmark:ai`

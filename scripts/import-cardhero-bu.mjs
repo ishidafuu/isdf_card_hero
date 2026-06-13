@@ -253,7 +253,6 @@ function parseMemberRatings(table) {
   };
 
   return {
-    spd: rating("Spd"),
     proBlack: rating("Pro黒"),
     proWhite: rating("Pro白"),
   };
