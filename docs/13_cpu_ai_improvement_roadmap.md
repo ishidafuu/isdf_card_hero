@@ -65,6 +65,14 @@ npm run benchmark:ai -- --seed-start 430 --count 5 --max-steps 700 --max-turns 1
 npm run diff:ai -- --seed 430 --direction challenger-as-cpu --max-diffs 12
 ```
 
+投稿テンプレデッキを使うAI評価ゲート:
+
+```sh
+npm run audit:deck-submissions
+npm run benchmark:deck-suite -- --suite smoke --seed-start 430 --count 2
+npm run diff:ai -- --seed 430 --deck-preset submission-pro-no-rare8-black-1408 --direction challenger-as-cpu --max-diffs 12
+```
+
 採用前の確認ゲート:
 
 ```sh
@@ -76,6 +84,8 @@ npm run benchmark:ai -- --seed-start 430 --count 10 --max-steps 700 --max-turns 
 ```sh
 npm run benchmark:ai -- --seed-start 400 --count 50 --max-steps 700 --max-turns 160
 npm run validate:auto-play -- --seed-start 400 --count 100 --max-steps 700 --max-turns 160
+npm run benchmark:deck-suite -- --suite core --seed-start 430 --count 3
+npm run benchmark:deck-suite -- --suite holdout --seed-start 450 --count 3
 ```
 
 採用基準:
@@ -255,11 +265,32 @@ npm run diff:ai -- --seed 432 --direction challenger-as-player --max-diffs 16
 - カード詳細とCard Listで、参照している評価値を確認できる。
 - ブラック/ホワイト別の100戦検証でfailureが増えない。
 
-## 次の3コミット候補
+## Phase I: 投稿テンプレデッキ検証
 
-1. `diff:ai` の診断強化
-   - `--turn-from` / `--turn-to`
-   - 初回差分、終盤差分、勝敗直前差分の要約
+目的:
+
+投稿テンプレデッキを監査し、実践的なデッキセットでAI改善を評価する。ランダムデッキの勝率だけに寄せず、実戦構成での開幕配置、キーカード温存、リーサル判断、防御判断、スーパー軸の扱いを確認する。
+
+現在の扱い:
+
+- `npm run audit:deck-submissions` で524件の構成、評価、アーキタイプ、実装リスクを監査する。
+- `smoke` / `core` / `stress` / `holdout` の4スイートを生成する。
+- `npm run benchmark:deck-suite` で複数投稿デッキをまとめて `stable` vs `strong` 比較する。
+- `npm run diff:ai -- --deck-preset <id>` で投稿デッキ上の判断差分を読む。
+
+完了条件:
+
+- `smoke` がAI評価変更の最小ゲートとして使える。
+- `core` で主検証し、`holdout` で過学習を確認できる。
+- `stress` で特殊/極端構成のwarningと長期戦を別管理できる。
+- 悪化seedを投稿デッキIDつきで再現、diff診断できる。
+
+## 次のコミット候補
+
+1. 投稿テンプレデッキ検証の初回ベースライン
+   - `audit:deck-submissions`
+   - `benchmark:deck-suite -- --suite smoke`
+   - 悪化seedを `diff:ai --deck-preset` で確認する
 
 2. 防御判断の局面限定補正
    - seed `431 challenger-as-cpu` と `432 challenger-as-player` を対象にする

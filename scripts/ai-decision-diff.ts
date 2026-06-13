@@ -1,7 +1,9 @@
 import { chooseCpuDecision, type CpuAiProfile, type CpuAiProfiles, type CpuDecision } from "../src/game/cpuAi";
 import { getCardName } from "../src/game/cards";
+import { buildDeckPresetCardIds, deckPresetAllowsSpecial, DECK_PRESET_IDS, getDeckPreset, type DeckPresetId } from "../src/game/deckPresets";
+import { MASTER_IDS } from "../src/game/masters";
 import { createInitialGame, runAutoStep } from "../src/game/rules";
-import type { GameState, PlayerId, SlotKey, Target } from "../src/game/types";
+import type { GameState, MasterId, PlayerId, SlotKey, Target } from "../src/game/types";
 
 type Direction = "challenger-as-cpu" | "challenger-as-player";
 
@@ -14,6 +16,8 @@ interface Options {
   maxDiffs: number;
   turnFrom?: number;
   turnTo?: number;
+  deckPreset: "random" | DeckPresetId;
+  masterIds: Partial<Record<PlayerId, MasterId>>;
 }
 
 const options = parseArgs(process.argv.slice(2));
@@ -23,6 +27,8 @@ const result = runDecisionDiff(options, profiles, challengerPlayer);
 
 console.log(`AI decision diff: seed ${options.seed}, ${options.direction}`);
 console.log(`Profiles: player ${profiles.player}, cpu ${profiles.cpu}`);
+console.log(`Deck preset: ${options.deckPreset}`);
+console.log(`Masters: player ${resolvedMasterIds(options).player}, cpu ${resolvedMasterIds(options).cpu}`);
 console.log(`Winner: ${result.winner ?? "none"} after ${result.steps} steps / ${result.turnNumber} turns`);
 if (options.turnFrom !== undefined || options.turnTo !== undefined) {
   console.log(`Turn filter: ${options.turnFrom ?? "start"}-${options.turnTo ?? "end"}`);
@@ -66,7 +72,7 @@ interface DecisionDiff {
 }
 
 function runDecisionDiff(options: Options, profiles: CpuAiProfiles, challengerPlayer: PlayerId) {
-  let game = createInitialGame(options.seed);
+  let game = createDiffInitialGame(options);
   const diffs: DecisionDiff[] = [];
   let step = 0;
 
@@ -113,6 +119,30 @@ function isTurnInRange(turnNumber: number, options: Options): boolean {
     return false;
   }
   return true;
+}
+
+function createDiffInitialGame(options: Options): GameState {
+  const masterIds = resolvedMasterIds(options);
+  if (options.deckPreset === "random") {
+    return createInitialGame(options.seed, { masterIds });
+  }
+  const cardIds = buildDeckPresetCardIds(options.deckPreset);
+  const allowSpecial = deckPresetAllowsSpecial(options.deckPreset);
+  return createInitialGame(options.seed, {
+    masterIds,
+    playerDeckCardIds: cardIds,
+    cpuDeckCardIds: cardIds,
+    allowSpecialDecks: { player: allowSpecial, cpu: allowSpecial },
+  });
+}
+
+function resolvedMasterIds(options: Options): Record<PlayerId, MasterId> {
+  const presetMaster = options.deckPreset === "random" ? undefined : getDeckPreset(options.deckPreset).masterId;
+  const fallback = presetMaster ?? "white";
+  return {
+    player: options.masterIds.player ?? fallback,
+    cpu: options.masterIds.cpu ?? fallback,
+  };
 }
 
 function printDecisionDiffSummary(diffs: DecisionDiff[], options: Options): void {
@@ -232,6 +262,8 @@ function parseArgs(args: string[]): Options {
     direction: "challenger-as-cpu",
     maxSteps: 220,
     maxDiffs: 20,
+    deckPreset: "random",
+    masterIds: {},
   };
 
   for (let i = 0; i < args.length; i += 1) {
@@ -248,6 +280,15 @@ function parseArgs(args: string[]): Options {
       i += 1;
     } else if (arg === "--direction") {
       parsed.direction = readDirection(next);
+      i += 1;
+    } else if (arg === "--deck-preset") {
+      parsed.deckPreset = readDeckPreset(next);
+      i += 1;
+    } else if (arg === "--player-master") {
+      parsed.masterIds = { ...parsed.masterIds, player: readMasterId(arg, next) };
+      i += 1;
+    } else if (arg === "--cpu-master") {
+      parsed.masterIds = { ...parsed.masterIds, cpu: readMasterId(arg, next) };
       i += 1;
     } else if (arg === "--max-steps") {
       parsed.maxSteps = readNumber(arg, next);
@@ -311,6 +352,23 @@ function readDirection(value: string | undefined): Direction {
   throw new Error("--direction must be one of: challenger-as-cpu, challenger-as-player");
 }
 
+function readDeckPreset(value: string | undefined): "random" | DeckPresetId {
+  if (!value) {
+    throw new Error("--deck-preset requires a value");
+  }
+  if (value === "random" || (DECK_PRESET_IDS as readonly string[]).includes(value)) {
+    return value as "random" | DeckPresetId;
+  }
+  throw new Error(`--deck-preset must be one of: random, ${DECK_PRESET_IDS.join(", ")}`);
+}
+
+function readMasterId(name: string, value: string | undefined): MasterId {
+  if ((MASTER_IDS as readonly string[]).includes(value ?? "")) {
+    return value as MasterId;
+  }
+  throw new Error(`${name} must be one of: ${MASTER_IDS.join(", ")}`);
+}
+
 function readNumber(name: string, value: string | undefined): number {
   if (!value) {
     throw new Error(`${name} requires a value`);
@@ -338,6 +396,9 @@ Options:
   --baseline-ai <id>      Baseline profile. Default: stable.
   --challenger-ai <id>    Challenger profile. Default: strong.
   --direction <id>        challenger-as-cpu or challenger-as-player. Default: challenger-as-cpu.
+  --deck-preset <id>      Deck preset. Default: random. Values: random, ${DECK_PRESET_IDS.join(", ")}
+  --player-master <id>    Override player master. Template decks default to their source master.
+  --cpu-master <id>       Override CPU master. Template decks default to their source master.
   --max-steps <n>         Maximum replay steps. Default: 220
   --max-diffs <n>         Maximum profile differences to print. Default: 20
   --turn-from <n>         Only inspect differences from this turn.
