@@ -1260,6 +1260,7 @@ button:disabled {
 }
 
 .zone-panel {
+  align-content: start;
   background: #f1f5ec;
   border: 1px solid #cbd5c5;
   border-radius: 6px;
@@ -1269,12 +1270,15 @@ button:disabled {
 }
 
 .info-panel-body > .zone-panel {
+  align-self: start;
   max-height: calc(100vh - 210px);
   min-width: 0;
   overflow: auto;
+  width: 100%;
 }
 
 .info-panel-body > .catalog-library-panel {
+  align-self: stretch;
   display: grid;
   grid-template-rows: auto auto minmax(0, 1fr);
   height: 100%;
@@ -1288,7 +1292,7 @@ button:disabled {
 }
 
 .deck-setup-panel {
-  gap: 12px;
+  gap: 8px;
 }
 
 .match-preset-panel {
@@ -1296,8 +1300,8 @@ button:disabled {
   border: 1px solid #d5ddce;
   border-radius: 6px;
   display: grid;
-  gap: 8px;
-  padding: 10px;
+  gap: 7px;
+  padding: 8px;
 }
 
 .match-preset-panel h4,
@@ -1321,11 +1325,11 @@ button:disabled {
   align-items: end;
   display: grid;
   gap: 6px;
-  grid-template-columns: minmax(160px, 1fr) auto minmax(180px, 1.2fr);
+  grid-template-columns: minmax(180px, 0.9fr) minmax(220px, 1.4fr);
 }
 
 .preset-control-grid:last-child {
-  grid-template-columns: minmax(160px, 1fr) auto minmax(160px, 1fr) auto auto;
+  grid-template-columns: minmax(150px, 1fr) auto minmax(170px, 1.25fr) auto;
 }
 
 .preset-control {
@@ -1371,6 +1375,7 @@ button:disabled {
 }
 
 .deck-setup-grid {
+  align-items: start;
   display: grid;
   gap: 10px;
   grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
@@ -1437,7 +1442,7 @@ button:disabled {
   align-items: end;
   display: grid;
   gap: 6px;
-  grid-template-columns: minmax(170px, 1fr) auto;
+  grid-template-columns: minmax(170px, 1fr);
 }
 
 .deck-preset-controls span {

@@ -1150,6 +1150,7 @@ export function App() {
   function handleLoadSavedBattlePreset(presetId: string) {
     const preset = savedBattlePresets.find((candidate) => candidate.id === presetId);
     if (!preset) {
+      setSavedPresetId("");
       return;
     }
     const nextSettings = cloneBattleSettings(preset.settings);
@@ -1174,9 +1175,10 @@ export function App() {
 
   function handleDeckPresetPickerChange(playerId: PlayerId, presetId: DeckPresetId) {
     setDeckPresetPickerIds((previous) => ({ ...previous, [playerId]: presetId }));
+    applyDeckPreset(playerId, presetId);
   }
 
-  function handleApplyDeckPreset(playerId: PlayerId, presetId: DeckPresetId) {
+  function applyDeckPreset(playerId: PlayerId, presetId: DeckPresetId) {
     setDeckSettings((previous) => ({
       ...previous,
       fixed: { ...previous.fixed, [playerId]: true },
@@ -1801,12 +1803,10 @@ export function App() {
                 savedPresetId={savedPresetId}
                 battlePresetName={battlePresetName}
                 onClose={() => setZoneView(undefined)}
-                onBuiltInMatchPresetChange={setMatchPresetId}
-                onApplyBuiltInMatchPreset={handleApplyBuiltInMatchPreset}
-                onSavedPresetChange={setSavedPresetId}
+                onBuiltInMatchPresetChange={handleApplyBuiltInMatchPreset}
+                onSavedPresetChange={handleLoadSavedBattlePreset}
                 onBattlePresetNameChange={setBattlePresetName}
                 onSaveBattlePreset={handleSaveBattlePreset}
-                onLoadSavedBattlePreset={handleLoadSavedBattlePreset}
                 onDeleteSavedBattlePreset={handleDeleteSavedBattlePreset}
                 onFixedChange={handleDeckFixedChange}
                 onAllowSpecialChange={handleDeckAllowSpecialChange}
@@ -1816,7 +1816,6 @@ export function App() {
                 onAddCard={handleAddDeckCard}
                 onRemoveCard={handleRemoveDeckCard}
                 onDeckPresetPickerChange={handleDeckPresetPickerChange}
-                onApplyDeckPreset={handleApplyDeckPreset}
               />
             ) : zoneView ? (
               <CardZonePanel
@@ -3002,11 +3001,9 @@ interface DeckSetupPanelProps {
   battlePresetName: string;
   onClose: () => void;
   onBuiltInMatchPresetChange: (presetId: string) => void;
-  onApplyBuiltInMatchPreset: (presetId: string) => void;
   onSavedPresetChange: (presetId: string) => void;
   onBattlePresetNameChange: (name: string) => void;
   onSaveBattlePreset: () => void;
-  onLoadSavedBattlePreset: (presetId: string) => void;
   onDeleteSavedBattlePreset: (presetId: string) => void;
   onFixedChange: (playerId: PlayerId, fixed: boolean) => void;
   onAllowSpecialChange: (playerId: PlayerId, allowSpecial: boolean) => void;
@@ -3016,7 +3013,6 @@ interface DeckSetupPanelProps {
   onAddCard: (playerId: PlayerId, cardId: string) => void;
   onRemoveCard: (playerId: PlayerId, cardId: string) => void;
   onDeckPresetPickerChange: (playerId: PlayerId, presetId: DeckPresetId) => void;
-  onApplyDeckPreset: (playerId: PlayerId, presetId: DeckPresetId) => void;
 }
 
 function DeckSetupPanel({
@@ -3033,11 +3029,9 @@ function DeckSetupPanel({
   battlePresetName,
   onClose,
   onBuiltInMatchPresetChange,
-  onApplyBuiltInMatchPreset,
   onSavedPresetChange,
   onBattlePresetNameChange,
   onSaveBattlePreset,
-  onLoadSavedBattlePreset,
   onDeleteSavedBattlePreset,
   onFixedChange,
   onAllowSpecialChange,
@@ -3047,7 +3041,6 @@ function DeckSetupPanel({
   onAddCard,
   onRemoveCard,
   onDeckPresetPickerChange,
-  onApplyDeckPreset,
 }: DeckSetupPanelProps) {
   return (
     <section className="zone-panel deck-setup-panel">
@@ -3067,11 +3060,9 @@ function DeckSetupPanel({
         savedPresetId={savedPresetId}
         battlePresetName={battlePresetName}
         onBuiltInMatchPresetChange={onBuiltInMatchPresetChange}
-        onApplyBuiltInMatchPreset={onApplyBuiltInMatchPreset}
         onSavedPresetChange={onSavedPresetChange}
         onBattlePresetNameChange={onBattlePresetNameChange}
         onSaveBattlePreset={onSaveBattlePreset}
-        onLoadSavedBattlePreset={onLoadSavedBattlePreset}
         onDeleteSavedBattlePreset={onDeleteSavedBattlePreset}
       />
       <div className="deck-setup-grid">
@@ -3112,7 +3103,6 @@ function DeckSetupPanel({
               <DeckPresetControls
                 presetId={deckPresetPickerIds[playerId]}
                 onPresetChange={(presetId) => onDeckPresetPickerChange(playerId, presetId)}
-                onApplyPreset={() => onApplyDeckPreset(playerId, deckPresetPickerIds[playerId])}
               />
               <div className="deck-editor-actions">
                 <button type="button" onClick={() => onUseGeneratedDeck(playerId)}>
@@ -3174,11 +3164,9 @@ function MatchPresetPanel({
   savedPresetId,
   battlePresetName,
   onBuiltInMatchPresetChange,
-  onApplyBuiltInMatchPreset,
   onSavedPresetChange,
   onBattlePresetNameChange,
   onSaveBattlePreset,
-  onLoadSavedBattlePreset,
   onDeleteSavedBattlePreset,
 }: {
   builtInMatchPresets: BuiltInMatchPreset[];
@@ -3187,11 +3175,9 @@ function MatchPresetPanel({
   savedPresetId: string;
   battlePresetName: string;
   onBuiltInMatchPresetChange: (presetId: string) => void;
-  onApplyBuiltInMatchPreset: (presetId: string) => void;
   onSavedPresetChange: (presetId: string) => void;
   onBattlePresetNameChange: (name: string) => void;
   onSaveBattlePreset: () => void;
-  onLoadSavedBattlePreset: (presetId: string) => void;
   onDeleteSavedBattlePreset: (presetId: string) => void;
 }) {
   const selectedBuiltIn = builtInMatchPresets.find((preset) => preset.id === matchPresetId) ?? builtInMatchPresets[0];
@@ -3215,9 +3201,6 @@ function MatchPresetPanel({
             ))}
           </select>
         </label>
-        <button type="button" onClick={() => selectedBuiltIn && onApplyBuiltInMatchPreset(selectedBuiltIn.id)}>
-          <Icon icon="▶️" /> 読込
-        </button>
         <span className="preset-description">{selectedBuiltIn?.description}</span>
       </div>
       <div className="preset-control-grid">
@@ -3245,9 +3228,6 @@ function MatchPresetPanel({
             ))}
           </select>
         </label>
-        <button type="button" onClick={() => savedPresetId && onLoadSavedBattlePreset(savedPresetId)} disabled={!selectedSaved}>
-          <Icon icon="🔁" /> 再現
-        </button>
         <button type="button" onClick={() => savedPresetId && onDeleteSavedBattlePreset(savedPresetId)} disabled={!selectedSaved}>
           <Icon icon="🗑️" /> 削除
         </button>
@@ -3259,11 +3239,9 @@ function MatchPresetPanel({
 function DeckPresetControls({
   presetId,
   onPresetChange,
-  onApplyPreset,
 }: {
   presetId: DeckPresetId;
   onPresetChange: (presetId: DeckPresetId) => void;
-  onApplyPreset: () => void;
 }) {
   const preset = DECK_PRESETS.find((candidate) => candidate.id === presetId) ?? DECK_PRESETS[0];
 
@@ -3287,9 +3265,6 @@ function DeckPresetControls({
           })}
         </select>
       </label>
-      <button type="button" onClick={onApplyPreset}>
-        <Icon icon="📥" /> デッキ読込
-      </button>
       <span>{preset.description}</span>
     </div>
   );
