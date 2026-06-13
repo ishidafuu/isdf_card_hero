@@ -30,6 +30,19 @@ export interface DeckPresetGroupDef {
   name: string;
 }
 
+export type DeckPresetMasterFilter = "all" | MasterId;
+export type DeckPresetRare8Filter = "all" | "with" | "without";
+
+export interface DeckPresetFilters {
+  master: DeckPresetMasterFilter;
+  rare8: DeckPresetRare8Filter;
+}
+
+export const DEFAULT_DECK_PRESET_FILTERS: DeckPresetFilters = {
+  master: "all",
+  rare8: "all",
+};
+
 const BALANCED_NORMAL_DECK_CARD_IDS = buildDeckCardIds(20260613, { masterId: "white" });
 const PRESSURE_NORMAL_DECK_CARD_IDS = buildDeckCardIds(20260614, { masterId: "white" });
 const BLACK_PRESSURE_DECK_CARD_IDS = buildDeckCardIds(20260615, { masterId: "black" });
@@ -113,6 +126,23 @@ export const DECK_PRESETS: DeckPresetDef[] = [
 ];
 
 export const DECK_PRESET_IDS = DECK_PRESETS.map((preset) => preset.id);
+
+export function deckPresetMatchesFilters(preset: DeckPresetDef, filters: DeckPresetFilters): boolean {
+  if (filters.master !== "all" && preset.masterId !== filters.master) {
+    return false;
+  }
+  if (filters.rare8 === "with" && preset.mode !== "Pro 8あり") {
+    return false;
+  }
+  if (filters.rare8 === "without" && preset.mode !== "Pro 8なし") {
+    return false;
+  }
+  return true;
+}
+
+export function filterDeckPresets(filters: DeckPresetFilters): DeckPresetDef[] {
+  return DECK_PRESETS.filter((preset) => deckPresetMatchesFilters(preset, filters));
+}
 
 export function buildDeckPresetCardIds(presetId: DeckPresetId): string[] {
   return [...getDeckPreset(presetId).cardIds];

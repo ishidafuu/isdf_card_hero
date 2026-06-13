@@ -55,10 +55,15 @@ import { getMasterActionDef, getMasterName, MASTER_IDS } from "./game/masters";
 import { CPU_AI_PROFILES, type CpuAiProfile, type CpuAiProfiles } from "./game/cpuAi";
 import {
   buildDeckPresetCardIds,
+  DEFAULT_DECK_PRESET_FILTERS,
   DECK_PRESET_GROUPS,
   DECK_PRESETS,
   deckPresetAllowsSpecial,
+  filterDeckPresets,
+  type DeckPresetFilters,
   type DeckPresetId,
+  type DeckPresetMasterFilter,
+  type DeckPresetRare8Filter,
 } from "./game/deckPresets";
 import { evaluateBoardUnit, evaluateCard, type UnitEvaluation } from "./game/unitEvaluation";
 import type { CardInstance, CardPool, CommandDef, GameState, MagicAction, MagicCardDef, MagicTargetKind, MasterActionId, MasterId, PlayerId, SlotKey, Target } from "./game/types";
@@ -219,6 +224,18 @@ interface DeckCardOption {
   typeLabel: string;
   sortValue: number;
 }
+
+const DECK_PRESET_MASTER_FILTER_OPTIONS = [
+  { value: "all", label: "すべて" },
+  { value: "white", label: "白" },
+  { value: "black", label: "黒" },
+] as const satisfies readonly { value: DeckPresetMasterFilter; label: string }[];
+
+const DECK_PRESET_RARE8_FILTER_OPTIONS = [
+  { value: "all", label: "8すべて" },
+  { value: "with", label: "8あり" },
+  { value: "without", label: "8なし" },
+] as const satisfies readonly { value: DeckPresetRare8Filter; label: string }[];
 
 const DRAG_MIME = "application/x-card-hero-drag";
 
@@ -669,6 +686,13 @@ function createDeckPickerIds(): Record<PlayerId, string> {
   return { player: firstCardId, cpu: firstCardId };
 }
 
+function createDeckPresetFilters(): Record<PlayerId, DeckPresetFilters> {
+  return {
+    player: { ...DEFAULT_DECK_PRESET_FILTERS },
+    cpu: { ...DEFAULT_DECK_PRESET_FILTERS },
+  };
+}
+
 function normalizeSeedInput(value: string, fallback: number): number {
   const parsed = Number(value);
   if (!Number.isFinite(parsed)) {
@@ -703,6 +727,7 @@ export function App() {
     player: "balanced-normal",
     cpu: "balanced-normal",
   });
+  const [deckPresetFilters, setDeckPresetFilters] = useState<Record<PlayerId, DeckPresetFilters>>(() => createDeckPresetFilters());
   const previousGameRef = useRef<GameState>(game);
   const visualEffectIdRef = useRef(0);
   const recordedResultKeyRef = useRef<string | undefined>(undefined);
@@ -1127,6 +1152,7 @@ export function App() {
     if (preset.deckPresetIds) {
       setDeckPresetPickerIds({ ...preset.deckPresetIds });
     }
+    setDeckPresetFilters(createDeckPresetFilters());
     setBattleSettings(next.settings);
     setDeckSettings(next.deckSettings);
     startNewGame(next.settings, next.deckSettings);
@@ -1176,6 +1202,10 @@ export function App() {
   function handleDeckPresetPickerChange(playerId: PlayerId, presetId: DeckPresetId) {
     setDeckPresetPickerIds((previous) => ({ ...previous, [playerId]: presetId }));
     applyDeckPreset(playerId, presetId);
+  }
+
+  function handleDeckPresetFilterChange(playerId: PlayerId, filters: DeckPresetFilters) {
+    setDeckPresetFilters((previous) => ({ ...previous, [playerId]: filters }));
   }
 
   function applyDeckPreset(playerId: PlayerId, presetId: DeckPresetId) {
@@ -1797,6 +1827,7 @@ export function App() {
                 cardOptions={deckCardOptions}
                 pickerIds={deckPickerIds}
                 deckPresetPickerIds={deckPresetPickerIds}
+                deckPresetFilters={deckPresetFilters}
                 builtInMatchPresets={BUILT_IN_MATCH_PRESETS}
                 matchPresetId={matchPresetId}
                 savedBattlePresets={savedBattlePresets}
@@ -1816,6 +1847,7 @@ export function App() {
                 onAddCard={handleAddDeckCard}
                 onRemoveCard={handleRemoveDeckCard}
                 onDeckPresetPickerChange={handleDeckPresetPickerChange}
+                onDeckPresetFilterChange={handleDeckPresetFilterChange}
               />
             ) : zoneView ? (
               <CardZonePanel
@@ -2994,6 +3026,7 @@ interface DeckSetupPanelProps {
   cardOptions: Record<PlayerId, DeckCardOption[]>;
   pickerIds: Record<PlayerId, string>;
   deckPresetPickerIds: Record<PlayerId, DeckPresetId>;
+  deckPresetFilters: Record<PlayerId, DeckPresetFilters>;
   builtInMatchPresets: BuiltInMatchPreset[];
   matchPresetId: string;
   savedBattlePresets: SavedBattlePreset[];
@@ -3013,6 +3046,7 @@ interface DeckSetupPanelProps {
   onAddCard: (playerId: PlayerId, cardId: string) => void;
   onRemoveCard: (playerId: PlayerId, cardId: string) => void;
   onDeckPresetPickerChange: (playerId: PlayerId, presetId: DeckPresetId) => void;
+  onDeckPresetFilterChange: (playerId: PlayerId, filters: DeckPresetFilters) => void;
 }
 
 function DeckSetupPanel({
@@ -3022,6 +3056,7 @@ function DeckSetupPanel({
   cardOptions,
   pickerIds,
   deckPresetPickerIds,
+  deckPresetFilters,
   builtInMatchPresets,
   matchPresetId,
   savedBattlePresets,
@@ -3041,6 +3076,7 @@ function DeckSetupPanel({
   onAddCard,
   onRemoveCard,
   onDeckPresetPickerChange,
+  onDeckPresetFilterChange,
 }: DeckSetupPanelProps) {
   return (
     <section className="zone-panel deck-setup-panel">
@@ -3102,6 +3138,8 @@ function DeckSetupPanel({
               <DeckSummaryView summary={summary} />
               <DeckPresetControls
                 presetId={deckPresetPickerIds[playerId]}
+                filters={deckPresetFilters[playerId]}
+                onFilterChange={(filters) => onDeckPresetFilterChange(playerId, filters)}
                 onPresetChange={(presetId) => onDeckPresetPickerChange(playerId, presetId)}
               />
               <div className="deck-editor-actions">
@@ -3238,20 +3276,61 @@ function MatchPresetPanel({
 
 function DeckPresetControls({
   presetId,
+  filters,
+  onFilterChange,
   onPresetChange,
 }: {
   presetId: DeckPresetId;
+  filters: DeckPresetFilters;
+  onFilterChange: (filters: DeckPresetFilters) => void;
   onPresetChange: (presetId: DeckPresetId) => void;
 }) {
   const preset = DECK_PRESETS.find((candidate) => candidate.id === presetId) ?? DECK_PRESETS[0];
+  const filteredPresets = filterDeckPresets(filters);
+  const selectedIsVisible = filteredPresets.some((candidate) => candidate.id === preset.id);
 
   return (
     <div className="deck-preset-controls">
+      <div className="deck-preset-filter-row">
+        <div className="deck-preset-filter-group" aria-label="マスターでプリセットを絞り込み">
+          <span className="deck-preset-filter-label">Master</span>
+          {DECK_PRESET_MASTER_FILTER_OPTIONS.map((option) => (
+            <button
+              type="button"
+              className={filters.master === option.value ? "selected" : ""}
+              aria-pressed={filters.master === option.value}
+              onClick={() => onFilterChange({ ...filters, master: option.value })}
+              key={option.value}
+            >
+              {option.label}
+            </button>
+          ))}
+        </div>
+        <div className="deck-preset-filter-group" aria-label="8ありなしでプリセットを絞り込み">
+          <span className="deck-preset-filter-label">Pro</span>
+          {DECK_PRESET_RARE8_FILTER_OPTIONS.map((option) => (
+            <button
+              type="button"
+              className={filters.rare8 === option.value ? "selected" : ""}
+              aria-pressed={filters.rare8 === option.value}
+              onClick={() => onFilterChange({ ...filters, rare8: option.value })}
+              key={option.value}
+            >
+              {option.label}
+            </button>
+          ))}
+        </div>
+      </div>
       <label className="preset-control">
-        Preset
-        <select value={preset.id} onChange={(event) => onPresetChange(event.target.value as DeckPresetId)}>
+        Preset ({filteredPresets.length})
+        <select
+          value={selectedIsVisible ? preset.id : ""}
+          onChange={(event) => event.target.value && onPresetChange(event.target.value as DeckPresetId)}
+          disabled={filteredPresets.length === 0}
+        >
+          {!selectedIsVisible && <option value="">フィルタ対象を選択</option>}
           {DECK_PRESET_GROUPS.map((group) => {
-            const groupPresets = DECK_PRESETS.filter((candidate) => (candidate.group ?? "built-in") === group.id);
+            const groupPresets = filteredPresets.filter((candidate) => (candidate.group ?? "built-in") === group.id);
             if (groupPresets.length === 0) {
               return null;
             }
@@ -3265,7 +3344,9 @@ function DeckPresetControls({
           })}
         </select>
       </label>
-      <span>{preset.description}</span>
+      <span>
+        {selectedIsVisible ? preset.description : `現在: ${preset.name}（フィルタ外）`}
+      </span>
     </div>
   );
 }

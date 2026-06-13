@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { getCardPool, summarizeDeckCardIds } from "../../src/game/cards";
+import { filterDeckPresets } from "../../src/game/deckPresets";
 import {
   DECK_SUBMISSION_PRESET_GROUPS,
   DECK_SUBMISSION_PRESETS,
@@ -54,5 +55,16 @@ describe("deck submission presets", () => {
       masterId: "white",
       allowSpecial: false,
     });
+  });
+
+  it("filters preset choices by master and Pro 8 mode", () => {
+    const blackNoRare8 = filterDeckPresets({ master: "black", rare8: "without" });
+    const whiteWithRare8 = filterDeckPresets({ master: "white", rare8: "with" });
+
+    expect(blackNoRare8).toHaveLength(EXPECTED_COUNTS["pro-no-rare8-black"]);
+    expect(blackNoRare8.every((preset) => preset.masterId === "black" && preset.mode === "Pro 8なし")).toBe(true);
+    expect(whiteWithRare8).toHaveLength(EXPECTED_COUNTS["pro-with-rare8-white"]);
+    expect(whiteWithRare8.every((preset) => preset.masterId === "white" && preset.mode === "Pro 8あり")).toBe(true);
+    expect(filterDeckPresets({ master: "all", rare8: "all" }).length).toBeGreaterThan(DECK_SUBMISSION_PRESETS.length);
   });
 });
