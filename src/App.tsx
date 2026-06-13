@@ -60,11 +60,17 @@ import {
   DECK_PRESETS,
   deckPresetAllowsSpecial,
   filterDeckPresets,
+  type DeckPresetDef,
   type DeckPresetFilters,
   type DeckPresetId,
   type DeckPresetMasterFilter,
   type DeckPresetRare8Filter,
 } from "./game/deckPresets";
+import {
+  DECK_BATTLE_SCORE_SNAPSHOT_SUMMARY,
+  getDeckBattleScoreSnapshot,
+  type DeckBattleScoreSnapshot,
+} from "./game/deckBattleScoreSnapshots";
 import { evaluateBoardUnit, evaluateCard, type UnitEvaluation } from "./game/unitEvaluation";
 import type { CardInstance, CardPool, CommandDef, GameState, MagicAction, MagicCardDef, MagicTargetKind, MasterActionId, MasterId, PlayerId, SlotKey, Target } from "./game/types";
 import type { DeckValidationSummary } from "./game/cards";
@@ -152,6 +158,7 @@ type BattleMode = "player-vs-cpu" | "cpu-vs-cpu";
 type TargetRole = "ally" | "enemy" | "move" | "summon" | "empty" | "master";
 type CatalogCategoryFilter = "all" | "front" | "back" | "magic";
 type CatalogSortKey = "source" | "evaluation" | "proBlack" | "proWhite" | "name" | "offense" | "defense" | "synergy" | "hp" | "cost";
+type DeckPresetSortKey = "source" | "battle" | "winRate" | "stability" | "speed";
 
 interface BattleSettings {
   seed: number;
@@ -250,6 +257,14 @@ const DECK_PRESET_RARE8_FILTER_OPTIONS = [
   { value: "with", label: "8あり" },
   { value: "without", label: "8なし" },
 ] as const satisfies readonly { value: DeckPresetRare8Filter; label: string }[];
+
+const DECK_PRESET_SORT_OPTIONS = [
+  { value: "battle", label: "Battle" },
+  { value: "winRate", label: "Win" },
+  { value: "stability", label: "Stable" },
+  { value: "speed", label: "Speed" },
+  { value: "source", label: "Source" },
+] as const satisfies readonly { value: DeckPresetSortKey; label: string }[];
 
 const DRAG_MIME = "application/x-card-hero-drag";
 
@@ -796,6 +811,10 @@ function createDeckPresetFilters(): Record<PlayerId, DeckPresetFilters> {
   };
 }
 
+function createDeckPresetSorts(): Record<PlayerId, DeckPresetSortKey> {
+  return { player: "battle", cpu: "battle" };
+}
+
 function normalizeSeedInput(value: string, fallback: number): number {
   const parsed = Number(value);
   if (!Number.isFinite(parsed)) {
@@ -833,6 +852,7 @@ export function App() {
     cpu: "balanced-normal",
   });
   const [deckPresetFilters, setDeckPresetFilters] = useState<Record<PlayerId, DeckPresetFilters>>(() => createDeckPresetFilters());
+  const [deckPresetSorts, setDeckPresetSorts] = useState<Record<PlayerId, DeckPresetSortKey>>(() => createDeckPresetSorts());
   const previousGameRef = useRef<GameState>(game);
   const lastSpectatorAttentionIndexRef = useRef<number | undefined>(undefined);
   const visualEffectIdRef = useRef(0);
@@ -1334,6 +1354,10 @@ export function App() {
 
   function handleDeckPresetFilterChange(playerId: PlayerId, filters: DeckPresetFilters) {
     setDeckPresetFilters((previous) => ({ ...previous, [playerId]: filters }));
+  }
+
+  function handleDeckPresetSortChange(playerId: PlayerId, sortKey: DeckPresetSortKey) {
+    setDeckPresetSorts((previous) => ({ ...previous, [playerId]: sortKey }));
   }
 
   function applyDeckPreset(playerId: PlayerId, presetId: DeckPresetId) {
@@ -2008,6 +2032,7 @@ export function App() {
                 pickerIds={deckPickerIds}
                 deckPresetPickerIds={deckPresetPickerIds}
                 deckPresetFilters={deckPresetFilters}
+                deckPresetSorts={deckPresetSorts}
                 builtInMatchPresets={BUILT_IN_MATCH_PRESETS}
                 matchPresetId={matchPresetId}
                 savedBattlePresets={savedBattlePresets}
@@ -2028,6 +2053,7 @@ export function App() {
                 onRemoveCard={handleRemoveDeckCard}
                 onDeckPresetPickerChange={handleDeckPresetPickerChange}
                 onDeckPresetFilterChange={handleDeckPresetFilterChange}
+                onDeckPresetSortChange={handleDeckPresetSortChange}
               />
             ) : zoneView ? (
               <CardZonePanel
@@ -3231,6 +3257,7 @@ interface DeckSetupPanelProps {
   pickerIds: Record<PlayerId, string>;
   deckPresetPickerIds: Record<PlayerId, DeckPresetId>;
   deckPresetFilters: Record<PlayerId, DeckPresetFilters>;
+  deckPresetSorts: Record<PlayerId, DeckPresetSortKey>;
   builtInMatchPresets: BuiltInMatchPreset[];
   matchPresetId: string;
   savedBattlePresets: SavedBattlePreset[];
@@ -3251,6 +3278,7 @@ interface DeckSetupPanelProps {
   onRemoveCard: (playerId: PlayerId, cardId: string) => void;
   onDeckPresetPickerChange: (playerId: PlayerId, presetId: DeckPresetId) => void;
   onDeckPresetFilterChange: (playerId: PlayerId, filters: DeckPresetFilters) => void;
+  onDeckPresetSortChange: (playerId: PlayerId, sortKey: DeckPresetSortKey) => void;
 }
 
 function DeckSetupPanel({
@@ -3261,6 +3289,7 @@ function DeckSetupPanel({
   pickerIds,
   deckPresetPickerIds,
   deckPresetFilters,
+  deckPresetSorts,
   builtInMatchPresets,
   matchPresetId,
   savedBattlePresets,
@@ -3281,6 +3310,7 @@ function DeckSetupPanel({
   onRemoveCard,
   onDeckPresetPickerChange,
   onDeckPresetFilterChange,
+  onDeckPresetSortChange,
 }: DeckSetupPanelProps) {
   return (
     <section className="zone-panel deck-setup-panel">
@@ -3343,7 +3373,9 @@ function DeckSetupPanel({
               <DeckPresetControls
                 presetId={deckPresetPickerIds[playerId]}
                 filters={deckPresetFilters[playerId]}
+                sortKey={deckPresetSorts[playerId]}
                 onFilterChange={(filters) => onDeckPresetFilterChange(playerId, filters)}
+                onSortChange={(sortKey) => onDeckPresetSortChange(playerId, sortKey)}
                 onPresetChange={(presetId) => onDeckPresetPickerChange(playerId, presetId)}
               />
               <div className="deck-editor-actions">
@@ -3481,17 +3513,23 @@ function MatchPresetPanel({
 function DeckPresetControls({
   presetId,
   filters,
+  sortKey,
   onFilterChange,
+  onSortChange,
   onPresetChange,
 }: {
   presetId: DeckPresetId;
   filters: DeckPresetFilters;
+  sortKey: DeckPresetSortKey;
   onFilterChange: (filters: DeckPresetFilters) => void;
+  onSortChange: (sortKey: DeckPresetSortKey) => void;
   onPresetChange: (presetId: DeckPresetId) => void;
 }) {
   const preset = DECK_PRESETS.find((candidate) => candidate.id === presetId) ?? DECK_PRESETS[0];
-  const filteredPresets = filterDeckPresets(filters);
+  const filteredPresets = sortDeckPresetCandidates(filterDeckPresets(filters), sortKey);
+  const optionGroups = buildDeckPresetOptionGroups(filteredPresets, sortKey);
   const selectedIsVisible = filteredPresets.some((candidate) => candidate.id === preset.id);
+  const selectedScore = getDeckBattleScoreSnapshot(preset.id);
 
   return (
     <div className="deck-preset-controls">
@@ -3525,6 +3563,22 @@ function DeckPresetControls({
           ))}
         </div>
       </div>
+      <div className="deck-preset-filter-row">
+        <div className="deck-preset-filter-group" aria-label="実戦スコアでプリセットを並び替え">
+          <span className="deck-preset-filter-label">Sort</span>
+          {DECK_PRESET_SORT_OPTIONS.map((option) => (
+            <button
+              type="button"
+              className={sortKey === option.value ? "selected" : ""}
+              aria-pressed={sortKey === option.value}
+              onClick={() => onSortChange(option.value)}
+              key={option.value}
+            >
+              {option.label}
+            </button>
+          ))}
+        </div>
+      </div>
       <label className="preset-control">
         Preset ({filteredPresets.length})
         <select
@@ -3533,15 +3587,11 @@ function DeckPresetControls({
           disabled={filteredPresets.length === 0}
         >
           {!selectedIsVisible && <option value="">フィルタ対象を選択</option>}
-          {DECK_PRESET_GROUPS.map((group) => {
-            const groupPresets = filteredPresets.filter((candidate) => (candidate.group ?? "built-in") === group.id);
-            if (groupPresets.length === 0) {
-              return null;
-            }
+          {optionGroups.map((group) => {
             return (
-              <optgroup label={`${group.name} (${groupPresets.length})`} key={group.id}>
-                {groupPresets.map((candidate) => (
-                  <option value={candidate.id} key={candidate.id}>{candidate.name}</option>
+              <optgroup label={`${group.name} (${group.presets.length})`} key={group.id}>
+                {group.presets.map((candidate) => (
+                  <option value={candidate.id} key={candidate.id}>{formatDeckPresetOptionText(candidate)}</option>
                 ))}
               </optgroup>
             );
@@ -3551,8 +3601,123 @@ function DeckPresetControls({
       <span>
         {selectedIsVisible ? preset.description : `現在: ${preset.name}（フィルタ外）`}
       </span>
+      <DeckBattleScoreStrip score={selectedScore} />
     </div>
   );
+}
+
+function DeckBattleScoreStrip({ score }: { score: DeckBattleScoreSnapshot | undefined }) {
+  if (!score) {
+    return (
+      <div className="deck-score-strip empty">
+        <div className="deck-score-strip-heading">
+          <strong>実戦スコア未計測</strong>
+          <span>投稿デッキsmoke対象のみ表示</span>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="deck-score-strip">
+      <div className="deck-score-strip-heading">
+        <strong>実戦スコア #{score.rank}</strong>
+        <span>
+          smoke / seed {DECK_BATTLE_SCORE_SNAPSHOT_SUMMARY.seedStart} / {score.games} games / issues {score.failures}/{score.warnings}
+        </span>
+      </div>
+      <div className="deck-score-main">
+        <MetricPill label="Battle" value={score.battleScore.toFixed(1)} strong />
+        <MetricPill label="Win" value={formatPercent(score.winRate)} />
+        <MetricPill label="Stable" value={score.stabilityScore.toFixed(1)} />
+        <MetricPill label="Speed" value={score.speedScore.toFixed(1)} />
+      </div>
+      <div className="deck-score-detail">
+        <span>W-L-D {score.wins}-{score.losses}-{score.draws}</span>
+        <span>Win point {formatPercent(score.winPointRate)}</span>
+        <span>Seat P/C {formatPercent(score.playerSideWinPointRate)} / {formatPercent(score.cpuSideWinPointRate)}</span>
+        <span>Avg {score.averageSteps.toFixed(1)} steps / {score.averageTurns.toFixed(1)} turns</span>
+      </div>
+    </div>
+  );
+}
+
+function MetricPill({ label, value, strong = false }: { label: string; value: string; strong?: boolean }) {
+  return (
+    <span className={`deck-score-metric ${strong ? "strong" : ""}`}>
+      <span>{label}</span>
+      <b>{value}</b>
+    </span>
+  );
+}
+
+function sortDeckPresetCandidates(presets: DeckPresetDef[], sortKey: DeckPresetSortKey): DeckPresetDef[] {
+  if (sortKey === "source") {
+    return presets;
+  }
+  return [...presets].sort((a, b) => {
+    const scoreDelta = deckPresetSortValue(b, sortKey) - deckPresetSortValue(a, sortKey);
+    if (scoreDelta !== 0) {
+      return scoreDelta;
+    }
+    const aScore = getDeckBattleScoreSnapshot(a.id);
+    const bScore = getDeckBattleScoreSnapshot(b.id);
+    if (aScore && bScore && aScore.rank !== bScore.rank) {
+      return aScore.rank - bScore.rank;
+    }
+    if (aScore && !bScore) {
+      return -1;
+    }
+    if (!aScore && bScore) {
+      return 1;
+    }
+    return DECK_PRESETS.indexOf(a) - DECK_PRESETS.indexOf(b);
+  });
+}
+
+function deckPresetSortValue(preset: DeckPresetDef, sortKey: DeckPresetSortKey): number {
+  const score = getDeckBattleScoreSnapshot(preset.id);
+  if (!score) {
+    return Number.NEGATIVE_INFINITY;
+  }
+  if (sortKey === "winRate") {
+    return score.winRate;
+  }
+  if (sortKey === "stability") {
+    return score.stabilityScore;
+  }
+  if (sortKey === "speed") {
+    return score.speedScore;
+  }
+  return score.battleScore;
+}
+
+function buildDeckPresetOptionGroups(presets: DeckPresetDef[], sortKey: DeckPresetSortKey) {
+  if (sortKey === "source") {
+    return DECK_PRESET_GROUPS.flatMap((group) => {
+      const groupPresets = presets.filter((candidate) => (candidate.group ?? "built-in") === group.id);
+      return groupPresets.length > 0 ? [{ id: group.id, name: group.name, presets: groupPresets }] : [];
+    });
+  }
+
+  const scored = presets.filter((preset) => getDeckBattleScoreSnapshot(preset.id));
+  const unscored = presets.filter((preset) => !getDeckBattleScoreSnapshot(preset.id));
+  return [
+    scored.length > 0 ? { id: "scored", name: "実戦スコア順", presets: scored } : undefined,
+    unscored.length > 0 ? { id: "unscored", name: "未計測/標準", presets: unscored } : undefined,
+  ].filter((group): group is { id: string; name: string; presets: DeckPresetDef[] } => !!group);
+}
+
+function formatDeckPresetOptionText(preset: DeckPresetDef): string {
+  const score = getDeckBattleScoreSnapshot(preset.id);
+  if (!score) {
+    return preset.name;
+  }
+  return `#${score.rank} B${score.battleScore.toFixed(1)} W${formatPercent(score.winRate)} S${score.stabilityScore.toFixed(1)} - ${preset.name}`;
+}
+
+function formatPercent(value: number): string {
+  return `${Math.round(value * 1000) / 10}%`;
 }
 
 function DeckBuilderControls({
