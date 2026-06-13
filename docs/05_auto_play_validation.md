@@ -26,7 +26,7 @@ npm run validate:auto-play -- --seed-start 400 --count 100 --out-dir artifacts/a
 - `--seed-start <n>`: 開始seed
 - `--seed-end <n>`: 終了seed。指定した場合は `--count` より優先
 - `--count <n>`: 戦数
-- `--deck-preset <id>`: 検証用固定デッキプリセット。既定は `random`。スペシャルON検証は `special-showcase`
+- `--deck-preset <id>`: 検証用固定デッキプリセット。既定は `random`。組み込みプリセットと投稿デッキテンプレIDを指定できる。スペシャルON検証は `special-showcase`
 - `--player-master <id>` / `--cpu-master <id>`: 検証用マスター。既定は `white`。ブラック検証は `black`
 - `--max-steps <n>`: 1戦あたりstep上限
 - `--max-turns <n>`: 1戦あたりturn上限
@@ -90,6 +90,7 @@ artifact内容:
 - 同一seedで両向きのAI比較ベンチを取る場合は `npm run benchmark:ai -- --baseline-ai stable --challenger-ai strong` を使う。
 - スペシャルONの再現検証は `npm run validate:auto-play -- --seed-start 620 --count 100 --deck-preset special-showcase --max-steps 600 --max-turns 140` を使う。
 - ブラックマスター検証は `npm run validate:auto-play -- --seed-start 640 --count 100 --player-master black --cpu-master black --max-steps 650 --max-turns 140` を使う。
+- カードヒーロー部.com投稿デッキの更新は `npm run import:deck-submissions` で再取得し、Pro 8なし/8ありのブラック/ホワイトマスターのみをテンプレ化する。
 - 失敗した場合は、artifactのseedで同じ条件を再実行できる。
 - CPU判断理由ログは `CPU判断: ...` または `プレイヤーAI判断: ...` として通常ログに残る。
 

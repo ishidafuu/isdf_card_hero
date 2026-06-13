@@ -1,6 +1,15 @@
 import { buildDeckCardIds, summarizeDeckCardIds } from "./cards";
+import {
+  DECK_SUBMISSION_PRESET_GROUPS,
+  DECK_SUBMISSION_PRESETS,
+  type DeckSubmissionGroupId,
+} from "./deckSubmissionPresets";
+import type { MasterId } from "./types";
 
-export type DeckPresetId = "balanced-normal" | "pressure-normal" | "black-pressure" | "special-showcase";
+export type BuiltInDeckPresetId = "balanced-normal" | "pressure-normal" | "black-pressure" | "special-showcase";
+export type DeckSubmissionPresetId = `submission-${string}`;
+export type DeckPresetId = BuiltInDeckPresetId | DeckSubmissionPresetId;
+export type DeckPresetGroupId = "built-in" | DeckSubmissionGroupId;
 
 export interface DeckPresetDef {
   id: DeckPresetId;
@@ -8,14 +17,18 @@ export interface DeckPresetDef {
   description: string;
   cardIds: readonly string[];
   allowSpecial: boolean;
+  sourceUrl?: string;
+  sourceDeckId?: number;
+  mode?: string;
+  masterId?: MasterId;
+  deckCode?: string;
+  group?: DeckPresetGroupId;
 }
 
-export const DECK_PRESET_IDS: DeckPresetId[] = [
-  "balanced-normal",
-  "pressure-normal",
-  "black-pressure",
-  "special-showcase",
-];
+export interface DeckPresetGroupDef {
+  id: DeckPresetGroupId;
+  name: string;
+}
 
 const BALANCED_NORMAL_DECK_CARD_IDS = buildDeckCardIds(20260613, { masterId: "white" });
 const PRESSURE_NORMAL_DECK_CARD_IDS = buildDeckCardIds(20260614, { masterId: "white" });
@@ -54,13 +67,14 @@ const SPECIAL_SHOWCASE_DECK_CARD_IDS = [
   "card_143",
 ] as const;
 
-export const DECK_PRESETS: DeckPresetDef[] = [
+const BUILT_IN_DECK_PRESETS: DeckPresetDef[] = [
   {
     id: "balanced-normal",
     name: "通常バランス",
     description: "通常カードのみ。手動プレイとCPU検証の基準に使う安定構成。",
     cardIds: BALANCED_NORMAL_DECK_CARD_IDS,
     allowSpecial: false,
+    group: "built-in",
   },
   {
     id: "pressure-normal",
@@ -68,6 +82,7 @@ export const DECK_PRESETS: DeckPresetDef[] = [
     description: "通常カードのみ。攻撃寄りのseed固定構成。",
     cardIds: PRESSURE_NORMAL_DECK_CARD_IDS,
     allowSpecial: false,
+    group: "built-in",
   },
   {
     id: "black-pressure",
@@ -75,6 +90,7 @@ export const DECK_PRESETS: DeckPresetDef[] = [
     description: "通常カードのみ。ブラックマスターや強気AIの検証向け構成。",
     cardIds: BLACK_PRESSURE_DECK_CARD_IDS,
     allowSpecial: false,
+    group: "built-in",
   },
   {
     id: "special-showcase",
@@ -82,8 +98,21 @@ export const DECK_PRESETS: DeckPresetDef[] = [
     description: "スーパー24枚導入後の代表効果を確認する固定構成。",
     cardIds: SPECIAL_SHOWCASE_DECK_CARD_IDS,
     allowSpecial: true,
+    group: "built-in",
   },
 ];
+
+export const DECK_PRESET_GROUPS: DeckPresetGroupDef[] = [
+  { id: "built-in", name: "標準プリセット" },
+  ...DECK_SUBMISSION_PRESET_GROUPS.map((group) => ({ id: group.id, name: group.name })),
+];
+
+export const DECK_PRESETS: DeckPresetDef[] = [
+  ...BUILT_IN_DECK_PRESETS,
+  ...DECK_SUBMISSION_PRESETS,
+];
+
+export const DECK_PRESET_IDS = DECK_PRESETS.map((preset) => preset.id);
 
 export function buildDeckPresetCardIds(presetId: DeckPresetId): string[] {
   return [...getDeckPreset(presetId).cardIds];

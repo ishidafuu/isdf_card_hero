@@ -40,7 +40,7 @@ npm run evaluate:units -- --seed-start 400 --count 100 --top 15
 主なオプション:
 
 - `--seed-start <n>` / `--seed-end <n>` / `--count <n>`
-- `--deck-preset random|special-showcase`
+- `--deck-preset random|<preset-id>`: 組み込みプリセットとカードヒーロー部.com投稿デッキテンプレを指定できる。
 - `--player-master white|black`
 - `--cpu-master white|black`
 - `--json <path>`: 集計結果をJSON保存

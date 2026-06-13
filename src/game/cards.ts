@@ -25,6 +25,7 @@ export interface DeckTextParseOptions {
 export interface DeckValidationOptions {
   allowSpecial?: boolean;
   disallowedSpecialTokens?: string[];
+  strictComposition?: boolean;
 }
 
 export interface DeckValidationSummary {
@@ -138,7 +139,7 @@ export function getCardIconPath(cardId: string): string | undefined {
 }
 
 export function validateRandomDeck(deck: CardInstance[] = buildDeck("validation", 0), options: DeckValidationOptions = {}): boolean {
-  return summarizeDeckCardIds(deck.map((card) => card.cardId), [], options).valid;
+  return summarizeDeckCardIds(deck.map((card) => card.cardId), [], { ...options, strictComposition: true }).valid;
 }
 
 export function parseDeckText(text: string, options: DeckTextParseOptions = {}): ParsedDeckText {
@@ -169,7 +170,7 @@ export function deckTextFromCardIds(cardIds: string[]): string {
 }
 
 export function summarizeDeckCardIds(
-  cardIds: string[],
+  cardIds: readonly string[],
   unknownTokens: string[] = [],
   options: DeckValidationOptions = {},
 ): DeckValidationSummary {
@@ -210,13 +211,13 @@ export function summarizeDeckCardIds(
   if (duplicateViolations.length > 0) {
     errors.push(`同名カードは${DECK_MAX_COPIES}枚までです`);
   }
-  if (categories.front < DECK_MIN_FRONT) {
+  if (options.strictComposition && categories.front < DECK_MIN_FRONT) {
     errors.push(`前衛は${DECK_MIN_FRONT}枚以上必要です（現在${categories.front}枚）`);
   }
-  if (categories.back < DECK_MIN_BACK) {
+  if (options.strictComposition && categories.back < DECK_MIN_BACK) {
     errors.push(`後衛は${DECK_MIN_BACK}枚以上必要です（現在${categories.back}枚）`);
   }
-  if (categories.magic < DECK_MIN_MAGIC) {
+  if (options.strictComposition && categories.magic < DECK_MIN_MAGIC) {
     errors.push(`魔法は${DECK_MIN_MAGIC}枚以上必要です（現在${categories.magic}枚）`);
   }
 

@@ -53,7 +53,13 @@ import {
 } from "./game/rules";
 import { getMasterActionDef, getMasterName, MASTER_IDS } from "./game/masters";
 import { CPU_AI_PROFILES, type CpuAiProfile, type CpuAiProfiles } from "./game/cpuAi";
-import { buildDeckPresetCardIds, DECK_PRESETS, deckPresetAllowsSpecial, type DeckPresetId } from "./game/deckPresets";
+import {
+  buildDeckPresetCardIds,
+  DECK_PRESET_GROUPS,
+  DECK_PRESETS,
+  deckPresetAllowsSpecial,
+  type DeckPresetId,
+} from "./game/deckPresets";
 import { evaluateBoardUnit, evaluateCard, type UnitEvaluation } from "./game/unitEvaluation";
 import type { CardInstance, CardPool, CommandDef, GameState, MagicAction, MagicCardDef, MagicTargetKind, MasterActionId, MasterId, PlayerId, SlotKey, Target } from "./game/types";
 import type { DeckValidationSummary } from "./game/cards";
@@ -349,7 +355,7 @@ function createDeckDraft(settings: BattleSettings, deckSettings: DeckSettings, p
       playerId,
       fixed: false,
       cardIds,
-      summary: summarizeDeckCardIds(cardIds),
+      summary: summarizeDeckCardIds(cardIds, [], { strictComposition: true }),
     };
   }
 
@@ -2743,7 +2749,7 @@ function DeckSetupPanel({
       <div className="zone-panel-heading">
         <div>
           <h3><Icon icon="🧩" /> Deck Setup</h3>
-          <p>30枚固定、同名3枚まで、前衛12 / 後衛6 / 魔法6以上。山札順はseedで再現されます。</p>
+          <p>固定デッキは30枚・同名3枚まで。ランダム生成は前衛/後衛/魔法の最低構成を確保します。</p>
         </div>
         <button type="button" onClick={onClose} aria-label="閉じる">
           <Icon icon="✕" /> Close
@@ -2961,9 +2967,19 @@ function DeckPresetControls({
       <label className="preset-control">
         Preset
         <select value={preset.id} onChange={(event) => onPresetChange(event.target.value as DeckPresetId)}>
-          {DECK_PRESETS.map((candidate) => (
-            <option value={candidate.id} key={candidate.id}>{candidate.name}</option>
-          ))}
+          {DECK_PRESET_GROUPS.map((group) => {
+            const groupPresets = DECK_PRESETS.filter((candidate) => (candidate.group ?? "built-in") === group.id);
+            if (groupPresets.length === 0) {
+              return null;
+            }
+            return (
+              <optgroup label={`${group.name} (${groupPresets.length})`} key={group.id}>
+                {groupPresets.map((candidate) => (
+                  <option value={candidate.id} key={candidate.id}>{candidate.name}</option>
+                ))}
+              </optgroup>
+            );
+          })}
         </select>
       </label>
       <button type="button" onClick={onApplyPreset}>
@@ -4037,13 +4053,7 @@ function superEvolutionText(def: ReturnType<typeof getMonsterDef>): string {
 }
 
 function deckCategoryValid(summary: DeckValidationSummary, category: "front" | "back" | "magic"): boolean {
-  if (category === "front") {
-    return summary.categories.front >= 12;
-  }
-  if (category === "back") {
-    return summary.categories.back >= 6;
-  }
-  return summary.categories.magic >= 6;
+  return summary.categories[category] >= 0;
 }
 
 function deckCategoryIcon(category: "front" | "back" | "magic" | "special"): string {
