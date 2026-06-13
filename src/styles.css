@@ -568,7 +568,15 @@ button:disabled {
   align-items: center;
   display: inline-flex;
   font-size: 16px;
+  gap: 6px;
   min-width: 0;
+}
+
+.board-slot .monster-card > strong .card-image-icon,
+.hand-card-title .card-image-icon {
+  height: 48px;
+  margin-right: 0;
+  width: 48px;
 }
 
 .monster-card span,
@@ -1220,10 +1228,11 @@ button:disabled {
 }
 
 .hand-card-title strong {
-  align-items: center;
+  align-items: flex-start;
   color: #1d2527;
   display: inline-flex;
   font-size: 15px;
+  gap: 6px;
   line-height: 1.2;
   overflow-wrap: anywhere;
 }
