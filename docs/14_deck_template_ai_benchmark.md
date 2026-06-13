@@ -226,3 +226,52 @@ npm run benchmark:deck-suite -- --suite stress --seed-start 430 --count 1 --max-
 | core count1 | PASS | 80 | 38 / 42 | 0 | 295 steps / 30 turns |
 | holdout count1 | PASS | 40 | 19 / 21 | 0 | 181 steps / 23 turns |
 | stress count1 | PASS | 24 | 9 / 15 | 0 | 172 steps / 35 turns |
+
+## Phase 8: 投稿デッキ実戦スコア
+
+静的な `practicalScore` は、カード評価・3枚積み・キーカード・構成リスクから見たテンプレ候補の一次選別に使う。
+ただし、実際のAI強化では「そのデッキがAI同士の自動対戦でどれくらい勝つか」「長期戦や警告が出にくいか」も分けて見る必要がある。
+
+そのため、投稿デッキ同士を総当たりで自動対戦させる実戦スコアを追加した。
+
+```sh
+npm run score:deck-battles -- --suite smoke --seed-start 500 --count 1
+npm run score:deck-battles -- --suite core --max-decks 12 --seed-start 500 --count 1
+```
+
+出力先は既定で `artifacts/deck-battle-score/latest/report.json` と `artifacts/deck-battle-score/latest/report.md`。
+必要に応じて `--out-dir` / `--json` / `--markdown` で保存先を変える。
+
+### 指標
+
+| 指標 | 用途 |
+| --- | --- |
+| Battle score | 並べ替え用の総合点。勝点率を主軸に、速度・警告・失敗を軽く補正する |
+| Win point | 勝ち=1、引き分け=0.5で見た実戦成績 |
+| Win rate | 純粋な勝率。引き分けは勝ちに含めない |
+| Stability | 警告/失敗の少なさと、player/cpu席で成績が崩れないかを見る安定度 |
+| Speed | 同一suite内の平均stepsと比べた決着速度。50がsuite平均 |
+
+`Battle score` だけでデッキ選別を固定しない。
+AI改善の検証では、上位デッキ、勝率は高いが安定度が低いデッキ、安定度は高いが勝ち切れないデッキを別枠で見る。
+
+### Smoke実行結果
+
+```sh
+npm run score:deck-battles -- --suite smoke --seed-start 500 --count 1 --out-dir artifacts/deck-battle-score/phase8-smoke
+```
+
+| Deck | Battle | Win point | Win rate | Stability | Speed | W-L-D | Avg |
+| --- | ---: | ---: | ---: | ---: | ---: | ---: | --- |
+| `submission-pro-no-rare8-black-493` | 78.7 | 78.6% | 78.6% | 95.7 | 51.5 | 11-3-0 | 98.2 steps / 9.4 turns |
+| `submission-pro-with-rare8-white-1339` | 70.9 | 71.4% | 71.4% | 91.4 | 44.3 | 10-4-0 | 112.7 steps / 10.6 turns |
+| `submission-pro-no-rare8-black-252` | 63.8 | 64.3% | 64.3% | 87.1 | 45.6 | 9-5-0 | 110.1 steps / 10.4 turns |
+| `submission-pro-with-rare8-black-1354` | 57.5 | 57.1% | 57.1% | 91.4 | 54.0 | 8-6-0 | 93.1 steps / 8.7 turns |
+| `submission-pro-with-rare8-white-1346` | 49.9 | 50.0% | 50.0% | 95.7 | 48.7 | 7-7-0 | 103.9 steps / 10.6 turns |
+| `submission-pro-with-rare8-black-999` | 43.9 | 42.9% | 42.9% | 91.4 | 60.2 | 6-8-0 | 80.6 steps / 8.2 turns |
+| `submission-pro-no-rare8-white-494` | 28.4 | 28.6% | 28.6% | 100.0 | 48.1 | 4-10-0 | 105.1 steps / 10.4 turns |
+| `submission-pro-no-rare8-white-1377` | 6.9 | 7.1% | 7.1% | 95.7 | 47.7 | 1-13-0 | 105.9 steps / 9.6 turns |
+
+- `submission-pro-no-rare8-black-493` は実戦スコア上も強く、黒アグロ/石テンポ検証の主軸にできる。
+- `submission-pro-with-rare8-white-1339` は白8あり代表として勝率が高いが、Speedは低めなので長期戦寄りの改善確認に向く。
+- `submission-pro-no-rare8-white-494` はStabilityが高い一方でWin rateが低く、安定するが勝ち切れない白デッキの確認枠に向く。

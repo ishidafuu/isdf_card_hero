@@ -140,9 +140,9 @@ describe("auto play validation", () => {
 
   it("keeps per-decision new log entries after the game log reaches its cap", () => {
     const result = validateAutoPlay({
-      seedStart: 400,
+      seedStart: 401,
       count: 1,
-      maxSteps: 140,
+      maxSteps: 125,
       maxTurns: 120,
       historyLimit: 140,
     });
@@ -151,7 +151,7 @@ describe("auto play validation", () => {
     expect(result.issues[0]).toMatchObject({
       kind: "step_limit",
       severity: "failure",
-      seed: 400,
+      seed: 401,
     });
     expect(result.issues[0].history.length).toBeGreaterThan(120);
     expect(result.issues[0].history.every((event) => event.newLog.length > 0)).toBe(true);
