@@ -67,9 +67,12 @@ import {
   type DeckPresetRare8Filter,
 } from "./game/deckPresets";
 import {
-  DECK_BATTLE_SCORE_SNAPSHOT_SUMMARY,
+  DECK_BATTLE_SCORE_SNAPSHOT_SUITES,
+  DEFAULT_DECK_BATTLE_SCORE_SNAPSHOT_SUITE_ID,
   getDeckBattleScoreSnapshot,
+  getDeckBattleScoreSuite,
   type DeckBattleScoreSnapshot,
+  type DeckBattleScoreSnapshotSuiteId,
 } from "./game/deckBattleScoreSnapshots";
 import { evaluateBoardUnit, evaluateCard, type UnitEvaluation } from "./game/unitEvaluation";
 import type { CardInstance, CardPool, CommandDef, GameState, MagicAction, MagicCardDef, MagicTargetKind, MasterActionId, MasterId, PlayerId, SlotKey, Target } from "./game/types";
@@ -152,7 +155,8 @@ type ZoneView =
   | { kind: "catalog" }
   | { kind: "effects" }
   | { kind: "cpuHistory" }
-  | { kind: "deckSetup" };
+  | { kind: "deckSetup" }
+  | { kind: "aiLab" };
 type LogFilter = "all" | "battle" | "damage" | "support" | "turn" | "cpu";
 type BattleMode = "player-vs-cpu" | "cpu-vs-cpu";
 type TargetRole = "ally" | "enemy" | "move" | "summon" | "empty" | "master";
@@ -853,6 +857,7 @@ export function App() {
   });
   const [deckPresetFilters, setDeckPresetFilters] = useState<Record<PlayerId, DeckPresetFilters>>(() => createDeckPresetFilters());
   const [deckPresetSorts, setDeckPresetSorts] = useState<Record<PlayerId, DeckPresetSortKey>>(() => createDeckPresetSorts());
+  const [aiLabSuiteId, setAiLabSuiteId] = useState<DeckBattleScoreSnapshotSuiteId>(DEFAULT_DECK_BATTLE_SCORE_SNAPSHOT_SUITE_ID);
   const previousGameRef = useRef<GameState>(game);
   const lastSpectatorAttentionIndexRef = useRef<number | undefined>(undefined);
   const visualEffectIdRef = useRef(0);
@@ -2007,6 +2012,13 @@ export function App() {
               </button>
               <button
                 type="button"
+                className={zoneView?.kind === "aiLab" ? "selected" : ""}
+                onClick={() => setZoneView(toggleZoneView(zoneView, { kind: "aiLab" }))}
+              >
+                <Icon icon="📈" /> AI Lab
+              </button>
+              <button
+                type="button"
                 className={zoneView?.kind === "deckSetup" ? "selected" : ""}
                 onClick={() => setZoneView(toggleZoneView(zoneView, { kind: "deckSetup" }))}
               >
@@ -2054,6 +2066,12 @@ export function App() {
                 onDeckPresetPickerChange={handleDeckPresetPickerChange}
                 onDeckPresetFilterChange={handleDeckPresetFilterChange}
                 onDeckPresetSortChange={handleDeckPresetSortChange}
+              />
+            ) : zoneView?.kind === "aiLab" ? (
+              <AiLabPanel
+                suiteId={aiLabSuiteId}
+                onSuiteChange={setAiLabSuiteId}
+                onClose={() => setZoneView(undefined)}
               />
             ) : zoneView ? (
               <CardZonePanel
@@ -3245,8 +3263,104 @@ function HandCardPanel({ card, game, disabled, onDiscard }: HandCardPanelProps) 
 
 interface CardZonePanelProps {
   game: GameState;
-  view: Exclude<ZoneView, { kind: "deckSetup" }>;
+  view: Exclude<ZoneView, { kind: "deckSetup" } | { kind: "aiLab" }>;
   onClose: () => void;
+}
+
+function AiLabPanel({
+  suiteId,
+  onSuiteChange,
+  onClose,
+}: {
+  suiteId: DeckBattleScoreSnapshotSuiteId;
+  onSuiteChange: (suiteId: DeckBattleScoreSnapshotSuiteId) => void;
+  onClose: () => void;
+}) {
+  const suite = getDeckBattleScoreSuite(suiteId);
+  const summary = suite.summary;
+  return (
+    <section className="zone-panel ai-lab-panel">
+      <div className="zone-panel-heading">
+        <div>
+          <h3><Icon icon="📈" /> AI Lab</h3>
+          <p>投稿デッキの実戦スコアから、AI改善で見るべきデッキと問題試合を整理します。</p>
+        </div>
+        <button type="button" onClick={onClose} aria-label="閉じる">
+          <Icon icon="✕" /> Close
+        </button>
+      </div>
+      <div className="ai-lab-toolbar">
+        <label className="preset-control">
+          Suite
+          <select
+            value={summary.suiteId}
+            onChange={(event) => onSuiteChange(event.target.value as DeckBattleScoreSnapshotSuiteId)}
+          >
+            {DECK_BATTLE_SCORE_SNAPSHOT_SUITES.map((candidate) => (
+              <option value={candidate.summary.suiteId} key={candidate.summary.suiteId}>
+                {candidate.summary.suiteId} / {candidate.summary.decks} decks / {candidate.summary.games} games
+              </option>
+            ))}
+          </select>
+        </label>
+        <div className="ai-lab-summary">
+          <MetricPill label="Decks" value={String(summary.decks)} />
+          <MetricPill label="Games" value={String(summary.games)} />
+          <MetricPill label="Avg steps" value={summary.averageSteps.toFixed(1)} />
+          <MetricPill label="Issues" value={`${summary.failures}/${summary.warnings}`} />
+        </div>
+      </div>
+      <section className="ai-lab-focus">
+        <h4>Recommended Focus</h4>
+        {suite.recommendedFocus.length > 0 ? (
+          <ul>
+            {suite.recommendedFocus.map((item) => (
+              <li key={item}>{item}</li>
+            ))}
+          </ul>
+        ) : (
+          <p>問題候補はまだありません。</p>
+        )}
+      </section>
+      <div className="ai-lab-category-grid">
+        {suite.categories.map((category) => (
+          <section className="ai-lab-category" key={category.id}>
+            <div>
+              <h4>{category.title}</h4>
+              <p>{category.description}</p>
+            </div>
+            <ol>
+              {category.decks.slice(0, 5).map((deck) => (
+                <li key={deck.deckPreset}>
+                  <span className="ai-lab-deck-rank">#{deck.rank}</span>
+                  <span className="ai-lab-deck-name">{deck.deckPreset}</span>
+                  <span className="ai-lab-deck-score">
+                    B{deck.battleScore.toFixed(1)} / W{formatPercent(deck.winRate)} / S{deck.stabilityScore.toFixed(1)}
+                  </span>
+                </li>
+              ))}
+            </ol>
+          </section>
+        ))}
+      </div>
+      <section className="ai-lab-problems">
+        <h4>Problem Games</h4>
+        <div className="ai-lab-problem-list">
+          {suite.problemGames.slice(0, 10).map((problem) => (
+            <div
+              className={`ai-lab-problem ${problem.kind}`}
+              key={`${problem.kind}-${problem.seed}-${problem.playerDeckPreset}-${problem.cpuDeckPreset}-${problem.steps}`}
+            >
+              <strong>{problem.kind}</strong>
+              <span>seed {problem.seed} / {problem.steps} steps / {problem.turns} turns</span>
+              <p>{problem.playerDeckPreset} vs {problem.cpuDeckPreset}</p>
+              <small>{problem.reason}</small>
+            </div>
+          ))}
+        </div>
+      </section>
+    </section>
+  );
 }
 
 interface DeckSetupPanelProps {
@@ -3607,12 +3721,13 @@ function DeckPresetControls({
 }
 
 function DeckBattleScoreStrip({ score }: { score: DeckBattleScoreSnapshot | undefined }) {
+  const suite = getDeckBattleScoreSuite();
   if (!score) {
     return (
       <div className="deck-score-strip empty">
         <div className="deck-score-strip-heading">
           <strong>実戦スコア未計測</strong>
-          <span>投稿デッキsmoke対象のみ表示</span>
+          <span>投稿デッキ{suite.summary.suiteId}対象のみ表示</span>
         </div>
       </div>
     );
@@ -3623,7 +3738,7 @@ function DeckBattleScoreStrip({ score }: { score: DeckBattleScoreSnapshot | unde
       <div className="deck-score-strip-heading">
         <strong>実戦スコア #{score.rank}</strong>
         <span>
-          smoke / seed {DECK_BATTLE_SCORE_SNAPSHOT_SUMMARY.seedStart} / {score.games} games / issues {score.failures}/{score.warnings}
+          {suite.summary.suiteId} / seed {suite.summary.seedStart} / {score.games} games / issues {score.failures}/{score.warnings}
         </span>
       </div>
       <div className="deck-score-main">
@@ -4712,6 +4827,9 @@ function toggleZoneView(current: ZoneView | undefined, next: ZoneView): ZoneView
   }
   if (next.kind === "cpuHistory") {
     return current?.kind === "cpuHistory" ? undefined : next;
+  }
+  if (next.kind === "aiLab") {
+    return current?.kind === "aiLab" ? undefined : next;
   }
   if (next.kind === "deckSetup") {
     return current?.kind === "deckSetup" ? undefined : next;

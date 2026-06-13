@@ -1358,6 +1358,138 @@ button:disabled {
   gap: 8px;
 }
 
+.ai-lab-panel {
+  gap: 10px;
+}
+
+.ai-lab-toolbar {
+  align-items: end;
+  display: grid;
+  gap: 8px;
+  grid-template-columns: minmax(180px, 0.8fr) minmax(280px, 1.4fr);
+}
+
+.ai-lab-summary {
+  display: grid;
+  gap: 5px;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+}
+
+.ai-lab-focus,
+.ai-lab-category,
+.ai-lab-problems {
+  background: #fbfcf8;
+  border: 1px solid #d5ddce;
+  border-radius: 6px;
+  display: grid;
+  gap: 7px;
+  padding: 8px;
+}
+
+.ai-lab-focus h4,
+.ai-lab-category h4,
+.ai-lab-category p,
+.ai-lab-problems h4,
+.ai-lab-focus p,
+.ai-lab-problem p,
+.ai-lab-problem small {
+  margin: 0;
+}
+
+.ai-lab-focus h4,
+.ai-lab-category h4,
+.ai-lab-problems h4 {
+  font-size: 14px;
+}
+
+.ai-lab-focus ul,
+.ai-lab-category ol {
+  display: grid;
+  gap: 5px;
+  margin: 0;
+  padding-left: 18px;
+}
+
+.ai-lab-focus li,
+.ai-lab-category p,
+.ai-lab-focus p,
+.ai-lab-problem small {
+  color: #56615d;
+  font-size: 12px;
+  line-height: 1.35;
+}
+
+.ai-lab-category-grid {
+  display: grid;
+  gap: 8px;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+}
+
+.ai-lab-category li {
+  align-items: baseline;
+  display: grid;
+  gap: 4px;
+  grid-template-columns: 34px minmax(0, 1fr);
+}
+
+.ai-lab-deck-rank {
+  color: #2f6faa;
+  font-size: 12px;
+  font-weight: 800;
+}
+
+.ai-lab-deck-name {
+  color: #1d2527;
+  font-size: 12px;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.ai-lab-deck-score {
+  color: #56615d;
+  font-size: 11px;
+  grid-column: 2;
+}
+
+.ai-lab-problem-list {
+  display: grid;
+  gap: 6px;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+}
+
+.ai-lab-problem {
+  background: #fffef9;
+  border: 1px solid #d8dfd2;
+  border-left: 4px solid #8aa45f;
+  border-radius: 5px;
+  display: grid;
+  gap: 3px;
+  padding: 7px;
+}
+
+.ai-lab-problem.issue {
+  border-left-color: #b85f5f;
+}
+
+.ai-lab-problem.upset,
+.ai-lab-problem.top_deck_loss {
+  border-left-color: #c28b1d;
+}
+
+.ai-lab-problem strong {
+  color: #26302e;
+  font-size: 12px;
+}
+
+.ai-lab-problem span,
+.ai-lab-problem p {
+  color: #3f4946;
+  font-size: 11px;
+  line-height: 1.35;
+}
+
 .match-preset-panel {
   background: #fbfcf8;
   border: 1px solid #d5ddce;
@@ -2608,6 +2740,10 @@ button:disabled {
   .catalog-selected-panel {
     max-height: none;
   }
+
+  .ai-lab-toolbar {
+    grid-template-columns: 1fr;
+  }
 }
 
 @media (max-width: 520px) {
@@ -2628,6 +2764,10 @@ button:disabled {
   }
 
   .deck-score-main {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .ai-lab-summary {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 }

@@ -117,6 +117,27 @@ describe("cpu ai", () => {
     expect(decision.type).not.toBe("attack");
   });
 
+  it("does not spend white closeout turns on non-defensive zero-damage focus stripping", () => {
+    const game = createCpuGame();
+    game.players.cpu.masterId = "white";
+    game.players.cpu.hand = [];
+    game.players.cpu.stones = 0;
+    game.players.player.masterHp = 4;
+    game.slots.cpu_back_left.monster = createActiveMonster("card_051", "cpu");
+    game.slots.player_front_left.monster = createActiveMonster("beyond", "player", { focused: true });
+
+    const decisions = listCpuDecisions(game);
+
+    expect(
+      decisions.some(
+        (decision) =>
+          decision.type === "attack" &&
+          decision.action.target.kind === "monster" &&
+          decision.action.target.slotKey === "player_front_left",
+      ),
+    ).toBe(false);
+  });
+
   it("uses master attack when it can defeat a front enemy", () => {
     const game = createCpuGame();
     game.players.cpu.hand = [];

@@ -275,3 +275,23 @@ npm run score:deck-battles -- --suite smoke --seed-start 500 --count 1 --out-dir
 - `submission-pro-no-rare8-black-493` は実戦スコア上も強く、黒アグロ/石テンポ検証の主軸にできる。
 - `submission-pro-with-rare8-white-1339` は白8あり代表として勝率が高いが、Speedは低めなので長期戦寄りの改善確認に向く。
 - `submission-pro-no-rare8-white-494` はStabilityが高い一方でWin rateが低く、安定するが勝ち切れない白デッキの確認枠に向く。
+
+## Phase 9-14: 継続強化ループ
+
+長時間のAI強化は、以下の順で回す。
+
+1. `core` 実戦スコアを生成する。
+2. スコアから代表デッキを分類する。
+3. 問題試合だけを再実行し、ログ末尾を保存する。
+4. 抽出結果から弱点カテゴリを1つ選んでAIを補正する。
+5. `smoke` / `core` / `holdout` / `stress` で回帰確認する。
+6. ゲーム内 `AI Lab` へスコア、分類、問題試合候補を反映する。
+
+```sh
+npm run score:deck-battles -- --suite core --seed-start 500 --count 1 --out-dir artifacts/deck-battle-score/phase9-core
+npm run analyze:deck-battles -- --report artifacts/deck-battle-score/phase9-core/report.json --out-dir artifacts/deck-battle-score/phase10-core-insights
+npm run trace:deck-battles -- --report artifacts/deck-battle-score/phase9-core/report.json --out-dir artifacts/deck-battle-score/phase11-core-traces --limit 8 --log-limit 40
+npm run generate:deck-battle-snapshots -- --report artifacts/deck-battle-score/phase8-smoke/report.json --report artifacts/deck-battle-score/phase9-core/report.json --default-suite core --out src/game/deckBattleScoreSnapshots.ts
+```
+
+ゲーム内では右パネルの `AI Lab` から、suite別のsummary、推奨フォーカス、カテゴリ別代表デッキ、問題試合候補を確認できる。

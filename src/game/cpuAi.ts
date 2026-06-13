@@ -649,6 +649,15 @@ function scoreAttackDecision(state: GameState, after: GameState, action: Command
 
   const damage = targetBefore.hp - targetAfter.hp;
   if (damage <= 0) {
+    if (shouldPruneCloseoutNonProgressActions(state, playerId)) {
+      const strippedFocus = targetBefore.focused && !targetAfter.focused;
+      const targetThreatBefore = directMasterDamageFromSlot(state, action.target.slotKey, opponent);
+      const targetThreatAfter = directMasterDamageFromSlot(after, action.target.slotKey, opponent);
+      if (strippedFocus && targetThreatAfter < targetThreatBefore) {
+        return stateDelta > 8 ? 30 + stateDelta + recoilPenalty : -100;
+      }
+      return strippedFocus && stateDelta >= 45 ? 12 + stateDelta * 0.35 + recoilPenalty : -100;
+    }
     return stateDelta > 8 ? 30 + stateDelta + recoilPenalty : -100;
   }
   if (shouldPruneCloseoutNonProgressActions(state, playerId) && damage < targetAfter.hp && stateDelta < 45) {
@@ -1692,6 +1701,25 @@ function bestDirectMasterDamageForPlayer(state: GameState, playerId: PlayerId): 
     }
   }
 
+  return bestDamage;
+}
+
+function directMasterDamageFromSlot(state: GameState, slotKey: SlotKey, attackerId: PlayerId): number {
+  const readyState = readyPlayerForTacticalEvaluation(state, attackerId);
+  const monster = readyState.slots[slotKey].monster;
+  if (!monster || monster.owner !== attackerId || monster.actionCount >= monster.actionLimit) {
+    return 0;
+  }
+
+  const opponent = opponentOf(attackerId);
+  let bestDamage = 0;
+  for (const command of getMonsterCommands(monster)) {
+    for (const target of getCommandTargets(readyState, slotKey, command.id)) {
+      if (target.kind === "master" && target.playerId === opponent) {
+        bestDamage = Math.max(bestDamage, Math.max(0, estimateCommandPower(monster, command) - 2));
+      }
+    }
+  }
   return bestDamage;
 }
 
