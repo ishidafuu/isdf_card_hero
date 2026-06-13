@@ -272,6 +272,18 @@ function parseArgs(args: string[]): Options {
   if (parsed.baselineProfile === parsed.challengerProfile) {
     throw new Error("baseline and challenger profiles must differ");
   }
+  assertMinimum("--seed", parsed.seed, 0);
+  assertMinimum("--max-steps", parsed.maxSteps, 1);
+  assertMinimum("--max-diffs", parsed.maxDiffs, 1);
+  if (parsed.turnFrom !== undefined) {
+    assertMinimum("--turn-from", parsed.turnFrom, 1);
+  }
+  if (parsed.turnTo !== undefined) {
+    assertMinimum("--turn-to", parsed.turnTo, 1);
+  }
+  if (parsed.turnFrom !== undefined && parsed.turnTo !== undefined && parsed.turnFrom > parsed.turnTo) {
+    throw new Error("--turn-from must be less than or equal to --turn-to");
+  }
   return parsed;
 }
 
@@ -308,6 +320,12 @@ function readNumber(name: string, value: string | undefined): number {
     throw new Error(`${name} must be an integer`);
   }
   return number;
+}
+
+function assertMinimum(name: string, value: number, minimum: number): void {
+  if (value < minimum) {
+    throw new Error(`${name} must be ${minimum} or greater`);
+  }
 }
 
 function printHelp(): void {

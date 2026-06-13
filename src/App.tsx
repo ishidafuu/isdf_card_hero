@@ -253,21 +253,52 @@ function createDefaultAiProfiles(): CpuAiProfiles {
 }
 
 function cloneAiProfiles(profiles: CpuAiProfiles): CpuAiProfiles {
-  return { player: profiles.player, cpu: profiles.cpu };
+  return normalizeAiProfiles(profiles);
 }
 
 function aiProfileSummary(profiles: CpuAiProfiles): string {
   return `P ${profiles.player} / C ${profiles.cpu}`;
 }
 
-function historyDeckSummary(settings: DeckSettings): string {
+function historyDeckSummary(settings: DeckSettings | undefined): string {
+  const normalized = normalizeDeckSettings(settings);
   return PLAYER_IDS
     .map((playerId) => {
-      const fixed = settings.fixed[playerId] ? "固定" : "ランダム";
-      const special = settings.allowSpecial[playerId] ? "+S" : "";
+      const fixed = normalized.fixed[playerId] ? "固定" : "ランダム";
+      const special = normalized.allowSpecial[playerId] ? "+S" : "";
       return `${playerId === "player" ? "P" : "C"} ${fixed}${special}`;
     })
     .join(" / ");
+}
+
+function normalizeAiProfiles(profiles: Partial<CpuAiProfiles> | undefined): CpuAiProfiles {
+  return {
+    player: normalizeCpuAiProfile(profiles?.player),
+    cpu: normalizeCpuAiProfile(profiles?.cpu),
+  };
+}
+
+function normalizeCpuAiProfile(value: unknown): CpuAiProfile {
+  return CPU_AI_PROFILES.includes(value as CpuAiProfile) ? (value as CpuAiProfile) : "stable";
+}
+
+function normalizeMasterIds(masterIds: Partial<Record<PlayerId, MasterId>> | undefined): Record<PlayerId, MasterId> {
+  return {
+    player: normalizeMasterId(masterIds?.player),
+    cpu: normalizeMasterId(masterIds?.cpu),
+  };
+}
+
+function normalizeMasterId(value: unknown): MasterId {
+  return MASTER_IDS.includes(value as MasterId) ? (value as MasterId) : "white";
+}
+
+function isPlayerId(value: unknown): value is PlayerId {
+  return value === "player" || value === "cpu";
+}
+
+function normalizeBattleMode(value: unknown): BattleMode {
+  return value === "cpu-vs-cpu" || value === "player-vs-cpu" ? value : "player-vs-cpu";
 }
 
 function createBattleSettings(seed: number): BattleSettings {
@@ -393,10 +424,24 @@ function createDeckDrafts(settings: BattleSettings, deckSettings: DeckSettings):
 }
 
 function cloneDeckSettings(settings: DeckSettings): DeckSettings {
+  return normalizeDeckSettings(settings);
+}
+
+function normalizeDeckSettings(settings: Partial<DeckSettings> | undefined): DeckSettings {
+  const fallback = createDeckSettings(DEFAULT_BATTLE_SEED);
   return {
-    fixed: { ...settings.fixed },
-    allowSpecial: { ...settings.allowSpecial },
-    text: { ...settings.text },
+    fixed: {
+      player: !!settings?.fixed?.player,
+      cpu: !!settings?.fixed?.cpu,
+    },
+    allowSpecial: {
+      player: !!settings?.allowSpecial?.player,
+      cpu: !!settings?.allowSpecial?.cpu,
+    },
+    text: {
+      player: typeof settings?.text?.player === "string" ? settings.text.player : fallback.text.player,
+      cpu: typeof settings?.text?.cpu === "string" ? settings.text.cpu : fallback.text.cpu,
+    },
   };
 }
 
@@ -448,6 +493,35 @@ function createBattleReplaySummary(log: string[]): BattleReplaySummary {
     late: pickReplayEvents(log, phases.late.start, phases.late.end, 4),
     decisive,
   };
+}
+
+function normalizeBattleReplaySummary(value: unknown): BattleReplaySummary | undefined {
+  if (!value || typeof value !== "object") {
+    return undefined;
+  }
+  const replay = value as Partial<Record<keyof BattleReplaySummary, unknown>>;
+  return {
+    early: normalizeBattleReplayEvents(replay.early),
+    middle: normalizeBattleReplayEvents(replay.middle),
+    late: normalizeBattleReplayEvents(replay.late),
+    decisive: normalizeBattleReplayEvents(replay.decisive),
+  };
+}
+
+function normalizeBattleReplayEvents(value: unknown): BattleReplayEvent[] {
+  if (!Array.isArray(value)) {
+    return [];
+  }
+  return value.flatMap((event) => {
+    if (!event || typeof event !== "object") {
+      return [];
+    }
+    const candidate = event as Partial<BattleReplayEvent>;
+    if (typeof candidate.index !== "number" || !Number.isFinite(candidate.index) || typeof candidate.entry !== "string") {
+      return [];
+    }
+    return [{ index: candidate.index, entry: candidate.entry }];
+  });
 }
 
 function splitReplayLogPhases(log: string[]) {
@@ -513,7 +587,45 @@ function createBattleResultKey(game: GameState, settings: BattleSettings): strin
 }
 
 function loadBattleHistory(): BattleHistoryEntry[] {
-  return loadJsonArray<BattleHistoryEntry>(BATTLE_HISTORY_STORAGE_KEY).slice(0, BATTLE_HISTORY_LIMIT);
+  return loadJsonArray<Partial<BattleHistoryEntry>>(BATTLE_HISTORY_STORAGE_KEY)
+    .map(normalizeBattleHistoryEntry)
+    .filter((entry): entry is BattleHistoryEntry => !!entry)
+    .slice(0, BATTLE_HISTORY_LIMIT);
+}
+
+function normalizeBattleHistoryEntry(entry: Partial<BattleHistoryEntry>): BattleHistoryEntry | undefined {
+  if (!entry || typeof entry !== "object") {
+    return undefined;
+  }
+  const winner = isPlayerId(entry.winner) ? entry.winner : undefined;
+  if (!winner) {
+    return undefined;
+  }
+  const seed = normalizeHistoryNumber(entry.seed, DEFAULT_BATTLE_SEED);
+  const turns = normalizeHistoryNumber(entry.turns, 0);
+  return {
+    id: typeof entry.id === "string" && entry.id ? entry.id : `history_${seed}_${turns}_${winner}`,
+    createdAt: typeof entry.createdAt === "string" ? entry.createdAt : "",
+    seed,
+    firstPlayer: isPlayerId(entry.firstPlayer) ? entry.firstPlayer : "player",
+    mode: normalizeBattleMode(entry.mode),
+    masterIds: normalizeMasterIds(entry.masterIds),
+    aiProfiles: normalizeAiProfiles(entry.aiProfiles),
+    deckSettings: normalizeDeckSettings(entry.deckSettings),
+    winner,
+    turns,
+    playerHp: normalizeHistoryNumber(entry.playerHp, 0),
+    cpuHp: normalizeHistoryNumber(entry.cpuHp, 0),
+    playerDeck: normalizeHistoryNumber(entry.playerDeck, 0),
+    cpuDeck: normalizeHistoryNumber(entry.cpuDeck, 0),
+    deckout: !!entry.deckout,
+    longGame: !!entry.longGame,
+    replay: normalizeBattleReplaySummary(entry.replay),
+  };
+}
+
+function normalizeHistoryNumber(value: unknown, fallback: number): number {
+  return typeof value === "number" && Number.isFinite(value) ? Math.max(0, Math.floor(value)) : fallback;
 }
 
 function loadSavedBattlePresets(): SavedBattlePreset[] {
@@ -2497,14 +2609,15 @@ function BattleHistoryComparison({ groups }: { groups: BattleHistoryEntry[][] })
 }
 
 function BattleReplaySummaryView({ replay }: { replay?: BattleReplaySummary }) {
-  if (!replay) {
+  const normalizedReplay = normalizeBattleReplaySummary(replay);
+  if (!normalizedReplay) {
     return <p className="empty-note">旧履歴のためリプレイ要点はありません。</p>;
   }
   const sections = [
-    ["序盤", replay.early],
-    ["中盤", replay.middle],
-    ["終盤", replay.late],
-    ["決定打", replay.decisive],
+    ["序盤", normalizedReplay.early],
+    ["中盤", normalizedReplay.middle],
+    ["終盤", normalizedReplay.late],
+    ["決定打", normalizedReplay.decisive],
   ] as const;
   if (sections.every(([, events]) => events.length === 0)) {
     return <p className="empty-note">要点ログはありません。</p>;
