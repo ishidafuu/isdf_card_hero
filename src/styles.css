@@ -1490,6 +1490,13 @@ button:disabled {
   grid-column: 2;
 }
 
+.ai-lab-deck-matchups {
+  color: #56615d;
+  font-size: 11px;
+  grid-column: 2;
+  line-height: 1.35;
+}
+
 .ai-lab-problem-list {
   display: grid;
   gap: 6px;
@@ -1752,6 +1759,12 @@ button:disabled {
   display: grid;
   gap: 5px;
   grid-template-columns: repeat(4, minmax(0, 1fr));
+}
+
+.deck-matchup-row {
+  display: grid;
+  gap: 5px;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
 }
 
 .deck-score-metric {

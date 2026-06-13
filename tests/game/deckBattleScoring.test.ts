@@ -95,6 +95,22 @@ describe("deck battle scoring", () => {
       playerSideGames: 2,
       cpuSideGames: 1,
     });
+    expect(winnerScore?.matchups.black_vs_black).toMatchObject({
+      games: 3,
+      wins: 2,
+      losses: 0,
+      draws: 1,
+      winRate: 0.667,
+      winPointRate: 0.833,
+    });
+    expect(loserScore?.matchups.black_vs_black).toMatchObject({
+      games: 3,
+      wins: 0,
+      losses: 2,
+      draws: 1,
+      winRate: 0,
+      winPointRate: 0.167,
+    });
     expect(winnerScore?.stabilityScore).toBeLessThan(100);
     expect(winnerScore?.speedScore).toBeTypeOf("number");
     expect(winnerScore?.battleScore).toBeGreaterThan(loserScore?.battleScore ?? 100);

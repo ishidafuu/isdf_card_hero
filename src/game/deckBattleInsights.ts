@@ -1,5 +1,7 @@
 import type {
   DeckBattleGameResult,
+  DeckBattleMatchupKey,
+  DeckBattleMatchupStats,
   DeckBattleScoreEntry,
   DeckBattleScoringReport,
 } from "./deckBattleScoring";
@@ -42,6 +44,7 @@ export interface DeckBattleDeckInsight {
   averageSteps: number;
   averageTurns: number;
   seatDelta: number;
+  matchups: Record<DeckBattleMatchupKey, DeckBattleMatchupStats>;
   reason: string;
 }
 
@@ -203,11 +206,13 @@ export function formatDeckBattleInsightsMarkdown(report: DeckBattleInsightsRepor
       ``,
       category.description,
       ``,
-      `| Rank | Deck | Battle | Win | Stable | Speed | Seat delta | Avg | Reason |`,
-      `| ---: | --- | ---: | ---: | ---: | ---: | ---: | --- | --- |`,
+      `| Rank | Deck | Battle | Win | Stable | Speed | BvB | WvW | WvB | Seat delta | Avg | Reason |`,
+      `| ---: | --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | --- | --- |`,
       ...category.decks.map((deck) =>
         `| ${deck.rank} | ${deck.deckPreset} | ${deck.battleScore} | ${formatPercent(deck.winRate)} | ` +
-        `${deck.stabilityScore} | ${deck.speedScore} | ${formatPercent(deck.seatDelta)} | ` +
+        `${deck.stabilityScore} | ${deck.speedScore} | ${formatMatchupWinRate(deck.matchups.black_vs_black)} | ` +
+        `${formatMatchupWinRate(deck.matchups.white_vs_white)} | ${formatMatchupWinRate(deck.matchups.white_vs_black)} | ` +
+        `${formatPercent(deck.seatDelta)} | ` +
         `${deck.averageSteps} steps / ${deck.averageTurns} turns | ${deck.reason} |`,
       ),
       ``,
@@ -331,6 +336,7 @@ function toDeckInsight(
     averageSteps: deck.averageSteps,
     averageTurns: deck.averageTurns,
     seatDelta: round(seatDelta(deck), 3),
+    matchups: normalizeMatchups(deck.matchups),
     reason,
   };
 }
@@ -407,4 +413,31 @@ function round(value: number, digits = 0): number {
 
 function formatPercent(value: number): string {
   return `${Math.round(value * 1000) / 10}%`;
+}
+
+function formatMatchupWinRate(matchup: DeckBattleMatchupStats): string {
+  return matchup.games > 0 ? `${formatPercent(matchup.winRate)} (${matchup.games})` : "-";
+}
+
+function normalizeMatchups(
+  matchups: DeckBattleScoreEntry["matchups"] | undefined,
+): Record<DeckBattleMatchupKey, DeckBattleMatchupStats> {
+  return {
+    black_vs_black: matchups?.black_vs_black ?? emptyMatchupStats(),
+    white_vs_white: matchups?.white_vs_white ?? emptyMatchupStats(),
+    white_vs_black: matchups?.white_vs_black ?? emptyMatchupStats(),
+  };
+}
+
+function emptyMatchupStats(): DeckBattleMatchupStats {
+  return {
+    games: 0,
+    wins: 0,
+    losses: 0,
+    draws: 0,
+    winRate: 0,
+    winPointRate: 0,
+    averageSteps: 0,
+    averageTurns: 0,
+  };
 }

@@ -3345,6 +3345,10 @@ function AiLabPanel({
                   <span className="ai-lab-deck-score">
                     B{deck.battleScore.toFixed(1)} / W{formatPercent(deck.winRate)} / S{deck.stabilityScore.toFixed(1)}
                   </span>
+                  <span className="ai-lab-deck-matchups">
+                    黒vs黒 {formatMatchupRate(deck.matchups.black_vs_black)} / 白vs白 {formatMatchupRate(deck.matchups.white_vs_white)} /
+                    白vs黒 {formatMatchupRate(deck.matchups.white_vs_black)}
+                  </span>
                 </li>
               ))}
             </ol>
@@ -3761,8 +3765,17 @@ function DeckBattleScoreStrip({ score }: { score: DeckBattleScoreSnapshot | unde
         <span>Seat P/C {formatPercent(score.playerSideWinPointRate)} / {formatPercent(score.cpuSideWinPointRate)}</span>
         <span>Avg {score.averageSteps.toFixed(1)} steps / {score.averageTurns.toFixed(1)} turns</span>
       </div>
+      <div className="deck-matchup-row" aria-label="matchup win rates">
+        <MetricPill label="黒vs黒" value={formatMatchupRate(score.matchups.black_vs_black)} />
+        <MetricPill label="白vs白" value={formatMatchupRate(score.matchups.white_vs_white)} />
+        <MetricPill label="白vs黒" value={formatMatchupRate(score.matchups.white_vs_black)} />
+      </div>
     </div>
   );
+}
+
+function formatMatchupRate(matchup: DeckBattleScoreSnapshot["matchups"][keyof DeckBattleScoreSnapshot["matchups"]]): string {
+  return matchup.games > 0 ? `${formatPercent(matchup.winRate)} (${matchup.wins}-${matchup.losses}-${matchup.draws})` : "-";
 }
 
 function MetricPill({ label, value, strong = false }: { label: string; value: string; strong?: boolean }) {

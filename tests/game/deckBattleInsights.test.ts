@@ -92,6 +92,7 @@ function createReport(): DeckBattleScoringReport {
         averageSteps: 84,
         averageTurns: 8,
         opponents: 2,
+        matchups: createMatchups({ black_vs_black: { games: 2, wins: 1, losses: 1 }, white_vs_black: { games: 2, wins: 2 } }),
       },
       {
         deckPreset: "submission-pro-with-rare8-white-1339",
@@ -124,6 +125,7 @@ function createReport(): DeckBattleScoringReport {
         averageSteps: 150,
         averageTurns: 13,
         opponents: 2,
+        matchups: createMatchups({ white_vs_white: { games: 2, wins: 1, losses: 1 }, white_vs_black: { games: 2, wins: 1, draws: 1 } }),
       },
       {
         deckPreset: "submission-pro-no-rare8-white-494",
@@ -156,6 +158,7 @@ function createReport(): DeckBattleScoringReport {
         averageSteps: 106,
         averageTurns: 9,
         opponents: 2,
+        matchups: createMatchups({ white_vs_white: { games: 2, wins: 1, losses: 1 }, white_vs_black: { games: 2, losses: 2 } }),
       },
     ],
     games: [
@@ -196,5 +199,37 @@ function createReport(): DeckBattleScoringReport {
         issues: [],
       },
     ],
+  };
+}
+
+function createMatchups(
+  overrides: Partial<Record<"black_vs_black" | "white_vs_white" | "white_vs_black", Partial<{
+    games: number;
+    wins: number;
+    losses: number;
+    draws: number;
+  }>>>,
+) {
+  return {
+    black_vs_black: createMatchup(overrides.black_vs_black),
+    white_vs_white: createMatchup(overrides.white_vs_white),
+    white_vs_black: createMatchup(overrides.white_vs_black),
+  };
+}
+
+function createMatchup(overrides: Partial<{ games: number; wins: number; losses: number; draws: number }> = {}) {
+  const games = overrides.games ?? 0;
+  const wins = overrides.wins ?? 0;
+  const losses = overrides.losses ?? 0;
+  const draws = overrides.draws ?? 0;
+  return {
+    games,
+    wins,
+    losses,
+    draws,
+    winRate: games > 0 ? Number((wins / games).toFixed(3)) : 0,
+    winPointRate: games > 0 ? Number(((wins + draws * 0.5) / games).toFixed(3)) : 0,
+    averageSteps: games > 0 ? 100 : 0,
+    averageTurns: games > 0 ? 10 : 0,
   };
 }

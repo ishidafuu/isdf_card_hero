@@ -8,7 +8,20 @@ import {
 } from "./deckPresets";
 import { createInitialGame, runAutoStep } from "./rules";
 import type { CpuAiProfile } from "./cpuAi";
-import type { GameState, PlayerId } from "./types";
+import type { GameState, MasterId, PlayerId } from "./types";
+
+export type DeckBattleMatchupKey = "black_vs_black" | "white_vs_white" | "white_vs_black";
+
+export interface DeckBattleMatchupStats {
+  games: number;
+  wins: number;
+  losses: number;
+  draws: number;
+  winRate: number;
+  winPointRate: number;
+  averageSteps: number;
+  averageTurns: number;
+}
 
 export interface DeckBattleScoringOptions {
   suiteId?: DeckBenchmarkSuiteId;
@@ -91,6 +104,7 @@ export interface DeckBattleScoreEntry {
   averageSteps: number;
   averageTurns: number;
   opponents: number;
+  matchups: Record<DeckBattleMatchupKey, DeckBattleMatchupStats>;
 }
 
 export interface DeckBattleScoringReport {
@@ -126,6 +140,16 @@ interface MutableDeckBattleRecord {
   totalSteps: number;
   totalTurns: number;
   opponents: Set<DeckSubmissionPresetId>;
+  matchups: Record<DeckBattleMatchupKey, MutableDeckBattleMatchupRecord>;
+}
+
+interface MutableDeckBattleMatchupRecord {
+  games: number;
+  wins: number;
+  losses: number;
+  draws: number;
+  totalSteps: number;
+  totalTurns: number;
 }
 
 const DEFAULT_OPTIONS: ResolvedDeckBattleScoringOptions = {
@@ -214,6 +238,7 @@ export function scoreDeckBattleResults(
       totalSteps: 0,
       totalTurns: 0,
       opponents: new Set(),
+      matchups: createMutableMatchupRecords(),
     });
   }
 
@@ -223,8 +248,11 @@ export function scoreDeckBattleResults(
     if (!player || !cpu) {
       continue;
     }
+    const matchupKey = deckBattleMatchupKey(player.audit.masterId, cpu.audit.masterId);
     applySharedGameStats(player, game, game.cpuDeckPreset, "player");
     applySharedGameStats(cpu, game, game.playerDeckPreset, "cpu");
+    applyMatchupGameStats(player, game.playerDeckPreset, game, matchupKey);
+    applyMatchupGameStats(cpu, game.cpuDeckPreset, game, matchupKey);
 
     if (!game.winnerDeckPreset) {
       player.draws += 1;
@@ -300,14 +328,17 @@ export function formatDeckBattleScoringMarkdown(report: DeckBattleScoringReport)
     `- Win rate: 純粋な勝率。引き分けは勝ちに含めない。`,
     `- Stability: 警告/失敗の少なさと、player/cpu席で成績が崩れないかを見る安定度。`,
     `- Speed: 同一suite内の平均stepsと比べた決着速度。50がsuite平均。`,
+    `- Matchups: 黒vs黒、白vs白、白vs黒に分けた勝率。相性差の確認に使う。`,
     ``,
     `## Deck Scores`,
     ``,
-    `| Rank | Deck | Battle | Win point | Win rate | Stability | Speed | W-L-D | Seat WPR P/C | Avg steps | Avg turns | Base | Issues |`,
-    `| ---: | --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: |`,
+    `| Rank | Deck | Battle | Win point | Win rate | Stability | Speed | BvB | WvW | WvB | W-L-D | Seat WPR P/C | Avg steps | Avg turns | Base | Issues |`,
+    `| ---: | --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: |`,
     ...report.decks.map((deck, index) =>
       `| ${index + 1} | ${deck.deckPreset} | ${deck.battleScore} | ${formatPercent(deck.winPointRate)} | ` +
       `${formatPercent(deck.winRate)} | ${deck.stabilityScore} | ${deck.speedScore} | ` +
+      `${formatMatchupWinRate(deck.matchups.black_vs_black)} | ${formatMatchupWinRate(deck.matchups.white_vs_white)} | ` +
+      `${formatMatchupWinRate(deck.matchups.white_vs_black)} | ` +
       `${deck.wins}-${deck.losses}-${deck.draws} | ${formatPercent(deck.playerSideWinPointRate)}/${formatPercent(deck.cpuSideWinPointRate)} | ` +
       `${deck.averageSteps} | ${deck.averageTurns} | ${deck.practicalScore} | ${deck.failures}/${deck.warnings} |`,
     ),
@@ -448,6 +479,25 @@ function applySharedGameStats(
   record.opponents.add(opponent);
 }
 
+function applyMatchupGameStats(
+  record: MutableDeckBattleRecord,
+  deckPreset: DeckSubmissionPresetId,
+  game: DeckBattleGameResult,
+  matchupKey: DeckBattleMatchupKey,
+): void {
+  const matchup = record.matchups[matchupKey];
+  matchup.games += 1;
+  matchup.totalSteps += game.steps;
+  matchup.totalTurns += game.turns;
+  if (!game.winnerDeckPreset) {
+    matchup.draws += 1;
+  } else if (game.winnerDeckPreset === deckPreset) {
+    matchup.wins += 1;
+  } else {
+    matchup.losses += 1;
+  }
+}
+
 function toScoreEntry(
   deckPreset: DeckSubmissionPresetId,
   record: MutableDeckBattleRecord,
@@ -502,7 +552,60 @@ function toScoreEntry(
     averageSteps: round(averageSteps, 1),
     averageTurns: round(averageTurns, 1),
     opponents: record.opponents.size,
+    matchups: toMatchupStats(record.matchups),
   };
+}
+
+function createMutableMatchupRecords(): Record<DeckBattleMatchupKey, MutableDeckBattleMatchupRecord> {
+  return {
+    black_vs_black: createMutableMatchupRecord(),
+    white_vs_white: createMutableMatchupRecord(),
+    white_vs_black: createMutableMatchupRecord(),
+  };
+}
+
+function createMutableMatchupRecord(): MutableDeckBattleMatchupRecord {
+  return {
+    games: 0,
+    wins: 0,
+    losses: 0,
+    draws: 0,
+    totalSteps: 0,
+    totalTurns: 0,
+  };
+}
+
+function toMatchupStats(
+  matchups: Record<DeckBattleMatchupKey, MutableDeckBattleMatchupRecord>,
+): Record<DeckBattleMatchupKey, DeckBattleMatchupStats> {
+  return {
+    black_vs_black: toMatchupStat(matchups.black_vs_black),
+    white_vs_white: toMatchupStat(matchups.white_vs_white),
+    white_vs_black: toMatchupStat(matchups.white_vs_black),
+  };
+}
+
+function toMatchupStat(record: MutableDeckBattleMatchupRecord): DeckBattleMatchupStats {
+  return {
+    games: record.games,
+    wins: record.wins,
+    losses: record.losses,
+    draws: record.draws,
+    winRate: record.games > 0 ? round(record.wins / record.games, 3) : 0,
+    winPointRate: record.games > 0 ? round((record.wins + record.draws * 0.5) / record.games, 3) : 0,
+    averageSteps: record.games > 0 ? round(record.totalSteps / record.games, 1) : 0,
+    averageTurns: record.games > 0 ? round(record.totalTurns / record.games, 1) : 0,
+  };
+}
+
+function deckBattleMatchupKey(left: MasterId, right: MasterId): DeckBattleMatchupKey {
+  if (left === "black" && right === "black") {
+    return "black_vs_black";
+  }
+  if (left === "white" && right === "white") {
+    return "white_vs_white";
+  }
+  return "white_vs_black";
 }
 
 function progressSignature(game: GameState): string {
@@ -563,4 +666,8 @@ function clamp(value: number, min: number, max: number): number {
 
 function formatPercent(value: number): string {
   return `${Math.round(value * 1000) / 10}%`;
+}
+
+function formatMatchupWinRate(matchup: DeckBattleMatchupStats): string {
+  return matchup.games > 0 ? `${formatPercent(matchup.winRate)} (${matchup.games})` : "-";
 }

@@ -5,7 +5,11 @@ import {
   formatDeckBattleInsightsMarkdown,
   type DeckBattleInsightsOptions,
 } from "../src/game/deckBattleInsights";
-import type { DeckBattleScoringReport } from "../src/game/deckBattleScoring";
+import { getDeckBenchmarkSuite } from "../src/game/deckBenchmarkSuites";
+import {
+  scoreDeckBattleResults,
+  type DeckBattleScoringReport,
+} from "../src/game/deckBattleScoring";
 
 interface CliOptions extends DeckBattleInsightsOptions {
   reportPath: string;
@@ -16,7 +20,7 @@ interface CliOptions extends DeckBattleInsightsOptions {
 
 const options = parseArgs(process.argv.slice(2));
 const report = JSON.parse(await readFile(options.reportPath, "utf8")) as DeckBattleScoringReport;
-const insights = analyzeDeckBattleReport(report, options);
+const insights = analyzeDeckBattleReport(enrichReportDeckScores(report), options);
 const markdown = formatDeckBattleInsightsMarkdown(insights);
 
 const jsonPath = options.jsonPath ?? join(options.outDir, "insights.json");
@@ -32,6 +36,15 @@ for (const item of insights.recommendedFocus.slice(0, 4)) {
 }
 console.log(`JSON: ${jsonPath}`);
 console.log(`Markdown: ${markdownPath}`);
+
+function enrichReportDeckScores(report: DeckBattleScoringReport): DeckBattleScoringReport {
+  const suiteDeckIds = getDeckBenchmarkSuite(report.options.suiteId).deckPresetIds;
+  const deckPresetIds = suiteDeckIds.slice(0, report.options.maxDecks ?? suiteDeckIds.length);
+  return {
+    ...report,
+    decks: scoreDeckBattleResults(deckPresetIds, report.games),
+  };
+}
 
 async function writeReport(path: string, content: string): Promise<void> {
   await mkdir(dirname(path), { recursive: true });
