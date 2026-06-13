@@ -13,6 +13,8 @@
 
 - `stable` / `strong` AIプロファイル
 - 陣営別AI指定
+- カードヒーロー部.comの部員評価 `Spd` / `Pro黒` / `Pro白` の構造化取り込み
+- マスター別の部員評価を使ったランダムデッキ重み付け
 - `npm run validate:auto-play`
 - `npm run benchmark:ai`
 - `npm run diff:ai`
@@ -220,6 +222,30 @@ npm run diff:ai -- --seed 432 --direction challenger-as-player --max-diffs 16
 - 各プロファイルの用途がdocs、CLI、UIで一致する。
 - `benchmark:ai` でプロファイルを入れ替えて比較できる。
 
+## Phase H: マスター別カード評価の活用
+
+目的:
+
+攻略サイト上の `Pro黒` / `Pro白` 評価を、ルール実装ではなくメタ評価として扱い、マスター別のデッキ構成とAI判断に反映する。
+
+現在の扱い:
+
+- `memberRatings` としてカード定義に保存する。
+- ホワイトマスターは `Pro白`、ブラックマスターは `Pro黒` を参照する。
+- ランダムデッキ生成では、カテゴリ最低枚数と3枚制限を守ったまま、高評価カードが選ばれやすい重みにする。
+- CPU AIでは、手札温存、召喚、特殊効果の手札選択に小さな補正として使う。
+
+注意:
+
+部員評価はゲームルールではなく、環境・構築知見の近似値として扱う。
+そのため、個別局面のリーサル、被リーサル、配置、石効率より優先しない。
+
+完了条件:
+
+- Deck Setupのランダム生成が、選択中マスターに応じて `Pro黒` / `Pro白` の評価を使う。
+- カード詳細とCard Listで、参照している評価値を確認できる。
+- ブラック/ホワイト別の100戦検証でfailureが増えない。
+
 ## 次の3コミット候補
 
 1. `diff:ai` の診断強化
@@ -234,6 +260,10 @@ npm run diff:ai -- --seed 432 --direction challenger-as-player --max-diffs 16
    - HPが低い、相手HPが低い、山札が少ない局面で `focus` の価値を再評価
    - seed `437` のlong game warningをレビューしてから着手する
 
+4. マスター別評価の検証
+   - `--player-master black --cpu-master black` と `--player-master white --cpu-master white` で100戦検証する
+   - 勝率ではなく、failure、warning、最大step、デッキ内訳の偏りを確認する
+
 ## 採用しない方針
 
 - 全候補で深いminimaxを回す。
@@ -241,3 +271,4 @@ npm run diff:ai -- --seed 432 --direction challenger-as-player --max-diffs 16
 - `stable` の既定挙動を不用意に変える。
 - warningが増えた変更をartifactレビューなしで採用する。
 - CPU AI改善とルール分割を同じコミットに混ぜる。
+- 部員評価をルールやカード効果の正解値として扱う。

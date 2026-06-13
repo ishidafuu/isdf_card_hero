@@ -10,6 +10,20 @@ export const CARD_DEFS = {
     "sourceUrl": "https://www.cardhero-bu.com/card/detail.php?id=1",
     "icon": "/card-icons/co001.jpg",
     "rarity": 1,
+    "memberRatings": {
+      "spd": {
+        "average": 1.5,
+        "votes": 151
+      },
+      "proBlack": {
+        "average": 1.5,
+        "votes": 152
+      },
+      "proWhite": {
+        "average": 1.5,
+        "votes": 151
+      }
+    },
     "catchcopy": "古代戦士",
     "type": "monster",
     "role": "front",
@@ -51,6 +65,20 @@ export const CARD_DEFS = {
     "sourceUrl": "https://www.cardhero-bu.com/card/detail.php?id=2",
     "icon": "/card-icons/co002.jpg",
     "rarity": 1,
+    "memberRatings": {
+      "spd": {
+        "average": 1.4,
+        "votes": 118
+      },
+      "proBlack": {
+        "average": 1.4,
+        "votes": 120
+      },
+      "proWhite": {
+        "average": 1.5,
+        "votes": 120
+      }
+    },
     "catchcopy": "みんなのマスコット",
     "type": "monster",
     "role": "front",
@@ -92,6 +120,20 @@ export const CARD_DEFS = {
     "sourceUrl": "https://www.cardhero-bu.com/card/detail.php?id=3",
     "icon": "/card-icons/co003.jpg",
     "rarity": 1,
+    "memberRatings": {
+      "spd": {
+        "average": 1.7,
+        "votes": 109
+      },
+      "proBlack": {
+        "average": 1.6,
+        "votes": 118
+      },
+      "proWhite": {
+        "average": 1.7,
+        "votes": 118
+      }
+    },
     "catchcopy": "キャンディ大好き！",
     "type": "monster",
     "role": "front",
@@ -133,6 +175,20 @@ export const CARD_DEFS = {
     "sourceUrl": "https://www.cardhero-bu.com/card/detail.php?id=4",
     "icon": "/card-icons/co004.jpg",
     "rarity": 1,
+    "memberRatings": {
+      "spd": {
+        "average": 2,
+        "votes": 109
+      },
+      "proBlack": {
+        "average": 1.7,
+        "votes": 109
+      },
+      "proWhite": {
+        "average": 1.7,
+        "votes": 108
+      }
+    },
     "catchcopy": "硬い頭とやわらかい体",
     "type": "monster",
     "role": "front",
@@ -174,6 +230,20 @@ export const CARD_DEFS = {
     "sourceUrl": "https://www.cardhero-bu.com/card/detail.php?id=5",
     "icon": "/card-icons/co005.jpg",
     "rarity": 2,
+    "memberRatings": {
+      "spd": {
+        "average": 3.6,
+        "votes": 127
+      },
+      "proBlack": {
+        "average": 4,
+        "votes": 131
+      },
+      "proWhite": {
+        "average": 3.8,
+        "votes": 132
+      }
+    },
     "catchcopy": "恐れ知らずの特攻野郎",
     "type": "monster",
     "role": "front",
@@ -239,6 +309,20 @@ export const CARD_DEFS = {
     "sourceUrl": "https://www.cardhero-bu.com/card/detail.php?id=6",
     "icon": "/card-icons/co006.jpg",
     "rarity": 5,
+    "memberRatings": {
+      "spd": {
+        "average": 2.6,
+        "votes": 103
+      },
+      "proBlack": {
+        "average": 3.2,
+        "votes": 110
+      },
+      "proWhite": {
+        "average": 3.2,
+        "votes": 112
+      }
+    },
     "catchcopy": "爆発力無限大",
     "type": "monster",
     "role": "front",
@@ -278,6 +362,20 @@ export const CARD_DEFS = {
     "sourceUrl": "https://www.cardhero-bu.com/card/detail.php?id=7",
     "icon": "/card-icons/co007.jpg",
     "rarity": 3,
+    "memberRatings": {
+      "spd": {
+        "average": 2.8,
+        "votes": 98
+      },
+      "proBlack": {
+        "average": 1.6,
+        "votes": 95
+      },
+      "proWhite": {
+        "average": 1.8,
+        "votes": 98
+      }
+    },
     "catchcopy": "海の悪魔",
     "type": "monster",
     "role": "front",
@@ -359,6 +457,20 @@ export const CARD_DEFS = {
     "sourceUrl": "https://www.cardhero-bu.com/card/detail.php?id=8",
     "icon": "/card-icons/co008.jpg",
     "rarity": 3,
+    "memberRatings": {
+      "spd": {
+        "average": 3.6,
+        "votes": 105
+      },
+      "proBlack": {
+        "average": 2.3,
+        "votes": 98
+      },
+      "proWhite": {
+        "average": 2.4,
+        "votes": 100
+      }
+    },
     "catchcopy": "脅威の貫通力",
     "type": "monster",
     "role": "front",
@@ -418,6 +530,20 @@ export const CARD_DEFS = {
     "sourceUrl": "https://www.cardhero-bu.com/card/detail.php?id=9",
     "icon": "/card-icons/co009.jpg",
     "rarity": 5,
+    "memberRatings": {
+      "spd": {
+        "average": 2.9,
+        "votes": 101
+      },
+      "proBlack": {
+        "average": 2.4,
+        "votes": 101
+      },
+      "proWhite": {
+        "average": 2.3,
+        "votes": 103
+      }
+    },
     "catchcopy": "神速の剣技",
     "type": "monster",
     "role": "front",
@@ -481,6 +607,20 @@ export const CARD_DEFS = {
     "sourceUrl": "https://www.cardhero-bu.com/card/detail.php?id=10",
     "icon": "/card-icons/co010.jpg",
     "rarity": 6,
+    "memberRatings": {
+      "spd": {
+        "average": 3,
+        "votes": 90
+      },
+      "proBlack": {
+        "average": 2.4,
+        "votes": 92
+      },
+      "proWhite": {
+        "average": 2.3,
+        "votes": 95
+      }
+    },
     "catchcopy": "大刀の阿修羅",
     "type": "monster",
     "role": "front",
@@ -518,6 +658,20 @@ export const CARD_DEFS = {
     "sourceUrl": "https://www.cardhero-bu.com/card/detail.php?id=11",
     "icon": "/card-icons/co011.jpg",
     "rarity": 5,
+    "memberRatings": {
+      "spd": {
+        "average": 3,
+        "votes": 125
+      },
+      "proBlack": {
+        "average": 4.6,
+        "votes": 137
+      },
+      "proWhite": {
+        "average": 4.3,
+        "votes": 133
+      }
+    },
     "catchcopy": "ヒット＆アウェイ",
     "type": "monster",
     "role": "front",
@@ -566,6 +720,20 @@ export const CARD_DEFS = {
     "sourceUrl": "https://www.cardhero-bu.com/card/detail.php?id=12",
     "icon": "/card-icons/co012.jpg",
     "rarity": 6,
+    "memberRatings": {
+      "spd": {
+        "average": 2.7,
+        "votes": 105
+      },
+      "proBlack": {
+        "average": 2.8,
+        "votes": 108
+      },
+      "proWhite": {
+        "average": 2.7,
+        "votes": 109
+      }
+    },
     "catchcopy": "究極の３行動",
     "type": "monster",
     "role": "front",
@@ -597,6 +765,20 @@ export const CARD_DEFS = {
     "sourceUrl": "https://www.cardhero-bu.com/card/detail.php?id=13",
     "icon": "/card-icons/co013.jpg",
     "rarity": 5,
+    "memberRatings": {
+      "spd": {
+        "average": 4.3,
+        "votes": 113
+      },
+      "proBlack": {
+        "average": 3,
+        "votes": 105
+      },
+      "proWhite": {
+        "average": 3.2,
+        "votes": 108
+      }
+    },
     "catchcopy": "ホネが大好きです。",
     "type": "monster",
     "role": "front",
@@ -658,6 +840,20 @@ export const CARD_DEFS = {
     "sourceUrl": "https://www.cardhero-bu.com/card/detail.php?id=14",
     "icon": "/card-icons/co014.jpg",
     "rarity": 6,
+    "memberRatings": {
+      "spd": {
+        "average": 4.6,
+        "votes": 105
+      },
+      "proBlack": {
+        "average": 3,
+        "votes": 97
+      },
+      "proWhite": {
+        "average": 3.3,
+        "votes": 99
+      }
+    },
     "catchcopy": "紅き炎と猛き爪",
     "type": "monster",
     "role": "front",
@@ -694,6 +890,20 @@ export const CARD_DEFS = {
     "sourceUrl": "https://www.cardhero-bu.com/card/detail.php?id=15",
     "icon": "/card-icons/co015.jpg",
     "rarity": 5,
+    "memberRatings": {
+      "spd": {
+        "average": 2.2,
+        "votes": 78
+      },
+      "proBlack": {
+        "average": 2.5,
+        "votes": 79
+      },
+      "proWhite": {
+        "average": 2.3,
+        "votes": 86
+      }
+    },
     "catchcopy": "退く事を知らぬ魔獣",
     "type": "monster",
     "role": "front",
@@ -731,6 +941,20 @@ export const CARD_DEFS = {
     "sourceUrl": "https://www.cardhero-bu.com/card/detail.php?id=16",
     "icon": "/card-icons/co016.jpg",
     "rarity": 6,
+    "memberRatings": {
+      "spd": {
+        "average": 2.6,
+        "votes": 95
+      },
+      "proBlack": {
+        "average": 3.2,
+        "votes": 96
+      },
+      "proWhite": {
+        "average": 3.9,
+        "votes": 101
+      }
+    },
     "catchcopy": "闘神、獅子奮迅",
     "type": "monster",
     "role": "front",
@@ -785,6 +1009,20 @@ export const CARD_DEFS = {
     "sourceUrl": "https://www.cardhero-bu.com/card/detail.php?id=17",
     "icon": "/card-icons/co017.jpg",
     "rarity": 1,
+    "memberRatings": {
+      "spd": {
+        "average": 1.8,
+        "votes": 87
+      },
+      "proBlack": {
+        "average": 1.8,
+        "votes": 88
+      },
+      "proWhite": {
+        "average": 1.9,
+        "votes": 92
+      }
+    },
     "catchcopy": "ピンクのハンター",
     "type": "monster",
     "role": "back",
@@ -842,6 +1080,20 @@ export const CARD_DEFS = {
     "sourceUrl": "https://www.cardhero-bu.com/card/detail.php?id=18",
     "icon": "/card-icons/co018.jpg",
     "rarity": 1,
+    "memberRatings": {
+      "spd": {
+        "average": 1.5,
+        "votes": 85
+      },
+      "proBlack": {
+        "average": 1.4,
+        "votes": 86
+      },
+      "proWhite": {
+        "average": 1.4,
+        "votes": 87
+      }
+    },
     "catchcopy": "人気Ｎｏ１アイドル",
     "type": "monster",
     "role": "back",
@@ -923,6 +1175,20 @@ export const CARD_DEFS = {
     "sourceUrl": "https://www.cardhero-bu.com/card/detail.php?id=19",
     "icon": "/card-icons/co019.jpg",
     "rarity": 2,
+    "memberRatings": {
+      "spd": {
+        "average": 3.3,
+        "votes": 90
+      },
+      "proBlack": {
+        "average": 3.3,
+        "votes": 93
+      },
+      "proWhite": {
+        "average": 3.8,
+        "votes": 97
+      }
+    },
     "catchcopy": "南国からの旋風",
     "type": "monster",
     "role": "back",
@@ -980,6 +1246,20 @@ export const CARD_DEFS = {
     "sourceUrl": "https://www.cardhero-bu.com/card/detail.php?id=20",
     "icon": "/card-icons/co020.jpg",
     "rarity": 2,
+    "memberRatings": {
+      "spd": {
+        "average": 2.6,
+        "votes": 77
+      },
+      "proBlack": {
+        "average": 2.5,
+        "votes": 79
+      },
+      "proWhite": {
+        "average": 2.6,
+        "votes": 83
+      }
+    },
     "catchcopy": "生ける重戦車",
     "type": "monster",
     "role": "back",
@@ -1043,6 +1323,20 @@ export const CARD_DEFS = {
     "sourceUrl": "https://www.cardhero-bu.com/card/detail.php?id=21",
     "icon": "/card-icons/co021.jpg",
     "rarity": 5,
+    "memberRatings": {
+      "spd": {
+        "average": 2.8,
+        "votes": 71
+      },
+      "proBlack": {
+        "average": 2.8,
+        "votes": 71
+      },
+      "proWhite": {
+        "average": 2.9,
+        "votes": 75
+      }
+    },
     "catchcopy": "重装機動生命体",
     "type": "monster",
     "role": "back",
@@ -1079,6 +1373,20 @@ export const CARD_DEFS = {
     "sourceUrl": "https://www.cardhero-bu.com/card/detail.php?id=22",
     "icon": "/card-icons/co022.jpg",
     "rarity": 4,
+    "memberRatings": {
+      "spd": {
+        "average": 3,
+        "votes": 82
+      },
+      "proBlack": {
+        "average": 2.5,
+        "votes": 78
+      },
+      "proWhite": {
+        "average": 3.1,
+        "votes": 83
+      }
+    },
     "catchcopy": "深遠からの一刺",
     "type": "monster",
     "role": "back",
@@ -1158,6 +1466,20 @@ export const CARD_DEFS = {
     "sourceUrl": "https://www.cardhero-bu.com/card/detail.php?id=23",
     "icon": "/card-icons/co023.jpg",
     "rarity": 6,
+    "memberRatings": {
+      "spd": {
+        "average": 4.4,
+        "votes": 105
+      },
+      "proBlack": {
+        "average": 1.8,
+        "votes": 95
+      },
+      "proWhite": {
+        "average": 1.8,
+        "votes": 92
+      }
+    },
     "catchcopy": "我が身も焦がす炎",
     "type": "monster",
     "role": "back",
@@ -1215,6 +1537,20 @@ export const CARD_DEFS = {
     "sourceUrl": "https://www.cardhero-bu.com/card/detail.php?id=24",
     "icon": "/card-icons/co024.jpg",
     "rarity": 1,
+    "memberRatings": {
+      "spd": {
+        "average": 1.6,
+        "votes": 65
+      },
+      "proBlack": {
+        "average": 1.5,
+        "votes": 70
+      },
+      "proWhite": {
+        "average": 1.3,
+        "votes": 55
+      }
+    },
     "catchcopy": "天使の聖石",
     "type": "magic",
     "cost": 3,
@@ -1233,6 +1569,20 @@ export const CARD_DEFS = {
     "sourceUrl": "https://www.cardhero-bu.com/card/detail.php?id=25",
     "icon": "/card-icons/co025.jpg",
     "rarity": 1,
+    "memberRatings": {
+      "spd": {
+        "average": 1.9,
+        "votes": 78
+      },
+      "proBlack": {
+        "average": 1.6,
+        "votes": 80
+      },
+      "proWhite": {
+        "average": 1.4,
+        "votes": 62
+      }
+    },
     "catchcopy": "防御魔法の基本",
     "type": "magic",
     "cost": 2,
@@ -1250,6 +1600,20 @@ export const CARD_DEFS = {
     "sourceUrl": "https://www.cardhero-bu.com/card/detail.php?id=26",
     "icon": "/card-icons/co026.jpg",
     "rarity": 1,
+    "memberRatings": {
+      "spd": {
+        "average": 3.5,
+        "votes": 84
+      },
+      "proBlack": {
+        "average": 1.8,
+        "votes": 75
+      },
+      "proWhite": {
+        "average": 1.9,
+        "votes": 75
+      }
+    },
     "catchcopy": "頼れる１パワーの電撃",
     "type": "magic",
     "cost": 1,
@@ -1266,6 +1630,20 @@ export const CARD_DEFS = {
     "sourceUrl": "https://www.cardhero-bu.com/card/detail.php?id=27",
     "icon": "/card-icons/co027.jpg",
     "rarity": 2,
+    "memberRatings": {
+      "spd": {
+        "average": 2,
+        "votes": 60
+      },
+      "proBlack": {
+        "average": 1.8,
+        "votes": 66
+      },
+      "proWhite": {
+        "average": 1.8,
+        "votes": 66
+      }
+    },
     "catchcopy": "弱体化マジック",
     "type": "magic",
     "cost": 1,
@@ -1283,6 +1661,20 @@ export const CARD_DEFS = {
     "sourceUrl": "https://www.cardhero-bu.com/card/detail.php?id=28",
     "icon": "/card-icons/co028.jpg",
     "rarity": 3,
+    "memberRatings": {
+      "spd": {
+        "average": 2.2,
+        "votes": 69
+      },
+      "proBlack": {
+        "average": 2.1,
+        "votes": 74
+      },
+      "proWhite": {
+        "average": 2.2,
+        "votes": 74
+      }
+    },
     "catchcopy": "当たれば逆転？",
     "type": "magic",
     "cost": 2,
@@ -1299,6 +1691,20 @@ export const CARD_DEFS = {
     "sourceUrl": "https://www.cardhero-bu.com/card/detail.php?id=29",
     "icon": "/card-icons/co029.jpg",
     "rarity": 4,
+    "memberRatings": {
+      "spd": {
+        "average": 3.2,
+        "votes": 74
+      },
+      "proBlack": {
+        "average": 3.4,
+        "votes": 77
+      },
+      "proWhite": {
+        "average": 3,
+        "votes": 77
+      }
+    },
     "catchcopy": "スーパーカードキラー",
     "type": "magic",
     "cost": 2,
@@ -1315,6 +1721,20 @@ export const CARD_DEFS = {
     "sourceUrl": "https://www.cardhero-bu.com/card/detail.php?id=30",
     "icon": "/card-icons/co030.jpg",
     "rarity": 5,
+    "memberRatings": {
+      "spd": {
+        "average": 2.8,
+        "votes": 69
+      },
+      "proBlack": {
+        "average": 2.4,
+        "votes": 73
+      },
+      "proWhite": {
+        "average": 1.7,
+        "votes": 70
+      }
+    },
     "catchcopy": "二体を守る鉄の盾",
     "type": "magic",
     "cost": 3,
@@ -1332,6 +1752,20 @@ export const CARD_DEFS = {
     "sourceUrl": "https://www.cardhero-bu.com/card/detail.php?id=31",
     "icon": "/card-icons/co031.jpg",
     "rarity": 6,
+    "memberRatings": {
+      "spd": {
+        "average": 3.2,
+        "votes": 75
+      },
+      "proBlack": {
+        "average": 3.4,
+        "votes": 82
+      },
+      "proWhite": {
+        "average": 3.5,
+        "votes": 85
+      }
+    },
     "catchcopy": "陣形の混乱と回復",
     "type": "magic",
     "cost": 3,
@@ -1348,6 +1782,20 @@ export const CARD_DEFS = {
     "sourceUrl": "https://www.cardhero-bu.com/card/detail.php?id=32",
     "icon": "/card-icons/co032.jpg",
     "rarity": 7,
+    "memberRatings": {
+      "spd": {
+        "average": 4.3,
+        "votes": 104
+      },
+      "proBlack": {
+        "average": 3.3,
+        "votes": 104
+      },
+      "proWhite": {
+        "average": 3.6,
+        "votes": 105
+      }
+    },
     "catchcopy": "天空からの一撃",
     "type": "magic",
     "cost": 4,
@@ -1367,6 +1815,20 @@ export const CARD_DEFS = {
     "sourceUrl": "https://www.cardhero-bu.com/card/detail.php?id=33",
     "icon": "/card-icons/co033.jpg",
     "rarity": 1,
+    "memberRatings": {
+      "spd": {
+        "average": 2.2,
+        "votes": 62
+      },
+      "proBlack": {
+        "average": 1.9,
+        "votes": 66
+      },
+      "proWhite": {
+        "average": 2.1,
+        "votes": 66
+      }
+    },
     "catchcopy": "「力」を操る者",
     "type": "monster",
     "role": "front",
@@ -1430,6 +1892,20 @@ export const CARD_DEFS = {
     "sourceUrl": "https://www.cardhero-bu.com/card/detail.php?id=34",
     "icon": "/card-icons/co034.jpg",
     "rarity": 5,
+    "memberRatings": {
+      "spd": {
+        "average": 3.1,
+        "votes": 64
+      },
+      "proBlack": {
+        "average": 2.2,
+        "votes": 64
+      },
+      "proWhite": {
+        "average": 2.3,
+        "votes": 64
+      }
+    },
     "catchcopy": "すべてはここに",
     "type": "monster",
     "role": "front",
@@ -1458,6 +1934,20 @@ export const CARD_DEFS = {
     "sourceUrl": "https://www.cardhero-bu.com/card/detail.php?id=35",
     "icon": "/card-icons/co035.jpg",
     "rarity": 3,
+    "memberRatings": {
+      "spd": {
+        "average": 2.1,
+        "votes": 62
+      },
+      "proBlack": {
+        "average": 2.3,
+        "votes": 70
+      },
+      "proWhite": {
+        "average": 2.6,
+        "votes": 70
+      }
+    },
     "catchcopy": "花咲く時を待つ者／生命の一瞬の輝き",
     "type": "monster",
     "role": "front",
@@ -1550,6 +2040,20 @@ export const CARD_DEFS = {
     "sourceUrl": "https://www.cardhero-bu.com/card/detail.php?id=36",
     "icon": "/card-icons/co036.jpg",
     "rarity": 5,
+    "memberRatings": {
+      "spd": {
+        "average": 2.4,
+        "votes": 51
+      },
+      "proBlack": {
+        "average": 2.4,
+        "votes": 57
+      },
+      "proWhite": {
+        "average": 2.5,
+        "votes": 56
+      }
+    },
     "catchcopy": "進化を司る精霊",
     "type": "monster",
     "role": "front",
@@ -1588,6 +2092,20 @@ export const CARD_DEFS = {
     "sourceUrl": "https://www.cardhero-bu.com/card/detail.php?id=37",
     "icon": "/card-icons/co037.jpg",
     "rarity": 4,
+    "memberRatings": {
+      "spd": {
+        "average": 3.2,
+        "votes": 80
+      },
+      "proBlack": {
+        "average": 3.3,
+        "votes": 83
+      },
+      "proWhite": {
+        "average": 4,
+        "votes": 87
+      }
+    },
     "catchcopy": "その刃、並ぶ者なく",
     "type": "monster",
     "role": "front",
@@ -1641,6 +2159,20 @@ export const CARD_DEFS = {
     "sourceUrl": "https://www.cardhero-bu.com/card/detail.php?id=38",
     "icon": "/card-icons/co038.jpg",
     "rarity": 5,
+    "memberRatings": {
+      "spd": {
+        "average": 2.7,
+        "votes": 60
+      },
+      "proBlack": {
+        "average": 2,
+        "votes": 59
+      },
+      "proWhite": {
+        "average": 2.1,
+        "votes": 62
+      }
+    },
     "catchcopy": "命を糧に、そして剣に",
     "type": "monster",
     "role": "front",
@@ -1680,6 +2212,20 @@ export const CARD_DEFS = {
     "sourceUrl": "https://www.cardhero-bu.com/card/detail.php?id=39",
     "icon": "/card-icons/co039.jpg",
     "rarity": 4,
+    "memberRatings": {
+      "spd": {
+        "average": 2.4,
+        "votes": 69
+      },
+      "proBlack": {
+        "average": 3.1,
+        "votes": 78
+      },
+      "proWhite": {
+        "average": 2.5,
+        "votes": 77
+      }
+    },
     "catchcopy": "さまよう重装騎兵",
     "type": "monster",
     "role": "front",
@@ -1757,6 +2303,20 @@ export const CARD_DEFS = {
     "sourceUrl": "https://www.cardhero-bu.com/card/detail.php?id=40",
     "icon": "/card-icons/co040.jpg",
     "rarity": 4,
+    "memberRatings": {
+      "spd": {
+        "average": 2.8,
+        "votes": 65
+      },
+      "proBlack": {
+        "average": 2.3,
+        "votes": 66
+      },
+      "proWhite": {
+        "average": 2.5,
+        "votes": 68
+      }
+    },
     "catchcopy": "白き魔導兵器",
     "type": "monster",
     "role": "front",
@@ -1817,6 +2377,20 @@ export const CARD_DEFS = {
     "sourceUrl": "https://www.cardhero-bu.com/card/detail.php?id=41",
     "icon": "/card-icons/co041.jpg",
     "rarity": 5,
+    "memberRatings": {
+      "spd": {
+        "average": 3,
+        "votes": 71
+      },
+      "proBlack": {
+        "average": 2.6,
+        "votes": 74
+      },
+      "proWhite": {
+        "average": 3.3,
+        "votes": 74
+      }
+    },
     "catchcopy": "新緑の守護者",
     "type": "monster",
     "role": "front",
@@ -1871,6 +2445,20 @@ export const CARD_DEFS = {
     "sourceUrl": "https://www.cardhero-bu.com/card/detail.php?id=42",
     "icon": "/card-icons/co042.jpg",
     "rarity": 6,
+    "memberRatings": {
+      "spd": {
+        "average": 3.9,
+        "votes": 70
+      },
+      "proBlack": {
+        "average": 3.3,
+        "votes": 71
+      },
+      "proWhite": {
+        "average": 3.8,
+        "votes": 73
+      }
+    },
     "catchcopy": "華麗なる射手",
     "type": "monster",
     "role": "front",
@@ -1907,6 +2495,20 @@ export const CARD_DEFS = {
     "sourceUrl": "https://www.cardhero-bu.com/card/detail.php?id=43",
     "icon": "/card-icons/co043.jpg",
     "rarity": 5,
+    "memberRatings": {
+      "spd": {
+        "average": 2.5,
+        "votes": 56
+      },
+      "proBlack": {
+        "average": 2.1,
+        "votes": 63
+      },
+      "proWhite": {
+        "average": 2.2,
+        "votes": 62
+      }
+    },
     "catchcopy": "時空の彼方へ",
     "type": "monster",
     "role": "front",
@@ -1957,6 +2559,20 @@ export const CARD_DEFS = {
     "sourceUrl": "https://www.cardhero-bu.com/card/detail.php?id=44",
     "icon": "/card-icons/co044.jpg",
     "rarity": 5,
+    "memberRatings": {
+      "spd": {
+        "average": 2.6,
+        "votes": 64
+      },
+      "proBlack": {
+        "average": 2.3,
+        "votes": 70
+      },
+      "proWhite": {
+        "average": 3.8,
+        "votes": 72
+      }
+    },
     "catchcopy": "宇宙からの使者",
     "type": "monster",
     "role": "front",
@@ -2000,6 +2616,20 @@ export const CARD_DEFS = {
     "sourceUrl": "https://www.cardhero-bu.com/card/detail.php?id=45",
     "icon": "/card-icons/co045.jpg",
     "rarity": 5,
+    "memberRatings": {
+      "spd": {
+        "average": 3.5,
+        "votes": 74
+      },
+      "proBlack": {
+        "average": 3.8,
+        "votes": 75
+      },
+      "proWhite": {
+        "average": 3.3,
+        "votes": 72
+      }
+    },
     "catchcopy": "若き竜使い",
     "type": "monster",
     "role": "front",
@@ -2084,6 +2714,20 @@ export const CARD_DEFS = {
     "sourceUrl": "https://www.cardhero-bu.com/card/detail.php?id=46",
     "icon": "/card-icons/co046.jpg",
     "rarity": 6,
+    "memberRatings": {
+      "spd": {
+        "average": 2.3,
+        "votes": 60
+      },
+      "proBlack": {
+        "average": 3.1,
+        "votes": 71
+      },
+      "proWhite": {
+        "average": 3.9,
+        "votes": 74
+      }
+    },
     "catchcopy": "純白の美剣士",
     "type": "monster",
     "role": "front",
@@ -2114,6 +2758,20 @@ export const CARD_DEFS = {
     "sourceUrl": "https://www.cardhero-bu.com/card/detail.php?id=47",
     "icon": "/card-icons/co047.jpg",
     "rarity": 7,
+    "memberRatings": {
+      "spd": {
+        "average": 4.5,
+        "votes": 121
+      },
+      "proBlack": {
+        "average": 4.3,
+        "votes": 124
+      },
+      "proWhite": {
+        "average": 4.6,
+        "votes": 125
+      }
+    },
     "catchcopy": "ブレイブ・スター",
     "type": "monster",
     "role": "front",
@@ -2168,6 +2826,20 @@ export const CARD_DEFS = {
     "sourceUrl": "https://www.cardhero-bu.com/card/detail.php?id=48",
     "icon": "/card-icons/co048.jpg",
     "rarity": 1,
+    "memberRatings": {
+      "spd": {
+        "average": 2.2,
+        "votes": 59
+      },
+      "proBlack": {
+        "average": 1.7,
+        "votes": 63
+      },
+      "proWhite": {
+        "average": 1.6,
+        "votes": 62
+      }
+    },
     "catchcopy": "鳥か獣か",
     "type": "monster",
     "role": "back",
@@ -2227,6 +2899,20 @@ export const CARD_DEFS = {
     "sourceUrl": "https://www.cardhero-bu.com/card/detail.php?id=49",
     "icon": "/card-icons/co049.jpg",
     "rarity": 2,
+    "memberRatings": {
+      "spd": {
+        "average": 2.9,
+        "votes": 59
+      },
+      "proBlack": {
+        "average": 2.2,
+        "votes": 61
+      },
+      "proWhite": {
+        "average": 2.5,
+        "votes": 61
+      }
+    },
     "catchcopy": "直径８８ｍｍの高射砲",
     "type": "monster",
     "role": "back",
@@ -2284,6 +2970,20 @@ export const CARD_DEFS = {
     "sourceUrl": "https://www.cardhero-bu.com/card/detail.php?id=50",
     "icon": "/card-icons/co050.jpg",
     "rarity": 2,
+    "memberRatings": {
+      "spd": {
+        "average": 1.9,
+        "votes": 56
+      },
+      "proBlack": {
+        "average": 3.4,
+        "votes": 66
+      },
+      "proWhite": {
+        "average": 2.6,
+        "votes": 64
+      }
+    },
     "catchcopy": "仮面の狩猟者",
     "type": "monster",
     "role": "back",
@@ -2320,6 +3020,20 @@ export const CARD_DEFS = {
     "sourceUrl": "https://www.cardhero-bu.com/card/detail.php?id=51",
     "icon": "/card-icons/co051.jpg",
     "rarity": 3,
+    "memberRatings": {
+      "spd": {
+        "average": 3.3,
+        "votes": 68
+      },
+      "proBlack": {
+        "average": 3.5,
+        "votes": 71
+      },
+      "proWhite": {
+        "average": 3.6,
+        "votes": 71
+      }
+    },
     "catchcopy": "いたずらダイスキ",
     "type": "monster",
     "role": "back",
@@ -2380,6 +3094,20 @@ export const CARD_DEFS = {
     "sourceUrl": "https://www.cardhero-bu.com/card/detail.php?id=52",
     "icon": "/card-icons/co052.jpg",
     "rarity": 5,
+    "memberRatings": {
+      "spd": {
+        "average": 2.1,
+        "votes": 53
+      },
+      "proBlack": {
+        "average": 2.3,
+        "votes": 59
+      },
+      "proWhite": {
+        "average": 2.4,
+        "votes": 58
+      }
+    },
     "catchcopy": "アンチマジック",
     "type": "monster",
     "role": "back",
@@ -2442,6 +3170,20 @@ export const CARD_DEFS = {
     "sourceUrl": "https://www.cardhero-bu.com/card/detail.php?id=53",
     "icon": "/card-icons/co053.jpg",
     "rarity": 5,
+    "memberRatings": {
+      "spd": {
+        "average": 3,
+        "votes": 63
+      },
+      "proBlack": {
+        "average": 2.5,
+        "votes": 62
+      },
+      "proWhite": {
+        "average": 2.6,
+        "votes": 63
+      }
+    },
     "catchcopy": "全てを癒す歌声",
     "type": "monster",
     "role": "back",
@@ -2507,6 +3249,20 @@ export const CARD_DEFS = {
     "sourceUrl": "https://www.cardhero-bu.com/card/detail.php?id=54",
     "icon": "/card-icons/co054.jpg",
     "rarity": 6,
+    "memberRatings": {
+      "spd": {
+        "average": 2.4,
+        "votes": 49
+      },
+      "proBlack": {
+        "average": 2,
+        "votes": 51
+      },
+      "proWhite": {
+        "average": 2,
+        "votes": 50
+      }
+    },
     "catchcopy": "生命を司る女神",
     "type": "monster",
     "role": "back",
@@ -2545,6 +3301,20 @@ export const CARD_DEFS = {
     "sourceUrl": "https://www.cardhero-bu.com/card/detail.php?id=55",
     "icon": "/card-icons/co055.jpg",
     "rarity": 1,
+    "memberRatings": {
+      "spd": {
+        "average": 2.3,
+        "votes": 52
+      },
+      "proBlack": {
+        "average": 2.1,
+        "votes": 57
+      },
+      "proWhite": {
+        "average": 1.6,
+        "votes": 56
+      }
+    },
     "catchcopy": "一度きりの盾",
     "type": "magic",
     "cost": 1,
@@ -2562,6 +3332,20 @@ export const CARD_DEFS = {
     "sourceUrl": "https://www.cardhero-bu.com/card/detail.php?id=56",
     "icon": "/card-icons/co056.jpg",
     "rarity": 1,
+    "memberRatings": {
+      "spd": {
+        "average": 2.5,
+        "votes": 57
+      },
+      "proBlack": {
+        "average": 2.3,
+        "votes": 58
+      },
+      "proWhite": {
+        "average": 2.3,
+        "votes": 58
+      }
+    },
     "catchcopy": "区別なき天災",
     "type": "magic",
     "cost": 1,
@@ -2578,6 +3362,20 @@ export const CARD_DEFS = {
     "sourceUrl": "https://www.cardhero-bu.com/card/detail.php?id=57",
     "icon": "/card-icons/co057.jpg",
     "rarity": 1,
+    "memberRatings": {
+      "spd": {
+        "average": 2.8,
+        "votes": 62
+      },
+      "proBlack": {
+        "average": 2.2,
+        "votes": 60
+      },
+      "proWhite": {
+        "average": 2.2,
+        "votes": 61
+      }
+    },
     "catchcopy": "脱出こそ近道",
     "type": "magic",
     "cost": 1,
@@ -2594,6 +3392,20 @@ export const CARD_DEFS = {
     "sourceUrl": "https://www.cardhero-bu.com/card/detail.php?id=58",
     "icon": "/card-icons/co058.jpg",
     "rarity": 2,
+    "memberRatings": {
+      "spd": {
+        "average": 2.4,
+        "votes": 50
+      },
+      "proBlack": {
+        "average": 2.3,
+        "votes": 55
+      },
+      "proWhite": {
+        "average": 2.4,
+        "votes": 54
+      }
+    },
     "catchcopy": "封印の念糸",
     "type": "magic",
     "cost": 2,
@@ -2611,6 +3423,20 @@ export const CARD_DEFS = {
     "sourceUrl": "https://www.cardhero-bu.com/card/detail.php?id=59",
     "icon": "/card-icons/co059.jpg",
     "rarity": 2,
+    "memberRatings": {
+      "spd": {
+        "average": 3.2,
+        "votes": 62
+      },
+      "proBlack": {
+        "average": 3.3,
+        "votes": 66
+      },
+      "proWhite": {
+        "average": 3.3,
+        "votes": 67
+      }
+    },
     "catchcopy": "攻防一体",
     "type": "magic",
     "cost": 1,
@@ -2628,6 +3454,20 @@ export const CARD_DEFS = {
     "sourceUrl": "https://www.cardhero-bu.com/card/detail.php?id=60",
     "icon": "/card-icons/co060.jpg",
     "rarity": 3,
+    "memberRatings": {
+      "spd": {
+        "average": 1.9,
+        "votes": 48
+      },
+      "proBlack": {
+        "average": 1.8,
+        "votes": 52
+      },
+      "proWhite": {
+        "average": 1.8,
+        "votes": 51
+      }
+    },
     "catchcopy": "敵のチャンスを未然に",
     "type": "magic",
     "cost": 2,
@@ -2645,6 +3485,20 @@ export const CARD_DEFS = {
     "sourceUrl": "https://www.cardhero-bu.com/card/detail.php?id=61",
     "icon": "/card-icons/co061.jpg",
     "rarity": 4,
+    "memberRatings": {
+      "spd": {
+        "average": 2,
+        "votes": 47
+      },
+      "proBlack": {
+        "average": 1.9,
+        "votes": 54
+      },
+      "proWhite": {
+        "average": 2,
+        "votes": 54
+      }
+    },
     "catchcopy": "去るのならば、共に…",
     "type": "magic",
     "cost": 3,
@@ -2661,6 +3515,20 @@ export const CARD_DEFS = {
     "sourceUrl": "https://www.cardhero-bu.com/card/detail.php?id=62",
     "icon": "/card-icons/co062.jpg",
     "rarity": 5,
+    "memberRatings": {
+      "spd": {
+        "average": 2.2,
+        "votes": 51
+      },
+      "proBlack": {
+        "average": 1.9,
+        "votes": 58
+      },
+      "proWhite": {
+        "average": 1.8,
+        "votes": 54
+      }
+    },
     "catchcopy": "絶対防御",
     "type": "magic",
     "cost": 3,
@@ -2678,6 +3546,20 @@ export const CARD_DEFS = {
     "sourceUrl": "https://www.cardhero-bu.com/card/detail.php?id=63",
     "icon": "/card-icons/co063.jpg",
     "rarity": 5,
+    "memberRatings": {
+      "spd": {
+        "average": 3.1,
+        "votes": 59
+      },
+      "proBlack": {
+        "average": 3,
+        "votes": 64
+      },
+      "proWhite": {
+        "average": 3.5,
+        "votes": 68
+      }
+    },
     "catchcopy": "狙いは外さず",
     "type": "magic",
     "cost": 2,
@@ -2695,6 +3577,20 @@ export const CARD_DEFS = {
     "sourceUrl": "https://www.cardhero-bu.com/card/detail.php?id=64",
     "icon": "/card-icons/co064.jpg",
     "rarity": 6,
+    "memberRatings": {
+      "spd": {
+        "average": 3.2,
+        "votes": 62
+      },
+      "proBlack": {
+        "average": 3.9,
+        "votes": 69
+      },
+      "proWhite": {
+        "average": 3.9,
+        "votes": 70
+      }
+    },
     "catchcopy": "全魔法の除去",
     "type": "magic",
     "cost": 2,
@@ -2711,6 +3607,20 @@ export const CARD_DEFS = {
     "sourceUrl": "https://www.cardhero-bu.com/card/detail.php?id=65",
     "icon": "/card-icons/co065.jpg",
     "rarity": 6,
+    "memberRatings": {
+      "spd": {
+        "average": 2.4,
+        "votes": 50
+      },
+      "proBlack": {
+        "average": 1.8,
+        "votes": 55
+      },
+      "proWhite": {
+        "average": 1.8,
+        "votes": 52
+      }
+    },
     "catchcopy": "帰らぬ者になる前に",
     "type": "magic",
     "cost": 4,
@@ -2727,6 +3637,20 @@ export const CARD_DEFS = {
     "sourceUrl": "https://www.cardhero-bu.com/card/detail.php?id=66",
     "icon": "/card-icons/co066.jpg",
     "rarity": 1,
+    "memberRatings": {
+      "spd": {
+        "average": 3,
+        "votes": 52
+      },
+      "proBlack": {
+        "average": 2.5,
+        "votes": 55
+      },
+      "proWhite": {
+        "average": 2.3,
+        "votes": 53
+      }
+    },
     "catchcopy": "雷雲を呼ぶ太鼓",
     "type": "monster",
     "role": "front",
@@ -2764,6 +3688,20 @@ export const CARD_DEFS = {
     "sourceUrl": "https://www.cardhero-bu.com/card/detail.php?id=67",
     "icon": "/card-icons/co067.jpg",
     "rarity": 1,
+    "memberRatings": {
+      "spd": {
+        "average": 1.7,
+        "votes": 51
+      },
+      "proBlack": {
+        "average": 1.7,
+        "votes": 55
+      },
+      "proWhite": {
+        "average": 1.7,
+        "votes": 55
+      }
+    },
     "catchcopy": "生ける屍",
     "type": "monster",
     "role": "front",
@@ -2837,6 +3775,20 @@ export const CARD_DEFS = {
     "sourceUrl": "https://www.cardhero-bu.com/card/detail.php?id=68",
     "icon": "/card-icons/co068.jpg",
     "rarity": 5,
+    "memberRatings": {
+      "spd": {
+        "average": 2.1,
+        "votes": 49
+      },
+      "proBlack": {
+        "average": 2.6,
+        "votes": 53
+      },
+      "proWhite": {
+        "average": 2.9,
+        "votes": 54
+      }
+    },
     "catchcopy": "断末魔の一撃",
     "type": "monster",
     "role": "front",
@@ -2873,6 +3825,20 @@ export const CARD_DEFS = {
     "sourceUrl": "https://www.cardhero-bu.com/card/detail.php?id=69",
     "icon": "/card-icons/co069.jpg",
     "rarity": 2,
+    "memberRatings": {
+      "spd": {
+        "average": 2.7,
+        "votes": 58
+      },
+      "proBlack": {
+        "average": 3.3,
+        "votes": 63
+      },
+      "proWhite": {
+        "average": 3.3,
+        "votes": 63
+      }
+    },
     "catchcopy": "愚者の輪舞曲",
     "type": "monster",
     "role": "front",
@@ -2933,6 +3899,20 @@ export const CARD_DEFS = {
     "sourceUrl": "https://www.cardhero-bu.com/card/detail.php?id=70",
     "icon": "/card-icons/co070.jpg",
     "rarity": 2,
+    "memberRatings": {
+      "spd": {
+        "average": 1.4,
+        "votes": 48
+      },
+      "proBlack": {
+        "average": 2.5,
+        "votes": 59
+      },
+      "proWhite": {
+        "average": 2.5,
+        "votes": 58
+      }
+    },
     "catchcopy": "防御不能の光線",
     "type": "monster",
     "role": "front",
@@ -2990,6 +3970,20 @@ export const CARD_DEFS = {
     "sourceUrl": "https://www.cardhero-bu.com/card/detail.php?id=71",
     "icon": "/card-icons/co071.jpg",
     "rarity": 3,
+    "memberRatings": {
+      "spd": {
+        "average": 2.6,
+        "votes": 53
+      },
+      "proBlack": {
+        "average": 2.8,
+        "votes": 62
+      },
+      "proWhite": {
+        "average": 3.1,
+        "votes": 61
+      }
+    },
     "catchcopy": "進化の可能性",
     "type": "monster",
     "role": "front",
@@ -3031,6 +4025,20 @@ export const CARD_DEFS = {
     "sourceUrl": "https://www.cardhero-bu.com/card/detail.php?id=72",
     "icon": "/card-icons/co072.jpg",
     "rarity": 5,
+    "memberRatings": {
+      "spd": {
+        "average": 1.3,
+        "votes": 50
+      },
+      "proBlack": {
+        "average": 3.4,
+        "votes": 67
+      },
+      "proWhite": {
+        "average": 2.7,
+        "votes": 62
+      }
+    },
     "catchcopy": "夜の帝王",
     "type": "monster",
     "role": "front",
@@ -3070,6 +4078,20 @@ export const CARD_DEFS = {
     "sourceUrl": "https://www.cardhero-bu.com/card/detail.php?id=73",
     "icon": "/card-icons/co073.jpg",
     "rarity": 5,
+    "memberRatings": {
+      "spd": {
+        "average": 1.8,
+        "votes": 58
+      },
+      "proBlack": {
+        "average": 4.1,
+        "votes": 73
+      },
+      "proWhite": {
+        "average": 3.2,
+        "votes": 69
+      }
+    },
     "catchcopy": "闇の暗殺者",
     "type": "monster",
     "role": "front",
@@ -3129,6 +4151,20 @@ export const CARD_DEFS = {
     "sourceUrl": "https://www.cardhero-bu.com/card/detail.php?id=74",
     "icon": "/card-icons/co074.jpg",
     "rarity": 5,
+    "memberRatings": {
+      "spd": {
+        "average": 2.7,
+        "votes": 56
+      },
+      "proBlack": {
+        "average": 2.6,
+        "votes": 59
+      },
+      "proWhite": {
+        "average": 2.8,
+        "votes": 59
+      }
+    },
     "catchcopy": "氷竜、その幼き時",
     "type": "monster",
     "role": "front",
@@ -3183,6 +4219,20 @@ export const CARD_DEFS = {
     "sourceUrl": "https://www.cardhero-bu.com/card/detail.php?id=75",
     "icon": "/card-icons/co075.jpg",
     "rarity": 6,
+    "memberRatings": {
+      "spd": {
+        "average": 3.3,
+        "votes": 54
+      },
+      "proBlack": {
+        "average": 2.8,
+        "votes": 61
+      },
+      "proWhite": {
+        "average": 2.9,
+        "votes": 61
+      }
+    },
     "catchcopy": "純枠、凶悪な戦闘力",
     "type": "monster",
     "role": "front",
@@ -3211,6 +4261,20 @@ export const CARD_DEFS = {
     "sourceUrl": "https://www.cardhero-bu.com/card/detail.php?id=76",
     "icon": "/card-icons/co076.jpg",
     "rarity": 6,
+    "memberRatings": {
+      "spd": {
+        "average": 3.3,
+        "votes": 54
+      },
+      "proBlack": {
+        "average": 2.6,
+        "votes": 61
+      },
+      "proWhite": {
+        "average": 2.8,
+        "votes": 60
+      }
+    },
     "catchcopy": "疾風の老戦士",
     "type": "monster",
     "role": "front",
@@ -3267,6 +4331,20 @@ export const CARD_DEFS = {
     "sourceUrl": "https://www.cardhero-bu.com/card/detail.php?id=77",
     "icon": "/card-icons/co077.jpg",
     "rarity": 6,
+    "memberRatings": {
+      "spd": {
+        "average": 3.1,
+        "votes": 63
+      },
+      "proBlack": {
+        "average": 2.7,
+        "votes": 63
+      },
+      "proWhite": {
+        "average": 2.6,
+        "votes": 65
+      }
+    },
     "catchcopy": "よみがえる伝説",
     "type": "monster",
     "role": "front",
@@ -3297,6 +4375,20 @@ export const CARD_DEFS = {
     "sourceUrl": "https://www.cardhero-bu.com/card/detail.php?id=78",
     "icon": "/card-icons/co078.jpg",
     "rarity": 1,
+    "memberRatings": {
+      "spd": {
+        "average": 2.3,
+        "votes": 56
+      },
+      "proBlack": {
+        "average": 2.5,
+        "votes": 63
+      },
+      "proWhite": {
+        "average": 2.3,
+        "votes": 63
+      }
+    },
     "catchcopy": "森の中をおさんぽ",
     "type": "monster",
     "role": "back",
@@ -3359,6 +4451,20 @@ export const CARD_DEFS = {
     "sourceUrl": "https://www.cardhero-bu.com/card/detail.php?id=79",
     "icon": "/card-icons/co079.jpg",
     "rarity": 6,
+    "memberRatings": {
+      "spd": {
+        "average": 2.6,
+        "votes": 56
+      },
+      "proBlack": {
+        "average": 3,
+        "votes": 64
+      },
+      "proWhite": {
+        "average": 3.3,
+        "votes": 68
+      }
+    },
     "catchcopy": "偉大なる年輪",
     "type": "monster",
     "role": "back",
@@ -3395,6 +4501,20 @@ export const CARD_DEFS = {
     "sourceUrl": "https://www.cardhero-bu.com/card/detail.php?id=80",
     "icon": "/card-icons/co080.jpg",
     "rarity": 2,
+    "memberRatings": {
+      "spd": {
+        "average": 1.8,
+        "votes": 51
+      },
+      "proBlack": {
+        "average": 2.9,
+        "votes": 65
+      },
+      "proWhite": {
+        "average": 2.5,
+        "votes": 61
+      }
+    },
     "catchcopy": "踊る泥土",
     "type": "monster",
     "role": "back",
@@ -3434,6 +4554,20 @@ export const CARD_DEFS = {
     "sourceUrl": "https://www.cardhero-bu.com/card/detail.php?id=81",
     "icon": "/card-icons/co081.jpg",
     "rarity": 3,
+    "memberRatings": {
+      "spd": {
+        "average": 2.2,
+        "votes": 49
+      },
+      "proBlack": {
+        "average": 2.3,
+        "votes": 54
+      },
+      "proWhite": {
+        "average": 2.1,
+        "votes": 52
+      }
+    },
     "catchcopy": "戦う聖職者",
     "type": "monster",
     "role": "back",
@@ -3472,6 +4606,20 @@ export const CARD_DEFS = {
     "sourceUrl": "https://www.cardhero-bu.com/card/detail.php?id=82",
     "icon": "/card-icons/co082.jpg",
     "rarity": 5,
+    "memberRatings": {
+      "spd": {
+        "average": 2.6,
+        "votes": 47
+      },
+      "proBlack": {
+        "average": 2.8,
+        "votes": 54
+      },
+      "proWhite": {
+        "average": 3.5,
+        "votes": 54
+      }
+    },
     "catchcopy": "紫衣の魔道士",
     "type": "monster",
     "role": "back",
@@ -3510,6 +4658,20 @@ export const CARD_DEFS = {
     "sourceUrl": "https://www.cardhero-bu.com/card/detail.php?id=83",
     "icon": "/card-icons/co083.jpg",
     "rarity": 5,
+    "memberRatings": {
+      "spd": {
+        "average": 2.1,
+        "votes": 45
+      },
+      "proBlack": {
+        "average": 2.6,
+        "votes": 53
+      },
+      "proWhite": {
+        "average": 3.3,
+        "votes": 58
+      }
+    },
     "catchcopy": "姉の芙蓉です！",
     "type": "monster",
     "role": "back",
@@ -3568,6 +4730,20 @@ export const CARD_DEFS = {
     "sourceUrl": "https://www.cardhero-bu.com/card/detail.php?id=84",
     "icon": "/card-icons/co084.jpg",
     "rarity": 5,
+    "memberRatings": {
+      "spd": {
+        "average": 2.2,
+        "votes": 44
+      },
+      "proBlack": {
+        "average": 2.5,
+        "votes": 53
+      },
+      "proWhite": {
+        "average": 3.2,
+        "votes": 57
+      }
+    },
     "catchcopy": "妹の牡丹です！",
     "type": "monster",
     "role": "back",
@@ -3626,6 +4802,20 @@ export const CARD_DEFS = {
     "sourceUrl": "https://www.cardhero-bu.com/card/detail.php?id=85",
     "icon": "/card-icons/co085.jpg",
     "rarity": 6,
+    "memberRatings": {
+      "spd": {
+        "average": 2.1,
+        "votes": 57
+      },
+      "proBlack": {
+        "average": 2.8,
+        "votes": 64
+      },
+      "proWhite": {
+        "average": 2.9,
+        "votes": 63
+      }
+    },
     "catchcopy": "空間兵器",
     "type": "monster",
     "role": "back",
@@ -3664,6 +4854,20 @@ export const CARD_DEFS = {
     "sourceUrl": "https://www.cardhero-bu.com/card/detail.php?id=86",
     "icon": "/card-icons/co086.jpg",
     "rarity": 1,
+    "memberRatings": {
+      "spd": {
+        "average": 1.9,
+        "votes": 44
+      },
+      "proBlack": {
+        "average": 1.9,
+        "votes": 49
+      },
+      "proWhite": {
+        "average": 1.9,
+        "votes": 48
+      }
+    },
     "catchcopy": "逃れられぬ恐怖",
     "type": "magic",
     "cost": 2,
@@ -3681,6 +4885,20 @@ export const CARD_DEFS = {
     "sourceUrl": "https://www.cardhero-bu.com/card/detail.php?id=87",
     "icon": "/card-icons/co087.jpg",
     "rarity": 2,
+    "memberRatings": {
+      "spd": {
+        "average": 1.7,
+        "votes": 43
+      },
+      "proBlack": {
+        "average": 2.2,
+        "votes": 50
+      },
+      "proWhite": {
+        "average": 2,
+        "votes": 49
+      }
+    },
     "catchcopy": "去れ、悪しき呪いよ",
     "type": "magic",
     "cost": 1,
@@ -3697,6 +4915,20 @@ export const CARD_DEFS = {
     "sourceUrl": "https://www.cardhero-bu.com/card/detail.php?id=88",
     "icon": "/card-icons/co088.jpg",
     "rarity": 3,
+    "memberRatings": {
+      "spd": {
+        "average": 3.8,
+        "votes": 61
+      },
+      "proBlack": {
+        "average": 3.1,
+        "votes": 63
+      },
+      "proWhite": {
+        "average": 2.1,
+        "votes": 62
+      }
+    },
     "catchcopy": "防御力最高の盾",
     "type": "magic",
     "cost": 2,
@@ -3714,6 +4946,20 @@ export const CARD_DEFS = {
     "sourceUrl": "https://www.cardhero-bu.com/card/detail.php?id=89",
     "icon": "/card-icons/co089.jpg",
     "rarity": 3,
+    "memberRatings": {
+      "spd": {
+        "average": 2.9,
+        "votes": 54
+      },
+      "proBlack": {
+        "average": 2.6,
+        "votes": 58
+      },
+      "proWhite": {
+        "average": 1.9,
+        "votes": 57
+      }
+    },
     "catchcopy": "反撃する盾",
     "type": "magic",
     "cost": 2,
@@ -3731,6 +4977,20 @@ export const CARD_DEFS = {
     "sourceUrl": "https://www.cardhero-bu.com/card/detail.php?id=90",
     "icon": "/card-icons/co090.jpg",
     "rarity": 3,
+    "memberRatings": {
+      "spd": {
+        "average": 3.9,
+        "votes": 54
+      },
+      "proBlack": {
+        "average": 1.6,
+        "votes": 53
+      },
+      "proWhite": {
+        "average": 1.6,
+        "votes": 52
+      }
+    },
     "catchcopy": "戦場に戻る魂",
     "type": "magic",
     "cost": 4,
@@ -3747,6 +5007,20 @@ export const CARD_DEFS = {
     "sourceUrl": "https://www.cardhero-bu.com/card/detail.php?id=91",
     "icon": "/card-icons/co091.jpg",
     "rarity": 4,
+    "memberRatings": {
+      "spd": {
+        "average": 2.3,
+        "votes": 46
+      },
+      "proBlack": {
+        "average": 2.4,
+        "votes": 51
+      },
+      "proWhite": {
+        "average": 2.3,
+        "votes": 52
+      }
+    },
     "catchcopy": "運がよければ完全防御",
     "type": "magic",
     "cost": 2,
@@ -3764,6 +5038,20 @@ export const CARD_DEFS = {
     "sourceUrl": "https://www.cardhero-bu.com/card/detail.php?id=92",
     "icon": "/card-icons/co092.jpg",
     "rarity": 4,
+    "memberRatings": {
+      "spd": {
+        "average": 3.3,
+        "votes": 46
+      },
+      "proBlack": {
+        "average": 1.7,
+        "votes": 47
+      },
+      "proWhite": {
+        "average": 1.9,
+        "votes": 46
+      }
+    },
     "catchcopy": "拡散する火柱",
     "type": "magic",
     "cost": 3,
@@ -3780,6 +5068,20 @@ export const CARD_DEFS = {
     "sourceUrl": "https://www.cardhero-bu.com/card/detail.php?id=93",
     "icon": "/card-icons/co093.jpg",
     "rarity": 5,
+    "memberRatings": {
+      "spd": {
+        "average": 2.6,
+        "votes": 40
+      },
+      "proBlack": {
+        "average": 3.7,
+        "votes": 53
+      },
+      "proWhite": {
+        "average": 3.8,
+        "votes": 55
+      }
+    },
     "catchcopy": "招かれる混乱",
     "type": "magic",
     "cost": 3,
@@ -3796,6 +5098,20 @@ export const CARD_DEFS = {
     "sourceUrl": "https://www.cardhero-bu.com/card/detail.php?id=94",
     "icon": "/card-icons/co094.jpg",
     "rarity": 5,
+    "memberRatings": {
+      "spd": {
+        "average": 2.1,
+        "votes": 49
+      },
+      "proBlack": {
+        "average": 1.8,
+        "votes": 45
+      },
+      "proWhite": {
+        "average": 3,
+        "votes": 58
+      }
+    },
     "catchcopy": "両刃の剣",
     "type": "magic",
     "cost": 3,
@@ -3813,6 +5129,20 @@ export const CARD_DEFS = {
     "sourceUrl": "https://www.cardhero-bu.com/card/detail.php?id=95",
     "icon": "/card-icons/co095.jpg",
     "rarity": 5,
+    "memberRatings": {
+      "spd": {
+        "average": 2.5,
+        "votes": 49
+      },
+      "proBlack": {
+        "average": 2.1,
+        "votes": 54
+      },
+      "proWhite": {
+        "average": 2.2,
+        "votes": 53
+      }
+    },
     "catchcopy": "暗黒の磁場",
     "type": "magic",
     "cost": 3,
@@ -3830,6 +5160,20 @@ export const CARD_DEFS = {
     "sourceUrl": "https://www.cardhero-bu.com/card/detail.php?id=96",
     "icon": "/card-icons/co096.jpg",
     "rarity": 6,
+    "memberRatings": {
+      "spd": {
+        "average": 2.5,
+        "votes": 58
+      },
+      "proBlack": {
+        "average": 2.2,
+        "votes": 57
+      },
+      "proWhite": {
+        "average": 3.1,
+        "votes": 62
+      }
+    },
     "catchcopy": "覇王の剣",
     "type": "magic",
     "cost": 3,
@@ -3849,6 +5193,20 @@ export const CARD_DEFS = {
     "sourceUrl": "https://www.cardhero-bu.com/card/detail.php?id=97",
     "icon": "/card-icons/co097.jpg",
     "rarity": 6,
+    "memberRatings": {
+      "spd": {
+        "average": 3.8,
+        "votes": 54
+      },
+      "proBlack": {
+        "average": 3.9,
+        "votes": 62
+      },
+      "proWhite": {
+        "average": 3.8,
+        "votes": 62
+      }
+    },
     "catchcopy": "通好みカードＮｏ１",
     "type": "magic",
     "cost": 2,
@@ -3866,6 +5224,20 @@ export const CARD_DEFS = {
     "sourceUrl": "https://www.cardhero-bu.com/card/detail.php?id=98",
     "icon": "/card-icons/co098.jpg",
     "rarity": 6,
+    "memberRatings": {
+      "spd": {
+        "average": 3.4,
+        "votes": 50
+      },
+      "proBlack": {
+        "average": 3.3,
+        "votes": 59
+      },
+      "proWhite": {
+        "average": 3.4,
+        "votes": 57
+      }
+    },
     "catchcopy": "人を呪わば穴二つ",
     "type": "magic",
     "cost": 2,
@@ -3883,6 +5255,20 @@ export const CARD_DEFS = {
     "sourceUrl": "https://www.cardhero-bu.com/card/detail.php?id=99",
     "icon": "/card-icons/co099.jpg",
     "rarity": 1,
+    "memberRatings": {
+      "spd": {
+        "average": 2,
+        "votes": 16
+      },
+      "proBlack": {
+        "average": 3,
+        "votes": 54
+      },
+      "proWhite": {
+        "average": 2.2,
+        "votes": 50
+      }
+    },
     "catchcopy": "墓場を漂う幽体",
     "type": "monster",
     "role": "front",
@@ -3926,6 +5312,20 @@ export const CARD_DEFS = {
     "sourceUrl": "https://www.cardhero-bu.com/card/detail.php?id=100",
     "icon": "/card-icons/co100.jpg",
     "rarity": 1,
+    "memberRatings": {
+      "spd": {
+        "average": 1.7,
+        "votes": 42
+      },
+      "proBlack": {
+        "average": 2.8,
+        "votes": 56
+      },
+      "proWhite": {
+        "average": 2.3,
+        "votes": 52
+      }
+    },
     "catchcopy": "死を呼ぶ思念体",
     "type": "monster",
     "role": "front",
@@ -3973,6 +5373,20 @@ export const CARD_DEFS = {
     "sourceUrl": "https://www.cardhero-bu.com/card/detail.php?id=101",
     "icon": "/card-icons/co101.jpg",
     "rarity": 5,
+    "memberRatings": {
+      "spd": {
+        "average": 2.1,
+        "votes": 36
+      },
+      "proBlack": {
+        "average": 2.1,
+        "votes": 47
+      },
+      "proWhite": {
+        "average": 2.6,
+        "votes": 47
+      }
+    },
     "catchcopy": "妖気漂う復讐",
     "type": "monster",
     "role": "front",
@@ -4003,6 +5417,20 @@ export const CARD_DEFS = {
     "sourceUrl": "https://www.cardhero-bu.com/card/detail.php?id=102",
     "icon": "/card-icons/co102.jpg",
     "rarity": 1,
+    "memberRatings": {
+      "spd": {
+        "average": 2.3,
+        "votes": 45
+      },
+      "proBlack": {
+        "average": 2.1,
+        "votes": 51
+      },
+      "proWhite": {
+        "average": 2.2,
+        "votes": 50
+      }
+    },
     "catchcopy": "火竜の子孫",
     "type": "monster",
     "role": "front",
@@ -4050,6 +5478,20 @@ export const CARD_DEFS = {
     "sourceUrl": "https://www.cardhero-bu.com/card/detail.php?id=103",
     "icon": "/card-icons/co103.jpg",
     "rarity": 6,
+    "memberRatings": {
+      "spd": {
+        "average": 2.9,
+        "votes": 54
+      },
+      "proBlack": {
+        "average": 3.1,
+        "votes": 60
+      },
+      "proWhite": {
+        "average": 3.3,
+        "votes": 59
+      }
+    },
     "catchcopy": "神話の中のドラゴン",
     "type": "monster",
     "role": "front",
@@ -4093,6 +5535,20 @@ export const CARD_DEFS = {
     "sourceUrl": "https://www.cardhero-bu.com/card/detail.php?id=104",
     "icon": "/card-icons/co104.jpg",
     "rarity": 2,
+    "memberRatings": {
+      "spd": {
+        "average": 2.4,
+        "votes": 14
+      },
+      "proBlack": {
+        "average": 3.1,
+        "votes": 51
+      },
+      "proWhite": {
+        "average": 2.3,
+        "votes": 48
+      }
+    },
     "catchcopy": "覚醒する魔角",
     "type": "monster",
     "role": "front",
@@ -4152,6 +5608,20 @@ export const CARD_DEFS = {
     "sourceUrl": "https://www.cardhero-bu.com/card/detail.php?id=105",
     "icon": "/card-icons/co105.jpg",
     "rarity": 3,
+    "memberRatings": {
+      "spd": {
+        "average": 2.5,
+        "votes": 17
+      },
+      "proBlack": {
+        "average": 4.2,
+        "votes": 67
+      },
+      "proWhite": {
+        "average": 4.3,
+        "votes": 66
+      }
+    },
     "catchcopy": "それ、２コ、ほしいの",
     "type": "monster",
     "role": "front",
@@ -4210,6 +5680,20 @@ export const CARD_DEFS = {
     "sourceUrl": "https://www.cardhero-bu.com/card/detail.php?id=106",
     "icon": "/card-icons/co106.jpg",
     "rarity": 4,
+    "memberRatings": {
+      "spd": {
+        "average": 2.4,
+        "votes": 11
+      },
+      "proBlack": {
+        "average": 3.9,
+        "votes": 52
+      },
+      "proWhite": {
+        "average": 3.2,
+        "votes": 48
+      }
+    },
     "catchcopy": "強化アンドロイド",
     "type": "monster",
     "role": "front",
@@ -4268,6 +5752,20 @@ export const CARD_DEFS = {
     "sourceUrl": "https://www.cardhero-bu.com/card/detail.php?id=107",
     "icon": "/card-icons/co107.jpg",
     "rarity": 5,
+    "memberRatings": {
+      "spd": {
+        "average": 1.4,
+        "votes": 37
+      },
+      "proBlack": {
+        "average": 3.8,
+        "votes": 63
+      },
+      "proWhite": {
+        "average": 3.8,
+        "votes": 61
+      }
+    },
     "catchcopy": "右翼守護の要",
     "type": "monster",
     "role": "front",
@@ -4326,6 +5824,20 @@ export const CARD_DEFS = {
     "sourceUrl": "https://www.cardhero-bu.com/card/detail.php?id=108",
     "icon": "/card-icons/co108.jpg",
     "rarity": 5,
+    "memberRatings": {
+      "spd": {
+        "average": 1.5,
+        "votes": 44
+      },
+      "proBlack": {
+        "average": 3.8,
+        "votes": 63
+      },
+      "proWhite": {
+        "average": 3.8,
+        "votes": 60
+      }
+    },
     "catchcopy": "左翼守護の要",
     "type": "monster",
     "role": "front",
@@ -4384,6 +5896,20 @@ export const CARD_DEFS = {
     "sourceUrl": "https://www.cardhero-bu.com/card/detail.php?id=109",
     "icon": "/card-icons/co109.jpg",
     "rarity": 6,
+    "memberRatings": {
+      "spd": {
+        "average": 1.5,
+        "votes": 48
+      },
+      "proBlack": {
+        "average": 4.1,
+        "votes": 73
+      },
+      "proWhite": {
+        "average": 3,
+        "votes": 66
+      }
+    },
     "catchcopy": "反撃ノ相手、我関セズ",
     "type": "monster",
     "role": "front",
@@ -4414,6 +5940,20 @@ export const CARD_DEFS = {
     "sourceUrl": "https://www.cardhero-bu.com/card/detail.php?id=110",
     "icon": "/card-icons/co110.jpg",
     "rarity": 2,
+    "memberRatings": {
+      "spd": {
+        "average": 1.3,
+        "votes": 44
+      },
+      "proBlack": {
+        "average": 1.8,
+        "votes": 57
+      },
+      "proWhite": {
+        "average": 1.8,
+        "votes": 56
+      }
+    },
     "catchcopy": "蒼き狙撃手",
     "type": "monster",
     "role": "back",
@@ -4451,6 +5991,20 @@ export const CARD_DEFS = {
     "sourceUrl": "https://www.cardhero-bu.com/card/detail.php?id=111",
     "icon": "/card-icons/co111.jpg",
     "rarity": 4,
+    "memberRatings": {
+      "spd": {
+        "average": 1.7,
+        "votes": 11
+      },
+      "proBlack": {
+        "average": 2.1,
+        "votes": 48
+      },
+      "proWhite": {
+        "average": 1.9,
+        "votes": 47
+      }
+    },
     "catchcopy": "浮遊するテセラック",
     "type": "monster",
     "role": "back",
@@ -4488,6 +6042,20 @@ export const CARD_DEFS = {
     "sourceUrl": "https://www.cardhero-bu.com/card/detail.php?id=112",
     "icon": "/card-icons/co112.jpg",
     "rarity": 4,
+    "memberRatings": {
+      "spd": {
+        "average": 1.5,
+        "votes": 8
+      },
+      "proBlack": {
+        "average": 1.9,
+        "votes": 51
+      },
+      "proWhite": {
+        "average": 1.8,
+        "votes": 50
+      }
+    },
     "catchcopy": "主食がストーン",
     "type": "monster",
     "role": "back",
@@ -4565,6 +6133,20 @@ export const CARD_DEFS = {
     "sourceUrl": "https://www.cardhero-bu.com/card/detail.php?id=113",
     "icon": "/card-icons/co113.jpg",
     "rarity": 1,
+    "memberRatings": {
+      "spd": {
+        "average": 1.6,
+        "votes": 7
+      },
+      "proBlack": {
+        "average": 3.6,
+        "votes": 45
+      },
+      "proWhite": {
+        "average": 3.3,
+        "votes": 45
+      }
+    },
     "catchcopy": "還らぬストーン",
     "type": "magic",
     "cost": 1,
@@ -4581,6 +6163,20 @@ export const CARD_DEFS = {
     "sourceUrl": "https://www.cardhero-bu.com/card/detail.php?id=114",
     "icon": "/card-icons/co114.jpg",
     "rarity": 1,
+    "memberRatings": {
+      "spd": {
+        "average": 1.8,
+        "votes": 9
+      },
+      "proBlack": {
+        "average": 2,
+        "votes": 44
+      },
+      "proWhite": {
+        "average": 2,
+        "votes": 43
+      }
+    },
     "catchcopy": "戦況変革",
     "type": "magic",
     "cost": 1,
@@ -4597,6 +6193,20 @@ export const CARD_DEFS = {
     "sourceUrl": "https://www.cardhero-bu.com/card/detail.php?id=115",
     "icon": "/card-icons/co115.jpg",
     "rarity": 1,
+    "memberRatings": {
+      "spd": {
+        "average": 1.9,
+        "votes": 8
+      },
+      "proBlack": {
+        "average": 2.7,
+        "votes": 46
+      },
+      "proWhite": {
+        "average": 2.7,
+        "votes": 46
+      }
+    },
     "catchcopy": "未来をチェック",
     "type": "magic",
     "cost": 1,
@@ -4613,6 +6223,20 @@ export const CARD_DEFS = {
     "sourceUrl": "https://www.cardhero-bu.com/card/detail.php?id=116",
     "icon": "/card-icons/co116.jpg",
     "rarity": 1,
+    "memberRatings": {
+      "spd": {
+        "average": 2.1,
+        "votes": 9
+      },
+      "proBlack": {
+        "average": 2.1,
+        "votes": 46
+      },
+      "proWhite": {
+        "average": 2,
+        "votes": 45
+      }
+    },
     "catchcopy": "デッキ圧縮と手札再生",
     "type": "magic",
     "cost": 2,
@@ -4629,6 +6253,20 @@ export const CARD_DEFS = {
     "sourceUrl": "https://www.cardhero-bu.com/card/detail.php?id=117",
     "icon": "/card-icons/co117.jpg",
     "rarity": 2,
+    "memberRatings": {
+      "spd": {
+        "average": 1.7,
+        "votes": 9
+      },
+      "proBlack": {
+        "average": 3,
+        "votes": 50
+      },
+      "proWhite": {
+        "average": 1.5,
+        "votes": 39
+      }
+    },
     "catchcopy": "速攻、そして奇襲",
     "type": "magic",
     "cost": 2,
@@ -4645,6 +6283,20 @@ export const CARD_DEFS = {
     "sourceUrl": "https://www.cardhero-bu.com/card/detail.php?id=118",
     "icon": "/card-icons/co118.jpg",
     "rarity": 2,
+    "memberRatings": {
+      "spd": {
+        "average": 1.3,
+        "votes": 31
+      },
+      "proBlack": {
+        "average": 1.4,
+        "votes": 36
+      },
+      "proWhite": {
+        "average": 1.6,
+        "votes": 44
+      }
+    },
     "catchcopy": "切り裂く疾風",
     "type": "magic",
     "cost": 3,
@@ -4661,6 +6313,20 @@ export const CARD_DEFS = {
     "sourceUrl": "https://www.cardhero-bu.com/card/detail.php?id=119",
     "icon": "/card-icons/co119.jpg",
     "rarity": 2,
+    "memberRatings": {
+      "spd": {
+        "average": 2,
+        "votes": 11
+      },
+      "proBlack": {
+        "average": 2,
+        "votes": 41
+      },
+      "proWhite": {
+        "average": 1.9,
+        "votes": 40
+      }
+    },
     "catchcopy": "封じるまでもなく",
     "type": "magic",
     "cost": 1,
@@ -4678,6 +6344,20 @@ export const CARD_DEFS = {
     "sourceUrl": "https://www.cardhero-bu.com/card/detail.php?id=120",
     "icon": "/card-icons/co120.jpg",
     "rarity": 3,
+    "memberRatings": {
+      "spd": {
+        "average": 2.2,
+        "votes": 8
+      },
+      "proBlack": {
+        "average": 4.3,
+        "votes": 56
+      },
+      "proWhite": {
+        "average": 4.1,
+        "votes": 57
+      }
+    },
     "catchcopy": "手札の数＝戦略の幅",
     "type": "magic",
     "cost": 2,
@@ -4694,6 +6374,20 @@ export const CARD_DEFS = {
     "sourceUrl": "https://www.cardhero-bu.com/card/detail.php?id=121",
     "icon": "/card-icons/co121.jpg",
     "rarity": 3,
+    "memberRatings": {
+      "spd": {
+        "average": 1.8,
+        "votes": 12
+      },
+      "proBlack": {
+        "average": 3.5,
+        "votes": 70
+      },
+      "proWhite": {
+        "average": 3.2,
+        "votes": 67
+      }
+    },
     "catchcopy": "ストーンの補充",
     "type": "magic",
     "cost": 1,
@@ -4710,6 +6404,20 @@ export const CARD_DEFS = {
     "sourceUrl": "https://www.cardhero-bu.com/card/detail.php?id=122",
     "icon": "/card-icons/co122.jpg",
     "rarity": 4,
+    "memberRatings": {
+      "spd": {
+        "average": 2,
+        "votes": 5
+      },
+      "proBlack": {
+        "average": 2.6,
+        "votes": 44
+      },
+      "proWhite": {
+        "average": 2.7,
+        "votes": 44
+      }
+    },
     "catchcopy": "誰も寝てはならぬ",
     "type": "magic",
     "cost": 3,
@@ -4726,6 +6434,20 @@ export const CARD_DEFS = {
     "sourceUrl": "https://www.cardhero-bu.com/card/detail.php?id=123",
     "icon": "/card-icons/co123.jpg",
     "rarity": 4,
+    "memberRatings": {
+      "spd": {
+        "average": 2,
+        "votes": 5
+      },
+      "proBlack": {
+        "average": 2.6,
+        "votes": 46
+      },
+      "proWhite": {
+        "average": 2.8,
+        "votes": 46
+      }
+    },
     "catchcopy": "今こそ、そのカードを",
     "type": "magic",
     "cost": 2,
@@ -4742,6 +6464,20 @@ export const CARD_DEFS = {
     "sourceUrl": "https://www.cardhero-bu.com/card/detail.php?id=124",
     "icon": "/card-icons/co124.jpg",
     "rarity": 5,
+    "memberRatings": {
+      "spd": {
+        "average": 1.8,
+        "votes": 6
+      },
+      "proBlack": {
+        "average": 2.4,
+        "votes": 45
+      },
+      "proWhite": {
+        "average": 3.6,
+        "votes": 48
+      }
+    },
     "catchcopy": "相手の特技を我が身に",
     "type": "magic",
     "cost": 1,
@@ -4759,6 +6495,20 @@ export const CARD_DEFS = {
     "sourceUrl": "https://www.cardhero-bu.com/card/detail.php?id=125",
     "icon": "/card-icons/co125.jpg",
     "rarity": 5,
+    "memberRatings": {
+      "spd": {
+        "average": 1.7,
+        "votes": 6
+      },
+      "proBlack": {
+        "average": 2.5,
+        "votes": 50
+      },
+      "proWhite": {
+        "average": 2.6,
+        "votes": 50
+      }
+    },
     "catchcopy": "マスターにも追撃",
     "type": "magic",
     "cost": 3,
@@ -4775,6 +6525,20 @@ export const CARD_DEFS = {
     "sourceUrl": "https://www.cardhero-bu.com/card/detail.php?id=126",
     "icon": "/card-icons/co126.jpg",
     "rarity": 5,
+    "memberRatings": {
+      "spd": {
+        "average": 1.9,
+        "votes": 9
+      },
+      "proBlack": {
+        "average": 1.7,
+        "votes": 38
+      },
+      "proWhite": {
+        "average": 2.9,
+        "votes": 50
+      }
+    },
     "catchcopy": "大自然の脅威",
     "type": "magic",
     "cost": 6,
@@ -4791,6 +6555,20 @@ export const CARD_DEFS = {
     "sourceUrl": "https://www.cardhero-bu.com/card/detail.php?id=127",
     "icon": "/card-icons/co127.jpg",
     "rarity": 5,
+    "memberRatings": {
+      "spd": {
+        "average": 1.6,
+        "votes": 28
+      },
+      "proBlack": {
+        "average": 3.3,
+        "votes": 47
+      },
+      "proWhite": {
+        "average": 3,
+        "votes": 46
+      }
+    },
     "catchcopy": "天界からの恵み",
     "type": "magic",
     "cost": 2,
@@ -4807,6 +6585,20 @@ export const CARD_DEFS = {
     "sourceUrl": "https://www.cardhero-bu.com/card/detail.php?id=128",
     "icon": "/card-icons/co128.jpg",
     "rarity": 6,
+    "memberRatings": {
+      "spd": {
+        "average": 1.9,
+        "votes": 9
+      },
+      "proBlack": {
+        "average": 3.6,
+        "votes": 57
+      },
+      "proWhite": {
+        "average": 4.3,
+        "votes": 60
+      }
+    },
     "catchcopy": "その犠牲者が敵ならば",
     "type": "magic",
     "cost": 2,
@@ -4824,6 +6616,20 @@ export const CARD_DEFS = {
     "sourceUrl": "https://www.cardhero-bu.com/card/detail.php?id=129",
     "icon": "/card-icons/co129.jpg",
     "rarity": 6,
+    "memberRatings": {
+      "spd": {
+        "average": 2.7,
+        "votes": 15
+      },
+      "proBlack": {
+        "average": 4.6,
+        "votes": 89
+      },
+      "proWhite": {
+        "average": 4.3,
+        "votes": 87
+      }
+    },
     "catchcopy": "小さな切り札",
     "type": "magic",
     "cost": 1,
@@ -4840,6 +6646,20 @@ export const CARD_DEFS = {
     "sourceUrl": "https://www.cardhero-bu.com/card/detail.php?id=130",
     "icon": "/card-icons/co130.jpg",
     "rarity": 6,
+    "memberRatings": {
+      "spd": {
+        "average": 2.7,
+        "votes": 54
+      },
+      "proBlack": {
+        "average": 2.4,
+        "votes": 62
+      },
+      "proWhite": {
+        "average": 2.4,
+        "votes": 61
+      }
+    },
     "catchcopy": "行動済みからの復帰",
     "type": "magic",
     "cost": 5,
@@ -4860,6 +6680,20 @@ export const CARD_DEFS = {
     "sourceUrl": "https://www.cardhero-bu.com/card/detail.php?id=131",
     "icon": "/card-icons/co131.jpg",
     "rarity": 5,
+    "memberRatings": {
+      "spd": {
+        "average": 2.3,
+        "votes": 44
+      },
+      "proBlack": {
+        "average": 2.3,
+        "votes": 51
+      },
+      "proWhite": {
+        "average": 2.5,
+        "votes": 50
+      }
+    },
     "catchcopy": "マナトット界の王者",
     "type": "monster",
     "role": "front",
@@ -4897,6 +6731,20 @@ export const CARD_DEFS = {
     "sourceUrl": "https://www.cardhero-bu.com/card/detail.php?id=132",
     "icon": "/card-icons/co132.jpg",
     "rarity": 6,
+    "memberRatings": {
+      "spd": {
+        "average": 2.6,
+        "votes": 49
+      },
+      "proBlack": {
+        "average": 3.9,
+        "votes": 61
+      },
+      "proWhite": {
+        "average": 3.6,
+        "votes": 60
+      }
+    },
     "catchcopy": "進化したアイツ",
     "type": "monster",
     "role": "front",
@@ -4940,6 +6788,20 @@ export const CARD_DEFS = {
     "sourceUrl": "https://www.cardhero-bu.com/card/detail.php?id=133",
     "icon": "/card-icons/co133.jpg",
     "rarity": 6,
+    "memberRatings": {
+      "spd": {
+        "average": 2,
+        "votes": 52
+      },
+      "proBlack": {
+        "average": 4.2,
+        "votes": 71
+      },
+      "proWhite": {
+        "average": 4.1,
+        "votes": 71
+      }
+    },
     "catchcopy": "黒き魔導兵器",
     "type": "monster",
     "role": "front",
@@ -4983,6 +6845,20 @@ export const CARD_DEFS = {
     "sourceUrl": "https://www.cardhero-bu.com/card/detail.php?id=134",
     "icon": "/card-icons/co134.jpg",
     "rarity": 6,
+    "memberRatings": {
+      "spd": {
+        "average": 2.2,
+        "votes": 18
+      },
+      "proBlack": {
+        "average": 2,
+        "votes": 43
+      },
+      "proWhite": {
+        "average": 2.1,
+        "votes": 42
+      }
+    },
     "catchcopy": "迷宮の亡霊",
     "type": "monster",
     "role": "front",
@@ -5041,6 +6917,20 @@ export const CARD_DEFS = {
     "sourceUrl": "https://www.cardhero-bu.com/card/detail.php?id=135",
     "icon": "/card-icons/co135.jpg",
     "rarity": 6,
+    "memberRatings": {
+      "spd": {
+        "average": 2.6,
+        "votes": 50
+      },
+      "proBlack": {
+        "average": 2.4,
+        "votes": 57
+      },
+      "proWhite": {
+        "average": 2.6,
+        "votes": 55
+      }
+    },
     "catchcopy": "闇のアイドル",
     "type": "monster",
     "role": "back",
@@ -5123,6 +7013,20 @@ export const CARD_DEFS = {
     "sourceUrl": "https://www.cardhero-bu.com/card/detail.php?id=136",
     "icon": "/card-icons/co136.jpg",
     "rarity": 6,
+    "memberRatings": {
+      "spd": {
+        "average": 2.6,
+        "votes": 42
+      },
+      "proBlack": {
+        "average": 2.6,
+        "votes": 50
+      },
+      "proWhite": {
+        "average": 2.9,
+        "votes": 51
+      }
+    },
     "catchcopy": "大地を揺るがす脚技",
     "type": "monster",
     "role": "back",
@@ -5164,6 +7068,20 @@ export const CARD_DEFS = {
     "sourceUrl": "https://www.cardhero-bu.com/card/detail.php?id=137",
     "icon": "/card-icons/co137.jpg",
     "rarity": 6,
+    "memberRatings": {
+      "spd": {
+        "average": 3.5,
+        "votes": 45
+      },
+      "proBlack": {
+        "average": 3.3,
+        "votes": 50
+      },
+      "proWhite": {
+        "average": 3.4,
+        "votes": 52
+      }
+    },
     "catchcopy": "近距離型機動生命体",
     "type": "monster",
     "role": "back",
@@ -5204,6 +7122,20 @@ export const CARD_DEFS = {
     "sourceUrl": "https://www.cardhero-bu.com/card/detail.php?id=138",
     "icon": "/card-icons/co138.jpg",
     "rarity": 6,
+    "memberRatings": {
+      "spd": {
+        "average": 2.4,
+        "votes": 37
+      },
+      "proBlack": {
+        "average": 2.6,
+        "votes": 45
+      },
+      "proWhite": {
+        "average": 2.8,
+        "votes": 45
+      }
+    },
     "catchcopy": "力の分配者",
     "type": "monster",
     "role": "front",
@@ -5246,6 +7178,20 @@ export const CARD_DEFS = {
     "sourceUrl": "https://www.cardhero-bu.com/card/detail.php?id=139",
     "icon": "/card-icons/co139.jpg",
     "rarity": 6,
+    "memberRatings": {
+      "spd": {
+        "average": 2,
+        "votes": 34
+      },
+      "proBlack": {
+        "average": 2.7,
+        "votes": 42
+      },
+      "proWhite": {
+        "average": 3.1,
+        "votes": 46
+      }
+    },
     "catchcopy": "千年の女王",
     "type": "monster",
     "role": "front",
@@ -5287,6 +7233,20 @@ export const CARD_DEFS = {
     "sourceUrl": "https://www.cardhero-bu.com/card/detail.php?id=140",
     "icon": "/card-icons/co140.jpg",
     "rarity": 7,
+    "memberRatings": {
+      "spd": {
+        "average": 2.5,
+        "votes": 45
+      },
+      "proBlack": {
+        "average": 3.2,
+        "votes": 51
+      },
+      "proWhite": {
+        "average": 3.3,
+        "votes": 52
+      }
+    },
     "catchcopy": "白銀の波動",
     "type": "monster",
     "role": "front",
@@ -5329,6 +7289,20 @@ export const CARD_DEFS = {
     "sourceUrl": "https://www.cardhero-bu.com/card/detail.php?id=141",
     "icon": "/card-icons/co141.jpg",
     "rarity": 6,
+    "memberRatings": {
+      "spd": {
+        "average": 2,
+        "votes": 11
+      },
+      "proBlack": {
+        "average": 2.3,
+        "votes": 46
+      },
+      "proWhite": {
+        "average": 2.5,
+        "votes": 49
+      }
+    },
     "catchcopy": "お菓子の妖精",
     "type": "monster",
     "role": "front",
@@ -5369,6 +7343,20 @@ export const CARD_DEFS = {
     "sourceUrl": "https://www.cardhero-bu.com/card/detail.php?id=142",
     "icon": "/card-icons/co142.jpg",
     "rarity": 6,
+    "memberRatings": {
+      "spd": {
+        "average": 2,
+        "votes": 11
+      },
+      "proBlack": {
+        "average": 2.4,
+        "votes": 47
+      },
+      "proWhite": {
+        "average": 2.2,
+        "votes": 47
+      }
+    },
     "catchcopy": "悠久なる繁栄",
     "type": "monster",
     "role": "front",
@@ -5403,6 +7391,20 @@ export const CARD_DEFS = {
     "sourceUrl": "https://www.cardhero-bu.com/card/detail.php?id=143",
     "icon": "/card-icons/co143.jpg",
     "rarity": 8,
+    "memberRatings": {
+      "spd": {
+        "average": 3.2,
+        "votes": 60
+      },
+      "proBlack": {
+        "average": 4.4,
+        "votes": 68
+      },
+      "proWhite": {
+        "average": 4.4,
+        "votes": 67
+      }
+    },
     "catchcopy": "奇襲にして強襲",
     "type": "monster",
     "role": "front",
@@ -5434,6 +7436,20 @@ export const CARD_DEFS = {
     "sourceUrl": "https://www.cardhero-bu.com/card/detail.php?id=144",
     "icon": "/card-icons/co144.jpg",
     "rarity": 8,
+    "memberRatings": {
+      "spd": {
+        "average": 2.6,
+        "votes": 34
+      },
+      "proBlack": {
+        "average": 4.3,
+        "votes": 76
+      },
+      "proWhite": {
+        "average": 4.3,
+        "votes": 74
+      }
+    },
     "catchcopy": "呪われた重騎士",
     "type": "monster",
     "role": "front",
@@ -5490,6 +7506,20 @@ export const CARD_DEFS = {
     "sourceUrl": "https://www.cardhero-bu.com/card/detail.php?id=145",
     "icon": "/card-icons/co145.jpg",
     "rarity": 8,
+    "memberRatings": {
+      "spd": {
+        "average": 1.5,
+        "votes": 43
+      },
+      "proBlack": {
+        "average": 3.4,
+        "votes": 57
+      },
+      "proWhite": {
+        "average": 3.2,
+        "votes": 54
+      }
+    },
     "catchcopy": "魔爪の連弾",
     "type": "monster",
     "role": "back",
@@ -5527,6 +7557,20 @@ export const CARD_DEFS = {
     "sourceUrl": "https://www.cardhero-bu.com/card/detail.php?id=146",
     "icon": "/card-icons/co146.jpg",
     "rarity": 8,
+    "memberRatings": {
+      "spd": {
+        "average": 3.4,
+        "votes": 51
+      },
+      "proBlack": {
+        "average": 4.4,
+        "votes": 57
+      },
+      "proWhite": {
+        "average": 4.4,
+        "votes": 57
+      }
+    },
     "catchcopy": "その正体、人か魔か",
     "type": "monster",
     "role": "back",
@@ -5565,6 +7609,20 @@ export const CARD_DEFS = {
     "sourceUrl": "https://www.cardhero-bu.com/card/detail.php?id=147",
     "icon": "/card-icons/co147.jpg",
     "rarity": 8,
+    "memberRatings": {
+      "spd": {
+        "average": 4.8,
+        "votes": 114
+      },
+      "proBlack": {
+        "average": 4.7,
+        "votes": 118
+      },
+      "proWhite": {
+        "average": 4.7,
+        "votes": 116
+      }
+    },
     "catchcopy": "天空の支配者",
     "type": "monster",
     "role": "back",
@@ -5622,6 +7680,20 @@ export const CARD_DEFS = {
     "sourceUrl": "https://www.cardhero-bu.com/card/detail.php?id=148",
     "icon": "/card-icons/co148.jpg",
     "rarity": 8,
+    "memberRatings": {
+      "spd": {
+        "average": 3.7,
+        "votes": 39
+      },
+      "proBlack": {
+        "average": 4.3,
+        "votes": 51
+      },
+      "proWhite": {
+        "average": 4.4,
+        "votes": 50
+      }
+    },
     "catchcopy": "逆風を追い風に",
     "type": "magic",
     "cost": 4,
@@ -5639,6 +7711,20 @@ export const CARD_DEFS = {
     "sourceUrl": "https://www.cardhero-bu.com/card/detail.php?id=149",
     "icon": "/card-icons/co149.jpg",
     "rarity": 8,
+    "memberRatings": {
+      "spd": {
+        "average": 3.8,
+        "votes": 55
+      },
+      "proBlack": {
+        "average": 4.5,
+        "votes": 66
+      },
+      "proWhite": {
+        "average": 4.7,
+        "votes": 63
+      }
+    },
     "catchcopy": "究極のレアカード！",
     "type": "magic",
     "cost": 4,
@@ -5655,6 +7741,20 @@ export const CARD_DEFS = {
     "sourceUrl": "https://www.cardhero-bu.com/card/detail.php?id=150",
     "icon": "/card-icons/co150.jpg",
     "rarity": 8,
+    "memberRatings": {
+      "spd": {
+        "average": 2.5,
+        "votes": 72
+      },
+      "proBlack": {
+        "average": 2.7,
+        "votes": 75
+      },
+      "proWhite": {
+        "average": 2.7,
+        "votes": 75
+      }
+    },
     "catchcopy": "見せよ、真の力を",
     "type": "magic",
     "cost": 3,

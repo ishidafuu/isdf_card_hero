@@ -6,6 +6,7 @@ import {
   evaluateAllCards,
   evaluateBoardUnit,
   evaluateCard,
+  memberRatingValueBonus,
 } from "../../src/game/unitEvaluation";
 import type { GameState, MonsterState, PlayerId } from "../../src/game/types";
 
@@ -67,6 +68,11 @@ describe("unit evaluation", () => {
 
     expect(polyspinner.tempo).toBeGreaterThan(takokke.tempo);
     expect(morgan.offense).toBeGreaterThan(takokke.offense);
+  });
+
+  it("keeps master-specific member ratings as a small AI value modifier", () => {
+    expect(memberRatingValueBonus("polyspinner", "black")).toBeGreaterThan(memberRatingValueBonus("takokke", "black"));
+    expect(memberRatingValueBonus("sigma", "white")).toBeGreaterThan(memberRatingValueBonus("takokke", "white"));
   });
 
   it("keeps high-HP front units ordered by growth and combat ceiling for catalog sorting", () => {

@@ -27,6 +27,7 @@ import {
   cpuPlacementValue as placementValue,
   evaluateHandCardKeepValue as handCardKeepValue,
   evaluateHandMonsterPlacementValue as handMonsterPlacementValue,
+  memberRatingValueBonus,
 } from "./unitEvaluation";
 import type {
   CommandAction,
@@ -954,7 +955,7 @@ function scoreSummon(state: GameState, cardId: string, slotKey: SlotKey): number
     score += cardId === "morgan" ? 5 : -10;
   }
 
-  return score;
+  return score + memberRatingValueBonus(cardId, state.players[state.currentPlayer].masterId);
 }
 
 function summonReason(playerId: PlayerId, cardId: string, slotKey: SlotKey): string {

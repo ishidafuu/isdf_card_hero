@@ -3,10 +3,12 @@ import {
   buildDeck,
   deckTextFromCardIds,
   getAllCardDefs,
+  getCardMemberRating,
   getCardDefsByPool,
   getCardDef,
   getCardIconPath,
   getCardPool,
+  getDeckSelectionWeight,
   getMonsterDef,
   getSpecialCardDefs,
   parseDeckText,
@@ -67,6 +69,19 @@ describe("battle prototype rules", () => {
     expect(buildDeck("test", 1).map((card) => card.cardId).join(",")).not.toBe(
       buildDeck("test", 2).map((card) => card.cardId).join(","),
     );
+  });
+
+  it("imports member ratings and uses them for master-aware random deck weights", () => {
+    expect(getCardMemberRating("bomuzo", "black")).toMatchObject({ average: 4.0, votes: 131 });
+    expect(getCardMemberRating("bomuzo", "white")).toMatchObject({ average: 3.8, votes: 132 });
+    expect(getDeckSelectionWeight("polyspinner", "black")).toBeGreaterThan(getDeckSelectionWeight("takokke", "black"));
+
+    const blackDeck = buildDeck("black_weighted", 20260613, { masterId: "black" });
+    const whiteDeck = buildDeck("white_weighted", 20260613, { masterId: "white" });
+
+    expect(validateRandomDeck(blackDeck)).toBe(true);
+    expect(validateRandomDeck(whiteDeck)).toBe(true);
+    expect(blackDeck.map((card) => card.cardId).join(",")).not.toBe(whiteDeck.map((card) => card.cardId).join(","));
   });
 
   it("validates editable fixed deck text by card name and card id", () => {

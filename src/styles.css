@@ -1291,6 +1291,63 @@ button:disabled {
   gap: 12px;
 }
 
+.match-preset-panel {
+  background: #fbfcf8;
+  border: 1px solid #d5ddce;
+  border-radius: 6px;
+  display: grid;
+  gap: 8px;
+  padding: 10px;
+}
+
+.match-preset-panel h4,
+.match-preset-panel p {
+  margin: 0;
+}
+
+.match-preset-panel h4 {
+  font-size: 15px;
+}
+
+.match-preset-panel p,
+.preset-description,
+.deck-preset-controls span {
+  color: #56615d;
+  font-size: 12px;
+  line-height: 1.35;
+}
+
+.preset-control-grid {
+  align-items: end;
+  display: grid;
+  gap: 6px;
+  grid-template-columns: minmax(160px, 1fr) auto minmax(180px, 1.2fr);
+}
+
+.preset-control-grid:last-child {
+  grid-template-columns: minmax(160px, 1fr) auto minmax(160px, 1fr) auto auto;
+}
+
+.preset-control {
+  color: #3f4946;
+  display: grid;
+  font-size: 12px;
+  gap: 4px;
+  min-width: 0;
+}
+
+.preset-control input,
+.preset-control select {
+  background: #fffef9;
+  border: 1px solid #cbd5c5;
+  border-radius: 6px;
+  color: #1d2527;
+  font: inherit;
+  min-height: 32px;
+  min-width: 0;
+  padding: 5px 8px;
+}
+
 .zone-panel-heading {
   align-items: start;
   display: flex;
@@ -1374,6 +1431,17 @@ button:disabled {
   display: flex;
   flex-wrap: wrap;
   gap: 6px;
+}
+
+.deck-preset-controls {
+  align-items: end;
+  display: grid;
+  gap: 6px;
+  grid-template-columns: minmax(170px, 1fr) auto;
+}
+
+.deck-preset-controls span {
+  grid-column: 1 / -1;
 }
 
 .deck-builder-controls select {
@@ -2079,6 +2147,17 @@ button:disabled {
   font-size: 12px;
 }
 
+.battle-history-actions {
+  align-items: center;
+  display: flex;
+  gap: 6px;
+}
+
+.battle-history-actions button {
+  min-height: 28px;
+  padding: 3px 7px;
+}
+
 .battle-history-list {
   display: grid;
   gap: 8px;
@@ -2087,6 +2166,13 @@ button:disabled {
   max-height: 260px;
   overflow: auto;
   padding: 0;
+}
+
+.empty-note {
+  color: #5f6f67;
+  font-size: 12px;
+  line-height: 1.5;
+  margin: 0;
 }
 
 .battle-history-row {

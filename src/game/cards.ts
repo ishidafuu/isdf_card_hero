@@ -1,5 +1,5 @@
 import { CARD_DEFS } from "./cardData";
-import type { CardDef, CardInstance, CardPool, MonsterCardDef } from "./types";
+import type { CardDef, CardInstance, CardPool, MasterId, MemberRating, MemberRatingKey, MonsterCardDef } from "./types";
 
 export { CARD_DEFS };
 
@@ -14,6 +14,8 @@ export type CardPoolFilter = CardPool | "all";
 
 export interface BuildDeckOptions {
   includeSpecial?: boolean;
+  masterId?: MasterId;
+  useMemberRatings?: boolean;
 }
 
 export interface DeckTextParseOptions {
@@ -50,11 +52,12 @@ export function buildDeckCardIds(seed = hashString("deck"), options: BuildDeckOp
   const counts = new Map<string, number>();
   const random = createSeededRandom(seed);
   const cardPool = getCardDefsByPool(options.includeSpecial ? "all" : "normal");
+  const weightForCard = (cardId: string) => deckSelectionWeight(cardId, options);
 
-  addRandomCards(selected, counts, cardIdsByCategory("front", cardPool), DECK_MIN_FRONT, random);
-  addRandomCards(selected, counts, cardIdsByCategory("back", cardPool), DECK_MIN_BACK, random);
-  addRandomCards(selected, counts, cardIdsByCategory("magic", cardPool), DECK_MIN_MAGIC, random);
-  addRandomCards(selected, counts, cardPool.map((def) => def.id), DECK_SIZE - selected.length, random);
+  addRandomCards(selected, counts, cardIdsByCategory("front", cardPool), DECK_MIN_FRONT, random, weightForCard);
+  addRandomCards(selected, counts, cardIdsByCategory("back", cardPool), DECK_MIN_BACK, random, weightForCard);
+  addRandomCards(selected, counts, cardIdsByCategory("magic", cardPool), DECK_MIN_MAGIC, random, weightForCard);
+  addRandomCards(selected, counts, cardPool.map((def) => def.id), DECK_SIZE - selected.length, random, weightForCard);
 
   return selected;
 }
@@ -111,6 +114,23 @@ export function getMonsterDef(cardId: string): MonsterCardDef {
 
 export function getCardName(cardId: string): string {
   return getCardDef(cardId).name;
+}
+
+export function getMemberRatingKeyForMaster(masterId: MasterId): MemberRatingKey {
+  return masterId === "black" ? "proBlack" : "proWhite";
+}
+
+export function getCardMemberRating(cardId: string, context: MasterId | MemberRatingKey): MemberRating | undefined {
+  const key = context === "black" || context === "white" ? getMemberRatingKeyForMaster(context) : context;
+  return getCardDef(cardId).memberRatings?.[key];
+}
+
+export function getCardMemberRatingAverage(cardId: string, context: MasterId | MemberRatingKey): number | undefined {
+  return getCardMemberRating(cardId, context)?.average;
+}
+
+export function getDeckSelectionWeight(cardId: string, masterId: MasterId): number {
+  return deckSelectionWeight(cardId, { masterId });
 }
 
 export function getCardIconPath(cardId: string): string | undefined {
@@ -230,16 +250,46 @@ function addRandomCards(
   pool: string[],
   amount: number,
   random: () => number,
+  weightForCard: (cardId: string) => number = () => 1,
 ): void {
   for (let i = 0; i < amount; i += 1) {
     const eligible = pool.filter((cardId) => (counts.get(cardId) ?? 0) < DECK_MAX_COPIES);
     if (eligible.length === 0) {
       throw new Error("ランダムデッキの候補カードが不足しています");
     }
-    const cardId = eligible[Math.floor(random() * eligible.length)];
+    const cardId = pickWeightedCard(eligible, random, weightForCard);
     selected.push(cardId);
     counts.set(cardId, (counts.get(cardId) ?? 0) + 1);
   }
+}
+
+function pickWeightedCard(pool: string[], random: () => number, weightForCard: (cardId: string) => number): string {
+  const weighted = pool.map((cardId) => ({
+    cardId,
+    weight: Math.max(0.05, finiteNumber(weightForCard(cardId), 1)),
+  }));
+  const total = weighted.reduce((sum, entry) => sum + entry.weight, 0);
+  let cursor = random() * total;
+  for (const entry of weighted) {
+    cursor -= entry.weight;
+    if (cursor <= 0) {
+      return entry.cardId;
+    }
+  }
+  return weighted.at(-1)?.cardId ?? pool[0];
+}
+
+function deckSelectionWeight(cardId: string, options: BuildDeckOptions): number {
+  if (!options.masterId || options.useMemberRatings === false) {
+    return 1;
+  }
+  const rating = getCardMemberRating(cardId, options.masterId);
+  if (!rating) {
+    return 1;
+  }
+  const confidence = Math.min(1, rating.votes / 80);
+  const influence = 0.45 + confidence * 0.25;
+  return clampNumber(1 + (rating.average - 2.5) * influence, 0.25, 2.75);
 }
 
 function cardIdsByCategory(category: DeckCategory, cardPool: CardDef[]): string[] {
@@ -285,6 +335,14 @@ function createSeededRandom(seed: number): () => number {
     next ^= next + Math.imul(next ^ (next >>> 7), next | 61);
     return ((next ^ (next >>> 14)) >>> 0) / 4294967296;
   };
+}
+
+function finiteNumber(value: number, fallback: number): number {
+  return Number.isFinite(value) ? value : fallback;
+}
+
+function clampNumber(value: number, min: number, max: number): number {
+  return Math.min(max, Math.max(min, value));
 }
 
 function hashString(value: string): number {

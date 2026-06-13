@@ -1,4 +1,4 @@
-import { getCardDef, getCardDefsByPool, getCardPool, getMonsterDef } from "./cards";
+import { getCardDef, getCardDefsByPool, getCardMemberRatingAverage, getCardPool, getMonsterDef } from "./cards";
 import { FIELD_ORDER, PLAYER_SLOT_ORDER } from "./ruleEngine/constants";
 import { isOpponentMasterInCommandRange, isTargetInCommandRange } from "./ruleEngine/field";
 import type {
@@ -216,7 +216,7 @@ export function evaluateHandCardKeepValue(state: GameState, card: Pick<CardInsta
   const frontCount = ownSlots.filter((slotKey) => state.slots[slotKey].row === "front" && state.slots[slotKey].monster).length;
   const backCount = ownSlots.filter((slotKey) => state.slots[slotKey].row === "back" && state.slots[slotKey].monster).length;
   const roleNeed = def.role === "front" ? Math.max(0, 2 - frontCount) : Math.max(0, 2 - backCount);
-  return 30 + def.maxLevel * 12 + (def.role === "front" ? 8 : 10) + roleNeed * 14;
+  return 30 + def.maxLevel * 12 + (def.role === "front" ? 8 : 10) + roleNeed * 14 + memberRatingValueBonus(card.cardId, state.players[state.currentPlayer].masterId);
 }
 
 export function evaluateHandMonsterPlacementValue(state: GameState, cardId: string, slotKey: SlotKey): number {
@@ -232,7 +232,12 @@ export function evaluateHandMonsterPlacementValue(state: GameState, cardId: stri
   const slot = state.slots[slotKey];
   const placement = def.role === slot.row ? 22 : -18;
   const laneSupport = def.role === "back" && slot.row === "back" && state.slots[frontSlotFor(slot)].monster ? 10 : 0;
-  return 30 + def.maxLevel * 12 + firstLevel.maxHp * 6 + placement + laneSupport;
+  return 30 + def.maxLevel * 12 + firstLevel.maxHp * 6 + placement + laneSupport + memberRatingValueBonus(cardId, state.players[state.currentPlayer].masterId);
+}
+
+export function memberRatingValueBonus(cardId: string, masterId: GameState["players"][PlayerId]["masterId"]): number {
+  const average = getCardMemberRatingAverage(cardId, masterId);
+  return average === undefined ? 0 : Math.round((average - 2.5) * 6);
 }
 
 export function estimateCommandPowerForEvaluation(monster: MonsterState, command: CommandDef): number {

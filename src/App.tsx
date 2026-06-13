@@ -9,6 +9,8 @@ import {
   getAllCardDefs,
   getCardDef,
   getCardIconPath,
+  getCardMemberRating,
+  getCardMemberRatingAverage,
   getCardName,
   getCardPool,
   getMonsterDef,
@@ -51,6 +53,7 @@ import {
 } from "./game/rules";
 import { getMasterActionDef, getMasterName, MASTER_IDS } from "./game/masters";
 import { CPU_AI_PROFILES, type CpuAiProfile, type CpuAiProfiles } from "./game/cpuAi";
+import { buildDeckPresetCardIds, DECK_PRESETS, deckPresetAllowsSpecial, type DeckPresetId } from "./game/deckPresets";
 import { evaluateBoardUnit, evaluateCard, type UnitEvaluation } from "./game/unitEvaluation";
 import type { CardInstance, CardPool, CommandDef, GameState, MagicAction, MagicCardDef, MagicTargetKind, MasterActionId, MasterId, PlayerId, SlotKey, Target } from "./game/types";
 import type { DeckValidationSummary } from "./game/cards";
@@ -95,6 +98,9 @@ const AUTO_STEP_DELAY_STEP_MS = 50;
 const AUTO_STEP_DELAY_DEFAULT_MS = 650;
 const MAX_VISIBLE_RESOURCE_ICONS = 10;
 const DEFAULT_BATTLE_SEED = 20260612;
+const BATTLE_HISTORY_STORAGE_KEY = "card-hero:battle-history:v1";
+const BATTLE_PRESETS_STORAGE_KEY = "card-hero:battle-presets:v1";
+const BATTLE_HISTORY_LIMIT = 20;
 
 type Selection =
   | { kind: "hand"; instanceId: string }
@@ -128,7 +134,7 @@ type LogFilter = "all" | "battle" | "damage" | "support" | "turn" | "cpu";
 type BattleMode = "player-vs-cpu" | "cpu-vs-cpu";
 type TargetRole = "ally" | "enemy" | "move" | "summon" | "empty" | "master";
 type CatalogCategoryFilter = "all" | "front" | "back" | "magic";
-type CatalogSortKey = "source" | "evaluation" | "name" | "offense" | "defense" | "synergy" | "hp" | "cost";
+type CatalogSortKey = "source" | "evaluation" | "proBlack" | "proWhite" | "name" | "offense" | "defense" | "synergy" | "hp" | "cost";
 
 interface BattleSettings {
   seed: number;
@@ -147,6 +153,7 @@ interface DeckSettings {
 
 interface BattleHistoryEntry {
   id: string;
+  createdAt: string;
   seed: number;
   firstPlayer: PlayerId;
   mode: BattleMode;
@@ -161,6 +168,22 @@ interface BattleHistoryEntry {
   cpuDeck: number;
   deckout: boolean;
   longGame: boolean;
+}
+
+interface SavedBattlePreset {
+  id: string;
+  name: string;
+  createdAt: string;
+  settings: BattleSettings;
+  deckSettings: DeckSettings;
+}
+
+interface BuiltInMatchPreset {
+  id: string;
+  name: string;
+  description: string;
+  create: () => { settings: BattleSettings; deckSettings: DeckSettings };
+  deckPresetIds?: Record<PlayerId, DeckPresetId>;
 }
 
 interface DeckDraft {
@@ -218,6 +241,16 @@ function aiProfileSummary(profiles: CpuAiProfiles): string {
   return `P ${profiles.player} / C ${profiles.cpu}`;
 }
 
+function historyDeckSummary(settings: DeckSettings): string {
+  return PLAYER_IDS
+    .map((playerId) => {
+      const fixed = settings.fixed[playerId] ? "固定" : "ランダム";
+      const special = settings.allowSpecial[playerId] ? "+S" : "";
+      return `${playerId === "player" ? "P" : "C"} ${fixed}${special}`;
+    })
+    .join(" / ");
+}
+
 function createBattleSettings(seed: number): BattleSettings {
   return {
     seed,
@@ -240,6 +273,63 @@ function createDeckSettings(seed: number): DeckSettings {
   };
 }
 
+function createDeckSettingsFromPreset(playerPresetId: DeckPresetId, cpuPresetId = playerPresetId): DeckSettings {
+  return {
+    fixed: { player: true, cpu: true },
+    allowSpecial: {
+      player: deckPresetAllowsSpecial(playerPresetId),
+      cpu: deckPresetAllowsSpecial(cpuPresetId),
+    },
+    text: {
+      player: deckTextFromCardIds(buildDeckPresetCardIds(playerPresetId)),
+      cpu: deckTextFromCardIds(buildDeckPresetCardIds(cpuPresetId)),
+    },
+  };
+}
+
+const BUILT_IN_MATCH_PRESETS: BuiltInMatchPreset[] = [
+  {
+    id: "standard-random",
+    name: "通常ランダム",
+    description: "通常カードのみ。Player vs CPU、ホワイト同士、stable AI。",
+    create: () => ({
+      settings: createBattleSettings(DEFAULT_BATTLE_SEED),
+      deckSettings: createDeckSettings(DEFAULT_BATTLE_SEED),
+    }),
+    deckPresetIds: { player: "balanced-normal", cpu: "balanced-normal" },
+  },
+  {
+    id: "black-cpu-duel",
+    name: "ブラックCPU戦",
+    description: "CPU vs CPU、ブラック同士、strong AI、通常固定デッキ。",
+    create: () => ({
+      settings: {
+        ...createBattleSettings(640),
+        seedInput: "640",
+        mode: "cpu-vs-cpu",
+        masterIds: { player: "black", cpu: "black" },
+        aiProfiles: { player: "strong", cpu: "strong" },
+      },
+      deckSettings: createDeckSettingsFromPreset("black-pressure"),
+    }),
+    deckPresetIds: { player: "black-pressure", cpu: "black-pressure" },
+  },
+  {
+    id: "special-showcase",
+    name: "スペシャル検証",
+    description: "スペシャルON固定デッキでスーパー化と代表効果を確認する。",
+    create: () => ({
+      settings: {
+        ...createBattleSettings(620),
+        seedInput: "620",
+        mode: "player-vs-cpu",
+      },
+      deckSettings: createDeckSettingsFromPreset("special-showcase"),
+    }),
+    deckPresetIds: { player: "special-showcase", cpu: "special-showcase" },
+  },
+];
+
 function createGameFromSettings(settings: BattleSettings, deckSettings: DeckSettings): GameState {
   const playerDeck = createDeckDraft(settings, deckSettings, "player");
   const cpuDeck = createDeckDraft(settings, deckSettings, "cpu");
@@ -254,7 +344,7 @@ function createGameFromSettings(settings: BattleSettings, deckSettings: DeckSett
 
 function createDeckDraft(settings: BattleSettings, deckSettings: DeckSettings, playerId: PlayerId): DeckDraft {
   if (!deckSettings.fixed[playerId]) {
-    const cardIds = generatedDeckCardIds(playerId, settings.seed);
+    const cardIds = generatedDeckCardIds(playerId, settings.seed, settings.masterIds[playerId]);
     return {
       playerId,
       fixed: false,
@@ -308,8 +398,10 @@ function createBattleHistoryEntry(
     return undefined;
   }
   const deckout = game.log.some((entry) => entry.includes("山札切れ"));
+  const createdAt = new Date().toISOString();
   return {
-    id: `${settings.seed}_${game.turnNumber}_${game.winner}_${game.log.length}`,
+    id: `history_${createdAt}_${settings.seed}_${game.turnNumber}_${game.winner}_${game.log.length}`,
+    createdAt,
     seed: settings.seed,
     firstPlayer: settings.firstPlayer,
     mode: settings.mode,
@@ -327,12 +419,60 @@ function createBattleHistoryEntry(
   };
 }
 
-function generatedDeckCardIds(playerId: PlayerId, seed: number): string[] {
-  return buildDeckCardIds(seed + (playerId === "player" ? 101 : 202));
+function createBattleResultKey(game: GameState, settings: BattleSettings): string {
+  return [
+    settings.seed,
+    settings.firstPlayer,
+    settings.mode,
+    settings.masterIds.player,
+    settings.masterIds.cpu,
+    settings.aiProfiles.player,
+    settings.aiProfiles.cpu,
+    game.turnNumber,
+    game.winner,
+    game.log.length,
+    game.log.at(-1) ?? "",
+  ].join("|");
 }
 
-function generatedDeckText(playerId: PlayerId, seed: number): string {
-  return deckTextFromCardIds(generatedDeckCardIds(playerId, seed));
+function loadBattleHistory(): BattleHistoryEntry[] {
+  return loadJsonArray<BattleHistoryEntry>(BATTLE_HISTORY_STORAGE_KEY).slice(0, BATTLE_HISTORY_LIMIT);
+}
+
+function loadSavedBattlePresets(): SavedBattlePreset[] {
+  return loadJsonArray<SavedBattlePreset>(BATTLE_PRESETS_STORAGE_KEY);
+}
+
+function saveJsonArray<T>(key: string, value: T[]): void {
+  if (typeof window === "undefined") {
+    return;
+  }
+  try {
+    window.localStorage.setItem(key, JSON.stringify(value));
+  } catch {
+    // localStorage is a convenience cache; gameplay must continue even when it is unavailable.
+  }
+}
+
+function loadJsonArray<T>(key: string): T[] {
+  if (typeof window === "undefined") {
+    return [];
+  }
+  try {
+    const raw = window.localStorage.getItem(key);
+    const parsed = raw ? JSON.parse(raw) : [];
+    return Array.isArray(parsed) ? parsed : [];
+  } catch {
+    return [];
+  }
+}
+
+function generatedDeckCardIds(playerId: PlayerId, seed: number, masterId: MasterId): string[] {
+  return buildDeckCardIds(seed + (playerId === "player" ? 101 : 202), { masterId });
+}
+
+function generatedDeckText(playerId: PlayerId, seed: number, masterId: MasterId = "white"): string {
+  return deckTextFromCardIds(generatedDeckCardIds(playerId, seed, masterId));
 }
 
 function createDeckPickerIds(): Record<PlayerId, string> {
@@ -365,7 +505,15 @@ export function App() {
   const [zoneView, setZoneView] = useState<ZoneView | undefined>();
   const [logFilter, setLogFilter] = useState<LogFilter>("all");
   const [selectedLogIndex, setSelectedLogIndex] = useState<number | undefined>();
-  const [battleHistory, setBattleHistory] = useState<BattleHistoryEntry[]>([]);
+  const [battleHistory, setBattleHistory] = useState<BattleHistoryEntry[]>(() => loadBattleHistory());
+  const [savedBattlePresets, setSavedBattlePresets] = useState<SavedBattlePreset[]>(() => loadSavedBattlePresets());
+  const [matchPresetId, setMatchPresetId] = useState<string>(BUILT_IN_MATCH_PRESETS[0]?.id ?? "");
+  const [savedPresetId, setSavedPresetId] = useState<string>("");
+  const [battlePresetName, setBattlePresetName] = useState("My Battle Preset");
+  const [deckPresetPickerIds, setDeckPresetPickerIds] = useState<Record<PlayerId, DeckPresetId>>({
+    player: "balanced-normal",
+    cpu: "balanced-normal",
+  });
   const previousGameRef = useRef<GameState>(game);
   const visualEffectIdRef = useRef(0);
   const recordedResultKeyRef = useRef<string | undefined>(undefined);
@@ -508,15 +656,21 @@ export function App() {
       recordedResultKeyRef.current = undefined;
       return;
     }
-    if (recordedResultKeyRef.current === entry.id) {
+    const resultKey = createBattleResultKey(game, activeBattleSettingsRef.current);
+    if (recordedResultKeyRef.current === resultKey) {
       return;
     }
-    recordedResultKeyRef.current = entry.id;
-    setBattleHistory((previous) => [
-      entry,
-      ...previous.filter((candidate) => candidate.id !== entry.id),
-    ].slice(0, 10));
+    recordedResultKeyRef.current = resultKey;
+    setBattleHistory((previous) => [entry, ...previous].slice(0, BATTLE_HISTORY_LIMIT));
   }, [game]);
+
+  useEffect(() => {
+    saveJsonArray(BATTLE_HISTORY_STORAGE_KEY, battleHistory);
+  }, [battleHistory]);
+
+  useEffect(() => {
+    saveJsonArray(BATTLE_PRESETS_STORAGE_KEY, savedBattlePresets);
+  }, [savedBattlePresets]);
 
   useEffect(() => () => clearPointerDrag(), []);
 
@@ -774,6 +928,74 @@ export function App() {
     startNewGame(nextSettings, nextDeckSettings);
   }
 
+  function handleApplyBuiltInMatchPreset(presetId: string) {
+    const preset = BUILT_IN_MATCH_PRESETS.find((candidate) => candidate.id === presetId);
+    if (!preset) {
+      return;
+    }
+    const next = preset.create();
+    setMatchPresetId(presetId);
+    if (preset.deckPresetIds) {
+      setDeckPresetPickerIds({ ...preset.deckPresetIds });
+    }
+    setBattleSettings(next.settings);
+    setDeckSettings(next.deckSettings);
+    startNewGame(next.settings, next.deckSettings);
+  }
+
+  function handleSaveBattlePreset() {
+    const name = battlePresetName.trim() || "Battle Preset";
+    const now = new Date().toISOString();
+    const preset: SavedBattlePreset = {
+      id: `preset_${Date.now()}`,
+      name,
+      createdAt: now,
+      settings: cloneBattleSettings(battleSettings),
+      deckSettings: cloneDeckSettings(deckSettings),
+    };
+    setSavedBattlePresets((previous) => [preset, ...previous].slice(0, 20));
+    setSavedPresetId(preset.id);
+    setBattlePresetName(name);
+  }
+
+  function handleLoadSavedBattlePreset(presetId: string) {
+    const preset = savedBattlePresets.find((candidate) => candidate.id === presetId);
+    if (!preset) {
+      return;
+    }
+    const nextSettings = cloneBattleSettings(preset.settings);
+    const nextDeckSettings = cloneDeckSettings(preset.deckSettings);
+    setSavedPresetId(preset.id);
+    setBattleSettings(nextSettings);
+    setDeckSettings(nextDeckSettings);
+    startNewGame(nextSettings, nextDeckSettings);
+  }
+
+  function handleDeleteSavedBattlePreset(presetId: string) {
+    setSavedBattlePresets((previous) => previous.filter((preset) => preset.id !== presetId));
+    if (savedPresetId === presetId) {
+      setSavedPresetId("");
+    }
+  }
+
+  function handleClearBattleHistory() {
+    setBattleHistory([]);
+    recordedResultKeyRef.current = undefined;
+  }
+
+  function handleDeckPresetPickerChange(playerId: PlayerId, presetId: DeckPresetId) {
+    setDeckPresetPickerIds((previous) => ({ ...previous, [playerId]: presetId }));
+  }
+
+  function handleApplyDeckPreset(playerId: PlayerId, presetId: DeckPresetId) {
+    setDeckSettings((previous) => ({
+      ...previous,
+      fixed: { ...previous.fixed, [playerId]: true },
+      allowSpecial: { ...previous.allowSpecial, [playerId]: deckPresetAllowsSpecial(presetId) },
+      text: { ...previous.text, [playerId]: deckTextFromCardIds(buildDeckPresetCardIds(presetId)) },
+    }));
+  }
+
   function handleBattleSeedChange(value: string) {
     const parsed = normalizeSeedInput(value, battleSettings.seed);
     setBattleSettings({ ...battleSettings, seedInput: value, seed: parsed });
@@ -825,7 +1047,7 @@ export function App() {
       fixed: { ...previous.fixed, [playerId]: fixed },
       text: {
         ...previous.text,
-        [playerId]: previous.text[playerId] || generatedDeckText(playerId, battleSettings.seed),
+        [playerId]: previous.text[playerId] || generatedDeckText(playerId, battleSettings.seed, battleSettings.masterIds[playerId]),
       },
     }));
   }
@@ -855,7 +1077,7 @@ export function App() {
     setDeckSettings((previous) => ({
       ...previous,
       fixed: { ...previous.fixed, [playerId]: true },
-      text: { ...previous.text, [playerId]: generatedDeckText(playerId, battleSettings.seed) },
+      text: { ...previous.text, [playerId]: generatedDeckText(playerId, battleSettings.seed, battleSettings.masterIds[playerId]) },
     }));
   }
 
@@ -1383,7 +1605,20 @@ export function App() {
                 drafts={deckDrafts}
                 cardOptions={deckCardOptions}
                 pickerIds={deckPickerIds}
+                deckPresetPickerIds={deckPresetPickerIds}
+                builtInMatchPresets={BUILT_IN_MATCH_PRESETS}
+                matchPresetId={matchPresetId}
+                savedBattlePresets={savedBattlePresets}
+                savedPresetId={savedPresetId}
+                battlePresetName={battlePresetName}
                 onClose={() => setZoneView(undefined)}
+                onBuiltInMatchPresetChange={setMatchPresetId}
+                onApplyBuiltInMatchPreset={handleApplyBuiltInMatchPreset}
+                onSavedPresetChange={setSavedPresetId}
+                onBattlePresetNameChange={setBattlePresetName}
+                onSaveBattlePreset={handleSaveBattlePreset}
+                onLoadSavedBattlePreset={handleLoadSavedBattlePreset}
+                onDeleteSavedBattlePreset={handleDeleteSavedBattlePreset}
                 onFixedChange={handleDeckFixedChange}
                 onAllowSpecialChange={handleDeckAllowSpecialChange}
                 onTextChange={handleDeckTextChange}
@@ -1391,6 +1626,8 @@ export function App() {
                 onPickerChange={handleDeckPickerChange}
                 onAddCard={handleAddDeckCard}
                 onRemoveCard={handleRemoveDeckCard}
+                onDeckPresetPickerChange={handleDeckPresetPickerChange}
+                onApplyDeckPreset={handleApplyDeckPreset}
               />
             ) : zoneView ? (
               <CardZonePanel
@@ -1795,9 +2032,7 @@ export function App() {
               )}
             </section>
           )}
-          {battleHistory.length > 0 && (
-            <BattleHistoryPanel history={battleHistory} onReplay={handleReplayHistory} />
-          )}
+          <BattleHistoryPanel history={battleHistory} onReplay={handleReplayHistory} onClear={handleClearBattleHistory} />
         </aside>
       </section>
     </main>
@@ -2092,18 +2327,28 @@ function BattleResultSummary({ game }: { game: GameState }) {
 function BattleHistoryPanel({
   history,
   onReplay,
+  onClear,
 }: {
   history: BattleHistoryEntry[];
   onReplay: (entry: BattleHistoryEntry) => void;
+  onClear: () => void;
 }) {
   return (
     <section className="battle-history-panel">
       <div className="battle-history-heading">
         <h2><Icon icon="🧾" /> Battle History</h2>
-        <span>{history.length}/10</span>
+        <div className="battle-history-actions">
+          <span>{history.length}/{BATTLE_HISTORY_LIMIT}</span>
+          <button type="button" onClick={onClear} disabled={history.length === 0}>
+            <Icon icon="🗑️" /> Clear
+          </button>
+        </div>
       </div>
-      <ol className="battle-history-list">
-        {history.map((entry) => (
+      {history.length === 0 ? (
+        <p className="empty-note">対戦終了後にseed、先攻、AI、マスター、デッキ条件がここに保存されます。</p>
+      ) : (
+        <ol className="battle-history-list">
+          {history.map((entry) => (
           <li className="battle-history-row" key={entry.id}>
             <div>
               <strong>
@@ -2114,6 +2359,7 @@ function BattleHistoryPanel({
                 <span>先攻 {playerLabel(entry.firstPlayer)}</span>
                 <span>AI {aiProfileSummary(entry.aiProfiles)}</span>
                 <span>P {getMasterName(entry.masterIds.player)} / C {getMasterName(entry.masterIds.cpu)}</span>
+                <span>{historyDeckSummary(entry.deckSettings)}</span>
               </div>
               <div className="battle-result-summary">
                 <span><Icon icon="⏱️" /> Turn {entry.turns}</span>
@@ -2127,8 +2373,9 @@ function BattleHistoryPanel({
               <Icon icon="🔁" /> 再現
             </button>
           </li>
-        ))}
-      </ol>
+          ))}
+        </ol>
+      )}
     </section>
   );
 }
@@ -2436,7 +2683,20 @@ interface DeckSetupPanelProps {
   drafts: Record<PlayerId, DeckDraft>;
   cardOptions: Record<PlayerId, DeckCardOption[]>;
   pickerIds: Record<PlayerId, string>;
+  deckPresetPickerIds: Record<PlayerId, DeckPresetId>;
+  builtInMatchPresets: BuiltInMatchPreset[];
+  matchPresetId: string;
+  savedBattlePresets: SavedBattlePreset[];
+  savedPresetId: string;
+  battlePresetName: string;
   onClose: () => void;
+  onBuiltInMatchPresetChange: (presetId: string) => void;
+  onApplyBuiltInMatchPreset: (presetId: string) => void;
+  onSavedPresetChange: (presetId: string) => void;
+  onBattlePresetNameChange: (name: string) => void;
+  onSaveBattlePreset: () => void;
+  onLoadSavedBattlePreset: (presetId: string) => void;
+  onDeleteSavedBattlePreset: (presetId: string) => void;
   onFixedChange: (playerId: PlayerId, fixed: boolean) => void;
   onAllowSpecialChange: (playerId: PlayerId, allowSpecial: boolean) => void;
   onTextChange: (playerId: PlayerId, text: string) => void;
@@ -2444,6 +2704,8 @@ interface DeckSetupPanelProps {
   onPickerChange: (playerId: PlayerId, cardId: string) => void;
   onAddCard: (playerId: PlayerId, cardId: string) => void;
   onRemoveCard: (playerId: PlayerId, cardId: string) => void;
+  onDeckPresetPickerChange: (playerId: PlayerId, presetId: DeckPresetId) => void;
+  onApplyDeckPreset: (playerId: PlayerId, presetId: DeckPresetId) => void;
 }
 
 function DeckSetupPanel({
@@ -2452,7 +2714,20 @@ function DeckSetupPanel({
   drafts,
   cardOptions,
   pickerIds,
+  deckPresetPickerIds,
+  builtInMatchPresets,
+  matchPresetId,
+  savedBattlePresets,
+  savedPresetId,
+  battlePresetName,
   onClose,
+  onBuiltInMatchPresetChange,
+  onApplyBuiltInMatchPreset,
+  onSavedPresetChange,
+  onBattlePresetNameChange,
+  onSaveBattlePreset,
+  onLoadSavedBattlePreset,
+  onDeleteSavedBattlePreset,
   onFixedChange,
   onAllowSpecialChange,
   onTextChange,
@@ -2460,6 +2735,8 @@ function DeckSetupPanel({
   onPickerChange,
   onAddCard,
   onRemoveCard,
+  onDeckPresetPickerChange,
+  onApplyDeckPreset,
 }: DeckSetupPanelProps) {
   return (
     <section className="zone-panel deck-setup-panel">
@@ -2472,6 +2749,20 @@ function DeckSetupPanel({
           <Icon icon="✕" /> Close
         </button>
       </div>
+      <MatchPresetPanel
+        builtInMatchPresets={builtInMatchPresets}
+        matchPresetId={matchPresetId}
+        savedBattlePresets={savedBattlePresets}
+        savedPresetId={savedPresetId}
+        battlePresetName={battlePresetName}
+        onBuiltInMatchPresetChange={onBuiltInMatchPresetChange}
+        onApplyBuiltInMatchPreset={onApplyBuiltInMatchPreset}
+        onSavedPresetChange={onSavedPresetChange}
+        onBattlePresetNameChange={onBattlePresetNameChange}
+        onSaveBattlePreset={onSaveBattlePreset}
+        onLoadSavedBattlePreset={onLoadSavedBattlePreset}
+        onDeleteSavedBattlePreset={onDeleteSavedBattlePreset}
+      />
       <div className="deck-setup-grid">
         {PLAYER_IDS.map((playerId) => {
           const draft = drafts[playerId];
@@ -2483,7 +2774,7 @@ function DeckSetupPanel({
                 <div>
                   <h4>{playerLabel(playerId)} Deck</h4>
                   <p>
-                    {fixed ? "固定デッキ" : `ランダム生成 / seed ${battleSettings.seed}`} /
+                    {fixed ? "固定デッキ" : `${getMasterName(battleSettings.masterIds[playerId])}評価ランダム / seed ${battleSettings.seed}`} /
                     Special {deckSettings.allowSpecial[playerId] ? "ON" : "OFF"}
                   </p>
                 </div>
@@ -2507,6 +2798,11 @@ function DeckSetupPanel({
                 </div>
               </div>
               <DeckSummaryView summary={summary} />
+              <DeckPresetControls
+                presetId={deckPresetPickerIds[playerId]}
+                onPresetChange={(presetId) => onDeckPresetPickerChange(playerId, presetId)}
+                onApplyPreset={() => onApplyDeckPreset(playerId, deckPresetPickerIds[playerId])}
+              />
               <div className="deck-editor-actions">
                 <button type="button" onClick={() => onUseGeneratedDeck(playerId)}>
                   <Icon icon="📌" /> 現在seedの内容を固定
@@ -2557,6 +2853,124 @@ function DeckSetupPanel({
         })}
       </div>
     </section>
+  );
+}
+
+function MatchPresetPanel({
+  builtInMatchPresets,
+  matchPresetId,
+  savedBattlePresets,
+  savedPresetId,
+  battlePresetName,
+  onBuiltInMatchPresetChange,
+  onApplyBuiltInMatchPreset,
+  onSavedPresetChange,
+  onBattlePresetNameChange,
+  onSaveBattlePreset,
+  onLoadSavedBattlePreset,
+  onDeleteSavedBattlePreset,
+}: {
+  builtInMatchPresets: BuiltInMatchPreset[];
+  matchPresetId: string;
+  savedBattlePresets: SavedBattlePreset[];
+  savedPresetId: string;
+  battlePresetName: string;
+  onBuiltInMatchPresetChange: (presetId: string) => void;
+  onApplyBuiltInMatchPreset: (presetId: string) => void;
+  onSavedPresetChange: (presetId: string) => void;
+  onBattlePresetNameChange: (name: string) => void;
+  onSaveBattlePreset: () => void;
+  onLoadSavedBattlePreset: (presetId: string) => void;
+  onDeleteSavedBattlePreset: (presetId: string) => void;
+}) {
+  const selectedBuiltIn = builtInMatchPresets.find((preset) => preset.id === matchPresetId) ?? builtInMatchPresets[0];
+  const selectedSaved = savedBattlePresets.find((preset) => preset.id === savedPresetId);
+
+  return (
+    <section className="match-preset-panel">
+      <div>
+        <h4><Icon icon="🎛️" /> Battle Presets</h4>
+        <p>対戦条件、マスター、AI、デッキ条件をまとめて再現できます。</p>
+      </div>
+      <div className="preset-control-grid">
+        <label className="preset-control">
+          Built-in
+          <select
+            value={selectedBuiltIn?.id ?? ""}
+            onChange={(event) => onBuiltInMatchPresetChange(event.target.value)}
+          >
+            {builtInMatchPresets.map((preset) => (
+              <option value={preset.id} key={preset.id}>{preset.name}</option>
+            ))}
+          </select>
+        </label>
+        <button type="button" onClick={() => selectedBuiltIn && onApplyBuiltInMatchPreset(selectedBuiltIn.id)}>
+          <Icon icon="▶️" /> 読込
+        </button>
+        <span className="preset-description">{selectedBuiltIn?.description}</span>
+      </div>
+      <div className="preset-control-grid">
+        <label className="preset-control">
+          Save name
+          <input
+            type="text"
+            value={battlePresetName}
+            onChange={(event) => onBattlePresetNameChange(event.target.value)}
+          />
+        </label>
+        <button type="button" onClick={onSaveBattlePreset}>
+          <Icon icon="💾" /> 保存
+        </button>
+        <label className="preset-control">
+          Saved
+          <select
+            value={savedPresetId}
+            onChange={(event) => onSavedPresetChange(event.target.value)}
+            disabled={savedBattlePresets.length === 0}
+          >
+            <option value="">保存なし</option>
+            {savedBattlePresets.map((preset) => (
+              <option value={preset.id} key={preset.id}>{preset.name}</option>
+            ))}
+          </select>
+        </label>
+        <button type="button" onClick={() => savedPresetId && onLoadSavedBattlePreset(savedPresetId)} disabled={!selectedSaved}>
+          <Icon icon="🔁" /> 再現
+        </button>
+        <button type="button" onClick={() => savedPresetId && onDeleteSavedBattlePreset(savedPresetId)} disabled={!selectedSaved}>
+          <Icon icon="🗑️" /> 削除
+        </button>
+      </div>
+    </section>
+  );
+}
+
+function DeckPresetControls({
+  presetId,
+  onPresetChange,
+  onApplyPreset,
+}: {
+  presetId: DeckPresetId;
+  onPresetChange: (presetId: DeckPresetId) => void;
+  onApplyPreset: () => void;
+}) {
+  const preset = DECK_PRESETS.find((candidate) => candidate.id === presetId) ?? DECK_PRESETS[0];
+
+  return (
+    <div className="deck-preset-controls">
+      <label className="preset-control">
+        Preset
+        <select value={preset.id} onChange={(event) => onPresetChange(event.target.value as DeckPresetId)}>
+          {DECK_PRESETS.map((candidate) => (
+            <option value={candidate.id} key={candidate.id}>{candidate.name}</option>
+          ))}
+        </select>
+      </label>
+      <button type="button" onClick={onApplyPreset}>
+        <Icon icon="📥" /> デッキ読込
+      </button>
+      <span>{preset.description}</span>
+    </div>
   );
 }
 
@@ -2870,6 +3284,8 @@ function CardCatalogPanel({ game, onClose }: { game: GameState; onClose: () => v
           <select value={sortKey} onChange={(event) => setSortKey(event.target.value as CatalogSortKey)}>
             <option value="source">No.</option>
             <option value="evaluation">評価</option>
+            <option value="proBlack">PRO黒評価</option>
+            <option value="proWhite">PRO白評価</option>
             <option value="offense">攻撃</option>
             <option value="defense">耐久</option>
             <option value="synergy">効果</option>
@@ -2958,6 +3374,12 @@ function compareCatalogRows(
   if (sortKey === "evaluation") {
     return b.evaluation.total - a.evaluation.total || sourceOrder(a.card) - sourceOrder(b.card);
   }
+  if (sortKey === "proBlack") {
+    return memberRatingSortValue(b.card.id, "black") - memberRatingSortValue(a.card.id, "black") || sourceOrder(a.card) - sourceOrder(b.card);
+  }
+  if (sortKey === "proWhite") {
+    return memberRatingSortValue(b.card.id, "white") - memberRatingSortValue(a.card.id, "white") || sourceOrder(a.card) - sourceOrder(b.card);
+  }
   if (sortKey === "offense") {
     return b.evaluation.offense - a.evaluation.offense || b.evaluation.total - a.evaluation.total;
   }
@@ -2981,6 +3403,10 @@ function catalogCategory(card: ReturnType<typeof getCardDef>): CatalogCategoryFi
     return "magic";
   }
   return card.role;
+}
+
+function memberRatingSortValue(cardId: string, masterId: MasterId): number {
+  return getCardMemberRatingAverage(cardId, masterId) ?? 0;
 }
 
 function catalogCategoryFilterLabel(filter: CatalogCategoryFilter): string {
@@ -3987,6 +4413,7 @@ function CardDetail({ cardId, game, slotKey, showTitle = true }: CardDetailProps
           <span className="card-chip magic">✨ 魔法</span>
           <span><Icon icon="🪨" /> Cost {def.cost}</span>
           <span>{targetKindsLabel(def.targetKinds)}</span>
+          <MemberRatingChips cardId={def.id} />
         </div>
         <EffectBreakdown
           items={[
@@ -4011,6 +4438,7 @@ function CardDetail({ cardId, game, slotKey, showTitle = true }: CardDetailProps
         <span>{getCardPool(def) === "special" ? <><Icon icon="✨" /> {superEvolutionText(def)}</> : <><Icon icon="🪨" /> 召喚 1</>}</span>
         <span><Icon icon="✨" /> MaxLv {def.maxLevel}</span>
         {def.actionLimit && <span><Icon icon="⚡" /> {def.actionLimit}回行動</span>}
+        <MemberRatingChips cardId={def.id} />
       </div>
       <CardNotes card={def} />
       <UnitEvaluationPanel evaluation={evaluation} title={boardEvaluation ? "盤面評価" : "カード評価"} />
@@ -4036,6 +4464,24 @@ function CardDetail({ cardId, game, slotKey, showTitle = true }: CardDetailProps
           </div>
         ))}
       </div>
+    </>
+  );
+}
+
+function MemberRatingChips({ cardId }: { cardId: string }) {
+  const ratings = [
+    ["PRO黒", getCardMemberRating(cardId, "black")],
+    ["PRO白", getCardMemberRating(cardId, "white")],
+  ] as const;
+  return (
+    <>
+      {ratings.map(([label, rating]) =>
+        rating ? (
+          <span className="card-chip" title={`部員評価 ${label} / ${rating.votes}票`} key={label}>
+            {label} {rating.average.toFixed(1)}
+          </span>
+        ) : null,
+      )}
     </>
   );
 }

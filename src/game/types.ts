@@ -1,5 +1,6 @@
 export type PlayerId = "player" | "cpu";
 export type MasterId = "white" | "black";
+export type MemberRatingKey = "spd" | "proBlack" | "proWhite";
 export type Row = "front" | "back";
 export type Lane = "left" | "right";
 export type SlotKey = `${PlayerId}_${Row}_${Lane}`;
@@ -26,6 +27,13 @@ export interface CardInstance {
   instanceId: string;
   cardId: string;
 }
+
+export interface MemberRating {
+  average: number;
+  votes: number;
+}
+
+export type MemberRatings = Partial<Record<MemberRatingKey, MemberRating>>;
 
 export interface CommandDef {
   id: string;
@@ -58,6 +66,7 @@ export interface MonsterCardDef {
   sourceUrl?: string;
   icon?: string;
   rarity?: number;
+  memberRatings?: MemberRatings;
   catchcopy?: string;
   notes?: string[];
   levels: MonsterLevelDef[];
@@ -75,6 +84,7 @@ export interface MagicCardDef {
   sourceUrl?: string;
   icon?: string;
   rarity?: number;
+  memberRatings?: MemberRatings;
   catchcopy?: string;
   category?: string;
   continuance?: string;

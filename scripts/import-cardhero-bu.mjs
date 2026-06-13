@@ -239,6 +239,26 @@ function parseMagic(table, base) {
   };
 }
 
+function parseMemberRatings(table) {
+  const ratingText = [...table.querySelectorAll("td.body")]
+    .map((element) => text(element))
+    .find((value) => value.includes("部員の評価"));
+  if (!ratingText) {
+    return undefined;
+  }
+
+  const rating = (label) => {
+    const match = ratingText.match(new RegExp(`${label}:\\s*([\\d.]+)\\((\\d+)\\)`));
+    return match ? { average: Number(match[1]), votes: Number(match[2]) } : undefined;
+  };
+
+  return {
+    spd: rating("Spd"),
+    proBlack: rating("Pro黒"),
+    proWhite: rating("Pro白"),
+  };
+}
+
 function parseMonster(table, base, role) {
   const levels = parseMonsterLevels(table, base.name);
   const notes = parseNotes(table);
@@ -302,6 +322,7 @@ async function main() {
       sourceUrl: detailUrl,
       icon: iconUrl ? await downloadIcon(iconUrl, no) : undefined,
       rarity: numericValue(text(table.querySelector(".rarity"))),
+      memberRatings: parseMemberRatings(table),
       catchcopy: text(table.querySelector(".catchcopy")).replace(/^『|』$/g, "") || undefined,
     };
 

@@ -24,6 +24,12 @@ import {
   rangedDistanceBetweenSlots,
 } from "./ruleEngine/field";
 import { appendLog, appendRandomResultLog } from "./ruleEngine/log";
+import {
+  createDamageContext,
+  levelUpCapacityForMonster,
+  masterShieldDamage,
+  type DamageContext,
+} from "./ruleEngine/damage";
 import { randomChance, randomInt, shuffle } from "./ruleEngine/random";
 import { cloneState } from "./ruleEngine/state";
 import {
@@ -78,15 +84,9 @@ interface DefeatedMonster {
   investedStones: number;
 }
 
-interface DamageContext {
-  source: string;
-  kind: "command" | "magic" | "master" | "effect" | "recoil";
-  attackerSlotKey?: SlotKey;
-  ignoreCounter?: boolean;
-  ignoreDeathChain?: boolean;
-}
-
 export function createInitialGame(seed = Date.now(), options: CreateInitialGameOptions = {}): GameState {
+  const playerMasterId = options.masterIds?.player ?? "white";
+  const cpuMasterId = options.masterIds?.cpu ?? "white";
   if (options.playerDeckCardIds) {
     ensureInitialDeckValid("プレイヤー", options.playerDeckCardIds, { allowSpecial: !!options.allowSpecialDecks?.player });
   }
@@ -95,18 +95,22 @@ export function createInitialGame(seed = Date.now(), options: CreateInitialGameO
   }
 
   const playerDeck = shuffle(
-    options.playerDeckCardIds ? createDeckFromCardIds("player", options.playerDeckCardIds) : buildDeck("player", seed + 101),
+    options.playerDeckCardIds
+      ? createDeckFromCardIds("player", options.playerDeckCardIds)
+      : buildDeck("player", seed + 101, { masterId: playerMasterId }),
     seed + 1,
   );
   const cpuDeck = shuffle(
-    options.cpuDeckCardIds ? createDeckFromCardIds("cpu", options.cpuDeckCardIds) : buildDeck("cpu", seed + 202),
+    options.cpuDeckCardIds
+      ? createDeckFromCardIds("cpu", options.cpuDeckCardIds)
+      : buildDeck("cpu", seed + 202, { masterId: cpuMasterId }),
     seed + 2,
   );
   const firstPlayer = options.firstPlayer ?? "player";
   const state: GameState = {
     players: {
-      player: createPlayer("player", playerDeck, options.masterIds?.player ?? "white"),
-      cpu: createPlayer("cpu", cpuDeck, options.masterIds?.cpu ?? "white"),
+      player: createPlayer("player", playerDeck, playerMasterId),
+      cpu: createPlayer("cpu", cpuDeck, cpuMasterId),
     },
     slots: createSlots(),
     currentPlayer: firstPlayer,
@@ -1770,7 +1774,7 @@ function damageMasterByPower(
     return;
   }
 
-  const damage = Math.max(0, power - 2);
+  const damage = masterShieldDamage(power);
   if (damage === 0) {
     appendLog(state, `${context.source}はマスターシールドで防がれた`);
     return;
@@ -1907,15 +1911,7 @@ function defeatMonster(
 
 function getLevelUpCapacity(state: GameState, attackerSlotKey: SlotKey, defeatedLevel: number): number {
   const attacker = state.slots[attackerSlotKey].monster;
-  if (!attacker) {
-    return 0;
-  }
-  if (attacker.levelFixed) {
-    return 0;
-  }
-  const def = getMonsterDef(attacker.cardId);
-  const room = getPotentialMaxLevel(state, attacker) - attacker.level;
-  return Math.max(0, Math.min(defeatedLevel, state.players[attacker.owner].stones, room));
+  return levelUpCapacityForMonster(state, attacker, defeatedLevel, attacker ? getPotentialMaxLevel(state, attacker) : 0);
 }
 
 function getPotentialMaxLevel(state: GameState, monster: MonsterState): number {
@@ -2933,10 +2929,7 @@ function isSameTarget(a: Target, b: Target): boolean {
 }
 
 function damageContext(sourceOrContext: string | DamageContext): DamageContext {
-  if (typeof sourceOrContext === "string") {
-    return { source: sourceOrContext, kind: "effect" };
-  }
-  return sourceOrContext;
+  return createDamageContext(sourceOrContext);
 }
 
 function categoryLabel(category: NonNullable<MagicAction["searchCategory"]>): string {

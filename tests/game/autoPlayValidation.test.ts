@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { validateAutoPlay } from "../../src/game/autoPlayValidation";
-import { buildDeckPresetCardIds, validateDeckPresets } from "../../src/game/deckPresets";
+import { buildDeckPresetCardIds, DECK_PRESET_IDS, deckPresetAllowsSpecial, validateDeckPresets } from "../../src/game/deckPresets";
 import { summarizeDeckCardIds } from "../../src/game/cards";
 
 const AUTO_PLAY_TEST_TIMEOUT_MS = 30_000;
@@ -32,6 +32,21 @@ describe("auto play validation", () => {
       magic: 6,
       special: 6,
     });
+  });
+
+  it("validates every deck preset for fixed-deck UI loading", () => {
+    validateDeckPresets();
+
+    for (const presetId of DECK_PRESET_IDS) {
+      const cardIds = buildDeckPresetCardIds(presetId);
+      const summary = summarizeDeckCardIds(cardIds, [], {
+        allowSpecial: deckPresetAllowsSpecial(presetId),
+      });
+
+      expect(summary.valid, presetId).toBe(true);
+      expect(summary.total, presetId).toBe(30);
+      expect(summary.duplicateViolations, presetId).toEqual([]);
+    }
   });
 
   it("runs auto play with the special showcase preset", () => {
@@ -111,7 +126,7 @@ describe("auto play validation", () => {
 
   it("keeps per-decision new log entries after the game log reaches its cap", () => {
     const result = validateAutoPlay({
-      seedStart: 404,
+      seedStart: 400,
       count: 1,
       maxSteps: 140,
       maxTurns: 120,
@@ -122,7 +137,7 @@ describe("auto play validation", () => {
     expect(result.issues[0]).toMatchObject({
       kind: "step_limit",
       severity: "failure",
-      seed: 404,
+      seed: 400,
     });
     expect(result.issues[0].history.length).toBeGreaterThan(120);
     expect(result.issues[0].history.every((event) => event.newLog.length > 0)).toBe(true);
