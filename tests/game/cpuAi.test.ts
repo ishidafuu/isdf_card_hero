@@ -578,6 +578,38 @@ describe("cpu ai", () => {
     ).toBe(false);
   });
 
+  it("does not take proactive white shield over direct master pressure", () => {
+    const game = createCpuGame([]);
+    game.players.cpu.stones = 4;
+    game.players.cpu.masterHp = 5;
+    game.players.player.masterHp = 5;
+    game.slots.cpu_front_left.monster = createActiveMonster("morgan", "cpu", {
+      hp: 4,
+      level: 2,
+    });
+    game.slots.cpu_back_left.monster = createActiveMonster("beyond", "cpu", {
+      hp: 4,
+    });
+
+    const decisions = listCpuDecisions(game);
+
+    expect(
+      decisions.some(
+        (decision) =>
+          decision.type === "master_action" &&
+          decision.actionId === "shield" &&
+          decision.target.kind === "monster" &&
+          decision.target.slotKey === "cpu_back_left",
+      ),
+    ).toBe(false);
+
+    const decision = chooseCpuDecision(game, { profile: "strong" });
+    expect(decision.type).toBe("attack");
+    if (decision.type === "attack") {
+      expect(decision.action.target).toEqual({ kind: "master", playerId: "player" });
+    }
+  });
+
   it("keeps high-value hand cards when evaluating refresh discard choices", () => {
     const game = createCpuGame([
       { cardId: "card_116", instanceId: "cpu_refresh_test" },

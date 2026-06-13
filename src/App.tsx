@@ -107,6 +107,12 @@ const AUTO_STEP_DELAY_MIN_MS = 100;
 const AUTO_STEP_DELAY_MAX_MS = 3000;
 const AUTO_STEP_DELAY_STEP_MS = 50;
 const AUTO_STEP_DELAY_DEFAULT_MS = 650;
+const AUTO_SPEED_PRESETS = [
+  { label: "Watch", delayMs: 1000 },
+  { label: "Normal", delayMs: 650 },
+  { label: "Fast", delayMs: 300 },
+  { label: "Skip", delayMs: 100 },
+] as const;
 const MAX_VISIBLE_RESOURCE_ICONS = 10;
 const DEFAULT_BATTLE_SEED = 20260612;
 const BATTLE_HISTORY_STORAGE_KEY = "card-hero:battle-history:v1";
@@ -187,11 +193,19 @@ interface BattleReplayEvent {
   entry: string;
 }
 
+interface BattleReplayTurn {
+  label: string;
+  startIndex: number;
+  endIndex: number;
+  events: BattleReplayEvent[];
+}
+
 interface BattleReplaySummary {
   early: BattleReplayEvent[];
   middle: BattleReplayEvent[];
   late: BattleReplayEvent[];
   decisive: BattleReplayEvent[];
+  turns: BattleReplayTurn[];
 }
 
 interface SavedBattlePreset {
@@ -509,6 +523,7 @@ function createBattleReplaySummary(log: string[]): BattleReplaySummary {
     middle: pickReplayEvents(log, phases.middle.start, phases.middle.end, 3),
     late: pickReplayEvents(log, phases.late.start, phases.late.end, 4),
     decisive,
+    turns: createBattleReplayTurns(log),
   };
 }
 
@@ -522,6 +537,7 @@ function normalizeBattleReplaySummary(value: unknown): BattleReplaySummary | und
     middle: normalizeBattleReplayEvents(replay.middle),
     late: normalizeBattleReplayEvents(replay.late),
     decisive: normalizeBattleReplayEvents(replay.decisive),
+    turns: normalizeBattleReplayTurns(replay.turns),
   };
 }
 
@@ -541,6 +557,35 @@ function normalizeBattleReplayEvents(value: unknown): BattleReplayEvent[] {
   });
 }
 
+function normalizeBattleReplayTurns(value: unknown): BattleReplayTurn[] {
+  if (!Array.isArray(value)) {
+    return [];
+  }
+  return value.flatMap((turn) => {
+    if (!turn || typeof turn !== "object") {
+      return [];
+    }
+    const candidate = turn as Partial<BattleReplayTurn>;
+    if (
+      typeof candidate.label !== "string" ||
+      typeof candidate.startIndex !== "number" ||
+      !Number.isFinite(candidate.startIndex) ||
+      typeof candidate.endIndex !== "number" ||
+      !Number.isFinite(candidate.endIndex)
+    ) {
+      return [];
+    }
+    return [
+      {
+        label: candidate.label,
+        startIndex: candidate.startIndex,
+        endIndex: candidate.endIndex,
+        events: normalizeBattleReplayEvents(candidate.events),
+      },
+    ];
+  });
+}
+
 function splitReplayLogPhases(log: string[]) {
   const third = Math.max(1, Math.floor(log.length / 3));
   return {
@@ -557,6 +602,40 @@ function pickReplayEvents(log: string[], start: number, end: number, limit: numb
     .filter(({ entry }) => replayEventPriority(entry) > 0)
     .sort((a, b) => replayEventPriority(b.entry) - replayEventPriority(a.entry) || a.index - b.index);
   return scoped.slice(0, limit).sort((a, b) => a.index - b.index);
+}
+
+function createBattleReplayTurns(log: string[]): BattleReplayTurn[] {
+  const turns: BattleReplayTurn[] = [];
+  let current: Omit<BattleReplayTurn, "endIndex"> | undefined;
+
+  log.forEach((entry, index) => {
+    const turnLabel = replayTurnLabel(entry);
+    if (turnLabel) {
+      if (current) {
+        turns.push({ ...current, endIndex: index - 1 });
+      }
+      current = { label: turnLabel, startIndex: index, events: [{ index, entry }] };
+      return;
+    }
+
+    if (!current) {
+      current = { label: "開始前", startIndex: index, events: [] };
+    }
+    current.events.push({ index, entry });
+  });
+
+  if (current) {
+    turns.push({ ...current, endIndex: log.length - 1 });
+  }
+
+  return turns.filter((turn) => turn.events.length > 0);
+}
+
+function replayTurnLabel(entry: string): string | undefined {
+  if (!entry.includes("ターン開始")) {
+    return undefined;
+  }
+  return entry.replace(/^.*?((?:プレイヤー|CPU|先攻|後攻).+?ターン開始).*$/, "$1");
 }
 
 function replayEventPriority(entry: string): number {
@@ -585,6 +664,30 @@ function replayEventPriority(entry: string): number {
     return 45;
   }
   return 0;
+}
+
+function findLatestSpectatorAttention(log: string[]): BattleReplayEvent | undefined {
+  for (let index = log.length - 1; index >= 0; index -= 1) {
+    const entry = log[index];
+    if (isSpectatorAttentionLog(entry)) {
+      return { index, entry };
+    }
+  }
+  return undefined;
+}
+
+function isSpectatorAttentionLog(entry: string): boolean {
+  return (
+    entry.includes("勝利") ||
+    entry.includes("倒れ") ||
+    entry.includes("撃破") ||
+    entry.includes("マスターHPが") ||
+    entry.includes("山札切れ") ||
+    entry.includes("レベル") ||
+    entry.includes("Lv") ||
+    entry.includes("スーパー") ||
+    entry.includes("ランダム結果")
+  );
 }
 
 function createBattleResultKey(game: GameState, settings: BattleSettings): string {
@@ -715,6 +818,8 @@ export function App() {
   const [pointerDragging, setPointerDragging] = useState(false);
   const [autoPlayEnabled, setAutoPlayEnabled] = useState(false);
   const [autoStepDelayMs, setAutoStepDelayMs] = useState(AUTO_STEP_DELAY_DEFAULT_MS);
+  const [spectatorPauseOnAttention, setSpectatorPauseOnAttention] = useState(true);
+  const [spectatorPaused, setSpectatorPaused] = useState(false);
   const [zoneView, setZoneView] = useState<ZoneView | undefined>();
   const [logFilter, setLogFilter] = useState<LogFilter>("all");
   const [selectedLogIndex, setSelectedLogIndex] = useState<number | undefined>();
@@ -729,6 +834,7 @@ export function App() {
   });
   const [deckPresetFilters, setDeckPresetFilters] = useState<Record<PlayerId, DeckPresetFilters>>(() => createDeckPresetFilters());
   const previousGameRef = useRef<GameState>(game);
+  const lastSpectatorAttentionIndexRef = useRef<number | undefined>(undefined);
   const visualEffectIdRef = useRef(0);
   const recordedResultKeyRef = useRef<string | undefined>(undefined);
   const activeBattleSettingsRef = useRef<BattleSettings>(cloneBattleSettings(battleSettings));
@@ -753,13 +859,17 @@ export function App() {
   const fixedDeckError = PLAYER_IDS.some((playerId) => deckSettings.fixed[playerId] && !deckDrafts[playerId].summary.valid);
   const currentPlayer = game.players[game.currentPlayer];
   const cpuVsCpu = battleSettings.mode === "cpu-vs-cpu";
-  const isAutoResolving = !game.winner && (cpuVsCpu || autoPlayEnabled || (game.currentPlayer === "cpu" && !game.pendingLevelUp));
+  const spectatorAutoPaused = cpuVsCpu && spectatorPaused;
+  const isAutoResolving =
+    !game.winner && !spectatorAutoPaused && (cpuVsCpu || autoPlayEnabled || (game.currentPlayer === "cpu" && !game.pendingLevelUp));
   const controlsDisabled = cpuVsCpu || autoPlayEnabled || game.currentPlayer !== "player" || !!game.winner || !!game.pendingLevelUp;
   const activeBattleSettings = activeBattleSettingsRef.current;
   const turnStatus = game.winner
     ? `${playerLabel(game.winner)} win`
     : cpuVsCpu
-      ? `CPU vs CPU... ${playerLabel(game.currentPlayer)}`
+      ? spectatorPaused
+        ? `CPU vs CPU paused / ${playerLabel(game.currentPlayer)}`
+        : `CPU vs CPU... ${playerLabel(game.currentPlayer)}`
       : autoPlayEnabled
       ? `Auto playing... ${playerLabel(game.currentPlayer)}`
       : isAutoResolving
@@ -813,6 +923,7 @@ export function App() {
     [game.log, logFilter],
   );
   const selectedLogEntry = selectedLogIndex !== undefined ? game.log[selectedLogIndex] : undefined;
+  const latestSpectatorAttention = useMemo(() => findLatestSpectatorAttention(game.log), [game.log]);
 
   useEffect(() => {
     if (selectedLogIndex === undefined) {
@@ -823,6 +934,21 @@ export function App() {
       setSelectedLogIndex(undefined);
     }
   }, [game.log, logFilter, selectedLogIndex]);
+
+  useEffect(() => {
+    if (!cpuVsCpu || !spectatorPauseOnAttention) {
+      setSpectatorPaused(false);
+      lastSpectatorAttentionIndexRef.current = latestSpectatorAttention?.index;
+      return;
+    }
+    if (!latestSpectatorAttention) {
+      return;
+    }
+    if (latestSpectatorAttention.index !== lastSpectatorAttentionIndexRef.current) {
+      lastSpectatorAttentionIndexRef.current = latestSpectatorAttention.index;
+      setSpectatorPaused(true);
+    }
+  }, [cpuVsCpu, latestSpectatorAttention, spectatorPauseOnAttention]);
 
   useEffect(() => {
     const previous = previousGameRef.current;
@@ -1114,6 +1240,8 @@ export function App() {
     setError("");
     setVisualEffect(undefined);
     setAutoPlayEnabled(false);
+    setSpectatorPaused(false);
+    lastSpectatorAttentionIndexRef.current = undefined;
   }
 
   function handleNewGame() {
@@ -1235,6 +1363,7 @@ export function App() {
     }
     setBattleSettings({ ...battleSettings, mode: value });
     setAutoPlayEnabled(false);
+    setSpectatorPaused(false);
   }
 
   function handleBattleAiProfileChange(playerId: PlayerId, value: string) {
@@ -1260,6 +1389,13 @@ export function App() {
   function handleRandomSeed() {
     const seed = Math.floor(Math.random() * 1_000_000_000);
     setBattleSettings({ ...battleSettings, seed, seedInput: String(seed) });
+  }
+
+  function handleAutoSpeedPreset(delayMs: number) {
+    setAutoStepDelayMs(delayMs);
+    if (cpuVsCpu) {
+      setSpectatorPaused(false);
+    }
   }
 
   function handleDeckFixedChange(playerId: PlayerId, fixed: boolean) {
@@ -1647,6 +1783,16 @@ export function App() {
         <div>
           <h1>Card Hero Prototype</h1>
           <p>Turn {game.turnNumber} / {turnStatus}</p>
+          {cpuVsCpu && (
+            <div className={`spectator-status ${spectatorPaused ? "paused" : ""}`}>
+              <strong><Icon icon={spectatorPaused ? "⏸️" : "👁️"} /> Spectator</strong>
+              <span>
+                {latestSpectatorAttention
+                  ? `#${latestSpectatorAttention.index + 1} ${latestSpectatorAttention.entry}`
+                  : "注目イベント待ち"}
+              </span>
+            </div>
+          )}
         </div>
         <div className="topbar-actions">
           <label className="battle-setting-control">
@@ -1735,6 +1881,40 @@ export function App() {
             />
             ms
           </label>
+          {cpuVsCpu && (
+            <div className="auto-speed-presets" aria-label="CPU vs CPU speed presets">
+              {AUTO_SPEED_PRESETS.map((preset) => (
+                <button
+                  type="button"
+                  className={autoStepDelayMs === preset.delayMs ? "selected" : ""}
+                  onClick={() => handleAutoSpeedPreset(preset.delayMs)}
+                  key={preset.label}
+                >
+                  {preset.label}
+                </button>
+              ))}
+            </div>
+          )}
+          {cpuVsCpu && (
+            <label className="spectator-toggle">
+              <input
+                type="checkbox"
+                checked={spectatorPauseOnAttention}
+                onChange={(event) => {
+                  setSpectatorPauseOnAttention(event.target.checked);
+                  if (!event.target.checked) {
+                    setSpectatorPaused(false);
+                  }
+                }}
+              />
+              注目停止
+            </label>
+          )}
+          {cpuVsCpu && spectatorPaused && (
+            <button type="button" onClick={() => setSpectatorPaused(false)}>
+              <Icon icon="▶️" /> Resume
+            </button>
+          )}
           <button type="button" onClick={handleRandomSeed}>
             <Icon icon="🎲" /> Seed
           </button>
@@ -2650,7 +2830,7 @@ function BattleReplaySummaryView({ replay }: { replay?: BattleReplaySummary }) {
     ["終盤", normalizedReplay.late],
     ["決定打", normalizedReplay.decisive],
   ] as const;
-  if (sections.every(([, events]) => events.length === 0)) {
+  if (sections.every(([, events]) => events.length === 0) && normalizedReplay.turns.length === 0) {
     return <p className="empty-note">要点ログはありません。</p>;
   }
   return (
@@ -2674,6 +2854,30 @@ function BattleReplaySummaryView({ replay }: { replay?: BattleReplaySummary }) {
           )}
         </div>
       ))}
+      {normalizedReplay.turns.length > 0 && (
+        <details className="battle-replay-turns">
+          <summary><Icon icon="📜" /> ターン詳細 {normalizedReplay.turns.length}</summary>
+          <div className="battle-replay-turn-list">
+            {normalizedReplay.turns.map((turn) => (
+              <details className="battle-replay-turn" key={`${turn.startIndex}_${turn.endIndex}`}>
+                <summary>
+                  <span>{turn.label}</span>
+                  <small>#{turn.startIndex + 1}-{turn.endIndex + 1} / {turn.events.length}件</small>
+                </summary>
+                <ol>
+                  {turn.events.map((event) => (
+                    <li className={logTone(event.entry)} key={`${turn.startIndex}_${event.index}`}>
+                      <Icon icon={logIcon(event.entry)} />
+                      <span>#{event.index + 1}</span>
+                      <p>{event.entry}</p>
+                    </li>
+                  ))}
+                </ol>
+              </details>
+            ))}
+          </div>
+        </details>
+      )}
     </details>
   );
 }

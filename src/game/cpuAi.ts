@@ -854,6 +854,9 @@ function createShieldDecision(state: GameState, target: Target): CpuDecision | u
   if (closeout && !preventsLethal && !threat.lethal && levelUpPotential <= 0) {
     return undefined;
   }
+  if (shouldHoldShieldForMasterRace(state, threat, preventsLethal, levelUpPotential)) {
+    return undefined;
+  }
   const score =
     14 +
     monsterValue(state, target.slotKey) * 0.18 +
@@ -876,6 +879,27 @@ function createShieldDecision(state: GameState, target: Target): CpuDecision | u
           : "高価値の味方を守るためシールド",
     score,
   };
+}
+
+function shouldHoldShieldForMasterRace(
+  state: GameState,
+  threat: IncomingThreat,
+  preventsLethal: boolean,
+  levelUpPotential: number,
+): boolean {
+  if (state.players[state.currentPlayer].masterId !== "white") {
+    return false;
+  }
+  if (preventsLethal || threat.lethal || levelUpPotential > 0) {
+    return false;
+  }
+
+  const directDamage = bestDirectMasterDamageForPlayer(state, state.currentPlayer);
+  if (directDamage <= 0) {
+    return false;
+  }
+  const opponent = opponentOf(state.currentPlayer);
+  return state.players[opponent].masterHp <= 6 || state.players[state.currentPlayer].masterHp <= state.players[opponent].masterHp;
 }
 
 function listBerserkPowerDecisions(state: GameState): CpuDecision[] {

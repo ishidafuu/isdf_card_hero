@@ -27,10 +27,12 @@ import { appendLog, appendRandomResultLog } from "./ruleEngine/log";
 import {
   createDamageContext,
   levelUpCapacityForMonster,
-  masterShieldDamage,
+  masterDamageByPower,
+  previewMonsterDamage,
   type DamageContext,
 } from "./ruleEngine/damage";
 import { removeDefeatedMonster, type DefeatedMonster } from "./ruleEngine/defeat";
+import { resolveLevelUpChoice } from "./ruleEngine/levelUp";
 import { randomChance, randomInt, shuffle } from "./ruleEngine/random";
 import { cloneState } from "./ruleEngine/state";
 import {
@@ -465,17 +467,12 @@ export function resolveLevelUp(state: GameState, levels: number, superHandInstan
   if (!pending) {
     throw new Error("レベルアップ待ちではありません");
   }
-  if (levels < 0 || levels > pending.maxLevels) {
-    throw new Error("選択できないレベルアップ数です");
-  }
+  const choice = resolveLevelUpChoice(pending, levels, superHandInstanceId);
 
-  if (superHandInstanceId) {
-    if (!pending.superOptions?.some((option) => option.handInstanceId === superHandInstanceId)) {
-      throw new Error("選択できないスーパーカードです");
-    }
-    performSuperLevelUp(next, pending.attackerSlotKey, superHandInstanceId);
-  } else if (levels > 0) {
-    performLevelUp(next, pending.attackerSlotKey, levels);
+  if (choice.kind === "super") {
+    performSuperLevelUp(next, pending.attackerSlotKey, choice.handInstanceId);
+  } else if (choice.kind === "level") {
+    performLevelUp(next, pending.attackerSlotKey, choice.levels);
   } else {
     appendLog(next, "レベルアップしなかった");
   }
@@ -1768,7 +1765,7 @@ function damageMasterByPower(
     return;
   }
 
-  const damage = masterShieldDamage(power);
+  const damage = masterDamageByPower(power);
   if (damage === 0) {
     appendLog(state, `${context.source}はマスターシールドで防がれた`);
     return;
@@ -1824,22 +1821,15 @@ function damageMonster(
     }
   }
 
-  let damage = power;
-  if (monster.shielded) {
-    damage = Math.max(0, damage - 1);
-  }
-  if (monster.halfShielded) {
-    damage = Math.max(0, Math.floor(damage / 2));
-  }
+  const damagePreview = previewMonsterDamage(monster, power);
+  const damage = damagePreview.damage;
   if (monster.oneShotShield) {
     monster.oneShotShield = false;
     monster.halfShielded = false;
   }
   if (monster.focused) {
-    const beforeFocusReduction = damage;
-    damage = Math.max(0, damage - 1);
     monster.focused = false;
-    if (beforeFocusReduction !== damage) {
+    if (damagePreview.focusedReduction > 0) {
       appendLog(state, `${monsterName(monster)}は気合いで1ダメージ軽減した`);
     }
   }

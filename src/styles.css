@@ -95,6 +95,39 @@ button:disabled {
   font-size: 14px;
 }
 
+.spectator-status {
+  align-items: center;
+  background: #f5f8f0;
+  border: 1px solid #d4ddcd;
+  border-radius: 6px;
+  display: flex;
+  gap: 8px;
+  margin-top: 6px;
+  max-width: 560px;
+  min-height: 30px;
+  padding: 5px 8px;
+}
+
+.spectator-status.paused {
+  border-color: #c28b1d;
+  box-shadow: inset 0 0 0 1px #e3bc66;
+}
+
+.spectator-status strong {
+  color: #26302e;
+  flex: 0 0 auto;
+  font-size: 12px;
+}
+
+.spectator-status span {
+  color: #4f5a56;
+  font-size: 12px;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
 .topbar-actions {
   align-items: center;
   display: flex;
@@ -125,6 +158,25 @@ button:disabled {
 
 .auto-delay-control input {
   width: 76px;
+}
+
+.auto-speed-presets {
+  display: inline-flex;
+  gap: 4px;
+}
+
+.auto-speed-presets button {
+  font-size: 12px;
+  min-height: 32px;
+  padding: 4px 8px;
+}
+
+.spectator-toggle {
+  align-items: center;
+  color: #4b5652;
+  display: inline-flex;
+  font-size: 13px;
+  gap: 5px;
 }
 
 .battle-setting-control {
@@ -2353,6 +2405,64 @@ button:disabled {
 }
 
 .battle-replay-phase li p {
+  font-size: 11px;
+  line-height: 1.35;
+  margin: 0;
+}
+
+.battle-replay-turns {
+  border-top: 1px solid #dce4d5;
+  margin-top: 8px;
+  padding-top: 6px;
+}
+
+.battle-replay-turn-list {
+  display: grid;
+  gap: 4px;
+  margin-top: 6px;
+}
+
+.battle-replay-turn {
+  background: #f7f9f3;
+  border: 1px solid #dce4d5;
+  border-radius: 5px;
+  padding: 5px 6px;
+}
+
+.battle-replay-turn summary {
+  align-items: center;
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.battle-replay-turn summary small {
+  color: #6a756f;
+  font-size: 11px;
+  font-weight: 600;
+}
+
+.battle-replay-turn ol {
+  display: grid;
+  gap: 4px;
+  list-style: none;
+  margin: 6px 0 0;
+  padding: 0;
+}
+
+.battle-replay-turn li {
+  align-items: start;
+  display: grid;
+  gap: 4px;
+  grid-template-columns: auto auto minmax(0, 1fr);
+}
+
+.battle-replay-turn li span {
+  color: #6a756f;
+  font-size: 11px;
+}
+
+.battle-replay-turn li p {
   font-size: 11px;
   line-height: 1.35;
   margin: 0;

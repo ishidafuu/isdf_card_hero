@@ -1,5 +1,11 @@
 import { describe, expect, it } from "vitest";
-import { createDamageContext, levelUpCapacityForMonster, masterShieldDamage } from "../../src/game/ruleEngine/damage";
+import {
+  createDamageContext,
+  levelUpCapacityForMonster,
+  masterDamageByPower,
+  masterShieldDamage,
+  previewMonsterDamage,
+} from "../../src/game/ruleEngine/damage";
 import { removeDefeatedMonster } from "../../src/game/ruleEngine/defeat";
 import { createInitialGame } from "../../src/game/rules";
 import type { MonsterState, PlayerId } from "../../src/game/types";
@@ -10,6 +16,7 @@ describe("damage rule engine helpers", () => {
     expect(masterShieldDamage(2)).toBe(0);
     expect(masterShieldDamage(3)).toBe(1);
     expect(masterShieldDamage(5)).toBe(3);
+    expect(masterDamageByPower(5)).toBe(3);
   });
 
   it("normalizes string damage sources into effect contexts", () => {
@@ -48,6 +55,19 @@ describe("damage rule engine helpers", () => {
     monster.levelFixed = true;
     game.players.player.stones = 3;
     expect(levelUpCapacityForMonster(game, monster, 2, 3)).toBe(0);
+  });
+
+  it("previews monster damage reductions without mutating the monster", () => {
+    const monster = createMonster("takokke", "player", {
+      hp: 4,
+      shielded: true,
+      focused: true,
+      halfShielded: true,
+    });
+
+    expect(previewMonsterDamage(monster, 4)).toEqual({ damage: 0, focusedReduction: 1 });
+    expect(monster.focused).toBe(true);
+    expect(monster.shielded).toBe(true);
   });
 
   it("removes defeated monsters, returns invested stones, and sends the card to discard", () => {
