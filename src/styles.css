@@ -40,6 +40,8 @@ button {
   display: inline-block;
   flex: 0 0 auto;
   height: 24px;
+  image-rendering: crisp-edges;
+  image-rendering: pixelated;
   margin-right: 5px;
   object-fit: cover;
   vertical-align: -0.32em;
