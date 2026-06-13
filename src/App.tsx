@@ -1805,6 +1805,7 @@ export function App() {
     selection?.kind === "monster" ? game.slots[selection.slotKey].monster : undefined;
   const selectedHand =
     selection?.kind === "hand" ? currentPlayer.hand.find((card) => card.instanceId === selection.instanceId) : undefined;
+  const infoWorkspaceOpen = isInfoWorkspaceView(zoneView);
 
   return (
     <main className={`app-shell ${pointerDragging ? "dragging" : ""}`}>
@@ -1960,7 +1961,14 @@ export function App() {
         </div>
       </header>
 
-      <section className={`play-layout ${zoneView ? "info-open" : ""} ${zoneView?.kind === "catalog" ? "catalog-open" : ""}`}>
+      <section
+        className={[
+          "play-layout",
+          zoneView ? "info-open" : "",
+          zoneView?.kind === "catalog" ? "catalog-open" : "",
+          infoWorkspaceOpen ? "info-workspace-open" : "",
+        ].filter(Boolean).join(" ")}
+      >
         <aside className="info-panel">
           <section className="info-switcher-panel">
             <div className="info-switcher-heading">
@@ -4816,6 +4824,10 @@ function targetRoleLabel(role: TargetRole): string {
 
 function isZoneView(view: ZoneView | undefined, playerId: PlayerId, zone: Extract<ZoneView, { kind: "playerZone" }>["zone"]): boolean {
   return view?.kind === "playerZone" && view.playerId === playerId && view.zone === zone;
+}
+
+function isInfoWorkspaceView(view: ZoneView | undefined): boolean {
+  return view?.kind === "deckSetup" || view?.kind === "aiLab";
 }
 
 function toggleZoneView(current: ZoneView | undefined, next: ZoneView): ZoneView | undefined {
