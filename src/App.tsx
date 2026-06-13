@@ -3725,7 +3725,9 @@ function DeckPresetControls({
         </select>
       </label>
       <span>
-        {selectedIsVisible ? preset.description : `現在: ${preset.name}（フィルタ外）`}
+        {selectedIsVisible
+          ? `${formatDeckPresetIdentity(preset)} / ${preset.description}`
+          : `現在: ${formatDeckPresetIdentity(preset)} / ${preset.name}（フィルタ外）`}
       </span>
       <DeckBattleScoreStrip score={selectedScore} />
     </div>
@@ -3847,9 +3849,13 @@ function buildDeckPresetOptionGroups(presets: DeckPresetDef[], sortKey: DeckPres
 function formatDeckPresetOptionText(preset: DeckPresetDef): string {
   const score = getDeckBattleScoreSnapshot(preset.id);
   if (!score) {
-    return preset.name;
+    return `${formatDeckPresetIdentity(preset)} - ${preset.name}`;
   }
-  return `#${score.rank} B${score.battleScore.toFixed(1)} W${formatPercent(score.winRate)} S${score.stabilityScore.toFixed(1)} - ${preset.name}`;
+  return `#${score.rank} ${formatDeckPresetIdentity(preset)} B${score.battleScore.toFixed(1)} W${formatPercent(score.winRate)} S${score.stabilityScore.toFixed(1)} - ${preset.name}`;
+}
+
+function formatDeckPresetIdentity(preset: DeckPresetDef): string {
+  return preset.sourceDeckId ? `${preset.id} / 投稿#${preset.sourceDeckId}` : preset.id;
 }
 
 function formatPercent(value: number): string {
