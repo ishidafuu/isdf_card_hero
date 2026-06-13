@@ -1536,8 +1536,6 @@ button:disabled {
 
 .deck-card-grid {
   margin-top: 8px;
-  max-height: 170px;
-  overflow: auto;
 }
 
 .deck-card-chip {
