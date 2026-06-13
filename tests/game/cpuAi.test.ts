@@ -276,6 +276,36 @@ describe("cpu ai", () => {
     expect(decision.reason).toContain("ためる");
   });
 
+  it("does not spend closeout turns on focus-only actions", () => {
+    const game = createCpuGame([]);
+    game.players.cpu.stones = 0;
+    game.players.cpu.masterHp = 4;
+    game.slots.cpu_back_left.monster = createActiveMonster("yanbaru", "cpu");
+
+    const decisions = listCpuDecisions(game);
+
+    expect(decisions.some((decision) => decision.type === "focus")).toBe(false);
+  });
+
+  it("does not use closeout master attack for non-lethal chip damage", () => {
+    const game = createCpuGame([]);
+    game.players.cpu.stones = 3;
+    game.players.player.masterHp = 4;
+    game.slots.player_front_left.monster = createActiveMonster("takokke", "player", { hp: 3 });
+
+    const decisions = listCpuDecisions(game);
+
+    expect(
+      decisions.some(
+        (decision) =>
+          decision.type === "master_action" &&
+          decision.actionId === "master_attack" &&
+          decision.target.kind === "monster" &&
+          decision.target.slotKey === "player_front_left",
+      ),
+    ).toBe(false);
+  });
+
   it("applies the chosen decision through existing rule functions", () => {
     const game = createCpuGame([{ cardId: "takokke", instanceId: "cpu_takokke_test" }]);
     const decision = chooseCpuDecision(game);

@@ -293,23 +293,30 @@ Phase 5 実行結果:
 - 補正後、同seedのstep 14差分は消え、117 steps / 11 turns から 88 steps / 8 turns に短縮。
 - `smoke` count2、`core` count1、`holdout` count1、`stress` count1 はfailure 0でPASS。
 
+Phase 6 実行結果:
+
+- `end_turn` 警告はraw scoreだけではなく、AIの同ターン先読み後の総合評価も見て判定するようにした。
+- `submission-pro-with-rare8-black-999` seed `430` など、総合評価で大差却下済みの候補は誤警告として除外する。
+- `core` count1の終盤ターン終了警告は7件から0件、`holdout` count1の同系警告は3件から0件。
+
+Phase 7 実行結果:
+
+- 白マスターのcloseout時だけ、勝敗に直結しないfocus、低スコア召喚、即行動につながらないウェイクアップ、非撃破マスターアタック、低効率の非撃破削りを抑制した。
+- `submission-pro-no-rare8-white-882` seed `430`: 355 steps / 27 turns から 295 steps / 28 turns に短縮し、long game warningを解消。
+- `submission-pro-no-rare8-white-206` seed `450`: 326 steps / 24 turns から 181 steps / 16 turns に短縮し、long game warningを解消。
+- `smoke` count2、`core` count1、`holdout` count1、`stress` count1 はfailure 0 / warning 0でPASS。
+
 ## 次のコミット候補
 
-1. 終盤ターン終了警告の補正
-   - `core` count1で7件、`holdout` count1で4件を確認
-   - 代表例: `submission-pro-with-rare8-black-999` seed `430`、`submission-pro-no-rare8-black-408` seed `430`
-   - 「攻撃候補があるのにend_turn」を、行動済み/射程外/反動死/リーサルのどれかに分類してから補正する
-
-2. 防御判断の局面限定補正
+1. 防御判断の局面限定補正
    - seed `431 challenger-as-cpu` と `432 challenger-as-player` を対象にする
    - シールド一律強化ではなく、被リーサル/次ターンレベルアップ維持だけを扱う
 
-3. 長期戦warningの短縮
-   - `submission-pro-no-rare8-white-882` seed `430`: 355 steps / 27 turns
-   - `submission-pro-no-rare8-white-206` seed `450`: 326 steps / 24 turns
-   - HPが低い、相手HPが低い、山札が少ない局面で `focus` / 召喚 / 防御の価値を再評価する
+2. 白マスターの中盤シールド過多レビュー
+   - `submission-pro-no-rare8-white-882` seed `430` の序盤から中盤で、直撃よりシールドを優先する差分が残る
+   - closeout補正とは分け、盤面維持と打点レースの境界を局面限定で見る
 
-4. マスター別評価の検証
+3. マスター別評価の検証
    - `--player-master black --cpu-master black` と `--player-master white --cpu-master white` で100戦検証する
    - 勝率ではなく、failure、warning、最大step、デッキ内訳の偏りを確認する
 

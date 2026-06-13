@@ -176,3 +176,53 @@ npm run benchmark:deck-suite -- --suite stress --seed-start 430 --count 1 --max-
 
 - 終盤に「強い候補があるのにターン終了」警告が出る局面を、投稿デッキIDつきで優先レビューする。
 - 長期戦warningは `submission-pro-no-rare8-white-882` と `submission-pro-no-rare8-white-206` を個別に見る。
+
+## Phase 6/7 実行メモ
+
+実行日: 2026-06-13
+
+### Phase 6: 終盤ターン終了警告
+
+`end_turn` 警告は、合法手のraw scoreだけでは誤検知が出ていた。`chooseCpuDecision` と同じ総合評価を参照し、raw score 200以上の候補でも、総合評価で `end_turn` から80点以上離れている場合は警告対象外にした。
+
+代表確認:
+
+```sh
+npm run benchmark:deck-suite -- --suite core --seed-start 430 --count 1 --max-steps 700 --max-turns 160 --json artifacts/deck-suite-benchmark/phase7-core-count1-white-only.json
+```
+
+- `core` count1の `ended turn despite strong candidate` 警告: 7件から0件。
+- `holdout` count1の同系警告: 3件から0件。
+
+### Phase 7: 白マスター長期戦短縮
+
+白マスターのcloseout時だけ、勝敗に直結しない行動を抑制した。
+
+- focusを候補から外す。
+- 既に盤面がある状態の低スコア召喚を抑える。
+- 即行動につながらない味方ウェイクアップを抑える。
+- 非撃破マスターアタックを抑える。
+- 残HPが大きく残る非撃破削りを抑える。
+
+代表結果:
+
+| Deck | Before | After | Result |
+| --- | ---: | ---: | --- |
+| `submission-pro-no-rare8-white-882` seed 430 | 355 steps / 27 turns | 295 steps / 28 turns | warning解消 |
+| `submission-pro-no-rare8-white-206` seed 450 | 326 steps / 24 turns | 181 steps / 16 turns | warning解消 |
+
+### Phase 7 ゲート結果
+
+```sh
+npm run benchmark:deck-suite -- --suite smoke --seed-start 430 --count 2 --max-steps 700 --max-turns 160 --json artifacts/deck-suite-benchmark/phase7-smoke-white-only.json
+npm run benchmark:deck-suite -- --suite core --seed-start 430 --count 1 --max-steps 700 --max-turns 160 --json artifacts/deck-suite-benchmark/phase7-core-count1-white-only.json
+npm run benchmark:deck-suite -- --suite holdout --seed-start 450 --count 1 --max-steps 700 --max-turns 160 --json artifacts/deck-suite-benchmark/phase7-holdout-count1.json
+npm run benchmark:deck-suite -- --suite stress --seed-start 430 --count 1 --max-steps 700 --max-turns 160 --json artifacts/deck-suite-benchmark/phase7-stress-count1.json
+```
+
+| Suite | Result | Games | Wins stable/strong | Warnings | Max |
+| --- | --- | ---: | ---: | ---: | --- |
+| smoke count2 | PASS | 32 | 20 / 12 | 0 | 145 steps / 15 turns |
+| core count1 | PASS | 80 | 38 / 42 | 0 | 295 steps / 30 turns |
+| holdout count1 | PASS | 40 | 19 / 21 | 0 | 181 steps / 23 turns |
+| stress count1 | PASS | 24 | 9 / 15 | 0 | 172 steps / 35 turns |

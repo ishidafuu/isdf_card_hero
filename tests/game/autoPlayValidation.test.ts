@@ -105,6 +105,20 @@ describe("auto play validation", () => {
     expect(result.games).toHaveLength(1);
   }, AUTO_PLAY_TEST_TIMEOUT_MS);
 
+  it("does not warn on end turn when strong raw candidates were rejected by full AI evaluation", () => {
+    const result = validateAutoPlay({
+      seedStart: 430,
+      count: 1,
+      deckPreset: "submission-pro-with-rare8-black-999",
+      aiProfiles: { player: "strong", cpu: "stable" },
+      maxSteps: 700,
+      maxTurns: 160,
+    });
+
+    expect(result.summary.failures).toBe(0);
+    expect(result.issues.some((issue) => issue.message.includes("ended turn despite strong candidate"))).toBe(false);
+  }, AUTO_PLAY_TEST_TIMEOUT_MS);
+
   it("captures reproducible state, log tail, and decision history for failures", () => {
     const result = validateAutoPlay({
       seedStart: 410,

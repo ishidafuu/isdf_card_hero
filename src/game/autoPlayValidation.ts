@@ -2,10 +2,12 @@ import { getCardName } from "./cards";
 import {
   applyCpuDecision,
   chooseCpuDecision,
+  inspectCpuDecisionEvaluations,
   listCpuDecisions,
   type CpuAiProfile,
   type CpuAiProfiles,
   type CpuDecision,
+  type CpuDecisionEvaluation,
 } from "./cpuAi";
 import { buildDeckPresetCardIds, deckPresetAllowsSpecial, type DeckPresetId } from "./deckPresets";
 import { createInitialGame, runAutoStep, targetToKey } from "./rules";
@@ -366,6 +368,10 @@ function runDecisionStepWithTrace(
 ): GameState {
   const decisions = listCpuDecisions(game);
   const decision = chooseCpuDecision(game, { profiles: options.aiProfiles });
+  const hasRawEndTurnWarningCandidate =
+    decision.type === "end_turn" && decisions.some((candidate) => candidate.type !== "end_turn" && candidate.score >= 200);
+  const evaluatedDecisions =
+    hasRawEndTurnWarningCandidate ? inspectCpuDecisionEvaluations(game, { profiles: options.aiProfiles }) : undefined;
   const beforeSummary = summarizeGameState(game);
   const logBefore = game.log;
   const next = applyCpuDecision(game, decision);
@@ -384,7 +390,7 @@ function runDecisionStepWithTrace(
     newLog: newLogEntries(logBefore, next.log),
   };
   pushHistory(context, event, options.historyLimit);
-  detectSuspiciousDecision(context, game, next, decision, decisions, step);
+  detectSuspiciousDecision(context, game, next, decision, decisions, evaluatedDecisions, step);
   return next;
 }
 
@@ -394,10 +400,11 @@ function detectSuspiciousDecision(
   after: GameState,
   decision: CpuDecision,
   decisions: CpuDecision[],
+  evaluatedDecisions: CpuDecisionEvaluation[] | undefined,
   step: number,
 ): void {
   if (decision.type === "end_turn" && !after.winner) {
-    const strongCandidate = decisions.find((candidate) => candidate.type !== "end_turn" && candidate.score >= 200);
+    const strongCandidate = findSuspiciousEndTurnCandidate(decisions, evaluatedDecisions);
     if (strongCandidate) {
       pushIssue(
         context,
@@ -436,6 +443,30 @@ function detectSuspiciousDecision(
       `low-score magic selected: ${decision.reason} (score ${decision.score})`,
     );
   }
+}
+
+function findSuspiciousEndTurnCandidate(
+  decisions: CpuDecision[],
+  evaluatedDecisions: CpuDecisionEvaluation[] | undefined,
+): CpuDecision | undefined {
+  const strongRawCandidates = decisions.filter((candidate) => candidate.type !== "end_turn" && candidate.score >= 200);
+  if (strongRawCandidates.length === 0) {
+    return undefined;
+  }
+  if (!evaluatedDecisions) {
+    return strongRawCandidates[0];
+  }
+
+  const selected = evaluatedDecisions.find((candidate) => candidate.decision.type === "end_turn");
+  if (!selected) {
+    return strongRawCandidates[0];
+  }
+
+  const suspicious = evaluatedDecisions
+    .filter((candidate) => candidate.decision.type !== "end_turn" && candidate.decision.score >= 200)
+    .filter((candidate) => candidate.totalScore >= selected.totalScore - 80)
+    .sort((a, b) => b.totalScore - a.totalScore || b.decision.score - a.decision.score || a.index - b.index);
+  return suspicious[0]?.decision;
 }
 
 function pushHistory(context: RunContext, event: AutoPlayDecisionEvent, limit: number): void {

@@ -142,6 +142,12 @@ export type CpuDecision =
       score: number;
     };
 
+export interface CpuDecisionEvaluation {
+  decision: CpuDecision;
+  totalScore: number;
+  index: number;
+}
+
 export function runCpuDecisionStep(state: GameState, options: CpuAiOptions = {}): GameState {
   const decision = chooseCpuDecision(state, options);
   return applyCpuDecision(state, decision);
@@ -165,6 +171,19 @@ export function chooseCpuDecision(state: GameState, options: CpuAiOptions = {}):
   });
 
   return best ? attachDecisionTrace(best, evaluated) : createEndTurnDecision();
+}
+
+export function inspectCpuDecisionEvaluations(
+  state: GameState,
+  options: CpuAiOptions = {},
+): CpuDecisionEvaluation[] {
+  const perspective = state.currentPlayer;
+  const config = CPU_AI_PROFILE_CONFIG[resolveCpuAiProfile(state, options)];
+  return evaluateCpuDecisions(state, perspective, config).map(({ decision, totalScore, index }) => ({
+    decision,
+    totalScore,
+    index,
+  }));
 }
 
 function resolveCpuAiProfile(state: GameState, options: CpuAiOptions): CpuAiProfile {
@@ -304,6 +323,20 @@ function isMasterRaceRelevant(state: GameState, perspective: PlayerId): boolean 
     state.players[perspective].deck.length <= 3 ||
     state.players[opponent].deck.length <= 3
   );
+}
+
+function isCloseoutState(state: GameState, perspective: PlayerId): boolean {
+  const opponent = opponentOf(perspective);
+  return (
+    state.players[perspective].masterHp <= 4 ||
+    state.players[opponent].masterHp <= 4 ||
+    state.players[perspective].deck.length <= 2 ||
+    state.players[opponent].deck.length <= 2
+  );
+}
+
+function shouldPruneCloseoutNonProgressActions(state: GameState, perspective: PlayerId): boolean {
+  return state.players[perspective].masterId === "white" && isCloseoutState(state, perspective);
 }
 
 function masterDamageFromTransition(before: GameState, after: GameState, perspective: PlayerId): number {
@@ -618,6 +651,9 @@ function scoreAttackDecision(state: GameState, after: GameState, action: Command
   if (damage <= 0) {
     return stateDelta > 8 ? 30 + stateDelta + recoilPenalty : -100;
   }
+  if (shouldPruneCloseoutNonProgressActions(state, playerId) && damage < targetAfter.hp && stateDelta < 45) {
+    return -100;
+  }
   const directMasterDamage = bestDirectMasterDamageForPlayer(state, playerId);
   if (directMasterDamage > 0) {
     const racePenalty =
@@ -720,7 +756,7 @@ function createMasterAttackDecision(state: GameState, target: Target): CpuDecisi
 
   const damage = targetBefore.hp - targetAfter.hp;
   const score = 10 * damage - 18;
-  if (damage <= 0 || score < 0) {
+  if (damage <= 0 || score < 0 || shouldPruneCloseoutNonProgressActions(state, state.currentPlayer)) {
     return undefined;
   }
 
@@ -768,6 +804,9 @@ function createWakeUpDecision(state: GameState, target: Target): CpuDecision | u
   if (!canActNow && isDeckOutRace(state)) {
     return undefined;
   }
+  if (!canActNow && shouldPruneCloseoutNonProgressActions(state, state.currentPlayer)) {
+    return undefined;
+  }
   const score = 28 + monsterValue(state, target.slotKey) * 0.35 + bestFollowUpAttack * 0.45 + (canActNow ? 35 : 0) - 16;
   if (score < 32) {
     return undefined;
@@ -805,10 +844,14 @@ function createShieldDecision(state: GameState, target: Target): CpuDecision | u
   const reducesDamage = threatAfterShield.maxDamage < threat.maxDamage;
   const important = monster.level >= 2 || getMonsterDef(monster.cardId).role === "back" || monster.hp <= 2;
   const levelUpPotential = nextTurnLevelUpPotential(state, target.slotKey);
+  const closeout = shouldPruneCloseoutNonProgressActions(state, state.currentPlayer);
   if (!threat.threatened && isDeckOutRace(state)) {
     return undefined;
   }
   if (!threat.threatened && !important) {
+    return undefined;
+  }
+  if (closeout && !preventsLethal && !threat.lethal && levelUpPotential <= 0) {
     return undefined;
   }
   const score =
@@ -981,6 +1024,9 @@ function listSummonDecisions(state: GameState): CpuDecision[] {
         continue;
       }
       const score = scoreSummon(state, card.cardId, slotKey);
+      if (shouldPruneCloseoutNonProgressActions(state, playerId) && score <= 20) {
+        continue;
+      }
       decisions.push({
         type: "summon",
         handInstanceId: card.instanceId,
@@ -1010,6 +1056,10 @@ function scoreSummon(state: GameState, cardId: string, slotKey: SlotKey): number
     score += frontFilled ? 20 : -20;
   } else {
     score += cardId === "morgan" ? 5 : -10;
+  }
+
+  if (shouldPruneCloseoutNonProgressActions(state, state.currentPlayer) && !boardEmpty) {
+    score -= 60;
   }
 
   return score + memberRatingValueBonus(cardId, state.players[state.currentPlayer].masterId);
@@ -1160,21 +1210,24 @@ function moveReason(state: GameState, after: GameState, fromSlotKey: SlotKey, to
 }
 
 function listFocusDecisions(state: GameState): CpuDecision[] {
+  if (shouldPruneCloseoutNonProgressActions(state, state.currentPlayer)) {
+    return [];
+  }
   return FIELD_ORDER_BY_PLAYER[state.currentPlayer]
     .filter((slotKey) => canFocusMonster(state, slotKey))
-    .map((slotKey) => {
+    .flatMap((slotKey) => {
       const score = scoreFocus(state, slotKey);
       const monster = state.slots[slotKey].monster;
       const reason =
         monster && bestDirectMasterDamageForPlayer(state, monster.owner) > 0
           ? "上の技の打点を伸ばしてマスター攻撃につなげるためためる"
           : "有効攻撃がないためためる";
-      return {
+      return [{
         type: "focus",
         slotKey,
         reason,
         score,
-      };
+      }];
     });
 }
 
@@ -1202,6 +1255,12 @@ function scoreFocus(state: GameState, slotKey: SlotKey): number {
     const opponent = opponentOf(monster.owner);
     if (state.players[monster.owner].masterHp <= state.players[opponent].masterHp) {
       score -= 18;
+    }
+  } else if (shouldPruneCloseoutNonProgressActions(state, monster.owner)) {
+    const opponent = opponentOf(monster.owner);
+    score -= 28;
+    if (state.players[monster.owner].masterHp <= 2 || state.players[opponent].masterHp <= 2) {
+      score -= 16;
     }
   }
   return score;
