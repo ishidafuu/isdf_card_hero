@@ -136,7 +136,7 @@ src/game/ruleEngine/random.ts      seed乱数、shuffle。
 
 ### Step 4: ダメージ/撃破
 
-状態: 着手中。`src/game/ruleEngine/damage.ts` を追加し、`DamageContext`、マスターシールド後のダメージ計算、レベルアップ可能数の純粋計算を切り出した。
+状態: 着手中。`src/game/ruleEngine/damage.ts` を追加し、`DamageContext`、マスターシールド後のダメージ計算、レベルアップ可能数の純粋計算を切り出した。追加で `src/game/ruleEngine/defeat.ts` を追加し、撃破時のストーン返却、捨て札/山札戻り、盤面からの除去を小分割した。
 
 移動候補:
 
@@ -219,5 +219,5 @@ git diff --check
 
 ## 次に進めるなら
 
-次の実装ステップは Step 4 のダメージ/撃破。
-`damageMonster`、`damageMasterByPower`、`defeatMonster`、`resolveLevelUp` 周辺を小さく分け、反撃、死亡時、レベルアップ、ストーン返却のテストを先に固定してから `ruleEngine/damage.ts` へ移す。
+次の実装ステップは Step 4 の継続。
+`damageMonster`、`damageMasterByPower`、`resolveLevelUp` 周辺を小さく分け、反撃、死亡時、レベルアップ、ストーン返却のテストを先に固定してから `ruleEngine/damage.ts` / `ruleEngine/defeat.ts` へ移す。

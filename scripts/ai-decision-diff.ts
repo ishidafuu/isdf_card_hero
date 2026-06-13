@@ -1,6 +1,7 @@
 import { chooseCpuDecision, type CpuAiProfile, type CpuAiProfiles, type CpuDecision } from "../src/game/cpuAi";
+import { getCardName } from "../src/game/cards";
 import { createInitialGame, runAutoStep } from "../src/game/rules";
-import type { PlayerId, Target } from "../src/game/types";
+import type { GameState, PlayerId, SlotKey, Target } from "../src/game/types";
 
 type Direction = "challenger-as-cpu" | "challenger-as-player";
 
@@ -11,6 +12,8 @@ interface Options {
   direction: Direction;
   maxSteps: number;
   maxDiffs: number;
+  turnFrom?: number;
+  turnTo?: number;
 }
 
 const options = parseArgs(process.argv.slice(2));
@@ -21,7 +24,11 @@ const result = runDecisionDiff(options, profiles, challengerPlayer);
 console.log(`AI decision diff: seed ${options.seed}, ${options.direction}`);
 console.log(`Profiles: player ${profiles.player}, cpu ${profiles.cpu}`);
 console.log(`Winner: ${result.winner ?? "none"} after ${result.steps} steps / ${result.turnNumber} turns`);
+if (options.turnFrom !== undefined || options.turnTo !== undefined) {
+  console.log(`Turn filter: ${options.turnFrom ?? "start"}-${options.turnTo ?? "end"}`);
+}
 console.log(`Diffs: ${result.diffs.length}`);
+printDecisionDiffSummary(result.diffs, options);
 for (const diff of result.diffs) {
   console.log(
     [
@@ -34,28 +41,47 @@ for (const diff of result.diffs) {
   );
   console.log(`  ${options.baselineProfile}: ${diff.baseline.text} score=${diff.baseline.score} reason=${diff.baseline.reason}`);
   console.log(`  ${options.challengerProfile}: ${diff.challenger.text} score=${diff.challenger.score} reason=${diff.challenger.reason}`);
+  console.log(`  score gap: ${diff.scoreGap}`);
+  console.log(`  resources: ${diff.resourceSummary}`);
+  console.log(`  board: ${diff.boardSummary}`);
+  if (diff.recentLog.length > 0) {
+    console.log(`  recent: ${diff.recentLog.join(" / ")}`);
+  }
+}
+
+interface DecisionDiff {
+  step: number;
+  turnNumber: number;
+  player: PlayerId;
+  playerHp: number;
+  cpuHp: number;
+  playerStones: number;
+  cpuStones: number;
+  baseline: DecisionSummary;
+  challenger: DecisionSummary;
+  scoreGap: number;
+  resourceSummary: string;
+  boardSummary: string;
+  recentLog: string[];
 }
 
 function runDecisionDiff(options: Options, profiles: CpuAiProfiles, challengerPlayer: PlayerId) {
   let game = createInitialGame(options.seed);
-  const diffs: Array<{
-    step: number;
-    turnNumber: number;
-    player: PlayerId;
-    playerHp: number;
-    cpuHp: number;
-    playerStones: number;
-    cpuStones: number;
-    baseline: DecisionSummary;
-    challenger: DecisionSummary;
-  }> = [];
+  const diffs: DecisionDiff[] = [];
   let step = 0;
 
   for (; step < options.maxSteps && !game.winner; step += 1) {
-    if (!game.pendingLevelUp && game.currentPlayer === challengerPlayer && diffs.length < options.maxDiffs) {
+    if (
+      !game.pendingLevelUp &&
+      game.currentPlayer === challengerPlayer &&
+      diffs.length < options.maxDiffs &&
+      isTurnInRange(game.turnNumber, options)
+    ) {
       const baseline = chooseCpuDecision(game, { profile: options.baselineProfile });
       const challenger = chooseCpuDecision(game, { profile: options.challengerProfile });
       if (decisionKey(baseline) !== decisionKey(challenger)) {
+        const baselineSummary = summarizeDecision(baseline);
+        const challengerSummary = summarizeDecision(challenger);
         diffs.push({
           step,
           turnNumber: game.turnNumber,
@@ -64,8 +90,12 @@ function runDecisionDiff(options: Options, profiles: CpuAiProfiles, challengerPl
           cpuHp: game.players.cpu.masterHp,
           playerStones: game.players.player.stones,
           cpuStones: game.players.cpu.stones,
-          baseline: summarizeDecision(baseline),
-          challenger: summarizeDecision(challenger),
+          baseline: baselineSummary,
+          challenger: challengerSummary,
+          scoreGap: decisionScoreGap(baselineSummary, challengerSummary),
+          resourceSummary: resourceSummary(game),
+          boardSummary: boardSummary(game),
+          recentLog: game.log.slice(-3),
         });
       }
     }
@@ -73,6 +103,31 @@ function runDecisionDiff(options: Options, profiles: CpuAiProfiles, challengerPl
   }
 
   return { winner: game.winner, steps: step, turnNumber: game.turnNumber, diffs };
+}
+
+function isTurnInRange(turnNumber: number, options: Options): boolean {
+  if (options.turnFrom !== undefined && turnNumber < options.turnFrom) {
+    return false;
+  }
+  if (options.turnTo !== undefined && turnNumber > options.turnTo) {
+    return false;
+  }
+  return true;
+}
+
+function printDecisionDiffSummary(diffs: DecisionDiff[], options: Options): void {
+  if (diffs.length === 0) {
+    console.log("Summary: no profile differences in the inspected range.");
+    return;
+  }
+  const first = diffs[0];
+  const last = diffs[diffs.length - 1];
+  const largestGap = diffs.reduce((best, diff) => (diff.scoreGap > best.scoreGap ? diff : best), first);
+  console.log(
+    `Summary: first step ${first.step}/turn ${first.turnNumber}, last step ${last.step}/turn ${last.turnNumber}, largest score gap ${largestGap.scoreGap} at step ${largestGap.step}`,
+  );
+  console.log(`  first ${options.baselineProfile}: ${first.baseline.text}`);
+  console.log(`  first ${options.challengerProfile}: ${first.challenger.text}`);
 }
 
 interface DecisionSummary {
@@ -87,6 +142,54 @@ function summarizeDecision(decision: CpuDecision): DecisionSummary {
     score: decision.score,
     reason: decision.reason,
   };
+}
+
+function decisionScoreGap(baseline: DecisionSummary, challenger: DecisionSummary): number {
+  return Math.abs(Math.round(challenger.score - baseline.score));
+}
+
+function resourceSummary(game: GameState): string {
+  return [
+    `P hand/deck/discard ${game.players.player.hand.length}/${game.players.player.deck.length}/${game.players.player.discard.length}`,
+    `C hand/deck/discard ${game.players.cpu.hand.length}/${game.players.cpu.deck.length}/${game.players.cpu.discard.length}`,
+  ].join(" | ");
+}
+
+function boardSummary(game: GameState): string {
+  const slots: SlotKey[] = [
+    "cpu_back_left",
+    "cpu_back_right",
+    "cpu_front_left",
+    "cpu_front_right",
+    "player_front_left",
+    "player_front_right",
+    "player_back_left",
+    "player_back_right",
+  ];
+  return slots.map((slotKey) => slotSummary(game, slotKey)).filter(Boolean).join(" | ") || "empty";
+}
+
+function slotSummary(game: GameState, slotKey: SlotKey): string {
+  const monster = game.slots[slotKey].monster;
+  if (!monster) {
+    return "";
+  }
+  const side = monster.owner === "player" ? "P" : "C";
+  const status = monster.status === "prepared" ? "prep" : `act${monster.actionCount}/${monster.actionLimit}`;
+  const flags = [
+    monster.focused ? "気" : "",
+    monster.shielded ? "盾" : "",
+    monster.powerUp ? "力" : "",
+  ].filter(Boolean).join("");
+  return `${slotLabel(slotKey)}:${side}${getCardName(monster.cardId)} Lv${monster.level} HP${monster.hp} ${status}${flags ? ` ${flags}` : ""}`;
+}
+
+function slotLabel(slotKey: SlotKey): string {
+  const [owner, row, lane] = slotKey.split("_");
+  const side = owner === "player" ? "P" : "C";
+  const rowLabel = row === "front" ? "F" : "B";
+  const laneLabel = lane === "left" ? "L" : "R";
+  return `${side}${rowLabel}${laneLabel}`;
 }
 
 function decisionKey(decision: CpuDecision): string {
@@ -152,6 +255,12 @@ function parseArgs(args: string[]): Options {
     } else if (arg === "--max-diffs") {
       parsed.maxDiffs = readNumber(arg, next);
       i += 1;
+    } else if (arg === "--turn-from") {
+      parsed.turnFrom = readNumber(arg, next);
+      i += 1;
+    } else if (arg === "--turn-to") {
+      parsed.turnTo = readNumber(arg, next);
+      i += 1;
     } else if (arg === "--help" || arg === "-h") {
       printHelp();
       process.exit(0);
@@ -213,5 +322,7 @@ Options:
   --direction <id>        challenger-as-cpu or challenger-as-player. Default: challenger-as-cpu.
   --max-steps <n>         Maximum replay steps. Default: 220
   --max-diffs <n>         Maximum profile differences to print. Default: 20
+  --turn-from <n>         Only inspect differences from this turn.
+  --turn-to <n>           Only inspect differences through this turn.
 `);
 }

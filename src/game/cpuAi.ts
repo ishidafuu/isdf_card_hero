@@ -245,7 +245,12 @@ function shouldDampenLookaheadForMasterRace(
     return false;
   }
   const opponent = opponentOf(perspective);
-  if (before.players[perspective].masterHp >= before.players[opponent].masterHp) {
+  const isMasterRaceRelevant =
+    before.players[perspective].masterHp < before.players[opponent].masterHp ||
+    before.players[opponent].masterHp <= 8 ||
+    before.players[perspective].deck.length <= 3 ||
+    before.players[opponent].deck.length <= 3;
+  if (!isMasterRaceRelevant) {
     return false;
   }
   if (candidate.decision.type === "master_action" && candidate.decision.actionId === "shield") {
@@ -569,6 +574,14 @@ function scoreAttackDecision(state: GameState, after: GameState, action: Command
   if (damage <= 0) {
     return stateDelta > 8 ? 30 + stateDelta + recoilPenalty : -100;
   }
+  const directMasterDamage = bestDirectMasterDamageForPlayer(state, playerId);
+  if (directMasterDamage > 0) {
+    const racePenalty =
+      34 +
+      directMasterDamage * 22 +
+      (state.players[playerId].masterHp <= state.players[opponent].masterHp ? 18 : 0);
+    return 25 * damage + recoilPenalty - racePenalty;
+  }
   return 25 * damage + recoilPenalty;
 }
 
@@ -757,8 +770,8 @@ function createShieldDecision(state: GameState, target: Target): CpuDecision | u
   const score =
     14 +
     monsterValue(state, target.slotKey) * 0.18 +
-    levelUpPotential * 0.18 +
-    (preventsLethal ? 90 : threat.lethal ? 42 : reducesDamage ? 28 : threat.threatened ? 18 : 0) -
+    levelUpPotential * 0.24 +
+    (preventsLethal ? 96 : threat.lethal ? 48 : reducesDamage ? 30 : threat.threatened ? 20 : 0) -
     14;
   if (score < 28) {
     return undefined;
@@ -1107,10 +1120,15 @@ function listFocusDecisions(state: GameState): CpuDecision[] {
     .filter((slotKey) => canFocusMonster(state, slotKey))
     .map((slotKey) => {
       const score = scoreFocus(state, slotKey);
+      const monster = state.slots[slotKey].monster;
+      const reason =
+        monster && bestDirectMasterDamageForPlayer(state, monster.owner) > 0
+          ? "上の技の打点を伸ばしてマスター攻撃につなげるためためる"
+          : "有効攻撃がないためためる";
       return {
         type: "focus",
         slotKey,
-        reason: "有効攻撃がないためためる",
+        reason,
         score,
       };
     });
@@ -1133,6 +1151,14 @@ function scoreFocus(state: GameState, slotKey: SlotKey): number {
   }
   if (getMonsterDef(monster.cardId).role === "back") {
     score += 8;
+  }
+  const directMasterDamage = bestDirectMasterDamageForPlayer(state, monster.owner);
+  if (directMasterDamage > 0) {
+    score -= 42 + directMasterDamage * 30;
+    const opponent = opponentOf(monster.owner);
+    if (state.players[monster.owner].masterHp <= state.players[opponent].masterHp) {
+      score -= 18;
+    }
   }
   return score;
 }
@@ -1518,6 +1544,28 @@ function bestAttackOpportunityScore(
 function bestAttackOpportunityScoreForPlayer(state: GameState, playerId: PlayerId, readyForNextTurn = false): number {
   const next = readyForNextTurn ? readyPlayerForTacticalEvaluation(state, playerId) : ({ ...state, currentPlayer: playerId } as GameState);
   return bestAttackOpportunityScore(next);
+}
+
+function bestDirectMasterDamageForPlayer(state: GameState, playerId: PlayerId): number {
+  const scopedState = playerId === state.currentPlayer ? state : ({ ...state, currentPlayer: playerId } as GameState);
+  const opponent = opponentOf(playerId);
+  let bestDamage = 0;
+
+  for (const slotKey of FIELD_ORDER_BY_PLAYER[playerId]) {
+    const monster = scopedState.slots[slotKey].monster;
+    if (!monster?.status || monster.status !== "active" || monster.actionCount >= monster.actionLimit) {
+      continue;
+    }
+    for (const command of getMonsterCommands(monster)) {
+      for (const target of getCommandTargets(scopedState, slotKey, command.id)) {
+        if (target.kind === "master" && target.playerId === opponent) {
+          bestDamage = Math.max(bestDamage, Math.max(0, estimateCommandPower(monster, command) - 2));
+        }
+      }
+    }
+  }
+
+  return bestDamage;
 }
 
 function readyPlayerForTacticalEvaluation(state: GameState, playerId: PlayerId): GameState {

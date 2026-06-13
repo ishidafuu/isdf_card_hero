@@ -2175,6 +2175,62 @@ button:disabled {
   margin: 0;
 }
 
+.battle-history-comparison {
+  background: #f7faf3;
+  border: 1px solid #d5ddce;
+  border-radius: 6px;
+  display: grid;
+  gap: 8px;
+  padding: 8px;
+}
+
+.battle-history-comparison.empty {
+  background: #fbfcf8;
+}
+
+.battle-history-comparison > strong,
+.history-compare-seed {
+  color: #1e2b26;
+  font-size: 13px;
+}
+
+.battle-history-comparison p {
+  color: #5f6f67;
+  font-size: 12px;
+  line-height: 1.45;
+  margin: 0;
+}
+
+.history-compare-group {
+  display: grid;
+  gap: 6px;
+}
+
+.history-compare-grid {
+  display: grid;
+  gap: 6px;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.history-compare-card {
+  background: #fffefa;
+  border: 1px solid #d8dfd1;
+  border-radius: 6px;
+  display: grid;
+  gap: 2px;
+  padding: 6px;
+}
+
+.history-compare-card strong {
+  font-size: 12px;
+}
+
+.history-compare-card span {
+  color: #56615d;
+  font-size: 11px;
+  line-height: 1.35;
+}
+
 .battle-history-row {
   align-items: start;
   background: #fbfcf8;
@@ -2204,6 +2260,56 @@ button:disabled {
   font-size: 12px;
   gap: 4px 8px;
   margin-bottom: 6px;
+}
+
+.battle-replay-summary {
+  margin-top: 8px;
+}
+
+.battle-replay-summary summary {
+  color: #1e2b26;
+  cursor: pointer;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.battle-replay-phase {
+  display: grid;
+  gap: 4px;
+  margin-top: 6px;
+}
+
+.battle-replay-phase > strong {
+  color: #56615d;
+  font-size: 11px;
+}
+
+.battle-replay-phase ol {
+  display: grid;
+  gap: 4px;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.battle-replay-phase li {
+  align-items: start;
+  border-left: 3px solid #b7c7b5;
+  display: grid;
+  gap: 4px;
+  grid-template-columns: auto auto minmax(0, 1fr);
+  padding: 3px 0 3px 6px;
+}
+
+.battle-replay-phase li span {
+  color: #6a756f;
+  font-size: 11px;
+}
+
+.battle-replay-phase li p {
+  font-size: 11px;
+  line-height: 1.35;
+  margin: 0;
 }
 
 @media (max-width: 1180px) {

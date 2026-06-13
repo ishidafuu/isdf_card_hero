@@ -30,6 +30,7 @@ import {
   masterShieldDamage,
   type DamageContext,
 } from "./ruleEngine/damage";
+import { removeDefeatedMonster, type DefeatedMonster } from "./ruleEngine/defeat";
 import { randomChance, randomInt, shuffle } from "./ruleEngine/random";
 import { cloneState } from "./ruleEngine/state";
 import {
@@ -75,13 +76,6 @@ export interface CreateInitialGameOptions {
   playerDeckCardIds?: string[];
   cpuDeckCardIds?: string[];
   allowSpecialDecks?: Partial<Record<PlayerId, boolean>>;
-}
-
-interface DefeatedMonster {
-  owner: PlayerId;
-  cardId: string;
-  level: number;
-  investedStones: number;
 }
 
 export function createInitialGame(seed = Date.now(), options: CreateInitialGameOptions = {}): GameState {
@@ -1885,28 +1879,14 @@ function defeatMonster(
     return undefined;
   }
 
-  const owner = state.players[monster.owner];
-  owner.stones += monster.investedStones;
-  const defeatedCard = { cardId: monster.cardId, instanceId: monster.instanceId };
-  if (monster.reviveOnDefeat) {
-    owner.deck.unshift(defeatedCard);
-  } else {
-    owner.discard.push(defeatedCard);
-  }
-  appendLog(state, `${monsterName(monster)}は倒れ、${playerLabel(monster.owner)}にストーン${monster.investedStones}個が戻った`);
+  clearDeathChain(state, slotKey);
+  const resolution = removeDefeatedMonster(state, slotKey);
+  appendLog(state, `${monsterName(resolution.monster)}は倒れ、${playerLabel(resolution.monster.owner)}にストーン${resolution.returnedStones}個が戻った`);
   if (monster.shadowCursed) {
     decreaseMasterHp(state, monster.owner, 1, "かげ呪い");
   }
   applyDefeatCurses(state, monster, context.attackerSlotKey);
-  clearDeathChain(state, slotKey);
-  const defeated: DefeatedMonster = {
-    owner: monster.owner,
-    cardId: monster.cardId,
-    level: monster.level,
-    investedStones: monster.investedStones,
-  };
-  delete slot.monster;
-  return defeated;
+  return resolution.defeated;
 }
 
 function getLevelUpCapacity(state: GameState, attackerSlotKey: SlotKey, defeatedLevel: number): number {

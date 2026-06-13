@@ -174,6 +174,19 @@ interface BattleHistoryEntry {
   cpuDeck: number;
   deckout: boolean;
   longGame: boolean;
+  replay?: BattleReplaySummary;
+}
+
+interface BattleReplayEvent {
+  index: number;
+  entry: string;
+}
+
+interface BattleReplaySummary {
+  early: BattleReplayEvent[];
+  middle: BattleReplayEvent[];
+  late: BattleReplayEvent[];
+  decisive: BattleReplayEvent[];
 }
 
 interface SavedBattlePreset {
@@ -422,7 +435,65 @@ function createBattleHistoryEntry(
     cpuDeck: game.players.cpu.deck.length,
     deckout,
     longGame: game.turnNumber >= 25,
+    replay: createBattleReplaySummary(game.log),
   };
+}
+
+function createBattleReplaySummary(log: string[]): BattleReplaySummary {
+  const phases = splitReplayLogPhases(log);
+  const decisive = pickReplayEvents(log, 0, log.length, 5);
+  return {
+    early: pickReplayEvents(log, phases.early.start, phases.early.end, 3),
+    middle: pickReplayEvents(log, phases.middle.start, phases.middle.end, 3),
+    late: pickReplayEvents(log, phases.late.start, phases.late.end, 4),
+    decisive,
+  };
+}
+
+function splitReplayLogPhases(log: string[]) {
+  const third = Math.max(1, Math.floor(log.length / 3));
+  return {
+    early: { start: 0, end: Math.min(log.length, third) },
+    middle: { start: Math.min(log.length, third), end: Math.min(log.length, third * 2) },
+    late: { start: Math.min(log.length, third * 2), end: log.length },
+  };
+}
+
+function pickReplayEvents(log: string[], start: number, end: number, limit: number): BattleReplayEvent[] {
+  const scoped = log
+    .map((entry, index) => ({ entry, index }))
+    .slice(start, end)
+    .filter(({ entry }) => replayEventPriority(entry) > 0)
+    .sort((a, b) => replayEventPriority(b.entry) - replayEventPriority(a.entry) || a.index - b.index);
+  return scoped.slice(0, limit).sort((a, b) => a.index - b.index);
+}
+
+function replayEventPriority(entry: string): number {
+  if (entry.includes("勝利")) {
+    return 100;
+  }
+  if (entry.includes("判断:")) {
+    return 90;
+  }
+  if (entry.includes("倒れ") || entry.includes("撃破")) {
+    return 80;
+  }
+  if (entry.includes("マスターHPが") || entry.includes("山札切れ")) {
+    return 75;
+  }
+  if (entry.includes("レベル") || entry.includes("Lv")) {
+    return 70;
+  }
+  if (entry.includes("ランダム結果")) {
+    return 65;
+  }
+  if (entry.includes("シールド") || entry.includes("ウェイクアップ") || entry.includes("バーサク") || entry.includes("大地の怒り")) {
+    return 60;
+  }
+  if (entry.includes("召喚") || entry.includes("登場")) {
+    return 45;
+  }
+  return 0;
 }
 
 function createBattleResultKey(game: GameState, settings: BattleSettings): string {
@@ -2339,6 +2410,7 @@ function BattleHistoryPanel({
   onReplay: (entry: BattleHistoryEntry) => void;
   onClear: () => void;
 }) {
+  const comparisonGroups = createHistoryComparisonGroups(history);
   return (
     <section className="battle-history-panel">
       <div className="battle-history-heading">
@@ -2353,37 +2425,157 @@ function BattleHistoryPanel({
       {history.length === 0 ? (
         <p className="empty-note">対戦終了後にseed、先攻、AI、マスター、デッキ条件がここに保存されます。</p>
       ) : (
-        <ol className="battle-history-list">
-          {history.map((entry) => (
-          <li className="battle-history-row" key={entry.id}>
-            <div>
-              <strong>
-                <Icon icon="🏆" /> {playerLabel(entry.winner)} / Seed {entry.seed}
-              </strong>
-              <div className="battle-history-meta">
-                <span>{entry.mode === "cpu-vs-cpu" ? "CPU vs CPU" : "Player vs CPU"}</span>
-                <span>先攻 {playerLabel(entry.firstPlayer)}</span>
-                <span>AI {aiProfileSummary(entry.aiProfiles)}</span>
-                <span>P {getMasterName(entry.masterIds.player)} / C {getMasterName(entry.masterIds.cpu)}</span>
-                <span>{historyDeckSummary(entry.deckSettings)}</span>
-              </div>
-              <div className="battle-result-summary">
-                <span><Icon icon="⏱️" /> Turn {entry.turns}</span>
-                <span><Icon icon="❤️" /> P {entry.playerHp} / C {entry.cpuHp}</span>
-                <span><Icon icon="🂠" /> P {entry.playerDeck} / C {entry.cpuDeck}</span>
-                {entry.deckout && <span className="result-warning"><Icon icon="🩸" /> 山札切れ</span>}
-                {entry.longGame && <span className="result-warning"><Icon icon="⌛" /> 長期戦</span>}
-              </div>
-            </div>
-            <button type="button" onClick={() => onReplay(entry)}>
-              <Icon icon="🔁" /> 再現
-            </button>
-          </li>
-          ))}
-        </ol>
+        <>
+          <BattleHistoryComparison groups={comparisonGroups} />
+          <ol className="battle-history-list">
+            {history.map((entry) => (
+              <li className="battle-history-row" key={entry.id}>
+                <div>
+                  <strong>
+                    <Icon icon="🏆" /> {playerLabel(entry.winner)} / Seed {entry.seed}
+                  </strong>
+                  <div className="battle-history-meta">
+                    <span>{formatHistoryTimestamp(entry.createdAt)}</span>
+                    <span>{entry.mode === "cpu-vs-cpu" ? "CPU vs CPU" : "Player vs CPU"}</span>
+                    <span>先攻 {playerLabel(entry.firstPlayer)}</span>
+                    <span>AI {aiProfileSummary(entry.aiProfiles)}</span>
+                    <span>P {getMasterName(entry.masterIds.player)} / C {getMasterName(entry.masterIds.cpu)}</span>
+                    <span>{historyDeckSummary(entry.deckSettings)}</span>
+                  </div>
+                  <div className="battle-result-summary">
+                    <span><Icon icon="⏱️" /> Turn {entry.turns}</span>
+                    <span><Icon icon="❤️" /> P {entry.playerHp} / C {entry.cpuHp}</span>
+                    <span><Icon icon="🂠" /> P {entry.playerDeck} / C {entry.cpuDeck}</span>
+                    {entry.deckout && <span className="result-warning"><Icon icon="🩸" /> 山札切れ</span>}
+                    {entry.longGame && <span className="result-warning"><Icon icon="⌛" /> 長期戦</span>}
+                  </div>
+                  <BattleReplaySummaryView replay={entry.replay} />
+                </div>
+                <button type="button" onClick={() => onReplay(entry)}>
+                  <Icon icon="🔁" /> 再現
+                </button>
+              </li>
+            ))}
+          </ol>
+        </>
       )}
     </section>
   );
+}
+
+function BattleHistoryComparison({ groups }: { groups: BattleHistoryEntry[][] }) {
+  if (groups.length === 0) {
+    return (
+      <div className="battle-history-comparison empty">
+        <strong><Icon icon="📊" /> Compare</strong>
+        <p>同じseedの履歴が2件以上になると、AI/マスター/デッキ差分を比較できます。</p>
+      </div>
+    );
+  }
+
+  return (
+    <div className="battle-history-comparison">
+      <strong><Icon icon="📊" /> Compare</strong>
+      {groups.slice(0, 2).map((group) => (
+        <div className="history-compare-group" key={group[0].seed}>
+          <span className="history-compare-seed">Seed {group[0].seed}</span>
+          <div className="history-compare-grid">
+            {group.slice(0, 4).map((entry) => (
+              <div className="history-compare-card" key={entry.id}>
+                <strong>{playerLabel(entry.winner)} win</strong>
+                <span>{entry.turns}T / HP {entry.playerHp}-{entry.cpuHp}</span>
+                <span>{getMasterName(entry.masterIds.player)} vs {getMasterName(entry.masterIds.cpu)}</span>
+                <span>{aiProfileSummary(entry.aiProfiles)}</span>
+                <span>{historyDeckSummary(entry.deckSettings)}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+      ))}
+    </div>
+  );
+}
+
+function BattleReplaySummaryView({ replay }: { replay?: BattleReplaySummary }) {
+  if (!replay) {
+    return <p className="empty-note">旧履歴のためリプレイ要点はありません。</p>;
+  }
+  const sections = [
+    ["序盤", replay.early],
+    ["中盤", replay.middle],
+    ["終盤", replay.late],
+    ["決定打", replay.decisive],
+  ] as const;
+  if (sections.every(([, events]) => events.length === 0)) {
+    return <p className="empty-note">要点ログはありません。</p>;
+  }
+  return (
+    <details className="battle-replay-summary">
+      <summary><Icon icon="🧭" /> リプレイ要点</summary>
+      {sections.map(([label, events]) => (
+        <div className="battle-replay-phase" key={label}>
+          <strong>{label}</strong>
+          {events.length === 0 ? (
+            <span className="empty-note">なし</span>
+          ) : (
+            <ol>
+              {events.map((event) => (
+                <li className={logTone(event.entry)} key={`${label}_${event.index}`}>
+                  <Icon icon={logIcon(event.entry)} />
+                  <span>#{event.index + 1}</span>
+                  <p>{event.entry}</p>
+                </li>
+              ))}
+            </ol>
+          )}
+        </div>
+      ))}
+    </details>
+  );
+}
+
+function createHistoryComparisonGroups(history: BattleHistoryEntry[]): BattleHistoryEntry[][] {
+  const groups = new Map<number, BattleHistoryEntry[]>();
+  for (const entry of history) {
+    groups.set(entry.seed, [...(groups.get(entry.seed) ?? []), entry]);
+  }
+  return [...groups.values()]
+    .filter((group) => group.length >= 2 && hasMeaningfulHistoryDifference(group))
+    .sort((a, b) => historyTimestampValue(b[0]) - historyTimestampValue(a[0]));
+}
+
+function hasMeaningfulHistoryDifference(group: BattleHistoryEntry[]): boolean {
+  const keys = new Set(
+    group.map((entry) => [
+      entry.winner,
+      entry.firstPlayer,
+      entry.mode,
+      entry.masterIds.player,
+      entry.masterIds.cpu,
+      entry.aiProfiles.player,
+      entry.aiProfiles.cpu,
+      historyDeckSummary(entry.deckSettings),
+    ].join("|")),
+  );
+  return keys.size > 1;
+}
+
+function formatHistoryTimestamp(value: string): string {
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) {
+    return "日時不明";
+  }
+  return date.toLocaleString("ja-JP", {
+    month: "2-digit",
+    day: "2-digit",
+    hour: "2-digit",
+    minute: "2-digit",
+  });
+}
+
+function historyTimestampValue(entry: BattleHistoryEntry): number {
+  const timestamp = Date.parse(entry.createdAt);
+  return Number.isFinite(timestamp) ? timestamp : 0;
 }
 
 interface StatusIconCountProps {

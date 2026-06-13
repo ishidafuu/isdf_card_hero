@@ -63,6 +63,25 @@ describe("cpu ai", () => {
     }
   });
 
+  it("does not spend an action focusing when direct master damage is already available", () => {
+    const game = createCpuGame();
+    game.players.cpu.hand = [];
+    game.players.cpu.stones = 0;
+    game.players.cpu.masterHp = 10;
+    game.players.player.masterHp = 10;
+    game.slots.cpu_front_left.monster = createActiveMonster("morgan", "cpu", {
+      hp: 4,
+      level: 2,
+    });
+
+    const decision = chooseCpuDecision(game, { profile: "strong" });
+
+    expect(decision.type).toBe("attack");
+    if (decision.type === "attack") {
+      expect(decision.action.target).toEqual({ kind: "master", playerId: "player" });
+    }
+  });
+
   it("does not list attacks against allied monsters", () => {
     const game = createCpuGame();
     game.players.cpu.hand = [];
