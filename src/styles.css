@@ -1781,7 +1781,7 @@ button:disabled {
   display: flex;
   flex-direction: column;
   gap: 4px;
-  min-height: 132px;
+  min-height: 148px;
   overflow: hidden;
   padding: 6px;
   text-align: left;
@@ -1884,16 +1884,68 @@ button:disabled {
   line-height: 1.3;
 }
 
+.deck-icon-matrix-wrap {
+  display: grid;
+  gap: 4px;
+  min-width: 0;
+}
+
+.deck-preset-row .deck-icon-matrix-wrap {
+  grid-column: 1 / -1;
+}
+
+.deck-icon-kind-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 3px;
+  min-width: 0;
+}
+
+.deck-icon-kind-legend span {
+  border: 1px solid #cbd5c5;
+  border-radius: 4px;
+  color: #33403c;
+  font-size: 10px;
+  font-weight: 800;
+  line-height: 1;
+  padding: 2px 5px;
+}
+
+.deck-icon-kind-legend .front {
+  background: #eaf3ed;
+  border-color: #80aa8a;
+}
+
+.deck-icon-kind-legend .back {
+  background: #edf1fb;
+  border-color: #8597ce;
+}
+
+.deck-icon-kind-legend .magic {
+  background: #fff4df;
+  border-color: #c49d41;
+}
+
+.deck-icon-kind-legend .special {
+  background: #f9e9f3;
+  border-color: #bd7ead;
+}
+
+.deck-icon-matrix-wrap.compact {
+  gap: 3px;
+}
+
+.deck-icon-matrix-wrap.compact .deck-icon-kind-legend span {
+  font-size: 9px;
+  padding: 1px 4px;
+}
+
 .deck-icon-matrix {
   display: grid;
   gap: 4px;
   grid-template-columns: repeat(15, 48px);
   justify-content: start;
   min-width: 0;
-}
-
-.deck-preset-row .deck-icon-matrix {
-  grid-column: 1 / -1;
 }
 
 .deck-icon-matrix.compact {
@@ -1911,8 +1963,33 @@ button:disabled {
   justify-items: center;
   min-width: 0;
   overflow: hidden;
+  position: relative;
   padding: 1px;
   width: 48px;
+}
+
+.deck-icon-cell.group-start {
+  box-shadow: -3px 0 0 0 #5a6a64;
+}
+
+.deck-icon-cell.group-start::after {
+  align-items: center;
+  background: rgba(255, 254, 249, 0.86);
+  border: 1px solid rgba(38, 48, 46, 0.14);
+  border-radius: 3px;
+  color: #26302e;
+  content: attr(data-kind-label);
+  display: inline-flex;
+  font-size: 9px;
+  font-weight: 900;
+  height: 13px;
+  justify-content: center;
+  left: 1px;
+  line-height: 1;
+  min-width: 13px;
+  padding: 0 2px;
+  position: absolute;
+  top: 1px;
 }
 
 .deck-icon-matrix.compact .deck-icon-cell {
@@ -1924,29 +2001,45 @@ button:disabled {
 
 .deck-icon-cell.front {
   background: #eaf3ed;
-  border-color: #a5c5ad;
+  border-color: #80aa8a;
 }
 
 .deck-icon-cell.back {
   background: #edf1fb;
-  border-color: #aab7da;
+  border-color: #8597ce;
 }
 
 .deck-icon-cell.magic {
   background: #fff4df;
-  border-color: #d4bb7a;
+  border-color: #c49d41;
 }
 
 .deck-icon-cell.special {
   background: #f9e9f3;
-  border-color: #cc9fc0;
+  border-color: #bd7ead;
+}
+
+.deck-icon-cell.front.group-start {
+  box-shadow: -3px 0 0 0 #4e8c5f;
+}
+
+.deck-icon-cell.back.group-start {
+  box-shadow: -3px 0 0 0 #556fb4;
+}
+
+.deck-icon-cell.magic.group-start {
+  box-shadow: -3px 0 0 0 #b68124;
+}
+
+.deck-icon-cell.special.group-start {
+  box-shadow: -3px 0 0 0 #a35c91;
 }
 
 .deck-icon-cell .card-image-icon {
   border-radius: 2px;
-  height: 100%;
+  height: calc(100% - 3px);
   margin-right: 0;
-  width: 100%;
+  width: calc(100% - 3px);
 }
 
 .deck-icon-cell .ui-icon {
@@ -3057,6 +3150,10 @@ button:disabled {
 
   .deck-preset-row-list {
     grid-template-columns: 1fr;
+  }
+
+  .deck-icon-kind-legend span {
+    font-size: 9px;
   }
 
   .deck-icon-matrix {

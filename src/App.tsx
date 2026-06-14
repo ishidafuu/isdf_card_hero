@@ -250,6 +250,11 @@ interface DeckCardOption {
 }
 
 type DeckMatrixCellKind = "front" | "back" | "magic" | "special";
+interface DeckMatrixCell {
+  cardId: string;
+  kind: DeckMatrixCellKind;
+  groupStart: boolean;
+}
 
 const DECK_PRESET_MASTER_FILTER_OPTIONS = [
   { value: "all", label: "すべて" },
@@ -272,6 +277,7 @@ const DECK_PRESET_SORT_OPTIONS = [
 ] as const satisfies readonly { value: DeckPresetSortKey; label: string }[];
 
 const DECK_PRESET_VISIBLE_CHUNK = 80;
+const DECK_MATRIX_KIND_ORDER: DeckMatrixCellKind[] = ["front", "back", "magic", "special"];
 
 const DRAG_MIME = "application/x-card-hero-drag";
 
@@ -3825,21 +3831,32 @@ function DeckMatrixPreview({ preset }: { preset: DeckPresetDef }) {
 }
 
 function DeckIconMatrix({ cardIds, compact = false }: { cardIds: readonly string[]; compact?: boolean }) {
+  const cells = toDeckMatrixCells(cardIds);
+  const counts = deckMatrixKindCounts(cells);
+
   return (
-    <div className={`deck-icon-matrix ${compact ? "compact" : ""}`} aria-label="deck card icons">
-      {toDeckMatrixCardIds(cardIds).map((cardId, index) => {
-        const def = getCardDef(cardId);
-        return (
-          <span
-            className={`deck-icon-cell ${deckMatrixCellKind(cardId)}`}
-            title={`${def.name} / ${cardTypeLabel(cardId)}`}
-            aria-label={`${index + 1}. ${def.name}`}
-            key={`${cardId}-${index}`}
-          >
-            <CardIcon cardId={cardId} />
-          </span>
-        );
-      })}
+    <div className={`deck-icon-matrix-wrap ${compact ? "compact" : ""}`} aria-label="deck card icons">
+      <div className="deck-icon-kind-legend" aria-hidden="true">
+        {DECK_MATRIX_KIND_ORDER.map((kind) => (
+          <span className={kind} key={kind}>{deckMatrixKindLabel(kind)} {counts[kind]}</span>
+        ))}
+      </div>
+      <div className={`deck-icon-matrix ${compact ? "compact" : ""}`}>
+        {cells.map(({ cardId, kind, groupStart }, index) => {
+          const def = getCardDef(cardId);
+          return (
+            <span
+              className={`deck-icon-cell ${kind} ${groupStart ? "group-start" : ""}`}
+              data-kind-label={groupStart ? deckMatrixKindShortLabel(kind) : undefined}
+              title={`${def.name} / ${cardTypeLabel(cardId)}`}
+              aria-label={`${index + 1}. ${def.name}`}
+              key={`${cardId}-${index}`}
+            >
+              <CardIcon cardId={cardId} />
+            </span>
+          );
+        })}
+      </div>
     </div>
   );
 }
@@ -3948,12 +3965,18 @@ function formatDeckPresetMeta(preset: DeckPresetDef): string {
   return [preset.masterId ? getMasterName(preset.masterId) : undefined, preset.mode, preset.name].filter(Boolean).join(" / ");
 }
 
-function toDeckMatrixCardIds(cardIds: readonly string[]): string[] {
+function toDeckMatrixCells(cardIds: readonly string[]): DeckMatrixCell[] {
+  let previousKind: DeckMatrixCellKind | undefined;
   return [...cardIds].sort((a, b) => {
     const aDef = getCardDef(a);
     const bDef = getCardDef(b);
     const categoryDiff = deckCategorySortValue(aDef) - deckCategorySortValue(bDef);
     return categoryDiff || aDef.name.localeCompare(bDef.name, "ja") || a.localeCompare(b);
+  }).map((cardId) => {
+    const kind = deckMatrixCellKind(cardId);
+    const groupStart = kind !== previousKind;
+    previousKind = kind;
+    return { cardId, kind, groupStart };
   });
 }
 
@@ -3966,6 +3989,40 @@ function deckMatrixCellKind(cardId: string): DeckMatrixCellKind {
     return "magic";
   }
   return def.role === "front" ? "front" : "back";
+}
+
+function deckMatrixKindCounts(cells: readonly DeckMatrixCell[]): Record<DeckMatrixCellKind, number> {
+  const counts: Record<DeckMatrixCellKind, number> = { front: 0, back: 0, magic: 0, special: 0 };
+  for (const cell of cells) {
+    counts[cell.kind] += 1;
+  }
+  return counts;
+}
+
+function deckMatrixKindLabel(kind: DeckMatrixCellKind): string {
+  if (kind === "front") {
+    return "前衛";
+  }
+  if (kind === "back") {
+    return "後衛";
+  }
+  if (kind === "magic") {
+    return "マジック";
+  }
+  return "スペシャル";
+}
+
+function deckMatrixKindShortLabel(kind: DeckMatrixCellKind): string {
+  if (kind === "front") {
+    return "前";
+  }
+  if (kind === "back") {
+    return "後";
+  }
+  if (kind === "magic") {
+    return "魔";
+  }
+  return "S";
 }
 
 function formatPercent(value: number): string {
