@@ -3354,6 +3354,22 @@ function AiLabPanel({
           <p>問題候補はまだありません。</p>
         )}
       </section>
+      <section className="ai-lab-focus">
+        <h4>Problem Focus</h4>
+        {suite.problemFocuses.length > 0 ? (
+          <div className="ai-lab-focus-grid">
+            {suite.problemFocuses.slice(0, 6).map((focus) => (
+              <div className="ai-lab-focus-card" key={focus.id}>
+                <strong>{focus.title}</strong>
+                <span>{focus.count}件 / weight {focus.reviewWeight.toFixed(1)}</span>
+                <p>{focus.description}</p>
+              </div>
+            ))}
+          </div>
+        ) : (
+          <p>分類済みの問題試合はまだありません。</p>
+        )}
+      </section>
       <div className="ai-lab-category-grid">
         {suite.categories.map((category) => (
           <section className="ai-lab-category" key={category.id}>
@@ -3390,6 +3406,13 @@ function AiLabPanel({
               <strong>{problem.kind}</strong>
               <span>seed {problem.seed} / {problem.steps} steps / {problem.turns} turns</span>
               <p>{problem.playerDeckPreset} vs {problem.cpuDeckPreset}</p>
+              {(problem.focusLabels?.length ?? 0) > 0 && (
+                <div className="ai-lab-problem-tags">
+                  {problem.focusLabels?.map((label) => (
+                    <b key={label}>{label}</b>
+                  ))}
+                </div>
+              )}
               <small>{problem.reason}</small>
             </div>
           ))}

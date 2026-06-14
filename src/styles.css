@@ -1456,6 +1456,38 @@ button:disabled {
   line-height: 1.35;
 }
 
+.ai-lab-focus-grid {
+  display: grid;
+  gap: 6px;
+  grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+}
+
+.ai-lab-focus-card {
+  background: #fffef9;
+  border: 1px solid #d8dfd2;
+  border-left: 4px solid #6f8f65;
+  border-radius: 5px;
+  display: grid;
+  gap: 3px;
+  min-width: 0;
+  padding: 7px;
+}
+
+.ai-lab-focus-card strong {
+  color: #26302e;
+  font-size: 12px;
+}
+
+.ai-lab-focus-card span {
+  color: #2f6faa;
+  font-size: 11px;
+  font-weight: 800;
+}
+
+.ai-lab-focus-card p {
+  margin: 0;
+}
+
 .ai-lab-category-grid {
   display: grid;
   gap: 8px;
@@ -1532,6 +1564,22 @@ button:disabled {
   color: #3f4946;
   font-size: 11px;
   line-height: 1.35;
+}
+
+.ai-lab-problem-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 3px;
+}
+
+.ai-lab-problem-tags b {
+  background: #eef5ee;
+  border: 1px solid #cbd5c5;
+  border-radius: 4px;
+  color: #33403c;
+  font-size: 10px;
+  line-height: 1.1;
+  padding: 2px 4px;
 }
 
 .match-preset-panel {

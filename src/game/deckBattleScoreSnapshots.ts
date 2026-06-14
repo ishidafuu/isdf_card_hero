@@ -1,4 +1,4 @@
-import type { DeckBattleInsightCategory, DeckBattleProblemGame } from "./deckBattleInsights";
+import type { DeckBattleInsightCategory, DeckBattleProblemFocusSummary, DeckBattleProblemGame } from "./deckBattleInsights";
 import type { DeckBenchmarkSuiteId } from "./deckBenchmarkSuites";
 import type { DeckBattleMatchupKey, DeckBattleMatchupStats } from "./deckBattleScoring";
 import type { DeckPresetId, DeckSubmissionPresetId } from "./deckPresets";
@@ -48,6 +48,7 @@ export interface DeckBattleScoreSnapshotSuite {
   scores: DeckBattleScoreSnapshot[];
   categories: DeckBattleInsightCategory[];
   problemGames: DeckBattleProblemGame[];
+  problemFocuses: DeckBattleProblemFocusSummary[];
   recommendedFocus: string[];
 }
 
@@ -1793,6 +1794,17 @@ export const DECK_BATTLE_SCORE_SNAPSHOT_SUITES = [
         "winnerRank": 8,
         "loserRank": 4,
         "battleScoreGap": 46.7,
+        "primaryFocus": "upset_review",
+        "focusIds": [
+          "upset_review",
+          "black_pressure",
+          "seat_bias"
+        ],
+        "focusLabels": [
+          "番狂わせ",
+          "黒の攻め筋",
+          "席差/非対称"
+        ],
         "reason": "lower-score deck beat higher-score deck by 46.7"
       },
       {
@@ -1808,6 +1820,13 @@ export const DECK_BATTLE_SCORE_SNAPSHOT_SUITES = [
         "winnerRank": 8,
         "loserRank": 5,
         "battleScoreGap": 36.3,
+        "primaryFocus": "upset_review",
+        "focusIds": [
+          "upset_review"
+        ],
+        "focusLabels": [
+          "番狂わせ"
+        ],
         "reason": "lower-score deck beat higher-score deck by 36.3"
       },
       {
@@ -1823,6 +1842,15 @@ export const DECK_BATTLE_SCORE_SNAPSHOT_SUITES = [
         "winnerRank": 7,
         "loserRank": 2,
         "battleScoreGap": 32.5,
+        "primaryFocus": "upset_review",
+        "focusIds": [
+          "upset_review",
+          "black_pressure"
+        ],
+        "focusLabels": [
+          "番狂わせ",
+          "黒の攻め筋"
+        ],
         "reason": "lower-score deck beat higher-score deck by 32.5"
       },
       {
@@ -1838,6 +1866,15 @@ export const DECK_BATTLE_SCORE_SNAPSHOT_SUITES = [
         "winnerRank": 7,
         "loserRank": 2,
         "battleScoreGap": 32.5,
+        "primaryFocus": "upset_review",
+        "focusIds": [
+          "upset_review",
+          "black_pressure"
+        ],
+        "focusLabels": [
+          "番狂わせ",
+          "黒の攻め筋"
+        ],
         "reason": "lower-score deck beat higher-score deck by 32.5"
       },
       {
@@ -1853,6 +1890,15 @@ export const DECK_BATTLE_SCORE_SNAPSHOT_SUITES = [
         "winnerRank": 7,
         "loserRank": 3,
         "battleScoreGap": 29.6,
+        "primaryFocus": "upset_review",
+        "focusIds": [
+          "upset_review",
+          "black_pressure"
+        ],
+        "focusLabels": [
+          "番狂わせ",
+          "黒の攻め筋"
+        ],
         "reason": "lower-score deck beat higher-score deck by 29.6"
       },
       {
@@ -1868,6 +1914,17 @@ export const DECK_BATTLE_SCORE_SNAPSHOT_SUITES = [
         "winnerRank": 7,
         "loserRank": 4,
         "battleScoreGap": 28.3,
+        "primaryFocus": "upset_review",
+        "focusIds": [
+          "upset_review",
+          "black_pressure",
+          "seat_bias"
+        ],
+        "focusLabels": [
+          "番狂わせ",
+          "黒の攻め筋",
+          "席差/非対称"
+        ],
         "reason": "lower-score deck beat higher-score deck by 28.3"
       },
       {
@@ -1883,6 +1940,17 @@ export const DECK_BATTLE_SCORE_SNAPSHOT_SUITES = [
         "winnerRank": 8,
         "loserRank": 6,
         "battleScoreGap": 25.6,
+        "primaryFocus": "upset_review",
+        "focusIds": [
+          "upset_review",
+          "white_closeout",
+          "seat_bias"
+        ],
+        "focusLabels": [
+          "番狂わせ",
+          "白の勝ち切り",
+          "席差/非対称"
+        ],
         "reason": "lower-score deck beat higher-score deck by 25.6"
       },
       {
@@ -1898,6 +1966,15 @@ export const DECK_BATTLE_SCORE_SNAPSHOT_SUITES = [
         "winnerRank": 6,
         "loserRank": 2,
         "battleScoreGap": 25.3,
+        "primaryFocus": "upset_review",
+        "focusIds": [
+          "upset_review",
+          "black_pressure"
+        ],
+        "focusLabels": [
+          "番狂わせ",
+          "黒の攻め筋"
+        ],
         "reason": "lower-score deck beat higher-score deck by 25.3"
       },
       {
@@ -1913,6 +1990,15 @@ export const DECK_BATTLE_SCORE_SNAPSHOT_SUITES = [
         "winnerRank": 6,
         "loserRank": 2,
         "battleScoreGap": 25.3,
+        "primaryFocus": "upset_review",
+        "focusIds": [
+          "upset_review",
+          "black_pressure"
+        ],
+        "focusLabels": [
+          "番狂わせ",
+          "黒の攻め筋"
+        ],
         "reason": "lower-score deck beat higher-score deck by 25.3"
       },
       {
@@ -1928,6 +2014,15 @@ export const DECK_BATTLE_SCORE_SNAPSHOT_SUITES = [
         "winnerRank": 6,
         "loserRank": 3,
         "battleScoreGap": 22.4,
+        "primaryFocus": "upset_review",
+        "focusIds": [
+          "upset_review",
+          "black_pressure"
+        ],
+        "focusLabels": [
+          "番狂わせ",
+          "黒の攻め筋"
+        ],
         "reason": "lower-score deck beat higher-score deck by 22.4"
       },
       {
@@ -1943,6 +2038,15 @@ export const DECK_BATTLE_SCORE_SNAPSHOT_SUITES = [
         "winnerRank": 6,
         "loserRank": 3,
         "battleScoreGap": 22.4,
+        "primaryFocus": "upset_review",
+        "focusIds": [
+          "upset_review",
+          "black_pressure"
+        ],
+        "focusLabels": [
+          "番狂わせ",
+          "黒の攻め筋"
+        ],
         "reason": "lower-score deck beat higher-score deck by 22.4"
       },
       {
@@ -1958,6 +2062,17 @@ export const DECK_BATTLE_SCORE_SNAPSHOT_SUITES = [
         "winnerRank": 6,
         "loserRank": 4,
         "battleScoreGap": 21.1,
+        "primaryFocus": "upset_review",
+        "focusIds": [
+          "upset_review",
+          "black_pressure",
+          "seat_bias"
+        ],
+        "focusLabels": [
+          "番狂わせ",
+          "黒の攻め筋",
+          "席差/非対称"
+        ],
         "reason": "lower-score deck beat higher-score deck by 21.1"
       },
       {
@@ -1973,6 +2088,13 @@ export const DECK_BATTLE_SCORE_SNAPSHOT_SUITES = [
         "winnerRank": 4,
         "loserRank": 1,
         "battleScoreGap": 18.6,
+        "primaryFocus": "upset_review",
+        "focusIds": [
+          "upset_review"
+        ],
+        "focusLabels": [
+          "番狂わせ"
+        ],
         "reason": "lower-score deck beat higher-score deck by 18.6"
       },
       {
@@ -1988,6 +2110,13 @@ export const DECK_BATTLE_SCORE_SNAPSHOT_SUITES = [
         "winnerRank": 4,
         "loserRank": 1,
         "battleScoreGap": 18.6,
+        "primaryFocus": "upset_review",
+        "focusIds": [
+          "upset_review"
+        ],
+        "focusLabels": [
+          "番狂わせ"
+        ],
         "reason": "lower-score deck beat higher-score deck by 18.6"
       },
       {
@@ -2003,6 +2132,17 @@ export const DECK_BATTLE_SCORE_SNAPSHOT_SUITES = [
         "winnerRank": 8,
         "loserRank": 7,
         "battleScoreGap": 18.4,
+        "primaryFocus": "upset_review",
+        "focusIds": [
+          "upset_review",
+          "white_closeout",
+          "seat_bias"
+        ],
+        "focusLabels": [
+          "番狂わせ",
+          "白の勝ち切り",
+          "席差/非対称"
+        ],
         "reason": "lower-score deck beat higher-score deck by 18.4"
       },
       {
@@ -2018,6 +2158,17 @@ export const DECK_BATTLE_SCORE_SNAPSHOT_SUITES = [
         "winnerRank": 6,
         "loserRank": 4,
         "battleScoreGap": 21.1,
+        "primaryFocus": "long_game_closeout",
+        "focusIds": [
+          "long_game_closeout",
+          "black_pressure",
+          "seat_bias"
+        ],
+        "focusLabels": [
+          "長期戦/勝ち切り",
+          "黒の攻め筋",
+          "席差/非対称"
+        ],
         "reason": "173 steps is above suite average + 45"
       },
       {
@@ -2033,6 +2184,17 @@ export const DECK_BATTLE_SCORE_SNAPSHOT_SUITES = [
         "winnerRank": 8,
         "loserRank": 7,
         "battleScoreGap": 18.4,
+        "primaryFocus": "long_game_closeout",
+        "focusIds": [
+          "long_game_closeout",
+          "white_closeout",
+          "seat_bias"
+        ],
+        "focusLabels": [
+          "長期戦/勝ち切り",
+          "白の勝ち切り",
+          "席差/非対称"
+        ],
         "reason": "194 steps is above suite average + 45"
       },
       {
@@ -2048,6 +2210,17 @@ export const DECK_BATTLE_SCORE_SNAPSHOT_SUITES = [
         "winnerRank": 7,
         "loserRank": 6,
         "battleScoreGap": 7.2,
+        "primaryFocus": "long_game_closeout",
+        "focusIds": [
+          "long_game_closeout",
+          "white_closeout",
+          "seat_bias"
+        ],
+        "focusLabels": [
+          "長期戦/勝ち切り",
+          "白の勝ち切り",
+          "席差/非対称"
+        ],
         "reason": "163 steps is above suite average + 45"
       },
       {
@@ -2063,6 +2236,19 @@ export const DECK_BATTLE_SCORE_SNAPSHOT_SUITES = [
         "winnerRank": 4,
         "loserRank": 7,
         "battleScoreGap": -28.3,
+        "primaryFocus": "long_game_closeout",
+        "focusIds": [
+          "long_game_closeout",
+          "white_vs_black",
+          "white_closeout",
+          "seat_bias"
+        ],
+        "focusLabels": [
+          "長期戦/勝ち切り",
+          "白vs黒対策",
+          "白の勝ち切り",
+          "席差/非対称"
+        ],
         "reason": "147 steps is above suite average + 45"
       },
       {
@@ -2078,10 +2264,197 @@ export const DECK_BATTLE_SCORE_SNAPSHOT_SUITES = [
         "winnerRank": 4,
         "loserRank": 8,
         "battleScoreGap": -46.7,
+        "primaryFocus": "long_game_closeout",
+        "focusIds": [
+          "long_game_closeout",
+          "white_vs_black",
+          "white_closeout"
+        ],
+        "focusLabels": [
+          "長期戦/勝ち切り",
+          "白vs黒対策",
+          "白の勝ち切り"
+        ],
         "reason": "148 steps is above suite average + 45"
       }
     ],
+    "problemFocuses": [
+      {
+        "id": "upset_review",
+        "title": "番狂わせ",
+        "description": "実戦スコア差のある敗戦。上位デッキ側の分岐判断を追う。",
+        "count": 15,
+        "reviewWeight": 3403.6,
+        "examples": [
+          {
+            "kind": "upset",
+            "seed": 500,
+            "playerDeckPreset": "submission-pro-no-rare8-white-1377",
+            "cpuDeckPreset": "submission-pro-no-rare8-black-252",
+            "reason": "lower-score deck beat higher-score deck by 46.7"
+          },
+          {
+            "kind": "upset",
+            "seed": 501,
+            "playerDeckPreset": "submission-pro-with-rare8-white-1339",
+            "cpuDeckPreset": "submission-pro-no-rare8-white-1377",
+            "reason": "lower-score deck beat higher-score deck by 36.3"
+          },
+          {
+            "kind": "upset",
+            "seed": 501,
+            "playerDeckPreset": "submission-pro-no-rare8-white-494",
+            "cpuDeckPreset": "submission-pro-with-rare8-black-1354",
+            "reason": "lower-score deck beat higher-score deck by 32.5"
+          }
+        ]
+      },
+      {
+        "id": "black_pressure",
+        "title": "黒の攻め筋",
+        "description": "黒が白に押し返される構図。バーサク後の直撃、非撃破削り、石消費を確認する。",
+        "count": 11,
+        "reviewWeight": 2407.2,
+        "examples": [
+          {
+            "kind": "upset",
+            "seed": 500,
+            "playerDeckPreset": "submission-pro-no-rare8-white-1377",
+            "cpuDeckPreset": "submission-pro-no-rare8-black-252",
+            "reason": "lower-score deck beat higher-score deck by 46.7"
+          },
+          {
+            "kind": "upset",
+            "seed": 501,
+            "playerDeckPreset": "submission-pro-no-rare8-white-494",
+            "cpuDeckPreset": "submission-pro-with-rare8-black-1354",
+            "reason": "lower-score deck beat higher-score deck by 32.5"
+          },
+          {
+            "kind": "upset",
+            "seed": 500,
+            "playerDeckPreset": "submission-pro-with-rare8-black-1354",
+            "cpuDeckPreset": "submission-pro-no-rare8-white-494",
+            "reason": "lower-score deck beat higher-score deck by 32.5"
+          }
+        ]
+      },
+      {
+        "id": "seat_bias",
+        "title": "席差/非対称",
+        "description": "player/cpu席の成績差が大きい。初手、先後、評価の非対称性を見る。",
+        "count": 9,
+        "reviewWeight": 1558.5,
+        "examples": [
+          {
+            "kind": "upset",
+            "seed": 500,
+            "playerDeckPreset": "submission-pro-no-rare8-white-1377",
+            "cpuDeckPreset": "submission-pro-no-rare8-black-252",
+            "reason": "lower-score deck beat higher-score deck by 46.7"
+          },
+          {
+            "kind": "upset",
+            "seed": 501,
+            "playerDeckPreset": "submission-pro-no-rare8-white-494",
+            "cpuDeckPreset": "submission-pro-no-rare8-black-252",
+            "reason": "lower-score deck beat higher-score deck by 28.3"
+          },
+          {
+            "kind": "upset",
+            "seed": 501,
+            "playerDeckPreset": "submission-pro-no-rare8-white-1377",
+            "cpuDeckPreset": "submission-pro-with-rare8-white-1346",
+            "reason": "lower-score deck beat higher-score deck by 25.6"
+          }
+        ]
+      },
+      {
+        "id": "white_closeout",
+        "title": "白の勝ち切り",
+        "description": "白デッキが安定するが勝ち切れない。守りすぎと終盤打点を確認する。",
+        "count": 6,
+        "reviewWeight": 794.6,
+        "examples": [
+          {
+            "kind": "upset",
+            "seed": 501,
+            "playerDeckPreset": "submission-pro-no-rare8-white-1377",
+            "cpuDeckPreset": "submission-pro-with-rare8-white-1346",
+            "reason": "lower-score deck beat higher-score deck by 25.6"
+          },
+          {
+            "kind": "upset",
+            "seed": 501,
+            "playerDeckPreset": "submission-pro-no-rare8-white-1377",
+            "cpuDeckPreset": "submission-pro-no-rare8-white-494",
+            "reason": "lower-score deck beat higher-score deck by 18.4"
+          },
+          {
+            "kind": "long_game",
+            "seed": 501,
+            "playerDeckPreset": "submission-pro-no-rare8-white-1377",
+            "cpuDeckPreset": "submission-pro-no-rare8-white-494",
+            "reason": "194 steps is above suite average + 45"
+          }
+        ]
+      },
+      {
+        "id": "long_game_closeout",
+        "title": "長期戦/勝ち切り",
+        "description": "平均より長い試合。終盤の直接打点、focus、非撃破行動を確認する。",
+        "count": 5,
+        "reviewWeight": 471.7,
+        "examples": [
+          {
+            "kind": "long_game",
+            "seed": 501,
+            "playerDeckPreset": "submission-pro-with-rare8-white-1346",
+            "cpuDeckPreset": "submission-pro-no-rare8-black-252",
+            "reason": "173 steps is above suite average + 45"
+          },
+          {
+            "kind": "long_game",
+            "seed": 501,
+            "playerDeckPreset": "submission-pro-no-rare8-white-1377",
+            "cpuDeckPreset": "submission-pro-no-rare8-white-494",
+            "reason": "194 steps is above suite average + 45"
+          },
+          {
+            "kind": "long_game",
+            "seed": 500,
+            "playerDeckPreset": "submission-pro-no-rare8-white-494",
+            "cpuDeckPreset": "submission-pro-with-rare8-white-1346",
+            "reason": "163 steps is above suite average + 45"
+          }
+        ]
+      },
+      {
+        "id": "white_vs_black",
+        "title": "白vs黒対策",
+        "description": "白が黒の圧に負ける構図。防御対象、前衛処理、石テンポを確認する。",
+        "count": 2,
+        "reviewWeight": 125,
+        "examples": [
+          {
+            "kind": "long_game",
+            "seed": 500,
+            "playerDeckPreset": "submission-pro-no-rare8-white-494",
+            "cpuDeckPreset": "submission-pro-no-rare8-black-252",
+            "reason": "147 steps is above suite average + 45"
+          },
+          {
+            "kind": "long_game",
+            "seed": 501,
+            "playerDeckPreset": "submission-pro-no-rare8-white-1377",
+            "cpuDeckPreset": "submission-pro-no-rare8-black-252",
+            "reason": "148 steps is above suite average + 45"
+          }
+        ]
+      }
+    ],
     "recommendedFocus": [
+      "番狂わせ: 15件。実戦スコア差のある敗戦。上位デッキ側の分岐判断を追う。",
       "submission-pro-no-rare8-black-252: 勝てるが遅い。終盤の勝ち切りと白/黒の過剰安全行動を見る。",
       "submission-pro-with-rare8-white-1346: 席差35.7%。先後・player/cpu非対称を確認する。",
       "submission-pro-no-rare8-white-1377: 安定するが勝てない。攻め筋不足や守りすぎを確認する。",
@@ -6225,6 +6598,15 @@ export const DECK_BATTLE_SCORE_SNAPSHOT_SUITES = [
         "winnerRank": 40,
         "loserRank": 1,
         "battleScoreGap": 55.1,
+        "primaryFocus": "top_deck_regression",
+        "focusIds": [
+          "top_deck_regression",
+          "black_pressure"
+        ],
+        "focusLabels": [
+          "上位デッキ敗戦",
+          "黒の攻め筋"
+        ],
         "reason": "top 8 deck lost to lower ranked deck"
       },
       {
@@ -6240,6 +6622,15 @@ export const DECK_BATTLE_SCORE_SNAPSHOT_SUITES = [
         "winnerRank": 39,
         "loserRank": 4,
         "battleScoreGap": 52.4,
+        "primaryFocus": "top_deck_regression",
+        "focusIds": [
+          "top_deck_regression",
+          "black_pressure"
+        ],
+        "focusLabels": [
+          "上位デッキ敗戦",
+          "黒の攻め筋"
+        ],
         "reason": "top 8 deck lost to lower ranked deck"
       },
       {
@@ -6255,6 +6646,15 @@ export const DECK_BATTLE_SCORE_SNAPSHOT_SUITES = [
         "winnerRank": 39,
         "loserRank": 3,
         "battleScoreGap": 52.4,
+        "primaryFocus": "top_deck_regression",
+        "focusIds": [
+          "top_deck_regression",
+          "black_pressure"
+        ],
+        "focusLabels": [
+          "上位デッキ敗戦",
+          "黒の攻め筋"
+        ],
         "reason": "top 8 deck lost to lower ranked deck"
       },
       {
@@ -6270,6 +6670,15 @@ export const DECK_BATTLE_SCORE_SNAPSHOT_SUITES = [
         "winnerRank": 37,
         "loserRank": 1,
         "battleScoreGap": 51.2,
+        "primaryFocus": "top_deck_regression",
+        "focusIds": [
+          "top_deck_regression",
+          "black_pressure"
+        ],
+        "focusLabels": [
+          "上位デッキ敗戦",
+          "黒の攻め筋"
+        ],
         "reason": "top 8 deck lost to lower ranked deck"
       },
       {
@@ -6285,6 +6694,15 @@ export const DECK_BATTLE_SCORE_SNAPSHOT_SUITES = [
         "winnerRank": 36,
         "loserRank": 1,
         "battleScoreGap": 50.2,
+        "primaryFocus": "top_deck_regression",
+        "focusIds": [
+          "top_deck_regression",
+          "black_pressure"
+        ],
+        "focusLabels": [
+          "上位デッキ敗戦",
+          "黒の攻め筋"
+        ],
         "reason": "top 8 deck lost to lower ranked deck"
       },
       {
@@ -6300,6 +6718,15 @@ export const DECK_BATTLE_SCORE_SNAPSHOT_SUITES = [
         "winnerRank": 35,
         "loserRank": 1,
         "battleScoreGap": 50.1,
+        "primaryFocus": "top_deck_regression",
+        "focusIds": [
+          "top_deck_regression",
+          "black_pressure"
+        ],
+        "focusLabels": [
+          "上位デッキ敗戦",
+          "黒の攻め筋"
+        ],
         "reason": "top 8 deck lost to lower ranked deck"
       },
       {
@@ -6315,6 +6742,15 @@ export const DECK_BATTLE_SCORE_SNAPSHOT_SUITES = [
         "winnerRank": 35,
         "loserRank": 1,
         "battleScoreGap": 50.1,
+        "primaryFocus": "top_deck_regression",
+        "focusIds": [
+          "top_deck_regression",
+          "black_pressure"
+        ],
+        "focusLabels": [
+          "上位デッキ敗戦",
+          "黒の攻め筋"
+        ],
         "reason": "top 8 deck lost to lower ranked deck"
       },
       {
@@ -6330,6 +6766,15 @@ export const DECK_BATTLE_SCORE_SNAPSHOT_SUITES = [
         "winnerRank": 33,
         "loserRank": 1,
         "battleScoreGap": 49.2,
+        "primaryFocus": "top_deck_regression",
+        "focusIds": [
+          "top_deck_regression",
+          "black_pressure"
+        ],
+        "focusLabels": [
+          "上位デッキ敗戦",
+          "黒の攻め筋"
+        ],
         "reason": "top 8 deck lost to lower ranked deck"
       },
       {
@@ -6345,6 +6790,15 @@ export const DECK_BATTLE_SCORE_SNAPSHOT_SUITES = [
         "winnerRank": 37,
         "loserRank": 2,
         "battleScoreGap": 49.1,
+        "primaryFocus": "top_deck_regression",
+        "focusIds": [
+          "top_deck_regression",
+          "black_pressure"
+        ],
+        "focusLabels": [
+          "上位デッキ敗戦",
+          "黒の攻め筋"
+        ],
         "reason": "top 8 deck lost to lower ranked deck"
       },
       {
@@ -6360,6 +6814,15 @@ export const DECK_BATTLE_SCORE_SNAPSHOT_SUITES = [
         "winnerRank": 37,
         "loserRank": 2,
         "battleScoreGap": 49.1,
+        "primaryFocus": "top_deck_regression",
+        "focusIds": [
+          "top_deck_regression",
+          "black_pressure"
+        ],
+        "focusLabels": [
+          "上位デッキ敗戦",
+          "黒の攻め筋"
+        ],
         "reason": "top 8 deck lost to lower ranked deck"
       },
       {
@@ -6375,6 +6838,15 @@ export const DECK_BATTLE_SCORE_SNAPSHOT_SUITES = [
         "winnerRank": 37,
         "loserRank": 5,
         "battleScoreGap": 47.1,
+        "primaryFocus": "top_deck_regression",
+        "focusIds": [
+          "top_deck_regression",
+          "black_pressure"
+        ],
+        "focusLabels": [
+          "上位デッキ敗戦",
+          "黒の攻め筋"
+        ],
         "reason": "top 8 deck lost to lower ranked deck"
       },
       {
@@ -6390,6 +6862,15 @@ export const DECK_BATTLE_SCORE_SNAPSHOT_SUITES = [
         "winnerRank": 31,
         "loserRank": 4,
         "battleScoreGap": 46.2,
+        "primaryFocus": "top_deck_regression",
+        "focusIds": [
+          "top_deck_regression",
+          "black_pressure"
+        ],
+        "focusLabels": [
+          "上位デッキ敗戦",
+          "黒の攻め筋"
+        ],
         "reason": "top 8 deck lost to lower ranked deck"
       },
       {
@@ -6405,6 +6886,15 @@ export const DECK_BATTLE_SCORE_SNAPSHOT_SUITES = [
         "winnerRank": 31,
         "loserRank": 3,
         "battleScoreGap": 46.2,
+        "primaryFocus": "top_deck_regression",
+        "focusIds": [
+          "top_deck_regression",
+          "black_pressure"
+        ],
+        "focusLabels": [
+          "上位デッキ敗戦",
+          "黒の攻め筋"
+        ],
         "reason": "top 8 deck lost to lower ranked deck"
       },
       {
@@ -6420,6 +6910,15 @@ export const DECK_BATTLE_SCORE_SNAPSHOT_SUITES = [
         "winnerRank": 35,
         "loserRank": 5,
         "battleScoreGap": 46,
+        "primaryFocus": "top_deck_regression",
+        "focusIds": [
+          "top_deck_regression",
+          "black_pressure"
+        ],
+        "focusLabels": [
+          "上位デッキ敗戦",
+          "黒の攻め筋"
+        ],
         "reason": "top 8 deck lost to lower ranked deck"
       },
       {
@@ -6435,145 +6934,417 @@ export const DECK_BATTLE_SCORE_SNAPSHOT_SUITES = [
         "winnerRank": 30,
         "loserRank": 4,
         "battleScoreGap": 45.6,
+        "primaryFocus": "top_deck_regression",
+        "focusIds": [
+          "top_deck_regression",
+          "black_pressure"
+        ],
+        "focusLabels": [
+          "上位デッキ敗戦",
+          "黒の攻め筋"
+        ],
         "reason": "top 8 deck lost to lower ranked deck"
       },
       {
-        "kind": "top_deck_loss",
+        "kind": "upset",
         "severity": "review",
         "seed": 501,
-        "playerDeckPreset": "submission-pro-no-rare8-white-837",
-        "cpuDeckPreset": "submission-pro-with-rare8-black-320",
-        "winnerDeckPreset": "submission-pro-no-rare8-white-837",
-        "loserDeckPreset": "submission-pro-with-rare8-black-320",
-        "steps": 96,
-        "turns": 10,
-        "winnerRank": 30,
-        "loserRank": 3,
-        "battleScoreGap": 45.6,
-        "reason": "top 8 deck lost to lower ranked deck"
-      },
-      {
-        "kind": "top_deck_loss",
-        "severity": "review",
-        "seed": 501,
-        "playerDeckPreset": "submission-pro-no-rare8-white-479",
-        "cpuDeckPreset": "submission-pro-with-rare8-black-1333",
-        "winnerDeckPreset": "submission-pro-no-rare8-white-479",
-        "loserDeckPreset": "submission-pro-with-rare8-black-1333",
-        "steps": 111,
+        "playerDeckPreset": "submission-pro-no-rare8-white-345",
+        "cpuDeckPreset": "submission-pro-no-rare8-black-408",
+        "winnerDeckPreset": "submission-pro-no-rare8-white-345",
+        "loserDeckPreset": "submission-pro-no-rare8-black-408",
+        "steps": 121,
         "turns": 11,
-        "winnerRank": 39,
-        "loserRank": 8,
-        "battleScoreGap": 45.4,
-        "reason": "top 8 deck lost to lower ranked deck"
+        "winnerRank": 40,
+        "loserRank": 1,
+        "battleScoreGap": 55.1,
+        "primaryFocus": "upset_review",
+        "focusIds": [
+          "upset_review",
+          "black_pressure"
+        ],
+        "focusLabels": [
+          "番狂わせ",
+          "黒の攻め筋"
+        ],
+        "reason": "lower-score deck beat higher-score deck by 55.1"
       },
       {
-        "kind": "top_deck_loss",
+        "kind": "upset",
         "severity": "review",
         "seed": 501,
-        "playerDeckPreset": "submission-pro-with-rare8-black-1333",
+        "playerDeckPreset": "submission-pro-with-rare8-black-315",
         "cpuDeckPreset": "submission-pro-no-rare8-white-479",
         "winnerDeckPreset": "submission-pro-no-rare8-white-479",
-        "loserDeckPreset": "submission-pro-with-rare8-black-1333",
-        "steps": 73,
-        "turns": 7,
+        "loserDeckPreset": "submission-pro-with-rare8-black-315",
+        "steps": 90,
+        "turns": 8,
         "winnerRank": 39,
-        "loserRank": 8,
-        "battleScoreGap": 45.4,
-        "reason": "top 8 deck lost to lower ranked deck"
+        "loserRank": 4,
+        "battleScoreGap": 52.4,
+        "primaryFocus": "upset_review",
+        "focusIds": [
+          "upset_review",
+          "black_pressure"
+        ],
+        "focusLabels": [
+          "番狂わせ",
+          "黒の攻め筋"
+        ],
+        "reason": "lower-score deck beat higher-score deck by 52.4"
       },
       {
-        "kind": "top_deck_loss",
-        "severity": "review",
-        "seed": 500,
-        "playerDeckPreset": "submission-pro-with-rare8-black-44",
-        "cpuDeckPreset": "submission-pro-no-rare8-white-494",
-        "winnerDeckPreset": "submission-pro-no-rare8-white-494",
-        "loserDeckPreset": "submission-pro-with-rare8-black-44",
-        "steps": 85,
-        "turns": 9,
-        "winnerRank": 34,
-        "loserRank": 5,
-        "battleScoreGap": 45.2,
-        "reason": "top 8 deck lost to lower ranked deck"
-      },
-      {
-        "kind": "top_deck_loss",
+        "kind": "upset",
         "severity": "review",
         "seed": 501,
-        "playerDeckPreset": "submission-pro-with-rare8-black-44",
-        "cpuDeckPreset": "submission-pro-no-rare8-white-836",
-        "winnerDeckPreset": "submission-pro-no-rare8-white-836",
-        "loserDeckPreset": "submission-pro-with-rare8-black-44",
-        "steps": 82,
+        "playerDeckPreset": "submission-pro-with-rare8-black-320",
+        "cpuDeckPreset": "submission-pro-no-rare8-white-479",
+        "winnerDeckPreset": "submission-pro-no-rare8-white-479",
+        "loserDeckPreset": "submission-pro-with-rare8-black-320",
+        "steps": 90,
         "turns": 8,
-        "winnerRank": 33,
-        "loserRank": 5,
-        "battleScoreGap": 45.1,
-        "reason": "top 8 deck lost to lower ranked deck"
+        "winnerRank": 39,
+        "loserRank": 3,
+        "battleScoreGap": 52.4,
+        "primaryFocus": "upset_review",
+        "focusIds": [
+          "upset_review",
+          "black_pressure"
+        ],
+        "focusLabels": [
+          "番狂わせ",
+          "黒の攻め筋"
+        ],
+        "reason": "lower-score deck beat higher-score deck by 52.4"
       },
       {
-        "kind": "top_deck_loss",
-        "severity": "review",
-        "seed": 501,
-        "playerDeckPreset": "submission-pro-with-rare8-black-1333",
-        "cpuDeckPreset": "submission-pro-no-rare8-white-541",
-        "winnerDeckPreset": "submission-pro-no-rare8-white-541",
-        "loserDeckPreset": "submission-pro-with-rare8-black-1333",
-        "steps": 73,
-        "turns": 7,
-        "winnerRank": 38,
-        "loserRank": 8,
-        "battleScoreGap": 44,
-        "reason": "top 8 deck lost to lower ranked deck"
-      },
-      {
-        "kind": "top_deck_loss",
+        "kind": "upset",
         "severity": "review",
         "seed": 500,
-        "playerDeckPreset": "submission-pro-no-rare8-black-254",
-        "cpuDeckPreset": "submission-pro-with-rare8-white-802",
-        "winnerDeckPreset": "submission-pro-with-rare8-white-802",
-        "loserDeckPreset": "submission-pro-no-rare8-black-254",
-        "steps": 93,
+        "playerDeckPreset": "submission-pro-with-rare8-black-999",
+        "cpuDeckPreset": "submission-pro-no-rare8-white-345",
+        "winnerDeckPreset": "submission-pro-no-rare8-white-345",
+        "loserDeckPreset": "submission-pro-with-rare8-black-999",
+        "steps": 83,
         "turns": 8,
-        "winnerRank": 37,
-        "loserRank": 7,
-        "battleScoreGap": 43.7,
-        "reason": "top 8 deck lost to lower ranked deck"
+        "winnerRank": 40,
+        "loserRank": 11,
+        "battleScoreGap": 42.3,
+        "primaryFocus": "upset_review",
+        "focusIds": [
+          "upset_review",
+          "black_pressure",
+          "seat_bias"
+        ],
+        "focusLabels": [
+          "番狂わせ",
+          "黒の攻め筋",
+          "席差/非対称"
+        ],
+        "reason": "lower-score deck beat higher-score deck by 42.3"
       },
       {
-        "kind": "top_deck_loss",
+        "kind": "long_game",
         "severity": "review",
         "seed": 500,
-        "playerDeckPreset": "submission-pro-with-rare8-white-802",
-        "cpuDeckPreset": "submission-pro-no-rare8-black-254",
-        "winnerDeckPreset": "submission-pro-with-rare8-white-802",
-        "loserDeckPreset": "submission-pro-no-rare8-black-254",
-        "steps": 61,
-        "turns": 6,
-        "winnerRank": 37,
-        "loserRank": 7,
-        "battleScoreGap": 43.7,
-        "reason": "top 8 deck lost to lower ranked deck"
+        "playerDeckPreset": "submission-pro-no-rare8-white-882",
+        "cpuDeckPreset": "submission-pro-no-rare8-black-758",
+        "winnerDeckPreset": "submission-pro-no-rare8-white-882",
+        "loserDeckPreset": "submission-pro-no-rare8-black-758",
+        "steps": 181,
+        "turns": 17,
+        "winnerRank": 31,
+        "loserRank": 16,
+        "battleScoreGap": 32.3,
+        "primaryFocus": "long_game_closeout",
+        "focusIds": [
+          "long_game_closeout",
+          "black_pressure"
+        ],
+        "focusLabels": [
+          "長期戦/勝ち切り",
+          "黒の攻め筋"
+        ],
+        "reason": "181 steps is above suite average + 45"
       },
       {
-        "kind": "top_deck_loss",
+        "kind": "long_game",
         "severity": "review",
-        "seed": 501,
+        "seed": 500,
         "playerDeckPreset": "submission-pro-no-rare8-white-400",
-        "cpuDeckPreset": "submission-pro-no-rare8-black-322",
+        "cpuDeckPreset": "submission-pro-no-rare8-black-228",
         "winnerDeckPreset": "submission-pro-no-rare8-white-400",
-        "loserDeckPreset": "submission-pro-no-rare8-black-322",
-        "steps": 99,
-        "turns": 10,
+        "loserDeckPreset": "submission-pro-no-rare8-black-228",
+        "steps": 173,
+        "turns": 15,
         "winnerRank": 32,
-        "loserRank": 6,
-        "battleScoreGap": 42.9,
-        "reason": "top 8 deck lost to lower ranked deck"
+        "loserRank": 17,
+        "battleScoreGap": 30.7,
+        "primaryFocus": "long_game_closeout",
+        "focusIds": [
+          "long_game_closeout",
+          "black_pressure"
+        ],
+        "focusLabels": [
+          "長期戦/勝ち切り",
+          "黒の攻め筋"
+        ],
+        "reason": "173 steps is above suite average + 45"
+      },
+      {
+        "kind": "long_game",
+        "severity": "review",
+        "seed": 501,
+        "playerDeckPreset": "submission-pro-with-rare8-white-438",
+        "cpuDeckPreset": "submission-pro-with-rare8-black-315",
+        "winnerDeckPreset": "submission-pro-with-rare8-white-438",
+        "loserDeckPreset": "submission-pro-with-rare8-black-315",
+        "steps": 155,
+        "turns": 18,
+        "winnerRank": 22,
+        "loserRank": 4,
+        "battleScoreGap": 30.6,
+        "primaryFocus": "long_game_closeout",
+        "focusIds": [
+          "long_game_closeout",
+          "black_pressure"
+        ],
+        "focusLabels": [
+          "長期戦/勝ち切り",
+          "黒の攻め筋"
+        ],
+        "reason": "155 steps is above suite average + 45"
+      },
+      {
+        "kind": "long_game",
+        "severity": "review",
+        "seed": 501,
+        "playerDeckPreset": "submission-pro-with-rare8-white-1245",
+        "cpuDeckPreset": "submission-pro-no-rare8-white-345",
+        "winnerDeckPreset": "submission-pro-no-rare8-white-345",
+        "loserDeckPreset": "submission-pro-with-rare8-white-1245",
+        "steps": 146,
+        "turns": 13,
+        "winnerRank": 40,
+        "loserRank": 26,
+        "battleScoreGap": 14,
+        "primaryFocus": "long_game_closeout",
+        "focusIds": [
+          "long_game_closeout",
+          "white_closeout",
+          "seat_bias"
+        ],
+        "focusLabels": [
+          "長期戦/勝ち切り",
+          "白の勝ち切り",
+          "席差/非対称"
+        ],
+        "reason": "146 steps is above suite average + 45"
+      },
+      {
+        "kind": "long_game",
+        "severity": "review",
+        "seed": 500,
+        "playerDeckPreset": "submission-pro-with-rare8-white-668",
+        "cpuDeckPreset": "submission-pro-no-rare8-black-252",
+        "winnerDeckPreset": "submission-pro-no-rare8-black-252",
+        "loserDeckPreset": "submission-pro-with-rare8-white-668",
+        "steps": 146,
+        "turns": 13,
+        "winnerRank": 19,
+        "loserRank": 12,
+        "battleScoreGap": 7.5,
+        "primaryFocus": "long_game_closeout",
+        "focusIds": [
+          "long_game_closeout",
+          "white_vs_black"
+        ],
+        "focusLabels": [
+          "長期戦/勝ち切り",
+          "白vs黒対策"
+        ],
+        "reason": "146 steps is above suite average + 45"
+      }
+    ],
+    "problemFocuses": [
+      {
+        "id": "black_pressure",
+        "title": "黒の攻め筋",
+        "description": "黒が白に押し返される構図。バーサク後の直撃、非撃破削り、石消費を確認する。",
+        "count": 22,
+        "reviewWeight": 6635.8,
+        "examples": [
+          {
+            "kind": "top_deck_loss",
+            "seed": 501,
+            "playerDeckPreset": "submission-pro-no-rare8-white-345",
+            "cpuDeckPreset": "submission-pro-no-rare8-black-408",
+            "reason": "top 8 deck lost to lower ranked deck"
+          },
+          {
+            "kind": "top_deck_loss",
+            "seed": 501,
+            "playerDeckPreset": "submission-pro-with-rare8-black-315",
+            "cpuDeckPreset": "submission-pro-no-rare8-white-479",
+            "reason": "top 8 deck lost to lower ranked deck"
+          },
+          {
+            "kind": "top_deck_loss",
+            "seed": 501,
+            "playerDeckPreset": "submission-pro-with-rare8-black-320",
+            "cpuDeckPreset": "submission-pro-no-rare8-white-479",
+            "reason": "top 8 deck lost to lower ranked deck"
+          }
+        ]
+      },
+      {
+        "id": "top_deck_regression",
+        "title": "上位デッキ敗戦",
+        "description": "主力検証デッキの敗戦。AI変更時の回帰チェック候補にする。",
+        "count": 15,
+        "reviewWeight": 5240,
+        "examples": [
+          {
+            "kind": "top_deck_loss",
+            "seed": 501,
+            "playerDeckPreset": "submission-pro-no-rare8-white-345",
+            "cpuDeckPreset": "submission-pro-no-rare8-black-408",
+            "reason": "top 8 deck lost to lower ranked deck"
+          },
+          {
+            "kind": "top_deck_loss",
+            "seed": 501,
+            "playerDeckPreset": "submission-pro-with-rare8-black-315",
+            "cpuDeckPreset": "submission-pro-no-rare8-white-479",
+            "reason": "top 8 deck lost to lower ranked deck"
+          },
+          {
+            "kind": "top_deck_loss",
+            "seed": 501,
+            "playerDeckPreset": "submission-pro-with-rare8-black-320",
+            "cpuDeckPreset": "submission-pro-no-rare8-white-479",
+            "reason": "top 8 deck lost to lower ranked deck"
+          }
+        ]
+      },
+      {
+        "id": "upset_review",
+        "title": "番狂わせ",
+        "description": "実戦スコア差のある敗戦。上位デッキ側の分岐判断を追う。",
+        "count": 4,
+        "reviewWeight": 1002.2,
+        "examples": [
+          {
+            "kind": "upset",
+            "seed": 501,
+            "playerDeckPreset": "submission-pro-no-rare8-white-345",
+            "cpuDeckPreset": "submission-pro-no-rare8-black-408",
+            "reason": "lower-score deck beat higher-score deck by 55.1"
+          },
+          {
+            "kind": "upset",
+            "seed": 501,
+            "playerDeckPreset": "submission-pro-with-rare8-black-315",
+            "cpuDeckPreset": "submission-pro-no-rare8-white-479",
+            "reason": "lower-score deck beat higher-score deck by 52.4"
+          },
+          {
+            "kind": "upset",
+            "seed": 501,
+            "playerDeckPreset": "submission-pro-with-rare8-black-320",
+            "cpuDeckPreset": "submission-pro-no-rare8-white-479",
+            "reason": "lower-score deck beat higher-score deck by 52.4"
+          }
+        ]
+      },
+      {
+        "id": "long_game_closeout",
+        "title": "長期戦/勝ち切り",
+        "description": "平均より長い試合。終盤の直接打点、focus、非撃破行動を確認する。",
+        "count": 5,
+        "reviewWeight": 615.1,
+        "examples": [
+          {
+            "kind": "long_game",
+            "seed": 500,
+            "playerDeckPreset": "submission-pro-no-rare8-white-882",
+            "cpuDeckPreset": "submission-pro-no-rare8-black-758",
+            "reason": "181 steps is above suite average + 45"
+          },
+          {
+            "kind": "long_game",
+            "seed": 500,
+            "playerDeckPreset": "submission-pro-no-rare8-white-400",
+            "cpuDeckPreset": "submission-pro-no-rare8-black-228",
+            "reason": "173 steps is above suite average + 45"
+          },
+          {
+            "kind": "long_game",
+            "seed": 501,
+            "playerDeckPreset": "submission-pro-with-rare8-white-438",
+            "cpuDeckPreset": "submission-pro-with-rare8-black-315",
+            "reason": "155 steps is above suite average + 45"
+          }
+        ]
+      },
+      {
+        "id": "seat_bias",
+        "title": "席差/非対称",
+        "description": "player/cpu席の成績差が大きい。初手、先後、評価の非対称性を見る。",
+        "count": 2,
+        "reviewWeight": 356.3,
+        "examples": [
+          {
+            "kind": "upset",
+            "seed": 500,
+            "playerDeckPreset": "submission-pro-with-rare8-black-999",
+            "cpuDeckPreset": "submission-pro-no-rare8-white-345",
+            "reason": "lower-score deck beat higher-score deck by 42.3"
+          },
+          {
+            "kind": "long_game",
+            "seed": 501,
+            "playerDeckPreset": "submission-pro-with-rare8-white-1245",
+            "cpuDeckPreset": "submission-pro-no-rare8-white-345",
+            "reason": "146 steps is above suite average + 45"
+          }
+        ]
+      },
+      {
+        "id": "white_closeout",
+        "title": "白の勝ち切り",
+        "description": "白デッキが安定するが勝ち切れない。守りすぎと終盤打点を確認する。",
+        "count": 1,
+        "reviewWeight": 114,
+        "examples": [
+          {
+            "kind": "long_game",
+            "seed": 501,
+            "playerDeckPreset": "submission-pro-with-rare8-white-1245",
+            "cpuDeckPreset": "submission-pro-no-rare8-white-345",
+            "reason": "146 steps is above suite average + 45"
+          }
+        ]
+      },
+      {
+        "id": "white_vs_black",
+        "title": "白vs黒対策",
+        "description": "白が黒の圧に負ける構図。防御対象、前衛処理、石テンポを確認する。",
+        "count": 1,
+        "reviewWeight": 107.5,
+        "examples": [
+          {
+            "kind": "long_game",
+            "seed": 500,
+            "playerDeckPreset": "submission-pro-with-rare8-white-668",
+            "cpuDeckPreset": "submission-pro-no-rare8-black-252",
+            "reason": "146 steps is above suite average + 45"
+          }
+        ]
       }
     ],
     "recommendedFocus": [
+      "黒の攻め筋: 22件。黒が白に押し返される構図。バーサク後の直撃、非撃破削り、石消費を確認する。",
       "submission-pro-no-rare8-black-66: 勝てるが遅い。終盤の勝ち切りと白/黒の過剰安全行動を見る。",
       "submission-pro-with-rare8-white-10: 席差27%。先後・player/cpu非対称を確認する。",
       "submission-pro-no-rare8-white-494: 安定するが勝てない。攻め筋不足や守りすぎを確認する。",

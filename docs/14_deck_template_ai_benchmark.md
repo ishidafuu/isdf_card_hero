@@ -295,3 +295,53 @@ npm run generate:deck-battle-snapshots -- --report artifacts/deck-battle-score/p
 ```
 
 ゲーム内では右パネルの `AI Lab` から、suite別のsummary、推奨フォーカス、カテゴリ別代表デッキ、問題試合候補を確認できる。
+
+## Phase 15: 問題試合の自動分類強化
+
+実行日: 2026-06-14
+
+### 目的
+
+勝率やBattle scoreだけでは、次にどのAI評価を直すべきかが見えにくい。
+そのため、`Problem Games` に改善テーマのタグを自動付与し、AI Labで「何を見ればよいか」を先に絞れるようにした。
+
+### 追加した分類
+
+| Focus | 用途 |
+| --- | --- |
+| 安全性 | failure / warningを含む試合。進行不能、例外、警告を優先確認する |
+| 長期戦/勝ち切り | 平均より長い試合。終盤の直接打点、focus、非撃破行動を見る |
+| 白の勝ち切り | 白デッキが安定するが勝ち切れないケースを見る |
+| 白vs黒対策 | 白が黒の圧に負ける構図。防御対象、前衛処理、石テンポを見る |
+| 黒の攻め筋 | 黒が白に押し返される構図。バーサク後の直撃、非撃破削り、石消費を見る |
+| 番狂わせ | 実戦スコア差がある敗戦。上位側の分岐判断を追う |
+| 上位デッキ敗戦 | 主力検証デッキの敗戦。AI変更時の回帰候補にする |
+| 席差/非対称 | player/cpu席差が大きいデッキ。先後や評価の非対称性を見る |
+
+### 生成結果
+
+```sh
+npm run analyze:deck-battles -- --report artifacts/deck-battle-score/2026-06-14-core-count2-merged/report.json --out-dir artifacts/deck-battle-score/phase15-core-insights
+npm run trace:deck-battles -- --report artifacts/deck-battle-score/2026-06-14-core-count2-merged/report.json --out-dir artifacts/deck-battle-score/phase15-core-traces --limit 10 --log-limit 50
+npm run generate:deck-battle-snapshots -- --report artifacts/deck-battle-score/2026-06-14-smoke-count2/report.json --report artifacts/deck-battle-score/2026-06-14-core-count2-merged/report.json --default-suite core --out src/game/deckBattleScoreSnapshots.ts
+```
+
+Core count2 mergedの代表分類:
+
+| Focus | Count | Weight |
+| --- | ---: | ---: |
+| 黒の攻め筋 | 22 | 6635.8 |
+| 上位デッキ敗戦 | 15 | 5240.0 |
+| 番狂わせ | 4 | 1002.2 |
+| 長期戦/勝ち切り | 5 | 615.1 |
+| 席差/非対称 | 2 | 356.3 |
+| 白の勝ち切り | 1 | 114.0 |
+| 白vs黒対策 | 1 | 107.5 |
+
+次のAI補正候補:
+
+- `黒の攻め筋`: 上位黒デッキが白に押し返される試合を優先し、バーサク後の直撃、非撃破削り、石消費を確認する。
+- `長期戦/勝ち切り`: trace済みの長期戦から、終盤に勝ち筋へ向かわない行動を確認する。
+- `白vs黒対策`: 白側が黒の圧に負ける試合は、防御対象と前衛処理の評価を確認する。
+
+ゲーム内では `AI Lab` に `Problem Focus` を追加し、各 `Problem Games` に分類タグを表示する。

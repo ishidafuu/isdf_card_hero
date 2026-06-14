@@ -99,7 +99,7 @@ function scoreSnapshot(deck: DeckBattleScoreEntry, rank: number) {
 
 function formatSnapshotModule(suites: SnapshotSuiteData[], defaultSuiteId: DeckBenchmarkSuiteId): string {
   const suiteUnion = suites.map((suite) => JSON.stringify(suite.summary.suiteId)).join(" | ");
-  return `import type { DeckBattleInsightCategory, DeckBattleProblemGame } from "./deckBattleInsights";
+  return `import type { DeckBattleInsightCategory, DeckBattleProblemFocusSummary, DeckBattleProblemGame } from "./deckBattleInsights";
 import type { DeckBenchmarkSuiteId } from "./deckBenchmarkSuites";
 import type { DeckBattleMatchupKey, DeckBattleMatchupStats } from "./deckBattleScoring";
 import type { DeckPresetId, DeckSubmissionPresetId } from "./deckPresets";
@@ -149,6 +149,7 @@ export interface DeckBattleScoreSnapshotSuite {
   scores: DeckBattleScoreSnapshot[];
   categories: DeckBattleInsightCategory[];
   problemGames: DeckBattleProblemGame[];
+  problemFocuses: DeckBattleProblemFocusSummary[];
   recommendedFocus: string[];
 }
 
@@ -159,6 +160,7 @@ export const DECK_BATTLE_SCORE_SNAPSHOT_SUITES = ${JSON.stringify(suites.map((su
     scores: suite.scores,
     categories: suite.insights.categories,
     problemGames: suite.insights.problemGames,
+    problemFocuses: suite.insights.problemFocuses,
     recommendedFocus: suite.insights.recommendedFocus,
   })), null, 2)} as const satisfies readonly DeckBattleScoreSnapshotSuite[];
 

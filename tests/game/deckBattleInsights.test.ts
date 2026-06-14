@@ -25,6 +25,11 @@ describe("deck battle insights", () => {
     });
     expect(insights.problemGames.map((game) => game.kind)).toContain("upset");
     expect(insights.problemGames.map((game) => game.kind)).toContain("long_game");
+    const problemFocusIds = insights.problemGames.flatMap((game) => game.focusIds ?? []);
+    expect(problemFocusIds).toContain("upset_review");
+    expect(problemFocusIds).toContain("long_game_closeout");
+    expect(insights.problemGames.every((game) => (game.focusLabels?.length ?? 0) > 0)).toBe(true);
+    expect(insights.problemFocuses.length).toBeGreaterThan(0);
     expect(insights.recommendedFocus.length).toBeGreaterThan(0);
   });
 
@@ -33,6 +38,7 @@ describe("deck battle insights", () => {
 
     expect(markdown).toContain("# AI Lab: デッキ実戦分析");
     expect(markdown).toContain("## Recommended Focus");
+    expect(markdown).toContain("## Problem Focus");
     expect(markdown).toContain("## Problem Games");
   });
 });

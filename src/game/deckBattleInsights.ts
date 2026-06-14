@@ -16,6 +16,15 @@ export type DeckBattleInsightCategoryId =
   | "practical_mismatch";
 
 export type DeckBattleProblemKind = "issue" | "long_game" | "upset" | "top_deck_loss";
+export type DeckBattleProblemFocusId =
+  | "issue_safety"
+  | "long_game_closeout"
+  | "white_closeout"
+  | "white_vs_black"
+  | "black_pressure"
+  | "upset_review"
+  | "top_deck_regression"
+  | "seat_bias";
 
 export interface DeckBattleInsightsOptions {
   limit?: number;
@@ -68,7 +77,27 @@ export interface DeckBattleProblemGame {
   winnerRank?: number;
   loserRank?: number;
   battleScoreGap?: number;
+  primaryFocus?: DeckBattleProblemFocusId;
+  focusIds?: readonly DeckBattleProblemFocusId[];
+  focusLabels?: readonly string[];
   reason: string;
+}
+
+export interface DeckBattleProblemFocusExample {
+  kind: DeckBattleProblemKind;
+  seed: number;
+  playerDeckPreset: DeckSubmissionPresetId;
+  cpuDeckPreset: DeckSubmissionPresetId;
+  reason: string;
+}
+
+export interface DeckBattleProblemFocusSummary {
+  id: DeckBattleProblemFocusId;
+  title: string;
+  description: string;
+  count: number;
+  reviewWeight: number;
+  examples: DeckBattleProblemFocusExample[];
 }
 
 export interface DeckBattleInsightsReport {
@@ -85,6 +114,7 @@ export interface DeckBattleInsightsReport {
   };
   categories: DeckBattleInsightCategory[];
   problemGames: DeckBattleProblemGame[];
+  problemFocuses: DeckBattleProblemFocusSummary[];
   recommendedFocus: string[];
 }
 
@@ -94,6 +124,41 @@ const DEFAULT_OPTIONS: Required<DeckBattleInsightsOptions> = {
   upsetBattleScoreGap: 18,
   topDeckRankLimit: 8,
 };
+
+const PROBLEM_FOCUS_DEFS = {
+  issue_safety: {
+    title: "安全性",
+    description: "failure/warningを含む。進行不能、長期戦警告、例外をまず潰す。",
+  },
+  long_game_closeout: {
+    title: "長期戦/勝ち切り",
+    description: "平均より長い試合。終盤の直接打点、focus、非撃破行動を確認する。",
+  },
+  white_closeout: {
+    title: "白の勝ち切り",
+    description: "白デッキが安定するが勝ち切れない。守りすぎと終盤打点を確認する。",
+  },
+  white_vs_black: {
+    title: "白vs黒対策",
+    description: "白が黒の圧に負ける構図。防御対象、前衛処理、石テンポを確認する。",
+  },
+  black_pressure: {
+    title: "黒の攻め筋",
+    description: "黒が白に押し返される構図。バーサク後の直撃、非撃破削り、石消費を確認する。",
+  },
+  upset_review: {
+    title: "番狂わせ",
+    description: "実戦スコア差のある敗戦。上位デッキ側の分岐判断を追う。",
+  },
+  top_deck_regression: {
+    title: "上位デッキ敗戦",
+    description: "主力検証デッキの敗戦。AI変更時の回帰チェック候補にする。",
+  },
+  seat_bias: {
+    title: "席差/非対称",
+    description: "player/cpu席の成績差が大きい。初手、先後、評価の非対称性を見る。",
+  },
+} as const satisfies Record<DeckBattleProblemFocusId, { title: string; description: string }>;
 
 export function analyzeDeckBattleReport(
   report: DeckBattleScoringReport,
@@ -165,6 +230,7 @@ export function analyzeDeckBattleReport(
   ];
 
   const problemGames = buildProblemGames(report.games, scoreByDeck, rankByDeck, report.summary.averageSteps, resolved);
+  const problemFocuses = buildProblemFocuses(problemGames, resolved.limit);
   return {
     source: {
       suiteId: report.options.suiteId,
@@ -179,7 +245,8 @@ export function analyzeDeckBattleReport(
     },
     categories,
     problemGames,
-    recommendedFocus: buildRecommendedFocus(categories, problemGames),
+    problemFocuses,
+    recommendedFocus: buildRecommendedFocus(categories, problemGames, problemFocuses),
   };
 }
 
@@ -201,6 +268,15 @@ export function formatDeckBattleInsightsMarkdown(report: DeckBattleInsightsRepor
     ``,
     ...report.recommendedFocus.map((item) => `- ${item}`),
     ``,
+    `## Problem Focus`,
+    ``,
+    `| Focus | Count | Weight | Description | Examples |`,
+    `| --- | ---: | ---: | --- | --- |`,
+    ...report.problemFocuses.map((focus) =>
+      `| ${focus.title} | ${focus.count} | ${focus.reviewWeight} | ${focus.description} | ` +
+      `${focus.examples.map((example) => `${example.kind} seed ${example.seed}`).join("<br>")} |`,
+    ),
+    ``,
     ...report.categories.flatMap((category) => [
       `## ${category.title}`,
       ``,
@@ -219,10 +295,10 @@ export function formatDeckBattleInsightsMarkdown(report: DeckBattleInsightsRepor
     ]),
     `## Problem Games`,
     ``,
-    `| Kind | Seed | Player | CPU | Winner | Steps | Turns | Gap | Reason |`,
-    `| --- | ---: | --- | --- | --- | ---: | ---: | ---: | --- |`,
+    `| Kind | Focus | Seed | Player | CPU | Winner | Steps | Turns | Gap | Reason |`,
+    `| --- | --- | ---: | --- | --- | --- | ---: | ---: | ---: | --- |`,
     ...report.problemGames.map((game) =>
-      `| ${game.kind} | ${game.seed} | ${game.playerDeckPreset} | ${game.cpuDeckPreset} | ` +
+      `| ${game.kind} | ${(game.focusLabels ?? []).join("<br>") || "-"} | ${game.seed} | ${game.playerDeckPreset} | ${game.cpuDeckPreset} | ` +
       `${game.winnerDeckPreset ?? "-"} | ${game.steps} | ${game.turns} | ` +
       `${game.battleScoreGap?.toFixed(1) ?? "-"} | ${game.reason} |`,
     ),
@@ -249,61 +325,82 @@ function buildProblemGames(
       winnerScore && loserScore ? round(loserScore.battleScore - winnerScore.battleScore, 1) : undefined;
 
     if (game.failures > 0 || game.warnings > 0) {
-      problemGames.push({
+      problemGames.push(createProblemGame({
         kind: "issue",
         severity: game.failures > 0 ? "failure" : "warning",
-        ...toProblemGameBase(game, winnerDeck, loserDeck, rankByDeck),
+        game,
+        winnerDeck,
+        loserDeck,
+        winnerScore,
+        loserScore,
+        rankByDeck,
         battleScoreGap,
         reason: `issue ${game.failures}/${game.warnings}`,
-      });
+      }));
     }
     if (game.steps >= longGameThreshold) {
-      problemGames.push({
+      problemGames.push(createProblemGame({
         kind: "long_game",
         severity: "review",
-        ...toProblemGameBase(game, winnerDeck, loserDeck, rankByDeck),
+        game,
+        winnerDeck,
+        loserDeck,
+        winnerScore,
+        loserScore,
+        rankByDeck,
         battleScoreGap,
         reason: `${game.steps} steps is above suite average + ${options.longGameStepMargin}`,
-      });
+      }));
     }
     if (battleScoreGap !== undefined && battleScoreGap >= options.upsetBattleScoreGap) {
-      problemGames.push({
+      problemGames.push(createProblemGame({
         kind: "upset",
         severity: "review",
-        ...toProblemGameBase(game, winnerDeck, loserDeck, rankByDeck),
+        game,
+        winnerDeck,
+        loserDeck,
+        winnerScore,
+        loserScore,
+        rankByDeck,
         battleScoreGap,
         reason: `lower-score deck beat higher-score deck by ${battleScoreGap}`,
-      });
+      }));
     }
     if (
       loserDeck &&
       (rankByDeck.get(loserDeck) ?? Number.POSITIVE_INFINITY) <= options.topDeckRankLimit &&
       (rankByDeck.get(winnerDeck ?? loserDeck) ?? 0) > options.topDeckRankLimit
     ) {
-      problemGames.push({
+      problemGames.push(createProblemGame({
         kind: "top_deck_loss",
         severity: "review",
-        ...toProblemGameBase(game, winnerDeck, loserDeck, rankByDeck),
+        game,
+        winnerDeck,
+        loserDeck,
+        winnerScore,
+        loserScore,
+        rankByDeck,
         battleScoreGap,
         reason: `top ${options.topDeckRankLimit} deck lost to lower ranked deck`,
-      });
+      }));
     }
   }
 
-  return uniqueProblemGames(problemGames)
-    .sort((a, b) => problemSeverityScore(b) - problemSeverityScore(a) || b.steps - a.steps)
-    .slice(0, options.limit * 3);
+  return selectRepresentativeProblemGames(uniqueProblemGames(problemGames), options.limit * 3);
 }
 
 function buildRecommendedFocus(
   categories: readonly DeckBattleInsightCategory[],
   problemGames: readonly DeckBattleProblemGame[],
+  problemFocuses: readonly DeckBattleProblemFocusSummary[],
 ): string[] {
   const slowWinner = categories.find((category) => category.id === "slow_winners")?.decks[0];
   const seatSkew = categories.find((category) => category.id === "seat_skew")?.decks[0];
   const stableLow = categories.find((category) => category.id === "stable_underperformers")?.decks[0];
   const upset = problemGames.find((game) => game.kind === "upset" || game.kind === "top_deck_loss");
+  const topFocus = problemFocuses[0];
   return [
+    topFocus ? `${topFocus.title}: ${topFocus.count}件。${topFocus.description}` : undefined,
     slowWinner ? `${slowWinner.deckPreset}: 勝てるが遅い。終盤の勝ち切りと白/黒の過剰安全行動を見る。` : undefined,
     seatSkew ? `${seatSkew.deckPreset}: 席差${formatPercent(seatSkew.seatDelta)}。先後・player/cpu非対称を確認する。` : undefined,
     stableLow ? `${stableLow.deckPreset}: 安定するが勝てない。攻め筋不足や守りすぎを確認する。` : undefined,
@@ -360,6 +457,117 @@ function toProblemGameBase(
   };
 }
 
+function createProblemGame({
+  kind,
+  severity,
+  game,
+  winnerDeck,
+  loserDeck,
+  winnerScore,
+  loserScore,
+  rankByDeck,
+  battleScoreGap,
+  reason,
+}: {
+  kind: DeckBattleProblemKind;
+  severity: DeckBattleProblemGame["severity"];
+  game: DeckBattleGameResult;
+  winnerDeck: DeckSubmissionPresetId | undefined;
+  loserDeck: DeckSubmissionPresetId | undefined;
+  winnerScore: DeckBattleScoreEntry | undefined;
+  loserScore: DeckBattleScoreEntry | undefined;
+  rankByDeck: Map<DeckSubmissionPresetId, number>;
+  battleScoreGap: number | undefined;
+  reason: string;
+}): DeckBattleProblemGame {
+  const focusIds = classifyProblemFocusIds(kind, game, winnerScore, loserScore);
+  return {
+    kind,
+    severity,
+    ...toProblemGameBase(game, winnerDeck, loserDeck, rankByDeck),
+    battleScoreGap,
+    primaryFocus: focusIds[0],
+    focusIds,
+    focusLabels: focusIds.map(deckBattleProblemFocusLabel),
+    reason,
+  };
+}
+
+function classifyProblemFocusIds(
+  kind: DeckBattleProblemKind,
+  game: DeckBattleGameResult,
+  winnerScore: DeckBattleScoreEntry | undefined,
+  loserScore: DeckBattleScoreEntry | undefined,
+): DeckBattleProblemFocusId[] {
+  const focusIds = new Set<DeckBattleProblemFocusId>();
+  if (kind === "issue") {
+    focusIds.add("issue_safety");
+  }
+  if (kind === "long_game" || game.issues.some((issue) => issue.kind === "long_game")) {
+    focusIds.add("long_game_closeout");
+  }
+  if (kind === "upset") {
+    focusIds.add("upset_review");
+  }
+  if (kind === "top_deck_loss") {
+    focusIds.add("top_deck_regression");
+  }
+  if (loserScore?.masterId === "white" && winnerScore?.masterId === "black") {
+    focusIds.add("white_vs_black");
+  }
+  if (loserScore?.masterId === "white" && loserScore.winRate <= 0.45) {
+    focusIds.add("white_closeout");
+  }
+  if (loserScore?.masterId === "black" && winnerScore?.masterId === "white") {
+    focusIds.add("black_pressure");
+  }
+  if (loserScore && seatDelta(loserScore) >= 0.2) {
+    focusIds.add("seat_bias");
+  }
+  if (focusIds.size === 0) {
+    focusIds.add(game.steps >= 140 ? "long_game_closeout" : "upset_review");
+  }
+  return [...focusIds];
+}
+
+function buildProblemFocuses(
+  problemGames: readonly DeckBattleProblemGame[],
+  limit: number,
+): DeckBattleProblemFocusSummary[] {
+  const focusMap = new Map<DeckBattleProblemFocusId, DeckBattleProblemFocusSummary>();
+  for (const problem of problemGames) {
+    for (const focusId of problem.focusIds ?? []) {
+      const focus = focusMap.get(focusId) ?? {
+        id: focusId,
+        title: deckBattleProblemFocusLabel(focusId),
+        description: PROBLEM_FOCUS_DEFS[focusId].description,
+        count: 0,
+        reviewWeight: 0,
+        examples: [],
+      };
+      focus.count += 1;
+      focus.reviewWeight = round(focus.reviewWeight + problemSeverityScore(problem), 1);
+      if (focus.examples.length < 3) {
+        focus.examples.push({
+          kind: problem.kind,
+          seed: problem.seed,
+          playerDeckPreset: problem.playerDeckPreset,
+          cpuDeckPreset: problem.cpuDeckPreset,
+          reason: problem.reason,
+        });
+      }
+      focusMap.set(focusId, focus);
+    }
+  }
+  return [...focusMap.values()]
+    .sort((a, b) => b.reviewWeight - a.reviewWeight || b.count - a.count)
+    .slice(0, limit);
+}
+
+export function deckBattleProblemFocusLabel(focusId: DeckBattleProblemFocusId): string {
+  return PROBLEM_FOCUS_DEFS[focusId].title;
+}
+
 function buildRankByDeck(decks: readonly DeckBattleScoreEntry[]): Map<DeckSubmissionPresetId, number> {
   return new Map(decks.map((deck, index) => [deck.deckPreset, index + 1]));
 }
@@ -394,6 +602,48 @@ function uniqueProblemGames(games: readonly DeckBattleProblemGame[]): DeckBattle
     seen.add(key);
     return true;
   });
+}
+
+function selectRepresentativeProblemGames(games: readonly DeckBattleProblemGame[], limit: number): DeckBattleProblemGame[] {
+  const sorted = [...games].sort((a, b) => problemSeverityScore(b) - problemSeverityScore(a) || b.steps - a.steps);
+  const selected: DeckBattleProblemGame[] = [];
+  const selectedKeys = new Set<string>();
+  const add = (game: DeckBattleProblemGame) => {
+    const key = problemGameSelectionKey(game);
+    if (selectedKeys.has(key) || selected.length >= limit) {
+      return;
+    }
+    selectedKeys.add(key);
+    selected.push(game);
+  };
+
+  for (const kind of ["issue", "top_deck_loss", "upset", "long_game"] as const) {
+    for (const game of sorted.filter((candidate) => candidate.kind === kind).slice(0, 3)) {
+      add(game);
+    }
+  }
+  for (const focusId of Object.keys(PROBLEM_FOCUS_DEFS) as DeckBattleProblemFocusId[]) {
+    const game = sorted.find((candidate) => candidate.focusIds?.includes(focusId));
+    if (game) {
+      add(game);
+    }
+  }
+  for (const game of sorted) {
+    add(game);
+  }
+
+  return selected.sort((a, b) => problemSeverityScore(b) - problemSeverityScore(a) || b.steps - a.steps);
+}
+
+function problemGameSelectionKey(game: DeckBattleProblemGame): string {
+  return [
+    game.kind,
+    game.seed,
+    game.playerDeckPreset,
+    game.cpuDeckPreset,
+    game.steps,
+    game.turns,
+  ].join("|");
 }
 
 function problemSeverityScore(game: DeckBattleProblemGame): number {
