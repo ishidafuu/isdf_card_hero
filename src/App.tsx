@@ -3856,14 +3856,12 @@ function DeckPresetRow({
                 value={formatDeckOpponentRate(preset, score, "black")}
                 barValue={deckOpponentRateBarValue(preset, score, "black")}
                 tone="vs-black"
-                wide
               />
               <DeckPresetScoreBar
                 label="対白 "
                 value={formatDeckOpponentRate(preset, score, "white")}
                 barValue={deckOpponentRateBarValue(preset, score, "white")}
                 tone="vs-white"
-                wide
               />
             </>
           ) : (
@@ -3881,20 +3879,18 @@ function DeckPresetScoreBar({
   value,
   barValue,
   tone,
-  wide = false,
 }: {
   label: string;
   value: string;
   barValue: number | undefined;
   tone: "battle" | "win" | "vs-black" | "vs-white";
-  wide?: boolean;
 }) {
   const normalizedValue = typeof barValue === "number" && Number.isFinite(barValue) ? clampNumber(barValue, 0, 1) : 0;
   const barPercent = `${Math.round(normalizedValue * 1000) / 10}%`;
   const style = { "--score-bar-width": barPercent } as CSSProperties;
 
   return (
-    <span className={`deck-preset-score-pill ${tone} ${wide ? "wide" : ""}`} style={style}>
+    <span className={`deck-preset-score-pill ${tone}`} style={style}>
       <span className="deck-preset-score-fill" aria-hidden="true" />
       <span className="deck-preset-score-text">{label}{value}</span>
     </span>
