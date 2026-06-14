@@ -161,7 +161,7 @@ type BattleMode = "player-vs-cpu" | "cpu-vs-cpu";
 type TargetRole = "ally" | "enemy" | "move" | "summon" | "empty" | "master";
 type CatalogCategoryFilter = "all" | "front" | "back" | "magic";
 type CatalogSortKey = "source" | "evaluation" | "proBlack" | "proWhite" | "name" | "offense" | "defense" | "synergy" | "hp" | "cost";
-type DeckPresetSortKey = "source" | "battle" | "winRate" | "stability" | "speed";
+type DeckPresetSortKey = "source" | "battle" | "winRate" | "stability" | "speed" | "vsBlack" | "vsWhite";
 
 interface BattleSettings {
   seed: number;
@@ -268,11 +268,13 @@ const DECK_PRESET_RARE8_FILTER_OPTIONS = [
 ] as const satisfies readonly { value: DeckPresetRare8Filter; label: string }[];
 
 const DECK_PRESET_SORT_OPTIONS = [
-  { value: "battle", label: "Battle" },
-  { value: "winRate", label: "Win" },
-  { value: "stability", label: "Stable" },
-  { value: "speed", label: "Speed" },
-  { value: "source", label: "Source" },
+  { value: "battle", label: "総合" },
+  { value: "winRate", label: "勝率" },
+  { value: "stability", label: "安定度" },
+  { value: "speed", label: "速度" },
+  { value: "vsBlack", label: "対黒勝率" },
+  { value: "vsWhite", label: "対白勝率" },
+  { value: "source", label: "登録順" },
 ] as const satisfies readonly { value: DeckPresetSortKey; label: string }[];
 
 const DECK_PRESET_VISIBLE_CHUNK = 80;
@@ -3723,7 +3725,7 @@ function DeckPresetControls({
       </div>
       <div className="deck-preset-filter-row">
         <div className="deck-preset-filter-group" aria-label="実戦スコアでプリセットを並び替え">
-          <span className="deck-preset-filter-label">Sort</span>
+          <span className="deck-preset-filter-label">ソート</span>
           {DECK_PRESET_SORT_OPTIONS.map((option) => (
             <button
               type="button"
@@ -3804,8 +3806,8 @@ function DeckPresetRow({
             <>
               <span>B{score.battleScore.toFixed(1)}</span>
               <span>W{formatPercent(score.winRate)}</span>
-              <span>黒vs黒 {formatMatchupRate(score.matchups.black_vs_black)}</span>
-              <span>白vs黒 {formatMatchupRate(score.matchups.white_vs_black)}</span>
+              <span>対黒 {formatDeckOpponentRate(preset, score, "black")}</span>
+              <span>対白 {formatDeckOpponentRate(preset, score, "white")}</span>
             </>
           ) : (
             <span>未計測</span>
@@ -3905,6 +3907,11 @@ function formatMatchupRate(matchup: DeckBattleScoreSnapshot["matchups"][keyof De
   return matchup.games > 0 ? `${formatPercent(matchup.winRate)} (${matchup.wins}-${matchup.losses}-${matchup.draws})` : "-";
 }
 
+function formatDeckOpponentRate(preset: DeckPresetDef, score: DeckBattleScoreSnapshot, opponentMasterId: MasterId): string {
+  const matchup = deckOpponentMatchup(preset, score, opponentMasterId);
+  return matchup ? formatMatchupRate(matchup) : "-";
+}
+
 function MetricPill({ label, value, strong = false }: { label: string; value: string; strong?: boolean }) {
   return (
     <span className={`deck-score-metric ${strong ? "strong" : ""}`}>
@@ -3952,7 +3959,32 @@ function deckPresetSortValue(preset: DeckPresetDef, sortKey: DeckPresetSortKey):
   if (sortKey === "speed") {
     return score.speedScore;
   }
+  if (sortKey === "vsBlack") {
+    return deckOpponentWinRateSortValue(preset, score, "black");
+  }
+  if (sortKey === "vsWhite") {
+    return deckOpponentWinRateSortValue(preset, score, "white");
+  }
   return score.battleScore;
+}
+
+function deckOpponentWinRateSortValue(preset: DeckPresetDef, score: DeckBattleScoreSnapshot, opponentMasterId: MasterId): number {
+  const matchup = deckOpponentMatchup(preset, score, opponentMasterId);
+  return matchup && matchup.games > 0 ? matchup.winRate : Number.NEGATIVE_INFINITY;
+}
+
+function deckOpponentMatchup(
+  preset: DeckPresetDef,
+  score: DeckBattleScoreSnapshot,
+  opponentMasterId: MasterId,
+): DeckBattleScoreSnapshot["matchups"][keyof DeckBattleScoreSnapshot["matchups"]] | undefined {
+  if (preset.masterId === "black") {
+    return opponentMasterId === "black" ? score.matchups.black_vs_black : score.matchups.white_vs_black;
+  }
+  if (preset.masterId === "white") {
+    return opponentMasterId === "black" ? score.matchups.white_vs_black : score.matchups.white_vs_white;
+  }
+  return undefined;
 }
 
 function formatDeckPresetIdentity(preset: DeckPresetDef): string {
