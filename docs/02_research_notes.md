@@ -9,6 +9,7 @@
 - [カードヒーロー部 カードリスト](https://www.cardhero-bu.com/card/)
 - [カードヒーロースピードバトルカスタムWiki](https://chspdcustom.wiki.fc2.com/)
 - [バトルでケリつけようね カードヒーローカテゴリ](http://hiirach.blog130.fc2.com/blog-category-1.html)
+- [カードヒーロー『；』 原作差分整理](./17_hiirach_semicolon_differences.md)
 
 ## 注意
 
