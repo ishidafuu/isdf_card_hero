@@ -56,7 +56,6 @@ import { CPU_AI_PROFILES, type CpuAiProfile, type CpuAiProfiles } from "./game/c
 import {
   buildDeckPresetCardIds,
   DEFAULT_DECK_PRESET_FILTERS,
-  DECK_PRESET_GROUPS,
   DECK_PRESETS,
   deckPresetAllowsSpecial,
   filterDeckPresets,
@@ -250,6 +249,8 @@ interface DeckCardOption {
   sortValue: number;
 }
 
+type DeckMatrixCellKind = "front" | "back" | "magic" | "special";
+
 const DECK_PRESET_MASTER_FILTER_OPTIONS = [
   { value: "all", label: "すべて" },
   { value: "white", label: "白" },
@@ -269,6 +270,8 @@ const DECK_PRESET_SORT_OPTIONS = [
   { value: "speed", label: "Speed" },
   { value: "source", label: "Source" },
 ] as const satisfies readonly { value: DeckPresetSortKey; label: string }[];
+
+const DECK_PRESET_VISIBLE_CHUNK = 80;
 
 const DRAG_MIME = "application/x-card-hero-drag";
 
@@ -855,6 +858,7 @@ export function App() {
     player: "balanced-normal",
     cpu: "balanced-normal",
   });
+  const [deckSetupTarget, setDeckSetupTarget] = useState<PlayerId>("player");
   const [deckPresetFilters, setDeckPresetFilters] = useState<Record<PlayerId, DeckPresetFilters>>(() => createDeckPresetFilters());
   const [deckPresetSorts, setDeckPresetSorts] = useState<Record<PlayerId, DeckPresetSortKey>>(() => createDeckPresetSorts());
   const [aiLabSuiteId, setAiLabSuiteId] = useState<DeckBattleScoreSnapshotSuiteId>(DEFAULT_DECK_BATTLE_SCORE_SNAPSHOT_SUITE_ID);
@@ -2053,6 +2057,7 @@ export function App() {
                 deckPresetPickerIds={deckPresetPickerIds}
                 deckPresetFilters={deckPresetFilters}
                 deckPresetSorts={deckPresetSorts}
+                activePlayerId={deckSetupTarget}
                 builtInMatchPresets={BUILT_IN_MATCH_PRESETS}
                 matchPresetId={matchPresetId}
                 savedBattlePresets={savedBattlePresets}
@@ -2071,6 +2076,7 @@ export function App() {
                 onPickerChange={handleDeckPickerChange}
                 onAddCard={handleAddDeckCard}
                 onRemoveCard={handleRemoveDeckCard}
+                onActivePlayerChange={setDeckSetupTarget}
                 onDeckPresetPickerChange={handleDeckPresetPickerChange}
                 onDeckPresetFilterChange={handleDeckPresetFilterChange}
                 onDeckPresetSortChange={handleDeckPresetSortChange}
@@ -3384,6 +3390,7 @@ interface DeckSetupPanelProps {
   deckPresetPickerIds: Record<PlayerId, DeckPresetId>;
   deckPresetFilters: Record<PlayerId, DeckPresetFilters>;
   deckPresetSorts: Record<PlayerId, DeckPresetSortKey>;
+  activePlayerId: PlayerId;
   builtInMatchPresets: BuiltInMatchPreset[];
   matchPresetId: string;
   savedBattlePresets: SavedBattlePreset[];
@@ -3402,6 +3409,7 @@ interface DeckSetupPanelProps {
   onPickerChange: (playerId: PlayerId, cardId: string) => void;
   onAddCard: (playerId: PlayerId, cardId: string) => void;
   onRemoveCard: (playerId: PlayerId, cardId: string) => void;
+  onActivePlayerChange: (playerId: PlayerId) => void;
   onDeckPresetPickerChange: (playerId: PlayerId, presetId: DeckPresetId) => void;
   onDeckPresetFilterChange: (playerId: PlayerId, filters: DeckPresetFilters) => void;
   onDeckPresetSortChange: (playerId: PlayerId, sortKey: DeckPresetSortKey) => void;
@@ -3416,6 +3424,7 @@ function DeckSetupPanel({
   deckPresetPickerIds,
   deckPresetFilters,
   deckPresetSorts,
+  activePlayerId,
   builtInMatchPresets,
   matchPresetId,
   savedBattlePresets,
@@ -3434,10 +3443,16 @@ function DeckSetupPanel({
   onPickerChange,
   onAddCard,
   onRemoveCard,
+  onActivePlayerChange,
   onDeckPresetPickerChange,
   onDeckPresetFilterChange,
   onDeckPresetSortChange,
 }: DeckSetupPanelProps) {
+  const playerId = activePlayerId;
+  const draft = drafts[playerId];
+  const summary = draft.summary;
+  const fixed = deckSettings.fixed[playerId];
+
   return (
     <section className="zone-panel deck-setup-panel">
       <div className="zone-panel-heading">
@@ -3461,97 +3476,103 @@ function DeckSetupPanel({
         onSaveBattlePreset={onSaveBattlePreset}
         onDeleteSavedBattlePreset={onDeleteSavedBattlePreset}
       />
-      <div className="deck-setup-grid">
-        {PLAYER_IDS.map((playerId) => {
-          const draft = drafts[playerId];
-          const summary = draft.summary;
-          const fixed = deckSettings.fixed[playerId];
-          return (
-            <section className={`deck-editor-card ${summary.valid ? "" : "invalid"}`} key={playerId}>
-              <div className="deck-editor-heading">
-                <div>
-                  <h4>{playerLabel(playerId)} Deck</h4>
-                  <p>
-                    {fixed ? "固定デッキ" : `${getMasterName(battleSettings.masterIds[playerId])}評価ランダム / seed ${battleSettings.seed}`} /
-                    Special {deckSettings.allowSpecial[playerId] ? "ON" : "OFF"}
-                  </p>
-                </div>
-                <div className="deck-toggle-group">
-                  <label className="deck-mode-toggle">
-                    <input
-                      type="checkbox"
-                      checked={fixed}
-                      onChange={(event) => onFixedChange(playerId, event.target.checked)}
-                    />
-                    固定
-                  </label>
-                  <label className="deck-mode-toggle">
-                    <input
-                      type="checkbox"
-                      checked={deckSettings.allowSpecial[playerId]}
-                      onChange={(event) => onAllowSpecialChange(playerId, event.target.checked)}
-                    />
-                    Special
-                  </label>
-                </div>
-              </div>
-              <DeckSummaryView summary={summary} />
-              <DeckPresetControls
-                presetId={deckPresetPickerIds[playerId]}
-                filters={deckPresetFilters[playerId]}
-                sortKey={deckPresetSorts[playerId]}
-                onFilterChange={(filters) => onDeckPresetFilterChange(playerId, filters)}
-                onSortChange={(sortKey) => onDeckPresetSortChange(playerId, sortKey)}
-                onPresetChange={(presetId) => onDeckPresetPickerChange(playerId, presetId)}
+      <div className="deck-setup-target-tabs" aria-label="deck setup target">
+        {PLAYER_IDS.map((targetPlayerId) => (
+          <button
+            type="button"
+            className={targetPlayerId === activePlayerId ? "selected" : ""}
+            aria-pressed={targetPlayerId === activePlayerId}
+            onClick={() => onActivePlayerChange(targetPlayerId)}
+            key={targetPlayerId}
+          >
+            {playerLabel(targetPlayerId)}
+          </button>
+        ))}
+      </div>
+      <div className="deck-setup-grid single">
+        <section className={`deck-editor-card ${summary.valid ? "" : "invalid"}`} key={playerId}>
+          <div className="deck-editor-heading">
+            <div>
+              <h4>{playerLabel(playerId)} Deck</h4>
+              <p>
+                {fixed ? "固定デッキ" : `${getMasterName(battleSettings.masterIds[playerId])}評価ランダム / seed ${battleSettings.seed}`} /
+                Special {deckSettings.allowSpecial[playerId] ? "ON" : "OFF"}
+              </p>
+            </div>
+            <div className="deck-toggle-group">
+              <label className="deck-mode-toggle">
+                <input
+                  type="checkbox"
+                  checked={fixed}
+                  onChange={(event) => onFixedChange(playerId, event.target.checked)}
+                />
+                固定
+              </label>
+              <label className="deck-mode-toggle">
+                <input
+                  type="checkbox"
+                  checked={deckSettings.allowSpecial[playerId]}
+                  onChange={(event) => onAllowSpecialChange(playerId, event.target.checked)}
+                />
+                Special
+              </label>
+            </div>
+          </div>
+          <DeckSummaryView summary={summary} />
+          <DeckPresetControls
+            presetId={deckPresetPickerIds[playerId]}
+            filters={deckPresetFilters[playerId]}
+            sortKey={deckPresetSorts[playerId]}
+            onFilterChange={(filters) => onDeckPresetFilterChange(playerId, filters)}
+            onSortChange={(sortKey) => onDeckPresetSortChange(playerId, sortKey)}
+            onPresetChange={(presetId) => onDeckPresetPickerChange(playerId, presetId)}
+          />
+          <div className="deck-editor-actions">
+            <button type="button" onClick={() => onUseGeneratedDeck(playerId)}>
+              <Icon icon="📌" /> 現在seedの内容を固定
+            </button>
+            {fixed && (
+              <button type="button" onClick={() => onFixedChange(playerId, false)}>
+                <Icon icon="🎲" /> ランダムに戻す
+              </button>
+            )}
+          </div>
+          {fixed ? (
+            <>
+              <DeckBuilderControls
+                cardOptions={cardOptions[playerId]}
+                selectedCardId={pickerIds[playerId]}
+                disabled={summary.total >= 30 || draft.cardIds.filter((cardId) => cardId === pickerIds[playerId]).length >= 3}
+                onSelect={(cardId) => onPickerChange(playerId, cardId)}
+                onAdd={() => onAddCard(playerId, pickerIds[playerId])}
               />
-              <div className="deck-editor-actions">
-                <button type="button" onClick={() => onUseGeneratedDeck(playerId)}>
-                  <Icon icon="📌" /> 現在seedの内容を固定
-                </button>
-                {fixed && (
-                  <button type="button" onClick={() => onFixedChange(playerId, false)}>
-                    <Icon icon="🎲" /> ランダムに戻す
-                  </button>
-                )}
-              </div>
-              {fixed ? (
-                <>
-                  <DeckBuilderControls
-                    cardOptions={cardOptions[playerId]}
-                    selectedCardId={pickerIds[playerId]}
-                    disabled={summary.total >= 30 || draft.cardIds.filter((cardId) => cardId === pickerIds[playerId]).length >= 3}
-                    onSelect={(cardId) => onPickerChange(playerId, cardId)}
-                    onAdd={() => onAddCard(playerId, pickerIds[playerId])}
-                  />
-                  <DeckCardList
-                    cardIds={draft.cardIds}
-                    editable
-                    onAddCard={(cardId) => onAddCard(playerId, cardId)}
-                    onRemoveCard={(cardId) => onRemoveCard(playerId, cardId)}
-                  />
-                  <details className="deck-raw-editor">
-                    <summary><Icon icon="✎" /> テキストで直接編集</summary>
-                    <textarea
-                      className="deck-editor-textarea"
-                      value={deckSettings.text[playerId]}
-                      onChange={(event) => onTextChange(playerId, event.target.value)}
-                      spellCheck={false}
-                    />
-                  </details>
-                </>
-              ) : (
-                <DeckCardList cardIds={draft.cardIds} />
-              )}
-              {!summary.valid && (
-                <ul className="deck-errors">
-                  {summary.errors.map((message) => (
-                    <li key={message}>{message}</li>
-                  ))}
-                </ul>
-              )}
-            </section>
-          );
-        })}
+              <DeckCardList
+                cardIds={draft.cardIds}
+                editable
+                onAddCard={(cardId) => onAddCard(playerId, cardId)}
+                onRemoveCard={(cardId) => onRemoveCard(playerId, cardId)}
+              />
+              <details className="deck-raw-editor">
+                <summary><Icon icon="✎" /> テキストで直接編集</summary>
+                <textarea
+                  className="deck-editor-textarea"
+                  value={deckSettings.text[playerId]}
+                  onChange={(event) => onTextChange(playerId, event.target.value)}
+                  spellCheck={false}
+                />
+              </details>
+            </>
+          ) : (
+            <DeckCardList cardIds={draft.cardIds} />
+          )}
+          {!summary.valid && (
+            <ul className="deck-errors">
+              {summary.errors.map((message) => (
+                <li key={message}>{message}</li>
+              ))}
+            </ul>
+          )}
+        </section>
       </div>
     </section>
   );
@@ -3651,11 +3672,17 @@ function DeckPresetControls({
   onSortChange: (sortKey: DeckPresetSortKey) => void;
   onPresetChange: (presetId: DeckPresetId) => void;
 }) {
+  const [visiblePresetCount, setVisiblePresetCount] = useState(DECK_PRESET_VISIBLE_CHUNK);
   const preset = DECK_PRESETS.find((candidate) => candidate.id === presetId) ?? DECK_PRESETS[0];
   const filteredPresets = sortDeckPresetCandidates(filterDeckPresets(filters), sortKey);
-  const optionGroups = buildDeckPresetOptionGroups(filteredPresets, sortKey);
+  const visiblePresets = filteredPresets.slice(0, visiblePresetCount);
+  const hasMorePresets = visiblePresetCount < filteredPresets.length;
   const selectedIsVisible = filteredPresets.some((candidate) => candidate.id === preset.id);
   const selectedScore = getDeckBattleScoreSnapshot(preset.id);
+
+  useEffect(() => {
+    setVisiblePresetCount(DECK_PRESET_VISIBLE_CHUNK);
+  }, [filters.master, filters.rare8, sortKey]);
 
   return (
     <div className="deck-preset-controls">
@@ -3705,31 +3732,112 @@ function DeckPresetControls({
           ))}
         </div>
       </div>
-      <label className="preset-control">
-        Preset ({filteredPresets.length})
-        <select
-          value={selectedIsVisible ? preset.id : ""}
-          onChange={(event) => event.target.value && onPresetChange(event.target.value as DeckPresetId)}
-          disabled={filteredPresets.length === 0}
-        >
-          {!selectedIsVisible && <option value="">フィルタ対象を選択</option>}
-          {optionGroups.map((group) => {
-            return (
-              <optgroup label={`${group.name} (${group.presets.length})`} key={group.id}>
-                {group.presets.map((candidate) => (
-                  <option value={candidate.id} key={candidate.id}>{formatDeckPresetOptionText(candidate)}</option>
-                ))}
-              </optgroup>
-            );
-          })}
-        </select>
-      </label>
-      <span>
+      <div className="deck-preset-browser" role="listbox" aria-label="deck preset candidates">
+        <div className="deck-preset-browser-heading">
+          <strong>Candidates</strong>
+          <span>{Math.min(visiblePresetCount, filteredPresets.length)} / {filteredPresets.length}</span>
+        </div>
+        {filteredPresets.length === 0 ? (
+          <span className="deck-preset-empty">フィルタ対象なし</span>
+        ) : (
+          <div className="deck-preset-row-list">
+            {visiblePresets.map((candidate) => (
+              <DeckPresetRow
+                preset={candidate}
+                selected={candidate.id === preset.id}
+                onSelect={() => onPresetChange(candidate.id)}
+                key={candidate.id}
+              />
+            ))}
+            {hasMorePresets && (
+              <button
+                type="button"
+                className="deck-preset-more"
+                onClick={() => setVisiblePresetCount((count) => count + DECK_PRESET_VISIBLE_CHUNK)}
+              >
+                ＋ {Math.min(DECK_PRESET_VISIBLE_CHUNK, filteredPresets.length - visiblePresetCount)}
+              </button>
+            )}
+          </div>
+        )}
+      </div>
+      <span className="deck-preset-selected-note">
         {selectedIsVisible
           ? `${formatDeckPresetIdentity(preset)} / ${preset.description}`
           : `現在: ${formatDeckPresetIdentity(preset)} / ${preset.name}（フィルタ外）`}
       </span>
+      <DeckMatrixPreview preset={preset} />
       <DeckBattleScoreStrip score={selectedScore} />
+    </div>
+  );
+}
+
+function DeckPresetRow({
+  preset,
+  selected,
+  onSelect,
+}: {
+  preset: DeckPresetDef;
+  selected: boolean;
+  onSelect: () => void;
+}) {
+  const score = getDeckBattleScoreSnapshot(preset.id);
+  return (
+    <button
+      type="button"
+      className={`deck-preset-row ${selected ? "selected" : ""}`}
+      aria-pressed={selected}
+      onClick={onSelect}
+    >
+      <div className="deck-preset-row-main">
+        <strong>{score ? `#${score.rank} ${formatDeckPresetIdentity(preset)}` : formatDeckPresetIdentity(preset)}</strong>
+        <span>{formatDeckPresetMeta(preset)}</span>
+      </div>
+      <div className="deck-preset-row-score">
+        {score ? (
+          <>
+            <span>B{score.battleScore.toFixed(1)}</span>
+            <span>W{formatPercent(score.winRate)}</span>
+            <span>黒vs黒 {formatMatchupRate(score.matchups.black_vs_black)}</span>
+            <span>白vs黒 {formatMatchupRate(score.matchups.white_vs_black)}</span>
+          </>
+        ) : (
+          <span>未計測</span>
+        )}
+      </div>
+      <DeckIconMatrix cardIds={preset.cardIds} compact />
+    </button>
+  );
+}
+
+function DeckMatrixPreview({ preset }: { preset: DeckPresetDef }) {
+  return (
+    <div className="deck-matrix-preview">
+      <div className="deck-matrix-heading">
+        <strong>{preset.name}</strong>
+        <span>{preset.cardIds.length}枚 / {formatDeckPresetMeta(preset)}</span>
+      </div>
+      <DeckIconMatrix cardIds={preset.cardIds} />
+    </div>
+  );
+}
+
+function DeckIconMatrix({ cardIds, compact = false }: { cardIds: readonly string[]; compact?: boolean }) {
+  return (
+    <div className={`deck-icon-matrix ${compact ? "compact" : ""}`} aria-label="deck card icons">
+      {toDeckMatrixCardIds(cardIds).map((cardId, index) => {
+        const def = getCardDef(cardId);
+        return (
+          <span
+            className={`deck-icon-cell ${deckMatrixCellKind(cardId)}`}
+            title={`${def.name} / ${cardTypeLabel(cardId)}`}
+            aria-label={`${index + 1}. ${def.name}`}
+            key={`${cardId}-${index}`}
+          >
+            <CardIcon cardId={cardId} />
+          </span>
+        );
+      })}
     </div>
   );
 }
@@ -3830,32 +3938,32 @@ function deckPresetSortValue(preset: DeckPresetDef, sortKey: DeckPresetSortKey):
   return score.battleScore;
 }
 
-function buildDeckPresetOptionGroups(presets: DeckPresetDef[], sortKey: DeckPresetSortKey) {
-  if (sortKey === "source") {
-    return DECK_PRESET_GROUPS.flatMap((group) => {
-      const groupPresets = presets.filter((candidate) => (candidate.group ?? "built-in") === group.id);
-      return groupPresets.length > 0 ? [{ id: group.id, name: group.name, presets: groupPresets }] : [];
-    });
-  }
-
-  const scored = presets.filter((preset) => getDeckBattleScoreSnapshot(preset.id));
-  const unscored = presets.filter((preset) => !getDeckBattleScoreSnapshot(preset.id));
-  return [
-    scored.length > 0 ? { id: "scored", name: "実戦スコア順", presets: scored } : undefined,
-    unscored.length > 0 ? { id: "unscored", name: "未計測/標準", presets: unscored } : undefined,
-  ].filter((group): group is { id: string; name: string; presets: DeckPresetDef[] } => !!group);
-}
-
-function formatDeckPresetOptionText(preset: DeckPresetDef): string {
-  const score = getDeckBattleScoreSnapshot(preset.id);
-  if (!score) {
-    return `${formatDeckPresetIdentity(preset)} - ${preset.name}`;
-  }
-  return `#${score.rank} ${formatDeckPresetIdentity(preset)} B${score.battleScore.toFixed(1)} W${formatPercent(score.winRate)} S${score.stabilityScore.toFixed(1)} - ${preset.name}`;
-}
-
 function formatDeckPresetIdentity(preset: DeckPresetDef): string {
   return preset.sourceDeckId ? `${preset.id} / 投稿#${preset.sourceDeckId}` : preset.id;
+}
+
+function formatDeckPresetMeta(preset: DeckPresetDef): string {
+  return [preset.masterId ? getMasterName(preset.masterId) : undefined, preset.mode, preset.name].filter(Boolean).join(" / ");
+}
+
+function toDeckMatrixCardIds(cardIds: readonly string[]): string[] {
+  return [...cardIds].sort((a, b) => {
+    const aDef = getCardDef(a);
+    const bDef = getCardDef(b);
+    const categoryDiff = deckCategorySortValue(aDef) - deckCategorySortValue(bDef);
+    return categoryDiff || aDef.name.localeCompare(bDef.name, "ja") || a.localeCompare(b);
+  });
+}
+
+function deckMatrixCellKind(cardId: string): DeckMatrixCellKind {
+  const def = getCardDef(cardId);
+  if (getCardPool(def) === "special") {
+    return "special";
+  }
+  if (def.type === "magic") {
+    return "magic";
+  }
+  return def.role === "front" ? "front" : "back";
 }
 
 function formatPercent(value: number): string {
