@@ -345,3 +345,65 @@ Core count2 mergedの代表分類:
 - `白vs黒対策`: 白側が黒の圧に負ける試合は、防御対象と前衛処理の評価を確認する。
 
 ゲーム内では `AI Lab` に `Problem Focus` を追加し、各 `Problem Games` に分類タグを表示する。
+
+## Phase 22: 安定化
+
+実行日: 2026-06-14
+
+### 目的
+
+Phase 15で見えた `黒の攻め筋` と `長期戦/勝ち切り` を、実戦デッキの自動対戦で再確認する。
+あわせて、ゲーム内のDecks / AI Labから見えるスコアを最新AIの結果へ更新する。
+
+### AI補正
+
+- 非致死のマスター向け攻撃魔法を固定8点ではなく、実ダメージ価値とコストで評価するようにした。
+  - サンダーなどを、リーサル以外でも黒の押し込み手段として評価できる。
+- 終盤、山札切れ、マスターHP競争の局面では、0ダメージ攻撃で気合いを剥がすだけの行動を抑制した。
+  - 防御上の直接打点軽減や、後続攻撃に明確につながる場合は残す。
+- 単体テストは、seed依存の途中盤面ではなく、バーサク後にマスター打点へ進む最小局面で固定した。
+
+### 実行結果
+
+```sh
+npm test -- --run tests/game/cpuAi.test.ts
+npm run score:deck-battles -- --suite smoke --seed-start 520 --count 2 --out-dir artifacts/deck-battle-score/phase22-smoke-count2
+npm run score:deck-battles -- --suite core --max-decks 24 --seed-start 520 --count 2 --out-dir artifacts/deck-battle-score/phase22-core24-count2
+npm run score:deck-battles -- --suite core --seed-start 540 --count 1 --out-dir artifacts/deck-battle-score/phase22-core-count1
+npm run analyze:deck-battles -- --report artifacts/deck-battle-score/phase22-core-count1/report.json --out-dir artifacts/deck-battle-score/phase22-core-count1-insights
+npm run trace:deck-battles -- --report artifacts/deck-battle-score/phase22-core-count1/report.json --out-dir artifacts/deck-battle-score/phase22-core-count1-traces --limit 8 --log-limit 60
+npm run generate:deck-battle-snapshots -- --report artifacts/deck-battle-score/phase22-smoke-count2/report.json --report artifacts/deck-battle-score/phase22-core-count1/report.json --default-suite core --out src/game/deckBattleScoreSnapshots.ts
+npm run benchmark:deck-suite -- --suite smoke --seed-start 560 --count 2 --json artifacts/deck-benchmark/phase22-smoke-count2.json
+npm run benchmark:deck-suite -- --suite core --seed-start 560 --count 1 --json artifacts/deck-benchmark/phase22-core-count1.json
+```
+
+| Gate | Games | Result | Notes |
+| --- | ---: | --- | --- |
+| AI単体テスト | 47 tests | PASS | サンダー非致死打点、終盤0ダメージ抑制、黒バーサク後の直撃を固定 |
+| score smoke count2 | 112 | PASS 0/0 | 平均99.2 steps / 9.6 turns、最大291 steps / 28 turns |
+| score core24 count2 | 1104 | PASS 0/0 | 平均90.7 steps / 8.9 turns、最大284 steps / 29 turns |
+| score core count1 | 1560 | PASS 0/3 | 平均108.1 steps / 10.5 turns、最大331 steps / 30 turns |
+| benchmark smoke count2 | 32 | PASS 0/0 | strong 17勝 / stable 15勝 |
+| benchmark core count1 | 80 | PASS 0/1 | strong 41勝 / stable 39勝 |
+
+`src/game/deckBattleScoreSnapshots.ts` は `smoke seed 520 count2` と `core seed 540 count1` で更新した。
+core count2は40デッキで3120試合になるため、同条件での再計算を試したが48分時点で未完だった。
+Phase 22では40デッキを最新AIで覆うことを優先し、snapshotはcore count1を採用した。
+
+### Core count1の代表傾向
+
+| Rank | Deck | Battle | Win | Stable | Speed |
+| ---: | --- | ---: | ---: | ---: | ---: |
+| 1 | submission-pro-with-rare8-black-320 | 82.0 | 80.8% | 94.6 | 60.9 |
+| 2 | submission-pro-with-rare8-black-315 | 82.0 | 80.8% | 94.6 | 60.9 |
+| 3 | submission-pro-with-rare8-black-1333 | 76.7 | 75.6% | 93.1 | 59.9 |
+| 4 | submission-pro-no-rare8-black-322 | 76.5 | 75.6% | 99.2 | 57.6 |
+| 6 | submission-pro-with-rare8-white-1339 | 72.9 | 73.1% | 99.2 | 48.6 |
+
+### 残課題
+
+- core count1のwarning 3件は、白同士の長期戦と山札切れ付近の勝ち切り問題。
+- traceでは、0ダメージ行動のうち「防御目的」と判定されたものがまだ残る。
+  - 次フェーズでは、山札切れ時は非致死の気合い剥がしをさらに抑え、勝ち筋または山札切れ勝負へ寄せる。
+- `submission-pro-with-rare8-black-45` と `submission-pro-with-rare8-black-999` は席差が大きく、player/cpu非対称の確認対象。
+- full core count2は夜間・長時間ジョブ向け。UI上の通常snapshotはcore count1、深掘りはcore24 count2 / traceで見る。

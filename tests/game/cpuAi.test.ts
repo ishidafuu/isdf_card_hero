@@ -1,12 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { getMonsterDef } from "../../src/game/cards";
 import { applyCpuDecision, chooseCpuDecision, listCpuDecisions } from "../../src/game/cpuAi";
-import {
-  buildDeckPresetCardIds,
-  deckPresetAllowsSpecial,
-  getDeckPreset,
-  type DeckPresetId,
-} from "../../src/game/deckPresets";
 import { attackWithCommand, createInitialGame, endTurn, runAutoStep, runCpuStep } from "../../src/game/rules";
 import type { CardInstance, GameState, MonsterState, PlayerId } from "../../src/game/types";
 
@@ -138,6 +132,25 @@ describe("cpu ai", () => {
     ).toBe(false);
   });
 
+  it("does not spend closeout turns on zero-damage attacks that only strip focus", () => {
+    const game = createPlayerAutoGame([]);
+    game.players.player.stones = 0;
+    game.players.cpu.masterHp = 2;
+    game.slots.player_front_left.monster = createActiveMonster("card_051", "player");
+    game.slots.cpu_front_left.monster = createActiveMonster("card_051", "cpu", { focused: true });
+
+    const decisions = listCpuDecisions(game);
+
+    expect(
+      decisions.some(
+        (decision) =>
+          decision.type === "attack" &&
+          decision.action.target.kind === "monster" &&
+          decision.action.target.slotKey === "cpu_front_left",
+      ),
+    ).toBe(false);
+  });
+
   it("uses master attack when it can defeat a front enemy", () => {
     const game = createCpuGame();
     game.players.cpu.hand = [];
@@ -207,21 +220,20 @@ describe("cpu ai", () => {
     ).toBe(false);
   });
 
-  it("keeps black strong AI on direct master damage after berserk power in a submission deck", () => {
-    let game = createSubmissionPresetMirrorGame("submission-pro-no-rare8-black-493", 430);
-    const profiles = { player: "stable", cpu: "strong" } as const;
+  it("keeps black strong AI on direct master damage after berserk power", () => {
+    let game = createCpuGame();
+    game.players.cpu.masterId = "black";
+    game.players.cpu.hand = [];
+    game.players.cpu.stones = 3;
+    game.slots.cpu_front_left.monster = createActiveMonster("takokke", "cpu");
 
-    for (let step = 0; step < 13; step += 1) {
-      game = runAutoStep(game, { profiles });
-    }
-
-    const berserkDecision = chooseCpuDecision(game, { profile: "strong" });
-    expect(berserkDecision.type).toBe("master_action");
-    if (berserkDecision.type !== "master_action") {
+    const setupDecision = chooseCpuDecision(game, { profile: "strong" });
+    expect(setupDecision.type).toBe("master_action");
+    if (setupDecision.type !== "master_action") {
       return;
     }
-    expect(berserkDecision.actionId).toBe("berserk_power");
-    game = applyCpuDecision(game, berserkDecision);
+    expect(setupDecision.actionId).toBe("berserk_power");
+    game = applyCpuDecision(game, setupDecision);
 
     const attackDecision = chooseCpuDecision(game, { profile: "strong" });
 
@@ -229,7 +241,7 @@ describe("cpu ai", () => {
     if (attackDecision.type === "attack") {
       expect(attackDecision.action.target).toEqual({ kind: "master", playerId: "player" });
     }
-  }, 30_000);
+  });
 
   it("lists black master earth anger when the field-wide exchange is favorable", () => {
     const game = createCpuGame();
@@ -417,6 +429,22 @@ describe("cpu ai", () => {
     if (decision.type === "magic") {
       expect(decision.action.target).toEqual({ kind: "master", playerId: "player" });
       expect(decision.reason).toContain("相手マスターを倒せる");
+    }
+  });
+
+  it("uses thunder as non-lethal master pressure over monster chip damage", () => {
+    const game = createCpuGame([{ cardId: "thunder", instanceId: "cpu_thunder_pressure" }]);
+    game.players.cpu.masterId = "black";
+    game.players.cpu.stones = 4;
+    game.players.player.masterHp = 8;
+    game.slots.player_front_left.monster = createActiveMonster("takokke", "player", { hp: 5 });
+
+    const decision = chooseCpuDecision(game, { profile: "strong" });
+
+    expect(decision.type).toBe("magic");
+    if (decision.type === "magic") {
+      expect(decision.action.handInstanceId).toBe("cpu_thunder_pressure");
+      expect(decision.action.target).toEqual({ kind: "master", playerId: "player" });
     }
   });
 
@@ -845,19 +873,6 @@ function createPlayerAutoGame(hand: CardInstance[] = []): GameState {
   game.players.player.discard = [];
   game.players.cpu.hand = [];
   return game;
-}
-
-function createSubmissionPresetMirrorGame(presetId: DeckPresetId, seed: number): GameState {
-  const preset = getDeckPreset(presetId);
-  const cardIds = buildDeckPresetCardIds(presetId);
-  const allowSpecial = deckPresetAllowsSpecial(presetId);
-  const masterId = preset.masterId ?? "white";
-  return createInitialGame(seed, {
-    masterIds: { player: masterId, cpu: masterId },
-    playerDeckCardIds: cardIds,
-    cpuDeckCardIds: cardIds,
-    allowSpecialDecks: { player: allowSpecial, cpu: allowSpecial },
-  });
 }
 
 function createActiveMonster(

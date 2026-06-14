@@ -649,16 +649,7 @@ function scoreAttackDecision(state: GameState, after: GameState, action: Command
 
   const damage = targetBefore.hp - targetAfter.hp;
   if (damage <= 0) {
-    if (shouldPruneCloseoutNonProgressActions(state, playerId)) {
-      const strippedFocus = targetBefore.focused && !targetAfter.focused;
-      const targetThreatBefore = directMasterDamageFromSlot(state, action.target.slotKey, opponent);
-      const targetThreatAfter = directMasterDamageFromSlot(after, action.target.slotKey, opponent);
-      if (strippedFocus && targetThreatAfter < targetThreatBefore) {
-        return stateDelta > 8 ? 30 + stateDelta + recoilPenalty : -100;
-      }
-      return strippedFocus && stateDelta >= 45 ? 12 + stateDelta * 0.35 + recoilPenalty : -100;
-    }
-    return stateDelta > 8 ? 30 + stateDelta + recoilPenalty : -100;
+    return scoreZeroDamageMonsterAttack(state, after, action.target.slotKey, targetBefore, targetAfter, stateDelta, recoilPenalty);
   }
   if (shouldPruneCloseoutNonProgressActions(state, playerId) && damage < targetAfter.hp && stateDelta < 45) {
     return -100;
@@ -672,6 +663,39 @@ function scoreAttackDecision(state: GameState, after: GameState, action: Command
     return 25 * damage + recoilPenalty - racePenalty;
   }
   return 25 * damage + recoilPenalty;
+}
+
+function scoreZeroDamageMonsterAttack(
+  state: GameState,
+  after: GameState,
+  targetSlotKey: SlotKey,
+  targetBefore: MonsterState,
+  targetAfter: MonsterState,
+  stateDelta: number,
+  recoilPenalty: number,
+): number {
+  const playerId = state.currentPlayer;
+  const opponent = opponentOf(playerId);
+  const strippedFocus = targetBefore.focused && !targetAfter.focused;
+  const closeout = shouldPruneCloseoutNonProgressActions(state, playerId) || isDeckOutRace(state) || isMasterRaceRelevant(state, playerId);
+
+  if (strippedFocus) {
+    const targetThreatBefore = directMasterDamageFromSlot(state, targetSlotKey, opponent);
+    const targetThreatAfter = directMasterDamageFromSlot(after, targetSlotKey, opponent);
+    if (targetThreatAfter < targetThreatBefore) {
+      return 24 + (targetThreatBefore - targetThreatAfter) * 38 + Math.max(0, stateDelta) * 0.25 + recoilPenalty;
+    }
+
+    const followUpImprovement = bestAttackOpportunityScore(after) - bestAttackOpportunityScore(state);
+    if (!closeout && followUpImprovement >= 70) {
+      return 12 + followUpImprovement * 0.35 + Math.max(0, stateDelta) * 0.2 + recoilPenalty;
+    }
+  }
+
+  if (closeout) {
+    return -100;
+  }
+  return stateDelta > 8 ? 30 + stateDelta + recoilPenalty : -100;
 }
 
 function scoreCommandHandChoiceDecision(
@@ -1516,7 +1540,7 @@ function scoreDamageMagicDecision(state: GameState, after: GameState, action: Ma
     if (damage <= 0) {
       return -100;
     }
-    return after.winner === state.currentPlayer ? 1_000_000 : 8;
+    return after.winner === state.currentPlayer ? 1_000_000 : masterDamageScore(state, state.currentPlayer, damage) - cost * 18;
   }
 
   const before = state.slots[action.target.slotKey].monster;
