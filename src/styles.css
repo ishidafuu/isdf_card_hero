@@ -1943,14 +1943,14 @@ button:disabled {
 .deck-icon-matrix {
   display: grid;
   gap: 4px;
-  grid-template-columns: repeat(15, 48px);
+  grid-template-columns: repeat(15, 52px);
   justify-content: start;
   min-width: 0;
 }
 
 .deck-icon-matrix.compact {
   gap: 3px;
-  grid-template-columns: repeat(15, 30px);
+  grid-template-columns: repeat(15, 36px);
   justify-content: start;
 }
 
@@ -1964,50 +1964,44 @@ button:disabled {
   min-width: 0;
   overflow: hidden;
   position: relative;
+  border-left-width: 5px;
   padding: 1px;
-  width: 48px;
-}
-
-.deck-icon-cell::before {
-  background: var(--deck-kind-strip, #7e8b82);
-  bottom: 0;
-  content: "";
-  left: 0;
-  position: absolute;
-  top: 0;
-  width: 4px;
-  z-index: 1;
+  width: 52px;
 }
 
 .deck-icon-matrix.compact .deck-icon-cell {
   border-radius: 3px;
   height: 30px;
   padding: 0;
-  width: 30px;
+  width: 36px;
 }
 
 .deck-icon-cell.front {
   --deck-kind-strip: #4e8c5f;
   background: #eaf3ed;
   border-color: #80aa8a;
+  border-left-color: var(--deck-kind-strip);
 }
 
 .deck-icon-cell.back {
   --deck-kind-strip: #556fb4;
   background: #edf1fb;
   border-color: #8597ce;
+  border-left-color: var(--deck-kind-strip);
 }
 
 .deck-icon-cell.magic {
   --deck-kind-strip: #b68124;
   background: #fff4df;
   border-color: #c49d41;
+  border-left-color: var(--deck-kind-strip);
 }
 
 .deck-icon-cell.special {
   --deck-kind-strip: #a35c91;
   background: #f9e9f3;
   border-color: #bd7ead;
+  border-left-color: var(--deck-kind-strip);
 }
 
 .deck-icon-cell .card-image-icon {
@@ -3141,12 +3135,12 @@ button:disabled {
   }
 
   .deck-icon-matrix.compact {
-    grid-template-columns: repeat(10, 26px);
+    grid-template-columns: repeat(10, 30px);
   }
 
   .deck-icon-matrix.compact .deck-icon-cell {
-    height: 26px;
-    width: 26px;
+    height: 30px;
+    width: 30px;
   }
 
   .ai-lab-summary {
