@@ -279,6 +279,13 @@ const DECK_PRESET_SORT_OPTIONS = [
 
 const DECK_PRESET_VISIBLE_CHUNK = 80;
 const DECK_MATRIX_KIND_ORDER: DeckMatrixCellKind[] = ["front", "back", "magic", "special"];
+const DECK_PRESET_CARD_FILTER_OPTIONS = getAllCardDefs()
+  .map((def) => ({
+    id: def.id,
+    name: def.name,
+    sortValue: deckCategorySortValue(def),
+  }))
+  .sort((a, b) => a.sortValue - b.sortValue || a.name.localeCompare(b.name, "ja") || a.id.localeCompare(b.id));
 
 const DRAG_MIME = "application/x-card-hero-drag";
 
@@ -819,9 +826,13 @@ function createDeckPickerIds(): Record<PlayerId, string> {
 }
 
 function createDeckPresetFilters(): Record<PlayerId, DeckPresetFilters> {
+  const createFilter = (): DeckPresetFilters => ({
+    ...DEFAULT_DECK_PRESET_FILTERS,
+    cardIds: [...DEFAULT_DECK_PRESET_FILTERS.cardIds],
+  });
   return {
-    player: { ...DEFAULT_DECK_PRESET_FILTERS },
-    cpu: { ...DEFAULT_DECK_PRESET_FILTERS },
+    player: createFilter(),
+    cpu: createFilter(),
   };
 }
 
@@ -3680,6 +3691,9 @@ function DeckPresetControls({
   onPresetChange: (presetId: DeckPresetId) => void;
 }) {
   const [visiblePresetCount, setVisiblePresetCount] = useState(DECK_PRESET_VISIBLE_CHUNK);
+  const selectedCardIds = filters.cardIds;
+  const selectedCardSet = new Set(selectedCardIds);
+  const cardFilterKey = selectedCardIds.join("|");
   const preset = DECK_PRESETS.find((candidate) => candidate.id === presetId) ?? DECK_PRESETS[0];
   const filteredPresets = sortDeckPresetCandidates(filterDeckPresets(filters), sortKey);
   const visiblePresets = filteredPresets.slice(0, visiblePresetCount);
@@ -3689,7 +3703,7 @@ function DeckPresetControls({
 
   useEffect(() => {
     setVisiblePresetCount(DECK_PRESET_VISIBLE_CHUNK);
-  }, [filters.master, filters.rare8, sortKey]);
+  }, [filters.master, filters.rare8, cardFilterKey, sortKey]);
 
   return (
     <div className="deck-preset-controls">
@@ -3737,6 +3751,37 @@ function DeckPresetControls({
               {option.label}
             </button>
           ))}
+        </div>
+      </div>
+      <div className="deck-card-filter-panel">
+        <div className="deck-card-filter-heading">
+          <span className="deck-preset-filter-label">使用カード</span>
+          <span>{selectedCardIds.length > 0 ? `${selectedCardIds.length}枚ON / OR` : "指定なし"}</span>
+          <button
+            type="button"
+            onClick={() => onFilterChange({ ...filters, cardIds: [] })}
+            disabled={selectedCardIds.length === 0}
+          >
+            クリア
+          </button>
+        </div>
+        <div className="deck-card-filter-grid" aria-label="使用カードでプリセットを絞り込み">
+          {DECK_PRESET_CARD_FILTER_OPTIONS.map((card) => {
+            const selected = selectedCardSet.has(card.id);
+            return (
+              <button
+                type="button"
+                className={`deck-card-filter-button ${deckMatrixCellKind(card.id)} ${selected ? "selected" : ""}`}
+                aria-pressed={selected}
+                title={card.name}
+                onClick={() => onFilterChange({ ...filters, cardIds: toggleDeckPresetFilterCard(selectedCardIds, card.id) })}
+                key={card.id}
+              >
+                <CardIcon cardId={card.id} />
+                <span>{card.name}</span>
+              </button>
+            );
+          })}
         </div>
       </div>
       <div className="deck-preset-browser" role="listbox" aria-label="deck preset candidates">
@@ -3966,6 +4011,12 @@ function deckPresetSortValue(preset: DeckPresetDef, sortKey: DeckPresetSortKey):
     return deckOpponentWinRateSortValue(preset, score, "white");
   }
   return score.battleScore;
+}
+
+function toggleDeckPresetFilterCard(cardIds: readonly string[], cardId: string): string[] {
+  return cardIds.includes(cardId)
+    ? cardIds.filter((candidate) => candidate !== cardId)
+    : [...cardIds, cardId];
 }
 
 function deckOpponentWinRateSortValue(preset: DeckPresetDef, score: DeckBattleScoreSnapshot, opponentMasterId: MasterId): number {

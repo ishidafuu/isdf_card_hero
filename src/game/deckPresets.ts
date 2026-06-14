@@ -36,11 +36,13 @@ export type DeckPresetRare8Filter = "all" | "with" | "without";
 export interface DeckPresetFilters {
   master: DeckPresetMasterFilter;
   rare8: DeckPresetRare8Filter;
+  cardIds: readonly string[];
 }
 
 export const DEFAULT_DECK_PRESET_FILTERS: DeckPresetFilters = {
   master: "all",
   rare8: "all",
+  cardIds: [],
 };
 
 const BALANCED_NORMAL_DECK_CARD_IDS = buildDeckCardIds(20260613, { masterId: "white" });
@@ -135,6 +137,9 @@ export function deckPresetMatchesFilters(preset: DeckPresetDef, filters: DeckPre
     return false;
   }
   if (filters.rare8 === "without" && preset.mode !== "Pro 8なし") {
+    return false;
+  }
+  if (filters.cardIds.length > 0 && !filters.cardIds.some((cardId) => preset.cardIds.includes(cardId))) {
     return false;
   }
   return true;
