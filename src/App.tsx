@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from "react";
-import type { DragEvent, PointerEvent as ReactPointerEvent } from "react";
+import type { CSSProperties, DragEvent, PointerEvent as ReactPointerEvent } from "react";
 import { getCardNoteDisplays } from "./game/cardAnnotations";
 import {
   buildDeckCardIds,
@@ -3849,10 +3849,22 @@ function DeckPresetRow({
         <div className="deck-preset-row-score">
           {score ? (
             <>
-              <span>B{score.battleScore.toFixed(1)}</span>
-              <span>W{formatPercent(score.winRate)}</span>
-              <span>対黒 {formatDeckOpponentRate(preset, score, "black")}</span>
-              <span>対白 {formatDeckOpponentRate(preset, score, "white")}</span>
+              <DeckPresetScoreBar label="B" value={score.battleScore.toFixed(1)} barValue={score.battleScore / 100} tone="battle" />
+              <DeckPresetScoreBar label="W" value={formatPercent(score.winRate)} barValue={score.winRate} tone="win" />
+              <DeckPresetScoreBar
+                label="対黒 "
+                value={formatDeckOpponentRate(preset, score, "black")}
+                barValue={deckOpponentRateBarValue(preset, score, "black")}
+                tone="vs-black"
+                wide
+              />
+              <DeckPresetScoreBar
+                label="対白 "
+                value={formatDeckOpponentRate(preset, score, "white")}
+                barValue={deckOpponentRateBarValue(preset, score, "white")}
+                tone="vs-white"
+                wide
+              />
             </>
           ) : (
             <span>未計測</span>
@@ -3861,6 +3873,31 @@ function DeckPresetRow({
       </div>
       <DeckIconMatrix cardIds={preset.cardIds} compact />
     </button>
+  );
+}
+
+function DeckPresetScoreBar({
+  label,
+  value,
+  barValue,
+  tone,
+  wide = false,
+}: {
+  label: string;
+  value: string;
+  barValue: number | undefined;
+  tone: "battle" | "win" | "vs-black" | "vs-white";
+  wide?: boolean;
+}) {
+  const normalizedValue = typeof barValue === "number" && Number.isFinite(barValue) ? clampNumber(barValue, 0, 1) : 0;
+  const barPercent = `${Math.round(normalizedValue * 1000) / 10}%`;
+  const style = { "--score-bar-width": barPercent } as CSSProperties;
+
+  return (
+    <span className={`deck-preset-score-pill ${tone} ${wide ? "wide" : ""}`} style={style}>
+      <span className="deck-preset-score-fill" aria-hidden="true" />
+      <span className="deck-preset-score-text">{label}{value}</span>
+    </span>
   );
 }
 
@@ -3955,6 +3992,11 @@ function formatMatchupRate(matchup: DeckBattleScoreSnapshot["matchups"][keyof De
 function formatDeckOpponentRate(preset: DeckPresetDef, score: DeckBattleScoreSnapshot, opponentMasterId: MasterId): string {
   const matchup = deckOpponentMatchup(preset, score, opponentMasterId);
   return matchup ? formatMatchupRate(matchup) : "-";
+}
+
+function deckOpponentRateBarValue(preset: DeckPresetDef, score: DeckBattleScoreSnapshot, opponentMasterId: MasterId): number | undefined {
+  const matchup = deckOpponentMatchup(preset, score, opponentMasterId);
+  return matchup && matchup.games > 0 ? matchup.winRate : undefined;
 }
 
 function MetricPill({ label, value, strong = false }: { label: string; value: string; strong?: boolean }) {

@@ -1927,7 +1927,7 @@ button:disabled {
 }
 
 .deck-preset-row-main span,
-.deck-preset-row-score span {
+.deck-preset-row-score > span {
   color: #56615d;
   font-size: 10px;
   line-height: 1.25;
@@ -1948,11 +1948,74 @@ button:disabled {
   max-width: 170px;
 }
 
-.deck-preset-row-score span {
+.deck-preset-row-score > span {
   background: #fffef9;
   border: 1px solid #d8dfd2;
   border-radius: 4px;
   padding: 1px 4px;
+}
+
+.deck-preset-score-pill {
+  --score-bar-color: #6b8f6a;
+  align-items: center;
+  display: inline-flex;
+  min-height: 18px;
+  min-width: 54px;
+  overflow: hidden;
+  position: relative;
+}
+
+.deck-preset-score-pill.wide {
+  min-width: 100px;
+}
+
+.deck-preset-score-pill.battle {
+  --score-bar-color: #5f8c63;
+}
+
+.deck-preset-score-pill.win {
+  --score-bar-color: #3f78a8;
+}
+
+.deck-preset-score-pill.vs-black {
+  --score-bar-color: #5f5875;
+}
+
+.deck-preset-score-pill.vs-white {
+  --score-bar-color: #bd8f38;
+}
+
+.deck-preset-score-fill {
+  background: var(--score-bar-color);
+  bottom: 0;
+  left: 0;
+  opacity: 0.26;
+  position: absolute;
+  top: 0;
+  width: var(--score-bar-width);
+}
+
+.deck-preset-score-pill::after {
+  background: rgba(86, 97, 93, 0.16);
+  border-radius: 999px;
+  bottom: 2px;
+  content: "";
+  height: 2px;
+  left: 4px;
+  position: absolute;
+  right: 4px;
+}
+
+.deck-preset-score-text {
+  color: #33403c;
+  font-size: 10px;
+  font-weight: 700;
+  line-height: 1.15;
+  overflow: hidden;
+  position: relative;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  z-index: 1;
 }
 
 .deck-preset-more {
