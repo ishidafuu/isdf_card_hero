@@ -1768,22 +1768,21 @@ button:disabled {
 .deck-preset-row-list {
   display: grid;
   gap: 6px;
-  grid-template-columns: repeat(auto-fit, minmax(430px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(470px, 1fr));
   max-height: 500px;
   overflow: auto;
   padding-right: 2px;
 }
 
 .deck-preset-row {
-  align-content: start;
   background: #f8faf4;
   border: 1px solid #d8dfd2;
   border-radius: 6px;
-  display: grid;
+  display: flex;
+  flex-direction: column;
   gap: 4px;
-  grid-template-columns: minmax(0, 1fr) auto;
-  min-height: 0;
-  overflow: visible;
+  min-height: 132px;
+  overflow: hidden;
   padding: 6px;
   text-align: left;
 }
@@ -1797,8 +1796,11 @@ button:disabled {
   box-shadow: inset 0 0 0 1px rgba(47, 111, 170, 0.32);
 }
 
-.deck-preset-row-main,
-.deck-preset-row-score {
+.deck-preset-row-head {
+  align-items: start;
+  display: grid;
+  gap: 6px;
+  grid-template-columns: minmax(0, 1fr) auto;
   min-width: 0;
 }
 
@@ -1896,7 +1898,7 @@ button:disabled {
 
 .deck-icon-matrix.compact {
   gap: 3px;
-  grid-template-columns: repeat(15, 24px);
+  grid-template-columns: repeat(15, 26px);
   justify-content: start;
 }
 
@@ -1915,9 +1917,9 @@ button:disabled {
 
 .deck-icon-matrix.compact .deck-icon-cell {
   border-radius: 3px;
-  height: 24px;
+  height: 26px;
   padding: 0;
-  width: 24px;
+  width: 26px;
 }
 
 .deck-icon-cell.front {
@@ -3067,12 +3069,12 @@ button:disabled {
   }
 
   .deck-icon-matrix.compact {
-    grid-template-columns: repeat(10, 22px);
+    grid-template-columns: repeat(10, 24px);
   }
 
   .deck-icon-matrix.compact .deck-icon-cell {
-    height: 22px;
-    width: 22px;
+    height: 24px;
+    width: 24px;
   }
 
   .ai-lab-summary {

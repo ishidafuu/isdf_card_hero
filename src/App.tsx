@@ -3789,21 +3789,23 @@ function DeckPresetRow({
       aria-pressed={selected}
       onClick={onSelect}
     >
-      <div className="deck-preset-row-main">
-        <strong>{score ? `#${score.rank} ${formatDeckPresetIdentity(preset)}` : formatDeckPresetIdentity(preset)}</strong>
-        <span>{formatDeckPresetMeta(preset)}</span>
-      </div>
-      <div className="deck-preset-row-score">
-        {score ? (
-          <>
-            <span>B{score.battleScore.toFixed(1)}</span>
-            <span>W{formatPercent(score.winRate)}</span>
-            <span>黒vs黒 {formatMatchupRate(score.matchups.black_vs_black)}</span>
-            <span>白vs黒 {formatMatchupRate(score.matchups.white_vs_black)}</span>
-          </>
-        ) : (
-          <span>未計測</span>
-        )}
+      <div className="deck-preset-row-head">
+        <div className="deck-preset-row-main">
+          <strong>{score ? `#${score.rank} ${formatDeckPresetIdentity(preset)}` : formatDeckPresetIdentity(preset)}</strong>
+          <span>{formatDeckPresetMeta(preset)}</span>
+        </div>
+        <div className="deck-preset-row-score">
+          {score ? (
+            <>
+              <span>B{score.battleScore.toFixed(1)}</span>
+              <span>W{formatPercent(score.winRate)}</span>
+              <span>黒vs黒 {formatMatchupRate(score.matchups.black_vs_black)}</span>
+              <span>白vs黒 {formatMatchupRate(score.matchups.white_vs_black)}</span>
+            </>
+          ) : (
+            <span>未計測</span>
+          )}
+        </div>
       </div>
       <DeckIconMatrix cardIds={preset.cardIds} compact />
     </button>
