@@ -253,7 +253,6 @@ type DeckMatrixCellKind = "front" | "back" | "magic" | "special";
 interface DeckMatrixCell {
   cardId: string;
   kind: DeckMatrixCellKind;
-  groupStart: boolean;
 }
 
 const DECK_PRESET_MASTER_FILTER_OPTIONS = [
@@ -3842,12 +3841,11 @@ function DeckIconMatrix({ cardIds, compact = false }: { cardIds: readonly string
         ))}
       </div>
       <div className={`deck-icon-matrix ${compact ? "compact" : ""}`}>
-        {cells.map(({ cardId, kind, groupStart }, index) => {
+        {cells.map(({ cardId, kind }, index) => {
           const def = getCardDef(cardId);
           return (
             <span
-              className={`deck-icon-cell ${kind} ${groupStart ? "group-start" : ""}`}
-              data-kind-label={groupStart ? deckMatrixKindShortLabel(kind) : undefined}
+              className={`deck-icon-cell ${kind}`}
               title={`${def.name} / ${cardTypeLabel(cardId)}`}
               aria-label={`${index + 1}. ${def.name}`}
               key={`${cardId}-${index}`}
@@ -3966,7 +3964,6 @@ function formatDeckPresetMeta(preset: DeckPresetDef): string {
 }
 
 function toDeckMatrixCells(cardIds: readonly string[]): DeckMatrixCell[] {
-  let previousKind: DeckMatrixCellKind | undefined;
   return [...cardIds].sort((a, b) => {
     const aDef = getCardDef(a);
     const bDef = getCardDef(b);
@@ -3974,9 +3971,7 @@ function toDeckMatrixCells(cardIds: readonly string[]): DeckMatrixCell[] {
     return categoryDiff || aDef.name.localeCompare(bDef.name, "ja") || a.localeCompare(b);
   }).map((cardId) => {
     const kind = deckMatrixCellKind(cardId);
-    const groupStart = kind !== previousKind;
-    previousKind = kind;
-    return { cardId, kind, groupStart };
+    return { cardId, kind };
   });
 }
 
@@ -4010,19 +4005,6 @@ function deckMatrixKindLabel(kind: DeckMatrixCellKind): string {
     return "マジック";
   }
   return "スペシャル";
-}
-
-function deckMatrixKindShortLabel(kind: DeckMatrixCellKind): string {
-  if (kind === "front") {
-    return "前";
-  }
-  if (kind === "back") {
-    return "後";
-  }
-  if (kind === "magic") {
-    return "魔";
-  }
-  return "S";
 }
 
 function formatPercent(value: number): string {

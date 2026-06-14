@@ -1781,7 +1781,7 @@ button:disabled {
   display: flex;
   flex-direction: column;
   gap: 4px;
-  min-height: 148px;
+  min-height: 156px;
   overflow: hidden;
   padding: 6px;
   text-align: left;
@@ -1950,7 +1950,7 @@ button:disabled {
 
 .deck-icon-matrix.compact {
   gap: 3px;
-  grid-template-columns: repeat(15, 26px);
+  grid-template-columns: repeat(15, 30px);
   justify-content: start;
 }
 
@@ -1968,78 +1968,53 @@ button:disabled {
   width: 48px;
 }
 
-.deck-icon-cell.group-start {
-  box-shadow: -3px 0 0 0 #5a6a64;
-}
-
-.deck-icon-cell.group-start::after {
-  align-items: center;
-  background: rgba(255, 254, 249, 0.86);
-  border: 1px solid rgba(38, 48, 46, 0.14);
-  border-radius: 3px;
-  color: #26302e;
-  content: attr(data-kind-label);
-  display: inline-flex;
-  font-size: 9px;
-  font-weight: 900;
-  height: 13px;
-  justify-content: center;
-  left: 1px;
-  line-height: 1;
-  min-width: 13px;
-  padding: 0 2px;
+.deck-icon-cell::before {
+  background: var(--deck-kind-strip, #7e8b82);
+  bottom: 0;
+  content: "";
+  left: 0;
   position: absolute;
-  top: 1px;
+  top: 0;
+  width: 4px;
+  z-index: 1;
 }
 
 .deck-icon-matrix.compact .deck-icon-cell {
   border-radius: 3px;
-  height: 26px;
+  height: 30px;
   padding: 0;
-  width: 26px;
+  width: 30px;
 }
 
 .deck-icon-cell.front {
+  --deck-kind-strip: #4e8c5f;
   background: #eaf3ed;
   border-color: #80aa8a;
 }
 
 .deck-icon-cell.back {
+  --deck-kind-strip: #556fb4;
   background: #edf1fb;
   border-color: #8597ce;
 }
 
 .deck-icon-cell.magic {
+  --deck-kind-strip: #b68124;
   background: #fff4df;
   border-color: #c49d41;
 }
 
 .deck-icon-cell.special {
+  --deck-kind-strip: #a35c91;
   background: #f9e9f3;
   border-color: #bd7ead;
 }
 
-.deck-icon-cell.front.group-start {
-  box-shadow: -3px 0 0 0 #4e8c5f;
-}
-
-.deck-icon-cell.back.group-start {
-  box-shadow: -3px 0 0 0 #556fb4;
-}
-
-.deck-icon-cell.magic.group-start {
-  box-shadow: -3px 0 0 0 #b68124;
-}
-
-.deck-icon-cell.special.group-start {
-  box-shadow: -3px 0 0 0 #a35c91;
-}
-
 .deck-icon-cell .card-image-icon {
   border-radius: 2px;
-  height: calc(100% - 3px);
+  height: calc(100% - 2px);
   margin-right: 0;
-  width: calc(100% - 3px);
+  width: calc(100% - 2px);
 }
 
 .deck-icon-cell .ui-icon {
@@ -3166,12 +3141,12 @@ button:disabled {
   }
 
   .deck-icon-matrix.compact {
-    grid-template-columns: repeat(10, 24px);
+    grid-template-columns: repeat(10, 26px);
   }
 
   .deck-icon-matrix.compact .deck-icon-cell {
-    height: 24px;
-    width: 24px;
+    height: 26px;
+    width: 26px;
   }
 
   .ai-lab-summary {
