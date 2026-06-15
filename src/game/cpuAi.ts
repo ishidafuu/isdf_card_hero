@@ -29,11 +29,18 @@ import {
   evaluateHandMonsterPlacementValue as handMonsterPlacementValue,
   memberRatingValueBonus,
 } from "./unitEvaluation";
+import { getMagicAiTrait } from "./aiTraits";
+import {
+  AI_EVALUATION_WEIGHTS,
+  DEFAULT_AI_EVALUATION_WEIGHTS,
+  type AiEvaluationWeights,
+} from "./aiWeights";
 import type {
   CommandAction,
   GameState,
   MagicAction,
   MasterActionId,
+  MonsterCardDef,
   MonsterState,
   PlayerId,
   SlotKey,
@@ -65,10 +72,10 @@ type CpuAiProfileConfig = {
   sameTurnSearchWidth: number;
   sameTurnSearchDiscount: number;
   beamScoreThreshold: number;
+  weights: AiEvaluationWeights;
 };
 
 const NO_THREAT: IncomingThreat = { threatened: false, lethal: false, maxDamage: 0 };
-const MASTER_DAMAGE_SCORE = 90;
 
 export const CPU_AI_PROFILES = ["stable", "strong"] as const;
 export type CpuAiProfile = (typeof CPU_AI_PROFILES)[number];
@@ -86,6 +93,7 @@ const CPU_AI_PROFILE_CONFIG: Record<CpuAiProfile, CpuAiProfileConfig> = {
     sameTurnSearchWidth: 2,
     sameTurnSearchDiscount: 0.55,
     beamScoreThreshold: 0,
+    weights: AI_EVALUATION_WEIGHTS.stable,
   },
   strong: {
     detailedWidth: 4,
@@ -93,6 +101,7 @@ const CPU_AI_PROFILE_CONFIG: Record<CpuAiProfile, CpuAiProfileConfig> = {
     sameTurnSearchWidth: 4,
     sameTurnSearchDiscount: 0.5,
     beamScoreThreshold: 8,
+    weights: AI_EVALUATION_WEIGHTS.strong,
   },
 };
 
@@ -195,13 +204,13 @@ function evaluateCpuDecisions(
   perspective: PlayerId,
   config: CpuAiProfileConfig,
 ): EvaluatedDecision[] {
-  const beforeScore = evaluateState(state, perspective);
-  const beforeFutureScore = evaluateFutureTacticalValue(state, perspective, false);
+  const beforeScore = evaluateState(state, perspective, config.weights);
+  const beforeFutureScore = evaluateFutureTacticalValue(state, perspective, false, config.weights);
   const beforeFollowUpScore = bestAttackOpportunityScore(state);
-  const decisions = listCpuDecisions(state);
+  const decisions = listCpuDecisions(state, config.weights);
 
   const evaluated = decisions.flatMap((decision, index) => {
-    const transition = evaluateDecisionTransition(state, decision, perspective, beforeScore, beforeFutureScore, false);
+    const transition = evaluateDecisionTransition(state, decision, perspective, beforeScore, beforeFutureScore, false, config.weights);
     if (!transition) {
       return [];
     }
@@ -225,7 +234,7 @@ function evaluateCpuDecisions(
       .slice(0, config.detailedWidth)
       .map((candidate) => candidate.index),
   );
-  const beforeDetailedFutureScore = evaluateFutureTacticalValue(state, perspective, true);
+  const beforeDetailedFutureScore = evaluateFutureTacticalValue(state, perspective, true, config.weights);
 
   return evaluated.map((candidate) => {
     const directMasterDetourPenalty = directMasterDamageDetourPenalty(
@@ -239,9 +248,9 @@ function evaluateCpuDecisions(
     }
     const detailedScore =
       candidate.decision.score +
-      evaluateState(candidate.after, perspective) -
+      evaluateState(candidate.after, perspective, config.weights) -
       beforeScore +
-      evaluateFutureTacticalValue(candidate.after, perspective, true) -
+      evaluateFutureTacticalValue(candidate.after, perspective, true, config.weights) -
       beforeDetailedFutureScore;
     const continuation =
       config.sameTurnSearchDepth > 1
@@ -351,6 +360,7 @@ function evaluateDecisionTransition(
   beforeScore: number,
   beforeFutureScore: number,
   detailedFuture: boolean,
+  weights: AiEvaluationWeights,
 ): { after: GameState; totalScore: number } | undefined {
   let after: GameState;
   try {
@@ -363,9 +373,9 @@ function evaluateDecisionTransition(
     after,
     totalScore:
       decision.score +
-      evaluateState(after, perspective) -
+      evaluateState(after, perspective, weights) -
       beforeScore +
-      evaluateFutureTacticalValue(after, perspective, detailedFuture) -
+      evaluateFutureTacticalValue(after, perspective, detailedFuture, weights) -
       beforeFutureScore,
   };
 }
@@ -387,7 +397,7 @@ function evaluateSameTurnBeamContinuation(
     return 0;
   }
 
-  const candidates = evaluateImmediateCpuDecisions(state, perspective)
+  const candidates = evaluateImmediateCpuDecisions(state, perspective, config)
     .filter((candidate) => candidate.decision.type !== "end_turn" && candidate.totalScore > config.beamScoreThreshold)
     .sort(
       (a, b) =>
@@ -406,24 +416,24 @@ function evaluateSameTurnBeamContinuation(
   return best;
 }
 
-function evaluateImmediateCpuDecisions(state: GameState, perspective: PlayerId): EvaluatedDecision[] {
-  const beforeScore = evaluateState(state, perspective);
-  const beforeFutureScore = evaluateFutureTacticalValue(state, perspective, false);
-  return listCpuDecisions(state).flatMap((decision, index) => {
-    const transition = evaluateDecisionTransition(state, decision, perspective, beforeScore, beforeFutureScore, false);
+function evaluateImmediateCpuDecisions(state: GameState, perspective: PlayerId, config: CpuAiProfileConfig): EvaluatedDecision[] {
+  const beforeScore = evaluateState(state, perspective, config.weights);
+  const beforeFutureScore = evaluateFutureTacticalValue(state, perspective, false, config.weights);
+  return listCpuDecisions(state, config.weights).flatMap((decision, index) => {
+    const transition = evaluateDecisionTransition(state, decision, perspective, beforeScore, beforeFutureScore, false, config.weights);
     return transition ? [{ decision, totalScore: transition.totalScore, index, after: transition.after }] : [];
   });
 }
 
-export function listCpuDecisions(state: GameState): CpuDecision[] {
+export function listCpuDecisions(state: GameState, weights: AiEvaluationWeights = DEFAULT_AI_EVALUATION_WEIGHTS): CpuDecision[] {
   if (state.winner || state.pendingLevelUp) {
     return [createEndTurnDecision()];
   }
 
   return [
-    ...listAttackDecisions(state),
+    ...listAttackDecisions(state, weights),
     ...listMasterActionDecisions(state),
-    ...listMagicDecisions(state),
+    ...listMagicDecisions(state, weights),
     ...listSummonDecisions(state),
     ...listMoveDecisions(state),
     ...listFocusDecisions(state),
@@ -464,7 +474,11 @@ function appendDecisionReasonLog(state: GameState, decision: CpuDecision): GameS
   return next;
 }
 
-export function evaluateState(state: GameState, perspective: PlayerId = "cpu"): number {
+export function evaluateState(
+  state: GameState,
+  perspective: PlayerId = "cpu",
+  weights: AiEvaluationWeights = DEFAULT_AI_EVALUATION_WEIGHTS,
+): number {
   const opponent = opponentOf(perspective);
   if (state.winner === perspective) {
     return 1_000_000;
@@ -474,10 +488,10 @@ export function evaluateState(state: GameState, perspective: PlayerId = "cpu"): 
   }
 
   let score = 0;
-  score += (state.players[perspective].masterHp - state.players[opponent].masterHp) * 80;
-  score += (state.players[perspective].stones - state.players[opponent].stones) * 6;
-  score += (state.players[perspective].hand.length - state.players[opponent].hand.length) * 3;
-  score += (state.players[perspective].deck.length - state.players[opponent].deck.length) * 1;
+  score += (state.players[perspective].masterHp - state.players[opponent].masterHp) * weights.masterHp;
+  score += (state.players[perspective].stones - state.players[opponent].stones) * weights.stone;
+  score += (state.players[perspective].hand.length - state.players[opponent].hand.length) * weights.hand;
+  score += (state.players[perspective].deck.length - state.players[opponent].deck.length) * weights.deck;
 
   for (const slotKey of ALL_FIELD_ORDER) {
     const value = monsterValue(state, slotKey);
@@ -491,7 +505,12 @@ export function evaluateState(state: GameState, perspective: PlayerId = "cpu"): 
   return score;
 }
 
-function evaluateFutureTacticalValue(state: GameState, perspective: PlayerId, detailed = true): number {
+function evaluateFutureTacticalValue(
+  state: GameState,
+  perspective: PlayerId,
+  detailed = true,
+  weights: AiEvaluationWeights = DEFAULT_AI_EVALUATION_WEIGHTS,
+): number {
   if (state.winner) {
     return 0;
   }
@@ -515,7 +534,7 @@ function evaluateFutureTacticalValue(state: GameState, perspective: PlayerId, de
     const opponentMasterDamage = opponentThreatModel.masterDamage[perspective];
     const ownThreatenedMonsterValue = threatenedMonsterValueForPlayer(state, perspective, opponentThreatModel);
     const opponentThreatenedMonsterValue = threatenedMonsterValueForPlayer(state, opponent, ownThreatModel);
-    const ownLethalPressure = ownMasterDamage >= enemy.masterHp ? 900 : ownMasterDamage * 42;
+    const ownLethalPressure = ownMasterDamage >= enemy.masterHp ? 900 : ownMasterDamage * (weights.masterDamageBase * 0.47);
     const opponentLethalThreat =
       opponentMasterDamage >= own.masterHp ? 1_100 : opponentMasterDamage >= 3 ? 190 + opponentMasterDamage * 36 : opponentMasterDamage * 38;
     detailedScore =
@@ -538,7 +557,7 @@ function evaluateFutureTacticalValue(state: GameState, perspective: PlayerId, de
   );
 }
 
-function listAttackDecisions(state: GameState): CpuDecision[] {
+function listAttackDecisions(state: GameState, weights: AiEvaluationWeights): CpuDecision[] {
   const decisions: CpuDecision[] = [];
   const playerId = state.currentPlayer;
 
@@ -559,7 +578,7 @@ function listAttackDecisions(state: GameState): CpuDecision[] {
           commandId: command.id,
           target,
         })) {
-          const decision = createAttackDecision(state, action);
+          const decision = createAttackDecision(state, action, weights);
           if (decision) {
             decisions.push(decision);
           }
@@ -587,9 +606,9 @@ function canUseOwnedMonsterTargetForCommand(state: GameState, attackerSlotKey: S
   return getCommandHandChoices(state, attackerSlotKey, commandId).length > 0;
 }
 
-function createAttackDecision(state: GameState, action: CommandAction): CpuDecision | undefined {
+function createAttackDecision(state: GameState, action: CommandAction, weights: AiEvaluationWeights): CpuDecision | undefined {
   const after = attackWithCommand(state, action);
-  const score = scoreAttackDecision(state, after, action);
+  const score = scoreAttackDecision(state, after, action, weights);
   if (score <= -90) {
     return undefined;
   }
@@ -616,7 +635,7 @@ function expandCommandActions(state: GameState, baseAction: CommandAction): Comm
   return [baseAction];
 }
 
-function scoreAttackDecision(state: GameState, after: GameState, action: CommandAction): number {
+function scoreAttackDecision(state: GameState, after: GameState, action: CommandAction, weights: AiEvaluationWeights): number {
   const playerId = state.currentPlayer;
   const opponent = opponentOf(playerId);
   if (after.winner === playerId) {
@@ -633,7 +652,7 @@ function scoreAttackDecision(state: GameState, after: GameState, action: Command
     if (damage <= 0) {
       return stateDelta > 8 ? 30 + stateDelta + recoilPenalty : -100;
     }
-    return masterDamageScore(state, playerId, damage) + recoilPenalty;
+    return masterDamageScore(state, playerId, damage, weights) + recoilPenalty;
   }
 
   const targetBefore = state.slots[action.target.slotKey].monster;
@@ -644,7 +663,7 @@ function scoreAttackDecision(state: GameState, after: GameState, action: Command
 
   if (!targetAfter) {
     const levelGain = attackerLevelGain(state, after, action.attackerSlotKey);
-    return 300 + monsterValue(state, action.target.slotKey) + 80 * levelGain + recoilPenalty;
+    return weights.monsterKillBase + monsterValue(state, action.target.slotKey) + 80 * levelGain + recoilPenalty;
   }
 
   const damage = targetBefore.hp - targetAfter.hp;
@@ -663,9 +682,9 @@ function scoreAttackDecision(state: GameState, after: GameState, action: Command
       34 +
       directMasterDamage * 22 +
       (state.players[playerId].masterHp <= state.players[opponent].masterHp ? 18 : 0);
-    return 25 * damage + recoilPenalty - racePenalty;
+    return weights.monsterDamagePerPoint * damage + recoilPenalty - racePenalty;
   }
-  return 25 * damage + recoilPenalty;
+  return weights.monsterDamagePerPoint * damage + recoilPenalty;
 }
 
 function scoreZeroDamageMonsterAttack(
@@ -734,13 +753,18 @@ function scoreCommandHandChoiceDecision(
   return 24 + stateDelta + handMonsterPlacementValue(state, selectedCard.cardId, action.attackerSlotKey) * 0.35 + recoilPenalty;
 }
 
-function masterDamageScore(state: GameState, playerId: PlayerId, damage: number): number {
+function masterDamageScore(
+  state: GameState,
+  playerId: PlayerId,
+  damage: number,
+  weights: AiEvaluationWeights = DEFAULT_AI_EVALUATION_WEIGHTS,
+): number {
   const opponent = opponentOf(playerId);
   const ownHp = state.players[playerId].masterHp;
   const opponentHp = state.players[opponent].masterHp;
   const raceGapBonus = Math.min(60, Math.max(0, opponentHp - ownHp) * 16);
   const closeoutBonus = opponentHp <= 4 ? (5 - opponentHp) * 12 : 0;
-  return (MASTER_DAMAGE_SCORE + raceGapBonus + closeoutBonus) * damage;
+  return (weights.masterDamageBase + raceGapBonus + closeoutBonus) * damage;
 }
 
 function attackReason(state: GameState, after: GameState, action: CommandAction): string {
@@ -1020,10 +1044,10 @@ function createEarthAngerDecision(state: GameState, target: Target): CpuDecision
   };
 }
 
-function listMagicDecisions(state: GameState): CpuDecision[] {
+function listMagicDecisions(state: GameState, weights: AiEvaluationWeights): CpuDecision[] {
   const decisions: CpuDecision[] = [];
   const playerId = state.currentPlayer;
-  const beforeScore = evaluateState(state, playerId);
+  const beforeScore = evaluateState(state, playerId, weights);
 
   for (const card of state.players[playerId].hand) {
     const def = getCardDef(card.cardId);
@@ -1039,7 +1063,7 @@ function listMagicDecisions(state: GameState): CpuDecision[] {
         } catch {
           continue;
         }
-        const score = scoreMagicDecision(state, after, action, beforeScore);
+        const score = scoreMagicDecision(state, after, action, beforeScore, weights);
         if (score <= 10) {
           continue;
         }
@@ -1065,7 +1089,7 @@ function expandMagicActions(state: GameState, baseAction: MagicAction): MagicAct
   const handChoices = getMagicHandChoices(state, baseAction.handInstanceId);
   if (handChoices.length > 0) {
     const card = state.players[state.currentPlayer].hand.find((handCard) => handCard.instanceId === baseAction.handInstanceId);
-    if (card?.cardId === "card_116") {
+    if (card && getMagicAiTrait(card.cardId)?.valueModel === "refresh_delta") {
       return buildRefreshActions(state, baseAction, handChoices);
     }
     return handChoices.map((handCard) => ({ ...baseAction, secondaryHandInstanceId: handCard.instanceId }));
@@ -1138,7 +1162,7 @@ function scoreSummon(state: GameState, cardId: string, slotKey: SlotKey): number
     score += 40;
     score += frontFilled ? 20 : -20;
   } else {
-    score += cardId === "morgan" ? 5 : -10;
+    score += isFrontViableBackliner(def) ? 5 : -10;
   }
 
   if (shouldPruneCloseoutNonProgressActions(state, state.currentPlayer) && !boardEmpty) {
@@ -1146,6 +1170,10 @@ function scoreSummon(state: GameState, cardId: string, slotKey: SlotKey): number
   }
 
   return score + memberRatingValueBonus(cardId, state.players[state.currentPlayer].masterId);
+}
+
+function isFrontViableBackliner(def: MonsterCardDef): boolean {
+  return def.levels.some((level) => level.commands.some((command) => command.implemented && command.range === "any_target"));
 }
 
 function summonReason(playerId: PlayerId, cardId: string, slotKey: SlotKey): string {
@@ -1485,6 +1513,7 @@ function scoreMagicDecision(
   after: GameState,
   action: MagicAction,
   beforeScore: number,
+  weights: AiEvaluationWeights,
 ): number {
   const card = state.players[state.currentPlayer].hand.find((handCard) => handCard.instanceId === action.handInstanceId);
   if (!card) {
@@ -1498,29 +1527,31 @@ function scoreMagicDecision(
   if (after.winner === state.currentPlayer) {
     return 1_000_000;
   }
-  if (def.id === "thunder" || def.id === "card_026" || def.id === "card_092" || def.id === "card_118") {
-    return scoreDamageMagicDecision(state, after, action, def.cost);
+
+  const trait = getMagicAiTrait(def.id);
+  if (trait?.valueModel === "target_damage") {
+    return scoreDamageMagicDecision(state, after, action, def.cost, weights);
   }
-  if (def.id === "healing" || def.id === "card_127") {
-    return scoreHealingMagicDecision(state, after, action, def.cost);
+  if (trait?.valueModel === "heal_delta") {
+    return scoreHealingMagicDecision(state, after, action, def.cost, weights);
   }
-  if (def.id === "power_up" || def.id === "card_094" || def.id === "card_150") {
+  if (trait?.valueModel === "attack_buff_delta") {
     return scorePowerMagicDecision(state, after, action, def.cost);
   }
-  if (def.id === "card_065") {
-    return scoreShiftChangeMagicDecision(state, after, action, beforeScore, def.cost);
+  if (trait?.effectKind === "transform" && action.secondaryHandInstanceId) {
+    return scoreShiftChangeMagicDecision(state, after, action, beforeScore, def.cost, weights);
   }
-  if (def.category === "シールド魔法" || def.category === "特殊防御魔法") {
+  if (trait?.valueModel === "shield_delta") {
     return scoreShieldMagicDecision(state, after, action, def.cost);
   }
-  if (def.id === "card_123") {
+  if (trait?.valueModel === "search_choice") {
     return scoreSearchMagicDecision(state, action, def.cost);
   }
-  if (def.id === "card_116") {
-    return scoreRefreshMagicDecision(state, after, action, beforeScore, def.cost);
+  if (trait?.valueModel === "refresh_delta") {
+    return scoreRefreshMagicDecision(state, after, action, beforeScore, def.cost, weights);
   }
 
-  return evaluateState(after, state.currentPlayer) - beforeScore - def.cost * 8;
+  return evaluateState(after, state.currentPlayer, weights) - beforeScore - def.cost * weights.genericMagicCost;
 }
 
 function scoreShiftChangeMagicDecision(
@@ -1529,15 +1560,16 @@ function scoreShiftChangeMagicDecision(
   action: MagicAction,
   beforeScore: number,
   cost: number,
+  weights: AiEvaluationWeights,
 ): number {
   if (action.target.kind !== "monster" || !action.secondaryHandInstanceId) {
-    return evaluateState(after, state.currentPlayer) - beforeScore - cost * 8;
+    return evaluateState(after, state.currentPlayer, weights) - beforeScore - cost * weights.genericMagicCost;
   }
   const selectedCard = state.players[state.currentPlayer].hand.find((card) => card.instanceId === action.secondaryHandInstanceId);
   if (!selectedCard) {
     return -100;
   }
-  const stateDelta = evaluateState(after, state.currentPlayer) - beforeScore;
+  const stateDelta = evaluateState(after, state.currentPlayer, weights) - beforeScore;
   return 18 + stateDelta + handMonsterPlacementValue(state, selectedCard.cardId, action.target.slotKey) * 0.35 - cost * 4;
 }
 
@@ -1565,6 +1597,7 @@ function scoreRefreshMagicDecision(
   action: MagicAction,
   beforeScore: number,
   cost: number,
+  weights: AiEvaluationWeights,
 ): number {
   const selected = new Set(action.selectedHandInstanceIds ?? []);
   const discardedPenalty = state.players[state.currentPlayer].hand
@@ -1573,10 +1606,16 @@ function scoreRefreshMagicDecision(
   const drawnCards = after.players[state.currentPlayer].hand
     .filter((card) => !state.players[state.currentPlayer].hand.some((beforeCard) => beforeCard.instanceId === card.instanceId));
   const drawnValue = drawnCards.reduce((total, card) => total + handCardKeepValue(after, card), 0);
-  return evaluateState(after, state.currentPlayer) - beforeScore + drawnValue * 0.55 - discardedPenalty * 0.3 - cost * 2;
+  return evaluateState(after, state.currentPlayer, weights) - beforeScore + drawnValue * 0.55 - discardedPenalty * 0.3 - cost * 2;
 }
 
-function scoreDamageMagicDecision(state: GameState, after: GameState, action: MagicAction, cost: number): number {
+function scoreDamageMagicDecision(
+  state: GameState,
+  after: GameState,
+  action: MagicAction,
+  cost: number,
+  weights: AiEvaluationWeights,
+): number {
   if (action.target.kind === "master") {
     const beforeHp = state.players[action.target.playerId].masterHp;
     const afterHp = after.players[action.target.playerId].masterHp;
@@ -1584,7 +1623,9 @@ function scoreDamageMagicDecision(state: GameState, after: GameState, action: Ma
     if (damage <= 0) {
       return -100;
     }
-    return after.winner === state.currentPlayer ? 1_000_000 : masterDamageScore(state, state.currentPlayer, damage) - cost * 18;
+    return after.winner === state.currentPlayer
+      ? 1_000_000
+      : masterDamageScore(state, state.currentPlayer, damage, weights) - cost * weights.masterDamageMagicCost;
   }
 
   const before = state.slots[action.target.slotKey].monster;
@@ -1596,16 +1637,22 @@ function scoreDamageMagicDecision(state: GameState, after: GameState, action: Ma
     return -100;
   }
   if (!current || current.instanceId !== before.instanceId) {
-    return 260 + monsterValue(state, action.target.slotKey) - cost * 8;
+    return weights.monsterKillBase - 40 + monsterValue(state, action.target.slotKey) - cost * weights.monsterKillMagicCost;
   }
   const damage = before.hp - current.hp;
   if (damage <= 0) {
     return -100;
   }
-  return 30 * damage - cost * 8;
+  return (weights.monsterDamagePerPoint + 5) * damage - cost * weights.monsterDamageMagicCost;
 }
 
-function scoreHealingMagicDecision(state: GameState, after: GameState, action: MagicAction, cost: number): number {
+function scoreHealingMagicDecision(
+  state: GameState,
+  after: GameState,
+  action: MagicAction,
+  cost: number,
+  weights: AiEvaluationWeights,
+): number {
   if (action.target.kind !== "monster") {
     return -100;
   }
@@ -1624,7 +1671,7 @@ function scoreHealingMagicDecision(state: GameState, after: GameState, action: M
     return 12;
   }
   return (
-    26 * healed +
+    weights.healPerPoint * healed +
     monsterValue(state, action.target.slotKey) * 0.22 +
     nextTurnLevelUpPotential(state, action.target.slotKey) * 0.16 +
     (threat.lethal ? 95 : threat.threatened ? 36 : 0) -
@@ -1858,14 +1905,18 @@ function buildThreatModel(state: GameState, attackerId: PlayerId): ThreatModel {
       if (def.type !== "magic") {
         return undefined;
       }
-      const power = estimateDamageMagicPower(card.cardId);
-      if (power <= 0 || remainingStones < def.cost) {
+      const trait = getMagicAiTrait(card.cardId);
+      if (trait?.effectKind !== "damage" || remainingStones < def.cost) {
         return undefined;
       }
       const targets = getMagicTargets(readyState, card.instanceId);
       const masterTargets = targets
         .filter((target): target is Extract<Target, { kind: "master" }> => target.kind === "master" && target.playerId !== attackerId)
-        .map((target) => ({ playerId: target.playerId, damage: Math.max(0, power - 2), cost: def.cost }));
+        .map((target) => ({
+          playerId: target.playerId,
+          damage: estimateMagicMasterDamageBySimulation(readyState, card.instanceId, target),
+          cost: def.cost,
+        }));
 
       for (const target of targets) {
         if (target.kind !== "monster" || readyState.slots[target.slotKey].owner === attackerId) {
@@ -1873,7 +1924,12 @@ function buildThreatModel(state: GameState, attackerId: PlayerId): ThreatModel {
         }
         const targetMonster = readyState.slots[target.slotKey].monster;
         if (targetMonster) {
-          updateMonsterThreat(monsterThreats, target.slotKey, estimatePowerDamageToMonster(targetMonster, power), targetMonster.hp);
+          updateMonsterThreat(
+            monsterThreats,
+            target.slotKey,
+            estimateMagicMonsterDamageBySimulation(readyState, card.instanceId, target),
+            targetMonster.hp,
+          );
         }
       }
 
@@ -1911,25 +1967,36 @@ function updateMonsterThreat(
   };
 }
 
-function estimateDamageMagicPower(cardId: string): number {
-  return cardId === "thunder" ? 3 : cardId === "card_092" ? 2 : cardId === "card_026" || cardId === "card_118" ? 1 : 0;
-}
-
-function estimatePowerDamageToMonster(target: MonsterState, power: number): number {
-  if (target.immune) {
+function estimateMagicMasterDamageBySimulation(
+  state: GameState,
+  handInstanceId: string,
+  target: Extract<Target, { kind: "master" }>,
+): number {
+  const beforeHp = state.players[target.playerId].masterHp;
+  try {
+    const after = playMagic(state, { handInstanceId, target });
+    return Math.max(0, beforeHp - after.players[target.playerId].masterHp);
+  } catch {
     return 0;
   }
-  let damage = power;
-  if (target.shielded) {
-    damage = Math.max(0, damage - 1);
+}
+
+function estimateMagicMonsterDamageBySimulation(
+  state: GameState,
+  handInstanceId: string,
+  target: Extract<Target, { kind: "monster" }>,
+): number {
+  const before = state.slots[target.slotKey].monster;
+  if (!before) {
+    return 0;
   }
-  if (target.focused) {
-    damage = Math.max(0, damage - 1);
+  try {
+    const after = playMagic(state, { handInstanceId, target });
+    const current = after.slots[target.slotKey].monster;
+    return Math.max(0, before.hp - (current?.hp ?? 0));
+  } catch {
+    return 0;
   }
-  if (target.halfShielded) {
-    damage = Math.max(0, Math.floor(damage / 2));
-  }
-  return damage;
 }
 
 function threatenedMonsterValueForPlayer(state: GameState, playerId: PlayerId, threatModel = buildThreatModel(state, opponentOf(playerId))): number {

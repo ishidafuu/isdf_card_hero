@@ -78,7 +78,7 @@ export const DECK_BATTLE_SCORE_SNAPSHOT_SUITES = [
         "winRate": 0.786,
         "winPointRate": 0.786,
         "stabilityScore": 95.7,
-        "speedScore": 52.2,
+        "speedScore": 52.4,
         "games": 28,
         "wins": 22,
         "losses": 6,
@@ -87,7 +87,7 @@ export const DECK_BATTLE_SCORE_SNAPSHOT_SUITES = [
         "cpuSideWinPointRate": 0.857,
         "failures": 0,
         "warnings": 0,
-        "averageSteps": 101.7,
+        "averageSteps": 101.3,
         "averageTurns": 10.4,
         "matchups": {
           "black_vs_black": {
@@ -97,8 +97,8 @@ export const DECK_BATTLE_SCORE_SNAPSHOT_SUITES = [
             "draws": 0,
             "winRate": 0.75,
             "winPointRate": 0.75,
-            "averageSteps": 94,
-            "averageTurns": 9.6
+            "averageSteps": 93,
+            "averageTurns": 9.5
           },
           "white_vs_white": {
             "games": 0,
@@ -131,7 +131,7 @@ export const DECK_BATTLE_SCORE_SNAPSHOT_SUITES = [
         "winRate": 0.643,
         "winPointRate": 0.643,
         "stabilityScore": 87.1,
-        "speedScore": 56.5,
+        "speedScore": 56.7,
         "games": 28,
         "wins": 18,
         "losses": 10,
@@ -140,7 +140,7 @@ export const DECK_BATTLE_SCORE_SNAPSHOT_SUITES = [
         "cpuSideWinPointRate": 0.857,
         "failures": 0,
         "warnings": 0,
-        "averageSteps": 92.5,
+        "averageSteps": 92.1,
         "averageTurns": 9.3,
         "matchups": {
           "black_vs_black": {
@@ -150,8 +150,8 @@ export const DECK_BATTLE_SCORE_SNAPSHOT_SUITES = [
             "draws": 0,
             "winRate": 0.583,
             "winPointRate": 0.583,
-            "averageSteps": 89.5,
-            "averageTurns": 9.1
+            "averageSteps": 88.5,
+            "averageTurns": 9
           },
           "white_vs_white": {
             "games": 0,
@@ -230,87 +230,34 @@ export const DECK_BATTLE_SCORE_SNAPSHOT_SUITES = [
       },
       {
         "rank": 4,
-        "deckPreset": "submission-pro-with-rare8-black-999",
-        "sourceDeckId": 999,
-        "battleScore": 50.6,
-        "practicalScore": 104.5,
-        "winRate": 0.5,
-        "winPointRate": 0.5,
-        "stabilityScore": 95.7,
-        "speedScore": 55.3,
-        "games": 28,
-        "wins": 14,
-        "losses": 14,
-        "draws": 0,
-        "playerSideWinPointRate": 0.571,
-        "cpuSideWinPointRate": 0.429,
-        "failures": 0,
-        "warnings": 0,
-        "averageSteps": 95,
-        "averageTurns": 10.7,
-        "matchups": {
-          "black_vs_black": {
-            "games": 12,
-            "wins": 6,
-            "losses": 6,
-            "draws": 0,
-            "winRate": 0.5,
-            "winPointRate": 0.5,
-            "averageSteps": 85.2,
-            "averageTurns": 9.1
-          },
-          "white_vs_white": {
-            "games": 0,
-            "wins": 0,
-            "losses": 0,
-            "draws": 0,
-            "winRate": 0,
-            "winPointRate": 0,
-            "averageSteps": 0,
-            "averageTurns": 0
-          },
-          "white_vs_black": {
-            "games": 16,
-            "wins": 8,
-            "losses": 8,
-            "draws": 0,
-            "winRate": 0.5,
-            "winPointRate": 0.5,
-            "averageSteps": 102.4,
-            "averageTurns": 11.9
-          }
-        }
-      },
-      {
-        "rank": 5,
         "deckPreset": "submission-pro-no-rare8-black-252",
         "sourceDeckId": 252,
-        "battleScore": 49.7,
+        "battleScore": 53.2,
         "practicalScore": 100.4,
-        "winRate": 0.5,
-        "winPointRate": 0.5,
-        "stabilityScore": 100,
-        "speedScore": 47,
+        "winRate": 0.536,
+        "winPointRate": 0.536,
+        "stabilityScore": 97.9,
+        "speedScore": 46.8,
         "games": 28,
-        "wins": 14,
-        "losses": 14,
+        "wins": 15,
+        "losses": 13,
         "draws": 0,
-        "playerSideWinPointRate": 0.5,
+        "playerSideWinPointRate": 0.571,
         "cpuSideWinPointRate": 0.5,
         "failures": 0,
         "warnings": 0,
-        "averageSteps": 112.6,
-        "averageTurns": 11.7,
+        "averageSteps": 113.1,
+        "averageTurns": 11.8,
         "matchups": {
           "black_vs_black": {
             "games": 12,
-            "wins": 2,
-            "losses": 10,
+            "wins": 3,
+            "losses": 9,
             "draws": 0,
-            "winRate": 0.167,
-            "winPointRate": 0.167,
-            "averageSteps": 100.5,
-            "averageTurns": 10.3
+            "winRate": 0.25,
+            "winPointRate": 0.25,
+            "averageSteps": 101.7,
+            "averageTurns": 10.4
           },
           "white_vs_white": {
             "games": 0,
@@ -331,6 +278,59 @@ export const DECK_BATTLE_SCORE_SNAPSHOT_SUITES = [
             "winPointRate": 0.75,
             "averageSteps": 121.7,
             "averageTurns": 12.8
+          }
+        }
+      },
+      {
+        "rank": 5,
+        "deckPreset": "submission-pro-with-rare8-black-999",
+        "sourceDeckId": 999,
+        "battleScore": 47,
+        "practicalScore": 104.5,
+        "winRate": 0.464,
+        "winPointRate": 0.464,
+        "stabilityScore": 93.6,
+        "speedScore": 55.1,
+        "games": 28,
+        "wins": 13,
+        "losses": 15,
+        "draws": 0,
+        "playerSideWinPointRate": 0.571,
+        "cpuSideWinPointRate": 0.357,
+        "failures": 0,
+        "warnings": 0,
+        "averageSteps": 95.5,
+        "averageTurns": 10.8,
+        "matchups": {
+          "black_vs_black": {
+            "games": 12,
+            "wins": 5,
+            "losses": 7,
+            "draws": 0,
+            "winRate": 0.417,
+            "winPointRate": 0.417,
+            "averageSteps": 86.3,
+            "averageTurns": 9.3
+          },
+          "white_vs_white": {
+            "games": 0,
+            "wins": 0,
+            "losses": 0,
+            "draws": 0,
+            "winRate": 0,
+            "winPointRate": 0,
+            "averageSteps": 0,
+            "averageTurns": 0
+          },
+          "white_vs_black": {
+            "games": 16,
+            "wins": 8,
+            "losses": 8,
+            "draws": 0,
+            "winRate": 0.5,
+            "winPointRate": 0.5,
+            "averageSteps": 102.4,
+            "averageTurns": 11.9
           }
         }
       },
@@ -449,7 +449,7 @@ export const DECK_BATTLE_SCORE_SNAPSHOT_SUITES = [
         "winRate": 0.321,
         "winPointRate": 0.321,
         "stabilityScore": 97.9,
-        "speedScore": 41.5,
+        "speedScore": 41.6,
         "games": 28,
         "wins": 9,
         "losses": 19,
@@ -511,13 +511,13 @@ export const DECK_BATTLE_SCORE_SNAPSHOT_SUITES = [
             "winRate": 0.786,
             "winPointRate": 0.786,
             "stabilityScore": 95.7,
-            "speedScore": 52.2,
+            "speedScore": 52.4,
             "practicalScore": 101.8,
             "games": 28,
             "wins": 22,
             "losses": 6,
             "draws": 0,
-            "averageSteps": 101.7,
+            "averageSteps": 101.3,
             "averageTurns": 10.4,
             "seatDelta": 0.143,
             "matchups": {
@@ -528,8 +528,8 @@ export const DECK_BATTLE_SCORE_SNAPSHOT_SUITES = [
                 "draws": 0,
                 "winRate": 0.75,
                 "winPointRate": 0.75,
-                "averageSteps": 94,
-                "averageTurns": 9.6
+                "averageSteps": 93,
+                "averageTurns": 9.5
               },
               "white_vs_white": {
                 "games": 0,
@@ -565,13 +565,13 @@ export const DECK_BATTLE_SCORE_SNAPSHOT_SUITES = [
             "winRate": 0.643,
             "winPointRate": 0.643,
             "stabilityScore": 87.1,
-            "speedScore": 56.5,
+            "speedScore": 56.7,
             "practicalScore": 105,
             "games": 28,
             "wins": 18,
             "losses": 10,
             "draws": 0,
-            "averageSteps": 92.5,
+            "averageSteps": 92.1,
             "averageTurns": 9.3,
             "seatDelta": 0.428,
             "matchups": {
@@ -582,8 +582,8 @@ export const DECK_BATTLE_SCORE_SNAPSHOT_SUITES = [
                 "draws": 0,
                 "winRate": 0.583,
                 "winPointRate": 0.583,
-                "averageSteps": 89.5,
-                "averageTurns": 9.1
+                "averageSteps": 88.5,
+                "averageTurns": 9
               },
               "white_vs_white": {
                 "games": 0,
@@ -663,89 +663,35 @@ export const DECK_BATTLE_SCORE_SNAPSHOT_SUITES = [
             "reason": "総合実戦スコアが高い"
           },
           {
-            "deckPreset": "submission-pro-with-rare8-black-999",
-            "sourceDeckId": 999,
-            "name": "投稿Pro黒8あり #999 はははっはははははははｈっはははははははははははははっははははははははははははははははははｈっはははははははははｈ",
-            "group": "pro-with-rare8-black",
-            "masterId": "black",
-            "rank": 4,
-            "battleScore": 50.6,
-            "winRate": 0.5,
-            "winPointRate": 0.5,
-            "stabilityScore": 95.7,
-            "speedScore": 55.3,
-            "practicalScore": 104.5,
-            "games": 28,
-            "wins": 14,
-            "losses": 14,
-            "draws": 0,
-            "averageSteps": 95,
-            "averageTurns": 10.7,
-            "seatDelta": 0.142,
-            "matchups": {
-              "black_vs_black": {
-                "games": 12,
-                "wins": 6,
-                "losses": 6,
-                "draws": 0,
-                "winRate": 0.5,
-                "winPointRate": 0.5,
-                "averageSteps": 85.2,
-                "averageTurns": 9.1
-              },
-              "white_vs_white": {
-                "games": 0,
-                "wins": 0,
-                "losses": 0,
-                "draws": 0,
-                "winRate": 0,
-                "winPointRate": 0,
-                "averageSteps": 0,
-                "averageTurns": 0
-              },
-              "white_vs_black": {
-                "games": 16,
-                "wins": 8,
-                "losses": 8,
-                "draws": 0,
-                "winRate": 0.5,
-                "winPointRate": 0.5,
-                "averageSteps": 102.4,
-                "averageTurns": 11.9
-              }
-            },
-            "reason": "総合実戦スコアが高い"
-          },
-          {
             "deckPreset": "submission-pro-no-rare8-black-252",
             "sourceDeckId": 252,
             "name": "投稿Pro黒8なし #252 ブラック殲滅（ヤミー＆ロストーン）",
             "group": "pro-no-rare8-black",
             "masterId": "black",
-            "rank": 5,
-            "battleScore": 49.7,
-            "winRate": 0.5,
-            "winPointRate": 0.5,
-            "stabilityScore": 100,
-            "speedScore": 47,
+            "rank": 4,
+            "battleScore": 53.2,
+            "winRate": 0.536,
+            "winPointRate": 0.536,
+            "stabilityScore": 97.9,
+            "speedScore": 46.8,
             "practicalScore": 100.4,
             "games": 28,
-            "wins": 14,
-            "losses": 14,
+            "wins": 15,
+            "losses": 13,
             "draws": 0,
-            "averageSteps": 112.6,
-            "averageTurns": 11.7,
-            "seatDelta": 0,
+            "averageSteps": 113.1,
+            "averageTurns": 11.8,
+            "seatDelta": 0.071,
             "matchups": {
               "black_vs_black": {
                 "games": 12,
-                "wins": 2,
-                "losses": 10,
+                "wins": 3,
+                "losses": 9,
                 "draws": 0,
-                "winRate": 0.167,
-                "winPointRate": 0.167,
-                "averageSteps": 100.5,
-                "averageTurns": 10.3
+                "winRate": 0.25,
+                "winPointRate": 0.25,
+                "averageSteps": 101.7,
+                "averageTurns": 10.4
               },
               "white_vs_white": {
                 "games": 0,
@@ -766,6 +712,60 @@ export const DECK_BATTLE_SCORE_SNAPSHOT_SUITES = [
                 "winPointRate": 0.75,
                 "averageSteps": 121.7,
                 "averageTurns": 12.8
+              }
+            },
+            "reason": "総合実戦スコアが高い"
+          },
+          {
+            "deckPreset": "submission-pro-with-rare8-black-999",
+            "sourceDeckId": 999,
+            "name": "投稿Pro黒8あり #999 はははっはははははははｈっはははははははははははははっははははははははははははははははははｈっはははははははははｈ",
+            "group": "pro-with-rare8-black",
+            "masterId": "black",
+            "rank": 5,
+            "battleScore": 47,
+            "winRate": 0.464,
+            "winPointRate": 0.464,
+            "stabilityScore": 93.6,
+            "speedScore": 55.1,
+            "practicalScore": 104.5,
+            "games": 28,
+            "wins": 13,
+            "losses": 15,
+            "draws": 0,
+            "averageSteps": 95.5,
+            "averageTurns": 10.8,
+            "seatDelta": 0.214,
+            "matchups": {
+              "black_vs_black": {
+                "games": 12,
+                "wins": 5,
+                "losses": 7,
+                "draws": 0,
+                "winRate": 0.417,
+                "winPointRate": 0.417,
+                "averageSteps": 86.3,
+                "averageTurns": 9.3
+              },
+              "white_vs_white": {
+                "games": 0,
+                "wins": 0,
+                "losses": 0,
+                "draws": 0,
+                "winRate": 0,
+                "winPointRate": 0,
+                "averageSteps": 0,
+                "averageTurns": 0
+              },
+              "white_vs_black": {
+                "games": 16,
+                "wins": 8,
+                "losses": 8,
+                "draws": 0,
+                "winRate": 0.5,
+                "winPointRate": 0.5,
+                "averageSteps": 102.4,
+                "averageTurns": 11.9
               }
             },
             "reason": "総合実戦スコアが高い"
@@ -889,7 +889,7 @@ export const DECK_BATTLE_SCORE_SNAPSHOT_SUITES = [
             "winRate": 0.321,
             "winPointRate": 0.321,
             "stabilityScore": 97.9,
-            "speedScore": 41.5,
+            "speedScore": 41.6,
             "practicalScore": 99.9,
             "games": 28,
             "wins": 9,
@@ -950,13 +950,13 @@ export const DECK_BATTLE_SCORE_SNAPSHOT_SUITES = [
             "winRate": 0.643,
             "winPointRate": 0.643,
             "stabilityScore": 87.1,
-            "speedScore": 56.5,
+            "speedScore": 56.7,
             "practicalScore": 105,
             "games": 28,
             "wins": 18,
             "losses": 10,
             "draws": 0,
-            "averageSteps": 92.5,
+            "averageSteps": 92.1,
             "averageTurns": 9.3,
             "seatDelta": 0.428,
             "matchups": {
@@ -967,8 +967,8 @@ export const DECK_BATTLE_SCORE_SNAPSHOT_SUITES = [
                 "draws": 0,
                 "winRate": 0.583,
                 "winPointRate": 0.583,
-                "averageSteps": 89.5,
-                "averageTurns": 9.1
+                "averageSteps": 88.5,
+                "averageTurns": 9
               },
               "white_vs_white": {
                 "games": 0,
@@ -989,60 +989,6 @@ export const DECK_BATTLE_SCORE_SNAPSHOT_SUITES = [
                 "winPointRate": 0.688,
                 "averageSteps": 94.8,
                 "averageTurns": 9.5
-              }
-            },
-            "reason": "勝率を保ちながら決着が速い"
-          },
-          {
-            "deckPreset": "submission-pro-with-rare8-black-999",
-            "sourceDeckId": 999,
-            "name": "投稿Pro黒8あり #999 はははっはははははははｈっはははははははははははははっははははははははははははははははははｈっはははははははははｈ",
-            "group": "pro-with-rare8-black",
-            "masterId": "black",
-            "rank": 4,
-            "battleScore": 50.6,
-            "winRate": 0.5,
-            "winPointRate": 0.5,
-            "stabilityScore": 95.7,
-            "speedScore": 55.3,
-            "practicalScore": 104.5,
-            "games": 28,
-            "wins": 14,
-            "losses": 14,
-            "draws": 0,
-            "averageSteps": 95,
-            "averageTurns": 10.7,
-            "seatDelta": 0.142,
-            "matchups": {
-              "black_vs_black": {
-                "games": 12,
-                "wins": 6,
-                "losses": 6,
-                "draws": 0,
-                "winRate": 0.5,
-                "winPointRate": 0.5,
-                "averageSteps": 85.2,
-                "averageTurns": 9.1
-              },
-              "white_vs_white": {
-                "games": 0,
-                "wins": 0,
-                "losses": 0,
-                "draws": 0,
-                "winRate": 0,
-                "winPointRate": 0,
-                "averageSteps": 0,
-                "averageTurns": 0
-              },
-              "white_vs_black": {
-                "games": 16,
-                "wins": 8,
-                "losses": 8,
-                "draws": 0,
-                "winRate": 0.5,
-                "winPointRate": 0.5,
-                "averageSteps": 102.4,
-                "averageTurns": 11.9
               }
             },
             "reason": "勝率を保ちながら決着が速い"
@@ -1112,13 +1058,13 @@ export const DECK_BATTLE_SCORE_SNAPSHOT_SUITES = [
             "winRate": 0.786,
             "winPointRate": 0.786,
             "stabilityScore": 95.7,
-            "speedScore": 52.2,
+            "speedScore": 52.4,
             "practicalScore": 101.8,
             "games": 28,
             "wins": 22,
             "losses": 6,
             "draws": 0,
-            "averageSteps": 101.7,
+            "averageSteps": 101.3,
             "averageTurns": 10.4,
             "seatDelta": 0.143,
             "matchups": {
@@ -1129,8 +1075,8 @@ export const DECK_BATTLE_SCORE_SNAPSHOT_SUITES = [
                 "draws": 0,
                 "winRate": 0.75,
                 "winPointRate": 0.75,
-                "averageSteps": 94,
-                "averageTurns": 9.6
+                "averageSteps": 93,
+                "averageTurns": 9.5
               },
               "white_vs_white": {
                 "games": 0,
@@ -1161,30 +1107,30 @@ export const DECK_BATTLE_SCORE_SNAPSHOT_SUITES = [
             "name": "投稿Pro黒8なし #252 ブラック殲滅（ヤミー＆ロストーン）",
             "group": "pro-no-rare8-black",
             "masterId": "black",
-            "rank": 5,
-            "battleScore": 49.7,
-            "winRate": 0.5,
-            "winPointRate": 0.5,
-            "stabilityScore": 100,
-            "speedScore": 47,
+            "rank": 4,
+            "battleScore": 53.2,
+            "winRate": 0.536,
+            "winPointRate": 0.536,
+            "stabilityScore": 97.9,
+            "speedScore": 46.8,
             "practicalScore": 100.4,
             "games": 28,
-            "wins": 14,
-            "losses": 14,
+            "wins": 15,
+            "losses": 13,
             "draws": 0,
-            "averageSteps": 112.6,
-            "averageTurns": 11.7,
-            "seatDelta": 0,
+            "averageSteps": 113.1,
+            "averageTurns": 11.8,
+            "seatDelta": 0.071,
             "matchups": {
               "black_vs_black": {
                 "games": 12,
-                "wins": 2,
-                "losses": 10,
+                "wins": 3,
+                "losses": 9,
                 "draws": 0,
-                "winRate": 0.167,
-                "winPointRate": 0.167,
-                "averageSteps": 100.5,
-                "averageTurns": 10.3
+                "winRate": 0.25,
+                "winPointRate": 0.25,
+                "averageSteps": 101.7,
+                "averageTurns": 10.4
               },
               "white_vs_white": {
                 "games": 0,
@@ -1227,13 +1173,13 @@ export const DECK_BATTLE_SCORE_SNAPSHOT_SUITES = [
             "winRate": 0.786,
             "winPointRate": 0.786,
             "stabilityScore": 95.7,
-            "speedScore": 52.2,
+            "speedScore": 52.4,
             "practicalScore": 101.8,
             "games": 28,
             "wins": 22,
             "losses": 6,
             "draws": 0,
-            "averageSteps": 101.7,
+            "averageSteps": 101.3,
             "averageTurns": 10.4,
             "seatDelta": 0.143,
             "matchups": {
@@ -1244,8 +1190,8 @@ export const DECK_BATTLE_SCORE_SNAPSHOT_SUITES = [
                 "draws": 0,
                 "winRate": 0.75,
                 "winPointRate": 0.75,
-                "averageSteps": 94,
-                "averageTurns": 9.6
+                "averageSteps": 93,
+                "averageTurns": 9.5
               },
               "white_vs_white": {
                 "games": 0,
@@ -1281,13 +1227,13 @@ export const DECK_BATTLE_SCORE_SNAPSHOT_SUITES = [
             "winRate": 0.643,
             "winPointRate": 0.643,
             "stabilityScore": 87.1,
-            "speedScore": 56.5,
+            "speedScore": 56.7,
             "practicalScore": 105,
             "games": 28,
             "wins": 18,
             "losses": 10,
             "draws": 0,
-            "averageSteps": 92.5,
+            "averageSteps": 92.1,
             "averageTurns": 9.3,
             "seatDelta": 0.428,
             "matchups": {
@@ -1298,8 +1244,8 @@ export const DECK_BATTLE_SCORE_SNAPSHOT_SUITES = [
                 "draws": 0,
                 "winRate": 0.583,
                 "winPointRate": 0.583,
-                "averageSteps": 89.5,
-                "averageTurns": 9.1
+                "averageSteps": 88.5,
+                "averageTurns": 9
               },
               "white_vs_white": {
                 "games": 0,
@@ -1342,7 +1288,7 @@ export const DECK_BATTLE_SCORE_SNAPSHOT_SUITES = [
             "winRate": 0.321,
             "winPointRate": 0.321,
             "stabilityScore": 97.9,
-            "speedScore": 41.5,
+            "speedScore": 41.6,
             "practicalScore": 99.9,
             "games": 28,
             "wins": 9,
@@ -1457,13 +1403,13 @@ export const DECK_BATTLE_SCORE_SNAPSHOT_SUITES = [
             "winRate": 0.643,
             "winPointRate": 0.643,
             "stabilityScore": 87.1,
-            "speedScore": 56.5,
+            "speedScore": 56.7,
             "practicalScore": 105,
             "games": 28,
             "wins": 18,
             "losses": 10,
             "draws": 0,
-            "averageSteps": 92.5,
+            "averageSteps": 92.1,
             "averageTurns": 9.3,
             "seatDelta": 0.428,
             "matchups": {
@@ -1474,8 +1420,8 @@ export const DECK_BATTLE_SCORE_SNAPSHOT_SUITES = [
                 "draws": 0,
                 "winRate": 0.583,
                 "winPointRate": 0.583,
-                "averageSteps": 89.5,
-                "averageTurns": 9.1
+                "averageSteps": 88.5,
+                "averageTurns": 9
               },
               "white_vs_white": {
                 "games": 0,
@@ -1658,6 +1604,60 @@ export const DECK_BATTLE_SCORE_SNAPSHOT_SUITES = [
                 "winPointRate": 0.188,
                 "averageSteps": 98.9,
                 "averageTurns": 11
+              }
+            },
+            "reason": "player/cpu席の勝点率差が大きい"
+          },
+          {
+            "deckPreset": "submission-pro-with-rare8-black-999",
+            "sourceDeckId": 999,
+            "name": "投稿Pro黒8あり #999 はははっはははははははｈっはははははははははははははっははははははははははははははははははｈっはははははははははｈ",
+            "group": "pro-with-rare8-black",
+            "masterId": "black",
+            "rank": 5,
+            "battleScore": 47,
+            "winRate": 0.464,
+            "winPointRate": 0.464,
+            "stabilityScore": 93.6,
+            "speedScore": 55.1,
+            "practicalScore": 104.5,
+            "games": 28,
+            "wins": 13,
+            "losses": 15,
+            "draws": 0,
+            "averageSteps": 95.5,
+            "averageTurns": 10.8,
+            "seatDelta": 0.214,
+            "matchups": {
+              "black_vs_black": {
+                "games": 12,
+                "wins": 5,
+                "losses": 7,
+                "draws": 0,
+                "winRate": 0.417,
+                "winPointRate": 0.417,
+                "averageSteps": 86.3,
+                "averageTurns": 9.3
+              },
+              "white_vs_white": {
+                "games": 0,
+                "wins": 0,
+                "losses": 0,
+                "draws": 0,
+                "winRate": 0,
+                "winPointRate": 0,
+                "averageSteps": 0,
+                "averageTurns": 0
+              },
+              "white_vs_black": {
+                "games": 16,
+                "wins": 8,
+                "losses": 8,
+                "draws": 0,
+                "winRate": 0.5,
+                "winPointRate": 0.5,
+                "averageSteps": 102.4,
+                "averageTurns": 11.9
               }
             },
             "reason": "player/cpu席の勝点率差が大きい"
@@ -1813,9 +1813,9 @@ export const DECK_BATTLE_SCORE_SNAPSHOT_SUITES = [
         "loserDeckPreset": "submission-pro-no-rare8-black-493",
         "steps": 73,
         "turns": 8,
-        "winnerRank": 4,
+        "winnerRank": 5,
         "loserRank": 1,
-        "battleScoreGap": 28.2,
+        "battleScoreGap": 31.8,
         "primaryFocus": "upset_review",
         "focusIds": [
           "upset_review"
@@ -1823,7 +1823,7 @@ export const DECK_BATTLE_SCORE_SNAPSHOT_SUITES = [
         "focusLabels": [
           "番狂わせ"
         ],
-        "reason": "lower-score deck beat higher-score deck by 28.2"
+        "reason": "lower-score deck beat higher-score deck by 31.8"
       },
       {
         "kind": "upset",
@@ -1835,9 +1835,9 @@ export const DECK_BATTLE_SCORE_SNAPSHOT_SUITES = [
         "loserDeckPreset": "submission-pro-no-rare8-black-493",
         "steps": 72,
         "turns": 9,
-        "winnerRank": 4,
+        "winnerRank": 5,
         "loserRank": 1,
-        "battleScoreGap": 28.2,
+        "battleScoreGap": 31.8,
         "primaryFocus": "upset_review",
         "focusIds": [
           "upset_review"
@@ -1845,7 +1845,7 @@ export const DECK_BATTLE_SCORE_SNAPSHOT_SUITES = [
         "focusLabels": [
           "番狂わせ"
         ],
-        "reason": "lower-score deck beat higher-score deck by 28.2"
+        "reason": "lower-score deck beat higher-score deck by 31.8"
       },
       {
         "kind": "upset",
@@ -2021,126 +2021,6 @@ export const DECK_BATTLE_SCORE_SNAPSHOT_SUITES = [
         "kind": "upset",
         "severity": "review",
         "seed": 561,
-        "playerDeckPreset": "submission-pro-no-rare8-white-1377",
-        "cpuDeckPreset": "submission-pro-with-rare8-black-999",
-        "winnerDeckPreset": "submission-pro-no-rare8-white-1377",
-        "loserDeckPreset": "submission-pro-with-rare8-black-999",
-        "steps": 161,
-        "turns": 17,
-        "winnerRank": 8,
-        "loserRank": 4,
-        "battleScoreGap": 19.4,
-        "primaryFocus": "upset_review",
-        "focusIds": [
-          "upset_review",
-          "black_pressure"
-        ],
-        "focusLabels": [
-          "番狂わせ",
-          "黒の攻め筋"
-        ],
-        "reason": "lower-score deck beat higher-score deck by 19.4"
-      },
-      {
-        "kind": "upset",
-        "severity": "review",
-        "seed": 560,
-        "playerDeckPreset": "submission-pro-no-rare8-white-1377",
-        "cpuDeckPreset": "submission-pro-with-rare8-black-999",
-        "winnerDeckPreset": "submission-pro-no-rare8-white-1377",
-        "loserDeckPreset": "submission-pro-with-rare8-black-999",
-        "steps": 61,
-        "turns": 7,
-        "winnerRank": 8,
-        "loserRank": 4,
-        "battleScoreGap": 19.4,
-        "primaryFocus": "upset_review",
-        "focusIds": [
-          "upset_review",
-          "black_pressure"
-        ],
-        "focusLabels": [
-          "番狂わせ",
-          "黒の攻め筋"
-        ],
-        "reason": "lower-score deck beat higher-score deck by 19.4"
-      },
-      {
-        "kind": "upset",
-        "severity": "review",
-        "seed": 560,
-        "playerDeckPreset": "submission-pro-with-rare8-black-999",
-        "cpuDeckPreset": "submission-pro-no-rare8-white-494",
-        "winnerDeckPreset": "submission-pro-no-rare8-white-494",
-        "loserDeckPreset": "submission-pro-with-rare8-black-999",
-        "steps": 129,
-        "turns": 13,
-        "winnerRank": 7,
-        "loserRank": 4,
-        "battleScoreGap": 18.9,
-        "primaryFocus": "upset_review",
-        "focusIds": [
-          "upset_review",
-          "black_pressure"
-        ],
-        "focusLabels": [
-          "番狂わせ",
-          "黒の攻め筋"
-        ],
-        "reason": "lower-score deck beat higher-score deck by 18.9"
-      },
-      {
-        "kind": "upset",
-        "severity": "review",
-        "seed": 561,
-        "playerDeckPreset": "submission-pro-with-rare8-black-999",
-        "cpuDeckPreset": "submission-pro-no-rare8-white-494",
-        "winnerDeckPreset": "submission-pro-no-rare8-white-494",
-        "loserDeckPreset": "submission-pro-with-rare8-black-999",
-        "steps": 91,
-        "turns": 9,
-        "winnerRank": 7,
-        "loserRank": 4,
-        "battleScoreGap": 18.9,
-        "primaryFocus": "upset_review",
-        "focusIds": [
-          "upset_review",
-          "black_pressure"
-        ],
-        "focusLabels": [
-          "番狂わせ",
-          "黒の攻め筋"
-        ],
-        "reason": "lower-score deck beat higher-score deck by 18.9"
-      },
-      {
-        "kind": "upset",
-        "severity": "review",
-        "seed": 560,
-        "playerDeckPreset": "submission-pro-no-rare8-white-494",
-        "cpuDeckPreset": "submission-pro-with-rare8-black-999",
-        "winnerDeckPreset": "submission-pro-no-rare8-white-494",
-        "loserDeckPreset": "submission-pro-with-rare8-black-999",
-        "steps": 61,
-        "turns": 7,
-        "winnerRank": 7,
-        "loserRank": 4,
-        "battleScoreGap": 18.9,
-        "primaryFocus": "upset_review",
-        "focusIds": [
-          "upset_review",
-          "black_pressure"
-        ],
-        "focusLabels": [
-          "番狂わせ",
-          "黒の攻め筋"
-        ],
-        "reason": "lower-score deck beat higher-score deck by 18.9"
-      },
-      {
-        "kind": "upset",
-        "severity": "review",
-        "seed": 561,
         "playerDeckPreset": "submission-pro-no-rare8-black-252",
         "cpuDeckPreset": "submission-pro-no-rare8-white-494",
         "winnerDeckPreset": "submission-pro-no-rare8-white-494",
@@ -2148,8 +2028,8 @@ export const DECK_BATTLE_SCORE_SNAPSHOT_SUITES = [
         "steps": 96,
         "turns": 10,
         "winnerRank": 7,
-        "loserRank": 5,
-        "battleScoreGap": 18,
+        "loserRank": 4,
+        "battleScoreGap": 21.5,
         "primaryFocus": "upset_review",
         "focusIds": [
           "upset_review",
@@ -2159,7 +2039,7 @@ export const DECK_BATTLE_SCORE_SNAPSHOT_SUITES = [
           "番狂わせ",
           "黒の攻め筋"
         ],
-        "reason": "lower-score deck beat higher-score deck by 18"
+        "reason": "lower-score deck beat higher-score deck by 21.5"
       },
       {
         "kind": "upset",
@@ -2172,8 +2052,8 @@ export const DECK_BATTLE_SCORE_SNAPSHOT_SUITES = [
         "steps": 86,
         "turns": 9,
         "winnerRank": 7,
-        "loserRank": 5,
-        "battleScoreGap": 18,
+        "loserRank": 4,
+        "battleScoreGap": 21.5,
         "primaryFocus": "upset_review",
         "focusIds": [
           "upset_review",
@@ -2182,6 +2062,54 @@ export const DECK_BATTLE_SCORE_SNAPSHOT_SUITES = [
         "focusLabels": [
           "番狂わせ",
           "黒の攻め筋"
+        ],
+        "reason": "lower-score deck beat higher-score deck by 21.5"
+      },
+      {
+        "kind": "upset",
+        "severity": "review",
+        "seed": 561,
+        "playerDeckPreset": "submission-pro-with-rare8-black-1354",
+        "cpuDeckPreset": "submission-pro-with-rare8-black-999",
+        "winnerDeckPreset": "submission-pro-with-rare8-black-999",
+        "loserDeckPreset": "submission-pro-with-rare8-black-1354",
+        "steps": 70,
+        "turns": 7,
+        "winnerRank": 5,
+        "loserRank": 2,
+        "battleScoreGap": 18,
+        "primaryFocus": "upset_review",
+        "focusIds": [
+          "upset_review",
+          "seat_bias"
+        ],
+        "focusLabels": [
+          "番狂わせ",
+          "席差/非対称"
+        ],
+        "reason": "lower-score deck beat higher-score deck by 18"
+      },
+      {
+        "kind": "upset",
+        "severity": "review",
+        "seed": 560,
+        "playerDeckPreset": "submission-pro-with-rare8-black-1354",
+        "cpuDeckPreset": "submission-pro-with-rare8-black-999",
+        "winnerDeckPreset": "submission-pro-with-rare8-black-999",
+        "loserDeckPreset": "submission-pro-with-rare8-black-1354",
+        "steps": 65,
+        "turns": 7,
+        "winnerRank": 5,
+        "loserRank": 2,
+        "battleScoreGap": 18,
+        "primaryFocus": "upset_review",
+        "focusIds": [
+          "upset_review",
+          "seat_bias"
+        ],
+        "focusLabels": [
+          "番狂わせ",
+          "席差/非対称"
         ],
         "reason": "lower-score deck beat higher-score deck by 18"
       },
@@ -2196,16 +2124,18 @@ export const DECK_BATTLE_SCORE_SNAPSHOT_SUITES = [
         "steps": 161,
         "turns": 17,
         "winnerRank": 8,
-        "loserRank": 4,
-        "battleScoreGap": 19.4,
+        "loserRank": 5,
+        "battleScoreGap": 15.8,
         "primaryFocus": "long_game_closeout",
         "focusIds": [
           "long_game_closeout",
-          "black_pressure"
+          "black_pressure",
+          "seat_bias"
         ],
         "focusLabels": [
           "長期戦/勝ち切り",
-          "黒の攻め筋"
+          "黒の攻め筋",
+          "席差/非対称"
         ],
         "reason": "161 steps is above suite average + 45"
       },
@@ -2290,6 +2220,56 @@ export const DECK_BATTLE_SCORE_SNAPSHOT_SUITES = [
       {
         "kind": "long_game",
         "severity": "review",
+        "seed": 560,
+        "playerDeckPreset": "submission-pro-no-rare8-white-1377",
+        "cpuDeckPreset": "submission-pro-with-rare8-white-1339",
+        "winnerDeckPreset": "submission-pro-with-rare8-white-1339",
+        "loserDeckPreset": "submission-pro-no-rare8-white-1377",
+        "steps": 197,
+        "turns": 22,
+        "winnerRank": 6,
+        "loserRank": 8,
+        "battleScoreGap": -7.9,
+        "primaryFocus": "long_game_closeout",
+        "focusIds": [
+          "long_game_closeout",
+          "white_closeout"
+        ],
+        "focusLabels": [
+          "長期戦/勝ち切り",
+          "白の勝ち切り"
+        ],
+        "reason": "197 steps is above suite average + 45"
+      },
+      {
+        "kind": "long_game",
+        "severity": "review",
+        "seed": 561,
+        "playerDeckPreset": "submission-pro-with-rare8-white-1339",
+        "cpuDeckPreset": "submission-pro-with-rare8-white-1346",
+        "winnerDeckPreset": "submission-pro-with-rare8-white-1346",
+        "loserDeckPreset": "submission-pro-with-rare8-white-1339",
+        "steps": 157,
+        "turns": 15,
+        "winnerRank": 3,
+        "loserRank": 6,
+        "battleScoreGap": -14.8,
+        "primaryFocus": "long_game_closeout",
+        "focusIds": [
+          "long_game_closeout",
+          "white_closeout",
+          "seat_bias"
+        ],
+        "focusLabels": [
+          "長期戦/勝ち切り",
+          "白の勝ち切り",
+          "席差/非対称"
+        ],
+        "reason": "157 steps is above suite average + 45"
+      },
+      {
+        "kind": "long_game",
+        "severity": "review",
         "seed": 561,
         "playerDeckPreset": "submission-pro-no-rare8-white-1377",
         "cpuDeckPreset": "submission-pro-no-rare8-black-252",
@@ -2297,9 +2277,9 @@ export const DECK_BATTLE_SCORE_SNAPSHOT_SUITES = [
         "loserDeckPreset": "submission-pro-no-rare8-white-1377",
         "steps": 174,
         "turns": 17,
-        "winnerRank": 5,
+        "winnerRank": 4,
         "loserRank": 8,
-        "battleScoreGap": -18.5,
+        "battleScoreGap": -22,
         "primaryFocus": "long_game_closeout",
         "focusIds": [
           "long_game_closeout",
@@ -2312,6 +2292,32 @@ export const DECK_BATTLE_SCORE_SNAPSHOT_SUITES = [
           "白の勝ち切り"
         ],
         "reason": "174 steps is above suite average + 45"
+      },
+      {
+        "kind": "long_game",
+        "severity": "review",
+        "seed": 560,
+        "playerDeckPreset": "submission-pro-no-rare8-black-252",
+        "cpuDeckPreset": "submission-pro-no-rare8-white-1377",
+        "winnerDeckPreset": "submission-pro-no-rare8-black-252",
+        "loserDeckPreset": "submission-pro-no-rare8-white-1377",
+        "steps": 161,
+        "turns": 15,
+        "winnerRank": 4,
+        "loserRank": 8,
+        "battleScoreGap": -22,
+        "primaryFocus": "long_game_closeout",
+        "focusIds": [
+          "long_game_closeout",
+          "white_vs_black",
+          "white_closeout"
+        ],
+        "focusLabels": [
+          "長期戦/勝ち切り",
+          "白vs黒対策",
+          "白の勝ち切り"
+        ],
+        "reason": "161 steps is above suite average + 45"
       }
     ],
     "problemFocuses": [
@@ -2319,38 +2325,8 @@ export const DECK_BATTLE_SCORE_SNAPSHOT_SUITES = [
         "id": "upset_review",
         "title": "番狂わせ",
         "description": "実戦スコア差のある敗戦。上位デッキ側の分岐判断を追う。",
-        "count": 19,
-        "reviewWeight": 4260.2,
-        "examples": [
-          {
-            "kind": "upset",
-            "seed": 560,
-            "playerDeckPreset": "submission-pro-no-rare8-black-493",
-            "cpuDeckPreset": "submission-pro-with-rare8-white-1339",
-            "reason": "lower-score deck beat higher-score deck by 39.7"
-          },
-          {
-            "kind": "upset",
-            "seed": 561,
-            "playerDeckPreset": "submission-pro-with-rare8-black-1354",
-            "cpuDeckPreset": "submission-pro-no-rare8-white-1377",
-            "reason": "lower-score deck beat higher-score deck by 33.8"
-          },
-          {
-            "kind": "upset",
-            "seed": 560,
-            "playerDeckPreset": "submission-pro-with-rare8-black-1354",
-            "cpuDeckPreset": "submission-pro-no-rare8-white-494",
-            "reason": "lower-score deck beat higher-score deck by 33.3"
-          }
-        ]
-      },
-      {
-        "id": "black_pressure",
-        "title": "黒の攻め筋",
-        "description": "黒が白に押し返される構図。バーサク後の直撃、非撃破削り、石消費を確認する。",
-        "count": 14,
-        "reviewWeight": 3033.4,
+        "count": 16,
+        "reviewWeight": 3614.9,
         "examples": [
           {
             "kind": "upset",
@@ -2379,8 +2355,8 @@ export const DECK_BATTLE_SCORE_SNAPSHOT_SUITES = [
         "id": "seat_bias",
         "title": "席差/非対称",
         "description": "player/cpu席の成績差が大きい。初手、先後、評価の非対称性を見る。",
-        "count": 10,
-        "reviewWeight": 1876.4,
+        "count": 14,
+        "reviewWeight": 2513.4,
         "examples": [
           {
             "kind": "upset",
@@ -2406,11 +2382,41 @@ export const DECK_BATTLE_SCORE_SNAPSHOT_SUITES = [
         ]
       },
       {
+        "id": "black_pressure",
+        "title": "黒の攻め筋",
+        "description": "黒が白に押し返される構図。バーサク後の直撃、非撃破削り、石消費を確認する。",
+        "count": 9,
+        "reviewWeight": 1941.3,
+        "examples": [
+          {
+            "kind": "upset",
+            "seed": 560,
+            "playerDeckPreset": "submission-pro-no-rare8-black-493",
+            "cpuDeckPreset": "submission-pro-with-rare8-white-1339",
+            "reason": "lower-score deck beat higher-score deck by 39.7"
+          },
+          {
+            "kind": "upset",
+            "seed": 561,
+            "playerDeckPreset": "submission-pro-with-rare8-black-1354",
+            "cpuDeckPreset": "submission-pro-no-rare8-white-1377",
+            "reason": "lower-score deck beat higher-score deck by 33.8"
+          },
+          {
+            "kind": "upset",
+            "seed": 560,
+            "playerDeckPreset": "submission-pro-with-rare8-black-1354",
+            "cpuDeckPreset": "submission-pro-no-rare8-white-494",
+            "reason": "lower-score deck beat higher-score deck by 33.3"
+          }
+        ]
+      },
+      {
         "id": "long_game_closeout",
         "title": "長期戦/勝ち切り",
         "description": "平均より長い試合。終盤の直接打点、focus、非撃破行動を確認する。",
-        "count": 5,
-        "reviewWeight": 494.5,
+        "count": 8,
+        "reviewWeight": 742.7,
         "examples": [
           {
             "kind": "long_game",
@@ -2439,8 +2445,8 @@ export const DECK_BATTLE_SCORE_SNAPSHOT_SUITES = [
         "id": "white_closeout",
         "title": "白の勝ち切り",
         "description": "白デッキが安定するが勝ち切れない。守りすぎと終盤打点を確認する。",
-        "count": 4,
-        "reviewWeight": 375.1,
+        "count": 7,
+        "reviewWeight": 626.9,
         "examples": [
           {
             "kind": "long_game",
@@ -2469,8 +2475,8 @@ export const DECK_BATTLE_SCORE_SNAPSHOT_SUITES = [
         "id": "white_vs_black",
         "title": "白vs黒対策",
         "description": "白が黒の圧に負ける構図。防御対象、前衛処理、石テンポを確認する。",
-        "count": 1,
-        "reviewWeight": 81.5,
+        "count": 2,
+        "reviewWeight": 156,
         "examples": [
           {
             "kind": "long_game",
@@ -2478,12 +2484,19 @@ export const DECK_BATTLE_SCORE_SNAPSHOT_SUITES = [
             "playerDeckPreset": "submission-pro-no-rare8-white-1377",
             "cpuDeckPreset": "submission-pro-no-rare8-black-252",
             "reason": "174 steps is above suite average + 45"
+          },
+          {
+            "kind": "long_game",
+            "seed": 560,
+            "playerDeckPreset": "submission-pro-no-rare8-black-252",
+            "cpuDeckPreset": "submission-pro-no-rare8-white-1377",
+            "reason": "161 steps is above suite average + 45"
           }
         ]
       }
     ],
     "recommendedFocus": [
-      "番狂わせ: 19件。実戦スコア差のある敗戦。上位デッキ側の分岐判断を追う。",
+      "番狂わせ: 16件。実戦スコア差のある敗戦。上位デッキ側の分岐判断を追う。",
       "submission-pro-no-rare8-black-493: 勝てるが遅い。終盤の勝ち切りと白/黒の過剰安全行動を見る。",
       "submission-pro-with-rare8-black-1354: 席差42.8%。先後・player/cpu非対称を確認する。",
       "submission-pro-no-rare8-white-1377: 安定するが勝てない。攻め筋不足や守りすぎを確認する。",
@@ -2500,7 +2513,7 @@ export const DECK_BATTLE_SCORE_SNAPSHOT_SUITES = [
       "games": 1560,
       "failures": 0,
       "warnings": 1,
-      "averageSteps": 101.5,
+      "averageSteps": 101.4,
       "averageTurns": 10.5
     },
     "scores": [
@@ -2513,7 +2526,7 @@ export const DECK_BATTLE_SCORE_SNAPSHOT_SUITES = [
         "winRate": 0.718,
         "winPointRate": 0.718,
         "stabilityScore": 92.3,
-        "speedScore": 52.9,
+        "speedScore": 53,
         "games": 78,
         "wins": 56,
         "losses": 22,
@@ -2522,7 +2535,7 @@ export const DECK_BATTLE_SCORE_SNAPSHOT_SUITES = [
         "cpuSideWinPointRate": 0.846,
         "failures": 0,
         "warnings": 0,
-        "averageSteps": 95.6,
+        "averageSteps": 95.2,
         "averageTurns": 9.9,
         "matchups": {
           "black_vs_black": {
@@ -2532,7 +2545,7 @@ export const DECK_BATTLE_SCORE_SNAPSHOT_SUITES = [
             "draws": 0,
             "winRate": 0.711,
             "winPointRate": 0.711,
-            "averageSteps": 91.6,
+            "averageSteps": 91.3,
             "averageTurns": 9.6
           },
           "white_vs_white": {
@@ -2552,7 +2565,7 @@ export const DECK_BATTLE_SCORE_SNAPSHOT_SUITES = [
             "draws": 0,
             "winRate": 0.725,
             "winPointRate": 0.725,
-            "averageSteps": 99.4,
+            "averageSteps": 98.9,
             "averageTurns": 10.2
           }
         }
@@ -2566,7 +2579,7 @@ export const DECK_BATTLE_SCORE_SNAPSHOT_SUITES = [
         "winRate": 0.692,
         "winPointRate": 0.692,
         "stabilityScore": 93.8,
-        "speedScore": 61.2,
+        "speedScore": 61.1,
         "games": 78,
         "wins": 54,
         "losses": 24,
@@ -2575,8 +2588,8 @@ export const DECK_BATTLE_SCORE_SNAPSHOT_SUITES = [
         "cpuSideWinPointRate": 0.795,
         "failures": 0,
         "warnings": 0,
-        "averageSteps": 78.7,
-        "averageTurns": 8.2,
+        "averageSteps": 78.8,
+        "averageTurns": 8.3,
         "matchups": {
           "black_vs_black": {
             "games": 38,
@@ -2605,8 +2618,8 @@ export const DECK_BATTLE_SCORE_SNAPSHOT_SUITES = [
             "draws": 0,
             "winRate": 0.8,
             "winPointRate": 0.8,
-            "averageSteps": 80,
-            "averageTurns": 8.3
+            "averageSteps": 80.2,
+            "averageTurns": 8.4
           }
         }
       },
@@ -2614,12 +2627,12 @@ export const DECK_BATTLE_SCORE_SNAPSHOT_SUITES = [
         "rank": 3,
         "deckPreset": "submission-pro-no-rare8-black-408",
         "sourceDeckId": 408,
-        "battleScore": 69.7,
+        "battleScore": 69.8,
         "practicalScore": 100.3,
         "winRate": 0.692,
         "winPointRate": 0.692,
         "stabilityScore": 95.4,
-        "speedScore": 54.9,
+        "speedScore": 55.3,
         "games": 78,
         "wins": 54,
         "losses": 24,
@@ -2628,8 +2641,8 @@ export const DECK_BATTLE_SCORE_SNAPSHOT_SUITES = [
         "cpuSideWinPointRate": 0.769,
         "failures": 0,
         "warnings": 0,
-        "averageSteps": 91.6,
-        "averageTurns": 9.7,
+        "averageSteps": 90.6,
+        "averageTurns": 9.6,
         "matchups": {
           "black_vs_black": {
             "games": 38,
@@ -2658,33 +2671,43 @@ export const DECK_BATTLE_SCORE_SNAPSHOT_SUITES = [
             "draws": 0,
             "winRate": 0.75,
             "winPointRate": 0.75,
-            "averageSteps": 96.6,
-            "averageTurns": 10.3
+            "averageSteps": 94.7,
+            "averageTurns": 10
           }
         }
       },
       {
         "rank": 4,
-        "deckPreset": "submission-pro-with-rare8-white-1236",
-        "sourceDeckId": 1236,
-        "battleScore": 68.2,
-        "practicalScore": 97.4,
+        "deckPreset": "submission-pro-no-rare8-black-542",
+        "sourceDeckId": 542,
+        "battleScore": 68.5,
+        "practicalScore": 98.7,
         "winRate": 0.679,
         "winPointRate": 0.679,
-        "stabilityScore": 92.9,
-        "speedScore": 53.4,
+        "stabilityScore": 90,
+        "speedScore": 55.3,
         "games": 78,
         "wins": 53,
         "losses": 25,
         "draws": 0,
-        "playerSideWinPointRate": 0.564,
-        "cpuSideWinPointRate": 0.795,
+        "playerSideWinPointRate": 0.513,
+        "cpuSideWinPointRate": 0.846,
         "failures": 0,
-        "warnings": 1,
-        "averageSteps": 94.5,
-        "averageTurns": 9.8,
+        "warnings": 0,
+        "averageSteps": 90.7,
+        "averageTurns": 9.5,
         "matchups": {
           "black_vs_black": {
+            "games": 38,
+            "wins": 21,
+            "losses": 17,
+            "draws": 0,
+            "winRate": 0.553,
+            "winPointRate": 0.553,
+            "averageSteps": 89.7,
+            "averageTurns": 9.3
+          },
+          "white_vs_white": {
             "games": 0,
             "wins": 0,
             "losses": 0,
@@ -2694,25 +2717,15 @@ export const DECK_BATTLE_SCORE_SNAPSHOT_SUITES = [
             "averageSteps": 0,
             "averageTurns": 0
           },
-          "white_vs_white": {
-            "games": 38,
-            "wins": 28,
-            "losses": 10,
-            "draws": 0,
-            "winRate": 0.737,
-            "winPointRate": 0.737,
-            "averageSteps": 102.3,
-            "averageTurns": 10.2
-          },
           "white_vs_black": {
             "games": 40,
-            "wins": 25,
-            "losses": 15,
+            "wins": 32,
+            "losses": 8,
             "draws": 0,
-            "winRate": 0.625,
-            "winPointRate": 0.625,
-            "averageSteps": 87.2,
-            "averageTurns": 9.4
+            "winRate": 0.8,
+            "winPointRate": 0.8,
+            "averageSteps": 91.7,
+            "averageTurns": 9.7
           }
         }
       },
@@ -2725,7 +2738,7 @@ export const DECK_BATTLE_SCORE_SNAPSHOT_SUITES = [
         "winRate": 0.667,
         "winPointRate": 0.667,
         "stabilityScore": 92.3,
-        "speedScore": 56.7,
+        "speedScore": 56.5,
         "games": 78,
         "wins": 52,
         "losses": 26,
@@ -2734,7 +2747,7 @@ export const DECK_BATTLE_SCORE_SNAPSHOT_SUITES = [
         "cpuSideWinPointRate": 0.795,
         "failures": 0,
         "warnings": 0,
-        "averageSteps": 87.8,
+        "averageSteps": 88.2,
         "averageTurns": 9.3,
         "matchups": {
           "black_vs_black": {
@@ -2764,8 +2777,8 @@ export const DECK_BATTLE_SCORE_SNAPSHOT_SUITES = [
             "draws": 0,
             "winRate": 0.725,
             "winPointRate": 0.725,
-            "averageSteps": 90.6,
-            "averageTurns": 9.6
+            "averageSteps": 91.3,
+            "averageTurns": 9.7
           }
         }
       },
@@ -2778,7 +2791,7 @@ export const DECK_BATTLE_SCORE_SNAPSHOT_SUITES = [
         "winRate": 0.654,
         "winPointRate": 0.654,
         "stabilityScore": 97.7,
-        "speedScore": 59.3,
+        "speedScore": 59,
         "games": 78,
         "wins": 51,
         "losses": 27,
@@ -2787,8 +2800,8 @@ export const DECK_BATTLE_SCORE_SNAPSHOT_SUITES = [
         "cpuSideWinPointRate": 0.692,
         "failures": 0,
         "warnings": 0,
-        "averageSteps": 82.6,
-        "averageTurns": 9.1,
+        "averageSteps": 83.1,
+        "averageTurns": 9.2,
         "matchups": {
           "black_vs_black": {
             "games": 38,
@@ -2797,8 +2810,8 @@ export const DECK_BATTLE_SCORE_SNAPSHOT_SUITES = [
             "draws": 0,
             "winRate": 0.711,
             "winPointRate": 0.711,
-            "averageSteps": 74.9,
-            "averageTurns": 8.4
+            "averageSteps": 75.8,
+            "averageTurns": 8.5
           },
           "white_vs_white": {
             "games": 0,
@@ -2817,7 +2830,7 @@ export const DECK_BATTLE_SCORE_SNAPSHOT_SUITES = [
             "draws": 0,
             "winRate": 0.6,
             "winPointRate": 0.6,
-            "averageSteps": 89.8,
+            "averageSteps": 90,
             "averageTurns": 9.8
           }
         }
@@ -2831,7 +2844,7 @@ export const DECK_BATTLE_SCORE_SNAPSHOT_SUITES = [
         "winRate": 0.654,
         "winPointRate": 0.654,
         "stabilityScore": 91.5,
-        "speedScore": 57.8,
+        "speedScore": 57.7,
         "games": 78,
         "wins": 51,
         "losses": 27,
@@ -2840,7 +2853,7 @@ export const DECK_BATTLE_SCORE_SNAPSHOT_SUITES = [
         "cpuSideWinPointRate": 0.795,
         "failures": 0,
         "warnings": 0,
-        "averageSteps": 85.5,
+        "averageSteps": 85.7,
         "averageTurns": 9.2,
         "matchups": {
           "black_vs_black": {
@@ -2870,8 +2883,8 @@ export const DECK_BATTLE_SCORE_SNAPSHOT_SUITES = [
             "draws": 0,
             "winRate": 0.725,
             "winPointRate": 0.725,
-            "averageSteps": 78.7,
-            "averageTurns": 8.4
+            "averageSteps": 79,
+            "averageTurns": 8.5
           }
         }
       },
@@ -2884,7 +2897,7 @@ export const DECK_BATTLE_SCORE_SNAPSHOT_SUITES = [
         "winRate": 0.654,
         "winPointRate": 0.654,
         "stabilityScore": 91.5,
-        "speedScore": 57.8,
+        "speedScore": 57.7,
         "games": 78,
         "wins": 51,
         "losses": 27,
@@ -2893,7 +2906,7 @@ export const DECK_BATTLE_SCORE_SNAPSHOT_SUITES = [
         "cpuSideWinPointRate": 0.795,
         "failures": 0,
         "warnings": 0,
-        "averageSteps": 85.5,
+        "averageSteps": 85.7,
         "averageTurns": 9.2,
         "matchups": {
           "black_vs_black": {
@@ -2923,84 +2936,31 @@ export const DECK_BATTLE_SCORE_SNAPSHOT_SUITES = [
             "draws": 0,
             "winRate": 0.725,
             "winPointRate": 0.725,
-            "averageSteps": 78.7,
-            "averageTurns": 8.4
+            "averageSteps": 79,
+            "averageTurns": 8.5
           }
         }
       },
       {
         "rank": 9,
-        "deckPreset": "submission-pro-no-rare8-black-542",
-        "sourceDeckId": 542,
-        "battleScore": 65.9,
-        "practicalScore": 98.7,
-        "winRate": 0.654,
-        "winPointRate": 0.654,
-        "stabilityScore": 90,
-        "speedScore": 55.3,
-        "games": 78,
-        "wins": 51,
-        "losses": 27,
-        "draws": 0,
-        "playerSideWinPointRate": 0.487,
-        "cpuSideWinPointRate": 0.821,
-        "failures": 0,
-        "warnings": 0,
-        "averageSteps": 90.6,
-        "averageTurns": 9.5,
-        "matchups": {
-          "black_vs_black": {
-            "games": 38,
-            "wins": 21,
-            "losses": 17,
-            "draws": 0,
-            "winRate": 0.553,
-            "winPointRate": 0.553,
-            "averageSteps": 90.2,
-            "averageTurns": 9.4
-          },
-          "white_vs_white": {
-            "games": 0,
-            "wins": 0,
-            "losses": 0,
-            "draws": 0,
-            "winRate": 0,
-            "winPointRate": 0,
-            "averageSteps": 0,
-            "averageTurns": 0
-          },
-          "white_vs_black": {
-            "games": 40,
-            "wins": 30,
-            "losses": 10,
-            "draws": 0,
-            "winRate": 0.75,
-            "winPointRate": 0.75,
-            "averageSteps": 91,
-            "averageTurns": 9.6
-          }
-        }
-      },
-      {
-        "rank": 10,
         "deckPreset": "submission-pro-with-rare8-black-1354",
         "sourceDeckId": 1354,
         "battleScore": 64.4,
         "practicalScore": 105,
         "winRate": 0.641,
         "winPointRate": 0.641,
-        "stabilityScore": 95.4,
-        "speedScore": 52.8,
+        "stabilityScore": 96.9,
+        "speedScore": 53.3,
         "games": 78,
         "wins": 50,
         "losses": 28,
         "draws": 0,
-        "playerSideWinPointRate": 0.564,
-        "cpuSideWinPointRate": 0.718,
+        "playerSideWinPointRate": 0.59,
+        "cpuSideWinPointRate": 0.692,
         "failures": 0,
         "warnings": 0,
-        "averageSteps": 95.8,
-        "averageTurns": 9.9,
+        "averageSteps": 94.6,
+        "averageTurns": 9.7,
         "matchups": {
           "black_vs_black": {
             "games": 38,
@@ -3009,7 +2969,7 @@ export const DECK_BATTLE_SCORE_SNAPSHOT_SUITES = [
             "draws": 0,
             "winRate": 0.526,
             "winPointRate": 0.526,
-            "averageSteps": 99.6,
+            "averageSteps": 99.2,
             "averageTurns": 10.3
           },
           "white_vs_white": {
@@ -3029,83 +2989,30 @@ export const DECK_BATTLE_SCORE_SNAPSHOT_SUITES = [
             "draws": 0,
             "winRate": 0.75,
             "winPointRate": 0.75,
-            "averageSteps": 92.3,
-            "averageTurns": 9.4
+            "averageSteps": 90.2,
+            "averageTurns": 9.2
           }
         }
       },
       {
-        "rank": 11,
-        "deckPreset": "submission-pro-with-rare8-white-668",
-        "sourceDeckId": 668,
-        "battleScore": 63.3,
-        "practicalScore": 91.3,
-        "winRate": 0.628,
-        "winPointRate": 0.628,
-        "stabilityScore": 88.5,
-        "speedScore": 54.5,
-        "games": 78,
-        "wins": 49,
-        "losses": 29,
-        "draws": 0,
-        "playerSideWinPointRate": 0.436,
-        "cpuSideWinPointRate": 0.821,
-        "failures": 0,
-        "warnings": 0,
-        "averageSteps": 92.4,
-        "averageTurns": 9.1,
-        "matchups": {
-          "black_vs_black": {
-            "games": 0,
-            "wins": 0,
-            "losses": 0,
-            "draws": 0,
-            "winRate": 0,
-            "winPointRate": 0,
-            "averageSteps": 0,
-            "averageTurns": 0
-          },
-          "white_vs_white": {
-            "games": 38,
-            "wins": 30,
-            "losses": 8,
-            "draws": 0,
-            "winRate": 0.789,
-            "winPointRate": 0.789,
-            "averageSteps": 111.6,
-            "averageTurns": 10.5
-          },
-          "white_vs_black": {
-            "games": 40,
-            "wins": 19,
-            "losses": 21,
-            "draws": 0,
-            "winRate": 0.475,
-            "winPointRate": 0.475,
-            "averageSteps": 74.2,
-            "averageTurns": 7.8
-          }
-        }
-      },
-      {
-        "rank": 12,
+        "rank": 10,
         "deckPreset": "submission-pro-no-rare8-black-66",
         "sourceDeckId": 66,
-        "battleScore": 62.6,
+        "battleScore": 63.9,
         "practicalScore": 99.7,
-        "winRate": 0.628,
-        "winPointRate": 0.628,
-        "stabilityScore": 88.5,
-        "speedScore": 48.1,
+        "winRate": 0.641,
+        "winPointRate": 0.641,
+        "stabilityScore": 89.2,
+        "speedScore": 48,
         "games": 78,
-        "wins": 49,
-        "losses": 29,
+        "wins": 50,
+        "losses": 28,
         "draws": 0,
-        "playerSideWinPointRate": 0.436,
+        "playerSideWinPointRate": 0.462,
         "cpuSideWinPointRate": 0.821,
         "failures": 0,
         "warnings": 0,
-        "averageSteps": 105.3,
+        "averageSteps": 105.5,
         "averageTurns": 10.8,
         "matchups": {
           "black_vs_black": {
@@ -3130,13 +3037,119 @@ export const DECK_BATTLE_SCORE_SNAPSHOT_SUITES = [
           },
           "white_vs_black": {
             "games": 40,
-            "wins": 31,
+            "wins": 32,
+            "losses": 8,
+            "draws": 0,
+            "winRate": 0.8,
+            "winPointRate": 0.8,
+            "averageSteps": 109,
+            "averageTurns": 11.2
+          }
+        }
+      },
+      {
+        "rank": 11,
+        "deckPreset": "submission-pro-with-rare8-white-1236",
+        "sourceDeckId": 1236,
+        "battleScore": 63,
+        "practicalScore": 97.4,
+        "winRate": 0.628,
+        "winPointRate": 0.628,
+        "stabilityScore": 91.3,
+        "speedScore": 53.4,
+        "games": 78,
+        "wins": 49,
+        "losses": 29,
+        "draws": 0,
+        "playerSideWinPointRate": 0.487,
+        "cpuSideWinPointRate": 0.769,
+        "failures": 0,
+        "warnings": 1,
+        "averageSteps": 94.4,
+        "averageTurns": 9.7,
+        "matchups": {
+          "black_vs_black": {
+            "games": 0,
+            "wins": 0,
+            "losses": 0,
+            "draws": 0,
+            "winRate": 0,
+            "winPointRate": 0,
+            "averageSteps": 0,
+            "averageTurns": 0
+          },
+          "white_vs_white": {
+            "games": 38,
+            "wins": 25,
+            "losses": 13,
+            "draws": 0,
+            "winRate": 0.658,
+            "winPointRate": 0.658,
+            "averageSteps": 101.9,
+            "averageTurns": 10.1
+          },
+          "white_vs_black": {
+            "games": 40,
+            "wins": 24,
+            "losses": 16,
+            "draws": 0,
+            "winRate": 0.6,
+            "winPointRate": 0.6,
+            "averageSteps": 87.4,
+            "averageTurns": 9.4
+          }
+        }
+      },
+      {
+        "rank": 12,
+        "deckPreset": "submission-pro-with-rare8-white-668",
+        "sourceDeckId": 668,
+        "battleScore": 62,
+        "practicalScore": 91.3,
+        "winRate": 0.615,
+        "winPointRate": 0.615,
+        "stabilityScore": 89.2,
+        "speedScore": 54.7,
+        "games": 78,
+        "wins": 48,
+        "losses": 30,
+        "draws": 0,
+        "playerSideWinPointRate": 0.436,
+        "cpuSideWinPointRate": 0.795,
+        "failures": 0,
+        "warnings": 0,
+        "averageSteps": 91.8,
+        "averageTurns": 9.1,
+        "matchups": {
+          "black_vs_black": {
+            "games": 0,
+            "wins": 0,
+            "losses": 0,
+            "draws": 0,
+            "winRate": 0,
+            "winPointRate": 0,
+            "averageSteps": 0,
+            "averageTurns": 0
+          },
+          "white_vs_white": {
+            "games": 38,
+            "wins": 29,
             "losses": 9,
             "draws": 0,
-            "winRate": 0.775,
-            "winPointRate": 0.775,
-            "averageSteps": 108.6,
-            "averageTurns": 11.2
+            "winRate": 0.763,
+            "winPointRate": 0.763,
+            "averageSteps": 110.4,
+            "averageTurns": 10.4
+          },
+          "white_vs_black": {
+            "games": 40,
+            "wins": 19,
+            "losses": 21,
+            "draws": 0,
+            "winRate": 0.475,
+            "winPointRate": 0.475,
+            "averageSteps": 74.2,
+            "averageTurns": 7.8
           }
         }
       },
@@ -3148,18 +3161,18 @@ export const DECK_BATTLE_SCORE_SNAPSHOT_SUITES = [
         "practicalScore": 98.8,
         "winRate": 0.603,
         "winPointRate": 0.603,
-        "stabilityScore": 90,
-        "speedScore": 51.9,
+        "stabilityScore": 91.5,
+        "speedScore": 51.6,
         "games": 78,
         "wins": 47,
         "losses": 31,
         "draws": 0,
-        "playerSideWinPointRate": 0.436,
-        "cpuSideWinPointRate": 0.769,
+        "playerSideWinPointRate": 0.462,
+        "cpuSideWinPointRate": 0.744,
         "failures": 0,
         "warnings": 0,
-        "averageSteps": 97.6,
-        "averageTurns": 10.1,
+        "averageSteps": 98.2,
+        "averageTurns": 10.2,
         "matchups": {
           "black_vs_black": {
             "games": 38,
@@ -3188,30 +3201,30 @@ export const DECK_BATTLE_SCORE_SNAPSHOT_SUITES = [
             "draws": 0,
             "winRate": 0.675,
             "winPointRate": 0.675,
-            "averageSteps": 101.9,
-            "averageTurns": 10.4
+            "averageSteps": 103.1,
+            "averageTurns": 10.5
           }
         }
       },
       {
         "rank": 14,
-        "deckPreset": "submission-pro-with-rare8-white-1346",
-        "sourceDeckId": 1346,
-        "battleScore": 59.2,
-        "practicalScore": 101,
-        "winRate": 0.59,
-        "winPointRate": 0.59,
-        "stabilityScore": 87.7,
-        "speedScore": 51.9,
+        "deckPreset": "submission-pro-with-rare8-white-10",
+        "sourceDeckId": 10,
+        "battleScore": 60.4,
+        "practicalScore": 91.5,
+        "winRate": 0.603,
+        "winPointRate": 0.603,
+        "stabilityScore": 86.9,
+        "speedScore": 51,
         "games": 78,
-        "wins": 46,
-        "losses": 32,
+        "wins": 47,
+        "losses": 31,
         "draws": 0,
         "playerSideWinPointRate": 0.385,
-        "cpuSideWinPointRate": 0.795,
+        "cpuSideWinPointRate": 0.821,
         "failures": 0,
         "warnings": 0,
-        "averageSteps": 97.5,
+        "averageSteps": 99.3,
         "averageTurns": 10,
         "matchups": {
           "black_vs_black": {
@@ -3226,119 +3239,13 @@ export const DECK_BATTLE_SCORE_SNAPSHOT_SUITES = [
           },
           "white_vs_white": {
             "games": 38,
-            "wins": 21,
-            "losses": 17,
+            "wins": 28,
+            "losses": 10,
             "draws": 0,
-            "winRate": 0.553,
-            "winPointRate": 0.553,
-            "averageSteps": 107.1,
-            "averageTurns": 10.4
-          },
-          "white_vs_black": {
-            "games": 40,
-            "wins": 25,
-            "losses": 15,
-            "draws": 0,
-            "winRate": 0.625,
-            "winPointRate": 0.625,
-            "averageSteps": 88.5,
-            "averageTurns": 9.5
-          }
-        }
-      },
-      {
-        "rank": 15,
-        "deckPreset": "submission-pro-no-rare8-black-758",
-        "sourceDeckId": 758,
-        "battleScore": 59,
-        "practicalScore": 98.9,
-        "winRate": 0.59,
-        "winPointRate": 0.59,
-        "stabilityScore": 93.8,
-        "speedScore": 49.9,
-        "games": 78,
-        "wins": 46,
-        "losses": 32,
-        "draws": 0,
-        "playerSideWinPointRate": 0.487,
-        "cpuSideWinPointRate": 0.692,
-        "failures": 0,
-        "warnings": 0,
-        "averageSteps": 101.6,
-        "averageTurns": 9.8,
-        "matchups": {
-          "black_vs_black": {
-            "games": 38,
-            "wins": 23,
-            "losses": 15,
-            "draws": 0,
-            "winRate": 0.605,
-            "winPointRate": 0.605,
-            "averageSteps": 95.6,
-            "averageTurns": 9.3
-          },
-          "white_vs_white": {
-            "games": 0,
-            "wins": 0,
-            "losses": 0,
-            "draws": 0,
-            "winRate": 0,
-            "winPointRate": 0,
-            "averageSteps": 0,
-            "averageTurns": 0
-          },
-          "white_vs_black": {
-            "games": 40,
-            "wins": 23,
-            "losses": 17,
-            "draws": 0,
-            "winRate": 0.575,
-            "winPointRate": 0.575,
-            "averageSteps": 107.3,
-            "averageTurns": 10.3
-          }
-        }
-      },
-      {
-        "rank": 16,
-        "deckPreset": "submission-pro-with-rare8-white-10",
-        "sourceDeckId": 10,
-        "battleScore": 59,
-        "practicalScore": 91.5,
-        "winRate": 0.59,
-        "winPointRate": 0.59,
-        "stabilityScore": 87.7,
-        "speedScore": 50.7,
-        "games": 78,
-        "wins": 46,
-        "losses": 32,
-        "draws": 0,
-        "playerSideWinPointRate": 0.385,
-        "cpuSideWinPointRate": 0.795,
-        "failures": 0,
-        "warnings": 0,
-        "averageSteps": 100,
-        "averageTurns": 10.1,
-        "matchups": {
-          "black_vs_black": {
-            "games": 0,
-            "wins": 0,
-            "losses": 0,
-            "draws": 0,
-            "winRate": 0,
-            "winPointRate": 0,
-            "averageSteps": 0,
-            "averageTurns": 0
-          },
-          "white_vs_white": {
-            "games": 38,
-            "wins": 27,
-            "losses": 11,
-            "draws": 0,
-            "winRate": 0.711,
-            "winPointRate": 0.711,
-            "averageSteps": 115.9,
-            "averageTurns": 11.4
+            "winRate": 0.737,
+            "winPointRate": 0.737,
+            "averageSteps": 114.8,
+            "averageTurns": 11.1
           },
           "white_vs_black": {
             "games": 40,
@@ -3347,31 +3254,31 @@ export const DECK_BATTLE_SCORE_SNAPSHOT_SUITES = [
             "draws": 0,
             "winRate": 0.475,
             "winPointRate": 0.475,
-            "averageSteps": 84.9,
+            "averageSteps": 84.6,
             "averageTurns": 8.9
           }
         }
       },
       {
-        "rank": 17,
+        "rank": 15,
         "deckPreset": "submission-pro-no-rare8-black-1388",
         "sourceDeckId": 1388,
-        "battleScore": 58,
+        "battleScore": 59.3,
         "practicalScore": 99.7,
-        "winRate": 0.577,
-        "winPointRate": 0.577,
-        "stabilityScore": 99.2,
-        "speedScore": 53.3,
+        "winRate": 0.59,
+        "winPointRate": 0.59,
+        "stabilityScore": 100,
+        "speedScore": 53.6,
         "games": 78,
-        "wins": 45,
-        "losses": 33,
+        "wins": 46,
+        "losses": 32,
         "draws": 0,
-        "playerSideWinPointRate": 0.564,
+        "playerSideWinPointRate": 0.59,
         "cpuSideWinPointRate": 0.59,
         "failures": 0,
         "warnings": 0,
-        "averageSteps": 94.7,
-        "averageTurns": 10.2,
+        "averageSteps": 94.1,
+        "averageTurns": 10.1,
         "matchups": {
           "black_vs_black": {
             "games": 38,
@@ -3395,13 +3302,119 @@ export const DECK_BATTLE_SCORE_SNAPSHOT_SUITES = [
           },
           "white_vs_black": {
             "games": 40,
+            "wins": 26,
+            "losses": 14,
+            "draws": 0,
+            "winRate": 0.65,
+            "winPointRate": 0.65,
+            "averageSteps": 94.7,
+            "averageTurns": 10.3
+          }
+        }
+      },
+      {
+        "rank": 16,
+        "deckPreset": "submission-pro-with-rare8-white-1346",
+        "sourceDeckId": 1346,
+        "battleScore": 59.1,
+        "practicalScore": 101,
+        "winRate": 0.59,
+        "winPointRate": 0.59,
+        "stabilityScore": 87.7,
+        "speedScore": 51.7,
+        "games": 78,
+        "wins": 46,
+        "losses": 32,
+        "draws": 0,
+        "playerSideWinPointRate": 0.385,
+        "cpuSideWinPointRate": 0.795,
+        "failures": 0,
+        "warnings": 0,
+        "averageSteps": 97.9,
+        "averageTurns": 10,
+        "matchups": {
+          "black_vs_black": {
+            "games": 0,
+            "wins": 0,
+            "losses": 0,
+            "draws": 0,
+            "winRate": 0,
+            "winPointRate": 0,
+            "averageSteps": 0,
+            "averageTurns": 0
+          },
+          "white_vs_white": {
+            "games": 38,
+            "wins": 21,
+            "losses": 17,
+            "draws": 0,
+            "winRate": 0.553,
+            "winPointRate": 0.553,
+            "averageSteps": 107.8,
+            "averageTurns": 10.4
+          },
+          "white_vs_black": {
+            "games": 40,
             "wins": 25,
             "losses": 15,
             "draws": 0,
             "winRate": 0.625,
             "winPointRate": 0.625,
-            "averageSteps": 95.9,
-            "averageTurns": 10.5
+            "averageSteps": 88.5,
+            "averageTurns": 9.5
+          }
+        }
+      },
+      {
+        "rank": 17,
+        "deckPreset": "submission-pro-no-rare8-black-758",
+        "sourceDeckId": 758,
+        "battleScore": 57.7,
+        "practicalScore": 98.9,
+        "winRate": 0.577,
+        "winPointRate": 0.577,
+        "stabilityScore": 94.6,
+        "speedScore": 50.3,
+        "games": 78,
+        "wins": 45,
+        "losses": 33,
+        "draws": 0,
+        "playerSideWinPointRate": 0.487,
+        "cpuSideWinPointRate": 0.667,
+        "failures": 0,
+        "warnings": 0,
+        "averageSteps": 100.8,
+        "averageTurns": 9.7,
+        "matchups": {
+          "black_vs_black": {
+            "games": 38,
+            "wins": 23,
+            "losses": 15,
+            "draws": 0,
+            "winRate": 0.605,
+            "winPointRate": 0.605,
+            "averageSteps": 95.6,
+            "averageTurns": 9.3
+          },
+          "white_vs_white": {
+            "games": 0,
+            "wins": 0,
+            "losses": 0,
+            "draws": 0,
+            "winRate": 0,
+            "winPointRate": 0,
+            "averageSteps": 0,
+            "averageTurns": 0
+          },
+          "white_vs_black": {
+            "games": 40,
+            "wins": 22,
+            "losses": 18,
+            "draws": 0,
+            "winRate": 0.55,
+            "winPointRate": 0.55,
+            "averageSteps": 105.7,
+            "averageTurns": 10.1
           }
         }
       },
@@ -3414,7 +3427,7 @@ export const DECK_BATTLE_SCORE_SNAPSHOT_SUITES = [
         "winRate": 0.577,
         "winPointRate": 0.577,
         "stabilityScore": 94.6,
-        "speedScore": 46.3,
+        "speedScore": 46.4,
         "games": 78,
         "wins": 45,
         "losses": 33,
@@ -3423,8 +3436,8 @@ export const DECK_BATTLE_SCORE_SNAPSHOT_SUITES = [
         "cpuSideWinPointRate": 0.667,
         "failures": 0,
         "warnings": 0,
-        "averageSteps": 109,
-        "averageTurns": 10.9,
+        "averageSteps": 108.7,
+        "averageTurns": 10.8,
         "matchups": {
           "black_vs_black": {
             "games": 0,
@@ -3444,7 +3457,7 @@ export const DECK_BATTLE_SCORE_SNAPSHOT_SUITES = [
             "winRate": 0.684,
             "winPointRate": 0.684,
             "averageSteps": 127.3,
-            "averageTurns": 11.8
+            "averageTurns": 11.7
           },
           "white_vs_black": {
             "games": 40,
@@ -3453,137 +3466,31 @@ export const DECK_BATTLE_SCORE_SNAPSHOT_SUITES = [
             "draws": 0,
             "winRate": 0.475,
             "winPointRate": 0.475,
-            "averageSteps": 91.6,
-            "averageTurns": 10.1
+            "averageSteps": 91,
+            "averageTurns": 10
           }
         }
       },
       {
         "rank": 19,
-        "deckPreset": "submission-pro-with-rare8-black-999",
-        "sourceDeckId": 999,
-        "battleScore": 57.3,
-        "practicalScore": 104.5,
-        "winRate": 0.564,
-        "winPointRate": 0.564,
-        "stabilityScore": 93.8,
-        "speedScore": 58.5,
-        "games": 78,
-        "wins": 44,
-        "losses": 34,
-        "draws": 0,
-        "playerSideWinPointRate": 0.462,
-        "cpuSideWinPointRate": 0.667,
-        "failures": 0,
-        "warnings": 0,
-        "averageSteps": 84.3,
-        "averageTurns": 9.5,
-        "matchups": {
-          "black_vs_black": {
-            "games": 38,
-            "wins": 20,
-            "losses": 18,
-            "draws": 0,
-            "winRate": 0.526,
-            "winPointRate": 0.526,
-            "averageSteps": 77.6,
-            "averageTurns": 8.7
-          },
-          "white_vs_white": {
-            "games": 0,
-            "wins": 0,
-            "losses": 0,
-            "draws": 0,
-            "winRate": 0,
-            "winPointRate": 0,
-            "averageSteps": 0,
-            "averageTurns": 0
-          },
-          "white_vs_black": {
-            "games": 40,
-            "wins": 24,
-            "losses": 16,
-            "draws": 0,
-            "winRate": 0.6,
-            "winPointRate": 0.6,
-            "averageSteps": 90.7,
-            "averageTurns": 10.2
-          }
-        }
-      },
-      {
-        "rank": 20,
-        "deckPreset": "submission-pro-no-rare8-black-252",
-        "sourceDeckId": 252,
-        "battleScore": 56,
-        "practicalScore": 100.4,
-        "winRate": 0.564,
-        "winPointRate": 0.564,
-        "stabilityScore": 90.8,
-        "speedScore": 46.2,
-        "games": 78,
-        "wins": 44,
-        "losses": 34,
-        "draws": 0,
-        "playerSideWinPointRate": 0.41,
-        "cpuSideWinPointRate": 0.718,
-        "failures": 0,
-        "warnings": 0,
-        "averageSteps": 109.1,
-        "averageTurns": 11.1,
-        "matchups": {
-          "black_vs_black": {
-            "games": 38,
-            "wins": 12,
-            "losses": 26,
-            "draws": 0,
-            "winRate": 0.316,
-            "winPointRate": 0.316,
-            "averageSteps": 103,
-            "averageTurns": 10.5
-          },
-          "white_vs_white": {
-            "games": 0,
-            "wins": 0,
-            "losses": 0,
-            "draws": 0,
-            "winRate": 0,
-            "winPointRate": 0,
-            "averageSteps": 0,
-            "averageTurns": 0
-          },
-          "white_vs_black": {
-            "games": 40,
-            "wins": 32,
-            "losses": 8,
-            "draws": 0,
-            "winRate": 0.8,
-            "winPointRate": 0.8,
-            "averageSteps": 115,
-            "averageTurns": 11.6
-          }
-        }
-      },
-      {
-        "rank": 21,
         "deckPreset": "submission-pro-with-rare8-white-438",
         "sourceDeckId": 438,
-        "battleScore": 55.5,
+        "battleScore": 56.7,
         "practicalScore": 96.2,
-        "winRate": 0.551,
-        "winPointRate": 0.551,
-        "stabilityScore": 88.5,
-        "speedScore": 53.6,
+        "winRate": 0.564,
+        "winPointRate": 0.564,
+        "stabilityScore": 89.2,
+        "speedScore": 52.8,
         "games": 78,
-        "wins": 43,
-        "losses": 35,
+        "wins": 44,
+        "losses": 34,
         "draws": 0,
-        "playerSideWinPointRate": 0.359,
+        "playerSideWinPointRate": 0.385,
         "cpuSideWinPointRate": 0.744,
         "failures": 0,
         "warnings": 0,
-        "averageSteps": 94.1,
-        "averageTurns": 9.7,
+        "averageSteps": 95.8,
+        "averageTurns": 9.9,
         "matchups": {
           "black_vs_black": {
             "games": 0,
@@ -3602,51 +3509,51 @@ export const DECK_BATTLE_SCORE_SNAPSHOT_SUITES = [
             "draws": 0,
             "winRate": 0.763,
             "winPointRate": 0.763,
-            "averageSteps": 104.2,
-            "averageTurns": 10.1
+            "averageSteps": 107.7,
+            "averageTurns": 10.5
           },
           "white_vs_black": {
             "games": 40,
-            "wins": 14,
-            "losses": 26,
+            "wins": 15,
+            "losses": 25,
             "draws": 0,
-            "winRate": 0.35,
-            "winPointRate": 0.35,
-            "averageSteps": 84.5,
+            "winRate": 0.375,
+            "winPointRate": 0.375,
+            "averageSteps": 84.4,
             "averageTurns": 9.3
           }
         }
       },
       {
-        "rank": 22,
-        "deckPreset": "submission-pro-no-rare8-black-228",
-        "sourceDeckId": 228,
-        "battleScore": 52.2,
-        "practicalScore": 99,
-        "winRate": 0.526,
-        "winPointRate": 0.526,
-        "stabilityScore": 90,
-        "speedScore": 46.1,
+        "rank": 20,
+        "deckPreset": "submission-pro-no-rare8-black-252",
+        "sourceDeckId": 252,
+        "battleScore": 56,
+        "practicalScore": 100.4,
+        "winRate": 0.564,
+        "winPointRate": 0.564,
+        "stabilityScore": 92.3,
+        "speedScore": 46.2,
         "games": 78,
-        "wins": 41,
-        "losses": 37,
+        "wins": 44,
+        "losses": 34,
         "draws": 0,
-        "playerSideWinPointRate": 0.359,
+        "playerSideWinPointRate": 0.436,
         "cpuSideWinPointRate": 0.692,
         "failures": 0,
         "warnings": 0,
-        "averageSteps": 109.5,
-        "averageTurns": 11.2,
+        "averageSteps": 109,
+        "averageTurns": 11.1,
         "matchups": {
           "black_vs_black": {
             "games": 38,
-            "wins": 12,
-            "losses": 26,
+            "wins": 13,
+            "losses": 25,
             "draws": 0,
-            "winRate": 0.316,
-            "winPointRate": 0.316,
-            "averageSteps": 103,
-            "averageTurns": 10.5
+            "winRate": 0.342,
+            "winPointRate": 0.342,
+            "averageSteps": 103.4,
+            "averageTurns": 10.6
           },
           "white_vs_white": {
             "games": 0,
@@ -3660,13 +3567,119 @@ export const DECK_BATTLE_SCORE_SNAPSHOT_SUITES = [
           },
           "white_vs_black": {
             "games": 40,
-            "wins": 29,
-            "losses": 11,
+            "wins": 31,
+            "losses": 9,
             "draws": 0,
-            "winRate": 0.725,
-            "winPointRate": 0.725,
-            "averageSteps": 115.6,
-            "averageTurns": 11.9
+            "winRate": 0.775,
+            "winPointRate": 0.775,
+            "averageSteps": 114.4,
+            "averageTurns": 11.6
+          }
+        }
+      },
+      {
+        "rank": 21,
+        "deckPreset": "submission-pro-no-rare8-black-228",
+        "sourceDeckId": 228,
+        "battleScore": 54.7,
+        "practicalScore": 99,
+        "winRate": 0.551,
+        "winPointRate": 0.551,
+        "stabilityScore": 91.5,
+        "speedScore": 45.8,
+        "games": 78,
+        "wins": 43,
+        "losses": 35,
+        "draws": 0,
+        "playerSideWinPointRate": 0.41,
+        "cpuSideWinPointRate": 0.692,
+        "failures": 0,
+        "warnings": 0,
+        "averageSteps": 109.8,
+        "averageTurns": 11.3,
+        "matchups": {
+          "black_vs_black": {
+            "games": 38,
+            "wins": 13,
+            "losses": 25,
+            "draws": 0,
+            "winRate": 0.342,
+            "winPointRate": 0.342,
+            "averageSteps": 103.4,
+            "averageTurns": 10.6
+          },
+          "white_vs_white": {
+            "games": 0,
+            "wins": 0,
+            "losses": 0,
+            "draws": 0,
+            "winRate": 0,
+            "winPointRate": 0,
+            "averageSteps": 0,
+            "averageTurns": 0
+          },
+          "white_vs_black": {
+            "games": 40,
+            "wins": 30,
+            "losses": 10,
+            "draws": 0,
+            "winRate": 0.75,
+            "winPointRate": 0.75,
+            "averageSteps": 115.9,
+            "averageTurns": 12
+          }
+        }
+      },
+      {
+        "rank": 22,
+        "deckPreset": "submission-pro-with-rare8-black-999",
+        "sourceDeckId": 999,
+        "battleScore": 53.5,
+        "practicalScore": 104.5,
+        "winRate": 0.526,
+        "winPointRate": 0.526,
+        "stabilityScore": 96.2,
+        "speedScore": 58.8,
+        "games": 78,
+        "wins": 41,
+        "losses": 37,
+        "draws": 0,
+        "playerSideWinPointRate": 0.462,
+        "cpuSideWinPointRate": 0.59,
+        "failures": 0,
+        "warnings": 0,
+        "averageSteps": 83.6,
+        "averageTurns": 9.4,
+        "matchups": {
+          "black_vs_black": {
+            "games": 38,
+            "wins": 18,
+            "losses": 20,
+            "draws": 0,
+            "winRate": 0.474,
+            "winPointRate": 0.474,
+            "averageSteps": 77.8,
+            "averageTurns": 8.8
+          },
+          "white_vs_white": {
+            "games": 0,
+            "wins": 0,
+            "losses": 0,
+            "draws": 0,
+            "winRate": 0,
+            "winPointRate": 0,
+            "averageSteps": 0,
+            "averageTurns": 0
+          },
+          "white_vs_black": {
+            "games": 40,
+            "wins": 23,
+            "losses": 17,
+            "draws": 0,
+            "winRate": 0.575,
+            "winPointRate": 0.575,
+            "averageSteps": 89.1,
+            "averageTurns": 9.9
           }
         }
       },
@@ -3679,7 +3692,7 @@ export const DECK_BATTLE_SCORE_SNAPSHOT_SUITES = [
         "winRate": 0.513,
         "winPointRate": 0.513,
         "stabilityScore": 86.2,
-        "speedScore": 51.2,
+        "speedScore": 50.9,
         "games": 78,
         "wins": 40,
         "losses": 38,
@@ -3688,7 +3701,7 @@ export const DECK_BATTLE_SCORE_SNAPSHOT_SUITES = [
         "cpuSideWinPointRate": 0.744,
         "failures": 0,
         "warnings": 0,
-        "averageSteps": 99.1,
+        "averageSteps": 99.4,
         "averageTurns": 10,
         "matchups": {
           "black_vs_black": {
@@ -3718,30 +3731,83 @@ export const DECK_BATTLE_SCORE_SNAPSHOT_SUITES = [
             "draws": 0,
             "winRate": 0.65,
             "winPointRate": 0.65,
-            "averageSteps": 96.7,
+            "averageSteps": 97.3,
             "averageTurns": 9.8
           }
         }
       },
       {
         "rank": 24,
-        "deckPreset": "submission-pro-with-rare8-white-146",
-        "sourceDeckId": 146,
-        "battleScore": 49.1,
-        "practicalScore": 90.6,
+        "deckPreset": "submission-pro-with-rare8-black-45",
+        "sourceDeckId": 45,
+        "battleScore": 49.8,
+        "practicalScore": 99.2,
         "winRate": 0.487,
         "winPointRate": 0.487,
-        "stabilityScore": 92.3,
-        "speedScore": 53.5,
+        "stabilityScore": 95.4,
+        "speedScore": 60.5,
         "games": 78,
         "wins": 38,
         "losses": 40,
         "draws": 0,
-        "playerSideWinPointRate": 0.615,
-        "cpuSideWinPointRate": 0.359,
+        "playerSideWinPointRate": 0.41,
+        "cpuSideWinPointRate": 0.564,
         "failures": 0,
         "warnings": 0,
-        "averageSteps": 94.4,
+        "averageSteps": 80.1,
+        "averageTurns": 9.6,
+        "matchups": {
+          "black_vs_black": {
+            "games": 38,
+            "wins": 14,
+            "losses": 24,
+            "draws": 0,
+            "winRate": 0.368,
+            "winPointRate": 0.368,
+            "averageSteps": 71.8,
+            "averageTurns": 8.3
+          },
+          "white_vs_white": {
+            "games": 0,
+            "wins": 0,
+            "losses": 0,
+            "draws": 0,
+            "winRate": 0,
+            "winPointRate": 0,
+            "averageSteps": 0,
+            "averageTurns": 0
+          },
+          "white_vs_black": {
+            "games": 40,
+            "wins": 24,
+            "losses": 16,
+            "draws": 0,
+            "winRate": 0.6,
+            "winPointRate": 0.6,
+            "averageSteps": 88,
+            "averageTurns": 10.9
+          }
+        }
+      },
+      {
+        "rank": 25,
+        "deckPreset": "submission-pro-with-rare8-white-146",
+        "sourceDeckId": 146,
+        "battleScore": 47.8,
+        "practicalScore": 90.6,
+        "winRate": 0.474,
+        "winPointRate": 0.474,
+        "stabilityScore": 91.5,
+        "speedScore": 53.3,
+        "games": 78,
+        "wins": 37,
+        "losses": 41,
+        "draws": 0,
+        "playerSideWinPointRate": 0.615,
+        "cpuSideWinPointRate": 0.333,
+        "failures": 0,
+        "warnings": 0,
+        "averageSteps": 94.7,
         "averageTurns": 10.5,
         "matchups": {
           "black_vs_black": {
@@ -3756,13 +3822,13 @@ export const DECK_BATTLE_SCORE_SNAPSHOT_SUITES = [
           },
           "white_vs_white": {
             "games": 38,
-            "wins": 20,
-            "losses": 18,
+            "wins": 19,
+            "losses": 19,
             "draws": 0,
-            "winRate": 0.526,
-            "winPointRate": 0.526,
-            "averageSteps": 101.2,
-            "averageTurns": 11
+            "winRate": 0.5,
+            "winPointRate": 0.5,
+            "averageSteps": 101.9,
+            "averageTurns": 11.1
           },
           "white_vs_black": {
             "games": 40,
@@ -3777,37 +3843,27 @@ export const DECK_BATTLE_SCORE_SNAPSHOT_SUITES = [
         }
       },
       {
-        "rank": 25,
-        "deckPreset": "submission-pro-with-rare8-black-45",
-        "sourceDeckId": 45,
-        "battleScore": 48.6,
-        "practicalScore": 99.2,
-        "winRate": 0.474,
-        "winPointRate": 0.474,
-        "stabilityScore": 96.2,
-        "speedScore": 61,
+        "rank": 26,
+        "deckPreset": "submission-pro-no-rare8-white-400",
+        "sourceDeckId": 400,
+        "battleScore": 44.2,
+        "practicalScore": 98.3,
+        "winRate": 0.449,
+        "winPointRate": 0.449,
+        "stabilityScore": 97.5,
+        "speedScore": 45,
         "games": 78,
-        "wins": 37,
-        "losses": 41,
+        "wins": 35,
+        "losses": 43,
         "draws": 0,
         "playerSideWinPointRate": 0.41,
-        "cpuSideWinPointRate": 0.538,
+        "cpuSideWinPointRate": 0.487,
         "failures": 0,
-        "warnings": 0,
-        "averageSteps": 79.1,
-        "averageTurns": 9.5,
+        "warnings": 1,
+        "averageSteps": 111.5,
+        "averageTurns": 11,
         "matchups": {
           "black_vs_black": {
-            "games": 38,
-            "wins": 14,
-            "losses": 24,
-            "draws": 0,
-            "winRate": 0.368,
-            "winPointRate": 0.368,
-            "averageSteps": 70.9,
-            "averageTurns": 8.2
-          },
-          "white_vs_white": {
             "games": 0,
             "wins": 0,
             "losses": 0,
@@ -3817,38 +3873,48 @@ export const DECK_BATTLE_SCORE_SNAPSHOT_SUITES = [
             "averageSteps": 0,
             "averageTurns": 0
           },
+          "white_vs_white": {
+            "games": 38,
+            "wins": 23,
+            "losses": 15,
+            "draws": 0,
+            "winRate": 0.605,
+            "winPointRate": 0.605,
+            "averageSteps": 138.4,
+            "averageTurns": 13
+          },
           "white_vs_black": {
             "games": 40,
-            "wins": 23,
-            "losses": 17,
+            "wins": 12,
+            "losses": 28,
             "draws": 0,
-            "winRate": 0.575,
-            "winPointRate": 0.575,
-            "averageSteps": 87,
-            "averageTurns": 10.8
+            "winRate": 0.3,
+            "winPointRate": 0.3,
+            "averageSteps": 86,
+            "averageTurns": 9.1
           }
         }
       },
       {
-        "rank": 26,
+        "rank": 27,
         "deckPreset": "submission-pro-no-rare8-white-345",
         "sourceDeckId": 345,
-        "battleScore": 42.8,
+        "battleScore": 41.4,
         "practicalScore": 97.5,
-        "winRate": 0.436,
-        "winPointRate": 0.436,
-        "stabilityScore": 96.9,
-        "speedScore": 42,
+        "winRate": 0.423,
+        "winPointRate": 0.423,
+        "stabilityScore": 96.2,
+        "speedScore": 41.5,
         "games": 78,
-        "wins": 34,
-        "losses": 44,
+        "wins": 33,
+        "losses": 45,
         "draws": 0,
-        "playerSideWinPointRate": 0.385,
+        "playerSideWinPointRate": 0.359,
         "cpuSideWinPointRate": 0.487,
         "failures": 0,
         "warnings": 0,
-        "averageSteps": 117.7,
-        "averageTurns": 11.4,
+        "averageSteps": 118.6,
+        "averageTurns": 11.5,
         "matchups": {
           "black_vs_black": {
             "games": 0,
@@ -3862,13 +3928,13 @@ export const DECK_BATTLE_SCORE_SNAPSHOT_SUITES = [
           },
           "white_vs_white": {
             "games": 38,
-            "wins": 22,
-            "losses": 16,
+            "wins": 21,
+            "losses": 17,
             "draws": 0,
-            "winRate": 0.579,
-            "winPointRate": 0.579,
-            "averageSteps": 128.7,
-            "averageTurns": 11.8
+            "winRate": 0.553,
+            "winPointRate": 0.553,
+            "averageSteps": 130.4,
+            "averageTurns": 12
           },
           "white_vs_black": {
             "games": 40,
@@ -3883,25 +3949,25 @@ export const DECK_BATTLE_SCORE_SNAPSHOT_SUITES = [
         }
       },
       {
-        "rank": 27,
+        "rank": 28,
         "deckPreset": "submission-pro-with-rare8-black-44",
         "sourceDeckId": 44,
-        "battleScore": 42.5,
+        "battleScore": 41.2,
         "practicalScore": 102.3,
-        "winRate": 0.423,
-        "winPointRate": 0.423,
-        "stabilityScore": 99.2,
-        "speedScore": 51.5,
+        "winRate": 0.41,
+        "winPointRate": 0.41,
+        "stabilityScore": 100,
+        "speedScore": 51.3,
         "games": 78,
-        "wins": 33,
-        "losses": 45,
+        "wins": 32,
+        "losses": 46,
         "draws": 0,
         "playerSideWinPointRate": 0.41,
-        "cpuSideWinPointRate": 0.436,
+        "cpuSideWinPointRate": 0.41,
         "failures": 0,
         "warnings": 0,
-        "averageSteps": 98.5,
-        "averageTurns": 10.4,
+        "averageSteps": 98.6,
+        "averageTurns": 10.5,
         "matchups": {
           "black_vs_black": {
             "games": 38,
@@ -3925,66 +3991,13 @@ export const DECK_BATTLE_SCORE_SNAPSHOT_SUITES = [
           },
           "white_vs_black": {
             "games": 40,
-            "wins": 21,
-            "losses": 19,
+            "wins": 20,
+            "losses": 20,
             "draws": 0,
-            "winRate": 0.525,
-            "winPointRate": 0.525,
-            "averageSteps": 103.4,
+            "winRate": 0.5,
+            "winPointRate": 0.5,
+            "averageSteps": 103.7,
             "averageTurns": 11
-          }
-        }
-      },
-      {
-        "rank": 28,
-        "deckPreset": "submission-pro-no-rare8-white-400",
-        "sourceDeckId": 400,
-        "battleScore": 41.6,
-        "practicalScore": 98.3,
-        "winRate": 0.423,
-        "winPointRate": 0.423,
-        "stabilityScore": 97.5,
-        "speedScore": 44.7,
-        "games": 78,
-        "wins": 33,
-        "losses": 45,
-        "draws": 0,
-        "playerSideWinPointRate": 0.385,
-        "cpuSideWinPointRate": 0.462,
-        "failures": 0,
-        "warnings": 1,
-        "averageSteps": 112.3,
-        "averageTurns": 11.1,
-        "matchups": {
-          "black_vs_black": {
-            "games": 0,
-            "wins": 0,
-            "losses": 0,
-            "draws": 0,
-            "winRate": 0,
-            "winPointRate": 0,
-            "averageSteps": 0,
-            "averageTurns": 0
-          },
-          "white_vs_white": {
-            "games": 38,
-            "wins": 21,
-            "losses": 17,
-            "draws": 0,
-            "winRate": 0.553,
-            "winPointRate": 0.553,
-            "averageSteps": 138.9,
-            "averageTurns": 13.1
-          },
-          "white_vs_black": {
-            "games": 40,
-            "wins": 12,
-            "losses": 28,
-            "draws": 0,
-            "winRate": 0.3,
-            "winPointRate": 0.3,
-            "averageSteps": 87,
-            "averageTurns": 9.3
           }
         }
       },
@@ -3992,21 +4005,21 @@ export const DECK_BATTLE_SCORE_SNAPSHOT_SUITES = [
         "rank": 29,
         "deckPreset": "submission-pro-no-rare8-white-1060",
         "sourceDeckId": 1060,
-        "battleScore": 40.4,
+        "battleScore": 39,
         "practicalScore": 98,
-        "winRate": 0.41,
-        "winPointRate": 0.41,
-        "stabilityScore": 98.5,
-        "speedScore": 43.4,
+        "winRate": 0.397,
+        "winPointRate": 0.397,
+        "stabilityScore": 99.2,
+        "speedScore": 42.9,
         "games": 78,
-        "wins": 32,
-        "losses": 46,
+        "wins": 31,
+        "losses": 47,
         "draws": 0,
         "playerSideWinPointRate": 0.385,
-        "cpuSideWinPointRate": 0.436,
+        "cpuSideWinPointRate": 0.41,
         "failures": 0,
         "warnings": 0,
-        "averageSteps": 114.8,
+        "averageSteps": 115.8,
         "averageTurns": 11.4,
         "matchups": {
           "black_vs_black": {
@@ -4021,13 +4034,13 @@ export const DECK_BATTLE_SCORE_SNAPSHOT_SUITES = [
           },
           "white_vs_white": {
             "games": 38,
-            "wins": 19,
-            "losses": 19,
+            "wins": 18,
+            "losses": 20,
             "draws": 0,
-            "winRate": 0.5,
-            "winPointRate": 0.5,
-            "averageSteps": 129.2,
-            "averageTurns": 12.3
+            "winRate": 0.474,
+            "winPointRate": 0.474,
+            "averageSteps": 131.3,
+            "averageTurns": 12.4
           },
           "white_vs_black": {
             "games": 40,
@@ -4043,77 +4056,24 @@ export const DECK_BATTLE_SCORE_SNAPSHOT_SUITES = [
       },
       {
         "rank": 30,
-        "deckPreset": "submission-pro-no-rare8-white-494",
-        "sourceDeckId": 494,
-        "battleScore": 36.7,
-        "practicalScore": 99.1,
+        "deckPreset": "submission-pro-no-rare8-white-836",
+        "sourceDeckId": 836,
+        "battleScore": 36.1,
+        "practicalScore": 98.4,
         "winRate": 0.372,
         "winPointRate": 0.372,
-        "stabilityScore": 86.9,
-        "speedScore": 45.1,
+        "stabilityScore": 99.2,
+        "speedScore": 39.5,
         "games": 78,
         "wins": 29,
         "losses": 49,
         "draws": 0,
-        "playerSideWinPointRate": 0.154,
-        "cpuSideWinPointRate": 0.59,
-        "failures": 0,
-        "warnings": 0,
-        "averageSteps": 111.4,
-        "averageTurns": 11.2,
-        "matchups": {
-          "black_vs_black": {
-            "games": 0,
-            "wins": 0,
-            "losses": 0,
-            "draws": 0,
-            "winRate": 0,
-            "winPointRate": 0,
-            "averageSteps": 0,
-            "averageTurns": 0
-          },
-          "white_vs_white": {
-            "games": 38,
-            "wins": 12,
-            "losses": 26,
-            "draws": 0,
-            "winRate": 0.316,
-            "winPointRate": 0.316,
-            "averageSteps": 119.7,
-            "averageTurns": 11.7
-          },
-          "white_vs_black": {
-            "games": 40,
-            "wins": 17,
-            "losses": 23,
-            "draws": 0,
-            "winRate": 0.425,
-            "winPointRate": 0.425,
-            "averageSteps": 103.5,
-            "averageTurns": 10.7
-          }
-        }
-      },
-      {
-        "rank": 31,
-        "deckPreset": "submission-pro-no-rare8-white-836",
-        "sourceDeckId": 836,
-        "battleScore": 34.8,
-        "practicalScore": 98.4,
-        "winRate": 0.359,
-        "winPointRate": 0.359,
-        "stabilityScore": 100,
-        "speedScore": 39.1,
-        "games": 78,
-        "wins": 28,
-        "losses": 50,
-        "draws": 0,
-        "playerSideWinPointRate": 0.359,
+        "playerSideWinPointRate": 0.385,
         "cpuSideWinPointRate": 0.359,
         "failures": 0,
         "warnings": 0,
-        "averageSteps": 123.5,
-        "averageTurns": 12.3,
+        "averageSteps": 122.7,
+        "averageTurns": 12.2,
         "matchups": {
           "black_vs_black": {
             "games": 0,
@@ -4127,13 +4087,13 @@ export const DECK_BATTLE_SCORE_SNAPSHOT_SUITES = [
           },
           "white_vs_white": {
             "games": 38,
-            "wins": 17,
-            "losses": 21,
+            "wins": 18,
+            "losses": 20,
             "draws": 0,
-            "winRate": 0.447,
-            "winPointRate": 0.447,
-            "averageSteps": 141.2,
-            "averageTurns": 13.5
+            "winRate": 0.474,
+            "winPointRate": 0.474,
+            "averageSteps": 138.6,
+            "averageTurns": 13.3
           },
           "white_vs_black": {
             "games": 40,
@@ -4142,30 +4102,30 @@ export const DECK_BATTLE_SCORE_SNAPSHOT_SUITES = [
             "draws": 0,
             "winRate": 0.275,
             "winPointRate": 0.275,
-            "averageSteps": 106.7,
-            "averageTurns": 11.2
+            "averageSteps": 107.7,
+            "averageTurns": 11.3
           }
         }
       },
       {
-        "rank": 32,
+        "rank": 31,
         "deckPreset": "submission-pro-with-rare8-white-1339",
         "sourceDeckId": 1339,
-        "battleScore": 34.5,
+        "battleScore": 35.8,
         "practicalScore": 103.2,
-        "winRate": 0.346,
-        "winPointRate": 0.346,
-        "stabilityScore": 90,
+        "winRate": 0.359,
+        "winPointRate": 0.359,
+        "stabilityScore": 89.2,
         "speedScore": 49,
         "games": 78,
-        "wins": 27,
-        "losses": 51,
+        "wins": 28,
+        "losses": 50,
         "draws": 0,
         "playerSideWinPointRate": 0.179,
-        "cpuSideWinPointRate": 0.513,
+        "cpuSideWinPointRate": 0.538,
         "failures": 0,
         "warnings": 0,
-        "averageSteps": 103.5,
+        "averageSteps": 103.4,
         "averageTurns": 10.3,
         "matchups": {
           "black_vs_black": {
@@ -4180,13 +4140,13 @@ export const DECK_BATTLE_SCORE_SNAPSHOT_SUITES = [
           },
           "white_vs_white": {
             "games": 38,
-            "wins": 17,
-            "losses": 21,
+            "wins": 18,
+            "losses": 20,
             "draws": 0,
-            "winRate": 0.447,
-            "winPointRate": 0.447,
-            "averageSteps": 122.3,
-            "averageTurns": 11.6
+            "winRate": 0.474,
+            "winPointRate": 0.474,
+            "averageSteps": 122.1,
+            "averageTurns": 11.5
           },
           "white_vs_black": {
             "games": 40,
@@ -4201,25 +4161,25 @@ export const DECK_BATTLE_SCORE_SNAPSHOT_SUITES = [
         }
       },
       {
-        "rank": 33,
+        "rank": 32,
         "deckPreset": "submission-pro-no-rare8-white-837",
         "sourceDeckId": 837,
-        "battleScore": 34.1,
+        "battleScore": 35.4,
         "practicalScore": 97,
-        "winRate": 0.346,
-        "winPointRate": 0.346,
-        "stabilityScore": 97.7,
-        "speedScore": 44.7,
+        "winRate": 0.359,
+        "winPointRate": 0.359,
+        "stabilityScore": 98.5,
+        "speedScore": 45.2,
         "games": 78,
-        "wins": 27,
-        "losses": 51,
+        "wins": 28,
+        "losses": 50,
         "draws": 0,
-        "playerSideWinPointRate": 0.308,
+        "playerSideWinPointRate": 0.333,
         "cpuSideWinPointRate": 0.385,
         "failures": 0,
         "warnings": 0,
-        "averageSteps": 112.2,
-        "averageTurns": 11.5,
+        "averageSteps": 111.2,
+        "averageTurns": 11.4,
         "matchups": {
           "black_vs_black": {
             "games": 0,
@@ -4238,76 +4198,76 @@ export const DECK_BATTLE_SCORE_SNAPSHOT_SUITES = [
             "draws": 0,
             "winRate": 0.474,
             "winPointRate": 0.474,
-            "averageSteps": 117.2,
+            "averageSteps": 116.3,
+            "averageTurns": 11.5
+          },
+          "white_vs_black": {
+            "games": 40,
+            "wins": 10,
+            "losses": 30,
+            "draws": 0,
+            "winRate": 0.25,
+            "winPointRate": 0.25,
+            "averageSteps": 106.3,
+            "averageTurns": 11.3
+          }
+        }
+      },
+      {
+        "rank": 33,
+        "deckPreset": "submission-pro-no-rare8-white-494",
+        "sourceDeckId": 494,
+        "battleScore": 35.3,
+        "practicalScore": 99.1,
+        "winRate": 0.359,
+        "winPointRate": 0.359,
+        "stabilityScore": 89.2,
+        "speedScore": 44.3,
+        "games": 78,
+        "wins": 28,
+        "losses": 50,
+        "draws": 0,
+        "playerSideWinPointRate": 0.179,
+        "cpuSideWinPointRate": 0.538,
+        "failures": 0,
+        "warnings": 0,
+        "averageSteps": 113,
+        "averageTurns": 11.4,
+        "matchups": {
+          "black_vs_black": {
+            "games": 0,
+            "wins": 0,
+            "losses": 0,
+            "draws": 0,
+            "winRate": 0,
+            "winPointRate": 0,
+            "averageSteps": 0,
+            "averageTurns": 0
+          },
+          "white_vs_white": {
+            "games": 38,
+            "wins": 13,
+            "losses": 25,
+            "draws": 0,
+            "winRate": 0.342,
+            "winPointRate": 0.342,
+            "averageSteps": 119.9,
             "averageTurns": 11.7
           },
           "white_vs_black": {
             "games": 40,
-            "wins": 9,
-            "losses": 31,
+            "wins": 15,
+            "losses": 25,
             "draws": 0,
-            "winRate": 0.225,
-            "winPointRate": 0.225,
-            "averageSteps": 107.5,
-            "averageTurns": 11.4
+            "winRate": 0.375,
+            "winPointRate": 0.375,
+            "averageSteps": 106.5,
+            "averageTurns": 11.1
           }
         }
       },
       {
         "rank": 34,
-        "deckPreset": "submission-pro-no-rare8-white-479",
-        "sourceDeckId": 479,
-        "battleScore": 31.4,
-        "practicalScore": 98.3,
-        "winRate": 0.321,
-        "winPointRate": 0.321,
-        "stabilityScore": 94.6,
-        "speedScore": 43.2,
-        "games": 78,
-        "wins": 25,
-        "losses": 53,
-        "draws": 0,
-        "playerSideWinPointRate": 0.231,
-        "cpuSideWinPointRate": 0.41,
-        "failures": 0,
-        "warnings": 0,
-        "averageSteps": 115.2,
-        "averageTurns": 11.6,
-        "matchups": {
-          "black_vs_black": {
-            "games": 0,
-            "wins": 0,
-            "losses": 0,
-            "draws": 0,
-            "winRate": 0,
-            "winPointRate": 0,
-            "averageSteps": 0,
-            "averageTurns": 0
-          },
-          "white_vs_white": {
-            "games": 38,
-            "wins": 18,
-            "losses": 20,
-            "draws": 0,
-            "winRate": 0.474,
-            "winPointRate": 0.474,
-            "averageSteps": 124.2,
-            "averageTurns": 12.1
-          },
-          "white_vs_black": {
-            "games": 40,
-            "wins": 7,
-            "losses": 33,
-            "draws": 0,
-            "winRate": 0.175,
-            "winPointRate": 0.175,
-            "averageSteps": 106.7,
-            "averageTurns": 11.2
-          }
-        }
-      },
-      {
-        "rank": 35,
         "deckPreset": "submission-pro-with-rare8-black-1390",
         "sourceDeckId": 1390,
         "battleScore": 30.9,
@@ -4315,7 +4275,7 @@ export const DECK_BATTLE_SCORE_SNAPSHOT_SUITES = [
         "winRate": 0.308,
         "winPointRate": 0.308,
         "stabilityScore": 90.8,
-        "speedScore": 51.4,
+        "speedScore": 51.5,
         "games": 78,
         "wins": 24,
         "losses": 54,
@@ -4324,8 +4284,8 @@ export const DECK_BATTLE_SCORE_SNAPSHOT_SUITES = [
         "cpuSideWinPointRate": 0.154,
         "failures": 0,
         "warnings": 0,
-        "averageSteps": 98.6,
-        "averageTurns": 11.8,
+        "averageSteps": 98.4,
+        "averageTurns": 11.7,
         "matchups": {
           "black_vs_black": {
             "games": 38,
@@ -4354,8 +4314,61 @@ export const DECK_BATTLE_SCORE_SNAPSHOT_SUITES = [
             "draws": 0,
             "winRate": 0.425,
             "winPointRate": 0.425,
-            "averageSteps": 117.7,
-            "averageTurns": 14.4
+            "averageSteps": 117.2,
+            "averageTurns": 14.2
+          }
+        }
+      },
+      {
+        "rank": 35,
+        "deckPreset": "submission-pro-no-rare8-white-479",
+        "sourceDeckId": 479,
+        "battleScore": 30.1,
+        "practicalScore": 98.3,
+        "winRate": 0.308,
+        "winPointRate": 0.308,
+        "stabilityScore": 95.4,
+        "speedScore": 43.2,
+        "games": 78,
+        "wins": 24,
+        "losses": 54,
+        "draws": 0,
+        "playerSideWinPointRate": 0.231,
+        "cpuSideWinPointRate": 0.385,
+        "failures": 0,
+        "warnings": 0,
+        "averageSteps": 115.2,
+        "averageTurns": 11.6,
+        "matchups": {
+          "black_vs_black": {
+            "games": 0,
+            "wins": 0,
+            "losses": 0,
+            "draws": 0,
+            "winRate": 0,
+            "winPointRate": 0,
+            "averageSteps": 0,
+            "averageTurns": 0
+          },
+          "white_vs_white": {
+            "games": 38,
+            "wins": 17,
+            "losses": 21,
+            "draws": 0,
+            "winRate": 0.447,
+            "winPointRate": 0.447,
+            "averageSteps": 124.2,
+            "averageTurns": 12.2
+          },
+          "white_vs_black": {
+            "games": 40,
+            "wins": 7,
+            "losses": 33,
+            "draws": 0,
+            "winRate": 0.175,
+            "winPointRate": 0.175,
+            "averageSteps": 106.7,
+            "averageTurns": 11.2
           }
         }
       },
@@ -4368,7 +4381,7 @@ export const DECK_BATTLE_SCORE_SNAPSHOT_SUITES = [
         "winRate": 0.308,
         "winPointRate": 0.308,
         "stabilityScore": 100,
-        "speedScore": 41.4,
+        "speedScore": 41,
         "games": 78,
         "wins": 24,
         "losses": 54,
@@ -4377,7 +4390,7 @@ export const DECK_BATTLE_SCORE_SNAPSHOT_SUITES = [
         "cpuSideWinPointRate": 0.308,
         "failures": 0,
         "warnings": 0,
-        "averageSteps": 118.9,
+        "averageSteps": 119.7,
         "averageTurns": 11.8,
         "matchups": {
           "black_vs_black": {
@@ -4397,8 +4410,8 @@ export const DECK_BATTLE_SCORE_SNAPSHOT_SUITES = [
             "draws": 0,
             "winRate": 0.447,
             "winPointRate": 0.447,
-            "averageSteps": 129.2,
-            "averageTurns": 12.4
+            "averageSteps": 130.7,
+            "averageTurns": 12.5
           },
           "white_vs_black": {
             "games": 40,
@@ -4414,6 +4427,59 @@ export const DECK_BATTLE_SCORE_SNAPSHOT_SUITES = [
       },
       {
         "rank": 37,
+        "deckPreset": "submission-pro-with-rare8-white-1405",
+        "sourceDeckId": 1405,
+        "battleScore": 29.7,
+        "practicalScore": 93.1,
+        "winRate": 0.295,
+        "winPointRate": 0.295,
+        "stabilityScore": 96.2,
+        "speedScore": 52.1,
+        "games": 78,
+        "wins": 23,
+        "losses": 55,
+        "draws": 0,
+        "playerSideWinPointRate": 0.359,
+        "cpuSideWinPointRate": 0.231,
+        "failures": 0,
+        "warnings": 0,
+        "averageSteps": 97.2,
+        "averageTurns": 10.2,
+        "matchups": {
+          "black_vs_black": {
+            "games": 0,
+            "wins": 0,
+            "losses": 0,
+            "draws": 0,
+            "winRate": 0,
+            "winPointRate": 0,
+            "averageSteps": 0,
+            "averageTurns": 0
+          },
+          "white_vs_white": {
+            "games": 38,
+            "wins": 14,
+            "losses": 24,
+            "draws": 0,
+            "winRate": 0.368,
+            "winPointRate": 0.368,
+            "averageSteps": 111.2,
+            "averageTurns": 11.3
+          },
+          "white_vs_black": {
+            "games": 40,
+            "wins": 9,
+            "losses": 31,
+            "draws": 0,
+            "winRate": 0.225,
+            "winPointRate": 0.225,
+            "averageSteps": 83.8,
+            "averageTurns": 9.3
+          }
+        }
+      },
+      {
+        "rank": 38,
         "deckPreset": "submission-pro-no-rare8-white-1377",
         "sourceDeckId": 1377,
         "battleScore": 26.7,
@@ -4430,7 +4496,7 @@ export const DECK_BATTLE_SCORE_SNAPSHOT_SUITES = [
         "cpuSideWinPointRate": 0.231,
         "failures": 0,
         "warnings": 0,
-        "averageSteps": 132.3,
+        "averageSteps": 132.2,
         "averageTurns": 13.2,
         "matchups": {
           "black_vs_black": {
@@ -4450,7 +4516,7 @@ export const DECK_BATTLE_SCORE_SNAPSHOT_SUITES = [
             "draws": 0,
             "winRate": 0.368,
             "winPointRate": 0.368,
-            "averageSteps": 152.2,
+            "averageSteps": 151.8,
             "averageTurns": 14.9
           },
           "white_vs_black": {
@@ -4466,59 +4532,6 @@ export const DECK_BATTLE_SCORE_SNAPSHOT_SUITES = [
         }
       },
       {
-        "rank": 38,
-        "deckPreset": "submission-pro-with-rare8-white-1405",
-        "sourceDeckId": 1405,
-        "battleScore": 25.6,
-        "practicalScore": 93.1,
-        "winRate": 0.256,
-        "winPointRate": 0.256,
-        "stabilityScore": 96.9,
-        "speedScore": 49.6,
-        "games": 78,
-        "wins": 20,
-        "losses": 58,
-        "draws": 0,
-        "playerSideWinPointRate": 0.205,
-        "cpuSideWinPointRate": 0.308,
-        "failures": 0,
-        "warnings": 0,
-        "averageSteps": 102.3,
-        "averageTurns": 11.1,
-        "matchups": {
-          "black_vs_black": {
-            "games": 0,
-            "wins": 0,
-            "losses": 0,
-            "draws": 0,
-            "winRate": 0,
-            "winPointRate": 0,
-            "averageSteps": 0,
-            "averageTurns": 0
-          },
-          "white_vs_white": {
-            "games": 38,
-            "wins": 10,
-            "losses": 28,
-            "draws": 0,
-            "winRate": 0.263,
-            "winPointRate": 0.263,
-            "averageSteps": 116.9,
-            "averageTurns": 12.3
-          },
-          "white_vs_black": {
-            "games": 40,
-            "wins": 10,
-            "losses": 30,
-            "draws": 0,
-            "winRate": 0.25,
-            "winPointRate": 0.25,
-            "averageSteps": 88.4,
-            "averageTurns": 9.9
-          }
-        }
-      },
-      {
         "rank": 39,
         "deckPreset": "submission-pro-with-rare8-white-802",
         "sourceDeckId": 802,
@@ -4527,7 +4540,7 @@ export const DECK_BATTLE_SCORE_SNAPSHOT_SUITES = [
         "winRate": 0.141,
         "winPointRate": 0.141,
         "stabilityScore": 96.2,
-        "speedScore": 45.3,
+        "speedScore": 45.5,
         "games": 78,
         "wins": 11,
         "losses": 67,
@@ -4536,7 +4549,7 @@ export const DECK_BATTLE_SCORE_SNAPSHOT_SUITES = [
         "cpuSideWinPointRate": 0.205,
         "failures": 0,
         "warnings": 0,
-        "averageSteps": 111.1,
+        "averageSteps": 110.5,
         "averageTurns": 11.3,
         "matchups": {
           "black_vs_black": {
@@ -4556,8 +4569,8 @@ export const DECK_BATTLE_SCORE_SNAPSHOT_SUITES = [
             "draws": 0,
             "winRate": 0.211,
             "winPointRate": 0.211,
-            "averageSteps": 118.9,
-            "averageTurns": 11.8
+            "averageSteps": 117.8,
+            "averageTurns": 11.7
           },
           "white_vs_black": {
             "games": 40,
@@ -4575,22 +4588,22 @@ export const DECK_BATTLE_SCORE_SNAPSHOT_SUITES = [
         "rank": 40,
         "deckPreset": "submission-pro-no-rare8-white-882",
         "sourceDeckId": 882,
-        "battleScore": 8.8,
+        "battleScore": 6.2,
         "practicalScore": 97,
-        "winRate": 0.103,
-        "winPointRate": 0.103,
+        "winRate": 0.077,
+        "winPointRate": 0.077,
         "stabilityScore": 96.9,
-        "speedScore": 36,
+        "speedScore": 35.5,
         "games": 78,
-        "wins": 8,
-        "losses": 70,
+        "wins": 6,
+        "losses": 72,
         "draws": 0,
-        "playerSideWinPointRate": 0.051,
-        "cpuSideWinPointRate": 0.154,
+        "playerSideWinPointRate": 0.026,
+        "cpuSideWinPointRate": 0.128,
         "failures": 0,
         "warnings": 0,
-        "averageSteps": 129.9,
-        "averageTurns": 13.5,
+        "averageSteps": 130.8,
+        "averageTurns": 13.7,
         "matchups": {
           "black_vs_black": {
             "games": 0,
@@ -4604,13 +4617,13 @@ export const DECK_BATTLE_SCORE_SNAPSHOT_SUITES = [
           },
           "white_vs_white": {
             "games": 38,
-            "wins": 6,
-            "losses": 32,
+            "wins": 4,
+            "losses": 34,
             "draws": 0,
-            "winRate": 0.158,
-            "winPointRate": 0.158,
-            "averageSteps": 142.7,
-            "averageTurns": 14.4
+            "winRate": 0.105,
+            "winPointRate": 0.105,
+            "averageSteps": 144.5,
+            "averageTurns": 14.8
           },
           "white_vs_black": {
             "games": 40,
@@ -4642,13 +4655,13 @@ export const DECK_BATTLE_SCORE_SNAPSHOT_SUITES = [
             "winRate": 0.718,
             "winPointRate": 0.718,
             "stabilityScore": 92.3,
-            "speedScore": 52.9,
+            "speedScore": 53,
             "practicalScore": 101.8,
             "games": 78,
             "wins": 56,
             "losses": 22,
             "draws": 0,
-            "averageSteps": 95.6,
+            "averageSteps": 95.2,
             "averageTurns": 9.9,
             "seatDelta": 0.256,
             "matchups": {
@@ -4659,7 +4672,7 @@ export const DECK_BATTLE_SCORE_SNAPSHOT_SUITES = [
                 "draws": 0,
                 "winRate": 0.711,
                 "winPointRate": 0.711,
-                "averageSteps": 91.6,
+                "averageSteps": 91.3,
                 "averageTurns": 9.6
               },
               "white_vs_white": {
@@ -4679,7 +4692,7 @@ export const DECK_BATTLE_SCORE_SNAPSHOT_SUITES = [
                 "draws": 0,
                 "winRate": 0.725,
                 "winPointRate": 0.725,
-                "averageSteps": 99.4,
+                "averageSteps": 98.9,
                 "averageTurns": 10.2
               }
             },
@@ -4696,14 +4709,14 @@ export const DECK_BATTLE_SCORE_SNAPSHOT_SUITES = [
             "winRate": 0.692,
             "winPointRate": 0.692,
             "stabilityScore": 93.8,
-            "speedScore": 61.2,
+            "speedScore": 61.1,
             "practicalScore": 103.3,
             "games": 78,
             "wins": 54,
             "losses": 24,
             "draws": 0,
-            "averageSteps": 78.7,
-            "averageTurns": 8.2,
+            "averageSteps": 78.8,
+            "averageTurns": 8.3,
             "seatDelta": 0.205,
             "matchups": {
               "black_vs_black": {
@@ -4733,8 +4746,8 @@ export const DECK_BATTLE_SCORE_SNAPSHOT_SUITES = [
                 "draws": 0,
                 "winRate": 0.8,
                 "winPointRate": 0.8,
-                "averageSteps": 80,
-                "averageTurns": 8.3
+                "averageSteps": 80.2,
+                "averageTurns": 8.4
               }
             },
             "reason": "総合実戦スコアが高い"
@@ -4746,18 +4759,18 @@ export const DECK_BATTLE_SCORE_SNAPSHOT_SUITES = [
             "group": "pro-no-rare8-black",
             "masterId": "black",
             "rank": 3,
-            "battleScore": 69.7,
+            "battleScore": 69.8,
             "winRate": 0.692,
             "winPointRate": 0.692,
             "stabilityScore": 95.4,
-            "speedScore": 54.9,
+            "speedScore": 55.3,
             "practicalScore": 100.3,
             "games": 78,
             "wins": 54,
             "losses": 24,
             "draws": 0,
-            "averageSteps": 91.6,
-            "averageTurns": 9.7,
+            "averageSteps": 90.6,
+            "averageTurns": 9.6,
             "seatDelta": 0.154,
             "matchups": {
               "black_vs_black": {
@@ -4787,34 +4800,44 @@ export const DECK_BATTLE_SCORE_SNAPSHOT_SUITES = [
                 "draws": 0,
                 "winRate": 0.75,
                 "winPointRate": 0.75,
-                "averageSteps": 96.6,
-                "averageTurns": 10.3
+                "averageSteps": 94.7,
+                "averageTurns": 10
               }
             },
             "reason": "総合実戦スコアが高い"
           },
           {
-            "deckPreset": "submission-pro-with-rare8-white-1236",
-            "sourceDeckId": 1236,
-            "name": "投稿Pro白8あり #1236 CPU遊びデッキ",
-            "group": "pro-with-rare8-white",
-            "masterId": "white",
+            "deckPreset": "submission-pro-no-rare8-black-542",
+            "sourceDeckId": 542,
+            "name": "投稿Pro黒8なし #542 黒 敵行動封じ",
+            "group": "pro-no-rare8-black",
+            "masterId": "black",
             "rank": 4,
-            "battleScore": 68.2,
+            "battleScore": 68.5,
             "winRate": 0.679,
             "winPointRate": 0.679,
-            "stabilityScore": 92.9,
-            "speedScore": 53.4,
-            "practicalScore": 97.4,
+            "stabilityScore": 90,
+            "speedScore": 55.3,
+            "practicalScore": 98.7,
             "games": 78,
             "wins": 53,
             "losses": 25,
             "draws": 0,
-            "averageSteps": 94.5,
-            "averageTurns": 9.8,
-            "seatDelta": 0.231,
+            "averageSteps": 90.7,
+            "averageTurns": 9.5,
+            "seatDelta": 0.333,
             "matchups": {
               "black_vs_black": {
+                "games": 38,
+                "wins": 21,
+                "losses": 17,
+                "draws": 0,
+                "winRate": 0.553,
+                "winPointRate": 0.553,
+                "averageSteps": 89.7,
+                "averageTurns": 9.3
+              },
+              "white_vs_white": {
                 "games": 0,
                 "wins": 0,
                 "losses": 0,
@@ -4824,25 +4847,15 @@ export const DECK_BATTLE_SCORE_SNAPSHOT_SUITES = [
                 "averageSteps": 0,
                 "averageTurns": 0
               },
-              "white_vs_white": {
-                "games": 38,
-                "wins": 28,
-                "losses": 10,
-                "draws": 0,
-                "winRate": 0.737,
-                "winPointRate": 0.737,
-                "averageSteps": 102.3,
-                "averageTurns": 10.2
-              },
               "white_vs_black": {
                 "games": 40,
-                "wins": 25,
-                "losses": 15,
+                "wins": 32,
+                "losses": 8,
                 "draws": 0,
-                "winRate": 0.625,
-                "winPointRate": 0.625,
-                "averageSteps": 87.2,
-                "averageTurns": 9.4
+                "winRate": 0.8,
+                "winPointRate": 0.8,
+                "averageSteps": 91.7,
+                "averageTurns": 9.7
               }
             },
             "reason": "総合実戦スコアが高い"
@@ -4858,13 +4871,13 @@ export const DECK_BATTLE_SCORE_SNAPSHOT_SUITES = [
             "winRate": 0.667,
             "winPointRate": 0.667,
             "stabilityScore": 92.3,
-            "speedScore": 56.7,
+            "speedScore": 56.5,
             "practicalScore": 99.4,
             "games": 78,
             "wins": 52,
             "losses": 26,
             "draws": 0,
-            "averageSteps": 87.8,
+            "averageSteps": 88.2,
             "averageTurns": 9.3,
             "seatDelta": 0.257,
             "matchups": {
@@ -4895,8 +4908,8 @@ export const DECK_BATTLE_SCORE_SNAPSHOT_SUITES = [
                 "draws": 0,
                 "winRate": 0.725,
                 "winPointRate": 0.725,
-                "averageSteps": 90.6,
-                "averageTurns": 9.6
+                "averageSteps": 91.3,
+                "averageTurns": 9.7
               }
             },
             "reason": "総合実戦スコアが高い"
@@ -4912,14 +4925,14 @@ export const DECK_BATTLE_SCORE_SNAPSHOT_SUITES = [
             "winRate": 0.654,
             "winPointRate": 0.654,
             "stabilityScore": 97.7,
-            "speedScore": 59.3,
+            "speedScore": 59,
             "practicalScore": 99.1,
             "games": 78,
             "wins": 51,
             "losses": 27,
             "draws": 0,
-            "averageSteps": 82.6,
-            "averageTurns": 9.1,
+            "averageSteps": 83.1,
+            "averageTurns": 9.2,
             "seatDelta": 0.077,
             "matchups": {
               "black_vs_black": {
@@ -4929,8 +4942,8 @@ export const DECK_BATTLE_SCORE_SNAPSHOT_SUITES = [
                 "draws": 0,
                 "winRate": 0.711,
                 "winPointRate": 0.711,
-                "averageSteps": 74.9,
-                "averageTurns": 8.4
+                "averageSteps": 75.8,
+                "averageTurns": 8.5
               },
               "white_vs_white": {
                 "games": 0,
@@ -4949,7 +4962,7 @@ export const DECK_BATTLE_SCORE_SNAPSHOT_SUITES = [
                 "draws": 0,
                 "winRate": 0.6,
                 "winPointRate": 0.6,
-                "averageSteps": 89.8,
+                "averageSteps": 90,
                 "averageTurns": 9.8
               }
             },
@@ -4966,13 +4979,13 @@ export const DECK_BATTLE_SCORE_SNAPSHOT_SUITES = [
             "winRate": 0.654,
             "winPointRate": 0.654,
             "stabilityScore": 91.5,
-            "speedScore": 57.8,
+            "speedScore": 57.7,
             "practicalScore": 98.7,
             "games": 78,
             "wins": 51,
             "losses": 27,
             "draws": 0,
-            "averageSteps": 85.5,
+            "averageSteps": 85.7,
             "averageTurns": 9.2,
             "seatDelta": 0.282,
             "matchups": {
@@ -5003,8 +5016,8 @@ export const DECK_BATTLE_SCORE_SNAPSHOT_SUITES = [
                 "draws": 0,
                 "winRate": 0.725,
                 "winPointRate": 0.725,
-                "averageSteps": 78.7,
-                "averageTurns": 8.4
+                "averageSteps": 79,
+                "averageTurns": 8.5
               }
             },
             "reason": "総合実戦スコアが高い"
@@ -5020,13 +5033,13 @@ export const DECK_BATTLE_SCORE_SNAPSHOT_SUITES = [
             "winRate": 0.654,
             "winPointRate": 0.654,
             "stabilityScore": 91.5,
-            "speedScore": 57.8,
+            "speedScore": 57.7,
             "practicalScore": 98.3,
             "games": 78,
             "wins": 51,
             "losses": 27,
             "draws": 0,
-            "averageSteps": 85.5,
+            "averageSteps": 85.7,
             "averageTurns": 9.2,
             "seatDelta": 0.282,
             "matchups": {
@@ -5057,8 +5070,8 @@ export const DECK_BATTLE_SCORE_SNAPSHOT_SUITES = [
                 "draws": 0,
                 "winRate": 0.725,
                 "winPointRate": 0.725,
-                "averageSteps": 78.7,
-                "averageTurns": 8.4
+                "averageSteps": 79,
+                "averageTurns": 8.5
               }
             },
             "reason": "総合実戦スコアが高い"
@@ -5081,14 +5094,14 @@ export const DECK_BATTLE_SCORE_SNAPSHOT_SUITES = [
             "winRate": 0.692,
             "winPointRate": 0.692,
             "stabilityScore": 93.8,
-            "speedScore": 61.2,
+            "speedScore": 61.1,
             "practicalScore": 103.3,
             "games": 78,
             "wins": 54,
             "losses": 24,
             "draws": 0,
-            "averageSteps": 78.7,
-            "averageTurns": 8.2,
+            "averageSteps": 78.8,
+            "averageTurns": 8.3,
             "seatDelta": 0.205,
             "matchups": {
               "black_vs_black": {
@@ -5118,8 +5131,8 @@ export const DECK_BATTLE_SCORE_SNAPSHOT_SUITES = [
                 "draws": 0,
                 "winRate": 0.8,
                 "winPointRate": 0.8,
-                "averageSteps": 80,
-                "averageTurns": 8.3
+                "averageSteps": 80.2,
+                "averageTurns": 8.4
               }
             },
             "reason": "勝率を保ちながら決着が速い"
@@ -5135,14 +5148,14 @@ export const DECK_BATTLE_SCORE_SNAPSHOT_SUITES = [
             "winRate": 0.654,
             "winPointRate": 0.654,
             "stabilityScore": 97.7,
-            "speedScore": 59.3,
+            "speedScore": 59,
             "practicalScore": 99.1,
             "games": 78,
             "wins": 51,
             "losses": 27,
             "draws": 0,
-            "averageSteps": 82.6,
-            "averageTurns": 9.1,
+            "averageSteps": 83.1,
+            "averageTurns": 9.2,
             "seatDelta": 0.077,
             "matchups": {
               "black_vs_black": {
@@ -5152,8 +5165,8 @@ export const DECK_BATTLE_SCORE_SNAPSHOT_SUITES = [
                 "draws": 0,
                 "winRate": 0.711,
                 "winPointRate": 0.711,
-                "averageSteps": 74.9,
-                "averageTurns": 8.4
+                "averageSteps": 75.8,
+                "averageTurns": 8.5
               },
               "white_vs_white": {
                 "games": 0,
@@ -5172,7 +5185,7 @@ export const DECK_BATTLE_SCORE_SNAPSHOT_SUITES = [
                 "draws": 0,
                 "winRate": 0.6,
                 "winPointRate": 0.6,
-                "averageSteps": 89.8,
+                "averageSteps": 90,
                 "averageTurns": 9.8
               }
             },
@@ -5184,30 +5197,30 @@ export const DECK_BATTLE_SCORE_SNAPSHOT_SUITES = [
             "name": "投稿Pro黒8あり #999 はははっはははははははｈっはははははははははははははっははははははははははははははははははｈっはははははははははｈ",
             "group": "pro-with-rare8-black",
             "masterId": "black",
-            "rank": 19,
-            "battleScore": 57.3,
-            "winRate": 0.564,
-            "winPointRate": 0.564,
-            "stabilityScore": 93.8,
-            "speedScore": 58.5,
+            "rank": 22,
+            "battleScore": 53.5,
+            "winRate": 0.526,
+            "winPointRate": 0.526,
+            "stabilityScore": 96.2,
+            "speedScore": 58.8,
             "practicalScore": 104.5,
             "games": 78,
-            "wins": 44,
-            "losses": 34,
+            "wins": 41,
+            "losses": 37,
             "draws": 0,
-            "averageSteps": 84.3,
-            "averageTurns": 9.5,
-            "seatDelta": 0.205,
+            "averageSteps": 83.6,
+            "averageTurns": 9.4,
+            "seatDelta": 0.128,
             "matchups": {
               "black_vs_black": {
                 "games": 38,
-                "wins": 20,
-                "losses": 18,
+                "wins": 18,
+                "losses": 20,
                 "draws": 0,
-                "winRate": 0.526,
-                "winPointRate": 0.526,
-                "averageSteps": 77.6,
-                "averageTurns": 8.7
+                "winRate": 0.474,
+                "winPointRate": 0.474,
+                "averageSteps": 77.8,
+                "averageTurns": 8.8
               },
               "white_vs_white": {
                 "games": 0,
@@ -5221,13 +5234,13 @@ export const DECK_BATTLE_SCORE_SNAPSHOT_SUITES = [
               },
               "white_vs_black": {
                 "games": 40,
-                "wins": 24,
-                "losses": 16,
+                "wins": 23,
+                "losses": 17,
                 "draws": 0,
-                "winRate": 0.6,
-                "winPointRate": 0.6,
-                "averageSteps": 90.7,
-                "averageTurns": 10.2
+                "winRate": 0.575,
+                "winPointRate": 0.575,
+                "averageSteps": 89.1,
+                "averageTurns": 9.9
               }
             },
             "reason": "勝率を保ちながら決着が速い"
@@ -5243,13 +5256,13 @@ export const DECK_BATTLE_SCORE_SNAPSHOT_SUITES = [
             "winRate": 0.654,
             "winPointRate": 0.654,
             "stabilityScore": 91.5,
-            "speedScore": 57.8,
+            "speedScore": 57.7,
             "practicalScore": 98.7,
             "games": 78,
             "wins": 51,
             "losses": 27,
             "draws": 0,
-            "averageSteps": 85.5,
+            "averageSteps": 85.7,
             "averageTurns": 9.2,
             "seatDelta": 0.282,
             "matchups": {
@@ -5280,8 +5293,8 @@ export const DECK_BATTLE_SCORE_SNAPSHOT_SUITES = [
                 "draws": 0,
                 "winRate": 0.725,
                 "winPointRate": 0.725,
-                "averageSteps": 78.7,
-                "averageTurns": 8.4
+                "averageSteps": 79,
+                "averageTurns": 8.5
               }
             },
             "reason": "勝率を保ちながら決着が速い"
@@ -5297,13 +5310,13 @@ export const DECK_BATTLE_SCORE_SNAPSHOT_SUITES = [
             "winRate": 0.654,
             "winPointRate": 0.654,
             "stabilityScore": 91.5,
-            "speedScore": 57.8,
+            "speedScore": 57.7,
             "practicalScore": 98.3,
             "games": 78,
             "wins": 51,
             "losses": 27,
             "draws": 0,
-            "averageSteps": 85.5,
+            "averageSteps": 85.7,
             "averageTurns": 9.2,
             "seatDelta": 0.282,
             "matchups": {
@@ -5334,8 +5347,8 @@ export const DECK_BATTLE_SCORE_SNAPSHOT_SUITES = [
                 "draws": 0,
                 "winRate": 0.725,
                 "winPointRate": 0.725,
-                "averageSteps": 78.7,
-                "averageTurns": 8.4
+                "averageSteps": 79,
+                "averageTurns": 8.5
               }
             },
             "reason": "勝率を保ちながら決着が速い"
@@ -5351,13 +5364,13 @@ export const DECK_BATTLE_SCORE_SNAPSHOT_SUITES = [
             "winRate": 0.667,
             "winPointRate": 0.667,
             "stabilityScore": 92.3,
-            "speedScore": 56.7,
+            "speedScore": 56.5,
             "practicalScore": 99.4,
             "games": 78,
             "wins": 52,
             "losses": 26,
             "draws": 0,
-            "averageSteps": 87.8,
+            "averageSteps": 88.2,
             "averageTurns": 9.3,
             "seatDelta": 0.257,
             "matchups": {
@@ -5388,62 +5401,8 @@ export const DECK_BATTLE_SCORE_SNAPSHOT_SUITES = [
                 "draws": 0,
                 "winRate": 0.725,
                 "winPointRate": 0.725,
-                "averageSteps": 90.6,
-                "averageTurns": 9.6
-              }
-            },
-            "reason": "勝率を保ちながら決着が速い"
-          },
-          {
-            "deckPreset": "submission-pro-no-rare8-black-542",
-            "sourceDeckId": 542,
-            "name": "投稿Pro黒8なし #542 黒 敵行動封じ",
-            "group": "pro-no-rare8-black",
-            "masterId": "black",
-            "rank": 9,
-            "battleScore": 65.9,
-            "winRate": 0.654,
-            "winPointRate": 0.654,
-            "stabilityScore": 90,
-            "speedScore": 55.3,
-            "practicalScore": 98.7,
-            "games": 78,
-            "wins": 51,
-            "losses": 27,
-            "draws": 0,
-            "averageSteps": 90.6,
-            "averageTurns": 9.5,
-            "seatDelta": 0.334,
-            "matchups": {
-              "black_vs_black": {
-                "games": 38,
-                "wins": 21,
-                "losses": 17,
-                "draws": 0,
-                "winRate": 0.553,
-                "winPointRate": 0.553,
-                "averageSteps": 90.2,
-                "averageTurns": 9.4
-              },
-              "white_vs_white": {
-                "games": 0,
-                "wins": 0,
-                "losses": 0,
-                "draws": 0,
-                "winRate": 0,
-                "winPointRate": 0,
-                "averageSteps": 0,
-                "averageTurns": 0
-              },
-              "white_vs_black": {
-                "games": 40,
-                "wins": 30,
-                "losses": 10,
-                "draws": 0,
-                "winRate": 0.75,
-                "winPointRate": 0.75,
-                "averageSteps": 91,
-                "averageTurns": 9.6
+                "averageSteps": 91.3,
+                "averageTurns": 9.7
               }
             },
             "reason": "勝率を保ちながら決着が速い"
@@ -5455,18 +5414,18 @@ export const DECK_BATTLE_SCORE_SNAPSHOT_SUITES = [
             "group": "pro-no-rare8-black",
             "masterId": "black",
             "rank": 3,
-            "battleScore": 69.7,
+            "battleScore": 69.8,
             "winRate": 0.692,
             "winPointRate": 0.692,
             "stabilityScore": 95.4,
-            "speedScore": 54.9,
+            "speedScore": 55.3,
             "practicalScore": 100.3,
             "games": 78,
             "wins": 54,
             "losses": 24,
             "draws": 0,
-            "averageSteps": 91.6,
-            "averageTurns": 9.7,
+            "averageSteps": 90.6,
+            "averageTurns": 9.6,
             "seatDelta": 0.154,
             "matchups": {
               "black_vs_black": {
@@ -5496,49 +5455,42 @@ export const DECK_BATTLE_SCORE_SNAPSHOT_SUITES = [
                 "draws": 0,
                 "winRate": 0.75,
                 "winPointRate": 0.75,
-                "averageSteps": 96.6,
-                "averageTurns": 10.3
+                "averageSteps": 94.7,
+                "averageTurns": 10
               }
             },
             "reason": "勝率を保ちながら決着が速い"
-          }
-        ]
-      },
-      {
-        "id": "slow_winners",
-        "title": "遅い勝者",
-        "description": "勝てているが決着が遅い。白マスター長期戦や勝ち切り判断の確認に使う。",
-        "decks": [
+          },
           {
-            "deckPreset": "submission-pro-no-rare8-black-252",
-            "sourceDeckId": 252,
-            "name": "投稿Pro黒8なし #252 ブラック殲滅（ヤミー＆ロストーン）",
+            "deckPreset": "submission-pro-no-rare8-black-542",
+            "sourceDeckId": 542,
+            "name": "投稿Pro黒8なし #542 黒 敵行動封じ",
             "group": "pro-no-rare8-black",
             "masterId": "black",
-            "rank": 20,
-            "battleScore": 56,
-            "winRate": 0.564,
-            "winPointRate": 0.564,
-            "stabilityScore": 90.8,
-            "speedScore": 46.2,
-            "practicalScore": 100.4,
+            "rank": 4,
+            "battleScore": 68.5,
+            "winRate": 0.679,
+            "winPointRate": 0.679,
+            "stabilityScore": 90,
+            "speedScore": 55.3,
+            "practicalScore": 98.7,
             "games": 78,
-            "wins": 44,
-            "losses": 34,
+            "wins": 53,
+            "losses": 25,
             "draws": 0,
-            "averageSteps": 109.1,
-            "averageTurns": 11.1,
-            "seatDelta": 0.308,
+            "averageSteps": 90.7,
+            "averageTurns": 9.5,
+            "seatDelta": 0.333,
             "matchups": {
               "black_vs_black": {
                 "games": 38,
-                "wins": 12,
-                "losses": 26,
+                "wins": 21,
+                "losses": 17,
                 "draws": 0,
-                "winRate": 0.316,
-                "winPointRate": 0.316,
-                "averageSteps": 103,
-                "averageTurns": 10.5
+                "winRate": 0.553,
+                "winPointRate": 0.553,
+                "averageSteps": 89.7,
+                "averageTurns": 9.3
               },
               "white_vs_white": {
                 "games": 0,
@@ -5557,7 +5509,122 @@ export const DECK_BATTLE_SCORE_SNAPSHOT_SUITES = [
                 "draws": 0,
                 "winRate": 0.8,
                 "winPointRate": 0.8,
-                "averageSteps": 115,
+                "averageSteps": 91.7,
+                "averageTurns": 9.7
+              }
+            },
+            "reason": "勝率を保ちながら決着が速い"
+          }
+        ]
+      },
+      {
+        "id": "slow_winners",
+        "title": "遅い勝者",
+        "description": "勝てているが決着が遅い。白マスター長期戦や勝ち切り判断の確認に使う。",
+        "decks": [
+          {
+            "deckPreset": "submission-pro-no-rare8-black-228",
+            "sourceDeckId": 228,
+            "name": "投稿Pro黒8なし #228 ブラック殲滅",
+            "group": "pro-no-rare8-black",
+            "masterId": "black",
+            "rank": 21,
+            "battleScore": 54.7,
+            "winRate": 0.551,
+            "winPointRate": 0.551,
+            "stabilityScore": 91.5,
+            "speedScore": 45.8,
+            "practicalScore": 99,
+            "games": 78,
+            "wins": 43,
+            "losses": 35,
+            "draws": 0,
+            "averageSteps": 109.8,
+            "averageTurns": 11.3,
+            "seatDelta": 0.282,
+            "matchups": {
+              "black_vs_black": {
+                "games": 38,
+                "wins": 13,
+                "losses": 25,
+                "draws": 0,
+                "winRate": 0.342,
+                "winPointRate": 0.342,
+                "averageSteps": 103.4,
+                "averageTurns": 10.6
+              },
+              "white_vs_white": {
+                "games": 0,
+                "wins": 0,
+                "losses": 0,
+                "draws": 0,
+                "winRate": 0,
+                "winPointRate": 0,
+                "averageSteps": 0,
+                "averageTurns": 0
+              },
+              "white_vs_black": {
+                "games": 40,
+                "wins": 30,
+                "losses": 10,
+                "draws": 0,
+                "winRate": 0.75,
+                "winPointRate": 0.75,
+                "averageSteps": 115.9,
+                "averageTurns": 12
+              }
+            },
+            "reason": "勝率は高いがSpeedが低い"
+          },
+          {
+            "deckPreset": "submission-pro-no-rare8-black-252",
+            "sourceDeckId": 252,
+            "name": "投稿Pro黒8なし #252 ブラック殲滅（ヤミー＆ロストーン）",
+            "group": "pro-no-rare8-black",
+            "masterId": "black",
+            "rank": 20,
+            "battleScore": 56,
+            "winRate": 0.564,
+            "winPointRate": 0.564,
+            "stabilityScore": 92.3,
+            "speedScore": 46.2,
+            "practicalScore": 100.4,
+            "games": 78,
+            "wins": 44,
+            "losses": 34,
+            "draws": 0,
+            "averageSteps": 109,
+            "averageTurns": 11.1,
+            "seatDelta": 0.256,
+            "matchups": {
+              "black_vs_black": {
+                "games": 38,
+                "wins": 13,
+                "losses": 25,
+                "draws": 0,
+                "winRate": 0.342,
+                "winPointRate": 0.342,
+                "averageSteps": 103.4,
+                "averageTurns": 10.6
+              },
+              "white_vs_white": {
+                "games": 0,
+                "wins": 0,
+                "losses": 0,
+                "draws": 0,
+                "winRate": 0,
+                "winPointRate": 0,
+                "averageSteps": 0,
+                "averageTurns": 0
+              },
+              "white_vs_black": {
+                "games": 40,
+                "wins": 31,
+                "losses": 9,
+                "draws": 0,
+                "winRate": 0.775,
+                "winPointRate": 0.775,
+                "averageSteps": 114.4,
                 "averageTurns": 11.6
               }
             },
@@ -5574,14 +5641,14 @@ export const DECK_BATTLE_SCORE_SNAPSHOT_SUITES = [
             "winRate": 0.577,
             "winPointRate": 0.577,
             "stabilityScore": 94.6,
-            "speedScore": 46.3,
+            "speedScore": 46.4,
             "practicalScore": 92.3,
             "games": 78,
             "wins": 45,
             "losses": 33,
             "draws": 0,
-            "averageSteps": 109,
-            "averageTurns": 10.9,
+            "averageSteps": 108.7,
+            "averageTurns": 10.8,
             "seatDelta": 0.18,
             "matchups": {
               "black_vs_black": {
@@ -5602,7 +5669,7 @@ export const DECK_BATTLE_SCORE_SNAPSHOT_SUITES = [
                 "winRate": 0.684,
                 "winPointRate": 0.684,
                 "averageSteps": 127.3,
-                "averageTurns": 11.8
+                "averageTurns": 11.7
               },
               "white_vs_black": {
                 "games": 40,
@@ -5611,8 +5678,8 @@ export const DECK_BATTLE_SCORE_SNAPSHOT_SUITES = [
                 "draws": 0,
                 "winRate": 0.475,
                 "winPointRate": 0.475,
-                "averageSteps": 91.6,
-                "averageTurns": 10.1
+                "averageSteps": 91,
+                "averageTurns": 10
               }
             },
             "reason": "勝率は高いがSpeedが低い"
@@ -5623,20 +5690,20 @@ export const DECK_BATTLE_SCORE_SNAPSHOT_SUITES = [
             "name": "投稿Pro黒8なし #66 ブラックＤ",
             "group": "pro-no-rare8-black",
             "masterId": "black",
-            "rank": 12,
-            "battleScore": 62.6,
-            "winRate": 0.628,
-            "winPointRate": 0.628,
-            "stabilityScore": 88.5,
-            "speedScore": 48.1,
+            "rank": 10,
+            "battleScore": 63.9,
+            "winRate": 0.641,
+            "winPointRate": 0.641,
+            "stabilityScore": 89.2,
+            "speedScore": 48,
             "practicalScore": 99.7,
             "games": 78,
-            "wins": 49,
-            "losses": 29,
+            "wins": 50,
+            "losses": 28,
             "draws": 0,
-            "averageSteps": 105.3,
+            "averageSteps": 105.5,
             "averageTurns": 10.8,
-            "seatDelta": 0.385,
+            "seatDelta": 0.359,
             "matchups": {
               "black_vs_black": {
                 "games": 38,
@@ -5660,12 +5727,12 @@ export const DECK_BATTLE_SCORE_SNAPSHOT_SUITES = [
               },
               "white_vs_black": {
                 "games": 40,
-                "wins": 31,
-                "losses": 9,
+                "wins": 32,
+                "losses": 8,
                 "draws": 0,
-                "winRate": 0.775,
-                "winPointRate": 0.775,
-                "averageSteps": 108.6,
+                "winRate": 0.8,
+                "winPointRate": 0.8,
+                "averageSteps": 109,
                 "averageTurns": 11.2
               }
             },
@@ -5677,20 +5744,20 @@ export const DECK_BATTLE_SCORE_SNAPSHOT_SUITES = [
             "name": "投稿Pro黒8なし #758 ホワイト殲滅",
             "group": "pro-no-rare8-black",
             "masterId": "black",
-            "rank": 15,
-            "battleScore": 59,
-            "winRate": 0.59,
-            "winPointRate": 0.59,
-            "stabilityScore": 93.8,
-            "speedScore": 49.9,
+            "rank": 17,
+            "battleScore": 57.7,
+            "winRate": 0.577,
+            "winPointRate": 0.577,
+            "stabilityScore": 94.6,
+            "speedScore": 50.3,
             "practicalScore": 98.9,
             "games": 78,
-            "wins": 46,
-            "losses": 32,
+            "wins": 45,
+            "losses": 33,
             "draws": 0,
-            "averageSteps": 101.6,
-            "averageTurns": 9.8,
-            "seatDelta": 0.205,
+            "averageSteps": 100.8,
+            "averageTurns": 9.7,
+            "seatDelta": 0.18,
             "matchups": {
               "black_vs_black": {
                 "games": 38,
@@ -5714,13 +5781,13 @@ export const DECK_BATTLE_SCORE_SNAPSHOT_SUITES = [
               },
               "white_vs_black": {
                 "games": 40,
-                "wins": 23,
-                "losses": 17,
+                "wins": 22,
+                "losses": 18,
                 "draws": 0,
-                "winRate": 0.575,
-                "winPointRate": 0.575,
-                "averageSteps": 107.3,
-                "averageTurns": 10.3
+                "winRate": 0.55,
+                "winPointRate": 0.55,
+                "averageSteps": 105.7,
+                "averageTurns": 10.1
               }
             },
             "reason": "勝率は高いがSpeedが低い"
@@ -5731,20 +5798,20 @@ export const DECK_BATTLE_SCORE_SNAPSHOT_SUITES = [
             "name": "投稿Pro白8あり #10 白殲滅？",
             "group": "pro-with-rare8-white",
             "masterId": "white",
-            "rank": 16,
-            "battleScore": 59,
-            "winRate": 0.59,
-            "winPointRate": 0.59,
-            "stabilityScore": 87.7,
-            "speedScore": 50.7,
+            "rank": 14,
+            "battleScore": 60.4,
+            "winRate": 0.603,
+            "winPointRate": 0.603,
+            "stabilityScore": 86.9,
+            "speedScore": 51,
             "practicalScore": 91.5,
             "games": 78,
-            "wins": 46,
-            "losses": 32,
+            "wins": 47,
+            "losses": 31,
             "draws": 0,
-            "averageSteps": 100,
-            "averageTurns": 10.1,
-            "seatDelta": 0.41,
+            "averageSteps": 99.3,
+            "averageTurns": 10,
+            "seatDelta": 0.436,
             "matchups": {
               "black_vs_black": {
                 "games": 0,
@@ -5758,13 +5825,13 @@ export const DECK_BATTLE_SCORE_SNAPSHOT_SUITES = [
               },
               "white_vs_white": {
                 "games": 38,
-                "wins": 27,
-                "losses": 11,
+                "wins": 28,
+                "losses": 10,
                 "draws": 0,
-                "winRate": 0.711,
-                "winPointRate": 0.711,
-                "averageSteps": 115.9,
-                "averageTurns": 11.4
+                "winRate": 0.737,
+                "winPointRate": 0.737,
+                "averageSteps": 114.8,
+                "averageTurns": 11.1
               },
               "white_vs_black": {
                 "games": 40,
@@ -5773,7 +5840,7 @@ export const DECK_BATTLE_SCORE_SNAPSHOT_SUITES = [
                 "draws": 0,
                 "winRate": 0.475,
                 "winPointRate": 0.475,
-                "averageSteps": 84.9,
+                "averageSteps": 84.6,
                 "averageTurns": 8.9
               }
             },
@@ -5789,16 +5856,16 @@ export const DECK_BATTLE_SCORE_SNAPSHOT_SUITES = [
             "battleScore": 60.4,
             "winRate": 0.603,
             "winPointRate": 0.603,
-            "stabilityScore": 90,
-            "speedScore": 51.9,
+            "stabilityScore": 91.5,
+            "speedScore": 51.6,
             "practicalScore": 98.8,
             "games": 78,
             "wins": 47,
             "losses": 31,
             "draws": 0,
-            "averageSteps": 97.6,
-            "averageTurns": 10.1,
-            "seatDelta": 0.333,
+            "averageSteps": 98.2,
+            "averageTurns": 10.2,
+            "seatDelta": 0.282,
             "matchups": {
               "black_vs_black": {
                 "games": 38,
@@ -5827,8 +5894,8 @@ export const DECK_BATTLE_SCORE_SNAPSHOT_SUITES = [
                 "draws": 0,
                 "winRate": 0.675,
                 "winPointRate": 0.675,
-                "averageSteps": 101.9,
-                "averageTurns": 10.4
+                "averageSteps": 103.1,
+                "averageTurns": 10.5
               }
             },
             "reason": "勝率は高いがSpeedが低い"
@@ -5839,18 +5906,18 @@ export const DECK_BATTLE_SCORE_SNAPSHOT_SUITES = [
             "name": "投稿Pro白8あり #1346 よく使ってるデッキ",
             "group": "pro-with-rare8-white",
             "masterId": "white",
-            "rank": 14,
-            "battleScore": 59.2,
+            "rank": 16,
+            "battleScore": 59.1,
             "winRate": 0.59,
             "winPointRate": 0.59,
             "stabilityScore": 87.7,
-            "speedScore": 51.9,
+            "speedScore": 51.7,
             "practicalScore": 101,
             "games": 78,
             "wins": 46,
             "losses": 32,
             "draws": 0,
-            "averageSteps": 97.5,
+            "averageSteps": 97.9,
             "averageTurns": 10,
             "seatDelta": 0.41,
             "matchups": {
@@ -5871,7 +5938,7 @@ export const DECK_BATTLE_SCORE_SNAPSHOT_SUITES = [
                 "draws": 0,
                 "winRate": 0.553,
                 "winPointRate": 0.553,
-                "averageSteps": 107.1,
+                "averageSteps": 107.8,
                 "averageTurns": 10.4
               },
               "white_vs_black": {
@@ -5883,60 +5950,6 @@ export const DECK_BATTLE_SCORE_SNAPSHOT_SUITES = [
                 "winPointRate": 0.625,
                 "averageSteps": 88.5,
                 "averageTurns": 9.5
-              }
-            },
-            "reason": "勝率は高いがSpeedが低い"
-          },
-          {
-            "deckPreset": "submission-pro-with-rare8-black-1354",
-            "sourceDeckId": 1354,
-            "name": "投稿Pro黒8あり #1354 星８有状況下黒速攻＆殲滅デッキ",
-            "group": "pro-with-rare8-black",
-            "masterId": "black",
-            "rank": 10,
-            "battleScore": 64.4,
-            "winRate": 0.641,
-            "winPointRate": 0.641,
-            "stabilityScore": 95.4,
-            "speedScore": 52.8,
-            "practicalScore": 105,
-            "games": 78,
-            "wins": 50,
-            "losses": 28,
-            "draws": 0,
-            "averageSteps": 95.8,
-            "averageTurns": 9.9,
-            "seatDelta": 0.154,
-            "matchups": {
-              "black_vs_black": {
-                "games": 38,
-                "wins": 20,
-                "losses": 18,
-                "draws": 0,
-                "winRate": 0.526,
-                "winPointRate": 0.526,
-                "averageSteps": 99.6,
-                "averageTurns": 10.3
-              },
-              "white_vs_white": {
-                "games": 0,
-                "wins": 0,
-                "losses": 0,
-                "draws": 0,
-                "winRate": 0,
-                "winPointRate": 0,
-                "averageSteps": 0,
-                "averageTurns": 0
-              },
-              "white_vs_black": {
-                "games": 40,
-                "wins": 30,
-                "losses": 10,
-                "draws": 0,
-                "winRate": 0.75,
-                "winPointRate": 0.75,
-                "averageSteps": 92.3,
-                "averageTurns": 9.4
               }
             },
             "reason": "勝率は高いがSpeedが低い"
@@ -5959,13 +5972,13 @@ export const DECK_BATTLE_SCORE_SNAPSHOT_SUITES = [
             "winRate": 0.308,
             "winPointRate": 0.308,
             "stabilityScore": 100,
-            "speedScore": 41.4,
+            "speedScore": 41,
             "practicalScore": 97.3,
             "games": 78,
             "wins": 24,
             "losses": 54,
             "draws": 0,
-            "averageSteps": 118.9,
+            "averageSteps": 119.7,
             "averageTurns": 11.8,
             "seatDelta": 0,
             "matchups": {
@@ -5986,8 +5999,8 @@ export const DECK_BATTLE_SCORE_SNAPSHOT_SUITES = [
                 "draws": 0,
                 "winRate": 0.447,
                 "winPointRate": 0.447,
-                "averageSteps": 129.2,
-                "averageTurns": 12.4
+                "averageSteps": 130.7,
+                "averageTurns": 12.5
               },
               "white_vs_black": {
                 "games": 40,
@@ -6008,74 +6021,20 @@ export const DECK_BATTLE_SCORE_SNAPSHOT_SUITES = [
             "name": "投稿Pro白8なし #836 白その２ キャンディ♪ガール",
             "group": "pro-no-rare8-white",
             "masterId": "white",
-            "rank": 31,
-            "battleScore": 34.8,
-            "winRate": 0.359,
-            "winPointRate": 0.359,
-            "stabilityScore": 100,
-            "speedScore": 39.1,
+            "rank": 30,
+            "battleScore": 36.1,
+            "winRate": 0.372,
+            "winPointRate": 0.372,
+            "stabilityScore": 99.2,
+            "speedScore": 39.5,
             "practicalScore": 98.4,
             "games": 78,
-            "wins": 28,
-            "losses": 50,
+            "wins": 29,
+            "losses": 49,
             "draws": 0,
-            "averageSteps": 123.5,
-            "averageTurns": 12.3,
-            "seatDelta": 0,
-            "matchups": {
-              "black_vs_black": {
-                "games": 0,
-                "wins": 0,
-                "losses": 0,
-                "draws": 0,
-                "winRate": 0,
-                "winPointRate": 0,
-                "averageSteps": 0,
-                "averageTurns": 0
-              },
-              "white_vs_white": {
-                "games": 38,
-                "wins": 17,
-                "losses": 21,
-                "draws": 0,
-                "winRate": 0.447,
-                "winPointRate": 0.447,
-                "averageSteps": 141.2,
-                "averageTurns": 13.5
-              },
-              "white_vs_black": {
-                "games": 40,
-                "wins": 11,
-                "losses": 29,
-                "draws": 0,
-                "winRate": 0.275,
-                "winPointRate": 0.275,
-                "averageSteps": 106.7,
-                "averageTurns": 11.2
-              }
-            },
-            "reason": "安定度は高いが勝率が低い"
-          },
-          {
-            "deckPreset": "submission-pro-no-rare8-white-837",
-            "sourceDeckId": 837,
-            "name": "投稿Pro白8なし #837 白その３ おとこはつらいよ",
-            "group": "pro-no-rare8-white",
-            "masterId": "white",
-            "rank": 33,
-            "battleScore": 34.1,
-            "winRate": 0.346,
-            "winPointRate": 0.346,
-            "stabilityScore": 97.7,
-            "speedScore": 44.7,
-            "practicalScore": 97,
-            "games": 78,
-            "wins": 27,
-            "losses": 51,
-            "draws": 0,
-            "averageSteps": 112.2,
-            "averageTurns": 11.5,
-            "seatDelta": 0.077,
+            "averageSteps": 122.7,
+            "averageTurns": 12.2,
+            "seatDelta": 0.026,
             "matchups": {
               "black_vs_black": {
                 "games": 0,
@@ -6094,42 +6053,42 @@ export const DECK_BATTLE_SCORE_SNAPSHOT_SUITES = [
                 "draws": 0,
                 "winRate": 0.474,
                 "winPointRate": 0.474,
-                "averageSteps": 117.2,
-                "averageTurns": 11.7
+                "averageSteps": 138.6,
+                "averageTurns": 13.3
               },
               "white_vs_black": {
                 "games": 40,
-                "wins": 9,
-                "losses": 31,
+                "wins": 11,
+                "losses": 29,
                 "draws": 0,
-                "winRate": 0.225,
-                "winPointRate": 0.225,
-                "averageSteps": 107.5,
-                "averageTurns": 11.4
+                "winRate": 0.275,
+                "winPointRate": 0.275,
+                "averageSteps": 107.7,
+                "averageTurns": 11.3
               }
             },
             "reason": "安定度は高いが勝率が低い"
           },
           {
-            "deckPreset": "submission-pro-no-rare8-white-882",
-            "sourceDeckId": 882,
-            "name": "投稿Pro白8なし #882 ジャレットの白奇襲（仮）",
+            "deckPreset": "submission-pro-no-rare8-white-1060",
+            "sourceDeckId": 1060,
+            "name": "投稿Pro白8なし #1060 sisters",
             "group": "pro-no-rare8-white",
             "masterId": "white",
-            "rank": 40,
-            "battleScore": 8.8,
-            "winRate": 0.103,
-            "winPointRate": 0.103,
-            "stabilityScore": 96.9,
-            "speedScore": 36,
-            "practicalScore": 97,
+            "rank": 29,
+            "battleScore": 39,
+            "winRate": 0.397,
+            "winPointRate": 0.397,
+            "stabilityScore": 99.2,
+            "speedScore": 42.9,
+            "practicalScore": 98,
             "games": 78,
-            "wins": 8,
-            "losses": 70,
+            "wins": 31,
+            "losses": 47,
             "draws": 0,
-            "averageSteps": 129.9,
-            "averageTurns": 13.5,
-            "seatDelta": 0.103,
+            "averageSteps": 115.8,
+            "averageTurns": 11.4,
+            "seatDelta": 0.025,
             "matchups": {
               "black_vs_black": {
                 "games": 0,
@@ -6143,13 +6102,121 @@ export const DECK_BATTLE_SCORE_SNAPSHOT_SUITES = [
               },
               "white_vs_white": {
                 "games": 38,
-                "wins": 6,
-                "losses": 32,
+                "wins": 18,
+                "losses": 20,
                 "draws": 0,
-                "winRate": 0.158,
-                "winPointRate": 0.158,
-                "averageSteps": 142.7,
-                "averageTurns": 14.4
+                "winRate": 0.474,
+                "winPointRate": 0.474,
+                "averageSteps": 131.3,
+                "averageTurns": 12.4
+              },
+              "white_vs_black": {
+                "games": 40,
+                "wins": 13,
+                "losses": 27,
+                "draws": 0,
+                "winRate": 0.325,
+                "winPointRate": 0.325,
+                "averageSteps": 101.2,
+                "averageTurns": 10.5
+              }
+            },
+            "reason": "安定度は高いが勝率が低い"
+          },
+          {
+            "deckPreset": "submission-pro-no-rare8-white-837",
+            "sourceDeckId": 837,
+            "name": "投稿Pro白8なし #837 白その３ おとこはつらいよ",
+            "group": "pro-no-rare8-white",
+            "masterId": "white",
+            "rank": 32,
+            "battleScore": 35.4,
+            "winRate": 0.359,
+            "winPointRate": 0.359,
+            "stabilityScore": 98.5,
+            "speedScore": 45.2,
+            "practicalScore": 97,
+            "games": 78,
+            "wins": 28,
+            "losses": 50,
+            "draws": 0,
+            "averageSteps": 111.2,
+            "averageTurns": 11.4,
+            "seatDelta": 0.052,
+            "matchups": {
+              "black_vs_black": {
+                "games": 0,
+                "wins": 0,
+                "losses": 0,
+                "draws": 0,
+                "winRate": 0,
+                "winPointRate": 0,
+                "averageSteps": 0,
+                "averageTurns": 0
+              },
+              "white_vs_white": {
+                "games": 38,
+                "wins": 18,
+                "losses": 20,
+                "draws": 0,
+                "winRate": 0.474,
+                "winPointRate": 0.474,
+                "averageSteps": 116.3,
+                "averageTurns": 11.5
+              },
+              "white_vs_black": {
+                "games": 40,
+                "wins": 10,
+                "losses": 30,
+                "draws": 0,
+                "winRate": 0.25,
+                "winPointRate": 0.25,
+                "averageSteps": 106.3,
+                "averageTurns": 11.3
+              }
+            },
+            "reason": "安定度は高いが勝率が低い"
+          },
+          {
+            "deckPreset": "submission-pro-no-rare8-white-882",
+            "sourceDeckId": 882,
+            "name": "投稿Pro白8なし #882 ジャレットの白奇襲（仮）",
+            "group": "pro-no-rare8-white",
+            "masterId": "white",
+            "rank": 40,
+            "battleScore": 6.2,
+            "winRate": 0.077,
+            "winPointRate": 0.077,
+            "stabilityScore": 96.9,
+            "speedScore": 35.5,
+            "practicalScore": 97,
+            "games": 78,
+            "wins": 6,
+            "losses": 72,
+            "draws": 0,
+            "averageSteps": 130.8,
+            "averageTurns": 13.7,
+            "seatDelta": 0.102,
+            "matchups": {
+              "black_vs_black": {
+                "games": 0,
+                "wins": 0,
+                "losses": 0,
+                "draws": 0,
+                "winRate": 0,
+                "winPointRate": 0,
+                "averageSteps": 0,
+                "averageTurns": 0
+              },
+              "white_vs_white": {
+                "games": 38,
+                "wins": 4,
+                "losses": 34,
+                "draws": 0,
+                "winRate": 0.105,
+                "winPointRate": 0.105,
+                "averageSteps": 144.5,
+                "averageTurns": 14.8
               },
               "white_vs_black": {
                 "games": 40,
@@ -6165,66 +6232,12 @@ export const DECK_BATTLE_SCORE_SNAPSHOT_SUITES = [
             "reason": "安定度は高いが勝率が低い"
           },
           {
-            "deckPreset": "submission-pro-with-rare8-white-1405",
-            "sourceDeckId": 1405,
-            "name": "投稿Pro白8あり #1405 ヤミラティシャムの布陣",
-            "group": "pro-with-rare8-white",
-            "masterId": "white",
-            "rank": 38,
-            "battleScore": 25.6,
-            "winRate": 0.256,
-            "winPointRate": 0.256,
-            "stabilityScore": 96.9,
-            "speedScore": 49.6,
-            "practicalScore": 93.1,
-            "games": 78,
-            "wins": 20,
-            "losses": 58,
-            "draws": 0,
-            "averageSteps": 102.3,
-            "averageTurns": 11.1,
-            "seatDelta": 0.103,
-            "matchups": {
-              "black_vs_black": {
-                "games": 0,
-                "wins": 0,
-                "losses": 0,
-                "draws": 0,
-                "winRate": 0,
-                "winPointRate": 0,
-                "averageSteps": 0,
-                "averageTurns": 0
-              },
-              "white_vs_white": {
-                "games": 38,
-                "wins": 10,
-                "losses": 28,
-                "draws": 0,
-                "winRate": 0.263,
-                "winPointRate": 0.263,
-                "averageSteps": 116.9,
-                "averageTurns": 12.3
-              },
-              "white_vs_black": {
-                "games": 40,
-                "wins": 10,
-                "losses": 30,
-                "draws": 0,
-                "winRate": 0.25,
-                "winPointRate": 0.25,
-                "averageSteps": 88.4,
-                "averageTurns": 9.9
-              }
-            },
-            "reason": "安定度は高いが勝率が低い"
-          },
-          {
             "deckPreset": "submission-pro-no-rare8-white-1377",
             "sourceDeckId": 1377,
             "name": "投稿Pro白8なし #1377 結論？",
             "group": "pro-no-rare8-white",
             "masterId": "white",
-            "rank": 37,
+            "rank": 38,
             "battleScore": 26.7,
             "winRate": 0.282,
             "winPointRate": 0.282,
@@ -6235,7 +6248,7 @@ export const DECK_BATTLE_SCORE_SNAPSHOT_SUITES = [
             "wins": 22,
             "losses": 56,
             "draws": 0,
-            "averageSteps": 132.3,
+            "averageSteps": 132.2,
             "averageTurns": 13.2,
             "seatDelta": 0.102,
             "matchups": {
@@ -6256,7 +6269,7 @@ export const DECK_BATTLE_SCORE_SNAPSHOT_SUITES = [
                 "draws": 0,
                 "winRate": 0.368,
                 "winPointRate": 0.368,
-                "averageSteps": 152.2,
+                "averageSteps": 151.8,
                 "averageTurns": 14.9
               },
               "white_vs_black": {
@@ -6283,13 +6296,13 @@ export const DECK_BATTLE_SCORE_SNAPSHOT_SUITES = [
             "winRate": 0.141,
             "winPointRate": 0.141,
             "stabilityScore": 96.2,
-            "speedScore": 45.3,
+            "speedScore": 45.5,
             "practicalScore": 90.4,
             "games": 78,
             "wins": 11,
             "losses": 67,
             "draws": 0,
-            "averageSteps": 111.1,
+            "averageSteps": 110.5,
             "averageTurns": 11.3,
             "seatDelta": 0.128,
             "matchups": {
@@ -6310,8 +6323,8 @@ export const DECK_BATTLE_SCORE_SNAPSHOT_SUITES = [
                 "draws": 0,
                 "winRate": 0.211,
                 "winPointRate": 0.211,
-                "averageSteps": 118.9,
-                "averageTurns": 11.8
+                "averageSteps": 117.8,
+                "averageTurns": 11.7
               },
               "white_vs_black": {
                 "games": 40,
@@ -6327,25 +6340,25 @@ export const DECK_BATTLE_SCORE_SNAPSHOT_SUITES = [
             "reason": "安定度は高いが勝率が低い"
           },
           {
-            "deckPreset": "submission-pro-no-rare8-white-479",
-            "sourceDeckId": 479,
-            "name": "投稿Pro白8なし #479 オーパスコントロール",
-            "group": "pro-no-rare8-white",
+            "deckPreset": "submission-pro-with-rare8-white-1405",
+            "sourceDeckId": 1405,
+            "name": "投稿Pro白8あり #1405 ヤミラティシャムの布陣",
+            "group": "pro-with-rare8-white",
             "masterId": "white",
-            "rank": 34,
-            "battleScore": 31.4,
-            "winRate": 0.321,
-            "winPointRate": 0.321,
-            "stabilityScore": 94.6,
-            "speedScore": 43.2,
-            "practicalScore": 98.3,
+            "rank": 37,
+            "battleScore": 29.7,
+            "winRate": 0.295,
+            "winPointRate": 0.295,
+            "stabilityScore": 96.2,
+            "speedScore": 52.1,
+            "practicalScore": 93.1,
             "games": 78,
-            "wins": 25,
-            "losses": 53,
+            "wins": 23,
+            "losses": 55,
             "draws": 0,
-            "averageSteps": 115.2,
-            "averageTurns": 11.6,
-            "seatDelta": 0.179,
+            "averageSteps": 97.2,
+            "averageTurns": 10.2,
+            "seatDelta": 0.128,
             "matchups": {
               "black_vs_black": {
                 "games": 0,
@@ -6359,23 +6372,23 @@ export const DECK_BATTLE_SCORE_SNAPSHOT_SUITES = [
               },
               "white_vs_white": {
                 "games": 38,
-                "wins": 18,
-                "losses": 20,
+                "wins": 14,
+                "losses": 24,
                 "draws": 0,
-                "winRate": 0.474,
-                "winPointRate": 0.474,
-                "averageSteps": 124.2,
-                "averageTurns": 12.1
+                "winRate": 0.368,
+                "winPointRate": 0.368,
+                "averageSteps": 111.2,
+                "averageTurns": 11.3
               },
               "white_vs_black": {
                 "games": 40,
-                "wins": 7,
-                "losses": 33,
+                "wins": 9,
+                "losses": 31,
                 "draws": 0,
-                "winRate": 0.175,
-                "winPointRate": 0.175,
-                "averageSteps": 106.7,
-                "averageTurns": 11.2
+                "winRate": 0.225,
+                "winPointRate": 0.225,
+                "averageSteps": 83.8,
+                "averageTurns": 9.3
               }
             },
             "reason": "安定度は高いが勝率が低い"
@@ -6398,13 +6411,13 @@ export const DECK_BATTLE_SCORE_SNAPSHOT_SUITES = [
             "winRate": 0.513,
             "winPointRate": 0.513,
             "stabilityScore": 86.2,
-            "speedScore": 51.2,
+            "speedScore": 50.9,
             "practicalScore": 99.3,
             "games": 78,
             "wins": 40,
             "losses": 38,
             "draws": 0,
-            "averageSteps": 99.1,
+            "averageSteps": 99.4,
             "averageTurns": 10,
             "seatDelta": 0.462,
             "matchups": {
@@ -6435,31 +6448,31 @@ export const DECK_BATTLE_SCORE_SNAPSHOT_SUITES = [
                 "draws": 0,
                 "winRate": 0.65,
                 "winPointRate": 0.65,
-                "averageSteps": 96.7,
+                "averageSteps": 97.3,
                 "averageTurns": 9.8
               }
             },
             "reason": "player/cpu席の勝点率差が大きい"
           },
           {
-            "deckPreset": "submission-pro-no-rare8-white-494",
-            "sourceDeckId": 494,
-            "name": "投稿Pro白8なし #494 高評価ホワイト",
-            "group": "pro-no-rare8-white",
+            "deckPreset": "submission-pro-with-rare8-white-10",
+            "sourceDeckId": 10,
+            "name": "投稿Pro白8あり #10 白殲滅？",
+            "group": "pro-with-rare8-white",
             "masterId": "white",
-            "rank": 30,
-            "battleScore": 36.7,
-            "winRate": 0.372,
-            "winPointRate": 0.372,
+            "rank": 14,
+            "battleScore": 60.4,
+            "winRate": 0.603,
+            "winPointRate": 0.603,
             "stabilityScore": 86.9,
-            "speedScore": 45.1,
-            "practicalScore": 99.1,
+            "speedScore": 51,
+            "practicalScore": 91.5,
             "games": 78,
-            "wins": 29,
-            "losses": 49,
+            "wins": 47,
+            "losses": 31,
             "draws": 0,
-            "averageSteps": 111.4,
-            "averageTurns": 11.2,
+            "averageSteps": 99.3,
+            "averageTurns": 10,
             "seatDelta": 0.436,
             "matchups": {
               "black_vs_black": {
@@ -6474,23 +6487,23 @@ export const DECK_BATTLE_SCORE_SNAPSHOT_SUITES = [
               },
               "white_vs_white": {
                 "games": 38,
-                "wins": 12,
-                "losses": 26,
+                "wins": 28,
+                "losses": 10,
                 "draws": 0,
-                "winRate": 0.316,
-                "winPointRate": 0.316,
-                "averageSteps": 119.7,
-                "averageTurns": 11.7
+                "winRate": 0.737,
+                "winPointRate": 0.737,
+                "averageSteps": 114.8,
+                "averageTurns": 11.1
               },
               "white_vs_black": {
                 "games": 40,
-                "wins": 17,
-                "losses": 23,
+                "wins": 19,
+                "losses": 21,
                 "draws": 0,
-                "winRate": 0.425,
-                "winPointRate": 0.425,
-                "averageSteps": 103.5,
-                "averageTurns": 10.7
+                "winRate": 0.475,
+                "winPointRate": 0.475,
+                "averageSteps": 84.6,
+                "averageTurns": 8.9
               }
             },
             "reason": "player/cpu席の勝点率差が大きい"
@@ -6501,18 +6514,18 @@ export const DECK_BATTLE_SCORE_SNAPSHOT_SUITES = [
             "name": "投稿Pro白8あり #1346 よく使ってるデッキ",
             "group": "pro-with-rare8-white",
             "masterId": "white",
-            "rank": 14,
-            "battleScore": 59.2,
+            "rank": 16,
+            "battleScore": 59.1,
             "winRate": 0.59,
             "winPointRate": 0.59,
             "stabilityScore": 87.7,
-            "speedScore": 51.9,
+            "speedScore": 51.7,
             "practicalScore": 101,
             "games": 78,
             "wins": 46,
             "losses": 32,
             "draws": 0,
-            "averageSteps": 97.5,
+            "averageSteps": 97.9,
             "averageTurns": 10,
             "seatDelta": 0.41,
             "matchups": {
@@ -6533,7 +6546,7 @@ export const DECK_BATTLE_SCORE_SNAPSHOT_SUITES = [
                 "draws": 0,
                 "winRate": 0.553,
                 "winPointRate": 0.553,
-                "averageSteps": 107.1,
+                "averageSteps": 107.8,
                 "averageTurns": 10.4
               },
               "white_vs_black": {
@@ -6550,79 +6563,25 @@ export const DECK_BATTLE_SCORE_SNAPSHOT_SUITES = [
             "reason": "player/cpu席の勝点率差が大きい"
           },
           {
-            "deckPreset": "submission-pro-with-rare8-white-10",
-            "sourceDeckId": 10,
-            "name": "投稿Pro白8あり #10 白殲滅？",
+            "deckPreset": "submission-pro-with-rare8-white-668",
+            "sourceDeckId": 668,
+            "name": "投稿Pro白8あり #668 /",
             "group": "pro-with-rare8-white",
             "masterId": "white",
-            "rank": 16,
-            "battleScore": 59,
-            "winRate": 0.59,
-            "winPointRate": 0.59,
-            "stabilityScore": 87.7,
-            "speedScore": 50.7,
-            "practicalScore": 91.5,
+            "rank": 12,
+            "battleScore": 62,
+            "winRate": 0.615,
+            "winPointRate": 0.615,
+            "stabilityScore": 89.2,
+            "speedScore": 54.7,
+            "practicalScore": 91.3,
             "games": 78,
-            "wins": 46,
-            "losses": 32,
+            "wins": 48,
+            "losses": 30,
             "draws": 0,
-            "averageSteps": 100,
-            "averageTurns": 10.1,
-            "seatDelta": 0.41,
-            "matchups": {
-              "black_vs_black": {
-                "games": 0,
-                "wins": 0,
-                "losses": 0,
-                "draws": 0,
-                "winRate": 0,
-                "winPointRate": 0,
-                "averageSteps": 0,
-                "averageTurns": 0
-              },
-              "white_vs_white": {
-                "games": 38,
-                "wins": 27,
-                "losses": 11,
-                "draws": 0,
-                "winRate": 0.711,
-                "winPointRate": 0.711,
-                "averageSteps": 115.9,
-                "averageTurns": 11.4
-              },
-              "white_vs_black": {
-                "games": 40,
-                "wins": 19,
-                "losses": 21,
-                "draws": 0,
-                "winRate": 0.475,
-                "winPointRate": 0.475,
-                "averageSteps": 84.9,
-                "averageTurns": 8.9
-              }
-            },
-            "reason": "player/cpu席の勝点率差が大きい"
-          },
-          {
-            "deckPreset": "submission-pro-with-rare8-white-438",
-            "sourceDeckId": 438,
-            "name": "投稿Pro白8あり #438 レオラオ",
-            "group": "pro-with-rare8-white",
-            "masterId": "white",
-            "rank": 21,
-            "battleScore": 55.5,
-            "winRate": 0.551,
-            "winPointRate": 0.551,
-            "stabilityScore": 88.5,
-            "speedScore": 53.6,
-            "practicalScore": 96.2,
-            "games": 78,
-            "wins": 43,
-            "losses": 35,
-            "draws": 0,
-            "averageSteps": 94.1,
-            "averageTurns": 9.7,
-            "seatDelta": 0.385,
+            "averageSteps": 91.8,
+            "averageTurns": 9.1,
+            "seatDelta": 0.359,
             "matchups": {
               "black_vs_black": {
                 "games": 0,
@@ -6641,62 +6600,8 @@ export const DECK_BATTLE_SCORE_SNAPSHOT_SUITES = [
                 "draws": 0,
                 "winRate": 0.763,
                 "winPointRate": 0.763,
-                "averageSteps": 104.2,
-                "averageTurns": 10.1
-              },
-              "white_vs_black": {
-                "games": 40,
-                "wins": 14,
-                "losses": 26,
-                "draws": 0,
-                "winRate": 0.35,
-                "winPointRate": 0.35,
-                "averageSteps": 84.5,
-                "averageTurns": 9.3
-              }
-            },
-            "reason": "player/cpu席の勝点率差が大きい"
-          },
-          {
-            "deckPreset": "submission-pro-with-rare8-white-668",
-            "sourceDeckId": 668,
-            "name": "投稿Pro白8あり #668 /",
-            "group": "pro-with-rare8-white",
-            "masterId": "white",
-            "rank": 11,
-            "battleScore": 63.3,
-            "winRate": 0.628,
-            "winPointRate": 0.628,
-            "stabilityScore": 88.5,
-            "speedScore": 54.5,
-            "practicalScore": 91.3,
-            "games": 78,
-            "wins": 49,
-            "losses": 29,
-            "draws": 0,
-            "averageSteps": 92.4,
-            "averageTurns": 9.1,
-            "seatDelta": 0.385,
-            "matchups": {
-              "black_vs_black": {
-                "games": 0,
-                "wins": 0,
-                "losses": 0,
-                "draws": 0,
-                "winRate": 0,
-                "winPointRate": 0,
-                "averageSteps": 0,
-                "averageTurns": 0
-              },
-              "white_vs_white": {
-                "games": 38,
-                "wins": 30,
-                "losses": 8,
-                "draws": 0,
-                "winRate": 0.789,
-                "winPointRate": 0.789,
-                "averageSteps": 111.6,
-                "averageTurns": 10.5
+                "averageSteps": 110.4,
+                "averageTurns": 10.4
               },
               "white_vs_black": {
                 "games": 40,
@@ -6712,25 +6617,187 @@ export const DECK_BATTLE_SCORE_SNAPSHOT_SUITES = [
             "reason": "player/cpu席の勝点率差が大きい"
           },
           {
+            "deckPreset": "submission-pro-with-rare8-white-1339",
+            "sourceDeckId": 1339,
+            "name": "投稿Pro白8あり #1339 お気に入り",
+            "group": "pro-with-rare8-white",
+            "masterId": "white",
+            "rank": 31,
+            "battleScore": 35.8,
+            "winRate": 0.359,
+            "winPointRate": 0.359,
+            "stabilityScore": 89.2,
+            "speedScore": 49,
+            "practicalScore": 103.2,
+            "games": 78,
+            "wins": 28,
+            "losses": 50,
+            "draws": 0,
+            "averageSteps": 103.4,
+            "averageTurns": 10.3,
+            "seatDelta": 0.359,
+            "matchups": {
+              "black_vs_black": {
+                "games": 0,
+                "wins": 0,
+                "losses": 0,
+                "draws": 0,
+                "winRate": 0,
+                "winPointRate": 0,
+                "averageSteps": 0,
+                "averageTurns": 0
+              },
+              "white_vs_white": {
+                "games": 38,
+                "wins": 18,
+                "losses": 20,
+                "draws": 0,
+                "winRate": 0.474,
+                "winPointRate": 0.474,
+                "averageSteps": 122.1,
+                "averageTurns": 11.5
+              },
+              "white_vs_black": {
+                "games": 40,
+                "wins": 10,
+                "losses": 30,
+                "draws": 0,
+                "winRate": 0.25,
+                "winPointRate": 0.25,
+                "averageSteps": 85.7,
+                "averageTurns": 9.1
+              }
+            },
+            "reason": "player/cpu席の勝点率差が大きい"
+          },
+          {
+            "deckPreset": "submission-pro-no-rare8-white-494",
+            "sourceDeckId": 494,
+            "name": "投稿Pro白8なし #494 高評価ホワイト",
+            "group": "pro-no-rare8-white",
+            "masterId": "white",
+            "rank": 33,
+            "battleScore": 35.3,
+            "winRate": 0.359,
+            "winPointRate": 0.359,
+            "stabilityScore": 89.2,
+            "speedScore": 44.3,
+            "practicalScore": 99.1,
+            "games": 78,
+            "wins": 28,
+            "losses": 50,
+            "draws": 0,
+            "averageSteps": 113,
+            "averageTurns": 11.4,
+            "seatDelta": 0.359,
+            "matchups": {
+              "black_vs_black": {
+                "games": 0,
+                "wins": 0,
+                "losses": 0,
+                "draws": 0,
+                "winRate": 0,
+                "winPointRate": 0,
+                "averageSteps": 0,
+                "averageTurns": 0
+              },
+              "white_vs_white": {
+                "games": 38,
+                "wins": 13,
+                "losses": 25,
+                "draws": 0,
+                "winRate": 0.342,
+                "winPointRate": 0.342,
+                "averageSteps": 119.9,
+                "averageTurns": 11.7
+              },
+              "white_vs_black": {
+                "games": 40,
+                "wins": 15,
+                "losses": 25,
+                "draws": 0,
+                "winRate": 0.375,
+                "winPointRate": 0.375,
+                "averageSteps": 106.5,
+                "averageTurns": 11.1
+              }
+            },
+            "reason": "player/cpu席の勝点率差が大きい"
+          },
+          {
+            "deckPreset": "submission-pro-with-rare8-white-438",
+            "sourceDeckId": 438,
+            "name": "投稿Pro白8あり #438 レオラオ",
+            "group": "pro-with-rare8-white",
+            "masterId": "white",
+            "rank": 19,
+            "battleScore": 56.7,
+            "winRate": 0.564,
+            "winPointRate": 0.564,
+            "stabilityScore": 89.2,
+            "speedScore": 52.8,
+            "practicalScore": 96.2,
+            "games": 78,
+            "wins": 44,
+            "losses": 34,
+            "draws": 0,
+            "averageSteps": 95.8,
+            "averageTurns": 9.9,
+            "seatDelta": 0.359,
+            "matchups": {
+              "black_vs_black": {
+                "games": 0,
+                "wins": 0,
+                "losses": 0,
+                "draws": 0,
+                "winRate": 0,
+                "winPointRate": 0,
+                "averageSteps": 0,
+                "averageTurns": 0
+              },
+              "white_vs_white": {
+                "games": 38,
+                "wins": 29,
+                "losses": 9,
+                "draws": 0,
+                "winRate": 0.763,
+                "winPointRate": 0.763,
+                "averageSteps": 107.7,
+                "averageTurns": 10.5
+              },
+              "white_vs_black": {
+                "games": 40,
+                "wins": 15,
+                "losses": 25,
+                "draws": 0,
+                "winRate": 0.375,
+                "winPointRate": 0.375,
+                "averageSteps": 84.4,
+                "averageTurns": 9.3
+              }
+            },
+            "reason": "player/cpu席の勝点率差が大きい"
+          },
+          {
             "deckPreset": "submission-pro-no-rare8-black-66",
             "sourceDeckId": 66,
             "name": "投稿Pro黒8なし #66 ブラックＤ",
             "group": "pro-no-rare8-black",
             "masterId": "black",
-            "rank": 12,
-            "battleScore": 62.6,
-            "winRate": 0.628,
-            "winPointRate": 0.628,
-            "stabilityScore": 88.5,
-            "speedScore": 48.1,
+            "rank": 10,
+            "battleScore": 63.9,
+            "winRate": 0.641,
+            "winPointRate": 0.641,
+            "stabilityScore": 89.2,
+            "speedScore": 48,
             "practicalScore": 99.7,
             "games": 78,
-            "wins": 49,
-            "losses": 29,
+            "wins": 50,
+            "losses": 28,
             "draws": 0,
-            "averageSteps": 105.3,
+            "averageSteps": 105.5,
             "averageTurns": 10.8,
-            "seatDelta": 0.385,
+            "seatDelta": 0.359,
             "matchups": {
               "black_vs_black": {
                 "games": 38,
@@ -6754,67 +6821,13 @@ export const DECK_BATTLE_SCORE_SNAPSHOT_SUITES = [
               },
               "white_vs_black": {
                 "games": 40,
-                "wins": 31,
-                "losses": 9,
+                "wins": 32,
+                "losses": 8,
                 "draws": 0,
-                "winRate": 0.775,
-                "winPointRate": 0.775,
-                "averageSteps": 108.6,
+                "winRate": 0.8,
+                "winPointRate": 0.8,
+                "averageSteps": 109,
                 "averageTurns": 11.2
-              }
-            },
-            "reason": "player/cpu席の勝点率差が大きい"
-          },
-          {
-            "deckPreset": "submission-pro-with-rare8-white-1339",
-            "sourceDeckId": 1339,
-            "name": "投稿Pro白8あり #1339 お気に入り",
-            "group": "pro-with-rare8-white",
-            "masterId": "white",
-            "rank": 32,
-            "battleScore": 34.5,
-            "winRate": 0.346,
-            "winPointRate": 0.346,
-            "stabilityScore": 90,
-            "speedScore": 49,
-            "practicalScore": 103.2,
-            "games": 78,
-            "wins": 27,
-            "losses": 51,
-            "draws": 0,
-            "averageSteps": 103.5,
-            "averageTurns": 10.3,
-            "seatDelta": 0.334,
-            "matchups": {
-              "black_vs_black": {
-                "games": 0,
-                "wins": 0,
-                "losses": 0,
-                "draws": 0,
-                "winRate": 0,
-                "winPointRate": 0,
-                "averageSteps": 0,
-                "averageTurns": 0
-              },
-              "white_vs_white": {
-                "games": 38,
-                "wins": 17,
-                "losses": 21,
-                "draws": 0,
-                "winRate": 0.447,
-                "winPointRate": 0.447,
-                "averageSteps": 122.3,
-                "averageTurns": 11.6
-              },
-              "white_vs_black": {
-                "games": 40,
-                "wins": 10,
-                "losses": 30,
-                "draws": 0,
-                "winRate": 0.25,
-                "winPointRate": 0.25,
-                "averageSteps": 85.7,
-                "averageTurns": 9.1
               }
             },
             "reason": "player/cpu席の勝点率差が大きい"
@@ -6832,20 +6845,20 @@ export const DECK_BATTLE_SCORE_SNAPSHOT_SUITES = [
             "name": "投稿Pro白8あり #1339 お気に入り",
             "group": "pro-with-rare8-white",
             "masterId": "white",
-            "rank": 32,
-            "battleScore": 34.5,
-            "winRate": 0.346,
-            "winPointRate": 0.346,
-            "stabilityScore": 90,
+            "rank": 31,
+            "battleScore": 35.8,
+            "winRate": 0.359,
+            "winPointRate": 0.359,
+            "stabilityScore": 89.2,
             "speedScore": 49,
             "practicalScore": 103.2,
             "games": 78,
-            "wins": 27,
-            "losses": 51,
+            "wins": 28,
+            "losses": 50,
             "draws": 0,
-            "averageSteps": 103.5,
+            "averageSteps": 103.4,
             "averageTurns": 10.3,
-            "seatDelta": 0.334,
+            "seatDelta": 0.359,
             "matchups": {
               "black_vs_black": {
                 "games": 0,
@@ -6859,13 +6872,13 @@ export const DECK_BATTLE_SCORE_SNAPSHOT_SUITES = [
               },
               "white_vs_white": {
                 "games": 38,
-                "wins": 17,
-                "losses": 21,
+                "wins": 18,
+                "losses": 20,
                 "draws": 0,
-                "winRate": 0.447,
-                "winPointRate": 0.447,
-                "averageSteps": 122.3,
-                "averageTurns": 11.6
+                "winRate": 0.474,
+                "winPointRate": 0.474,
+                "averageSteps": 122.1,
+                "averageTurns": 11.5
               },
               "white_vs_black": {
                 "games": 40,
@@ -6886,20 +6899,20 @@ export const DECK_BATTLE_SCORE_SNAPSHOT_SUITES = [
             "name": "投稿Pro黒8あり #44 ラオンレオンスーパーデッキ",
             "group": "pro-with-rare8-black",
             "masterId": "black",
-            "rank": 27,
-            "battleScore": 42.5,
-            "winRate": 0.423,
-            "winPointRate": 0.423,
-            "stabilityScore": 99.2,
-            "speedScore": 51.5,
+            "rank": 28,
+            "battleScore": 41.2,
+            "winRate": 0.41,
+            "winPointRate": 0.41,
+            "stabilityScore": 100,
+            "speedScore": 51.3,
             "practicalScore": 102.3,
             "games": 78,
-            "wins": 33,
-            "losses": 45,
+            "wins": 32,
+            "losses": 46,
             "draws": 0,
-            "averageSteps": 98.5,
-            "averageTurns": 10.4,
-            "seatDelta": 0.026,
+            "averageSteps": 98.6,
+            "averageTurns": 10.5,
+            "seatDelta": 0,
             "matchups": {
               "black_vs_black": {
                 "games": 38,
@@ -6923,12 +6936,12 @@ export const DECK_BATTLE_SCORE_SNAPSHOT_SUITES = [
               },
               "white_vs_black": {
                 "games": 40,
-                "wins": 21,
-                "losses": 19,
+                "wins": 20,
+                "losses": 20,
                 "draws": 0,
-                "winRate": 0.525,
-                "winPointRate": 0.525,
-                "averageSteps": 103.4,
+                "winRate": 0.5,
+                "winPointRate": 0.5,
+                "averageSteps": 103.7,
                 "averageTurns": 11
               }
             },
@@ -6948,9 +6961,9 @@ export const DECK_BATTLE_SCORE_SNAPSHOT_SUITES = [
         "loserDeckPreset": "submission-pro-with-rare8-white-1236",
         "steps": 328,
         "turns": 30,
-        "winnerRank": 28,
-        "loserRank": 4,
-        "battleScoreGap": 26.6,
+        "winnerRank": 26,
+        "loserRank": 11,
+        "battleScoreGap": 18.8,
         "primaryFocus": "issue_safety",
         "focusIds": [
           "issue_safety",
@@ -6976,7 +6989,7 @@ export const DECK_BATTLE_SCORE_SNAPSHOT_SUITES = [
         "turns": 13,
         "winnerRank": 40,
         "loserRank": 5,
-        "battleScoreGap": 58.5,
+        "battleScoreGap": 61.1,
         "primaryFocus": "top_deck_regression",
         "focusIds": [
           "top_deck_regression",
@@ -7002,7 +7015,7 @@ export const DECK_BATTLE_SCORE_SNAPSHOT_SUITES = [
         "turns": 12,
         "winnerRank": 40,
         "loserRank": 6,
-        "battleScoreGap": 57.5,
+        "battleScoreGap": 60.1,
         "primaryFocus": "top_deck_regression",
         "focusIds": [
           "top_deck_regression",
@@ -7044,15 +7057,15 @@ export const DECK_BATTLE_SCORE_SNAPSHOT_SUITES = [
         "kind": "top_deck_loss",
         "severity": "review",
         "seed": 560,
-        "playerDeckPreset": "submission-pro-no-rare8-black-322",
-        "cpuDeckPreset": "submission-pro-with-rare8-white-1405",
-        "winnerDeckPreset": "submission-pro-with-rare8-white-1405",
-        "loserDeckPreset": "submission-pro-no-rare8-black-322",
-        "steps": 89,
-        "turns": 10,
-        "winnerRank": 38,
-        "loserRank": 5,
-        "battleScoreGap": 41.7,
+        "playerDeckPreset": "submission-pro-no-rare8-black-493",
+        "cpuDeckPreset": "submission-pro-no-rare8-white-479",
+        "winnerDeckPreset": "submission-pro-no-rare8-white-479",
+        "loserDeckPreset": "submission-pro-no-rare8-black-493",
+        "steps": 114,
+        "turns": 12,
+        "winnerRank": 35,
+        "loserRank": 1,
+        "battleScoreGap": 42,
         "primaryFocus": "top_deck_regression",
         "focusIds": [
           "top_deck_regression",
@@ -7070,37 +7083,13 @@ export const DECK_BATTLE_SCORE_SNAPSHOT_SUITES = [
         "kind": "top_deck_loss",
         "severity": "review",
         "seed": 560,
-        "playerDeckPreset": "submission-pro-no-rare8-white-1377",
-        "cpuDeckPreset": "submission-pro-with-rare8-white-1236",
-        "winnerDeckPreset": "submission-pro-no-rare8-white-1377",
-        "loserDeckPreset": "submission-pro-with-rare8-white-1236",
-        "steps": 126,
-        "turns": 11,
-        "winnerRank": 37,
-        "loserRank": 4,
-        "battleScoreGap": 41.5,
-        "primaryFocus": "top_deck_regression",
-        "focusIds": [
-          "top_deck_regression",
-          "seat_bias"
-        ],
-        "focusLabels": [
-          "上位デッキ敗戦",
-          "席差/非対称"
-        ],
-        "reason": "top 8 deck lost to lower ranked deck"
-      },
-      {
-        "kind": "top_deck_loss",
-        "severity": "review",
-        "seed": 560,
         "playerDeckPreset": "submission-pro-with-rare8-black-1390",
         "cpuDeckPreset": "submission-pro-no-rare8-black-493",
         "winnerDeckPreset": "submission-pro-with-rare8-black-1390",
         "loserDeckPreset": "submission-pro-no-rare8-black-493",
         "steps": 76,
         "turns": 8,
-        "winnerRank": 35,
+        "winnerRank": 34,
         "loserRank": 1,
         "battleScoreGap": 41.2,
         "primaryFocus": "top_deck_regression",
@@ -7118,39 +7107,13 @@ export const DECK_BATTLE_SCORE_SNAPSHOT_SUITES = [
         "kind": "top_deck_loss",
         "severity": "review",
         "seed": 560,
-        "playerDeckPreset": "submission-pro-no-rare8-black-493",
-        "cpuDeckPreset": "submission-pro-no-rare8-white-479",
-        "winnerDeckPreset": "submission-pro-no-rare8-white-479",
-        "loserDeckPreset": "submission-pro-no-rare8-black-493",
-        "steps": 114,
-        "turns": 12,
-        "winnerRank": 34,
-        "loserRank": 1,
-        "battleScoreGap": 40.7,
-        "primaryFocus": "top_deck_regression",
-        "focusIds": [
-          "top_deck_regression",
-          "black_pressure",
-          "seat_bias"
-        ],
-        "focusLabels": [
-          "上位デッキ敗戦",
-          "黒の攻め筋",
-          "席差/非対称"
-        ],
-        "reason": "top 8 deck lost to lower ranked deck"
-      },
-      {
-        "kind": "top_deck_loss",
-        "severity": "review",
-        "seed": 560,
         "playerDeckPreset": "submission-pro-no-rare8-white-1377",
         "cpuDeckPreset": "submission-pro-with-rare8-black-1336",
         "winnerDeckPreset": "submission-pro-no-rare8-white-1377",
         "loserDeckPreset": "submission-pro-with-rare8-black-1336",
         "steps": 79,
         "turns": 8,
-        "winnerRank": 37,
+        "winnerRank": 38,
         "loserRank": 6,
         "battleScoreGap": 39.6,
         "primaryFocus": "top_deck_regression",
@@ -7174,7 +7137,7 @@ export const DECK_BATTLE_SCORE_SNAPSHOT_SUITES = [
         "loserDeckPreset": "submission-pro-with-rare8-black-1333",
         "steps": 49,
         "turns": 6,
-        "winnerRank": 35,
+        "winnerRank": 34,
         "loserRank": 2,
         "battleScoreGap": 39.5,
         "primaryFocus": "top_deck_regression",
@@ -7192,40 +7155,14 @@ export const DECK_BATTLE_SCORE_SNAPSHOT_SUITES = [
         "kind": "top_deck_loss",
         "severity": "review",
         "seed": 560,
-        "playerDeckPreset": "submission-pro-no-rare8-black-493",
-        "cpuDeckPreset": "submission-pro-no-rare8-white-837",
-        "winnerDeckPreset": "submission-pro-no-rare8-white-837",
-        "loserDeckPreset": "submission-pro-no-rare8-black-493",
-        "steps": 143,
-        "turns": 16,
-        "winnerRank": 33,
-        "loserRank": 1,
-        "battleScoreGap": 38,
-        "primaryFocus": "top_deck_regression",
-        "focusIds": [
-          "top_deck_regression",
-          "black_pressure",
-          "seat_bias"
-        ],
-        "focusLabels": [
-          "上位デッキ敗戦",
-          "黒の攻め筋",
-          "席差/非対称"
-        ],
-        "reason": "top 8 deck lost to lower ranked deck"
-      },
-      {
-        "kind": "top_deck_loss",
-        "severity": "review",
-        "seed": 560,
-        "playerDeckPreset": "submission-pro-no-rare8-black-493",
-        "cpuDeckPreset": "submission-pro-with-rare8-white-1339",
-        "winnerDeckPreset": "submission-pro-with-rare8-white-1339",
-        "loserDeckPreset": "submission-pro-no-rare8-black-493",
-        "steps": 122,
-        "turns": 13,
-        "winnerRank": 32,
-        "loserRank": 1,
+        "playerDeckPreset": "submission-pro-no-rare8-black-322",
+        "cpuDeckPreset": "submission-pro-with-rare8-white-1405",
+        "winnerDeckPreset": "submission-pro-with-rare8-white-1405",
+        "loserDeckPreset": "submission-pro-no-rare8-black-322",
+        "steps": 83,
+        "turns": 9,
+        "winnerRank": 37,
+        "loserRank": 5,
         "battleScoreGap": 37.6,
         "primaryFocus": "top_deck_regression",
         "focusIds": [
@@ -7244,48 +7181,24 @@ export const DECK_BATTLE_SCORE_SNAPSHOT_SUITES = [
         "kind": "top_deck_loss",
         "severity": "review",
         "seed": 560,
-        "playerDeckPreset": "submission-pro-with-rare8-black-1390",
-        "cpuDeckPreset": "submission-pro-with-rare8-white-1236",
-        "winnerDeckPreset": "submission-pro-with-rare8-black-1390",
-        "loserDeckPreset": "submission-pro-with-rare8-white-1236",
-        "steps": 74,
-        "turns": 9,
-        "winnerRank": 35,
-        "loserRank": 4,
-        "battleScoreGap": 37.3,
+        "playerDeckPreset": "submission-pro-no-rare8-black-493",
+        "cpuDeckPreset": "submission-pro-no-rare8-white-837",
+        "winnerDeckPreset": "submission-pro-no-rare8-white-837",
+        "loserDeckPreset": "submission-pro-no-rare8-black-493",
+        "steps": 143,
+        "turns": 16,
+        "winnerRank": 32,
+        "loserRank": 1,
+        "battleScoreGap": 36.7,
         "primaryFocus": "top_deck_regression",
         "focusIds": [
           "top_deck_regression",
-          "white_vs_black",
+          "black_pressure",
           "seat_bias"
         ],
         "focusLabels": [
           "上位デッキ敗戦",
-          "白vs黒対策",
-          "席差/非対称"
-        ],
-        "reason": "top 8 deck lost to lower ranked deck"
-      },
-      {
-        "kind": "top_deck_loss",
-        "severity": "review",
-        "seed": 560,
-        "playerDeckPreset": "submission-pro-with-rare8-white-1236",
-        "cpuDeckPreset": "submission-pro-no-rare8-white-479",
-        "winnerDeckPreset": "submission-pro-no-rare8-white-479",
-        "loserDeckPreset": "submission-pro-with-rare8-white-1236",
-        "steps": 78,
-        "turns": 7,
-        "winnerRank": 34,
-        "loserRank": 4,
-        "battleScoreGap": 36.8,
-        "primaryFocus": "top_deck_regression",
-        "focusIds": [
-          "top_deck_regression",
-          "seat_bias"
-        ],
-        "focusLabels": [
-          "上位デッキ敗戦",
+          "黒の攻め筋",
           "席差/非対称"
         ],
         "reason": "top 8 deck lost to lower ranked deck"
@@ -7318,15 +7231,65 @@ export const DECK_BATTLE_SCORE_SNAPSHOT_SUITES = [
         "kind": "top_deck_loss",
         "severity": "review",
         "seed": 560,
+        "playerDeckPreset": "submission-pro-no-rare8-black-493",
+        "cpuDeckPreset": "submission-pro-with-rare8-white-1339",
+        "winnerDeckPreset": "submission-pro-with-rare8-white-1339",
+        "loserDeckPreset": "submission-pro-no-rare8-black-493",
+        "steps": 122,
+        "turns": 13,
+        "winnerRank": 31,
+        "loserRank": 1,
+        "battleScoreGap": 36.3,
+        "primaryFocus": "top_deck_regression",
+        "focusIds": [
+          "top_deck_regression",
+          "black_pressure",
+          "seat_bias"
+        ],
+        "focusLabels": [
+          "上位デッキ敗戦",
+          "黒の攻め筋",
+          "席差/非対称"
+        ],
+        "reason": "top 8 deck lost to lower ranked deck"
+      },
+      {
+        "kind": "top_deck_loss",
+        "severity": "review",
+        "seed": 560,
+        "playerDeckPreset": "submission-pro-with-rare8-black-1336",
+        "cpuDeckPreset": "submission-pro-no-rare8-white-479",
+        "winnerDeckPreset": "submission-pro-no-rare8-white-479",
+        "loserDeckPreset": "submission-pro-with-rare8-black-1336",
+        "steps": 102,
+        "turns": 11,
+        "winnerRank": 35,
+        "loserRank": 6,
+        "battleScoreGap": 36.2,
+        "primaryFocus": "top_deck_regression",
+        "focusIds": [
+          "top_deck_regression",
+          "black_pressure"
+        ],
+        "focusLabels": [
+          "上位デッキ敗戦",
+          "黒の攻め筋"
+        ],
+        "reason": "top 8 deck lost to lower ranked deck"
+      },
+      {
+        "kind": "top_deck_loss",
+        "severity": "review",
+        "seed": 560,
         "playerDeckPreset": "submission-pro-with-rare8-black-1333",
         "cpuDeckPreset": "submission-pro-no-rare8-white-837",
         "winnerDeckPreset": "submission-pro-no-rare8-white-837",
         "loserDeckPreset": "submission-pro-with-rare8-black-1333",
         "steps": 87,
         "turns": 9,
-        "winnerRank": 33,
+        "winnerRank": 32,
         "loserRank": 2,
-        "battleScoreGap": 36.3,
+        "battleScoreGap": 35,
         "primaryFocus": "top_deck_regression",
         "focusIds": [
           "top_deck_regression",
@@ -7350,9 +7313,9 @@ export const DECK_BATTLE_SCORE_SNAPSHOT_SUITES = [
         "loserDeckPreset": "submission-pro-with-rare8-black-1333",
         "steps": 74,
         "turns": 8,
-        "winnerRank": 32,
+        "winnerRank": 31,
         "loserRank": 2,
-        "battleScoreGap": 35.9,
+        "battleScoreGap": 34.6,
         "primaryFocus": "top_deck_regression",
         "focusIds": [
           "top_deck_regression",
@@ -7363,6 +7326,30 @@ export const DECK_BATTLE_SCORE_SNAPSHOT_SUITES = [
           "上位デッキ敗戦",
           "黒の攻め筋",
           "席差/非対称"
+        ],
+        "reason": "top 8 deck lost to lower ranked deck"
+      },
+      {
+        "kind": "top_deck_loss",
+        "severity": "review",
+        "seed": 560,
+        "playerDeckPreset": "submission-pro-no-rare8-black-408",
+        "cpuDeckPreset": "submission-pro-no-rare8-white-494",
+        "winnerDeckPreset": "submission-pro-no-rare8-white-494",
+        "loserDeckPreset": "submission-pro-no-rare8-black-408",
+        "steps": 111,
+        "turns": 12,
+        "winnerRank": 33,
+        "loserRank": 3,
+        "battleScoreGap": 34.5,
+        "primaryFocus": "top_deck_regression",
+        "focusIds": [
+          "top_deck_regression",
+          "black_pressure"
+        ],
+        "focusLabels": [
+          "上位デッキ敗戦",
+          "黒の攻め筋"
         ],
         "reason": "top 8 deck lost to lower ranked deck"
       },
@@ -7378,7 +7365,7 @@ export const DECK_BATTLE_SCORE_SNAPSHOT_SUITES = [
         "turns": 13,
         "winnerRank": 40,
         "loserRank": 5,
-        "battleScoreGap": 58.5,
+        "battleScoreGap": 61.1,
         "primaryFocus": "upset_review",
         "focusIds": [
           "upset_review",
@@ -7390,7 +7377,7 @@ export const DECK_BATTLE_SCORE_SNAPSHOT_SUITES = [
           "黒の攻め筋",
           "席差/非対称"
         ],
-        "reason": "lower-score deck beat higher-score deck by 58.5"
+        "reason": "lower-score deck beat higher-score deck by 61.1"
       },
       {
         "kind": "upset",
@@ -7404,7 +7391,7 @@ export const DECK_BATTLE_SCORE_SNAPSHOT_SUITES = [
         "turns": 12,
         "winnerRank": 40,
         "loserRank": 6,
-        "battleScoreGap": 57.5,
+        "battleScoreGap": 60.1,
         "primaryFocus": "upset_review",
         "focusIds": [
           "upset_review",
@@ -7414,7 +7401,7 @@ export const DECK_BATTLE_SCORE_SNAPSHOT_SUITES = [
           "番狂わせ",
           "黒の攻め筋"
         ],
-        "reason": "lower-score deck beat higher-score deck by 57.5"
+        "reason": "lower-score deck beat higher-score deck by 60.1"
       },
       {
         "kind": "upset",
@@ -7427,8 +7414,8 @@ export const DECK_BATTLE_SCORE_SNAPSHOT_SUITES = [
         "steps": 129,
         "turns": 12,
         "winnerRank": 39,
-        "loserRank": 11,
-        "battleScoreGap": 49.7,
+        "loserRank": 12,
+        "battleScoreGap": 48.4,
         "primaryFocus": "upset_review",
         "focusIds": [
           "upset_review",
@@ -7438,7 +7425,7 @@ export const DECK_BATTLE_SCORE_SNAPSHOT_SUITES = [
           "番狂わせ",
           "席差/非対称"
         ],
-        "reason": "lower-score deck beat higher-score deck by 49.7"
+        "reason": "lower-score deck beat higher-score deck by 48.4"
       },
       {
         "kind": "upset",
@@ -7452,7 +7439,7 @@ export const DECK_BATTLE_SCORE_SNAPSHOT_SUITES = [
         "turns": 9,
         "winnerRank": 40,
         "loserRank": 29,
-        "battleScoreGap": 31.6,
+        "battleScoreGap": 32.8,
         "primaryFocus": "upset_review",
         "focusIds": [
           "upset_review",
@@ -7462,7 +7449,33 @@ export const DECK_BATTLE_SCORE_SNAPSHOT_SUITES = [
           "番狂わせ",
           "白の勝ち切り"
         ],
-        "reason": "lower-score deck beat higher-score deck by 31.6"
+        "reason": "lower-score deck beat higher-score deck by 32.8"
+      },
+      {
+        "kind": "upset",
+        "severity": "review",
+        "seed": 560,
+        "playerDeckPreset": "submission-pro-with-rare8-black-1390",
+        "cpuDeckPreset": "submission-pro-with-rare8-white-1236",
+        "winnerDeckPreset": "submission-pro-with-rare8-black-1390",
+        "loserDeckPreset": "submission-pro-with-rare8-white-1236",
+        "steps": 74,
+        "turns": 9,
+        "winnerRank": 34,
+        "loserRank": 11,
+        "battleScoreGap": 32.1,
+        "primaryFocus": "upset_review",
+        "focusIds": [
+          "upset_review",
+          "white_vs_black",
+          "seat_bias"
+        ],
+        "focusLabels": [
+          "番狂わせ",
+          "白vs黒対策",
+          "席差/非対称"
+        ],
+        "reason": "lower-score deck beat higher-score deck by 32.1"
       },
       {
         "kind": "long_game",
@@ -7475,8 +7488,8 @@ export const DECK_BATTLE_SCORE_SNAPSHOT_SUITES = [
         "steps": 218,
         "turns": 24,
         "winnerRank": 40,
-        "loserRank": 24,
-        "battleScoreGap": 40.3,
+        "loserRank": 25,
+        "battleScoreGap": 41.6,
         "primaryFocus": "long_game_closeout",
         "focusIds": [
           "long_game_closeout",
@@ -7492,39 +7505,15 @@ export const DECK_BATTLE_SCORE_SNAPSHOT_SUITES = [
         "kind": "long_game",
         "severity": "review",
         "seed": 560,
-        "playerDeckPreset": "submission-pro-no-rare8-white-1377",
-        "cpuDeckPreset": "submission-pro-with-rare8-white-668",
-        "winnerDeckPreset": "submission-pro-no-rare8-white-1377",
-        "loserDeckPreset": "submission-pro-with-rare8-white-668",
-        "steps": 178,
-        "turns": 16,
-        "winnerRank": 37,
-        "loserRank": 11,
-        "battleScoreGap": 36.6,
-        "primaryFocus": "long_game_closeout",
-        "focusIds": [
-          "long_game_closeout",
-          "seat_bias"
-        ],
-        "focusLabels": [
-          "長期戦/勝ち切り",
-          "席差/非対称"
-        ],
-        "reason": "178 steps is above suite average + 45"
-      },
-      {
-        "kind": "long_game",
-        "severity": "review",
-        "seed": 560,
         "playerDeckPreset": "submission-pro-no-rare8-black-66",
         "cpuDeckPreset": "submission-pro-no-rare8-white-1377",
         "winnerDeckPreset": "submission-pro-no-rare8-white-1377",
         "loserDeckPreset": "submission-pro-no-rare8-black-66",
         "steps": 176,
         "turns": 17,
-        "winnerRank": 37,
-        "loserRank": 12,
-        "battleScoreGap": 35.9,
+        "winnerRank": 38,
+        "loserRank": 10,
+        "battleScoreGap": 37.2,
         "primaryFocus": "long_game_closeout",
         "focusIds": [
           "long_game_closeout",
@@ -7537,45 +7526,39 @@ export const DECK_BATTLE_SCORE_SNAPSHOT_SUITES = [
           "席差/非対称"
         ],
         "reason": "176 steps is above suite average + 45"
+      },
+      {
+        "kind": "long_game",
+        "severity": "review",
+        "seed": 560,
+        "playerDeckPreset": "submission-pro-no-rare8-white-1377",
+        "cpuDeckPreset": "submission-pro-with-rare8-white-668",
+        "winnerDeckPreset": "submission-pro-no-rare8-white-1377",
+        "loserDeckPreset": "submission-pro-with-rare8-white-668",
+        "steps": 178,
+        "turns": 16,
+        "winnerRank": 38,
+        "loserRank": 12,
+        "battleScoreGap": 35.3,
+        "primaryFocus": "long_game_closeout",
+        "focusIds": [
+          "long_game_closeout",
+          "seat_bias"
+        ],
+        "focusLabels": [
+          "長期戦/勝ち切り",
+          "席差/非対称"
+        ],
+        "reason": "178 steps is above suite average + 45"
       }
     ],
     "problemFocuses": [
       {
-        "id": "seat_bias",
-        "title": "席差/非対称",
-        "description": "player/cpu席の成績差が大きい。初手、先後、評価の非対称性を見る。",
-        "count": 19,
-        "reviewWeight": 5774.8,
-        "examples": [
-          {
-            "kind": "issue",
-            "seed": 560,
-            "playerDeckPreset": "submission-pro-with-rare8-white-1236",
-            "cpuDeckPreset": "submission-pro-no-rare8-white-400",
-            "reason": "issue 0/1"
-          },
-          {
-            "kind": "top_deck_loss",
-            "seed": 560,
-            "playerDeckPreset": "submission-pro-no-rare8-black-322",
-            "cpuDeckPreset": "submission-pro-no-rare8-white-882",
-            "reason": "top 8 deck lost to lower ranked deck"
-          },
-          {
-            "kind": "top_deck_loss",
-            "seed": 560,
-            "playerDeckPreset": "submission-pro-no-rare8-black-493",
-            "cpuDeckPreset": "submission-pro-no-rare8-white-541",
-            "reason": "top 8 deck lost to lower ranked deck"
-          }
-        ]
-      },
-      {
         "id": "top_deck_regression",
         "title": "上位デッキ敗戦",
         "description": "主力検証デッキの敗戦。AI変更時の回帰チェック候補にする。",
-        "count": 16,
-        "reviewWeight": 5460.7,
+        "count": 15,
+        "reviewWeight": 5113,
         "examples": [
           {
             "kind": "top_deck_loss",
@@ -7604,8 +7587,8 @@ export const DECK_BATTLE_SCORE_SNAPSHOT_SUITES = [
         "id": "black_pressure",
         "title": "黒の攻め筋",
         "description": "黒が白に押し返される構図。バーサク後の直撃、非撃破削り、石消費を確認する。",
-        "count": 14,
-        "reviewWeight": 4416.3,
+        "count": 16,
+        "reviewWeight": 5090.7,
         "examples": [
           {
             "kind": "top_deck_loss",
@@ -7631,32 +7614,62 @@ export const DECK_BATTLE_SCORE_SNAPSHOT_SUITES = [
         ]
       },
       {
+        "id": "seat_bias",
+        "title": "席差/非対称",
+        "description": "player/cpu席の成績差が大きい。初手、先後、評価の非対称性を見る。",
+        "count": 17,
+        "reviewWeight": 4980.7,
+        "examples": [
+          {
+            "kind": "issue",
+            "seed": 560,
+            "playerDeckPreset": "submission-pro-with-rare8-white-1236",
+            "cpuDeckPreset": "submission-pro-no-rare8-white-400",
+            "reason": "issue 0/1"
+          },
+          {
+            "kind": "top_deck_loss",
+            "seed": 560,
+            "playerDeckPreset": "submission-pro-no-rare8-black-322",
+            "cpuDeckPreset": "submission-pro-no-rare8-white-882",
+            "reason": "top 8 deck lost to lower ranked deck"
+          },
+          {
+            "kind": "top_deck_loss",
+            "seed": 560,
+            "playerDeckPreset": "submission-pro-no-rare8-black-493",
+            "cpuDeckPreset": "submission-pro-no-rare8-white-541",
+            "reason": "top 8 deck lost to lower ranked deck"
+          }
+        ]
+      },
+      {
         "id": "upset_review",
         "title": "番狂わせ",
         "description": "実戦スコア差のある敗戦。上位デッキ側の分岐判断を追う。",
-        "count": 4,
-        "reviewWeight": 997.3,
+        "count": 5,
+        "reviewWeight": 1234.5,
         "examples": [
           {
             "kind": "upset",
             "seed": 560,
             "playerDeckPreset": "submission-pro-no-rare8-black-322",
             "cpuDeckPreset": "submission-pro-no-rare8-white-882",
-            "reason": "lower-score deck beat higher-score deck by 58.5"
+            "reason": "lower-score deck beat higher-score deck by 61.1"
           },
           {
             "kind": "upset",
             "seed": 560,
             "playerDeckPreset": "submission-pro-with-rare8-black-1336",
             "cpuDeckPreset": "submission-pro-no-rare8-white-882",
-            "reason": "lower-score deck beat higher-score deck by 57.5"
+            "reason": "lower-score deck beat higher-score deck by 60.1"
           },
           {
             "kind": "upset",
             "seed": 560,
             "playerDeckPreset": "submission-pro-with-rare8-white-668",
             "cpuDeckPreset": "submission-pro-with-rare8-white-802",
-            "reason": "lower-score deck beat higher-score deck by 49.7"
+            "reason": "lower-score deck beat higher-score deck by 48.4"
           }
         ]
       },
@@ -7665,7 +7678,7 @@ export const DECK_BATTLE_SCORE_SNAPSHOT_SUITES = [
         "title": "長期戦/勝ち切り",
         "description": "平均より長い試合。終盤の直接打点、focus、非撃破行動を確認する。",
         "count": 4,
-        "reviewWeight": 839.4,
+        "reviewWeight": 832.9,
         "examples": [
           {
             "kind": "issue",
@@ -7684,9 +7697,9 @@ export const DECK_BATTLE_SCORE_SNAPSHOT_SUITES = [
           {
             "kind": "long_game",
             "seed": 560,
-            "playerDeckPreset": "submission-pro-no-rare8-white-1377",
-            "cpuDeckPreset": "submission-pro-with-rare8-white-668",
-            "reason": "178 steps is above suite average + 45"
+            "playerDeckPreset": "submission-pro-no-rare8-black-66",
+            "cpuDeckPreset": "submission-pro-no-rare8-white-1377",
+            "reason": "176 steps is above suite average + 45"
           }
         ]
       },
@@ -7695,7 +7708,7 @@ export const DECK_BATTLE_SCORE_SNAPSHOT_SUITES = [
         "title": "安全性",
         "description": "failure/warningを含む。進行不能、長期戦警告、例外をまず潰す。",
         "count": 1,
-        "reviewWeight": 426.6,
+        "reviewWeight": 418.8,
         "examples": [
           {
             "kind": "issue",
@@ -7707,41 +7720,41 @@ export const DECK_BATTLE_SCORE_SNAPSHOT_SUITES = [
         ]
       },
       {
-        "id": "white_vs_black",
-        "title": "白vs黒対策",
-        "description": "白が黒の圧に負ける構図。防御対象、前衛処理、石テンポを確認する。",
-        "count": 1,
-        "reviewWeight": 337.3,
-        "examples": [
-          {
-            "kind": "top_deck_loss",
-            "seed": 560,
-            "playerDeckPreset": "submission-pro-with-rare8-black-1390",
-            "cpuDeckPreset": "submission-pro-with-rare8-white-1236",
-            "reason": "top 8 deck lost to lower ranked deck"
-          }
-        ]
-      },
-      {
         "id": "white_closeout",
         "title": "白の勝ち切り",
         "description": "白デッキが安定するが勝ち切れない。守りすぎと終盤打点を確認する。",
         "count": 1,
-        "reviewWeight": 231.6,
+        "reviewWeight": 232.8,
         "examples": [
           {
             "kind": "upset",
             "seed": 560,
             "playerDeckPreset": "submission-pro-no-rare8-white-1060",
             "cpuDeckPreset": "submission-pro-no-rare8-white-882",
-            "reason": "lower-score deck beat higher-score deck by 31.6"
+            "reason": "lower-score deck beat higher-score deck by 32.8"
+          }
+        ]
+      },
+      {
+        "id": "white_vs_black",
+        "title": "白vs黒対策",
+        "description": "白が黒の圧に負ける構図。防御対象、前衛処理、石テンポを確認する。",
+        "count": 1,
+        "reviewWeight": 232.1,
+        "examples": [
+          {
+            "kind": "upset",
+            "seed": 560,
+            "playerDeckPreset": "submission-pro-with-rare8-black-1390",
+            "cpuDeckPreset": "submission-pro-with-rare8-white-1236",
+            "reason": "lower-score deck beat higher-score deck by 32.1"
           }
         ]
       }
     ],
     "recommendedFocus": [
-      "席差/非対称: 19件。player/cpu席の成績差が大きい。初手、先後、評価の非対称性を見る。",
-      "submission-pro-no-rare8-black-252: 勝てるが遅い。終盤の勝ち切りと白/黒の過剰安全行動を見る。",
+      "上位デッキ敗戦: 15件。主力検証デッキの敗戦。AI変更時の回帰チェック候補にする。",
+      "submission-pro-no-rare8-black-228: 勝てるが遅い。終盤の勝ち切りと白/黒の過剰安全行動を見る。",
       "submission-pro-with-rare8-black-771: 席差46.2%。先後・player/cpu非対称を確認する。",
       "submission-pro-no-rare8-white-541: 安定するが勝てない。攻め筋不足や守りすぎを確認する。",
       "submission-pro-no-rare8-black-322 vs submission-pro-no-rare8-white-882: 番狂わせ。負けた上位デッキ側の判断を追う。"
