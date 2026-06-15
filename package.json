@@ -22,6 +22,7 @@
     "lab:masters": "vite-node scripts/master-lab-report.ts",
     "lab:masters:auto-play": "vite-node scripts/master-lab-auto-play.ts",
     "lab:masters:final-gate": "vite-node scripts/master-lab-final-gate.ts",
+    "lab:masters:improve": "vite-node scripts/master-lab-improvement-loop.ts",
     "audit:deck-submissions": "vite-node scripts/deck-submission-audit.ts",
     "import:deck-submissions": "node scripts/import-cardhero-bu-decks.mjs",
     "validate:auto-play": "vite-node scripts/auto-play-validation.ts",
