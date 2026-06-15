@@ -34,7 +34,11 @@ export const AI_EVALUATION_WEIGHTS = {
   stable: BASE_WEIGHTS,
   strong: {
     ...BASE_WEIGHTS,
-    // Initially mirror the current behavior. Tune this independently from card data changes.
+    masterHp: 85,
+    stone: 5,
+    masterDamageBase: 96,
+    monsterKillBase: 280,
+    monsterDamagePerPoint: 24,
   },
 } satisfies Record<AiEvaluationProfile, AiEvaluationWeights>;
 

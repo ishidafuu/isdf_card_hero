@@ -432,7 +432,7 @@ export function listCpuDecisions(state: GameState, weights: AiEvaluationWeights 
 
   return [
     ...listAttackDecisions(state, weights),
-    ...listMasterActionDecisions(state),
+    ...listMasterActionDecisions(state, weights),
     ...listMagicDecisions(state, weights),
     ...listSummonDecisions(state),
     ...listMoveDecisions(state),
@@ -643,7 +643,7 @@ function scoreAttackDecision(state: GameState, after: GameState, action: Command
   }
 
   const recoilPenalty = attackerWasDefeated(state, after, action.attackerSlotKey) ? -120 : 0;
-  const stateDelta = evaluateState(after, playerId) - evaluateState(state, playerId);
+  const stateDelta = evaluateState(after, playerId, weights) - evaluateState(state, playerId, weights);
   if (action.secondaryHandInstanceId) {
     return scoreCommandHandChoiceDecision(state, action, stateDelta, recoilPenalty);
   }
@@ -787,7 +787,7 @@ function attackReason(state: GameState, after: GameState, action: CommandAction)
   return target ? `${getCardName(target.cardId)}を削れるため攻撃` : "有効ダメージを与えられるため攻撃";
 }
 
-function listMasterActionDecisions(state: GameState): CpuDecision[] {
+function listMasterActionDecisions(state: GameState, weights: AiEvaluationWeights): CpuDecision[] {
   return getCurrentMasterActionIds(state).flatMap((actionId) => {
     if (actionId === "master_attack") {
       return listMasterAttackDecisions(state);
@@ -802,7 +802,7 @@ function listMasterActionDecisions(state: GameState): CpuDecision[] {
       return listBerserkPowerDecisions(state);
     }
     if (actionId === "earth_anger") {
-      return listEarthAngerDecisions(state);
+      return listEarthAngerDecisions(state, weights);
     }
     return [];
   });
@@ -1018,19 +1018,19 @@ function createBerserkPowerDecision(state: GameState, target: Target): CpuDecisi
   };
 }
 
-function listEarthAngerDecisions(state: GameState): CpuDecision[] {
+function listEarthAngerDecisions(state: GameState, weights: AiEvaluationWeights): CpuDecision[] {
   return getMasterActionTargets(state, "earth_anger")
-    .map((target) => createEarthAngerDecision(state, target))
+    .map((target) => createEarthAngerDecision(state, target, weights))
     .filter((decision): decision is CpuDecision => !!decision);
 }
 
-function createEarthAngerDecision(state: GameState, target: Target): CpuDecision | undefined {
+function createEarthAngerDecision(state: GameState, target: Target, weights: AiEvaluationWeights): CpuDecision | undefined {
   if (target.kind !== "master" || target.playerId !== state.currentPlayer) {
     return undefined;
   }
-  const beforeScore = evaluateState(state, state.currentPlayer);
+  const beforeScore = evaluateState(state, state.currentPlayer, weights);
   const after = useMasterAction(state, "earth_anger", target);
-  const score = evaluateState(after, state.currentPlayer) - beforeScore - 28;
+  const score = evaluateState(after, state.currentPlayer, weights) - beforeScore - 28;
   if (score < 45) {
     return undefined;
   }

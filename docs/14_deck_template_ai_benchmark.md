@@ -511,3 +511,60 @@ npm run generate:deck-battle-snapshots -- --report artifacts/deck-battle-score/p
 - `cpuAi` に残るコマンド/モンスター寄りのID例外を、必要に応じて `commandTraits` / `unitTraits` へ分離する。
 - `aiWeights.strong` は現時点では既存係数を踏襲している。カード性能調整後は、カードデータではなくここでAI性格を再調整する。
 - マジック以外の特殊コマンドも、威力固定推定ではなくルール仮実行差分へ寄せる。
+
+## Phase 25: AI分離レビューと重みプロファイル修正
+
+実行日: 2026-06-15
+
+### 目的
+
+Phase 24のコードレビューとして、カード調整耐性の設計に対して不足している点を修正する。
+特に `strong` が `stable` と同一重みのままだった点と、一部評価経路でプロファイル重みがデフォルトへ戻っていた点を直す。
+
+### 修正内容
+
+- `AI_EVALUATION_WEIGHTS.strong` に初期差分を持たせ、マスターHP差とマスター打点をやや重く、ストーン消費とモンスター撃破をやや軽く評価するようにした。
+- 攻撃評価の `stateDelta` と大地の怒り評価へ、選択中プロファイルの `weights` を渡すようにした。
+- `tests/game/aiWeights.test.ts` を追加し、`stable` / `strong` が別プロファイルとして維持されることを検出する。
+- `docs/17_ai_card_adjustment_boundary.md` に `strong` の初期性格差を追記した。
+
+### 実行結果
+
+```sh
+npm test -- --run
+npm run build
+npm run score:deck-battles -- --suite smoke --seed-start 570 --count 2 --out-dir artifacts/deck-battle-score/phase25-review-smoke-count2 --fail-on-warnings
+npm run score:deck-battles -- --suite core --seed-start 570 --count 1 --out-dir artifacts/deck-battle-score/phase25-review-core-count1 --fail-on-warnings
+npm run analyze:deck-battles -- --report artifacts/deck-battle-score/phase25-review-core-count1/report.json --out-dir artifacts/deck-battle-score/phase25-review-core-count1-insights
+npm run trace:deck-battles -- --report artifacts/deck-battle-score/phase25-review-core-count1/report.json --out-dir artifacts/deck-battle-score/phase25-review-core-count1-traces --limit 8 --log-limit 80
+npm run generate:deck-battle-snapshots -- --report artifacts/deck-battle-score/phase25-review-smoke-count2/report.json --report artifacts/deck-battle-score/phase25-review-core-count1/report.json --default-suite core --out src/game/deckBattleScoreSnapshots.ts
+```
+
+| Gate | Games | Result | Notes |
+| --- | ---: | --- | --- |
+| 全テスト | 423 tests | PASS | aiWeightsプロファイル差分チェックを追加 |
+| build | - | PASS | Viteのchunk size warningのみ |
+| score smoke count2 | 112 | PASS 0/0 | 平均89.5 steps / 9.7 turns、最大172 steps / 17 turns |
+| score core count1 | 1560 | PASS 0/2 | 平均95.4 steps / 10.6 turns、最大358 steps / 32 turns |
+
+`score core count1` は `--fail-on-warnings` により終了コード1だが、failure 0、warning 2でレポート生成は完了している。
+警告2件はいずれも白同士の長期戦で、進行不能ではない。
+
+`src/game/deckBattleScoreSnapshots.ts` は `phase25-review-smoke-count2` と `phase25-review-core-count1` で更新した。
+
+### Core count1の代表傾向
+
+| Rank | Deck | Battle | Win | Stable | Speed |
+| ---: | --- | ---: | ---: | ---: | ---: |
+| 1 | submission-pro-with-rare8-black-44 | 76.2 | 75.6% | 86.9 | 55.5 |
+| 2 | submission-pro-with-rare8-white-1245 | 72.9 | 73.1% | 88.5 | 47.7 |
+| 3 | submission-pro-with-rare8-black-1354 | 72.1 | 71.8% | 87.7 | 53.4 |
+| 4 | submission-pro-no-rare8-black-408 | 69.7 | 69.2% | 89.2 | 55.0 |
+| 5 | submission-pro-with-rare8-black-771 | 69.3 | 69.2% | 83.1 | 51.2 |
+
+### 残課題
+
+- 白同士の長期戦warning 2件は、`submission-pro-no-rare8-white-479` が先手側のときに発生した。
+- `Problem Focus` は席差/非対称24件が中心で、次は player/cpu席差と先後差の分解が必要。
+- `submission-pro-no-rare8-black-758` は勝てるが遅い。終盤の勝ち切り評価を確認する。
+- `submission-pro-no-rare8-white-345` は安定するが勝てない。白デッキの攻め筋不足を確認する。
