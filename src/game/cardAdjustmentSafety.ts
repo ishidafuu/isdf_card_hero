@@ -14,6 +14,11 @@ import {
 
 export interface CardAdjustmentSafetyOptions extends DeckBattleScoringOptions {
   compareWeights?: boolean;
+  maxFailures?: number;
+  maxWarnings?: number;
+  maxSeatDelta?: number;
+  maxFirstPlayerDelta?: number;
+  minTopWinPointRate?: number;
 }
 
 export interface CardAdjustmentSafetyCheck {
@@ -92,6 +97,7 @@ export function runCardAdjustmentSafetyGate(options: CardAdjustmentSafetyOptions
       message: `${totalComparisonFailures} failures across compared AI profiles`,
     });
   }
+  checks.push(...buildThresholdChecks(deckBattleReport, options));
 
   return {
     ok: checks.every((check) => check.status !== "fail"),
@@ -132,4 +138,60 @@ export function formatCardAdjustmentSafetyMarkdown(report: CardAdjustmentSafetyR
       ]
       : []),
   ].join("\n");
+}
+
+function buildThresholdChecks(
+  report: DeckBattleScoringReport,
+  options: CardAdjustmentSafetyOptions,
+): CardAdjustmentSafetyCheck[] {
+  const checks: CardAdjustmentSafetyCheck[] = [];
+  if (options.maxFailures !== undefined) {
+    checks.push({
+      id: "max_failures",
+      status: report.summary.failures <= options.maxFailures ? "pass" : "fail",
+      message: `${report.summary.failures} failures <= ${options.maxFailures}`,
+    });
+  }
+  if (options.maxWarnings !== undefined) {
+    checks.push({
+      id: "max_warnings",
+      status: report.summary.warnings <= options.maxWarnings ? "pass" : "fail",
+      message: `${report.summary.warnings} warnings <= ${options.maxWarnings}`,
+    });
+  }
+  if (options.maxSeatDelta !== undefined) {
+    const maxSeatDelta = Math.max(
+      0,
+      ...report.decks.map((deck) => Math.abs(deck.playerSideWinPointRate - deck.cpuSideWinPointRate)),
+    );
+    checks.push({
+      id: "max_seat_delta",
+      status: maxSeatDelta <= options.maxSeatDelta ? "pass" : "fail",
+      message: `${formatPercent(maxSeatDelta)} max seat delta <= ${formatPercent(options.maxSeatDelta)}`,
+    });
+  }
+  if (options.maxFirstPlayerDelta !== undefined) {
+    const maxFirstPlayerDelta = Math.max(
+      0,
+      ...report.decks.map((deck) => Math.abs(deck.firstPlayerWinPointRate - deck.secondPlayerWinPointRate)),
+    );
+    checks.push({
+      id: "max_first_player_delta",
+      status: maxFirstPlayerDelta <= options.maxFirstPlayerDelta ? "pass" : "fail",
+      message: `${formatPercent(maxFirstPlayerDelta)} max first-player delta <= ${formatPercent(options.maxFirstPlayerDelta)}`,
+    });
+  }
+  if (options.minTopWinPointRate !== undefined) {
+    const topWinPointRate = report.decks[0]?.winPointRate ?? 0;
+    checks.push({
+      id: "min_top_win_point_rate",
+      status: topWinPointRate >= options.minTopWinPointRate ? "pass" : "fail",
+      message: `${formatPercent(topWinPointRate)} top win point >= ${formatPercent(options.minTopWinPointRate)}`,
+    });
+  }
+  return checks;
+}
+
+function formatPercent(value: number): string {
+  return `${Math.round(value * 1000) / 10}%`;
 }

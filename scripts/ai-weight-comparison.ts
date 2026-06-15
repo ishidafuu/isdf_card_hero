@@ -47,7 +47,7 @@ function parseArgs(args: string[]): CliOptions {
     longGameTurns: 80,
     stagnationLimit: 8,
     firstPlayerMode: "player",
-    profiles: ["stable", "strong"],
+    profiles: CPU_AI_PROFILES,
     outDir: join("artifacts", "ai-weight-comparison", "latest"),
   };
 
@@ -142,7 +142,7 @@ Options:
   --count <n>               Number of seeds per pair. Default: 1
   --max-decks <n>           Limit deck count from the selected suite.
   --first-player-mode <m>   First player mode. Default: player. Values: player, cpu, alternate, both
-  --profiles <ids>          Comma-separated profiles. Default: stable,strong
+  --profiles <ids>          Comma-separated profiles. Default: ${CPU_AI_PROFILES.join(",")}
   --out-dir <path>          Output directory. Default: artifacts/ai-weight-comparison/latest
   --json <path>             Write JSON report to an explicit path.
   --markdown <path>         Write Markdown report to an explicit path.

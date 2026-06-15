@@ -77,7 +77,7 @@ type CpuAiProfileConfig = {
 
 const NO_THREAT: IncomingThreat = { threatened: false, lethal: false, maxDamage: 0 };
 
-export const CPU_AI_PROFILES = ["stable", "strong"] as const;
+export const CPU_AI_PROFILES = ["stable", "strong", "pressure", "defensive"] as const;
 export type CpuAiProfile = (typeof CPU_AI_PROFILES)[number];
 export type CpuAiProfiles = Record<PlayerId, CpuAiProfile>;
 
@@ -102,6 +102,22 @@ const CPU_AI_PROFILE_CONFIG: Record<CpuAiProfile, CpuAiProfileConfig> = {
     sameTurnSearchDiscount: 0.5,
     beamScoreThreshold: 8,
     weights: AI_EVALUATION_WEIGHTS.strong,
+  },
+  pressure: {
+    detailedWidth: 4,
+    sameTurnSearchDepth: 3,
+    sameTurnSearchWidth: 4,
+    sameTurnSearchDiscount: 0.48,
+    beamScoreThreshold: 6,
+    weights: AI_EVALUATION_WEIGHTS.pressure,
+  },
+  defensive: {
+    detailedWidth: 3,
+    sameTurnSearchDepth: 2,
+    sameTurnSearchWidth: 3,
+    sameTurnSearchDiscount: 0.52,
+    beamScoreThreshold: 10,
+    weights: AI_EVALUATION_WEIGHTS.defensive,
   },
 };
 

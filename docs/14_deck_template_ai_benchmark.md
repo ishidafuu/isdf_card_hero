@@ -659,3 +659,81 @@ npm run generate:deck-battle-snapshots -- --report artifacts/deck-battle-score/p
 - warningは0件まで下がったが、`Problem Focus` は席差/非対称23件が中心。
 - `submission-pro-with-rare8-black-45` は席差59%、先後差59%で、次フェーズの先後/席差分解の主対象。
 - `submission-pro-no-rare8-white-836` は勝てるが遅い。白の勝ち切りと過剰安全行動の継続確認対象。
+
+## Phase 31-40: 診断強化、重みグリッド、カード調整シミュレーション、自動改善ループ
+
+実行日: 2026-06-15
+
+### 目的
+
+Phase 30までの「AIをカード調整に耐える構造へ分離する」流れを、継続運用できる診断ループへ広げる。
+実戦スコアを単一順位で終わらせず、席差、先後差、白の勝ち切り、相性別補正候補、母数信頼度、trace上の判断傾向を分けて見られるようにする。
+
+### Phase 31-33: 診断とtrace分類
+
+- `DeckBattleInsightsReport` に `biasDiagnostics`、`whiteCloseoutDiagnostics`、`confidenceDiagnostics`、`matchupAdjustments` を追加した。
+- 席差と先後差は `seat` / `first_player` / `mixed` に分解し、再計測方針を出す。
+- 白デッキは `low_win_rate`、`slow_closeout`、`white_mirror_slow`、`white_vs_black_pressure` に分ける。
+- `src/game/deckBattleTraceAnalysis.ts` を追加し、判断ログから守りすぎ、攻撃見送り、低影響移動、終盤ためる、リソース停滞、勝ち切り遅延候補を集計する。
+
+### Phase 34-36: 重み比較とカード調整前レビュー
+
+- `pressure` / `defensive` のAI重みプロファイルを追加した。
+  - 既定AIは変更せず、CLI比較用の候補として扱う。
+- `compare:ai-weights` はデッキごとの `Deck Delta Grid` を出し、どのデッキがどの重み候補で伸びるかを確認できるようにした。
+- `simulate:card-adjustment` を追加し、HP/攻撃/コスト変更の粗い影響とリスクを、card traitsベースで事前確認できるようにした。
+
+### Phase 37-40: 信頼度ゲートと自動改善ループ
+
+- `safety:card-adjustment` に `--max-warnings`、`--max-seat-delta`、`--max-first-delta`、`--min-top-win-point` を追加した。
+- `improve:ai-loop` を追加し、セーフティゲート、実戦分析、重み比較から次アクションを自動生成する。
+- 生成アクションは `trace確認`、`firstPlayerMode=both追加計測`、`重み比較`、`母数追加` を優先度つきで出す。
+
+### 実行コマンド
+
+```sh
+npm test -- --run
+npm run build
+npm run compare:ai-weights -- --suite smoke --max-decks 4 --seed-start 650 --count 1 --out-dir artifacts/ai-weight-comparison/phase40-grid-smoke-max4
+npm run safety:card-adjustment -- --suite smoke --max-decks 4 --seed-start 650 --count 1 --max-failures 0 --max-warnings 0 --max-seat-delta 1 --max-first-delta 1 --min-top-win-point 0 --out-dir artifacts/card-adjustment-safety/phase40-smoke-max4
+npm run improve:ai-loop -- --suite smoke --max-decks 4 --seed-start 650 --count 1 --max-warnings 0 --max-seat-delta 1 --max-first-delta 1 --min-top-win-point 0 --out-dir artifacts/ai-improvement-loop/phase40-smoke-max4
+npm run simulate:card-adjustment -- --card thunder --power-delta 1 --card healing --cost-delta -1 --out-dir artifacts/card-adjustment-simulation/phase40-smoke
+npm run score:deck-battles -- --suite smoke --max-decks 8 --seed-start 652 --count 1 --first-player-mode both --out-dir artifacts/deck-battle-score/phase40-first-both-smoke8 --fail-on-warnings
+npm run analyze:deck-battles -- --report artifacts/deck-battle-score/phase40-first-both-smoke8/report.json --out-dir artifacts/deck-battle-score/phase40-first-both-smoke8-insights
+npm run trace:deck-battles -- --report artifacts/deck-battle-score/phase40-first-both-smoke8/report.json --out-dir artifacts/deck-battle-score/phase40-first-both-smoke8-traces --limit 4 --log-limit 60
+```
+
+### 実行結果
+
+| Gate | Games | Result | Notes |
+| --- | ---: | --- | --- |
+| 全テスト | 434 tests | PASS | 23 test files |
+| build | - | PASS | Viteのchunk size warningのみ |
+| compare ai weights | 12 x 4 profiles | PASS 0/0 | stable 90.1 steps、strong 80.8、pressure 77.1、defensive 87.4 |
+| safety card adjustment | 12 + 比較24 | PASS | traits、実戦、閾値チェックすべてpass |
+| improve ai loop | 12 + 4 profiles | PASS | 優先アクション3件を生成 |
+| card adjustment simulation | 2 changes | PASS | サンダー+1Pはmedium、ヒーリング-1costはlow |
+| score first both smoke8 | 112 | PASS 0/0 | 平均97.8 steps / 10 turns、最大237 steps / 25 turns |
+
+### Phase 40 smoke8の代表傾向
+
+| Rank | Deck | Battle | Win | Stable | Speed |
+| ---: | --- | ---: | ---: | ---: | ---: |
+| 1 | submission-pro-with-rare8-black-1354 | 78.8 | 78.6% | 97.1 | 52.1 |
+| 2 | submission-pro-no-rare8-black-252 | 71.4 | 71.4% | 95.0 | 49.5 |
+| 3 | submission-pro-no-rare8-black-493 | 64.7 | 64.3% | 94.3 | 54.0 |
+| 4 | submission-pro-with-rare8-black-999 | 61.7 | 60.7% | 88.9 | 59.9 |
+| 5 | submission-pro-no-rare8-white-1377 | 45.5 | 46.4% | 97.5 | 40.1 |
+| 8 | submission-pro-no-rare8-white-494 | 6.4 | 7.1% | 95.0 | 41.9 |
+
+### 自動改善ループの出力
+
+- `番狂わせのtrace確認`: smoke max4では2件、first-both smoke8では11件。
+- `席差/先後差の追加計測`: `submission-pro-with-rare8-black-1354` は小母数でseat/firstが66.7%差、first-both smoke8では `submission-pro-with-rare8-black-999` の席差50%が目立つ。
+- `相性別重み比較`: 黒/白の相性差と、白vs黒の防御寄り比較が次候補。
+
+### 残課題
+
+- 白デッキは引き続き黒相手が弱い。`submission-pro-no-rare8-white-1377` は白同士91.7%に対して白vs黒12.5%。
+- `submission-pro-no-rare8-white-494` は安定度95だが勝点7.1%。守れていても攻撃移行できない代表候補。
+- trace分類では `攻撃見送り候補` 38件、`勝ち切り遅延候補` 23件、`リソース停滞候補` 15件が出た。ただし現状はログ文面ベースの粗分類なので、次は分類精度を上げる。

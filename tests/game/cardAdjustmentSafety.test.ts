@@ -12,10 +12,15 @@ describe("card adjustment safety gate", () => {
       seedStart: 630,
       count: 1,
       compareWeights: false,
+      maxFailures: 0,
+      maxWarnings: 0,
+      maxSeatDelta: 1,
+      minTopWinPointRate: 0,
     });
 
     expect(report.ok).toBe(true);
     expect(report.checks.find((check) => check.id === "magic_trait_coverage")).toMatchObject({ status: "pass" });
+    expect(report.checks.find((check) => check.id === "max_seat_delta")).toMatchObject({ status: "pass" });
     expect(report.deckBattleReport.summary.games).toBe(2);
 
     const markdown = formatCardAdjustmentSafetyMarkdown(report);

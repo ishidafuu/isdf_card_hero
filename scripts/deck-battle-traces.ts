@@ -1,6 +1,12 @@
 import { readFile, mkdir, writeFile } from "node:fs/promises";
 import { dirname, join } from "node:path";
 import { analyzeDeckBattleReport, type DeckBattleProblemGame } from "../src/game/deckBattleInsights";
+import {
+  analyzeTraceDecisionIssues,
+  classifyDecisionLogEntry,
+  formatTraceDecisionIssuesMarkdown,
+  type TraceDecisionIssueId,
+} from "../src/game/deckBattleTraceAnalysis";
 import type { DeckBattleScoringReport } from "../src/game/deckBattleScoring";
 import {
   buildDeckPresetCardIds,
@@ -34,6 +40,7 @@ interface DeckBattleTrace {
   cpuHp: number;
   playerDeckRemaining: number;
   cpuDeckRemaining: number;
+  decisionIssues: TraceDecisionIssueId[];
   logTail: string[];
 }
 
@@ -119,6 +126,7 @@ function runTrace(
       : game.winner === "cpu"
         ? problem.cpuDeckPreset
         : undefined;
+  const logTail = game.log.slice(-logLimit);
   return {
     problem,
     winner: game.winner,
@@ -129,7 +137,8 @@ function runTrace(
     cpuHp: game.players.cpu.masterHp,
     playerDeckRemaining: game.players.player.deck.length,
     cpuDeckRemaining: game.players.cpu.deck.length,
-    logTail: game.log.slice(-logLimit),
+    decisionIssues: [...new Set(logTail.flatMap(classifyDecisionLogEntry))],
+    logTail,
   };
 }
 
@@ -154,6 +163,7 @@ function formatTracesMarkdown(traces: readonly DeckBattleTrace[]): string {
   return [
     `# Deck Battle Problem Traces`,
     ``,
+    formatTraceDecisionIssuesMarkdown(analyzeTraceDecisionIssues(traces)),
     ...traces.flatMap((trace, index) => [
       `## ${index + 1}. ${trace.problem.kind} seed ${trace.problem.seed}`,
       ``,
@@ -162,6 +172,7 @@ function formatTracesMarkdown(traces: readonly DeckBattleTrace[]): string {
       `- Winner: ${trace.winnerDeckPreset ?? "-"}`,
       `- Result: ${trace.steps} steps / ${trace.turns} turns / HP ${trace.playerHp}-${trace.cpuHp}`,
       `- Reason: ${trace.problem.reason}`,
+      `- Decision issues: ${trace.decisionIssues.join(", ") || "-"}`,
       ``,
       `### Log Tail`,
       ``,

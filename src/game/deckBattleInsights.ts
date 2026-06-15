@@ -104,6 +104,70 @@ export interface DeckBattleProblemFocusSummary {
   examples: DeckBattleProblemFocusExample[];
 }
 
+export type DeckBattleBiasCause = "seat" | "first_player" | "mixed";
+export type DeckBattleWhiteCloseoutIssue =
+  | "low_win_rate"
+  | "slow_closeout"
+  | "white_mirror_slow"
+  | "white_vs_black_pressure"
+  | "review";
+export type DeckBattleConfidenceTier = "low" | "medium" | "high";
+export type DeckBattleMatchupAdjustmentFocus =
+  | "white_vs_black_defense"
+  | "white_mirror_closeout"
+  | "black_pressure"
+  | "seat_balance"
+  | "first_player_balance";
+
+export interface DeckBattleBiasDiagnostic {
+  deckPreset: DeckSubmissionPresetId;
+  masterId: DeckBattleScoreEntry["masterId"];
+  rank: number;
+  seatDelta: number;
+  firstPlayerDelta: number;
+  playerSideWinPointRate: number;
+  cpuSideWinPointRate: number;
+  firstPlayerWinPointRate: number;
+  secondPlayerWinPointRate: number;
+  primaryCause: DeckBattleBiasCause;
+  reviewHint: string;
+}
+
+export interface DeckBattleWhiteCloseoutDiagnostic {
+  deckPreset: DeckSubmissionPresetId;
+  rank: number;
+  winRate: number;
+  winPointRate: number;
+  stabilityScore: number;
+  speedScore: number;
+  averageSteps: number;
+  whiteMirrorWinPointRate: number;
+  whiteBlackWinPointRate: number;
+  issue: DeckBattleWhiteCloseoutIssue;
+  reviewHint: string;
+}
+
+export interface DeckBattleConfidenceDiagnostic {
+  deckPreset: DeckSubmissionPresetId;
+  rank: number;
+  games: number;
+  opponents: number;
+  warnings: number;
+  failures: number;
+  confidenceScore: number;
+  tier: DeckBattleConfidenceTier;
+  reviewHint: string;
+}
+
+export interface DeckBattleMatchupAdjustment {
+  deckPreset: DeckSubmissionPresetId;
+  rank: number;
+  focus: DeckBattleMatchupAdjustmentFocus;
+  currentWinPointRate?: number;
+  suggestedProfile: "pressure" | "defensive" | "strong";
+  reviewHint: string;
+}
+
 export interface DeckBattleInsightsReport {
   source: {
     suiteId: DeckBattleScoringReport["options"]["suiteId"];
@@ -119,6 +183,10 @@ export interface DeckBattleInsightsReport {
   categories: DeckBattleInsightCategory[];
   problemGames: DeckBattleProblemGame[];
   problemFocuses: DeckBattleProblemFocusSummary[];
+  biasDiagnostics: DeckBattleBiasDiagnostic[];
+  whiteCloseoutDiagnostics: DeckBattleWhiteCloseoutDiagnostic[];
+  confidenceDiagnostics: DeckBattleConfidenceDiagnostic[];
+  matchupAdjustments: DeckBattleMatchupAdjustment[];
   recommendedFocus: string[];
 }
 
@@ -253,6 +321,15 @@ export function analyzeDeckBattleReport(
 
   const problemGames = buildProblemGames(report.games, scoreByDeck, rankByDeck, report.summary.averageSteps, resolved);
   const problemFocuses = buildProblemFocuses(problemGames, resolved.limit);
+  const biasDiagnostics = buildBiasDiagnostics(report.decks, rankByDeck, resolved.limit);
+  const whiteCloseoutDiagnostics = buildWhiteCloseoutDiagnostics(
+    report.decks,
+    rankByDeck,
+    report.summary.averageSteps,
+    resolved.limit,
+  );
+  const confidenceDiagnostics = buildConfidenceDiagnostics(report.decks, rankByDeck, resolved.limit);
+  const matchupAdjustments = buildMatchupAdjustments(report.decks, rankByDeck, report.summary.averageSteps, resolved.limit);
   return {
     source: {
       suiteId: report.options.suiteId,
@@ -268,7 +345,19 @@ export function analyzeDeckBattleReport(
     categories,
     problemGames,
     problemFocuses,
-    recommendedFocus: buildRecommendedFocus(categories, problemGames, problemFocuses),
+    biasDiagnostics,
+    whiteCloseoutDiagnostics,
+    confidenceDiagnostics,
+    matchupAdjustments,
+    recommendedFocus: buildRecommendedFocus(
+      categories,
+      problemGames,
+      problemFocuses,
+      biasDiagnostics,
+      whiteCloseoutDiagnostics,
+      confidenceDiagnostics,
+      matchupAdjustments,
+    ),
   };
 }
 
@@ -297,6 +386,47 @@ export function formatDeckBattleInsightsMarkdown(report: DeckBattleInsightsRepor
     ...report.problemFocuses.map((focus) =>
       `| ${focus.title} | ${focus.count} | ${focus.reviewWeight} | ${focus.description} | ` +
       `${focus.examples.map((example) => `${example.kind} seed ${example.seed}`).join("<br>")} |`,
+    ),
+    ``,
+    `## Bias Diagnostics`,
+    ``,
+    `| Rank | Deck | Cause | Seat delta | P/C WPR | First delta | F/S WPR | Hint |`,
+    `| ---: | --- | --- | ---: | ---: | ---: | ---: | --- |`,
+    ...report.biasDiagnostics.map((diagnostic) =>
+      `| ${diagnostic.rank} | ${diagnostic.deckPreset} | ${diagnostic.primaryCause} | ` +
+      `${formatPercent(diagnostic.seatDelta)} | ${formatPercent(diagnostic.playerSideWinPointRate)}/${formatPercent(diagnostic.cpuSideWinPointRate)} | ` +
+      `${formatPercent(diagnostic.firstPlayerDelta)} | ${formatPercent(diagnostic.firstPlayerWinPointRate)}/${formatPercent(diagnostic.secondPlayerWinPointRate)} | ` +
+      `${diagnostic.reviewHint} |`,
+    ),
+    ``,
+    `## White Closeout Diagnostics`,
+    ``,
+    `| Rank | Deck | Issue | Win | Win point | Stable | Speed | WvW | WvB | Avg | Hint |`,
+    `| ---: | --- | --- | ---: | ---: | ---: | ---: | ---: | ---: | --- | --- |`,
+    ...report.whiteCloseoutDiagnostics.map((diagnostic) =>
+      `| ${diagnostic.rank} | ${diagnostic.deckPreset} | ${diagnostic.issue} | ` +
+      `${formatPercent(diagnostic.winRate)} | ${formatPercent(diagnostic.winPointRate)} | ` +
+      `${diagnostic.stabilityScore} | ${diagnostic.speedScore} | ${formatPercent(diagnostic.whiteMirrorWinPointRate)} | ` +
+      `${formatPercent(diagnostic.whiteBlackWinPointRate)} | ${diagnostic.averageSteps} steps | ${diagnostic.reviewHint} |`,
+    ),
+    ``,
+    `## Confidence Diagnostics`,
+    ``,
+    `| Rank | Deck | Tier | Confidence | Games | Opponents | Issues | Hint |`,
+    `| ---: | --- | --- | ---: | ---: | ---: | ---: | --- |`,
+    ...report.confidenceDiagnostics.map((diagnostic) =>
+      `| ${diagnostic.rank} | ${diagnostic.deckPreset} | ${diagnostic.tier} | ${diagnostic.confidenceScore} | ` +
+      `${diagnostic.games} | ${diagnostic.opponents} | ${diagnostic.failures}/${diagnostic.warnings} | ${diagnostic.reviewHint} |`,
+    ),
+    ``,
+    `## Matchup Adjustments`,
+    ``,
+    `| Rank | Deck | Focus | Current | Suggested profile | Hint |`,
+    `| ---: | --- | --- | ---: | --- | --- |`,
+    ...report.matchupAdjustments.map((adjustment) =>
+      `| ${adjustment.rank} | ${adjustment.deckPreset} | ${adjustment.focus} | ` +
+      `${adjustment.currentWinPointRate === undefined ? "-" : formatPercent(adjustment.currentWinPointRate)} | ` +
+      `${adjustment.suggestedProfile} | ${adjustment.reviewHint} |`,
     ),
     ``,
     ...report.categories.flatMap((category) => [
@@ -415,6 +545,10 @@ function buildRecommendedFocus(
   categories: readonly DeckBattleInsightCategory[],
   problemGames: readonly DeckBattleProblemGame[],
   problemFocuses: readonly DeckBattleProblemFocusSummary[],
+  biasDiagnostics: readonly DeckBattleBiasDiagnostic[],
+  whiteCloseoutDiagnostics: readonly DeckBattleWhiteCloseoutDiagnostic[],
+  confidenceDiagnostics: readonly DeckBattleConfidenceDiagnostic[],
+  matchupAdjustments: readonly DeckBattleMatchupAdjustment[],
 ): string[] {
   const slowWinner = categories.find((category) => category.id === "slow_winners")?.decks[0];
   const seatSkew = categories.find((category) => category.id === "seat_skew")?.decks[0];
@@ -422,14 +556,186 @@ function buildRecommendedFocus(
   const stableLow = categories.find((category) => category.id === "stable_underperformers")?.decks[0];
   const upset = problemGames.find((game) => game.kind === "upset" || game.kind === "top_deck_loss");
   const topFocus = problemFocuses[0];
+  const topBias = biasDiagnostics[0];
+  const whiteCloseout = whiteCloseoutDiagnostics[0];
+  const lowConfidence = confidenceDiagnostics.find((diagnostic) => diagnostic.tier === "low");
+  const matchupAdjustment = matchupAdjustments[0];
   return [
     topFocus ? `${topFocus.title}: ${topFocus.count}件。${topFocus.description}` : undefined,
+    topBias
+      ? `${topBias.deckPreset}: ${topBias.primaryCause}由来の偏り。${topBias.reviewHint}`
+      : undefined,
+    whiteCloseout
+      ? `${whiteCloseout.deckPreset}: 白の${whiteCloseout.issue}。${whiteCloseout.reviewHint}`
+      : undefined,
+    matchupAdjustment
+      ? `${matchupAdjustment.deckPreset}: ${matchupAdjustment.focus}を${matchupAdjustment.suggestedProfile}寄りで比較。`
+      : undefined,
+    lowConfidence
+      ? `${lowConfidence.deckPreset}: 母数${lowConfidence.games}試合で信頼度${lowConfidence.confidenceScore}。スコア確定前に追加対戦。`
+      : undefined,
     slowWinner ? `${slowWinner.deckPreset}: 勝てるが遅い。終盤の勝ち切りと白/黒の過剰安全行動を見る。` : undefined,
     seatSkew ? `${seatSkew.deckPreset}: 席差${formatPercent(seatSkew.seatDelta)}。player/cpu非対称を確認する。` : undefined,
     firstSkew ? `${firstSkew.deckPreset}: 先後差${formatPercent(firstSkew.firstPlayerDelta)}。初手テンポと後攻の守りを確認する。` : undefined,
     stableLow ? `${stableLow.deckPreset}: 安定するが勝てない。攻め筋不足や守りすぎを確認する。` : undefined,
     upset ? `${upset.playerDeckPreset} vs ${upset.cpuDeckPreset}: 番狂わせ。負けた上位デッキ側の判断を追う。` : undefined,
   ].filter((item): item is string => !!item);
+}
+
+function buildBiasDiagnostics(
+  decks: readonly DeckBattleScoreEntry[],
+  rankByDeck: Map<DeckSubmissionPresetId, number>,
+  limit: number,
+): DeckBattleBiasDiagnostic[] {
+  return decks
+    .filter((deck) => seatDelta(deck) >= 0.2 || firstPlayerDelta(deck) >= 0.2)
+    .sort((a, b) => Math.max(seatDelta(b), firstPlayerDelta(b)) - Math.max(seatDelta(a), firstPlayerDelta(a)))
+    .slice(0, limit)
+    .map((deck) => {
+      const seat = round(seatDelta(deck), 3);
+      const first = round(firstPlayerDelta(deck), 3);
+      const primaryCause = biasCause(seat, first);
+      return {
+        deckPreset: deck.deckPreset,
+        masterId: deck.masterId,
+        rank: rankByDeck.get(deck.deckPreset) ?? 0,
+        seatDelta: seat,
+        firstPlayerDelta: first,
+        playerSideWinPointRate: deck.playerSideWinPointRate,
+        cpuSideWinPointRate: deck.cpuSideWinPointRate,
+        firstPlayerWinPointRate: deck.firstPlayerWinPointRate,
+        secondPlayerWinPointRate: deck.secondPlayerWinPointRate,
+        primaryCause,
+        reviewHint: biasReviewHint(deck, primaryCause),
+      };
+    });
+}
+
+function buildWhiteCloseoutDiagnostics(
+  decks: readonly DeckBattleScoreEntry[],
+  rankByDeck: Map<DeckSubmissionPresetId, number>,
+  averageSteps: number,
+  limit: number,
+): DeckBattleWhiteCloseoutDiagnostic[] {
+  return decks
+    .filter((deck) => deck.masterId === "white")
+    .map((deck) => {
+      const matchups = normalizeMatchups(deck.matchups);
+      const issue = whiteCloseoutIssue(deck, averageSteps);
+      return {
+        deckPreset: deck.deckPreset,
+        rank: rankByDeck.get(deck.deckPreset) ?? 0,
+        winRate: deck.winRate,
+        winPointRate: deck.winPointRate,
+        stabilityScore: deck.stabilityScore,
+        speedScore: deck.speedScore,
+        averageSteps: deck.averageSteps,
+        whiteMirrorWinPointRate: matchups.white_vs_white.winPointRate,
+        whiteBlackWinPointRate: matchups.white_vs_black.winPointRate,
+        issue,
+        reviewHint: whiteCloseoutReviewHint(deck, issue, averageSteps),
+      };
+    })
+    .filter((diagnostic) => diagnostic.issue !== "review" || diagnostic.speedScore <= 52 || diagnostic.winPointRate <= 0.55)
+    .sort((a, b) =>
+      whiteCloseoutIssueWeight(b.issue) - whiteCloseoutIssueWeight(a.issue) ||
+      a.speedScore - b.speedScore ||
+      a.winPointRate - b.winPointRate,
+    )
+    .slice(0, limit);
+}
+
+function buildConfidenceDiagnostics(
+  decks: readonly DeckBattleScoreEntry[],
+  rankByDeck: Map<DeckSubmissionPresetId, number>,
+  limit: number,
+): DeckBattleConfidenceDiagnostic[] {
+  return decks
+    .map((deck) => {
+      const confidenceScore = deckBattleConfidenceScore(deck);
+      const tier = confidenceScore >= 70 ? "high" : confidenceScore >= 45 ? "medium" : "low";
+      return {
+        deckPreset: deck.deckPreset,
+        rank: rankByDeck.get(deck.deckPreset) ?? 0,
+        games: deck.games,
+        opponents: deck.opponents,
+        warnings: deck.warnings,
+        failures: deck.failures,
+        confidenceScore,
+        tier,
+        reviewHint: confidenceReviewHint(deck, confidenceScore, tier),
+      } satisfies DeckBattleConfidenceDiagnostic;
+    })
+    .sort((a, b) => a.confidenceScore - b.confidenceScore || a.games - b.games)
+    .slice(0, limit);
+}
+
+function buildMatchupAdjustments(
+  decks: readonly DeckBattleScoreEntry[],
+  rankByDeck: Map<DeckSubmissionPresetId, number>,
+  averageSteps: number,
+  limit: number,
+): DeckBattleMatchupAdjustment[] {
+  const adjustments: DeckBattleMatchupAdjustment[] = [];
+  for (const deck of decks) {
+    const matchups = normalizeMatchups(deck.matchups);
+    if (deck.masterId === "white" && matchups.white_vs_black.games > 0 && matchups.white_vs_black.winPointRate < 0.48) {
+      adjustments.push({
+        deckPreset: deck.deckPreset,
+        rank: rankByDeck.get(deck.deckPreset) ?? 0,
+        focus: "white_vs_black_defense",
+        currentWinPointRate: matchups.white_vs_black.winPointRate,
+        suggestedProfile: "defensive",
+        reviewHint: "黒圧に対して守る対象と石テンポの重みを比較する",
+      });
+    }
+    if (
+      deck.masterId === "white" &&
+      matchups.white_vs_white.games > 0 &&
+      (matchups.white_vs_white.averageSteps >= averageSteps + 25 || deck.speedScore <= 42)
+    ) {
+      adjustments.push({
+        deckPreset: deck.deckPreset,
+        rank: rankByDeck.get(deck.deckPreset) ?? 0,
+        focus: "white_mirror_closeout",
+        currentWinPointRate: matchups.white_vs_white.winPointRate,
+        suggestedProfile: "pressure",
+        reviewHint: "白同士の長期戦で終盤打点と非進行行動の重みを比較する",
+      });
+    }
+    if (deck.masterId === "black" && matchups.white_vs_black.games > 0 && matchups.white_vs_black.winPointRate < 0.48) {
+      adjustments.push({
+        deckPreset: deck.deckPreset,
+        rank: rankByDeck.get(deck.deckPreset) ?? 0,
+        focus: "black_pressure",
+        currentWinPointRate: matchups.white_vs_black.winPointRate,
+        suggestedProfile: "pressure",
+        reviewHint: "黒の直撃・撃破より遅い迂回行動を取りすぎていないか比較する",
+      });
+    }
+    if (seatDelta(deck) >= 0.25) {
+      adjustments.push({
+        deckPreset: deck.deckPreset,
+        rank: rankByDeck.get(deck.deckPreset) ?? 0,
+        focus: "seat_balance",
+        suggestedProfile: "strong",
+        reviewHint: "player/cpu席の非対称を固定し、同一firstPlayer条件で再計測する",
+      });
+    }
+    if (firstPlayerDelta(deck) >= 0.25) {
+      adjustments.push({
+        deckPreset: deck.deckPreset,
+        rank: rankByDeck.get(deck.deckPreset) ?? 0,
+        focus: "first_player_balance",
+        suggestedProfile: "strong",
+        reviewHint: "firstPlayerMode=bothで初手テンポと後攻防御の差を再計測する",
+      });
+    }
+  }
+
+  return adjustments
+    .sort((a, b) => a.rank - b.rank || matchupAdjustmentWeight(b.focus) - matchupAdjustmentWeight(a.focus))
+    .slice(0, limit);
 }
 
 function toDeckInsight(
@@ -603,6 +909,119 @@ export function deckBattleProblemFocusLabel(focusId: DeckBattleProblemFocusId): 
   return PROBLEM_FOCUS_DEFS[focusId].title;
 }
 
+function biasCause(seat: number, first: number): DeckBattleBiasCause {
+  if (seat >= 0.2 && first >= 0.2) {
+    return "mixed";
+  }
+  return seat >= first ? "seat" : "first_player";
+}
+
+function biasReviewHint(deck: DeckBattleScoreEntry, cause: DeckBattleBiasCause): string {
+  if (cause === "seat") {
+    const betterSide = deck.playerSideWinPointRate >= deck.cpuSideWinPointRate ? "player席" : "cpu席";
+    return `${betterSide}で勝点が偏るため、席固定とfirstPlayer固定を分けて再計測する`;
+  }
+  if (cause === "first_player") {
+    const betterTurn = deck.firstPlayerWinPointRate >= deck.secondPlayerWinPointRate ? "先攻" : "後攻";
+    return `${betterTurn}で勝点が偏るため、初手テンポと後攻の防御価値を確認する`;
+  }
+  return "席差と先後差が同時に大きいため、firstPlayerMode=bothで追加母数を取る";
+}
+
+function whiteCloseoutIssue(deck: DeckBattleScoreEntry, averageSteps: number): DeckBattleWhiteCloseoutIssue {
+  const matchups = normalizeMatchups(deck.matchups);
+  if (deck.winPointRate < 0.45) {
+    return "low_win_rate";
+  }
+  if (matchups.white_vs_black.games > 0 && matchups.white_vs_black.winPointRate < 0.45) {
+    return "white_vs_black_pressure";
+  }
+  if (matchups.white_vs_white.games > 0 && matchups.white_vs_white.averageSteps >= averageSteps + 25) {
+    return "white_mirror_slow";
+  }
+  if (deck.speedScore <= 45 || deck.averageSteps >= averageSteps + 20) {
+    return "slow_closeout";
+  }
+  return "review";
+}
+
+function whiteCloseoutReviewHint(
+  deck: DeckBattleScoreEntry,
+  issue: DeckBattleWhiteCloseoutIssue,
+  averageSteps: number,
+): string {
+  if (issue === "low_win_rate") {
+    return "守れていても勝点が低いため、終盤の攻撃移行と直接打点をtraceで確認する";
+  }
+  if (issue === "white_vs_black_pressure") {
+    return "黒相手で勝点が低いため、守る対象と前衛処理の優先度を確認する";
+  }
+  if (issue === "white_mirror_slow") {
+    return "白同士で長引くため、非致死防御と山札切れ前の勝ち筋を確認する";
+  }
+  if (issue === "slow_closeout") {
+    return `suite平均${round(averageSteps, 1)}stepsより遅いため、勝ち切り手の見送り理由を確認する`;
+  }
+  return deck.winPointRate >= 0.55 ? "白の安定勝ち候補。追加母数で評価を固める" : "白の扱いを追加母数で確認する";
+}
+
+function whiteCloseoutIssueWeight(issue: DeckBattleWhiteCloseoutIssue): number {
+  if (issue === "low_win_rate") {
+    return 5;
+  }
+  if (issue === "white_vs_black_pressure") {
+    return 4;
+  }
+  if (issue === "white_mirror_slow") {
+    return 3;
+  }
+  if (issue === "slow_closeout") {
+    return 2;
+  }
+  return 1;
+}
+
+function deckBattleConfidenceScore(deck: DeckBattleScoreEntry): number {
+  const sampleScore = Math.min(58, deck.games * 2.8 + deck.opponents * 8);
+  const sideCoverage = deck.playerSideGames > 0 && deck.cpuSideGames > 0 ? 14 : 0;
+  const firstCoverage = deck.firstPlayerGames > 0 && deck.secondPlayerGames > 0 ? 14 : 0;
+  const issuePenalty = deck.failureRate * 80 + deck.warningRate * 35;
+  return round(clamp(sampleScore + sideCoverage + firstCoverage + 14 - issuePenalty, 0, 100), 1);
+}
+
+function confidenceReviewHint(
+  deck: DeckBattleScoreEntry,
+  confidenceScore: number,
+  tier: DeckBattleConfidenceTier,
+): string {
+  if (tier === "low") {
+    return "母数不足。並び順確定前にseed追加または対戦相手追加が必要";
+  }
+  if (deck.failures > 0 || deck.warnings > 0) {
+    return "問題試合を含むため、trace確認後にスコア採用する";
+  }
+  if (confidenceScore < 70) {
+    return "中程度の信頼度。上位/境界デッキだけ追加母数を取る";
+  }
+  return "母数と席/先後カバレッジは概ね十分";
+}
+
+function matchupAdjustmentWeight(focus: DeckBattleMatchupAdjustmentFocus): number {
+  if (focus === "white_vs_black_defense") {
+    return 5;
+  }
+  if (focus === "white_mirror_closeout") {
+    return 4;
+  }
+  if (focus === "black_pressure") {
+    return 3;
+  }
+  if (focus === "first_player_balance") {
+    return 2;
+  }
+  return 1;
+}
+
 function buildRankByDeck(decks: readonly DeckBattleScoreEntry[]): Map<DeckSubmissionPresetId, number> {
   return new Map(decks.map((deck, index) => [deck.deckPreset, index + 1]));
 }
@@ -698,6 +1117,10 @@ function firstPlayerDelta(deck: DeckBattleScoreEntry): number {
 function round(value: number, digits = 0): number {
   const scale = 10 ** digits;
   return Math.round(value * scale) / scale;
+}
+
+function clamp(value: number, min: number, max: number): number {
+  return Math.max(min, Math.min(max, value));
 }
 
 function formatPercent(value: number): string {

@@ -5,6 +5,7 @@ import {
   type DeckBattleScoringOptions,
   type DeckBattleScoringReport,
 } from "./deckBattleScoring";
+import type { DeckSubmissionPresetId } from "./deckPresets";
 
 export interface AiWeightComparisonOptions extends Omit<DeckBattleScoringOptions, "aiProfile"> {
   profiles?: readonly CpuAiProfile[];
@@ -31,11 +32,22 @@ export interface AiWeightProfileDelta {
   topBattleScoreDelta: number;
 }
 
+export interface AiWeightDeckDelta {
+  deckPreset: DeckSubmissionPresetId;
+  profile: CpuAiProfile;
+  baselineProfile: CpuAiProfile;
+  battleScoreDelta: number;
+  winPointRateDelta: number;
+  speedScoreDelta: number;
+  stabilityScoreDelta: number;
+}
+
 export interface AiWeightComparisonReport {
   baselineProfile: CpuAiProfile;
   summaries: AiWeightProfileSummary[];
   deltas: AiWeightProfileDelta[];
-  reports: Record<CpuAiProfile, DeckBattleScoringReport>;
+  deckDeltas: AiWeightDeckDelta[];
+  reports: Partial<Record<CpuAiProfile, DeckBattleScoringReport>>;
 }
 
 export function compareAiWeightProfiles(options: AiWeightComparisonOptions = {}): AiWeightComparisonReport {
@@ -46,10 +58,11 @@ export function compareAiWeightProfiles(options: AiWeightComparisonOptions = {})
 
   const reports = Object.fromEntries(
     profiles.map((profile) => [profile, runDeckBattleScoring({ ...options, aiProfile: profile })]),
-  ) as Record<CpuAiProfile, DeckBattleScoringReport>;
-  const summaries = profiles.map((profile) => toProfileSummary(profile, reports[profile]));
+  ) as Partial<Record<CpuAiProfile, DeckBattleScoringReport>>;
+  const summaries = profiles.map((profile) => toProfileSummary(profile, requireReport(reports, profile)));
   const baselineProfile = profiles[0];
   const baseline = summaries[0];
+  const baselineReport = requireReport(reports, baselineProfile);
   const deltas = summaries.slice(1).map((summary) => ({
     profile: summary.profile,
     baselineProfile,
@@ -58,11 +71,13 @@ export function compareAiWeightProfiles(options: AiWeightComparisonOptions = {})
     averageStepDelta: round(summary.averageSteps - baseline.averageSteps, 1),
     topBattleScoreDelta: round((summary.topBattleScore ?? 0) - (baseline.topBattleScore ?? 0), 1),
   }));
+  const deckDeltas = buildDeckDeltas(baselineProfile, baselineReport, profiles.slice(1), reports);
 
   return {
     baselineProfile,
     summaries,
     deltas,
+    deckDeltas,
     reports,
   };
 }
@@ -91,16 +106,30 @@ export function formatAiWeightComparisonMarkdown(report: AiWeightComparisonRepor
       `| ${delta.profile} | ${delta.warningDelta} | ${delta.failureDelta} | ${delta.averageStepDelta} | ${delta.topBattleScoreDelta} |`,
     ),
     ``,
+    `## Deck Delta Grid`,
+    ``,
+    `| Deck | Profile | Battle delta | Win point delta | Speed delta | Stable delta |`,
+    `| --- | --- | ---: | ---: | ---: | ---: |`,
+    ...report.deckDeltas.map((delta) =>
+      `| ${delta.deckPreset} | ${delta.profile} | ${delta.battleScoreDelta} | ` +
+      `${formatSignedPercent(delta.winPointRateDelta)} | ${delta.speedScoreDelta} | ${delta.stabilityScoreDelta} |`,
+    ),
+    ``,
     `## Raw Reports`,
     ``,
-    ...Object.values(report.reports).flatMap((rawReport) => [
-      `### ${rawReport.options.aiProfile}`,
-      ``,
-      "```text",
-      formatDeckBattleScoringReport(rawReport, 8),
-      "```",
-      ``,
-    ]),
+    ...report.summaries.flatMap((summary) => {
+      const rawReport = report.reports[summary.profile];
+      return rawReport
+        ? [
+          `### ${rawReport.options.aiProfile}`,
+          ``,
+          "```text",
+          formatDeckBattleScoringReport(rawReport, 8),
+          "```",
+          ``,
+        ]
+        : [];
+    }),
   ].join("\n");
 }
 
@@ -119,8 +148,50 @@ function toProfileSummary(profile: CpuAiProfile, report: DeckBattleScoringReport
   };
 }
 
+function buildDeckDeltas(
+  baselineProfile: CpuAiProfile,
+  baselineReport: DeckBattleScoringReport,
+  comparedProfiles: readonly CpuAiProfile[],
+  reports: Partial<Record<CpuAiProfile, DeckBattleScoringReport>>,
+): AiWeightDeckDelta[] {
+  const baselineByDeck = new Map(baselineReport.decks.map((deck) => [deck.deckPreset, deck]));
+  return comparedProfiles.flatMap((profile) =>
+    (reports[profile]?.decks ?? []).flatMap((deck) => {
+      const baseline = baselineByDeck.get(deck.deckPreset);
+      if (!baseline) {
+        return [];
+      }
+      return [{
+        deckPreset: deck.deckPreset,
+        profile,
+        baselineProfile,
+        battleScoreDelta: round(deck.battleScore - baseline.battleScore, 1),
+        winPointRateDelta: round(deck.winPointRate - baseline.winPointRate, 3),
+        speedScoreDelta: round(deck.speedScore - baseline.speedScore, 1),
+        stabilityScoreDelta: round(deck.stabilityScore - baseline.stabilityScore, 1),
+      }];
+    }),
+  ).sort((a, b) => Math.abs(b.battleScoreDelta) - Math.abs(a.battleScoreDelta));
+}
+
+function requireReport(
+  reports: Partial<Record<CpuAiProfile, DeckBattleScoringReport>>,
+  profile: CpuAiProfile,
+): DeckBattleScoringReport {
+  const report = reports[profile];
+  if (!report) {
+    throw new Error(`Missing AI weight report for profile: ${profile}`);
+  }
+  return report;
+}
+
 function formatPercent(value: number): string {
   return `${Math.round(value * 1000) / 10}%`;
+}
+
+function formatSignedPercent(value: number): string {
+  const formatted = formatPercent(Math.abs(value));
+  return value > 0 ? `+${formatted}` : value < 0 ? `-${formatted}` : formatted;
 }
 
 function round(value: number, digits = 0): number {

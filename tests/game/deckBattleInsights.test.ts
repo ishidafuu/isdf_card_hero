@@ -31,6 +31,13 @@ describe("deck battle insights", () => {
     expect(problemFocusIds).toContain("long_game_closeout");
     expect(insights.problemGames.every((game) => (game.focusLabels?.length ?? 0) > 0)).toBe(true);
     expect(insights.problemFocuses.length).toBeGreaterThan(0);
+    expect(insights.biasDiagnostics.length).toBeGreaterThan(0);
+    expect(insights.whiteCloseoutDiagnostics[0]).toMatchObject({
+      deckPreset: "submission-pro-no-rare8-white-494",
+      issue: "low_win_rate",
+    });
+    expect(insights.confidenceDiagnostics.length).toBeGreaterThan(0);
+    expect(insights.matchupAdjustments.length).toBeGreaterThan(0);
     expect(insights.recommendedFocus.length).toBeGreaterThan(0);
   });
 
@@ -40,6 +47,10 @@ describe("deck battle insights", () => {
     expect(markdown).toContain("# AI Lab: デッキ実戦分析");
     expect(markdown).toContain("## Recommended Focus");
     expect(markdown).toContain("## Problem Focus");
+    expect(markdown).toContain("## Bias Diagnostics");
+    expect(markdown).toContain("## White Closeout Diagnostics");
+    expect(markdown).toContain("## Confidence Diagnostics");
+    expect(markdown).toContain("## Matchup Adjustments");
     expect(markdown).toContain("## Problem Games");
   });
 });

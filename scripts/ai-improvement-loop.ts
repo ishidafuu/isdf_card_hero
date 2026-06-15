@@ -1,38 +1,34 @@
 import { mkdir, writeFile } from "node:fs/promises";
 import { dirname, join } from "node:path";
 import {
-  formatCardAdjustmentSafetyMarkdown,
-  runCardAdjustmentSafetyGate,
-  type CardAdjustmentSafetyOptions,
-} from "../src/game/cardAdjustmentSafety";
+  formatAiImprovementLoopMarkdown,
+  runAiImprovementLoop,
+  type AiImprovementLoopOptions,
+} from "../src/game/aiImprovementLoop";
 import { DECK_BENCHMARK_SUITE_IDS, type DeckBenchmarkSuiteId } from "../src/game/deckBenchmarkSuites";
 import type { DeckBattleFirstPlayerMode } from "../src/game/deckBattleScoring";
 
-interface CliOptions extends CardAdjustmentSafetyOptions {
+interface CliOptions extends AiImprovementLoopOptions {
   outDir: string;
   jsonPath?: string;
   markdownPath?: string;
 }
 
 const options = parseArgs(process.argv.slice(2));
-const report = runCardAdjustmentSafetyGate(options);
-const markdown = formatCardAdjustmentSafetyMarkdown(report);
+const report = runAiImprovementLoop(options);
+const markdown = formatAiImprovementLoopMarkdown(report);
 
-const jsonPath = options.jsonPath ?? join(options.outDir, "card-adjustment-safety.json");
-const markdownPath = options.markdownPath ?? join(options.outDir, "card-adjustment-safety.md");
+const jsonPath = options.jsonPath ?? join(options.outDir, "ai-improvement-loop.json");
+const markdownPath = options.markdownPath ?? join(options.outDir, "ai-improvement-loop.md");
 await writeReport(jsonPath, JSON.stringify(report, null, 2));
 await writeReport(markdownPath, markdown);
 
-console.log(`Card adjustment safety: ${report.ok ? "PASS" : "FAIL"}`);
-for (const check of report.checks) {
-  console.log(`${check.status.toUpperCase()} ${check.id}: ${check.message}`);
+console.log(`AI improvement loop: ${report.actions.length} actions`);
+for (const action of report.actions) {
+  console.log(`${action.priority.toUpperCase()} ${action.title}: ${action.reason}`);
 }
 console.log(`JSON: ${jsonPath}`);
 console.log(`Markdown: ${markdownPath}`);
-
-if (!report.ok) {
-  process.exitCode = 1;
-}
 
 async function writeReport(path: string, content: string): Promise<void> {
   await mkdir(dirname(path), { recursive: true });
@@ -42,7 +38,7 @@ async function writeReport(path: string, content: string): Promise<void> {
 function parseArgs(args: string[]): CliOptions {
   const parsed: CliOptions = {
     suiteId: "smoke",
-    seedStart: 620,
+    seedStart: 700,
     count: 1,
     maxDecks: 4,
     maxSteps: 700,
@@ -53,7 +49,7 @@ function parseArgs(args: string[]): CliOptions {
     aiProfile: "strong",
     firstPlayerMode: "player",
     compareWeights: true,
-    outDir: join("artifacts", "card-adjustment-safety", "latest"),
+    outDir: join("artifacts", "ai-improvement-loop", "latest"),
   };
 
   for (let i = 0; i < args.length; i += 1) {
@@ -152,21 +148,21 @@ function readString(name: string, value: string | undefined): string {
 function printHelp(): void {
   console.log(`
 Usage:
-  npm run safety:card-adjustment -- [options]
+  npm run improve:ai-loop -- [options]
 
 Options:
   --suite <id>              Deck suite. Default: smoke. Values: ${DECK_BENCHMARK_SUITE_IDS.join(", ")}
-  --seed-start <n>          First seed. Default: 620
+  --seed-start <n>          First seed. Default: 700
   --count <n>               Number of seeds per pair. Default: 1
   --max-decks <n>           Limit deck count from the selected suite. Default: 4
   --first-player-mode <m>   First player mode. Default: player. Values: player, cpu, alternate, both
-  --max-failures <n>        Fail if failure count exceeds this value.
-  --max-warnings <n>        Fail if warning count exceeds this value.
-  --max-seat-delta <n>      Fail if max player/cpu win-point delta exceeds this 0-1 rate.
-  --max-first-delta <n>     Fail if max first/second win-point delta exceeds this 0-1 rate.
-  --min-top-win-point <n>   Fail if top deck win-point rate is below this 0-1 rate.
-  --no-compare-weights      Skip stable/strong comparison.
-  --out-dir <path>          Output directory. Default: artifacts/card-adjustment-safety/latest
+  --max-failures <n>        Add a safety threshold for failures.
+  --max-warnings <n>        Add a safety threshold for warnings.
+  --max-seat-delta <n>      Add a 0-1 safety threshold for player/cpu bias.
+  --max-first-delta <n>     Add a 0-1 safety threshold for first/second bias.
+  --min-top-win-point <n>   Add a 0-1 safety threshold for top deck win-point rate.
+  --no-compare-weights      Skip AI weight profile comparison.
+  --out-dir <path>          Output directory. Default: artifacts/ai-improvement-loop/latest
   --json <path>             Write JSON report to an explicit path.
   --markdown <path>         Write Markdown report to an explicit path.
 `);

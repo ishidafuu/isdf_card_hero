@@ -1,4 +1,4 @@
-export type AiEvaluationProfile = "stable" | "strong";
+export type AiEvaluationProfile = "stable" | "strong" | "pressure" | "defensive";
 
 export interface AiEvaluationWeights {
   masterHp: number;
@@ -39,6 +39,26 @@ export const AI_EVALUATION_WEIGHTS = {
     masterDamageBase: 96,
     monsterKillBase: 280,
     monsterDamagePerPoint: 24,
+  },
+  pressure: {
+    ...BASE_WEIGHTS,
+    masterHp: 76,
+    stone: 5,
+    masterDamageBase: 108,
+    monsterKillBase: 250,
+    monsterDamagePerPoint: 22,
+    masterDamageMagicCost: 14,
+    monsterKillMagicCost: 10,
+  },
+  defensive: {
+    ...BASE_WEIGHTS,
+    masterHp: 92,
+    stone: 7,
+    masterDamageBase: 82,
+    monsterKillBase: 330,
+    monsterDamagePerPoint: 28,
+    genericMagicCost: 6,
+    healPerPoint: 34,
   },
 } satisfies Record<AiEvaluationProfile, AiEvaluationWeights>;
 
