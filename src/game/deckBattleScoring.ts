@@ -11,6 +11,7 @@ import type { CpuAiProfile } from "./cpuAi";
 import type { GameState, MasterId, PlayerId } from "./types";
 
 export type DeckBattleMatchupKey = "black_vs_black" | "white_vs_white" | "white_vs_black";
+export type DeckBattleFirstPlayerMode = "player" | "cpu" | "alternate" | "both";
 
 export interface DeckBattleMatchupStats {
   games: number;
@@ -34,6 +35,7 @@ export interface DeckBattleScoringOptions {
   longGameTurns?: number;
   stagnationLimit?: number;
   aiProfile?: CpuAiProfile;
+  firstPlayerMode?: DeckBattleFirstPlayerMode;
 }
 
 export interface ResolvedDeckBattleScoringOptions {
@@ -47,12 +49,14 @@ export interface ResolvedDeckBattleScoringOptions {
   longGameTurns: number;
   stagnationLimit: number;
   aiProfile: CpuAiProfile;
+  firstPlayerMode: DeckBattleFirstPlayerMode;
 }
 
 export interface DeckBattlePairing {
   seed: number;
   playerDeckPreset: DeckSubmissionPresetId;
   cpuDeckPreset: DeckSubmissionPresetId;
+  firstPlayer?: PlayerId;
 }
 
 export interface DeckBattleGameResult extends DeckBattlePairing {
@@ -95,6 +99,13 @@ export interface DeckBattleScoreEntry {
   cpuSideGames: number;
   cpuSideWinPointRate: number;
   sideBalanceScore: number;
+  firstPlayerWins: number;
+  firstPlayerGames: number;
+  firstPlayerWinPointRate: number;
+  secondPlayerWins: number;
+  secondPlayerGames: number;
+  secondPlayerWinPointRate: number;
+  firstPlayerBalanceScore: number;
   stabilityScore: number;
   speedScore: number;
   warningRate: number;
@@ -135,6 +146,12 @@ interface MutableDeckBattleRecord {
   cpuSideWins: number;
   cpuSideGames: number;
   cpuSideDraws: number;
+  firstPlayerWins: number;
+  firstPlayerGames: number;
+  firstPlayerDraws: number;
+  secondPlayerWins: number;
+  secondPlayerGames: number;
+  secondPlayerDraws: number;
   failures: number;
   warnings: number;
   totalSteps: number;
@@ -162,6 +179,7 @@ const DEFAULT_OPTIONS: ResolvedDeckBattleScoringOptions = {
   longGameTurns: 80,
   stagnationLimit: 8,
   aiProfile: "strong",
+  firstPlayerMode: "player",
 };
 
 export function runDeckBattleScoring(options: DeckBattleScoringOptions = {}): DeckBattleScoringReport {
@@ -169,7 +187,7 @@ export function runDeckBattleScoring(options: DeckBattleScoringOptions = {}): De
   const auditsById = new Map(analyzeDeckSubmissions().map((audit) => [audit.id, audit]));
   const suite = getDeckBenchmarkSuite(resolved.suiteId);
   const deckPresetIds = suite.deckPresetIds.slice(0, resolved.maxDecks ?? suite.deckPresetIds.length);
-  const pairings = buildDeckBattlePairings(deckPresetIds, resolved.seedStart, resolved.count);
+  const pairings = buildDeckBattlePairings(deckPresetIds, resolved.seedStart, resolved.count, resolved.firstPlayerMode);
   const games = pairings.map((pairing) => runDeckBattleGame(pairing, resolved));
   const decks = scoreDeckBattleResults(deckPresetIds, games, auditsById);
 
@@ -194,6 +212,7 @@ export function buildDeckBattlePairings(
   deckPresetIds: readonly DeckSubmissionPresetId[],
   seedStart: number,
   count: number,
+  firstPlayerMode: DeckBattleFirstPlayerMode = "player",
 ): DeckBattlePairing[] {
   const pairings: DeckBattlePairing[] = [];
   for (let leftIndex = 0; leftIndex < deckPresetIds.length; leftIndex += 1) {
@@ -202,12 +221,35 @@ export function buildDeckBattlePairings(
         const seed = seedStart + seedOffset;
         const left = deckPresetIds[leftIndex];
         const right = deckPresetIds[rightIndex];
-        pairings.push({ seed, playerDeckPreset: left, cpuDeckPreset: right });
-        pairings.push({ seed, playerDeckPreset: right, cpuDeckPreset: left });
+        for (const firstPlayer of firstPlayersForPairing(firstPlayerMode, seedOffset)) {
+          pairings.push(createDeckBattlePairing(seed, left, right, firstPlayerMode, firstPlayer));
+          pairings.push(createDeckBattlePairing(seed, right, left, firstPlayerMode, firstPlayer));
+        }
       }
     }
   }
   return pairings;
+}
+
+function firstPlayersForPairing(mode: DeckBattleFirstPlayerMode, seedOffset: number): PlayerId[] {
+  if (mode === "both") {
+    return ["player", "cpu"];
+  }
+  if (mode === "alternate") {
+    return [seedOffset % 2 === 0 ? "player" : "cpu"];
+  }
+  return [mode];
+}
+
+function createDeckBattlePairing(
+  seed: number,
+  playerDeckPreset: DeckSubmissionPresetId,
+  cpuDeckPreset: DeckSubmissionPresetId,
+  mode: DeckBattleFirstPlayerMode,
+  firstPlayer: PlayerId,
+): DeckBattlePairing {
+  const base = { seed, playerDeckPreset, cpuDeckPreset };
+  return mode === "player" ? base : { ...base, firstPlayer };
 }
 
 export function scoreDeckBattleResults(
@@ -233,6 +275,12 @@ export function scoreDeckBattleResults(
       cpuSideWins: 0,
       cpuSideGames: 0,
       cpuSideDraws: 0,
+      firstPlayerWins: 0,
+      firstPlayerGames: 0,
+      firstPlayerDraws: 0,
+      secondPlayerWins: 0,
+      secondPlayerGames: 0,
+      secondPlayerDraws: 0,
       failures: 0,
       warnings: 0,
       totalSteps: 0,
@@ -259,13 +307,17 @@ export function scoreDeckBattleResults(
       cpu.draws += 1;
       player.playerSideDraws += 1;
       cpu.cpuSideDraws += 1;
+      applyFirstPlayerDraw(player, game, "player");
+      applyFirstPlayerDraw(cpu, game, "cpu");
     } else if (game.winnerDeckPreset === game.playerDeckPreset) {
       player.wins += 1;
       player.playerSideWins += 1;
+      applyFirstPlayerWin(player, game, "player");
       cpu.losses += 1;
     } else {
       cpu.wins += 1;
       cpu.cpuSideWins += 1;
+      applyFirstPlayerWin(cpu, game, "cpu");
       player.losses += 1;
     }
   }
@@ -282,6 +334,7 @@ export function formatDeckBattleScoringReport(report: DeckBattleScoringReport, l
     `Suite: ${report.options.suiteId} (${report.summary.decks} decks)`,
     `Seeds: ${report.options.seedStart}-${report.options.seedStart + report.options.count - 1} (${report.options.count})`,
     `AI profile: ${report.options.aiProfile}`,
+    `First player: ${report.options.firstPlayerMode}`,
     `Games: ${report.summary.games}`,
     `Issues: ${report.summary.failures} failures, ${report.summary.warnings} warnings`,
     `Average: ${report.summary.averageSteps} steps / ${report.summary.averageTurns} turns`,
@@ -327,19 +380,22 @@ export function formatDeckBattleScoringMarkdown(report: DeckBattleScoringReport)
     `- Win point: 勝ち=1、引き分け=0.5で見た実戦成績。`,
     `- Win rate: 純粋な勝率。引き分けは勝ちに含めない。`,
     `- Stability: 警告/失敗の少なさと、player/cpu席で成績が崩れないかを見る安定度。`,
+    `- Seat WPR: player席/cpu席の勝点率。UI操作側とCPU側の非対称性を見る。`,
+    `- First WPR: 先攻/後攻の勝点率。先後差が大きいデッキを分けて見る。`,
     `- Speed: 同一suite内の平均stepsと比べた決着速度。50がsuite平均。`,
     `- Matchups: 黒vs黒、白vs白、白vs黒に分けた勝率。相性差の確認に使う。`,
     ``,
     `## Deck Scores`,
     ``,
-    `| Rank | Deck | Battle | Win point | Win rate | Stability | Speed | BvB | WvW | WvB | W-L-D | Seat WPR P/C | Avg steps | Avg turns | Base | Issues |`,
-    `| ---: | --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: |`,
+    `| Rank | Deck | Battle | Win point | Win rate | Stability | Speed | BvB | WvW | WvB | W-L-D | Seat WPR P/C | First WPR F/S | Avg steps | Avg turns | Base | Issues |`,
+    `| ---: | --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: |`,
     ...report.decks.map((deck, index) =>
       `| ${index + 1} | ${deck.deckPreset} | ${deck.battleScore} | ${formatPercent(deck.winPointRate)} | ` +
       `${formatPercent(deck.winRate)} | ${deck.stabilityScore} | ${deck.speedScore} | ` +
       `${formatMatchupWinRate(deck.matchups.black_vs_black)} | ${formatMatchupWinRate(deck.matchups.white_vs_white)} | ` +
       `${formatMatchupWinRate(deck.matchups.white_vs_black)} | ` +
       `${deck.wins}-${deck.losses}-${deck.draws} | ${formatPercent(deck.playerSideWinPointRate)}/${formatPercent(deck.cpuSideWinPointRate)} | ` +
+      `${formatPercent(deck.firstPlayerWinPointRate)}/${formatPercent(deck.secondPlayerWinPointRate)} | ` +
       `${deck.averageSteps} | ${deck.averageTurns} | ${deck.practicalScore} | ${deck.failures}/${deck.warnings} |`,
     ),
     ``,
@@ -358,6 +414,7 @@ function resolveDeckBattleScoringOptions(options: DeckBattleScoringOptions): Res
     longGameTurns: integerOption(options.longGameTurns, DEFAULT_OPTIONS.longGameTurns),
     stagnationLimit: integerOption(options.stagnationLimit, DEFAULT_OPTIONS.stagnationLimit),
     aiProfile: options.aiProfile ?? DEFAULT_OPTIONS.aiProfile,
+    firstPlayerMode: options.firstPlayerMode ?? DEFAULT_OPTIONS.firstPlayerMode,
   };
 }
 
@@ -433,6 +490,7 @@ function runDeckBattleGame(pairing: DeckBattlePairing, options: ResolvedDeckBatt
     game.winner === "player" ? pairing.playerDeckPreset : game.winner === "cpu" ? pairing.cpuDeckPreset : undefined;
   return {
     ...pairing,
+    firstPlayer: pairing.firstPlayer ?? "player",
     winner: game.winner,
     winnerDeckPreset,
     steps: step,
@@ -453,6 +511,7 @@ function createDeckBattleInitialGame(pairing: DeckBattlePairing): GameState {
     },
     playerDeckCardIds: buildDeckPresetCardIds(pairing.playerDeckPreset),
     cpuDeckCardIds: buildDeckPresetCardIds(pairing.cpuDeckPreset),
+    firstPlayer: pairing.firstPlayer ?? "player",
     allowSpecialDecks: {
       player: deckPresetAllowsSpecial(pairing.playerDeckPreset),
       cpu: deckPresetAllowsSpecial(pairing.cpuDeckPreset),
@@ -472,11 +531,32 @@ function applySharedGameStats(
   } else {
     record.cpuSideGames += 1;
   }
+  if ((game.firstPlayer ?? "player") === side) {
+    record.firstPlayerGames += 1;
+  } else {
+    record.secondPlayerGames += 1;
+  }
   record.failures += game.failures;
   record.warnings += game.warnings;
   record.totalSteps += game.steps;
   record.totalTurns += game.turns;
   record.opponents.add(opponent);
+}
+
+function applyFirstPlayerWin(record: MutableDeckBattleRecord, game: DeckBattleGameResult, side: PlayerId): void {
+  if ((game.firstPlayer ?? "player") === side) {
+    record.firstPlayerWins += 1;
+  } else {
+    record.secondPlayerWins += 1;
+  }
+}
+
+function applyFirstPlayerDraw(record: MutableDeckBattleRecord, game: DeckBattleGameResult, side: PlayerId): void {
+  if ((game.firstPlayer ?? "player") === side) {
+    record.firstPlayerDraws += 1;
+  } else {
+    record.secondPlayerDraws += 1;
+  }
 }
 
 function applyMatchupGameStats(
@@ -514,9 +594,14 @@ function toScoreEntry(
     record.playerSideGames > 0 ? (record.playerSideWins + record.playerSideDraws * 0.5) / record.playerSideGames : 0;
   const cpuSideWinPointRate =
     record.cpuSideGames > 0 ? (record.cpuSideWins + record.cpuSideDraws * 0.5) / record.cpuSideGames : 0;
+  const firstPlayerWinPointRate =
+    record.firstPlayerGames > 0 ? (record.firstPlayerWins + record.firstPlayerDraws * 0.5) / record.firstPlayerGames : 0;
+  const secondPlayerWinPointRate =
+    record.secondPlayerGames > 0 ? (record.secondPlayerWins + record.secondPlayerDraws * 0.5) / record.secondPlayerGames : 0;
   const sideBalanceScore = clamp(100 - Math.abs(playerSideWinPointRate - cpuSideWinPointRate) * 100, 0, 100);
+  const firstPlayerBalanceScore = clamp(100 - Math.abs(firstPlayerWinPointRate - secondPlayerWinPointRate) * 100, 0, 100);
   const issueScore = clamp(100 - warningRate * 25 - failureRate * 85, 0, 100);
-  const stabilityScore = issueScore * 0.7 + sideBalanceScore * 0.3;
+  const stabilityScore = issueScore * 0.65 + sideBalanceScore * 0.2 + firstPlayerBalanceScore * 0.15;
   const speedScore =
     suiteAverageSteps > 0 ? clamp(50 + ((suiteAverageSteps - averageSteps) / suiteAverageSteps) * 50, 0, 100) : 0;
   const tempoBonus = clamp((suiteAverageSteps - averageSteps) / 20, -5, 5);
@@ -543,6 +628,13 @@ function toScoreEntry(
     cpuSideGames: record.cpuSideGames,
     cpuSideWinPointRate: round(cpuSideWinPointRate, 3),
     sideBalanceScore: round(sideBalanceScore, 1),
+    firstPlayerWins: record.firstPlayerWins,
+    firstPlayerGames: record.firstPlayerGames,
+    firstPlayerWinPointRate: round(firstPlayerWinPointRate, 3),
+    secondPlayerWins: record.secondPlayerWins,
+    secondPlayerGames: record.secondPlayerGames,
+    secondPlayerWinPointRate: round(secondPlayerWinPointRate, 3),
+    firstPlayerBalanceScore: round(firstPlayerBalanceScore, 1),
     stabilityScore: round(stabilityScore, 1),
     speedScore: round(speedScore, 1),
     warningRate: round(warningRate, 3),

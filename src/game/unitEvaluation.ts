@@ -1,4 +1,6 @@
 import { getCardDef, getCardDefsByPool, getCardMemberRatingAverage, getCardPool, getMonsterDef } from "./cards";
+import { getMagicAiTrait } from "./aiTraits";
+import { getMonsterAiTrait } from "./aiUnitTraits";
 import { FIELD_ORDER, PLAYER_SLOT_ORDER } from "./ruleEngine/constants";
 import { isOpponentMasterInCommandRange, isTargetInCommandRange } from "./ruleEngine/field";
 import type {
@@ -178,8 +180,8 @@ export function cpuMonsterValue(state: GameState, slotKey: SlotKey): number {
 }
 
 export function cpuPlacementValue(state: GameState, slot: SlotState, monster: MonsterState): number {
-  const def = getMonsterDef(monster.cardId);
-  if (def.role === "front") {
+  const trait = getMonsterAiTrait(monster.cardId);
+  if (trait.role === "front") {
     return slot.row === "front" ? 12 : -8;
   }
 
@@ -193,13 +195,14 @@ export function cpuPlacementValue(state: GameState, slot: SlotState, monster: Mo
 export function evaluateHandCardKeepValue(state: GameState, card: Pick<CardInstance, "cardId">): number {
   const def = getCardDef(card.cardId);
   if (def.type === "magic") {
-    if (def.id === "thunder" || def.id === "card_026" || def.id === "card_092" || def.id === "card_118") {
+    const trait = getMagicAiTrait(def.id);
+    if (trait?.effectKind === "damage" && trait.valueModel === "target_damage") {
       return 48;
     }
-    if (def.id === "healing" || def.id === "card_127" || def.id === "power_up") {
+    if (trait?.effectKind === "heal" || trait?.valueModel === "attack_buff_delta") {
       return 42;
     }
-    if (def.id === "card_030" || def.id === "card_031" || def.id === "card_123") {
+    if (trait?.effectKind === "shield" || trait?.effectKind === "move" || trait?.valueModel === "search_choice") {
       return 34;
     }
     return 24;
@@ -215,8 +218,9 @@ export function evaluateHandCardKeepValue(state: GameState, card: Pick<CardInsta
   const ownSlots = PLAYER_SLOT_ORDER[state.currentPlayer];
   const frontCount = ownSlots.filter((slotKey) => state.slots[slotKey].row === "front" && state.slots[slotKey].monster).length;
   const backCount = ownSlots.filter((slotKey) => state.slots[slotKey].row === "back" && state.slots[slotKey].monster).length;
-  const roleNeed = def.role === "front" ? Math.max(0, 2 - frontCount) : Math.max(0, 2 - backCount);
-  return 30 + def.maxLevel * 12 + (def.role === "front" ? 8 : 10) + roleNeed * 14 + memberRatingValueBonus(card.cardId, state.players[state.currentPlayer].masterId);
+  const trait = getMonsterAiTrait(def.id);
+  const roleNeed = trait.role === "front" ? Math.max(0, 2 - frontCount) : Math.max(0, 2 - backCount);
+  return 30 + def.maxLevel * 12 + (trait.role === "front" ? 8 : 10) + roleNeed * 14 + memberRatingValueBonus(card.cardId, state.players[state.currentPlayer].masterId);
 }
 
 export function evaluateHandMonsterPlacementValue(state: GameState, cardId: string, slotKey: SlotKey): number {
@@ -230,8 +234,9 @@ export function evaluateHandMonsterPlacementValue(state: GameState, cardId: stri
 
   const firstLevel = def.levels[0];
   const slot = state.slots[slotKey];
-  const placement = def.role === slot.row ? 22 : -18;
-  const laneSupport = def.role === "back" && slot.row === "back" && state.slots[frontSlotFor(slot)].monster ? 10 : 0;
+  const trait = getMonsterAiTrait(cardId);
+  const placement = trait.role === slot.row ? 22 : -18;
+  const laneSupport = trait.role === "back" && slot.row === "back" && state.slots[frontSlotFor(slot)].monster ? 10 : 0;
   return 30 + def.maxLevel * 12 + firstLevel.maxHp * 6 + placement + laneSupport + memberRatingValueBonus(cardId, state.players[state.currentPlayer].masterId);
 }
 

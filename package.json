@@ -14,6 +14,8 @@
     "analyze:deck-battles": "vite-node scripts/deck-battle-insights.ts",
     "trace:deck-battles": "vite-node scripts/deck-battle-traces.ts",
     "generate:deck-battle-snapshots": "vite-node scripts/generate-deck-battle-snapshots.ts",
+    "compare:ai-weights": "vite-node scripts/ai-weight-comparison.ts",
+    "safety:card-adjustment": "vite-node scripts/card-adjustment-safety.ts",
     "diff:ai": "vite-node scripts/ai-decision-diff.ts",
     "audit:deck-submissions": "vite-node scripts/deck-submission-audit.ts",
     "import:deck-submissions": "node scripts/import-cardhero-bu-decks.mjs",

@@ -6,6 +6,7 @@ import {
   formatDeckBattleScoringMarkdown,
   formatDeckBattleScoringReport,
   runDeckBattleScoring,
+  type DeckBattleFirstPlayerMode,
   type DeckBattleScoringOptions,
 } from "../src/game/deckBattleScoring";
 
@@ -47,6 +48,7 @@ function parseArgs(args: string[]): CliOptions {
     longGameTurns: 80,
     stagnationLimit: 8,
     aiProfile: "strong",
+    firstPlayerMode: "player",
     outDir: join("artifacts", "deck-battle-score", "latest"),
     failOnWarnings: false,
   };
@@ -83,6 +85,9 @@ function parseArgs(args: string[]): CliOptions {
       i += 1;
     } else if (arg === "--ai-profile") {
       parsed.aiProfile = readAiProfile(arg, next);
+      i += 1;
+    } else if (arg === "--first-player-mode") {
+      parsed.firstPlayerMode = readFirstPlayerMode(arg, next);
       i += 1;
     } else if (arg === "--out-dir") {
       if (!next) {
@@ -129,6 +134,14 @@ function readAiProfile(name: string, value: string | undefined): CpuAiProfile {
   throw new Error(`${name} must be one of: ${CPU_AI_PROFILES.join(", ")}`);
 }
 
+function readFirstPlayerMode(name: string, value: string | undefined): DeckBattleFirstPlayerMode {
+  const values = ["player", "cpu", "alternate", "both"] as const satisfies readonly DeckBattleFirstPlayerMode[];
+  if ((values as readonly string[]).includes(value ?? "")) {
+    return value as DeckBattleFirstPlayerMode;
+  }
+  throw new Error(`${name} must be one of: ${values.join(", ")}`);
+}
+
 function readNumber(name: string, value: string | undefined): number {
   if (!value) {
     throw new Error(`${name} requires a value`);
@@ -156,6 +169,7 @@ Options:
   --long-game-turns <n>    Warning threshold for long finished games. Default: 80
   --stagnation-limit <n>   Repeated progress signature failure threshold. Default: 8
   --ai-profile <id>        Auto battle AI profile. Default: strong. Values: ${CPU_AI_PROFILES.join(", ")}
+  --first-player-mode <m>  First player mode. Default: player. Values: player, cpu, alternate, both
   --out-dir <path>         Output directory. Default: artifacts/deck-battle-score/latest
   --json <path>            Write JSON report to an explicit path.
   --markdown <path>        Write Markdown report to an explicit path.

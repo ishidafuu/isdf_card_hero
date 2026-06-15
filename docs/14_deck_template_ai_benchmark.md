@@ -568,3 +568,94 @@ npm run generate:deck-battle-snapshots -- --report artifacts/deck-battle-score/p
 - `Problem Focus` は席差/非対称24件が中心で、次は player/cpu席差と先後差の分解が必要。
 - `submission-pro-no-rare8-black-758` は勝てるが遅い。終盤の勝ち切り評価を確認する。
 - `submission-pro-no-rare8-white-345` は安定するが勝てない。白デッキの攻め筋不足を確認する。
+
+## Phase 26-30: traits拡張、先後差分解、カード調整セーフティゲート
+
+実行日: 2026-06-15
+
+### 目的
+
+Phase 25までのAI分離を、マジック以外の評価、デッキスコア分析、カード調整後の検証フローまで広げる。
+カード性能調整時に、AIコードへカードID知識を戻さず、traits、スコア指標、セーフティゲートで変化を確認できる状態にする。
+
+### Phase 26: commandTraits / unitTraits
+
+- `src/game/aiUnitTraits.ts` を追加し、コマンド射程、マスター圧、柔軟射程、リソースリスク、ユニット配置適性をAI用traitsとして推定する。
+- `cpuAi` の召喚、移動理由、シールド重要度、サーチ対象判定を `unitTraits` 経由に寄せた。
+- `unitEvaluation` の魔法保持価値をカードID分岐から `aiTraits` ベースへ移した。
+- `tests/game/aiUnitTraits.test.ts` を追加し、全モンスターでtraits生成できることを確認する。
+
+### Phase 27: 席差/先後差の分解
+
+- `DeckBattlePairing` に `firstPlayer` を追加し、`--first-player-mode player|cpu|alternate|both` を指定できるようにした。
+- `DeckBattleScoreEntry` に先攻時/後攻時の勝点率とバランススコアを追加した。
+- `AI Lab` の分析カテゴリに `先後差` を追加し、席差と先後差を別々に追えるようにした。
+
+### Phase 28: 白同士長期戦
+
+- `Problem Focus` に `白同士長期戦` を追加した。
+- 白vs白の終盤・山札切れ付近では、非致死かつレベルアップ筋のないシールドを抑制する。
+- 致死回避、明確な撃破防止、レベルアップ筋は従来通り残す。
+
+### Phase 29: aiWeights比較
+
+- `src/game/aiWeightComparison.ts` と `scripts/ai-weight-comparison.ts` を追加した。
+- `npm run compare:ai-weights` で `stable` / `strong` を同条件で実戦比較できる。
+- `tests/game/aiWeightComparison.test.ts` を追加し、小さいsuiteで比較レポートが生成できることを確認する。
+
+### Phase 30: カード調整セーフティゲート
+
+- `src/game/cardAdjustmentSafety.ts` と `scripts/card-adjustment-safety.ts` を追加した。
+- `npm run safety:card-adjustment` で、マジックtraits未分類、ユニットtraits生成、短い実戦スコア、重み比較を一括確認できる。
+- `tests/game/cardAdjustmentSafety.test.ts` を追加し、軽量ゲートが通ることを確認する。
+
+### 実行コマンド
+
+```sh
+npm test -- --run tests/game/aiUnitTraits.test.ts tests/game/deckBattleScoring.test.ts tests/game/deckBattleInsights.test.ts tests/game/aiWeightComparison.test.ts tests/game/cardAdjustmentSafety.test.ts
+npm test -- --run
+npm run build
+npm run compare:ai-weights -- --suite smoke --max-decks 4 --seed-start 640 --count 1 --out-dir artifacts/ai-weight-comparison/phase30-smoke-max4
+npm run safety:card-adjustment -- --suite smoke --max-decks 4 --seed-start 640 --count 1 --out-dir artifacts/card-adjustment-safety/phase30-smoke-max4
+npm run score:deck-battles -- --suite smoke --seed-start 640 --count 2 --out-dir artifacts/deck-battle-score/phase30-smoke-count2 --fail-on-warnings
+npm run score:deck-battles -- --suite smoke --max-decks 8 --seed-start 642 --count 1 --first-player-mode both --out-dir artifacts/deck-battle-score/phase30-first-both-smoke8 --fail-on-warnings
+npm run score:deck-battles -- --suite core --seed-start 640 --count 1 --out-dir artifacts/deck-battle-score/phase30-core-count1 --fail-on-warnings
+npm run analyze:deck-battles -- --report artifacts/deck-battle-score/phase30-core-count1/report.json --out-dir artifacts/deck-battle-score/phase30-core-count1-insights
+npm run trace:deck-battles -- --report artifacts/deck-battle-score/phase30-core-count1/report.json --out-dir artifacts/deck-battle-score/phase30-core-count1-traces --limit 8 --log-limit 80
+npm run generate:deck-battle-snapshots -- --report artifacts/deck-battle-score/phase30-smoke-count2/report.json --report artifacts/deck-battle-score/phase30-core-count1/report.json --default-suite core --out src/game/deckBattleScoreSnapshots.ts
+```
+
+### 期待される運用
+
+カード性能を変えたら、まず `npm run safety:card-adjustment` を通す。
+勝率やデッキ順位の確認が必要な場合は `score:deck-battles`、AI性格差を見る場合は `compare:ai-weights`、先後差を見る場合は `--first-player-mode both` を使う。
+
+### 実行結果
+
+| Gate | Games | Result | Notes |
+| --- | ---: | --- | --- |
+| 局所テスト | 10 tests | PASS | traits、先後差、重み比較、セーフティゲート |
+| 全テスト | 429 tests | PASS | 20 test files |
+| compare ai weights | 24 | PASS 0/0 | stable平均101.6 steps、strong平均89.9 steps |
+| safety card adjustment | 12 + 比較24 | PASS | magic/unit traits、実戦、重み比較すべてfailure 0 |
+| score smoke count2 | 112 | PASS 0/0 | 平均98.2 steps / 10 turns、最大205 steps / 17 turns |
+| score first both smoke8 | 112 | PASS 0/0 | 平均103.1 steps / 9.8 turns、最大290 steps / 23 turns |
+| score core count1 | 1560 | PASS 0/0 | 平均101.9 steps / 10.5 turns、最大286 steps / 29 turns |
+
+`src/game/deckBattleScoreSnapshots.ts` は `phase30-smoke-count2` と `phase30-core-count1` で更新した。
+
+### Core count1の代表傾向
+
+| Rank | Deck | Battle | Win | Stable | Speed |
+| ---: | --- | ---: | ---: | ---: | ---: |
+| 1 | submission-pro-with-rare8-black-44 | 85.8 | 84.6% | 91.0 | 61.2 |
+| 2 | submission-pro-with-rare8-black-1336 | 78.1 | 76.9% | 83.8 | 61.4 |
+| 3 | submission-pro-with-rare8-black-1390 | 71.6 | 70.5% | 84.7 | 60.5 |
+| 4 | submission-pro-no-rare8-black-252 | 70.8 | 70.5% | 91.9 | 52.8 |
+| 5 | submission-pro-no-rare8-black-1388 | 69.6 | 69.2% | 85.6 | 53.8 |
+
+### 残課題
+
+- warningは0件まで下がったが、`Problem Focus` は席差/非対称23件が中心。
+- `submission-pro-with-rare8-black-45` は席差59%、先後差59%で、次フェーズの先後/席差分解の主対象。
+- `submission-pro-no-rare8-white-836` は勝てるが遅い。白の勝ち切りと過剰安全行動の継続確認対象。

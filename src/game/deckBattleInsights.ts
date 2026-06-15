@@ -13,18 +13,21 @@ export type DeckBattleInsightCategoryId =
   | "slow_winners"
   | "stable_underperformers"
   | "seat_skew"
+  | "first_player_skew"
   | "practical_mismatch";
 
 export type DeckBattleProblemKind = "issue" | "long_game" | "upset" | "top_deck_loss";
 export type DeckBattleProblemFocusId =
   | "issue_safety"
   | "long_game_closeout"
+  | "white_mirror_closeout"
   | "white_closeout"
   | "white_vs_black"
   | "black_pressure"
   | "upset_review"
   | "top_deck_regression"
-  | "seat_bias";
+  | "seat_bias"
+  | "first_player_bias";
 
 export interface DeckBattleInsightsOptions {
   limit?: number;
@@ -53,6 +56,7 @@ export interface DeckBattleDeckInsight {
   averageSteps: number;
   averageTurns: number;
   seatDelta: number;
+  firstPlayerDelta: number;
   matchups: Record<DeckBattleMatchupKey, DeckBattleMatchupStats>;
   reason: string;
 }
@@ -134,6 +138,10 @@ const PROBLEM_FOCUS_DEFS = {
     title: "長期戦/勝ち切り",
     description: "平均より長い試合。終盤の直接打点、focus、非撃破行動を確認する。",
   },
+  white_mirror_closeout: {
+    title: "白同士長期戦",
+    description: "白vs白で長引く試合。非致死防御、山札切れ前の攻め筋、直接打点不足を確認する。",
+  },
   white_closeout: {
     title: "白の勝ち切り",
     description: "白デッキが安定するが勝ち切れない。守りすぎと終盤打点を確認する。",
@@ -157,6 +165,10 @@ const PROBLEM_FOCUS_DEFS = {
   seat_bias: {
     title: "席差/非対称",
     description: "player/cpu席の成績差が大きい。初手、先後、評価の非対称性を見る。",
+  },
+  first_player_bias: {
+    title: "先後差",
+    description: "先攻/後攻の成績差が大きい。初手ドロー差、先攻のテンポ、後攻の守りを確認する。",
   },
 } as const satisfies Record<DeckBattleProblemFocusId, { title: string; description: string }>;
 
@@ -209,13 +221,23 @@ export function analyzeDeckBattleReport(
     },
     {
       id: "seat_skew",
-      title: "先後/席差",
-      description: "player席とcpu席で勝点率差が大きい。初手、先攻後攻、評価の非対称性を確認する。",
+      title: "席差",
+      description: "player席とcpu席で勝点率差が大きい。UI操作側/CPU側の評価非対称性を確認する。",
       decks: report.decks
         .filter((deck) => seatDelta(deck) >= 0.2)
         .sort((a, b) => seatDelta(b) - seatDelta(a) || b.battleScore - a.battleScore)
         .slice(0, resolved.limit)
         .map((deck) => toDeckInsight(deck, rankByDeck, "player/cpu席の勝点率差が大きい")),
+    },
+    {
+      id: "first_player_skew",
+      title: "先後差",
+      description: "先攻時と後攻時で勝点率差が大きい。先後依存のデッキやAI判断を探す。",
+      decks: report.decks
+        .filter((deck) => firstPlayerDelta(deck) >= 0.2)
+        .sort((a, b) => firstPlayerDelta(b) - firstPlayerDelta(a) || b.battleScore - a.battleScore)
+        .slice(0, resolved.limit)
+        .map((deck) => toDeckInsight(deck, rankByDeck, "先攻/後攻の勝点率差が大きい")),
     },
     {
       id: "practical_mismatch",
@@ -282,13 +304,13 @@ export function formatDeckBattleInsightsMarkdown(report: DeckBattleInsightsRepor
       ``,
       category.description,
       ``,
-      `| Rank | Deck | Battle | Win | Stable | Speed | BvB | WvW | WvB | Seat delta | Avg | Reason |`,
-      `| ---: | --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | --- | --- |`,
+      `| Rank | Deck | Battle | Win | Stable | Speed | BvB | WvW | WvB | Seat delta | First delta | Avg | Reason |`,
+      `| ---: | --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | --- | --- |`,
       ...category.decks.map((deck) =>
         `| ${deck.rank} | ${deck.deckPreset} | ${deck.battleScore} | ${formatPercent(deck.winRate)} | ` +
         `${deck.stabilityScore} | ${deck.speedScore} | ${formatMatchupWinRate(deck.matchups.black_vs_black)} | ` +
         `${formatMatchupWinRate(deck.matchups.white_vs_white)} | ${formatMatchupWinRate(deck.matchups.white_vs_black)} | ` +
-        `${formatPercent(deck.seatDelta)} | ` +
+        `${formatPercent(deck.seatDelta)} | ${formatPercent(deck.firstPlayerDelta)} | ` +
         `${deck.averageSteps} steps / ${deck.averageTurns} turns | ${deck.reason} |`,
       ),
       ``,
@@ -396,13 +418,15 @@ function buildRecommendedFocus(
 ): string[] {
   const slowWinner = categories.find((category) => category.id === "slow_winners")?.decks[0];
   const seatSkew = categories.find((category) => category.id === "seat_skew")?.decks[0];
+  const firstSkew = categories.find((category) => category.id === "first_player_skew")?.decks[0];
   const stableLow = categories.find((category) => category.id === "stable_underperformers")?.decks[0];
   const upset = problemGames.find((game) => game.kind === "upset" || game.kind === "top_deck_loss");
   const topFocus = problemFocuses[0];
   return [
     topFocus ? `${topFocus.title}: ${topFocus.count}件。${topFocus.description}` : undefined,
     slowWinner ? `${slowWinner.deckPreset}: 勝てるが遅い。終盤の勝ち切りと白/黒の過剰安全行動を見る。` : undefined,
-    seatSkew ? `${seatSkew.deckPreset}: 席差${formatPercent(seatSkew.seatDelta)}。先後・player/cpu非対称を確認する。` : undefined,
+    seatSkew ? `${seatSkew.deckPreset}: 席差${formatPercent(seatSkew.seatDelta)}。player/cpu非対称を確認する。` : undefined,
+    firstSkew ? `${firstSkew.deckPreset}: 先後差${formatPercent(firstSkew.firstPlayerDelta)}。初手テンポと後攻の守りを確認する。` : undefined,
     stableLow ? `${stableLow.deckPreset}: 安定するが勝てない。攻め筋不足や守りすぎを確認する。` : undefined,
     upset ? `${upset.playerDeckPreset} vs ${upset.cpuDeckPreset}: 番狂わせ。負けた上位デッキ側の判断を追う。` : undefined,
   ].filter((item): item is string => !!item);
@@ -433,6 +457,7 @@ function toDeckInsight(
     averageSteps: deck.averageSteps,
     averageTurns: deck.averageTurns,
     seatDelta: round(seatDelta(deck), 3),
+    firstPlayerDelta: round(firstPlayerDelta(deck), 3),
     matchups: normalizeMatchups(deck.matchups),
     reason,
   };
@@ -506,6 +531,13 @@ function classifyProblemFocusIds(
   if (kind === "long_game" || game.issues.some((issue) => issue.kind === "long_game")) {
     focusIds.add("long_game_closeout");
   }
+  if (
+    (kind === "long_game" || game.issues.some((issue) => issue.kind === "long_game")) &&
+    winnerScore?.masterId === "white" &&
+    loserScore?.masterId === "white"
+  ) {
+    focusIds.add("white_mirror_closeout");
+  }
   if (kind === "upset") {
     focusIds.add("upset_review");
   }
@@ -523,6 +555,9 @@ function classifyProblemFocusIds(
   }
   if (loserScore && seatDelta(loserScore) >= 0.2) {
     focusIds.add("seat_bias");
+  }
+  if (loserScore && firstPlayerDelta(loserScore) >= 0.2) {
+    focusIds.add("first_player_bias");
   }
   if (focusIds.size === 0) {
     focusIds.add(game.steps >= 140 ? "long_game_closeout" : "upset_review");
@@ -654,6 +689,10 @@ function problemSeverityScore(game: DeckBattleProblemGame): number {
 
 function seatDelta(deck: DeckBattleScoreEntry): number {
   return Math.abs(deck.playerSideWinPointRate - deck.cpuSideWinPointRate);
+}
+
+function firstPlayerDelta(deck: DeckBattleScoreEntry): number {
+  return Math.abs((deck.firstPlayerWinPointRate ?? 0) - (deck.secondPlayerWinPointRate ?? 0));
 }
 
 function round(value: number, digits = 0): number {

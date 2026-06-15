@@ -22,6 +22,7 @@ interface SnapshotSuiteData {
     seedStart: number;
     count: number;
     aiProfile: DeckBattleScoringReport["options"]["aiProfile"];
+    firstPlayerMode: DeckBattleScoringReport["options"]["firstPlayerMode"];
     decks: number;
     games: number;
     failures: number;
@@ -60,6 +61,7 @@ function toSnapshotSuiteData(report: DeckBattleScoringReport): SnapshotSuiteData
       seedStart: report.options.seedStart,
       count: report.options.count,
       aiProfile: report.options.aiProfile,
+      firstPlayerMode: report.options.firstPlayerMode ?? "player",
       decks: report.summary.decks,
       games: report.summary.games,
       failures: report.summary.failures,
@@ -89,6 +91,8 @@ function scoreSnapshot(deck: DeckBattleScoreEntry, rank: number) {
     draws: deck.draws,
     playerSideWinPointRate: deck.playerSideWinPointRate,
     cpuSideWinPointRate: deck.cpuSideWinPointRate,
+    firstPlayerWinPointRate: deck.firstPlayerWinPointRate,
+    secondPlayerWinPointRate: deck.secondPlayerWinPointRate,
     failures: deck.failures,
     warnings: deck.warnings,
     averageSteps: deck.averageSteps,
@@ -113,6 +117,7 @@ export interface DeckBattleScoreSnapshotSummary {
   seedStart: number;
   count: number;
   aiProfile: "stable" | "strong";
+  firstPlayerMode: "player" | "cpu" | "alternate" | "both";
   decks: number;
   games: number;
   failures: number;
@@ -137,6 +142,8 @@ export interface DeckBattleScoreSnapshot {
   draws: number;
   playerSideWinPointRate: number;
   cpuSideWinPointRate: number;
+  firstPlayerWinPointRate: number;
+  secondPlayerWinPointRate: number;
   failures: number;
   warnings: number;
   averageSteps: number;

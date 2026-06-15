@@ -29,6 +29,14 @@ describe("deck battle scoring", () => {
     });
   });
 
+  it("can build pairings with both first-player orders", () => {
+    const deckIds = getDeckBenchmarkSuite("smoke").deckPresetIds.slice(0, 2);
+    const pairings = buildDeckBattlePairings(deckIds, 500, 1, "both");
+
+    expect(pairings).toHaveLength(4);
+    expect(pairings.map((pairing) => pairing.firstPlayer)).toEqual(["player", "player", "cpu", "cpu"]);
+  });
+
   it("keeps win, stability, speed, and issue metrics separate", () => {
     const deckIds = getDeckBenchmarkSuite("smoke").deckPresetIds.slice(0, 2);
     const [winnerDeck, loserDeck] = deckIds;
@@ -37,6 +45,7 @@ describe("deck battle scoring", () => {
         seed: 500,
         playerDeckPreset: winnerDeck,
         cpuDeckPreset: loserDeck,
+        firstPlayer: "player",
         winner: "player",
         winnerDeckPreset: winnerDeck,
         steps: 80,
@@ -49,6 +58,7 @@ describe("deck battle scoring", () => {
         seed: 500,
         playerDeckPreset: loserDeck,
         cpuDeckPreset: winnerDeck,
+        firstPlayer: "cpu",
         winner: "cpu",
         winnerDeckPreset: winnerDeck,
         steps: 100,
@@ -61,6 +71,7 @@ describe("deck battle scoring", () => {
         seed: 501,
         playerDeckPreset: winnerDeck,
         cpuDeckPreset: loserDeck,
+        firstPlayer: "cpu",
         steps: 320,
         turns: 82,
         failures: 0,
@@ -94,7 +105,11 @@ describe("deck battle scoring", () => {
       warnings: 1,
       playerSideGames: 2,
       cpuSideGames: 1,
+      firstPlayerGames: 2,
+      secondPlayerGames: 1,
     });
+    expect(winnerScore?.firstPlayerWinPointRate).toBe(1);
+    expect(winnerScore?.secondPlayerWinPointRate).toBe(0.5);
     expect(winnerScore?.matchups.black_vs_black).toMatchObject({
       games: 3,
       wins: 2,

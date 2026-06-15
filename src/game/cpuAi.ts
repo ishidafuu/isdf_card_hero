@@ -30,6 +30,7 @@ import {
   memberRatingValueBonus,
 } from "./unitEvaluation";
 import { getMagicAiTrait } from "./aiTraits";
+import { getMonsterAiTrait, inferMonsterAiTrait } from "./aiUnitTraits";
 import {
   AI_EVALUATION_WEIGHTS,
   DEFAULT_AI_EVALUATION_WEIGHTS,
@@ -40,7 +41,6 @@ import type {
   GameState,
   MagicAction,
   MasterActionId,
-  MonsterCardDef,
   MonsterState,
   PlayerId,
   SlotKey,
@@ -922,7 +922,7 @@ function createShieldDecision(state: GameState, target: Target): CpuDecision | u
   const threatAfterShield = incomingThreat(shielded, target.slotKey);
   const preventsLethal = threat.lethal && !threatAfterShield.lethal;
   const reducesDamage = threatAfterShield.maxDamage < threat.maxDamage;
-  const important = monster.level >= 2 || getMonsterDef(monster.cardId).role === "back" || monster.hp <= 2;
+  const important = monster.level >= 2 || getMonsterAiTrait(monster.cardId).role === "back" || monster.hp <= 2;
   const levelUpPotential = nextTurnLevelUpPotential(state, target.slotKey);
   const closeout = shouldPruneCloseoutNonProgressActions(state, state.currentPlayer);
   if (!threat.threatened && isDeckOutRace(state)) {
@@ -932,6 +932,9 @@ function createShieldDecision(state: GameState, target: Target): CpuDecision | u
     return undefined;
   }
   if (closeout && !preventsLethal && !threat.lethal && levelUpPotential <= 0) {
+    return undefined;
+  }
+  if (isWhiteMirrorCloseout(state) && !preventsLethal && !threat.lethal && levelUpPotential <= 0) {
     return undefined;
   }
   if (!shouldProtectInDeckOutRace(state, target.slotKey, threat, preventsLethal, levelUpPotential)) {
@@ -1148,12 +1151,13 @@ function listSummonDecisions(state: GameState): CpuDecision[] {
 
 function scoreSummon(state: GameState, cardId: string, slotKey: SlotKey): number {
   const def = getMonsterDef(cardId);
+  const trait = inferMonsterAiTrait(def);
   const slot = state.slots[slotKey];
   const frontFilled = slot.row === "back" && !!state.slots[frontSlotFor(slot)].monster;
   const boardEmpty = SUMMON_SLOT_ORDER_BY_PLAYER[slot.owner].every((key) => !state.slots[key].monster);
 
   let score = 0;
-  if (def.role === "front") {
+  if (trait.role === "front") {
     score += slot.row === "front" ? 45 : 15;
     if (boardEmpty && slot.row === "front") {
       score += 15;
@@ -1162,7 +1166,7 @@ function scoreSummon(state: GameState, cardId: string, slotKey: SlotKey): number
     score += 40;
     score += frontFilled ? 20 : -20;
   } else {
-    score += isFrontViableBackliner(def) ? 5 : -10;
+    score += trait.frontViable ? 5 : -10;
   }
 
   if (shouldPruneCloseoutNonProgressActions(state, state.currentPlayer) && !boardEmpty) {
@@ -1172,17 +1176,13 @@ function scoreSummon(state: GameState, cardId: string, slotKey: SlotKey): number
   return score + memberRatingValueBonus(cardId, state.players[state.currentPlayer].masterId);
 }
 
-function isFrontViableBackliner(def: MonsterCardDef): boolean {
-  return def.levels.some((level) => level.commands.some((command) => command.implemented && command.range === "any_target"));
-}
-
 function summonReason(playerId: PlayerId, cardId: string, slotKey: SlotKey): string {
-  const def = getMonsterDef(cardId);
+  const trait = getMonsterAiTrait(cardId);
   const slotLabel = stateSlotLabel(slotKey);
-  if (def.role === "front" && slotKey.includes("_front_")) {
+  if (trait.role === "front" && slotKey.includes("_front_")) {
     return `前衛カードを${slotLabel}へ召喚`;
   }
-  if (def.role === "back" && slotKey.includes("_back_")) {
+  if (trait.role === "back" && slotKey.includes("_back_")) {
     return `後衛カードを${slotLabel}へ召喚`;
   }
   if (playerId === "cpu") {
@@ -1328,7 +1328,7 @@ function moveReason(state: GameState, after: GameState, fromSlotKey: SlotKey, to
     return "移動後に強い攻撃筋を作れるため移動";
   }
   const mover = state.slots[fromSlotKey].monster;
-  const role = mover ? getMonsterDef(mover.cardId).role : undefined;
+  const role = mover ? getMonsterAiTrait(mover.cardId).role : undefined;
   if (role === "front" && toSlotKey.includes("_front_")) {
     return "前衛カードを前列へ出して攻撃しやすくするため移動";
   }
@@ -1375,7 +1375,7 @@ function scoreFocus(state: GameState, slotKey: SlotKey): number {
   if (monster.hp <= 2 && state.slots[slotKey].row === "front") {
     score -= 10;
   }
-  if (getMonsterDef(monster.cardId).role === "back") {
+  if (getMonsterAiTrait(monster.cardId).role === "back") {
     score += 8;
   }
   const directMasterDamage = bestDirectMasterDamageForPlayer(state, monster.owner);
@@ -1583,7 +1583,7 @@ function scoreSearchMagicDecision(state: GameState, action: MagicAction, cost: n
     if (category === "magic") {
       return def.type === "magic";
     }
-    return def.type === "monster" && getCardPool(def) === "normal" && def.role === category;
+    return def.type === "monster" && getCardPool(def) === "normal" && inferMonsterAiTrait(def).role === category;
   });
   if (!searchedCard) {
     return -100;
@@ -1666,7 +1666,7 @@ function scoreHealingMagicDecision(
     return -100;
   }
   const threat = incomingThreat(state, action.target.slotKey);
-  const important = before.level >= 2 || getMonsterDef(before.cardId).role === "back";
+  const important = before.level >= 2 || getMonsterAiTrait(before.cardId).role === "back";
   if (!threat.threatened && !important) {
     return 12;
   }
@@ -1712,6 +1712,14 @@ function scoreShieldMagicDecision(state: GameState, after: GameState, action: Ma
       const threatAfterShield = incomingThreat(after, target.slotKey);
       const preventsLethal = threat.lethal && !threatAfterShield.lethal;
       return shouldProtectInDeckOutRace(state, target.slotKey, threat, preventsLethal, nextTurnLevelUpPotential(state, target.slotKey));
+    });
+  }
+  if (isWhiteMirrorCloseout(state)) {
+    protectedTargets = protectedTargets.filter((target) => {
+      const threat = incomingThreat(state, target.slotKey);
+      const threatAfterShield = incomingThreat(after, target.slotKey);
+      const preventsLethal = threat.lethal && !threatAfterShield.lethal;
+      return preventsLethal || threat.lethal || nextTurnLevelUpPotential(state, target.slotKey) > 0;
     });
   }
 
@@ -2020,6 +2028,14 @@ function nextTurnLevelUpPotentialForPlayer(state: GameState, playerId: PlayerId)
 
 function isDeckOutRace(state: GameState): boolean {
   return state.players.player.deck.length === 0 || state.players.cpu.deck.length === 0;
+}
+
+function isWhiteMirrorCloseout(state: GameState): boolean {
+  return (
+    state.players.player.masterId === "white" &&
+    state.players.cpu.masterId === "white" &&
+    (state.turnNumber >= 20 || isDeckOutRace(state) || shouldPruneCloseoutNonProgressActions(state, state.currentPlayer))
+  );
 }
 
 function shouldProtectInDeckOutRace(
