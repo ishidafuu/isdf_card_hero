@@ -131,25 +131,25 @@ export const MASTER_LAB_ROADMAP: readonly MasterLabRoadmapPhase[] = [
   {
     id: "phase_2",
     title: "実験ランナー",
-    status: "active",
+    status: "done",
     exitCriteria: ["white/black との座席入れ替えマトリクスを100戦単位で回せる"],
   },
   {
     id: "phase_3",
     title: "CPU AI 評価",
-    status: "later",
+    status: "done",
     exitCriteria: ["実験特技の合法手列挙と評価理由が出る"],
   },
   {
     id: "phase_4",
     title: "シナリオテスト",
-    status: "later",
+    status: "active",
     exitCriteria: ["バーサク詰め、主力保護、ロック化回避の盤面テストがある"],
   },
   {
     id: "phase_5",
     title: "本採用判定",
-    status: "later",
+    status: "next",
     exitCriteria: ["failure 0 の実戦レポートと本線移植方針がある"],
   },
 ];

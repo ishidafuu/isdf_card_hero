@@ -45,13 +45,15 @@ Master Lab は、本採用前の候補を扱う場所とする。
 
 実験マスターを `white` / `black` と同じ自動対戦検証に載せる。
 
-現在の次ステップはこのフェーズ。まずはデコイマスターだけを対象にする。
+デコイマスターについては、このフェーズの初期実装を完了した。
 
 実装は段階的に行う。
 
 1. 1手評価: 実験特技だけを列挙、適用、評価する
 2. 混合評価: 既存CPU候補と実験特技候補を同じレポートで比較する
 3. 自動対戦: 座席ごとに実験マスターを指定して複数戦を回す
+
+現在は `src/game/masterLabAutoPlay.ts` と `npm run lab:masters:auto-play` で、実験マスターを座席指定して自動対戦できる。実験席では既存マスター固有特技を除外し、通常CPU候補とMaster Lab特技候補を比較して行動する。5組み合わせをまとめて回す `npm run lab:masters:final-gate` も追加済み。
 
 - 新マスター vs ホワイト
 - ホワイト vs 新マスター
@@ -79,6 +81,8 @@ Master Lab は、本採用前の候補を扱う場所とする。
 3. 供養: 行動前限定で相手のレベルアップ機会を消せるか
 4. 鎮魂: ブラックの撃破圧を反撃価値へ変えられるか
 
+デコイマスターについては、通常CPU候補とMaster Lab特技候補を比較する混合評価まで完了した。犠牲型、タイミング型は新規効果実装前のため未接続。
+
 ### Phase 4: シナリオテスト
 
 勝率だけでは壊れ方を見落とすため、小さい盤面テストを作る。
@@ -100,6 +104,28 @@ Master Lab は、本採用前の候補を扱う場所とする。
 - 極端な相性差がない
 - マスターの勝ち方が既存2種と明確に違う
 - 実装差分が `masterLab` から本線へ切り出せる
+
+最終フェイズの判定コマンド例:
+
+```bash
+npm run lab:masters:final-gate -- --candidate decoy
+```
+
+短時間のスモーク確認:
+
+```bash
+npm run lab:masters:final-gate -- --candidate decoy --games-per-matchup 5 --max-steps 700 --max-turns 160
+```
+
+個別に分解して確認する場合:
+
+```bash
+npm run lab:masters:auto-play -- --player decoy --cpu white --seed-start 1000 --count 100 --max-steps 700 --max-turns 160
+npm run lab:masters:auto-play -- --player white --cpu decoy --seed-start 1100 --count 100 --max-steps 700 --max-turns 160
+npm run lab:masters:auto-play -- --player decoy --cpu black --seed-start 1200 --count 100 --max-steps 700 --max-turns 160
+npm run lab:masters:auto-play -- --player black --cpu decoy --seed-start 1300 --count 100 --max-steps 700 --max-turns 160
+npm run lab:masters:auto-play -- --player decoy --cpu decoy --seed-start 1400 --count 50 --max-steps 700 --max-turns 160
+```
 
 ## 初期候補
 
