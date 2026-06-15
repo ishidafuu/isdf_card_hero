@@ -651,6 +651,9 @@ function scoreAttackDecision(state: GameState, after: GameState, action: Command
   if (damage <= 0) {
     return scoreZeroDamageMonsterAttack(state, after, action.target.slotKey, targetBefore, targetAfter, stateDelta, recoilPenalty);
   }
+  if (shouldPruneDeckOutUnresolvedLethalThreat(state, after, action.target.slotKey)) {
+    return -100;
+  }
   if (shouldPruneCloseoutNonProgressActions(state, playerId) && damage < targetAfter.hp && stateDelta < 45) {
     return -100;
   }
@@ -683,7 +686,10 @@ function scoreZeroDamageMonsterAttack(
     const targetThreatBefore = directMasterDamageFromSlot(state, targetSlotKey, opponent);
     const targetThreatAfter = directMasterDamageFromSlot(after, targetSlotKey, opponent);
     if (targetThreatAfter < targetThreatBefore) {
-      return 24 + (targetThreatBefore - targetThreatAfter) * 38 + Math.max(0, stateDelta) * 0.25 + recoilPenalty;
+      const preventsMasterLethal = targetThreatBefore >= state.players[playerId].masterHp;
+      if (!isDeckOutRace(state) || preventsMasterLethal) {
+        return 24 + (targetThreatBefore - targetThreatAfter) * 38 + Math.max(0, stateDelta) * 0.25 + recoilPenalty;
+      }
     }
 
     const followUpImprovement = bestAttackOpportunityScore(after) - bestAttackOpportunityScore(state);
@@ -696,6 +702,23 @@ function scoreZeroDamageMonsterAttack(
     return -100;
   }
   return stateDelta > 8 ? 30 + stateDelta + recoilPenalty : -100;
+}
+
+function shouldPruneDeckOutUnresolvedLethalThreat(state: GameState, after: GameState, targetSlotKey: SlotKey): boolean {
+  if (!isDeckOutRace(state)) {
+    return false;
+  }
+  const playerId = state.currentPlayer;
+  const opponent = opponentOf(playerId);
+  const targetAfter = after.slots[targetSlotKey].monster;
+  if (!targetAfter) {
+    return false;
+  }
+  const targetThreatBefore = directMasterDamageFromSlot(state, targetSlotKey, opponent);
+  if (targetThreatBefore < state.players[playerId].masterHp) {
+    return false;
+  }
+  return directMasterDamageFromSlot(after, targetSlotKey, opponent) >= state.players[playerId].masterHp;
 }
 
 function scoreCommandHandChoiceDecision(
@@ -885,6 +908,9 @@ function createShieldDecision(state: GameState, target: Target): CpuDecision | u
     return undefined;
   }
   if (closeout && !preventsLethal && !threat.lethal && levelUpPotential <= 0) {
+    return undefined;
+  }
+  if (!shouldProtectInDeckOutRace(state, target.slotKey, threat, preventsLethal, levelUpPotential)) {
     return undefined;
   }
   if (shouldHoldShieldForMasterRace(state, threat, preventsLethal, levelUpPotential)) {
@@ -1204,6 +1230,9 @@ function scoreMoveDecision(state: GameState, after: GameState, fromSlotKey: Slot
   const beforeBestAttack = bestAttackOpportunityScore(state);
   const afterBestAttack = bestAttackOpportunityScore(after);
   const afterMoverAttack = bestAttackOpportunityScore(after, moverAfterSlot);
+  if (shouldPruneCloseoutMove(state, after, beforeBestAttack, afterBestAttack, afterMoverAttack)) {
+    return -100;
+  }
   if (afterMoverAttack > 0) {
     score += 12 + Math.min(34, afterMoverAttack * 0.1);
   }
@@ -1249,6 +1278,21 @@ function turnMoveCountPenalty(state: GameState): number {
 
 function currentTurnMoveCount(state: GameState): number {
   return (state.turnMoveHistory ?? []).filter((entry) => entry.playerId === state.currentPlayer).length;
+}
+
+function shouldPruneCloseoutMove(
+  state: GameState,
+  after: GameState,
+  beforeBestAttack: number,
+  afterBestAttack: number,
+  afterMoverAttack: number,
+): boolean {
+  if (!isDeckOutRace(state) && !shouldPruneCloseoutNonProgressActions(state, state.currentPlayer)) {
+    return false;
+  }
+  const directBefore = bestDirectMasterDamageForPlayer(state, state.currentPlayer);
+  const directAfter = bestDirectMasterDamageForPlayer(after, state.currentPlayer);
+  return afterBestAttack < beforeBestAttack + 45 && afterMoverAttack < 260 && directAfter <= directBefore;
 }
 
 function moveReason(state: GameState, after: GameState, fromSlotKey: SlotKey, toSlotKey: SlotKey): string {
@@ -1607,13 +1651,22 @@ function scorePowerMagicDecision(state: GameState, after: GameState, action: Mag
 }
 
 function scoreShieldMagicDecision(state: GameState, after: GameState, action: MagicAction, cost: number): number {
-  const protectedTargets = [action.target, action.secondaryTarget]
+  let protectedTargets = [action.target, action.secondaryTarget]
     .filter((target): target is Extract<Target, { kind: "monster" }> => target?.kind === "monster")
     .filter((target) => {
       const before = state.slots[target.slotKey].monster;
       const current = after.slots[target.slotKey].monster;
       return !!before && !!current && before.owner === state.currentPlayer && before.shielded !== current.shielded;
     });
+
+  if (isDeckOutRace(state)) {
+    protectedTargets = protectedTargets.filter((target) => {
+      const threat = incomingThreat(state, target.slotKey);
+      const threatAfterShield = incomingThreat(after, target.slotKey);
+      const preventsLethal = threat.lethal && !threatAfterShield.lethal;
+      return shouldProtectInDeckOutRace(state, target.slotKey, threat, preventsLethal, nextTurnLevelUpPotential(state, target.slotKey));
+    });
+  }
 
   if (protectedTargets.length === 0) {
     return -100;
@@ -1900,6 +1953,28 @@ function nextTurnLevelUpPotentialForPlayer(state: GameState, playerId: PlayerId)
 
 function isDeckOutRace(state: GameState): boolean {
   return state.players.player.deck.length === 0 || state.players.cpu.deck.length === 0;
+}
+
+function shouldProtectInDeckOutRace(
+  state: GameState,
+  slotKey: SlotKey,
+  threat: IncomingThreat,
+  preventsLethal: boolean,
+  levelUpPotential: number,
+): boolean {
+  if (!isDeckOutRace(state)) {
+    return true;
+  }
+  if (!preventsLethal && !threat.lethal) {
+    return false;
+  }
+  if (directMasterDamageFromSlot(state, slotKey, state.currentPlayer) > 0) {
+    return true;
+  }
+  if (levelUpPotential > 0) {
+    return true;
+  }
+  return bestAttackOpportunityScore(state, slotKey) >= 260;
 }
 
 function nextTurnLevelUpPotential(state: GameState, slotKey: SlotKey): number {

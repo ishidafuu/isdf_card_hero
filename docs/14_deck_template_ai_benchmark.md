@@ -407,3 +407,61 @@ Phase 22では40デッキを最新AIで覆うことを優先し、snapshotはcor
   - 次フェーズでは、山札切れ時は非致死の気合い剥がしをさらに抑え、勝ち筋または山札切れ勝負へ寄せる。
 - `submission-pro-with-rare8-black-45` と `submission-pro-with-rare8-black-999` は席差が大きく、player/cpu非対称の確認対象。
 - full core count2は夜間・長時間ジョブ向け。UI上の通常snapshotはcore count1、深掘りはcore24 count2 / traceで見る。
+
+## Phase 23: Phase 22残課題対応
+
+実行日: 2026-06-15
+
+### 目的
+
+Phase 22で残った白同士の長期戦、山札切れ付近の0ダメージ行動、防御過多、配置だけの移動を抑える。
+実戦スコアはseedを変えて取り直し、ゲーム内のDecks / AI Labのsnapshotも最新結果へ更新する。
+
+### AI補正
+
+- 山札切れ中の0ダメージ気合い剥がしは、相手の次ターン直接打点がこちらマスターを倒す場合だけ防御行動として残す。
+- 山札切れ中のシールドは、リーサル回避、直接打点維持、レベルアップ見込み、明確な攻撃筋がない場合は候補から外す。
+- 山札切れ/closeout中の移動は、攻撃筋や直接打点を伸ばさない配置改善だけなら抑制する。
+- 山札切れ中に敵モンスターを削る攻撃は、相手の直接リーサル脅威が残る場合は候補から外す。
+
+### 実行結果
+
+```sh
+npm test -- --run
+npm run build
+npm run score:deck-battles -- --suite smoke --seed-start 560 --count 2 --out-dir artifacts/deck-battle-score/phase23-smoke-count2 --fail-on-warnings
+npm run score:deck-battles -- --suite core --seed-start 560 --count 1 --out-dir artifacts/deck-battle-score/phase23-core-count1 --fail-on-warnings
+npm run analyze:deck-battles -- --report artifacts/deck-battle-score/phase23-core-count1/report.json --out-dir artifacts/deck-battle-score/phase23-core-count1-insights
+npm run trace:deck-battles -- --report artifacts/deck-battle-score/phase23-core-count1/report.json --out-dir artifacts/deck-battle-score/phase23-core-count1-traces --limit 8 --log-limit 80
+npm run generate:deck-battle-snapshots -- --report artifacts/deck-battle-score/phase23-smoke-count2/report.json --report artifacts/deck-battle-score/phase23-core-count1/report.json --default-suite core --out src/game/deckBattleScoreSnapshots.ts
+```
+
+| Gate | Games | Result | Notes |
+| --- | ---: | --- | --- |
+| 全テスト | 420 tests | PASS | CPU AIは51 tests |
+| build | - | PASS | Viteのchunk size warningのみ |
+| score smoke count2 | 112 | PASS 0/0 | 平均106.3 steps / 11 turns、最大219 steps / 22 turns |
+| score core count1 | 1560 | PASS 0/1 | 平均101.5 steps / 10.5 turns、最大328 steps / 30 turns |
+
+`score core count1` は `--fail-on-warnings` により終了コード1だが、failure 0、warning 1でレポート生成は完了している。
+Phase 22のcore count1と比べると、warningは3件から1件へ減り、平均stepsは108.1から101.5へ改善した。
+
+`src/game/deckBattleScoreSnapshots.ts` は `smoke seed 560 count2` と `core seed 560 count1` で更新した。
+
+### Core count1の代表傾向
+
+| Rank | Deck | Battle | Win | Stable | Speed |
+| ---: | --- | ---: | ---: | ---: | ---: |
+| 1 | submission-pro-no-rare8-black-493 | 72.1 | 71.8% | 92.3 | 52.9 |
+| 2 | submission-pro-with-rare8-black-1333 | 70.4 | 69.2% | 93.8 | 61.2 |
+| 3 | submission-pro-no-rare8-black-408 | 69.7 | 69.2% | 95.4 | 54.9 |
+| 4 | submission-pro-with-rare8-white-1236 | 68.2 | 67.9% | 92.9 | 53.4 |
+| 5 | submission-pro-no-rare8-black-322 | 67.3 | 66.7% | 92.3 | 56.7 |
+
+### 残課題
+
+- 残りwarning 1件は `submission-pro-with-rare8-white-1236` vs `submission-pro-no-rare8-white-400` seed 560、328 steps / 30 turns。
+  - 進行不能ではなく、CPUの真勇者ダインが山札切れ後に勝ち切る白同士の長期戦。
+  - 次は白の攻め筋不足、席差/非対称、山札切れ前の勝ち切りを分けて見る。
+- `Problem Focus` は席差/非対称19件、上位デッキ敗戦16件、黒の攻め筋14件が中心。
+- `submission-pro-no-rare8-white-541` は安定度100だが勝率30.8%で、守りすぎ/攻め筋不足の継続確認対象。

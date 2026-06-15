@@ -151,6 +151,55 @@ describe("cpu ai", () => {
     ).toBe(false);
   });
 
+  it("does not spend deck-out turns on nonlethal defensive zero-damage focus stripping", () => {
+    const game = createPlayerAutoGame([]);
+    game.players.player.deck = [];
+    game.players.player.stones = 0;
+    game.players.player.masterHp = 8;
+    game.players.cpu.masterHp = 8;
+    game.slots.player_front_left.monster = createActiveMonster("card_051", "player");
+    game.slots.cpu_front_left.monster = createActiveMonster("morgan", "cpu", {
+      hp: 4,
+      level: 2,
+      focused: true,
+    });
+
+    const decisions = listCpuDecisions(game);
+
+    expect(
+      decisions.some(
+        (decision) =>
+          decision.type === "attack" &&
+          decision.action.target.kind === "monster" &&
+          decision.action.target.slotKey === "cpu_front_left",
+      ),
+    ).toBe(false);
+  });
+
+  it("does not chip a deck-out lethal threat unless the hit removes that threat", () => {
+    const game = createPlayerAutoGame([]);
+    game.players.player.deck = [];
+    game.players.player.stones = 0;
+    game.players.player.masterHp = 1;
+    game.players.cpu.masterHp = 3;
+    game.slots.player_back_right.monster = createActiveMonster("card_051", "player", { level: 2 });
+    game.slots.cpu_front_left.monster = createActiveMonster("bomuzo", "cpu", {
+      hp: 5,
+      level: 2,
+    });
+
+    const decisions = listCpuDecisions(game);
+
+    expect(
+      decisions.some(
+        (decision) =>
+          decision.type === "attack" &&
+          decision.action.target.kind === "monster" &&
+          decision.action.target.slotKey === "cpu_front_left",
+      ),
+    ).toBe(false);
+  });
+
   it("uses master attack when it can defeat a front enemy", () => {
     const game = createCpuGame();
     game.players.cpu.hand = [];
@@ -416,6 +465,29 @@ describe("cpu ai", () => {
       expect(decision.actionId).toBe("shield");
       expect(decision.target).toEqual({ kind: "monster", slotKey: "cpu_front_left" });
     }
+  });
+
+  it("does not spend deck-out shield on allies without master pressure", () => {
+    const game = createCpuGame([]);
+    game.players.cpu.deck = [];
+    game.players.cpu.stones = 5;
+    game.slots.cpu_front_left.monster = createActiveMonster("beyond", "cpu", {
+      hp: 2,
+      levelFixed: true,
+    });
+    game.slots.player_front_left.monster = createActiveMonster("takokke", "player");
+
+    const decisions = listCpuDecisions(game);
+
+    expect(
+      decisions.some(
+        (decision) =>
+          decision.type === "master_action" &&
+          decision.actionId === "shield" &&
+          decision.target.kind === "monster" &&
+          decision.target.slotKey === "cpu_front_left",
+      ),
+    ).toBe(false);
   });
 
   it("uses thunder when it can finish the opponent master", () => {
@@ -694,6 +766,27 @@ describe("cpu ai", () => {
       expect(decision.toSlotKey).toBe("cpu_back_left");
       expect(decision.reason).toContain("後列");
     }
+  });
+
+  it("does not spend deck-out turns on placement-only movement", () => {
+    const game = createCpuGame([]);
+    game.players.cpu.deck = [];
+    game.players.cpu.stones = 0;
+    game.players.player.masterHp = 8;
+    game.slots.cpu_front_left.monster = createActiveMonster("beyond", "cpu", {
+      levelFixed: true,
+    });
+
+    const decisions = listCpuDecisions(game);
+
+    expect(
+      decisions.some(
+        (decision) =>
+          decision.type === "move" &&
+          decision.fromSlotKey === "cpu_front_left" &&
+          decision.toSlotKey === "cpu_back_left",
+      ),
+    ).toBe(false);
   });
 
   it("prioritizes a swap when it creates a stronger follow-up attack lane", () => {
