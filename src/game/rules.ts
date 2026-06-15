@@ -1822,13 +1822,16 @@ function damageMonster(
     }
   }
 
-  const damagePreview = previewMonsterDamage(monster, power);
+  const ignoresDamageReduction = context.kind === "recoil";
+  const damagePreview = ignoresDamageReduction
+    ? { damage: power, focusedReduction: 0 }
+    : previewMonsterDamage(monster, power);
   const damage = damagePreview.damage;
-  if (monster.oneShotShield) {
+  if (!ignoresDamageReduction && monster.oneShotShield) {
     monster.oneShotShield = false;
     monster.halfShielded = false;
   }
-  if (monster.focused) {
+  if (!ignoresDamageReduction && monster.focused) {
     monster.focused = false;
     if (damagePreview.focusedReduction > 0) {
       appendLog(state, `${monsterName(monster)}は気合いで1ダメージ軽減した`);

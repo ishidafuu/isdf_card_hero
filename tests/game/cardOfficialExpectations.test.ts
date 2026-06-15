@@ -1071,7 +1071,7 @@ describe("official card effect expectations", () => {
 
   it("bomuzo ボムゾウ takes recoil when using 自爆", () => {
     let game = createGameWithPlayerHand([]);
-    game.slots.player_front_left.monster = createActiveMonster("bomuzo", "player");
+    game.slots.player_front_left.monster = createActiveMonster("bomuzo", "player", { shielded: true });
     game.slots.cpu_front_left.monster = createActiveMonster("takokke", "cpu", { hp: 1 });
 
     game = attackWithCommand(game, {
@@ -1086,6 +1086,7 @@ describe("official card effect expectations", () => {
     game = resolveLevelUp(game, 0);
 
     expect(game.slots.player_front_left.monster?.hp).toBe(4);
+    expect(game.slots.player_front_left.monster?.shielded).toBe(true);
   });
 
   it("polyspinner ポリスピナー can act twice in one turn", () => {
