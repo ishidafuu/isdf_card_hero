@@ -174,3 +174,7 @@ npm run lab:masters:auto-play -- --player decoy --cpu decoy --seed-start 1400 --
 ## 判定メモ
 
 デコイマスターは第1候補として扱う。理由は、ホワイトの盤面維持ともブラックの速攻とも違う勝ち方になりやすく、既存魔法の挑発・スケープゴートで最小実装から試せるため。
+
+最新結果:
+
+- `docs/master_lab/results/2026-06-16_decoy_master_final_gate.md`
