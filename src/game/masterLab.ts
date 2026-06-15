@@ -1,6 +1,17 @@
 import { getCardDef, getCardName } from "./cards";
+import { evaluateState } from "./cpuAi";
 import { MASTER_ACTION_DEFS } from "./masters";
-import type { MasterActionId, PlayerId } from "./types";
+import { cloneState } from "./ruleEngine/state";
+import {
+  getMagicSecondaryTargets,
+  getMagicTargets,
+  getMasterActionTargets,
+  opponentOf,
+  playMagic,
+  targetToKey,
+  useMasterAction,
+} from "./rules";
+import type { GameState, MasterActionId, PlayerId, Target } from "./types";
 
 export type MasterLabCandidateId = "decoy" | "sacrifice" | "timing";
 export type MasterLabCandidateStatus = "design" | "rules_probe" | "ai_probe" | "candidate";
@@ -75,23 +86,52 @@ export interface MasterLabValidationIssue {
   message: string;
 }
 
+export interface MasterLabActionOption {
+  candidateId: MasterLabCandidateId;
+  actionId: string;
+  actionName: string;
+  kind: MasterLabActionKind;
+  cost: number;
+  target: Target;
+  secondaryTarget?: Target;
+  summary: string;
+}
+
+export interface MasterLabActionInput {
+  candidateId: MasterLabCandidateId;
+  actionId: string;
+  target: Target;
+  secondaryTarget?: Target;
+}
+
+export interface MasterLabActionEvaluation {
+  option: MasterLabActionOption;
+  stateScoreDelta: number;
+  heuristicScore: number;
+  totalScore: number;
+  reason: string;
+  after: GameState;
+}
+
+const MASTER_LAB_VIRTUAL_CARD_PREFIX = "__master_lab_virtual__";
+
 export const MASTER_LAB_ROADMAP: readonly MasterLabRoadmapPhase[] = [
   {
     id: "phase_0",
     title: "設計台帳",
-    status: "active",
+    status: "done",
     exitCriteria: ["候補定義をコード化する", "参照カードとコストを静的検証する"],
   },
   {
     id: "phase_1",
     title: "既存魔法参照",
-    status: "next",
+    status: "done",
     exitCriteria: ["magic_ref 特技を実戦で解決できる", "カード本体と特技側コストを分離する"],
   },
   {
     id: "phase_2",
     title: "実験ランナー",
-    status: "later",
+    status: "active",
     exitCriteria: ["white/black との座席入れ替えマトリクスを100戦単位で回せる"],
   },
   {
@@ -119,7 +159,7 @@ export const MASTER_LAB_CANDIDATES: readonly MasterLabCandidate[] = [
     id: "decoy",
     name: "デコイマスター",
     stance: "攻撃誘導型",
-    status: "design",
+    status: "rules_probe",
     goal: "相手の攻撃を止めず、当たり先をずらして損な攻撃に変える。",
     actions: [
       {
@@ -275,6 +315,91 @@ export function listMasterLabCandidates(): MasterLabCandidate[] {
   }));
 }
 
+export function getMasterLabCandidate(candidateId: MasterLabCandidateId): MasterLabCandidate {
+  const candidate = MASTER_LAB_CANDIDATES.find((item) => item.id === candidateId);
+  if (!candidate) {
+    throw new Error(`Unknown Master Lab candidate: ${candidateId}`);
+  }
+  return candidate;
+}
+
+export function listMasterLabActionOptions(
+  state: GameState,
+  candidateId: MasterLabCandidateId,
+): MasterLabActionOption[] {
+  if (state.winner || state.pendingLevelUp || state.players[state.currentPlayer].masterFrozen) {
+    return [];
+  }
+
+  const candidate = getMasterLabCandidate(candidateId);
+  return candidate.actions.flatMap((action) => listActionOptions(state, candidate, action));
+}
+
+export function playMasterLabAction(state: GameState, input: MasterLabActionInput): GameState {
+  const candidate = getMasterLabCandidate(input.candidateId);
+  const action = candidate.actions.find((item) => item.id === input.actionId);
+  if (!action) {
+    throw new Error(`Unknown Master Lab action: ${input.actionId}`);
+  }
+
+  const legal = listMasterLabActionOptions(state, input.candidateId).some((option) => isSameActionOption(option, input));
+  if (!legal) {
+    throw new Error("そのMaster Lab特技は使えません");
+  }
+
+  if (action.kind === "builtin") {
+    const resolverState = createCostAdjustedState(state, resolvedMasterLabActionCost(action), MASTER_ACTION_DEFS[action.actionId].cost);
+    return useMasterAction(resolverState, action.actionId, input.target);
+  }
+  if (action.kind === "magic_ref") {
+    const virtual = createVirtualMagicResolverState(state, candidate.id, action);
+    const next = playMagic(virtual.state, {
+      handInstanceId: virtual.handInstanceId,
+      target: input.target,
+      secondaryTarget: input.secondaryTarget,
+    });
+    removeVirtualMagicCard(next, state.currentPlayer, virtual.handInstanceId);
+    return next;
+  }
+
+  throw new Error(`${action.name} はまだMaster Lab実行に接続されていません`);
+}
+
+export function inspectMasterLabActionEvaluations(
+  state: GameState,
+  candidateId: MasterLabCandidateId,
+  perspective: PlayerId = state.currentPlayer,
+): MasterLabActionEvaluation[] {
+  const beforeScore = evaluateState(state, perspective);
+  return listMasterLabActionOptions(state, candidateId).flatMap((option, index) => {
+    try {
+      const after = playMasterLabAction(state, option);
+      const stateScoreDelta = evaluateState(after, perspective) - beforeScore;
+      const heuristicScore = masterLabActionHeuristic(state, after, option, perspective);
+      const totalScore = stateScoreDelta + heuristicScore;
+      return [{
+        option,
+        stateScoreDelta,
+        heuristicScore,
+        totalScore,
+        reason: masterLabEvaluationReason(option, stateScoreDelta, heuristicScore, index),
+        after,
+      }];
+    } catch {
+      return [];
+    }
+  });
+}
+
+export function chooseMasterLabAction(
+  state: GameState,
+  candidateId: MasterLabCandidateId,
+  perspective: PlayerId = state.currentPlayer,
+): MasterLabActionEvaluation | undefined {
+  return inspectMasterLabActionEvaluations(state, candidateId, perspective)
+    .sort((a, b) => b.totalScore - a.totalScore || a.option.summary.localeCompare(b.option.summary))[0];
+}
+
 export function buildMasterLabMatchups(
   candidates: readonly MasterLabCandidate[] = MASTER_LAB_CANDIDATES,
 ): MasterLabMatchup[] {
@@ -401,6 +526,13 @@ export function formatMasterLabMarkdown(
   }
 
   lines.push("");
+  lines.push("## 実行レイヤー");
+  lines.push("");
+  lines.push("- builtin: 既存マスター特技を、Master Lab側のコストで解決する");
+  lines.push("- magic_ref: 仮想手札カードを一時追加し、既存魔法効果をMaster Lab側のコストで解決する");
+  lines.push("- experimental_effect: 効果ごとの個別実装が入るまで候補列挙しない");
+
+  lines.push("");
   lines.push("## 静的検証");
   lines.push("");
   if (issues.length === 0) {
@@ -464,6 +596,164 @@ function validateAction(
       });
     }
   }
+}
+
+function listActionOptions(
+  state: GameState,
+  candidate: MasterLabCandidate,
+  action: MasterLabAction,
+): MasterLabActionOption[] {
+  if (state.players[state.currentPlayer].stones < resolvedMasterLabActionCost(action)) {
+    return [];
+  }
+
+  if (action.kind === "builtin") {
+    const resolverState = createCostAdjustedState(state, resolvedMasterLabActionCost(action), MASTER_ACTION_DEFS[action.actionId].cost);
+    return getMasterActionTargets(resolverState, action.actionId).map((target) =>
+      createActionOption(candidate.id, action, target),
+    );
+  }
+
+  if (action.kind === "magic_ref") {
+    const virtual = createVirtualMagicResolverState(state, candidate.id, action);
+    return getMagicTargets(virtual.state, virtual.handInstanceId).flatMap((target) => {
+      const secondaryTargets = getMagicSecondaryTargets(virtual.state, {
+        handInstanceId: virtual.handInstanceId,
+        target,
+      });
+      if (secondaryTargets.length === 0) {
+        return [createActionOption(candidate.id, action, target)];
+      }
+      return secondaryTargets.map((secondaryTarget) => createActionOption(candidate.id, action, target, secondaryTarget));
+    });
+  }
+
+  return [];
+}
+
+function createActionOption(
+  candidateId: MasterLabCandidateId,
+  action: MasterLabAction,
+  target: Target,
+  secondaryTarget?: Target,
+): MasterLabActionOption {
+  const cost = resolvedMasterLabActionCost(action);
+  return {
+    candidateId,
+    actionId: action.id,
+    actionName: action.name,
+    kind: action.kind,
+    cost,
+    target,
+    secondaryTarget,
+    summary: secondaryTarget
+      ? `${action.name} ${targetToKey(target)} / ${targetToKey(secondaryTarget)} (${cost}コ)`
+      : `${action.name} ${targetToKey(target)} (${cost}コ)`,
+  };
+}
+
+function isSameActionOption(option: MasterLabActionOption, input: MasterLabActionInput): boolean {
+  return option.candidateId === input.candidateId
+    && option.actionId === input.actionId
+    && targetToKey(option.target) === targetToKey(input.target)
+    && optionalTargetKey(option.secondaryTarget) === optionalTargetKey(input.secondaryTarget);
+}
+
+function optionalTargetKey(target: Target | undefined): string {
+  return target ? targetToKey(target) : "";
+}
+
+function createVirtualMagicResolverState(
+  state: GameState,
+  candidateId: MasterLabCandidateId,
+  action: MasterLabMagicRefAction,
+): { state: GameState; handInstanceId: string } {
+  const card = getCardDef(action.cardId);
+  if (card.type !== "magic") {
+    throw new Error(`${action.cardId} は魔法カードではありません`);
+  }
+
+  const handInstanceId = virtualMagicHandInstanceId(candidateId, action.id);
+  const next = createCostAdjustedState(state, resolvedMasterLabActionCost(action), card.cost);
+  const player = next.players[next.currentPlayer];
+  removeVirtualMagicCard(next, next.currentPlayer, handInstanceId);
+  player.hand.push({ cardId: action.cardId, instanceId: handInstanceId });
+  return { state: next, handInstanceId };
+}
+
+function masterLabActionHeuristic(
+  before: GameState,
+  after: GameState,
+  option: MasterLabActionOption,
+  perspective: PlayerId,
+): number {
+  if (option.candidateId !== "decoy") {
+    return 0;
+  }
+
+  if (option.actionId === "scapegoat" && option.target.kind === "monster") {
+    const target = after.slots[option.target.slotKey].monster;
+    if (!target?.scapegoat || target.owner !== perspective) {
+      return 0;
+    }
+    const opponent = opponentOf(perspective);
+    const hpPressure = before.players[perspective].masterHp <= before.players[opponent].masterHp ? 22 : 8;
+    const lowHpBonus = before.players[perspective].masterHp <= 3 ? 24 : 0;
+    return 34 + hpPressure + lowHpBonus + Math.max(0, target.hp) * 3;
+  }
+
+  if (option.actionId === "provoke" && option.target.kind === "monster") {
+    const provoked = after.slots[option.target.slotKey].monster;
+    const bait = option.secondaryTarget?.kind === "monster"
+      ? before.slots[option.secondaryTarget.slotKey].monster
+      : undefined;
+    if (!provoked?.provokeTargetSlotKey || bait?.owner !== perspective) {
+      return 0;
+    }
+    const enemyLevelPressure = provoked.level * 12;
+    const cheapBaitBonus = bait.level <= 1 ? 14 : -8;
+    return 32 + enemyLevelPressure + cheapBaitBonus;
+  }
+
+  return 0;
+}
+
+function masterLabEvaluationReason(
+  option: MasterLabActionOption,
+  stateScoreDelta: number,
+  heuristicScore: number,
+  index: number,
+): string {
+  return [
+    `Master Lab候補${index + 1}`,
+    option.summary,
+    `状態差分 ${formatSigned(stateScoreDelta)}`,
+    `補助評価 ${formatSigned(heuristicScore)}`,
+  ].join(" / ");
+}
+
+function formatSigned(value: number): string {
+  return value >= 0 ? `+${value.toFixed(1)}` : value.toFixed(1);
+}
+
+function createCostAdjustedState(state: GameState, labCost: number, resolverCost: number): GameState {
+  const current = state.players[state.currentPlayer];
+  if (current.stones < labCost) {
+    throw new Error("Master Lab特技に必要なストーンが足りません");
+  }
+  const next = cloneState(state);
+  next.players[next.currentPlayer].stones = current.stones - labCost + resolverCost;
+  return next;
+}
+
+function removeVirtualMagicCard(state: GameState, playerId: PlayerId, handInstanceId: string): void {
+  const player = state.players[playerId];
+  player.hand = player.hand.filter((card) => card.instanceId !== handInstanceId);
+  player.discard = player.discard.filter((card) => card.instanceId !== handInstanceId);
+}
+
+function virtualMagicHandInstanceId(candidateId: MasterLabCandidateId, actionId: string): string {
+  return `${MASTER_LAB_VIRTUAL_CARD_PREFIX}${candidateId}_${actionId}`;
 }
 
 function formatActionSummary(action: MasterLabAction): string {
