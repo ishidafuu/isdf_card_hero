@@ -98,3 +98,5 @@ node scripts/import-cardhero-bu-movies.mjs
 - `docs/research/cardhero-bu-movie-position-notes.json`
 
 前者は手動レビュー待ち一覧、後者は動画時刻つきの局面メモにする。AI改善実装に入るのは、その局面メモが10件程度たまってからでよい。
+
+画面表示の参考は `docs/18_battle_screen_video_reference.md` に分ける。こちらはAI改善ではなく、バトル中の盤面表示、HP/Stone、手札帯、主要操作の見せ方に限定する。
