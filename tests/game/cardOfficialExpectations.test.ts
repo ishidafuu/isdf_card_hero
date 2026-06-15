@@ -1572,7 +1572,7 @@ describe("official card effect expectations", () => {
     expect(game.slots.cpu_front_left.monster?.hp).toBe(3);
   });
 
-  it("card_109 ナッツロックル auto-counters the monster directly in front after taking damage", () => {
+  it("card_109 ナッツロックル attacks the monster directly in front after taking damage", () => {
     let game = createGameWithPlayerHand([]);
     game.currentPlayer = "cpu";
     game.players.cpu.stones = 3;
@@ -1586,7 +1586,26 @@ describe("official card effect expectations", () => {
     expect(game.log.some((entry) => entry.includes("やつあたりが発動した"))).toBe(true);
   });
 
-  it("card_109 ナッツロックル does not recursively trigger another auto-counter", () => {
+  it("card_109 ナッツロックル attacks the unit in front after taking ranged damage", () => {
+    let game = createGameWithPlayerHand([]);
+    game.currentPlayer = "player";
+    game.slots.player_front_right.monster = createActiveMonster("bomuzo", "player", { level: 2, hp: 2, investedStones: 2 });
+    game.slots.cpu_back_left.monster = createActiveMonster("card_109", "cpu", { hp: 6 });
+    game.slots.cpu_front_left.monster = createActiveMonster("card_001", "cpu", { hp: 3 });
+
+    game = attackWithCommand(game, {
+      attackerSlotKey: "player_front_right",
+      commandId: "storm_bomb",
+      target: { kind: "monster", slotKey: "cpu_back_left" },
+    });
+
+    expect(game.slots.cpu_back_left.monster?.hp).toBe(4);
+    expect(game.slots.cpu_front_left.monster?.hp).toBe(1);
+    expect(game.slots.player_front_right.monster?.hp).toBe(2);
+    expect(game.log.some((entry) => entry.includes("やつあたりが発動した"))).toBe(true);
+  });
+
+  it("card_109 ナッツロックル does not recursively trigger another やつあたり", () => {
     let game = createGameWithPlayerHand([]);
     game.currentPlayer = "cpu";
     game.slots.player_front_left.monster = createActiveMonster("card_109", "player", { hp: 6 });
