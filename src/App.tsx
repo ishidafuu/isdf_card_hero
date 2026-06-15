@@ -159,6 +159,9 @@ type ZoneView =
 type LogFilter = "all" | "battle" | "damage" | "support" | "turn" | "cpu";
 type BattleMode = "player-vs-cpu" | "cpu-vs-cpu";
 type TargetRole = "ally" | "enemy" | "move" | "summon" | "empty" | "master";
+type BoardAnchor =
+  | { kind: "slot"; slotKey: SlotKey }
+  | { kind: "master"; playerId: PlayerId };
 type CatalogCategoryFilter = "all" | "front" | "back" | "magic";
 type CatalogSortKey = "source" | "evaluation" | "proBlack" | "proWhite" | "name" | "offense" | "defense" | "synergy" | "hp" | "cost";
 type DeckPresetSortKey = "source" | "battle" | "winRate" | "stability" | "speed" | "vsBlack" | "vsWhite";
@@ -300,7 +303,35 @@ interface VisualEffect {
   masters: PlayerId[];
   slotDamageFlashes: SlotDamageFlash[];
   masterDamageFlashes: MasterDamageFlash[];
+  action?: BoardActionEffect;
 }
+
+interface BoardActionEffect {
+  kind: EffectKind;
+  label: string;
+  detail?: string;
+  source?: BoardAnchor;
+  target?: BoardAnchor;
+  targets: BoardAnchor[];
+}
+
+interface BoardPoint {
+  x: number;
+  y: number;
+}
+
+const BOARD_ANCHOR_POINTS: Record<string, BoardPoint> = {
+  "slot:cpu_back_left": { x: 16.67, y: 12.5 },
+  "slot:cpu_back_right": { x: 83.33, y: 12.5 },
+  "slot:cpu_front_left": { x: 16.67, y: 37.5 },
+  "master:cpu": { x: 50, y: 37.5 },
+  "slot:cpu_front_right": { x: 83.33, y: 37.5 },
+  "slot:player_front_left": { x: 16.67, y: 62.5 },
+  "master:player": { x: 50, y: 62.5 },
+  "slot:player_front_right": { x: 83.33, y: 62.5 },
+  "slot:player_back_left": { x: 16.67, y: 87.5 },
+  "slot:player_back_right": { x: 83.33, y: 87.5 },
+};
 
 interface DamageFlash {
   amount: number;
@@ -2128,75 +2159,76 @@ export function App() {
         <div className="battle-area">
           <div className="battle-primary">
             <div className="board" aria-label="field">
-            {BOARD_CELLS.map((row, rowIndex) => (
-              <div className="board-row" key={rowIndex}>
-                {row.map((cell) => {
-                  if (cell.kind === "slot") {
-                    return (
-                      <BoardSlot
-                        key={cell.slotKey}
-                        slotKey={cell.slotKey}
-                        game={game}
-                        selected={isSelectedSourceSlot(selection, pendingDropAction, cell.slotKey)}
-                        targetable={targetKeys.has(`monster:${cell.slotKey}`)}
-                        targetRole={targetRoleForTarget(game, { kind: "monster", slotKey: cell.slotKey }, targetKeys, selection, pendingDropAction)}
-                        effectKind={visualEffect?.slots.includes(cell.slotKey) ? visualEffect.kind : undefined}
-                        effectId={visualEffect?.id}
-                        damageFlash={visualEffect?.slotDamageFlashes.find((flash) => flash.slotKey === cell.slotKey)}
-                        draggable={canDragMonsterFromSlot(cell.slotKey)}
-                        onDragStart={(event) => handleMonsterDragStart(event, cell.slotKey)}
-                        onPointerDown={(event) => handleMonsterPointerDown(event, cell.slotKey)}
-                        onDragOver={handleDragOver}
-                        onDrop={(event) => handleSlotDrop(event, cell.slotKey)}
-                        onClick={() => handleSlotClick(cell.slotKey)}
-                      />
-                    );
-                  }
-                  if (cell.kind === "master") {
-                    const damageFlash = visualEffect?.masterDamageFlashes.find((flash) => flash.playerId === cell.playerId);
-                    const targetRole = targetRoleForTarget(game, { kind: "master", playerId: cell.playerId }, targetKeys, selection, pendingDropAction);
-                    const masterId = game.players[cell.playerId].masterId;
-                    const masterLabel = `${cell.playerId === "cpu" ? "CPU" : "Player"} ${getMasterName(masterId)}`;
-                    return (
-                      <button
-                        key={cell.playerId}
-                        type="button"
-                        className={[
-                          "master",
-                          cell.playerId === "cpu" ? "master-cpu" : "master-player",
-                          `master-${masterId}`,
-                          targetKeys.has(`master:${cell.playerId}`) ? "targetable" : "",
-                          targetRole ? `target-${targetRole}` : "",
-                          visualEffect?.masters.includes(cell.playerId) ? `effect-active effect-${visualEffect.kind}` : "",
-                          damageFlash?.defeated ? "effect-defeated" : "",
-                        ].join(" ")}
-                        onDragOver={handleDragOver}
-                        onDrop={(event) => handleMasterDrop(event, cell.playerId)}
-                        data-master-id={cell.playerId}
-                        onClick={() => handleMasterClick(cell.playerId)}
-                        aria-label={`${masterLabel} HP ${game.players[cell.playerId].masterHp} Stone ${game.players[cell.playerId].stones} Deck ${game.players[cell.playerId].deck.length} Hand ${game.players[cell.playerId].hand.length}`}
-                      >
-                        <MasterResourceDisplay
-                          label={masterLabel}
-                          active={game.currentPlayer === cell.playerId}
-                          hp={game.players[cell.playerId].masterHp}
-                          stones={game.players[cell.playerId].stones}
-                          deck={game.players[cell.playerId].deck.length}
-                          hand={game.players[cell.playerId].hand.length}
+              {visualEffect?.action && <BoardActionOverlay action={visualEffect.action} effectId={visualEffect.id} />}
+              {BOARD_CELLS.map((row, rowIndex) => (
+                <div className="board-row" key={rowIndex}>
+                  {row.map((cell) => {
+                    if (cell.kind === "slot") {
+                      return (
+                        <BoardSlot
+                          key={cell.slotKey}
+                          slotKey={cell.slotKey}
+                          game={game}
+                          selected={isSelectedSourceSlot(selection, pendingDropAction, cell.slotKey)}
+                          targetable={targetKeys.has(`monster:${cell.slotKey}`)}
+                          targetRole={targetRoleForTarget(game, { kind: "monster", slotKey: cell.slotKey }, targetKeys, selection, pendingDropAction)}
+                          effectKind={visualEffect?.slots.includes(cell.slotKey) ? visualEffect.kind : undefined}
+                          effectId={visualEffect?.id}
+                          damageFlash={visualEffect?.slotDamageFlashes.find((flash) => flash.slotKey === cell.slotKey)}
+                          draggable={canDragMonsterFromSlot(cell.slotKey)}
+                          onDragStart={(event) => handleMonsterDragStart(event, cell.slotKey)}
+                          onPointerDown={(event) => handleMonsterPointerDown(event, cell.slotKey)}
+                          onDragOver={handleDragOver}
+                          onDrop={(event) => handleSlotDrop(event, cell.slotKey)}
+                          onClick={() => handleSlotClick(cell.slotKey)}
                         />
-                        {targetRole && <span className="target-badge">{targetRoleLabel(targetRole)}</span>}
-                        <DamageBubble key={visualEffect?.id} flash={damageFlash} />
-                      </button>
+                      );
+                    }
+                    if (cell.kind === "master") {
+                      const damageFlash = visualEffect?.masterDamageFlashes.find((flash) => flash.playerId === cell.playerId);
+                      const targetRole = targetRoleForTarget(game, { kind: "master", playerId: cell.playerId }, targetKeys, selection, pendingDropAction);
+                      const masterId = game.players[cell.playerId].masterId;
+                      const masterLabel = `${cell.playerId === "cpu" ? "CPU" : "Player"} ${getMasterName(masterId)}`;
+                      return (
+                        <button
+                          key={cell.playerId}
+                          type="button"
+                          className={[
+                            "master",
+                            cell.playerId === "cpu" ? "master-cpu" : "master-player",
+                            `master-${masterId}`,
+                            targetKeys.has(`master:${cell.playerId}`) ? "targetable" : "",
+                            targetRole ? `target-${targetRole}` : "",
+                            visualEffect?.masters.includes(cell.playerId) ? `effect-active effect-${visualEffect.kind}` : "",
+                            damageFlash?.defeated ? "effect-defeated" : "",
+                          ].join(" ")}
+                          onDragOver={handleDragOver}
+                          onDrop={(event) => handleMasterDrop(event, cell.playerId)}
+                          data-master-id={cell.playerId}
+                          onClick={() => handleMasterClick(cell.playerId)}
+                          aria-label={`${masterLabel} HP ${game.players[cell.playerId].masterHp} Stone ${game.players[cell.playerId].stones} Deck ${game.players[cell.playerId].deck.length} Hand ${game.players[cell.playerId].hand.length}`}
+                        >
+                          <MasterResourceDisplay
+                            label={masterLabel}
+                            active={game.currentPlayer === cell.playerId}
+                            hp={game.players[cell.playerId].masterHp}
+                            stones={game.players[cell.playerId].stones}
+                            deck={game.players[cell.playerId].deck.length}
+                            hand={game.players[cell.playerId].hand.length}
+                          />
+                          {targetRole && <span className="target-badge">{targetRoleLabel(targetRole)}</span>}
+                          <DamageBubble key={visualEffect?.id} flash={damageFlash} />
+                        </button>
+                      );
+                    }
+                    return (
+                      <div key={`${cell.label}_${rowIndex}`} className="blocked-cell" aria-label={cell.label}>
+                        <span>{cell.label}</span>
+                      </div>
                     );
-                  }
-                  return (
-                    <div key={`${cell.label}_${rowIndex}`} className="blocked-cell" aria-label={cell.label}>
-                      <span>{cell.label}</span>
-                    </div>
-                  );
-                })}
-              </div>
-            ))}
+                  })}
+                </div>
+              ))}
             </div>
             <section className="hand-area">
             <div className="hand-heading">
@@ -4713,6 +4745,55 @@ interface BoardSlotProps {
   onClick: () => void;
 }
 
+function BoardActionOverlay({ action, effectId }: { action: BoardActionEffect; effectId: number }) {
+  const sourcePoint = action.source ? boardPointForAnchor(action.source) : undefined;
+  const targetPoint = action.target ? boardPointForAnchor(action.target) : undefined;
+  const labelPoint = boardActionLabelPoint(sourcePoint, targetPoint);
+  const markerId = `board-action-arrow-${effectId}`;
+  const drawsArrow = sourcePoint && targetPoint && !isSameBoardPoint(sourcePoint, targetPoint);
+  const ringAnchors = uniqueBoardAnchors([
+    ...(action.source ? [action.source] : []),
+    ...action.targets,
+  ]);
+
+  return (
+    <div className={`board-action-overlay board-action-${action.kind}`} aria-live="polite">
+      {drawsArrow && (
+        <svg className="board-action-svg" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true">
+          <defs>
+            <marker id={markerId} markerWidth="8" markerHeight="8" refX="6.8" refY="4" orient="auto">
+              <path d="M0,0 L8,4 L0,8 z" />
+            </marker>
+          </defs>
+          <line
+            className="board-action-line"
+            x1={sourcePoint.x}
+            y1={sourcePoint.y}
+            x2={targetPoint.x}
+            y2={targetPoint.y}
+            markerEnd={`url(#${markerId})`}
+          />
+        </svg>
+      )}
+      {ringAnchors.map((anchor) => {
+        const point = boardPointForAnchor(anchor);
+        return (
+          <span
+            className={`board-action-ring ${action.target && isSameBoardAnchor(anchor, action.target) ? "target" : "source"}`}
+            style={boardActionPointStyle(point)}
+            key={boardAnchorKey(anchor)}
+            aria-hidden="true"
+          />
+        );
+      })}
+      <span className="board-action-label" style={boardActionPointStyle(labelPoint)}>
+        <strong>{action.label}</strong>
+        {action.detail && <span>{action.detail}</span>}
+      </span>
+    </div>
+  );
+}
+
 function BoardSlot({
   slotKey,
   game,
@@ -5271,6 +5352,8 @@ function createVisualEffect(previous: GameState, next: GameState, id: number): V
   const appendedLogs = getAppendedLogs(previous.log, next.log);
   const latestLog = appendedLogs.at(-1) ?? next.log[next.log.length - 1] ?? "";
   const kind = effectKindFromLogs(appendedLogs, latestLog);
+  const slotDamageFlashes = createSlotDamageFlashes(previous, next, appendedLogs);
+  const masterDamageFlashes = createMasterDamageFlashes(previous, next);
   return {
     id,
     kind,
@@ -5280,9 +5363,330 @@ function createVisualEffect(previous: GameState, next: GameState, id: number): V
         previous.players[playerId].masterHp !== next.players[playerId].masterHp ||
         (kind === "random" && previous.players[playerId].stones !== next.players[playerId].stones),
     ),
-    slotDamageFlashes: createSlotDamageFlashes(previous, next, appendedLogs),
-    masterDamageFlashes: createMasterDamageFlashes(previous, next),
+    slotDamageFlashes,
+    masterDamageFlashes,
+    action: createBoardActionEffect(previous, next, appendedLogs, kind, slotDamageFlashes, masterDamageFlashes),
   };
+}
+
+function createBoardActionEffect(
+  previous: GameState,
+  next: GameState,
+  appendedLogs: string[],
+  kind: EffectKind,
+  slotDamageFlashes: SlotDamageFlash[],
+  masterDamageFlashes: MasterDamageFlash[],
+): BoardActionEffect | undefined {
+  const actionLogs = appendedLogs.filter((entry) => !entry.includes("判断:"));
+  const currentPlayer = previous.currentPlayer;
+  const actor = playerLabel(currentPlayer);
+  const sourceMaster: BoardAnchor = { kind: "master", playerId: currentPlayer };
+  const damageTarget = firstDamageAnchor(slotDamageFlashes, masterDamageFlashes);
+
+  const commandLog = actionLogs.find((entry) => /^.+の.+: .+ \d+P$/.test(entry));
+  const commandMatch = commandLog?.match(/^(.+)の(.+): (.+) (\d+)P$/);
+  if (commandMatch) {
+    const [, , actorName, commandName, power] = commandMatch;
+    const sourceSlotKey = findActionSourceSlot(previous, next, actorName, currentPlayer);
+    const source = sourceSlotKey ? { kind: "slot", slotKey: sourceSlotKey } as const : undefined;
+    const target = damageTarget ?? firstChangedAnchor(previous, next, source);
+    return {
+      kind: "attack",
+      label: `${actorName}: ${commandName} ${power}P`,
+      detail: actionDetail(previous, next, source, target),
+      source,
+      target,
+      targets: target ? [target] : [],
+    };
+  }
+
+  if (actionLogs.some((entry) => entry === `${actor}のマスターアタック`)) {
+    const target = damageTarget ?? firstChangedAnchor(previous, next, sourceMaster);
+    return {
+      kind: "attack",
+      label: `${actor} マスターアタック`,
+      detail: actionDetail(previous, next, sourceMaster, target),
+      source: sourceMaster,
+      target,
+      targets: target ? [target] : [],
+    };
+  }
+
+  if (actionLogs.some((entry) => entry === `${actor}の大地の怒り`)) {
+    const targets = slotDamageFlashes.map((flash) => ({ kind: "slot", slotKey: flash.slotKey }) as const);
+    return {
+      kind: "attack",
+      label: `${actor} 大地の怒り`,
+      detail: targets.length > 0 ? `${targets.length}体に3P` : undefined,
+      source: sourceMaster,
+      target: targets[0],
+      targets,
+    };
+  }
+
+  const magicLog = actionLogs.find((entry) => new RegExp(`^${actor}は.+を使った$`).test(entry));
+  const magicMatch = magicLog?.match(/^.+は(.+)を使った$/);
+  if (magicMatch) {
+    const [, cardName] = magicMatch;
+    const target = damageTarget ?? firstChangedAnchor(previous, next, sourceMaster);
+    const targets = target ? [target] : changedAnchors(previous, next, sourceMaster).slice(0, 3);
+    return {
+      kind,
+      label: `${cardName}`,
+      detail: actionDetail(previous, next, sourceMaster, target),
+      source: sourceMaster,
+      target,
+      targets,
+    };
+  }
+
+  const masterSupport = createMasterSupportAction(previous, next, actionLogs, actor, sourceMaster, kind);
+  if (masterSupport) {
+    return masterSupport;
+  }
+
+  const summonLog = actionLogs.find((entry) => new RegExp(`^${actor}は.+を準備中で召喚した$`).test(entry));
+  const summonMatch = summonLog?.match(/^.+は(.+)を準備中で召喚した$/);
+  if (summonMatch) {
+    const [, summonedName] = summonMatch;
+    const targetSlotKey = findSummonTargetSlot(previous, next, summonedName, currentPlayer);
+    const target = targetSlotKey ? { kind: "slot", slotKey: targetSlotKey } as const : undefined;
+    return {
+      kind: "summon",
+      label: `召喚: ${summonedName}`,
+      detail: actionDetail(previous, next, sourceMaster, target),
+      source: sourceMaster,
+      target,
+      targets: target ? [target] : [],
+    };
+  }
+
+  const moved = findMovedSlot(previous, next);
+  if (moved) {
+    const source = { kind: "slot", slotKey: moved.from } as const;
+    const target = { kind: "slot", slotKey: moved.to } as const;
+    return {
+      kind: "move",
+      label: actionLogs.some((entry) => entry.includes("入れ替え")) ? "入れ替え" : "移動",
+      detail: actionDetail(previous, next, source, target),
+      source,
+      target,
+      targets: [target],
+    };
+  }
+
+  const focusLog = actionLogs.find((entry) => entry.endsWith("はためた"));
+  const focusMatch = focusLog?.match(/^(.+)はためた$/);
+  if (focusMatch) {
+    const [, focusedName] = focusMatch;
+    const slotKey = findChangedSlotByMonsterName(previous, next, focusedName, currentPlayer);
+    const target = slotKey ? { kind: "slot", slotKey } as const : undefined;
+    return {
+      kind: "focus",
+      label: `${focusedName}: ためる`,
+      detail: target ? boardAnchorLabel(previous, next, target) : undefined,
+      source: target,
+      target,
+      targets: target ? [target] : [],
+    };
+  }
+
+  return undefined;
+}
+
+function createMasterSupportAction(
+  previous: GameState,
+  next: GameState,
+  actionLogs: string[],
+  actor: string,
+  source: BoardAnchor,
+  kind: EffectKind,
+): BoardActionEffect | undefined {
+  const wakeMatch = actionLogs.find((entry) => new RegExp(`^${actor}は.+をウェイクアップした$`).test(entry))?.match(/^.+は(.+)をウェイクアップした$/);
+  if (wakeMatch) {
+    return createTargetedMasterSupportAction(previous, next, wakeMatch[1], source, "ウェイクアップ", kind);
+  }
+
+  const berserkMatch = actionLogs.find((entry) => new RegExp(`^${actor}は.+をバーサクパワー状態にした$`).test(entry))?.match(/^.+は(.+)をバーサクパワー状態にした$/);
+  if (berserkMatch) {
+    return createTargetedMasterSupportAction(previous, next, berserkMatch[1], source, "バーサクパワー", "focus");
+  }
+
+  const shieldMatch = actionLogs.find((entry) => new RegExp(`^${actor}は.+にシールドを張った$`).test(entry))?.match(/^.+は(.+)にシールドを張った$/);
+  if (shieldMatch) {
+    return createTargetedMasterSupportAction(previous, next, shieldMatch[1], source, "シールド", "heal");
+  }
+
+  return undefined;
+}
+
+function createTargetedMasterSupportAction(
+  previous: GameState,
+  next: GameState,
+  targetName: string,
+  source: BoardAnchor,
+  label: string,
+  kind: EffectKind,
+): BoardActionEffect {
+  const targetSlotKey = findChangedSlotByMonsterName(previous, next, targetName);
+  const target = targetSlotKey ? { kind: "slot", slotKey: targetSlotKey } as const : undefined;
+  return {
+    kind,
+    label,
+    detail: actionDetail(previous, next, source, target),
+    source,
+    target,
+    targets: target ? [target] : [],
+  };
+}
+
+function firstDamageAnchor(slotDamageFlashes: SlotDamageFlash[], masterDamageFlashes: MasterDamageFlash[]): BoardAnchor | undefined {
+  const slotFlash = slotDamageFlashes[0];
+  if (slotFlash) {
+    return { kind: "slot", slotKey: slotFlash.slotKey };
+  }
+  const masterFlash = masterDamageFlashes[0];
+  if (masterFlash) {
+    return { kind: "master", playerId: masterFlash.playerId };
+  }
+  return undefined;
+}
+
+function firstChangedAnchor(previous: GameState, next: GameState, excluded?: BoardAnchor): BoardAnchor | undefined {
+  return changedAnchors(previous, next, excluded)[0];
+}
+
+function changedAnchors(previous: GameState, next: GameState, excluded?: BoardAnchor): BoardAnchor[] {
+  const excludedKey = excluded ? boardAnchorKey(excluded) : undefined;
+  return BOARD_SLOT_KEYS
+    .filter((slotKey) => slotSignature(previous, slotKey) !== slotSignature(next, slotKey))
+    .map((slotKey) => ({ kind: "slot", slotKey }) as const)
+    .filter((anchor) => boardAnchorKey(anchor) !== excludedKey);
+}
+
+function findActionSourceSlot(previous: GameState, next: GameState, name: string, owner: PlayerId): SlotKey | undefined {
+  const candidates = BOARD_SLOT_KEYS.filter((slotKey) => {
+    const monster = previous.slots[slotKey].monster;
+    return monster?.owner === owner && getMonsterDisplayName(monster) === name;
+  });
+  return (
+    candidates.find((slotKey) => {
+      const before = previous.slots[slotKey].monster;
+      const after = next.slots[slotKey].monster;
+      return before && (!after || before.instanceId !== after.instanceId || before.actionCount !== after.actionCount);
+    }) ?? candidates[0]
+  );
+}
+
+function findChangedSlotByMonsterName(previous: GameState, next: GameState, name: string, owner?: PlayerId): SlotKey | undefined {
+  return BOARD_SLOT_KEYS.find((slotKey) => {
+    if (slotSignature(previous, slotKey) === slotSignature(next, slotKey)) {
+      return false;
+    }
+    const before = previous.slots[slotKey].monster;
+    const after = next.slots[slotKey].monster;
+    const matched = [before, after].some((monster) => monster && getMonsterDisplayName(monster) === name);
+    const ownerMatched = !owner || before?.owner === owner || after?.owner === owner;
+    return matched && ownerMatched;
+  });
+}
+
+function findSummonTargetSlot(previous: GameState, next: GameState, name: string, owner: PlayerId): SlotKey | undefined {
+  return BOARD_SLOT_KEYS.find((slotKey) => {
+    const before = previous.slots[slotKey].monster;
+    const after = next.slots[slotKey].monster;
+    return !before && after?.owner === owner && getMonsterDisplayName(after) === name;
+  });
+}
+
+function findMovedSlot(previous: GameState, next: GameState): { from: SlotKey; to: SlotKey } | undefined {
+  for (const from of BOARD_SLOT_KEYS) {
+    const before = previous.slots[from].monster;
+    if (!before) {
+      continue;
+    }
+    const afterSameSlot = next.slots[from].monster;
+    if (afterSameSlot?.instanceId === before.instanceId) {
+      continue;
+    }
+    const to = BOARD_SLOT_KEYS.find((slotKey) => next.slots[slotKey].monster?.instanceId === before.instanceId);
+    if (to && to !== from) {
+      return { from, to };
+    }
+  }
+  return undefined;
+}
+
+function actionDetail(previous: GameState, next: GameState, source?: BoardAnchor, target?: BoardAnchor): string | undefined {
+  if (!source && !target) {
+    return undefined;
+  }
+  if (!source) {
+    return target ? boardAnchorLabel(previous, next, target) : undefined;
+  }
+  if (!target || isSameBoardAnchor(source, target)) {
+    return boardAnchorLabel(previous, next, source);
+  }
+  return `${boardAnchorLabel(previous, next, source)} -> ${boardAnchorLabel(previous, next, target)}`;
+}
+
+function boardAnchorLabel(previous: GameState, next: GameState, anchor: BoardAnchor): string {
+  if (anchor.kind === "master") {
+    return `${playerLabel(anchor.playerId)}マスター`;
+  }
+  const monster = next.slots[anchor.slotKey].monster ?? previous.slots[anchor.slotKey].monster;
+  return monster ? `${slotLabel(anchor.slotKey)} ${getMonsterDisplayName(monster)}` : slotLabel(anchor.slotKey);
+}
+
+function boardAnchorKey(anchor: BoardAnchor): string {
+  return anchor.kind === "slot" ? `slot:${anchor.slotKey}` : `master:${anchor.playerId}`;
+}
+
+function boardPointForAnchor(anchor: BoardAnchor): BoardPoint {
+  return BOARD_ANCHOR_POINTS[boardAnchorKey(anchor)] ?? { x: 50, y: 50 };
+}
+
+function boardActionPointStyle(point: BoardPoint): CSSProperties {
+  return {
+    left: `${clampNumber(point.x, 8, 92)}%`,
+    top: `${clampNumber(point.y, 8, 92)}%`,
+  };
+}
+
+function boardActionLabelPoint(source?: BoardPoint, target?: BoardPoint): BoardPoint {
+  if (source && target && !isSameBoardPoint(source, target)) {
+    return {
+      x: (source.x + target.x) / 2,
+      y: (source.y + target.y) / 2,
+    };
+  }
+  if (target) {
+    return { x: target.x, y: clampNumber(target.y - 9, 8, 92) };
+  }
+  if (source) {
+    return { x: source.x, y: clampNumber(source.y - 9, 8, 92) };
+  }
+  return { x: 50, y: 50 };
+}
+
+function isSameBoardPoint(a: BoardPoint, b: BoardPoint): boolean {
+  return Math.abs(a.x - b.x) < 0.1 && Math.abs(a.y - b.y) < 0.1;
+}
+
+function isSameBoardAnchor(a: BoardAnchor, b: BoardAnchor): boolean {
+  return boardAnchorKey(a) === boardAnchorKey(b);
+}
+
+function uniqueBoardAnchors(anchors: BoardAnchor[]): BoardAnchor[] {
+  const seen = new Set<string>();
+  return anchors.filter((anchor) => {
+    const key = boardAnchorKey(anchor);
+    if (seen.has(key)) {
+      return false;
+    }
+    seen.add(key);
+    return true;
+  });
 }
 
 function getAppendedLogs(previousLog: string[], nextLog: string[]): string[] {
