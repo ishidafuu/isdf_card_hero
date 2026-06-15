@@ -19,6 +19,7 @@
     "safety:card-adjustment": "vite-node scripts/card-adjustment-safety.ts",
     "improve:ai-loop": "vite-node scripts/ai-improvement-loop.ts",
     "diff:ai": "vite-node scripts/ai-decision-diff.ts",
+    "lab:masters": "vite-node scripts/master-lab-report.ts",
     "audit:deck-submissions": "vite-node scripts/deck-submission-audit.ts",
     "import:deck-submissions": "node scripts/import-cardhero-bu-decks.mjs",
     "validate:auto-play": "vite-node scripts/auto-play-validation.ts",
