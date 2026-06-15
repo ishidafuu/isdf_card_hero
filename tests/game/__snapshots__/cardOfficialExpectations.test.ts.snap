@@ -90,7 +90,7 @@ exports[`official card effect expectations > bomuzo ボムゾウ has reviewed of
           "power": 2,
           "range": "adjacent",
           "rangeText": undefined,
-          "recoilDamage": 1,
+          "recoilDamage": "power",
           "stoneCost": undefined,
         },
         {
@@ -118,7 +118,7 @@ exports[`official card effect expectations > bomuzo ボムゾウ has reviewed of
           "power": 3,
           "range": "adjacent",
           "rangeText": undefined,
-          "recoilDamage": 1,
+          "recoilDamage": "power",
           "stoneCost": undefined,
         },
         {
@@ -325,7 +325,7 @@ exports[`official card effect expectations > card_006 ボムキング has review
           "power": 6,
           "range": "adjacent",
           "rangeText": undefined,
-          "recoilDamage": 1,
+          "recoilDamage": "power",
           "stoneCost": undefined,
         },
         {

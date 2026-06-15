@@ -390,8 +390,9 @@ export function attackWithCommand(state: GameState, action: CommandAction): Game
       healMonster(next, resolvedAttackerSlotKey, Math.max(0, beforeHp - next.players[action.target.playerId].masterHp));
     }
     finishCommandSideEffects(next, resolvedAttackerSlotKey, command, hadBerserkPower, hadDamageCurse);
-    if (!next.winner && command.recoilDamage) {
-      applyRecoil(next, resolvedAttackerSlotKey, command.recoilDamage);
+    const recoilDamage = getCommandRecoilDamage(command, power);
+    if (!next.winner && recoilDamage) {
+      applyRecoil(next, resolvedAttackerSlotKey, recoilDamage);
     }
     return next;
   }
@@ -2294,7 +2295,7 @@ function applyPostDamageCommandEffect(
 }
 
 function getCommandRecoilDamage(command: CommandDef, power: number): number {
-  if (command.name === "爆雷撃") {
+  if (command.name === "爆雷撃" || command.recoilDamage === "power") {
     return power;
   }
   return command.recoilDamage ?? 0;

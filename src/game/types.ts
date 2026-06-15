@@ -35,6 +35,8 @@ export interface MemberRating {
 
 export type MemberRatings = Partial<Record<MemberRatingKey, MemberRating>>;
 
+export type RecoilDamage = number | "power";
+
 export interface CommandDef {
   id: string;
   name: string;
@@ -42,7 +44,7 @@ export interface CommandDef {
   range: RangeTag;
   rangeText?: string;
   stoneCost?: number;
-  recoilDamage?: number;
+  recoilDamage?: RecoilDamage;
   effectText?: string;
   implemented?: boolean;
 }

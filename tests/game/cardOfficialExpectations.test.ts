@@ -122,7 +122,7 @@ describe("official card effect expectations", () => {
       target: { kind: "monster", slotKey: "cpu_front_left" },
     });
 
-    expect(game.slots.player_front_left.monster?.hp).toBe(3);
+    expect(game.slots.player_front_left.monster).toBeUndefined();
     expect(game.slots.cpu_front_left.monster?.hp).toBe(4);
 
     game = createGameWithPlayerHand([]);
@@ -1072,7 +1072,7 @@ describe("official card effect expectations", () => {
   it("bomuzo ボムゾウ takes recoil when using 自爆", () => {
     let game = createGameWithPlayerHand([]);
     game.slots.player_front_left.monster = createActiveMonster("bomuzo", "player");
-    game.slots.cpu_front_left.monster = createActiveMonster("takokke", "cpu");
+    game.slots.cpu_front_left.monster = createActiveMonster("takokke", "cpu", { hp: 1 });
 
     game = attackWithCommand(game, {
       attackerSlotKey: "player_front_left",
@@ -1080,8 +1080,12 @@ describe("official card effect expectations", () => {
       target: { kind: "monster", slotKey: "cpu_front_left" },
     });
 
-    expect(game.slots.cpu_front_left.monster?.hp).toBe(3);
-    expect(game.slots.player_front_left.monster?.hp).toBe(5);
+    expect(game.pendingLevelUp?.recoilDamage).toBe(2);
+    expect(game.slots.cpu_front_left.monster).toBeUndefined();
+
+    game = resolveLevelUp(game, 0);
+
+    expect(game.slots.player_front_left.monster?.hp).toBe(4);
   });
 
   it("polyspinner ポリスピナー can act twice in one turn", () => {

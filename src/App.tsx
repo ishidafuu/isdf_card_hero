@@ -6170,7 +6170,7 @@ function commandSummary(command: CommandDef): string {
     rangeLabel(command.range, command.rangeText),
     command.stoneCost ? `Stone ${command.stoneCost}` : "",
     command.effectText ? `効果 ${command.effectText}` : "",
-    command.recoilDamage ? `反動 ${command.recoilDamage}` : "",
+    recoilDamageLabel(command),
   ].filter(Boolean).join(" / ");
 }
 
@@ -6179,8 +6179,15 @@ function commandActionSummary(command: CommandDef): string {
     rangeLabel(command.range, command.rangeText),
     command.stoneCost ? `Stone ${command.stoneCost}` : "Stone 0",
     command.effectText ? command.effectText : "",
-    command.recoilDamage ? `反動 ${command.recoilDamage}` : "",
+    recoilDamageLabel(command),
   ].filter(Boolean).join(" / ");
+}
+
+function recoilDamageLabel(command: CommandDef): string | undefined {
+  if (!command.recoilDamage) {
+    return undefined;
+  }
+  return command.recoilDamage === "power" ? "反動 攻撃力分" : `反動 ${command.recoilDamage}`;
 }
 
 function rangeLabel(range: string, rawRange?: string): string {
@@ -6259,7 +6266,7 @@ function commandConditionText(command: CommandDef): string {
     conditions.push(`Stone ${command.stoneCost}`);
   }
   if (command.recoilDamage) {
-    conditions.push(`反動 ${command.recoilDamage}`);
+    conditions.push(recoilDamageLabel(command));
   }
   if (command.implemented === false) {
     conditions.push("要確認");

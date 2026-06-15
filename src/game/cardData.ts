@@ -241,7 +241,7 @@ export const CARD_DEFS = {
             "name": "自爆",
             "power": 2,
             "range": "adjacent",
-            "recoilDamage": 1,
+            "recoilDamage": "power",
             "implemented": true
           },
           {
@@ -263,7 +263,7 @@ export const CARD_DEFS = {
             "name": "自爆",
             "power": 3,
             "range": "adjacent",
-            "recoilDamage": 1,
+            "recoilDamage": "power",
             "implemented": true
           },
           {
@@ -316,7 +316,7 @@ export const CARD_DEFS = {
             "name": "大爆発",
             "power": 6,
             "range": "adjacent",
-            "recoilDamage": 1,
+            "recoilDamage": "power",
             "implemented": true
           },
           {

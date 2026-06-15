@@ -444,7 +444,7 @@ describe("battle prototype rules", () => {
     const superMonster = game.slots.player_front_left.monster;
     expect(superMonster?.cardId).toBe("card_006");
     expect(superMonster?.level).toBe(3);
-    expect(superMonster?.hp).toBe(3);
+    expect(superMonster?.hp).toBe(1);
     expect(superMonster?.investedStones).toBe(3);
     expect(game.players.player.hand).toEqual([]);
     expect(game.players.player.discard.some((card) => card.cardId === "bomuzo")).toBe(true);

@@ -206,7 +206,7 @@ function parseMonsterLevels(table, cardName) {
         recoilDamage:
           (cardName === "ボムゾウ" && command.name === "自爆") ||
           (cardName === "ボムキング" && command.name === "大爆発")
-            ? 1
+            ? "power"
             : undefined,
         implemented: isImplementedRange(range),
       };
