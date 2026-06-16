@@ -10,6 +10,10 @@ import {
   resolvedMasterLabActionCost,
   validateMasterLabCandidates,
 } from "../../src/game/masterLab";
+import {
+  formatMasterLabSelectionLoopMarkdown,
+  runMasterLabSelectionLoop,
+} from "../../src/game/masterLabSelectionLoop";
 import { createInitialGame } from "../../src/game/rules";
 import { getMonsterDef } from "../../src/game/cards";
 import type { MonsterState, PlayerId } from "../../src/game/types";
@@ -30,6 +34,41 @@ describe("master lab", () => {
     expect(scapegoat).toMatchObject({ kind: "magic_ref", cardId: "card_128" });
     expect(provoke ? resolvedMasterLabActionCost(provoke) : undefined).toBe(3);
     expect(scapegoat ? resolvedMasterLabActionCost(scapegoat) : undefined).toBe(2);
+  });
+
+  it("defines the timing candidate as a low-stress tempo master", () => {
+    const timing = MASTER_LAB_CANDIDATES.find((candidate) => candidate.id === "timing");
+    expect(timing).toBeDefined();
+    expect(timing?.name).toBe("テンポマスター");
+    expect(timing?.actions.map((action) => action.id)).toEqual(["master_attack", "quick_call", "shift"]);
+    expect(timing?.actions.find((action) => action.id === "quick_call")).toMatchObject({
+      kind: "experimental_effect",
+      effectId: "accelerate_own_prepared_monster",
+      cost: 2,
+    });
+    expect(timing?.actions.find((action) => action.id === "shift")).toMatchObject({
+      kind: "experimental_effect",
+      effectId: "move_or_swap_own_active_monster",
+      cost: 2,
+    });
+    expect(JSON.stringify(timing)).not.toContain("delay_prepared_enemy");
+    expect(JSON.stringify(timing)).not.toContain("ステイ");
+  });
+
+  it("runs a static fourth-master selection loop", () => {
+    const report = runMasterLabSelectionLoop(new Date("2026-06-17T00:00:00.000Z"));
+
+    expect(report.best.candidate.id).toBe("tempo");
+    expect(report.best.judgement).toBe("prototype");
+    expect(report.entries[0].candidate.label).toBe("テンポマスター");
+    expect(report.entries.find((entry) => entry.candidate.id === "old_timing")?.judgement).toBe("reject");
+
+    const markdown = formatMasterLabSelectionLoopMarkdown(report);
+    expect(markdown).toContain("# Master Lab Selection Loop");
+    expect(markdown).toContain("テンポマスター");
+    expect(markdown).toContain("クイックコール");
+    expect(markdown).toContain("旧タイミング型");
+    expect(markdown).toContain("Master Lab 台帳の `timing`");
   });
 
   it("builds a matchup matrix for every candidate against white and black", () => {

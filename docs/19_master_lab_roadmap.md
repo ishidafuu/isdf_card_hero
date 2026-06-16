@@ -183,3 +183,10 @@ npm run lab:masters:auto-play -- --player decoy --cpu decoy --seed-start 1400 --
 第四マスター候補は、相手の行動を止める旧タイミング型ではなく、自分の準備と配置を整えるテンポマスターを本命にする。
 
 - `docs/master_lab/results/2026-06-16_fourth_master_candidate_selection.md`
+- `docs/master_lab/results/2026-06-17_master_selection_loop_1.md`
+
+再実行:
+
+```bash
+npm run lab:masters:select -- --markdown docs/master_lab/results/YYYY-MM-DD_master_selection_loop_N.md
+```
