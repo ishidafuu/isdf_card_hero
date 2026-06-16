@@ -6,6 +6,7 @@ import {
   type CpuAiProfiles,
   type CpuDecision,
 } from "./cpuAi";
+import { getCardDef } from "./cards";
 import { buildDeckPresetCardIds, deckPresetAllowsSpecial, type DeckPresetId } from "./deckPresets";
 import {
   chooseMasterLabAction,
@@ -22,6 +23,13 @@ export type MasterLabParticipantId = MasterId | MasterLabCandidateId;
 export type MasterLabIssueKind = "exception" | "unresolved_level_up" | "stagnation" | "step_limit" | "turn_limit" | "long_game";
 export type MasterLabIssueSeverity = "failure" | "warning";
 export type MasterLabDecisionSource = "cpu" | "master_lab";
+
+export interface MasterLabMagicOpportunityOptions {
+  cardIds: readonly string[];
+  minScoreDelta?: number;
+  maxRecordsPerGame?: number;
+  candidateOnly?: boolean;
+}
 
 export interface MasterLabAutoPlayOptions {
   seedStart?: number;
@@ -41,15 +49,17 @@ export interface MasterLabAutoPlayOptions {
   labActionMargin?: number;
   labEvaluationTuning?: MasterLabEvaluationTuning;
   includeGameHistory?: boolean;
+  magicOpportunity?: MasterLabMagicOpportunityOptions;
 }
 
 type ResolvedMasterLabAutoPlayOptions = Required<
-  Omit<MasterLabAutoPlayOptions, "seedEnd" | "failOnWarnings" | "participants" | "aiProfiles">
+  Omit<MasterLabAutoPlayOptions, "seedEnd" | "failOnWarnings" | "participants" | "aiProfiles" | "magicOpportunity">
 > & {
   seedEnd: number;
   failOnWarnings: boolean;
   participants: Record<PlayerId, MasterLabParticipantId>;
   aiProfiles: CpuAiProfiles;
+  magicOpportunity: MasterLabMagicOpportunityOptions | undefined;
 };
 
 export interface MasterLabDecisionEvent {
@@ -106,6 +116,21 @@ export interface MasterLabIssue {
   history: MasterLabDecisionEvent[];
 }
 
+export interface MasterLabMagicOpportunityRecord {
+  seed: number;
+  step: number;
+  turnNumber: number;
+  player: PlayerId;
+  cardId: string;
+  lethal: boolean;
+  scoreDelta: number;
+  opportunityScore: number;
+  selectedScore: number;
+  targetKey: string;
+  selectedDecision: string;
+  opportunityReason: string;
+}
+
 export interface MasterLabGameResult {
   seed: number;
   steps: number;
@@ -116,6 +141,13 @@ export interface MasterLabGameResult {
   labDecisionCount: number;
   labActionUsage: Record<string, number>;
   labActionTargetUsage: Record<string, number>;
+  magicOpportunityCount: number;
+  magicOpportunityUsage: Record<string, number>;
+  magicOpportunityLethalUsage: Record<string, number>;
+  magicOpportunityDeltaTotal: Record<string, number>;
+  magicOpportunityNonLethalDeltaTotal: Record<string, number>;
+  magicOpportunityBestDelta: Record<string, number>;
+  magicOpportunityRecords: MasterLabMagicOpportunityRecord[];
   logTail?: string[];
   stateSummary?: MasterLabGameStateSummary;
   history?: MasterLabDecisionEvent[];
@@ -138,6 +170,12 @@ export interface MasterLabAutoPlayResult {
     labDecisionCount: number;
     labActionUsage: Record<string, number>;
     labActionTargetUsage: Record<string, number>;
+    magicOpportunityCount: number;
+    magicOpportunityUsage: Record<string, number>;
+    magicOpportunityLethalUsage: Record<string, number>;
+    magicOpportunityDeltaTotal: Record<string, number>;
+    magicOpportunityNonLethalDeltaTotal: Record<string, number>;
+    magicOpportunityBestDelta: Record<string, number>;
   };
 }
 
@@ -168,6 +206,7 @@ const DEFAULT_OPTIONS = {
   aiProfile: "stable" as const satisfies CpuAiProfile,
   labActionMargin: 0,
   labEvaluationTuning: {} satisfies MasterLabEvaluationTuning,
+  magicOpportunity: undefined as MasterLabMagicOpportunityOptions | undefined,
 };
 
 export function validateMasterLabAutoPlay(options: MasterLabAutoPlayOptions = {}): MasterLabAutoPlayResult {
@@ -211,6 +250,12 @@ export function validateMasterLabAutoPlay(options: MasterLabAutoPlayOptions = {}
       labDecisionCount: games.reduce((total, game) => total + game.labDecisionCount, 0),
       labActionUsage: mergeUsage(games.map((game) => game.labActionUsage)),
       labActionTargetUsage: mergeUsage(games.map((game) => game.labActionTargetUsage)),
+      magicOpportunityCount: games.reduce((total, game) => total + game.magicOpportunityCount, 0),
+      magicOpportunityUsage: mergeUsage(games.map((game) => game.magicOpportunityUsage)),
+      magicOpportunityLethalUsage: mergeUsage(games.map((game) => game.magicOpportunityLethalUsage)),
+      magicOpportunityDeltaTotal: mergeUsage(games.map((game) => game.magicOpportunityDeltaTotal)),
+      magicOpportunityNonLethalDeltaTotal: mergeUsage(games.map((game) => game.magicOpportunityNonLethalDeltaTotal)),
+      magicOpportunityBestDelta: mergeMaxUsage(games.map((game) => game.magicOpportunityBestDelta)),
     },
   };
 }
@@ -228,6 +273,7 @@ export function formatMasterLabAutoPlaySummary(result: MasterLabAutoPlayResult):
     `Master Lab decisions: ${result.summary.labDecisionCount}`,
     `Master Lab action usage: ${formatUsage(result.summary.labActionUsage)}`,
     `Master Lab target usage: ${formatUsage(result.summary.labActionTargetUsage)}`,
+    `Magic opportunities: ${result.summary.magicOpportunityCount}`,
     `Issues: ${result.summary.failures} failures, ${result.summary.warnings} warnings`,
   ];
 
@@ -275,6 +321,7 @@ function resolveOptions(options: MasterLabAutoPlayOptions): ResolvedMasterLabAut
     },
     labActionMargin: options.labActionMargin ?? DEFAULT_OPTIONS.labActionMargin,
     labEvaluationTuning: options.labEvaluationTuning ?? DEFAULT_OPTIONS.labEvaluationTuning,
+    magicOpportunity: options.magicOpportunity ?? DEFAULT_OPTIONS.magicOpportunity,
   };
 }
 
@@ -289,6 +336,13 @@ function runMasterLabAutoPlayGame(
   let step = 0;
   const labActionUsage: Record<string, number> = {};
   const labActionTargetUsage: Record<string, number> = {};
+  const magicOpportunityRecords: MasterLabMagicOpportunityRecord[] = [];
+  let magicOpportunityCount = 0;
+  const magicOpportunityUsage: Record<string, number> = {};
+  const magicOpportunityLethalUsage: Record<string, number> = {};
+  const magicOpportunityDeltaTotal: Record<string, number> = {};
+  const magicOpportunityNonLethalDeltaTotal: Record<string, number> = {};
+  const magicOpportunityBestDelta: Record<string, number> = {};
 
   try {
     for (; step < options.maxSteps && !game.winner; step += 1) {
@@ -306,6 +360,19 @@ function runMasterLabAutoPlayGame(
       } else {
         const transition = runMasterLabDecisionStep(game, step, context);
         game = transition.next;
+        for (const record of transition.magicOpportunityRecords) {
+          magicOpportunityCount += 1;
+          magicOpportunityUsage[record.cardId] = (magicOpportunityUsage[record.cardId] ?? 0) + 1;
+          if (record.lethal) {
+            magicOpportunityLethalUsage[record.cardId] = (magicOpportunityLethalUsage[record.cardId] ?? 0) + 1;
+          } else {
+            magicOpportunityNonLethalDeltaTotal[record.cardId] =
+              (magicOpportunityNonLethalDeltaTotal[record.cardId] ?? 0) + record.scoreDelta;
+          }
+          magicOpportunityDeltaTotal[record.cardId] = (magicOpportunityDeltaTotal[record.cardId] ?? 0) + record.scoreDelta;
+          magicOpportunityBestDelta[record.cardId] = Math.max(magicOpportunityBestDelta[record.cardId] ?? 0, record.scoreDelta);
+          magicOpportunityRecords.push(record);
+        }
         if (transition.source === "master_lab") {
           labActionUsage[transition.actionId] = (labActionUsage[transition.actionId] ?? 0) + 1;
           labActionTargetUsage[transition.targetUsageKey] = (labActionTargetUsage[transition.targetUsageKey] ?? 0) + 1;
@@ -334,6 +401,10 @@ function runMasterLabAutoPlayGame(
 
   const issueCount = context.issues.filter((issue) => issue.severity === "failure").length;
   const warningCount = context.issues.filter((issue) => issue.severity === "warning").length;
+  const maxOpportunityRecords = options.magicOpportunity?.maxRecordsPerGame ?? 40;
+  const sampledOpportunityRecords = [...magicOpportunityRecords]
+    .sort((a, b) => b.scoreDelta - a.scoreDelta || b.opportunityScore - a.opportunityScore)
+    .slice(0, maxOpportunityRecords);
 
   return {
     result: {
@@ -346,6 +417,13 @@ function runMasterLabAutoPlayGame(
       labDecisionCount: Object.values(labActionUsage).reduce((total, count) => total + count, 0),
       labActionUsage,
       labActionTargetUsage,
+      magicOpportunityCount,
+      magicOpportunityUsage,
+      magicOpportunityLethalUsage,
+      magicOpportunityDeltaTotal,
+      magicOpportunityNonLethalDeltaTotal,
+      magicOpportunityBestDelta,
+      magicOpportunityRecords: sampledOpportunityRecords,
       ...(options.includeGameHistory
         ? {
             logTail: game.log.slice(-20),
@@ -362,10 +440,17 @@ function runMasterLabDecisionStep(
   game: GameState,
   step: number,
   context: MasterLabRunContext,
-): { next: GameState; source: "cpu" } | { next: GameState; source: "master_lab"; actionId: string; targetUsageKey: string } {
+): (
+  { next: GameState; source: "cpu"; magicOpportunityRecords: MasterLabMagicOpportunityRecord[] } |
+  { next: GameState; source: "master_lab"; actionId: string; targetUsageKey: string; magicOpportunityRecords: MasterLabMagicOpportunityRecord[] }
+) {
   const selected = chooseMixedDecision(game, context.options);
   const beforeSummary = summarizeMasterLabGameState(game, context.options.participants);
   const logBefore = game.log;
+  const selectedDecision = selected.source === "master_lab"
+    ? `master_lab:${selected.evaluation.option.actionId}->${targetToKey(selected.evaluation.option.target)}`
+    : decisionToText(selected.decision);
+  const magicOpportunityRecords = inspectMagicOpportunityRecords(game, selected, selectedDecision, step, context);
   const next = selected.source === "master_lab"
     ? playMasterLabAction(game, selected.evaluation.option)
     : applyCpuDecision(game, selected.decision);
@@ -375,9 +460,7 @@ function runMasterLabDecisionStep(
     turnNumber: game.turnNumber,
     player: game.currentPlayer,
     source: selected.source,
-    decision: selected.source === "master_lab"
-      ? `master_lab:${selected.evaluation.option.actionId}->${targetToKey(selected.evaluation.option.target)}`
-      : decisionToText(selected.decision),
+    decision: selectedDecision,
     reason: selected.reason,
     score: selected.score,
     legalDecisionCount: selected.legalDecisionCount,
@@ -394,9 +477,94 @@ function runMasterLabDecisionStep(
       source: "master_lab",
       actionId: option.actionId,
       targetUsageKey: labActionTargetUsageKey(game, option.actionId, option.target),
+      magicOpportunityRecords,
     };
   }
-  return { next, source: "cpu" };
+  return { next, source: "cpu", magicOpportunityRecords };
+}
+
+function inspectMagicOpportunityRecords(
+  game: GameState,
+  selected: SelectedDecision,
+  selectedDecision: string,
+  step: number,
+  context: MasterLabRunContext,
+): MasterLabMagicOpportunityRecord[] {
+  const options = context.options.magicOpportunity;
+  if (!options || options.cardIds.length === 0 || game.winner || game.pendingLevelUp) {
+    return [];
+  }
+  if ((options.candidateOnly ?? true) && !isMasterLabCandidateId(context.options.participants[game.currentPlayer])) {
+    return [];
+  }
+
+  const minScoreDelta = options.minScoreDelta ?? 20;
+  const records: MasterLabMagicOpportunityRecord[] = [];
+  const selectedScore = selected.score;
+  const existingCardIds = new Set(game.players[game.currentPlayer].hand.map((card) => card.cardId));
+
+  for (const cardId of options.cardIds) {
+    if (existingCardIds.has(cardId)) {
+      continue;
+    }
+    const def = getCardDef(cardId);
+    if (def.type !== "magic" || game.players[game.currentPlayer].stones < def.cost) {
+      continue;
+    }
+
+    const handInstanceId = magicOpportunityHandInstanceId(cardId);
+    const virtual = structuredClone(game) as GameState;
+    virtual.players[virtual.currentPlayer].hand.push({ cardId, instanceId: handInstanceId });
+    const opportunity = inspectCpuDecisionEvaluations(virtual, { profiles: context.options.aiProfiles })
+      .filter((evaluation) =>
+        evaluation.decision.type === "magic" &&
+        evaluation.decision.action.handInstanceId === handInstanceId,
+      )
+      .sort((a, b) => b.totalScore - a.totalScore || a.index - b.index)[0];
+
+    if (!opportunity || opportunity.decision.type !== "magic") {
+      continue;
+    }
+    const scoreDelta = opportunity.totalScore - selectedScore;
+    if (scoreDelta < minScoreDelta) {
+      continue;
+    }
+    const lethal = opportunity.totalScore >= 1_000_000 || opportunity.decision.reason.includes("倒せる");
+    records.push({
+      seed: context.seed,
+      step,
+      turnNumber: game.turnNumber,
+      player: game.currentPlayer,
+      cardId,
+      lethal,
+      scoreDelta: round1(scoreDelta),
+      opportunityScore: round1(opportunity.totalScore),
+      selectedScore: round1(selectedScore),
+      targetKey: magicActionTargetKey(opportunity.decision.action),
+      selectedDecision,
+      opportunityReason: opportunity.decision.reason,
+    });
+  }
+
+  return records.sort((a, b) => b.scoreDelta - a.scoreDelta || b.opportunityScore - a.opportunityScore);
+}
+
+function magicOpportunityHandInstanceId(cardId: string): string {
+  return `__master_lab_magic_opportunity__${cardId}`;
+}
+
+function magicActionTargetKey(action: Extract<CpuDecision, { type: "magic" }>["action"]): string {
+  const parts = [targetToKey(action.target)];
+  if (action.secondaryTarget) {
+    parts.push(targetToKey(action.secondaryTarget));
+  }
+  if (action.secondaryHandInstanceId) {
+    parts.push(`hand:${action.secondaryHandInstanceId}`);
+  }
+  if (action.searchCategory) {
+    parts.push(`search:${action.searchCategory}`);
+  }
+  return parts.join("/");
 }
 
 function labActionTargetUsageKey(game: GameState, actionId: string, target: Target): string {
@@ -651,7 +819,21 @@ function mergeUsage(usages: Array<Record<string, number>>): Record<string, numbe
   return merged;
 }
 
+function mergeMaxUsage(usages: Array<Record<string, number>>): Record<string, number> {
+  const merged: Record<string, number> = {};
+  for (const usage of usages) {
+    for (const [actionId, value] of Object.entries(usage)) {
+      merged[actionId] = Math.max(merged[actionId] ?? 0, value);
+    }
+  }
+  return merged;
+}
+
 function formatUsage(usage: Record<string, number>): string {
   const entries = Object.entries(usage).sort(([a], [b]) => a.localeCompare(b));
   return entries.length > 0 ? entries.map(([actionId, count]) => `${actionId} ${count}`).join(", ") : "none";
+}
+
+function round1(value: number): number {
+  return Math.round(value * 10) / 10;
 }

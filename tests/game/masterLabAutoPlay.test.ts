@@ -43,4 +43,30 @@ describe("master lab auto play", () => {
     expect(result.ok).toBe(true);
     expect(result.summary.labDecisionCount).toBe(0);
   }, MASTER_LAB_AUTO_PLAY_TEST_TIMEOUT_MS);
+
+  it("can record virtual magic opportunities for lab participants", () => {
+    const result = validateMasterLabAutoPlay({
+      seedStart: 930,
+      count: 1,
+      deckPreset: "black-pressure",
+      participants: { player: "decoy", cpu: "black" },
+      labActionMargin: 12,
+      labEvaluationTuning: { targetOwnerBias: { enemy: 16 } },
+      magicOpportunity: {
+        cardIds: ["card_120"],
+        minScoreDelta: -1000,
+        maxRecordsPerGame: 5,
+      },
+      maxSteps: 700,
+      maxTurns: 160,
+    });
+
+    expect(result.ok).toBe(true);
+    expect(result.summary.magicOpportunityCount).toBeGreaterThanOrEqual(0);
+    expect(result.summary.magicOpportunityUsage).toBeDefined();
+    expect(result.games[0].magicOpportunityRecords.length).toBeLessThanOrEqual(5);
+
+    const summary = formatMasterLabAutoPlaySummary(result);
+    expect(summary).toContain("Magic opportunities:");
+  }, MASTER_LAB_AUTO_PLAY_TEST_TIMEOUT_MS);
 });
