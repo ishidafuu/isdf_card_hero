@@ -6,7 +6,7 @@ import type { PlayerId } from "./types";
 
 export type MasterLabImprovementJudgement = "advance" | "hold" | "reject";
 export type MasterLabImprovementDecision = "needs_full_gate" | "continue_deck_loop" | "pivot_to_action_design";
-export type MasterLabImprovementPlanId = "deck" | "mixed" | "scapegoat" | "magic_inclusion" | "unit_inclusion";
+export type MasterLabImprovementPlanId = "deck" | "mixed" | "scapegoat" | "magic_inclusion" | "unit_inclusion" | "unit_action";
 export type MasterLabImprovementExperimentKind = "deck" | "ai_eval" | "hybrid" | "warning_probe";
 
 export interface MasterLabImprovementLoopOptions extends Omit<MasterLabFinalGateOptions, "deckPreset"> {
@@ -107,6 +107,10 @@ const DEFAULT_MASTER_LAB_UNIT_INCLUSION_TUNING = {
   targetOwnerBias: { enemy: 16 },
 } satisfies MasterLabEvaluationTuning;
 const DEFAULT_MASTER_LAB_UNIT_INCLUSION_MARGIN = 12;
+const DEFAULT_MASTER_LAB_UNIT_ACTION_TUNING = {
+  targetOwnerBias: { enemy: 16 },
+} satisfies MasterLabEvaluationTuning;
+const DEFAULT_MASTER_LAB_UNIT_ACTION_MARGIN = 12;
 
 export const DEFAULT_MASTER_LAB_IMPROVEMENT_DECK_PRESETS = [
   "pressure-normal",
@@ -205,6 +209,25 @@ export const DEFAULT_MASTER_LAB_UNIT_INCLUSION_EXPERIMENTS = [
   unitInclusionExperiment("unit_front_growth", "投入: 前衛育成", "master-lab-decoy-unit-front-growth", "ダイン、ホロウダイン、ナッツロックルを増やし、守った駒を制圧役に変えられるか見る。"),
   unitInclusionExperiment("unit_back_stable", "投入: 後衛安定", "master-lab-decoy-unit-back-stable", "フーヨウ、ラティーヌ、バルキャノンを増やし、守る価値の高い後衛が勝率へ出るか見る。"),
   unitInclusionExperiment("unit_back_pressure", "投入: 後衛圧力", "master-lab-decoy-unit-back-pressure", "バルキャノン、ビヨンド、ゼックを増やし、敵主力を後衛から削るテンポが黒速攻へ間に合うか見る。"),
+] as const satisfies readonly MasterLabImprovementExperiment[];
+
+export const DEFAULT_MASTER_LAB_UNIT_ACTION_EXPERIMENTS = [
+  unitActionExperiment("unit_action_stable_baseline", "基準: 後衛安定", "master-lab-decoy-unit-back-stable", undefined, "前回最上位。後衛安定型を特技評価ループの基準として再確認する。"),
+  unitActionExperiment("unit_action_pressure_baseline", "基準: 後衛圧力", "master-lab-decoy-unit-back-pressure", undefined, "黒相手の惜敗寄り候補。後衛圧力型を黒対策の基準として再確認する。"),
+  unitActionExperiment("unit_action_stable_provoke8", "挑発+8: 後衛安定", "master-lab-decoy-unit-back-stable", { actionBias: { provoke: 8 } }, "挑発を軽く増やし、白相手の安定を壊さず黒の打点を曲げられるか見る。"),
+  unitActionExperiment("unit_action_stable_provoke16", "挑発+16: 後衛安定", "master-lab-decoy-unit-back-stable", { actionBias: { provoke: 16 } }, "後衛安定型で挑発を明確に増やし、スケープゴート偏重を緩める。"),
+  unitActionExperiment("unit_action_stable_provoke24", "挑発+24: 後衛安定", "master-lab-decoy-unit-back-stable", { actionBias: { provoke: 24 } }, "後衛安定型で挑発を強めすぎた場合の白相手崩れを確認する。"),
+  unitActionExperiment("unit_action_pressure_provoke8", "挑発+8: 後衛圧力", "master-lab-decoy-unit-back-pressure", { actionBias: { provoke: 8 } }, "黒相手の惜敗を、軽い挑発補正だけで勝ちに変えられるか見る。"),
+  unitActionExperiment("unit_action_pressure_provoke16", "挑発+16: 後衛圧力", "master-lab-decoy-unit-back-pressure", { actionBias: { provoke: 16 } }, "後衛圧力型で挑発を明確に増やし、バーサク突撃の当たり先を曲げる。"),
+  unitActionExperiment("unit_action_pressure_provoke24", "挑発+24: 後衛圧力", "master-lab-decoy-unit-back-pressure", { actionBias: { provoke: 24 } }, "後衛圧力型で挑発を強め、黒相手の上限と副作用を測る。"),
+  unitActionExperiment("unit_action_stable_scapegoat_minus8", "スケープゴート-8: 後衛安定", "master-lab-decoy-unit-back-stable", { actionBias: { scapegoat: -8 } }, "後衛安定型のスケープゴート過多を少し抑え、挑発や通常手へ余地を作る。"),
+  unitActionExperiment("unit_action_stable_scapegoat_minus16", "スケープゴート-16: 後衛安定", "master-lab-decoy-unit-back-stable", { actionBias: { scapegoat: -16 } }, "後衛安定型で守りすぎを強く抑えた時の勝率低下を測る。"),
+  unitActionExperiment("unit_action_pressure_scapegoat_minus8", "スケープゴート-8: 後衛圧力", "master-lab-decoy-unit-back-pressure", { actionBias: { scapegoat: -8 } }, "後衛圧力型でスケープゴート偏重を少し落とし、攻撃参加を増やす。"),
+  unitActionExperiment("unit_action_pressure_scapegoat_minus16", "スケープゴート-16: 後衛圧力", "master-lab-decoy-unit-back-pressure", { actionBias: { scapegoat: -16 } }, "後衛圧力型で守りすぎを強く抑え、黒相手の速さへ寄せる。"),
+  unitActionExperiment("unit_action_stable_provoke16_scapegoat_minus8", "混合: 後衛安定 / 挑発+16 / スケープゴート-8", "master-lab-decoy-unit-back-stable", { actionBias: { provoke: 16, scapegoat: -8 } }, "挑発を増やしつつスケープゴートを少し抑え、守るだけの挙動から外す。"),
+  unitActionExperiment("unit_action_pressure_provoke16_scapegoat_minus8", "混合: 後衛圧力 / 挑発+16 / スケープゴート-8", "master-lab-decoy-unit-back-pressure", { actionBias: { provoke: 16, scapegoat: -8 } }, "後衛圧力型で攻撃誘導と守り過多抑制を同時に試す。"),
+  unitActionExperiment("unit_action_stable_provoke16_margin16", "混合: 後衛安定 / 挑発+16 / margin+16", "master-lab-decoy-unit-back-stable", { actionBias: { provoke: 16 } }, "挑発を増やしながら特技採用をさらに慎重にし、無駄撃ちを減らす。", 16),
+  unitActionExperiment("unit_action_pressure_provoke16_margin16", "混合: 後衛圧力 / 挑発+16 / margin+16", "master-lab-decoy-unit-back-pressure", { actionBias: { provoke: 16 } }, "後衛圧力型で挑発を増やしつつ、通常手を上回る時だけ特技を使わせる。", 16),
 ] as const satisfies readonly MasterLabImprovementExperiment[];
 
 export function runMasterLabImprovementLoop(
@@ -365,7 +388,7 @@ function formatSummaryBullets(report: MasterLabImprovementLoopReport): string[] 
     `基準にした \`${report.baseline.experimentId}\` は overall ${formatPercent(report.baseline.metrics.decoyWinRate)}、vs Black ${formatPercent(report.baseline.metrics.blackWinRate)}。差分は black ${formatSignedPercent(report.best.metrics.blackWinRate - report.baseline.metrics.blackWinRate)}、overall ${formatSignedPercent(report.best.metrics.decoyWinRate - report.baseline.metrics.decoyWinRate)}。`,
     stableBlackCandidates.length > 0
       ? `vs Black 50%以上かつ warning 1件以下の候補は ${stableBlackCandidates.length} 件。横展開より、上位候補の中母数再検証に進む段階。`
-      : "vs Black 50%以上かつ warning 1件以下の候補は 0 件。ユニット差し替え単体では不足しているため、次は上位デッキを固定して特技評価補正を比較する段階。",
+      : "vs Black 50%以上かつ warning 1件以下の候補は 0 件。全体勝率は伸びても黒対策としては未達のため、次は上位条件を中母数で再確認しつつ黒相手の負け方を分類する段階。",
   ];
 
   if (highRateWarning) {
@@ -451,6 +474,25 @@ function unitInclusionExperiment(
   };
 }
 
+function unitActionExperiment(
+  id: string,
+  label: string,
+  deckPreset: DeckPresetId,
+  labEvaluationTuning: MasterLabEvaluationTuning | undefined,
+  hypothesis: string,
+  labActionMargin = DEFAULT_MASTER_LAB_UNIT_ACTION_MARGIN,
+): MasterLabImprovementExperiment {
+  return {
+    id,
+    kind: "ai_eval",
+    label,
+    deckPreset,
+    hypothesis,
+    labActionMargin,
+    labEvaluationTuning: mergeMasterLabEvaluationTuning(DEFAULT_MASTER_LAB_UNIT_ACTION_TUNING, labEvaluationTuning),
+  };
+}
+
 function aiExperiment(
   id: string,
   label: string,
@@ -533,7 +575,30 @@ function selectExperimentSource(options: {
   if (options.plan === "unit_inclusion") {
     return DEFAULT_MASTER_LAB_UNIT_INCLUSION_EXPERIMENTS;
   }
+  if (options.plan === "unit_action") {
+    return DEFAULT_MASTER_LAB_UNIT_ACTION_EXPERIMENTS;
+  }
   return DEFAULT_MASTER_LAB_MIXED_IMPROVEMENT_EXPERIMENTS;
+}
+
+function mergeMasterLabEvaluationTuning(
+  base: MasterLabEvaluationTuning,
+  override: MasterLabEvaluationTuning | undefined,
+): MasterLabEvaluationTuning {
+  if (!override) {
+    return base;
+  }
+  return {
+    ...(base.actionBias || override.actionBias
+      ? { actionBias: { ...base.actionBias, ...override.actionBias } }
+      : {}),
+    ...(base.actionMultiplier || override.actionMultiplier
+      ? { actionMultiplier: { ...base.actionMultiplier, ...override.actionMultiplier } }
+      : {}),
+    ...(base.targetOwnerBias || override.targetOwnerBias
+      ? { targetOwnerBias: { ...base.targetOwnerBias, ...override.targetOwnerBias } }
+      : {}),
+  };
 }
 
 function summarizeImprovementMetrics(
@@ -782,17 +847,27 @@ function buildConclusion(
 
   return {
     decision: "continue_deck_loop",
-    summary: "明確な採用候補はまだ本検証待ちだが、デッキ側の差は出ている。候補を絞り、同系統の微調整を続ける価値がある。",
+    summary: stableTopCount > 0
+      ? "明確な採用候補はまだ本検証待ちだが、候補間の差は出ている。候補を絞り、同系統の微調整を続ける価値がある。"
+      : "全体勝率は伸びたが、黒相手の採用ラインはまだ未達。候補を上位条件に絞り、黒相手の再現性を確認する段階。",
     reasons: [
       `${best.experimentId}: ${best.deckPreset} / overall ${formatPercent(best.metrics.decoyWinRate)} / vs Black ${formatPercent(best.metrics.blackWinRate)}`,
       `baselineとの差分は black ${formatSignedPercent(blackGain)}, overall ${formatSignedPercent(overallGain)}`,
-      `vs Black 50%以上の安定候補が ${stableTopCount} 件ある`,
+      stableTopCount > 0
+        ? `vs Black 50%以上の安定候補が ${stableTopCount} 件ある`
+        : "vs Black 50%以上の安定候補は 0 件",
     ],
-    nextSteps: [
-      "上位3候補だけ games-per-matchup 20-30 で中間検証する。",
-      "共通カードを抽出して、デコイ向けの小さな固定デッキ候補を作る。",
-      "伸びが鈍れば、特技評価パラメータ比較へ切り替える。",
-    ],
+    nextSteps: stableTopCount > 0
+      ? [
+        "上位3候補だけ games-per-matchup 20-30 で中間検証する。",
+        "共通カードを抽出して、デコイ向けの小さな固定デッキ候補を作る。",
+        "伸びが鈍れば、特技評価パラメータ比較へ切り替える。",
+      ]
+      : [
+        "上位3条件だけ games-per-matchup 30-50 で中間検証する。",
+        "黒相手の負けログを見て、挑発が遅いのか、守る対象が悪いのか、後衛打点が足りないのかを分類する。",
+        "中母数でも vs Black 50%未満なら、特技評価の微調整より新特技設計へ切り替える。",
+      ],
   };
 }
 

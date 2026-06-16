@@ -99,4 +99,27 @@ describe("master lab improvement loop", () => {
     expect(markdown).toContain("投入: 前衛耐久");
     expect(markdown).toContain("target enemy +16");
   }, MASTER_LAB_IMPROVEMENT_LOOP_TEST_TIMEOUT_MS);
+
+  it("runs the unit action plan with backline deck variants", () => {
+    const report = runMasterLabImprovementLoop({
+      candidateId: "decoy",
+      plan: "unit_action",
+      loopCount: 4,
+      gamesPerMatchup: 1,
+      maxSteps: 700,
+      maxTurns: 160,
+    });
+
+    expect(report.entries).toHaveLength(4);
+    expect(report.entries[0].experimentId).toBe("unit_action_stable_baseline");
+    expect(report.entries[0].deckPreset).toBe("master-lab-decoy-unit-back-stable");
+    expect(report.entries[0].labActionMargin).toBe(12);
+    expect(report.entries[0].labEvaluationTuning?.targetOwnerBias?.enemy).toBe(16);
+    expect(report.entries[1].deckPreset).toBe("master-lab-decoy-unit-back-pressure");
+    expect(report.entries[3].labEvaluationTuning?.actionBias?.provoke).toBe(16);
+
+    const markdown = formatMasterLabImprovementLoopMarkdown(report);
+    expect(markdown).toContain("挑発+16");
+    expect(markdown).toContain("target enemy +16");
+  }, MASTER_LAB_IMPROVEMENT_LOOP_TEST_TIMEOUT_MS);
 });
