@@ -4,7 +4,9 @@ import { DECK_PRESET_IDS, type DeckPresetId } from "../src/game/deckPresets";
 import {
   DEFAULT_MASTER_LAB_MAGIC_OPPORTUNITY_CARDS,
   formatMasterLabMagicOpportunityMarkdown,
+  getMasterLabMagicOpportunityCardIds,
   runMasterLabMagicOpportunityReport,
+  type MasterLabMagicOpportunityCandidateSet,
   type MasterLabMagicOpportunityOptions,
 } from "../src/game/masterLabMagicOpportunity";
 import type { MasterLabCandidateId } from "../src/game/masterLab";
@@ -72,6 +74,16 @@ function parseArgs(args: string[]): CliOptions {
       i += 1;
     } else if (arg === "--default-cards") {
       parsed.cardIds = DEFAULT_MASTER_LAB_MAGIC_OPPORTUNITY_CARDS;
+    } else if (arg === "--candidate-set") {
+      parsed.candidateSet = readCandidateSet(arg, next);
+      parsed.cardIds = undefined;
+      i += 1;
+    } else if (arg === "--all-implemented-magic") {
+      parsed.candidateSet = "implemented";
+      parsed.cardIds = undefined;
+    } else if (arg === "--non-finisher-magic") {
+      parsed.candidateSet = "non_finisher";
+      parsed.cardIds = undefined;
     } else if (arg === "--min-score-delta") {
       parsed.minScoreDelta = readNumber(arg, next);
       i += 1;
@@ -147,11 +159,24 @@ Options:
   --games-per-matchup <n>       Games per final-gate matchup. Default: 5
   --card <id>                   Add a magic card candidate. Can be repeated.
   --default-cards               Use the default opportunity candidate set.
+  --candidate-set <set>          Candidate set. Values: default, implemented, non_finisher
+  --all-implemented-magic        Alias for --candidate-set implemented
+  --non-finisher-magic           Alias for --candidate-set non_finisher
   --min-score-delta <n>         Minimum score gain over selected action. Default: 25
   --max-records-per-game <n>    Stored sample records per game. Default: 30
   --max-steps <n>               Failure threshold per game. Default: 700
   --max-turns <n>               Failure threshold per game. Default: 160
   --markdown <path>             Write a Markdown report.
   --json <path>                 Write a JSON report.
+
+Implemented magic cards: ${getMasterLabMagicOpportunityCardIds("implemented").length}
 `);
+}
+
+function readCandidateSet(name: string, value: string | undefined): MasterLabMagicOpportunityCandidateSet {
+  const text = readString(name, value);
+  if (text === "default" || text === "implemented" || text === "non_finisher") {
+    return text;
+  }
+  throw new Error(`${name} must be one of: default, implemented, non_finisher`);
 }

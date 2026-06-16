@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import {
   formatMasterLabMagicOpportunityMarkdown,
+  getMasterLabMagicOpportunityCardIds,
   runMasterLabMagicOpportunityReport,
 } from "../../src/game/masterLabMagicOpportunity";
 
@@ -21,14 +22,32 @@ describe("master lab magic opportunity", () => {
 
     expect(report.runs).toHaveLength(5);
     expect(report.totalGames).toBe(5);
+    expect(report.candidateSet).toBe("custom");
     expect(report.cardStats.map((stats) => stats.cardId).sort()).toEqual(["card_029", "card_120"]);
+    expect(report.roleStats.length).toBeGreaterThan(0);
     expect(report.topRecords.length).toBeLessThanOrEqual(15);
+    expect(report.topNonLethalRecords.length).toBeLessThanOrEqual(15);
 
     const markdown = formatMasterLabMagicOpportunityMarkdown(report);
     expect(markdown).toContain("# Master Lab Magic Opportunity: decoy");
+    expect(markdown).toContain("候補セット: `custom`");
+    expect(markdown).toContain("## Role Summary");
     expect(markdown).toContain("## Card Ranking");
+    expect(markdown).toContain("## Top Non-Lethal Opportunity Records");
     expect(markdown).toContain("ドロー５");
     expect(markdown).toContain("悪魔のダンス");
     expect(markdown).toContain("## Next Loop Proposal");
   }, MASTER_LAB_MAGIC_OPPORTUNITY_TEST_TIMEOUT_MS);
+
+  it("can expand candidates to every implemented normal magic card", () => {
+    const defaultCards = getMasterLabMagicOpportunityCardIds("default");
+    const implementedCards = getMasterLabMagicOpportunityCardIds("implemented");
+    const nonFinisherCards = getMasterLabMagicOpportunityCardIds("non_finisher");
+
+    expect(implementedCards.length).toBeGreaterThan(defaultCards.length);
+    expect(implementedCards).toContain("thunder");
+    expect(implementedCards).toContain("card_128");
+    expect(nonFinisherCards.length).toBe(implementedCards.length - 1);
+    expect(nonFinisherCards).not.toContain("thunder");
+  });
 });

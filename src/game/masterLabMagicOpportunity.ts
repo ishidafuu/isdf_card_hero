@@ -1,12 +1,17 @@
-import { getCardDef, getCardName } from "./cards";
+import { getCardDef, getCardDefsByPool, getCardName } from "./cards";
+import { getMagicAiTrait } from "./aiTraits";
 import { getDeckPreset, type DeckPresetId } from "./deckPresets";
 import { buildMasterLabFinalGateMatchups, type MasterLabFinalGateMatchup } from "./masterLabFinalGate";
 import { validateMasterLabAutoPlay, type MasterLabAutoPlayOptions, type MasterLabAutoPlayResult, type MasterLabMagicOpportunityRecord } from "./masterLabAutoPlay";
 import type { MasterLabCandidateId, MasterLabEvaluationTuning } from "./masterLab";
 
+export type MasterLabMagicOpportunityCandidateSet = "default" | "implemented" | "non_finisher";
+export type MasterLabMagicOpportunityResolvedCandidateSet = MasterLabMagicOpportunityCandidateSet | "custom";
+
 export interface MasterLabMagicOpportunityOptions extends Omit<MasterLabAutoPlayOptions, "participants" | "seedStart" | "count" | "seedEnd" | "deckPreset" | "magicOpportunity"> {
   candidateId?: MasterLabCandidateId;
   deckPreset?: DeckPresetId;
+  candidateSet?: MasterLabMagicOpportunityCandidateSet;
   gamesPerMatchup?: number;
   cardIds?: readonly string[];
   minScoreDelta?: number;
@@ -31,11 +36,22 @@ export interface MasterLabMagicOpportunityCardStats {
   recommendation: "main_candidate" | "finisher_candidate" | "tech_candidate" | "watch" | "low_signal";
 }
 
+export interface MasterLabMagicOpportunityRoleStats {
+  role: string;
+  cardCount: number;
+  count: number;
+  lethalCount: number;
+  nonLethalCount: number;
+  averageNonLethalDelta: number;
+  topCards: readonly MasterLabMagicOpportunityCardStats[];
+}
+
 export interface MasterLabMagicOpportunityReport {
   generatedAt: string;
   candidateId: MasterLabCandidateId;
   deckPreset: DeckPresetId;
   deckName: string;
+  candidateSet: MasterLabMagicOpportunityResolvedCandidateSet;
   gamesPerMatchup: number;
   cardIds: readonly string[];
   minScoreDelta: number;
@@ -45,7 +61,9 @@ export interface MasterLabMagicOpportunityReport {
   warnings: number;
   totalOpportunities: number;
   cardStats: MasterLabMagicOpportunityCardStats[];
+  roleStats: MasterLabMagicOpportunityRoleStats[];
   topRecords: MasterLabMagicOpportunityRecord[];
+  topNonLethalRecords: MasterLabMagicOpportunityRecord[];
 }
 
 export const DEFAULT_MASTER_LAB_MAGIC_OPPORTUNITY_CARDS = [
@@ -71,13 +89,33 @@ const DEFAULT_LAB_EVALUATION_TUNING = {
   targetOwnerBias: { enemy: 16 },
 } satisfies MasterLabEvaluationTuning;
 
+export function getMasterLabMagicOpportunityCardIds(
+  candidateSet: MasterLabMagicOpportunityCandidateSet = "default",
+): string[] {
+  if (candidateSet === "default") {
+    return [...DEFAULT_MASTER_LAB_MAGIC_OPPORTUNITY_CARDS];
+  }
+
+  const implemented = getCardDefsByPool("normal")
+    .filter((def) => def.type === "magic" && def.implemented)
+    .sort((a, b) => (a.sourceNo ?? Number.MAX_SAFE_INTEGER) - (b.sourceNo ?? Number.MAX_SAFE_INTEGER) || a.name.localeCompare(b.name))
+    .map((def) => def.id);
+
+  if (candidateSet === "non_finisher") {
+    return implemented.filter((cardId) => !isDirectMasterFinisherCard(cardId));
+  }
+  return implemented;
+}
+
 export function runMasterLabMagicOpportunityReport(
   options: MasterLabMagicOpportunityOptions = {},
 ): MasterLabMagicOpportunityReport {
   const candidateId = options.candidateId ?? DEFAULT_CANDIDATE_ID;
   const deckPreset = options.deckPreset ?? DEFAULT_DECK_PRESET;
   const gamesPerMatchup = options.gamesPerMatchup ?? DEFAULT_GAMES_PER_MATCHUP;
-  const cardIds = options.cardIds ?? DEFAULT_MASTER_LAB_MAGIC_OPPORTUNITY_CARDS;
+  const requestedCandidateSet = options.candidateSet ?? "default";
+  const candidateSet: MasterLabMagicOpportunityResolvedCandidateSet = options.cardIds ? "custom" : requestedCandidateSet;
+  const cardIds = options.cardIds ?? getMasterLabMagicOpportunityCardIds(requestedCandidateSet);
   const minScoreDelta = options.minScoreDelta ?? DEFAULT_MIN_SCORE_DELTA;
   const maxRecordsPerGame = options.maxRecordsPerGame ?? DEFAULT_MAX_RECORDS_PER_GAME;
 
@@ -109,17 +147,24 @@ export function runMasterLabMagicOpportunityReport(
   const deltaTotal = mergeUsage(runs.map((run) => run.result.summary.magicOpportunityDeltaTotal));
   const nonLethalDeltaTotal = mergeUsage(runs.map((run) => run.result.summary.magicOpportunityNonLethalDeltaTotal));
   const bestDelta = mergeMaxUsage(runs.map((run) => run.result.summary.magicOpportunityBestDelta));
-  const topRecords = runs
-    .flatMap((run) => run.result.games.flatMap((game) => game.magicOpportunityRecords))
+  const allRecords = runs
+    .flatMap((run) => run.result.games.flatMap((game) => game.magicOpportunityRecords));
+  const topRecords = allRecords
+    .sort((a, b) => b.scoreDelta - a.scoreDelta || b.opportunityScore - a.opportunityScore)
+    .slice(0, 20);
+  const topNonLethalRecords = allRecords
+    .filter((record) => !record.lethal)
     .sort((a, b) => b.scoreDelta - a.scoreDelta || b.opportunityScore - a.opportunityScore)
     .slice(0, 20);
   const deck = getDeckPreset(deckPreset);
+  const cardStats = buildCardStats(cardIds, usage, lethalUsage, deltaTotal, nonLethalDeltaTotal, bestDelta, totalGames);
 
   return {
     generatedAt: new Date().toISOString(),
     candidateId,
     deckPreset,
     deckName: deck.name,
+    candidateSet,
     gamesPerMatchup,
     cardIds,
     minScoreDelta,
@@ -128,8 +173,10 @@ export function runMasterLabMagicOpportunityReport(
     failures,
     warnings,
     totalOpportunities,
-    cardStats: buildCardStats(cardIds, usage, lethalUsage, deltaTotal, nonLethalDeltaTotal, bestDelta, totalGames),
+    cardStats,
+    roleStats: buildRoleStats(cardStats),
     topRecords,
+    topNonLethalRecords,
   };
 }
 
@@ -139,6 +186,7 @@ export function formatMasterLabMagicOpportunityMarkdown(report: MasterLabMagicOp
     "",
     `生成: ${report.generatedAt}`,
     `デッキ: \`${report.deckPreset}\`（${report.deckName}）`,
+    `候補セット: \`${report.candidateSet}\`（${report.cardIds.length} cards）`,
     `試行: ${report.gamesPerMatchup} games/matchup（5 matchups）`,
     `閾値: 実選択より +${report.minScoreDelta} 点以上`,
     "",
@@ -149,6 +197,12 @@ export function formatMasterLabMagicOpportunityMarkdown(report: MasterLabMagicOp
     `- 主候補: ${formatRecommendedCards(report.cardStats, "main_candidate")}`,
     `- 勝ち切り候補: ${formatRecommendedCards(report.cardStats, "finisher_candidate")}`,
     `- 1枚差し候補: ${formatRecommendedCards(report.cardStats, "tech_candidate")}`,
+    "",
+    "## Role Summary",
+    "",
+    "| Role | Cards | Count | Lethal | Non-Lethal Avg | Top Cards | Reading |",
+    "| --- | ---: | ---: | ---: | ---: | --- | --- |",
+    ...report.roleStats.map(formatRoleStatsRow),
     "",
     "## Card Ranking",
     "",
@@ -168,6 +222,12 @@ export function formatMasterLabMagicOpportunityMarkdown(report: MasterLabMagicOp
     "| ---: | ---: | ---: | --- | --- | --- | ---: | --- | --- | --- |",
     ...report.topRecords.map((record, index) => formatRecordRow(record, index + 1)),
     "",
+    "## Top Non-Lethal Opportunity Records",
+    "",
+    "| Rank | Seed | Turn | Player | Card | Delta | Target | Selected | Reason |",
+    "| ---: | ---: | ---: | --- | --- | ---: | --- | --- | --- |",
+    ...report.topNonLethalRecords.map((record, index) => formatNonLethalRecordRow(record, index + 1)),
+    "",
     "## Next Loop Proposal",
     "",
     ...formatNextLoopProposal(report),
@@ -176,6 +236,7 @@ export function formatMasterLabMagicOpportunityMarkdown(report: MasterLabMagicOp
     "",
     "- count が高いカードは、複数seedで実選択より良い可能性が出たカード。",
     "- lethal は、そのマジックで相手マスターを倒せる勝ち切り機会。汎用性とは分けて読む。",
+    "- role summary は、サンダーのようなピーキーな勝ち切り札でランキングが埋まるのを避け、役割ごとの候補を拾うために見る。",
     "- best delta だけが高いカードは、汎用枠ではなく1枚差しの奇襲/回答札として見る。",
     "- このレポートは勝率検証ではなく、次にデッキへ入れて試す候補を絞るための前段。",
   ].join("\n");
@@ -208,7 +269,7 @@ function buildCardStats(
         averageDelta,
         averageNonLethalDelta,
         bestDelta: best,
-        recommendation: recommendCard(count, lethalCount, nonLethalCount, averageNonLethalDelta, best, totalGames),
+        recommendation: recommendCard(cardId, count, lethalCount, nonLethalCount, averageNonLethalDelta, best, totalGames),
       };
     })
     .sort((a, b) =>
@@ -221,6 +282,7 @@ function buildCardStats(
 }
 
 function recommendCard(
+  cardId: string,
   count: number,
   lethalCount: number,
   nonLethalCount: number,
@@ -228,6 +290,9 @@ function recommendCard(
   bestDelta: number,
   totalGames: number,
 ): MasterLabMagicOpportunityCardStats["recommendation"] {
+  if (isDirectMasterFinisherCard(cardId) && (lethalCount > 0 || count >= 2)) {
+    return "finisher_candidate";
+  }
   if (nonLethalCount >= Math.max(3, Math.ceil(totalGames * 0.12)) && averageNonLethalDelta >= 35) {
     return "main_candidate";
   }
@@ -260,26 +325,71 @@ function recommendationRank(recommendation: MasterLabMagicOpportunityCardStats["
 }
 
 function magicOpportunityRole(cardId: string): string {
-  if (cardId === "card_120") {
-    return "draw";
+  if (isDirectMasterFinisherCard(cardId)) {
+    return "finisher";
   }
-  if (cardId === "card_130" || cardId === "healing") {
+  const trait = getMagicAiTrait(cardId);
+  if (!trait) {
+    return "utility";
+  }
+  if (trait.effectKind === "damage") {
+    return "removal";
+  }
+  if (trait.effectKind === "buff" && (trait.intents.includes("lethal") || trait.intents.includes("kill"))) {
+    return "burst";
+  }
+  if (trait.effectKind === "heal" || trait.effectKind === "transform") {
     return "recovery";
   }
-  if (cardId === "card_093" || cardId === "card_117") {
+  if (trait.effectKind === "draw" || trait.effectKind === "search" || trait.effectKind === "refresh" || trait.intents.includes("resource") || trait.intents.includes("consistency")) {
+    return "resource";
+  }
+  if (trait.effectKind === "move" || trait.effectKind === "wake" || trait.intents.includes("position") || trait.intents.includes("tempo")) {
     return "tempo";
   }
-  if (cardId === "card_029" || cardId === "card_113" || cardId === "card_064") {
-    return "interference";
-  }
-  if (cardId === "card_030" || cardId === "card_088") {
+  if (trait.effectKind === "shield" || trait.intents.includes("protect")) {
     return "shield";
   }
-  const def = getCardDef(cardId);
-  if (def.type === "magic" && def.targetKinds.includes("enemy_master")) {
-    return "damage";
+  if (trait.effectKind === "level" || trait.effectKind === "buff" || trait.intents.includes("setup")) {
+    return "setup";
+  }
+  if (trait.effectKind === "debuff" || trait.effectKind === "control" || trait.effectKind === "clear" || trait.intents.includes("disrupt")) {
+    return "interference";
   }
   return "utility";
+}
+
+function isDirectMasterFinisherCard(cardId: string): boolean {
+  const def = getCardDef(cardId);
+  return def.type === "magic" && def.targetKinds.includes("enemy_master");
+}
+
+function buildRoleStats(cardStats: readonly MasterLabMagicOpportunityCardStats[]): MasterLabMagicOpportunityRoleStats[] {
+  const byRole = new Map<string, MasterLabMagicOpportunityCardStats[]>();
+  for (const stats of cardStats) {
+    byRole.set(stats.role, [...(byRole.get(stats.role) ?? []), stats]);
+  }
+
+  return Array.from(byRole.entries())
+    .map(([role, cards]) => {
+      const count = cards.reduce((total, card) => total + card.count, 0);
+      const lethalCount = cards.reduce((total, card) => total + card.lethalCount, 0);
+      const nonLethalCount = cards.reduce((total, card) => total + card.nonLethalCount, 0);
+      const nonLethalDelta = cards.reduce((total, card) => total + card.averageNonLethalDelta * card.nonLethalCount, 0);
+      return {
+        role,
+        cardCount: cards.length,
+        count,
+        lethalCount,
+        nonLethalCount,
+        averageNonLethalDelta: nonLethalCount > 0 ? round1(nonLethalDelta / nonLethalCount) : 0,
+        topCards: cards
+          .filter((card) => card.count > 0)
+          .sort((a, b) => b.count - a.count || b.averageNonLethalDelta - a.averageNonLethalDelta || b.bestDelta - a.bestDelta)
+          .slice(0, 3),
+      };
+    })
+    .sort((a, b) => b.count - a.count || b.averageNonLethalDelta - a.averageNonLethalDelta || a.role.localeCompare(b.role));
 }
 
 function formatRecommendedCards(
@@ -291,6 +401,37 @@ function formatRecommendedCards(
     .slice(0, 4)
     .map((item) => `\`${item.cardName}\` (${item.count}件, lethal ${item.lethalCount}, non-lethal avg +${item.averageNonLethalDelta})`);
   return selected.length > 0 ? selected.join(" / ") : "なし";
+}
+
+function formatRoleStatsRow(stats: MasterLabMagicOpportunityRoleStats): string {
+  return [
+    stats.role,
+    stats.cardCount,
+    stats.count,
+    stats.lethalCount,
+    stats.averageNonLethalDelta,
+    stats.topCards.map((card) => `${card.cardName} ${card.count}`).join("<br>") || "-",
+    escapeMarkdownTableCell(roleReading(stats)),
+  ].join(" | ").replace(/^/, "| ").replace(/$/, " |");
+}
+
+function roleReading(stats: MasterLabMagicOpportunityRoleStats): string {
+  if (stats.count === 0) {
+    return "今回の盤面では出番なし。";
+  }
+  if (stats.role === "finisher") {
+    return "勝ち切り力を見る枠。汎用性とは分けて扱う。";
+  }
+  if (stats.role === "burst") {
+    return "火力増幅枠。サンダー同様にピーキーなので安定枠とは分ける。";
+  }
+  if (stats.nonLethalCount >= stats.cardCount && stats.averageNonLethalDelta >= 50) {
+    return "役割単位で再現性あり。デッキ採用テストへ進める。";
+  }
+  if (stats.topCards.length > 0) {
+    return "役割内の上位だけを1枚差しで試す。";
+  }
+  return "候補はあるが優先度は低い。";
 }
 
 function formatCardStatsRow(
@@ -317,7 +458,7 @@ function cardReading(stats: MasterLabMagicOpportunityCardStats, totalGames: numb
     return `${totalGames}戦中${stats.nonLethalCount}件で非リーサル改善。まず1-2枚入れて勝率検証する。`;
   }
   if (stats.recommendation === "finisher_candidate") {
-    return `${stats.lethalCount}件の勝ち切り機会。汎用枠ではなく詰め札として1枚から見る。`;
+    return `${stats.lethalCount}件の勝ち切り機会。評価値が跳ねやすいので詰め札として別枠で見る。`;
   }
   if (stats.recommendation === "tech_candidate") {
     return "頻度は限定的だが、最大値がある。1枚差し候補。";
@@ -359,11 +500,26 @@ function formatRecordRow(record: MasterLabMagicOpportunityRecord, rank: number):
   ].join(" | ").replace(/^/, "| ").replace(/$/, " |");
 }
 
+function formatNonLethalRecordRow(record: MasterLabMagicOpportunityRecord, rank: number): string {
+  return [
+    rank,
+    record.seed,
+    record.turnNumber,
+    record.player,
+    `\`${getCardName(record.cardId)}\``,
+    record.scoreDelta,
+    escapeMarkdownTableCell(record.targetKey),
+    escapeMarkdownTableCell(record.selectedDecision),
+    escapeMarkdownTableCell(record.opportunityReason),
+  ].join(" | ").replace(/^/, "| ").replace(/$/, " |");
+}
+
 function formatNextLoopProposal(report: MasterLabMagicOpportunityReport): string[] {
   const main = report.cardStats.filter((stats) => stats.recommendation === "main_candidate").slice(0, 3);
   const finisher = report.cardStats.filter((stats) => stats.recommendation === "finisher_candidate").slice(0, 2);
-  const tech = report.cardStats.filter((stats) => stats.recommendation === "tech_candidate").slice(0, 3);
-  const candidates = [...main, ...finisher, ...tech].slice(0, 4);
+  const tech = selectRoleDiverseCandidates(report.cardStats.filter((stats) => stats.recommendation === "tech_candidate"), 4);
+  const rolePicks = selectRoleDiverseCandidates(report.cardStats.filter((stats) => stats.count > 0 && stats.role !== "finisher"), 6);
+  const candidates = [...main, ...finisher, ...tech].slice(0, 5);
   if (candidates.length === 0) {
     return [
       "- 提案: 今回の候補マジックには強いシグナルがない。候補範囲を広げるより、まずモンスター比率とAI評価の中母数確認を優先する。",
@@ -372,11 +528,47 @@ function formatNextLoopProposal(report: MasterLabMagicOpportunityReport): string
   }
 
   return [
-    "- 提案: opportunity 上位カードだけをデッキへ実装して、小母数勝率で副作用を見る。",
+    "- 提案: opportunity 上位だけでなく role 別上位も拾い、サンダー型の勝ち切り札と汎用札を別々に小母数検証する。",
     `- 次回候補: ${candidates.map((card) => `\`${card.cardName}\` ${card.count}件 lethal ${card.lethalCount} non-lethal avg +${card.averageNonLethalDelta}`).join(" / ")}`,
+    `- role別控え: ${rolePicks.map((card) => `${card.role}=\`${card.cardName}\` ${card.count}件`).join(" / ") || "なし"}`,
     "- 目安: 3-5デッキ案、games-per-matchup 10-20。warning と敵スケープゴート率を同時に見る。",
-    "- 分岐: main_candidate が勝率を落とす場合、カード自体ではなくAIがその場面を過大評価している可能性を疑う。",
+    "- 分岐: finisher_candidate は勝率が上がってもピーキー枠として扱い、main_candidate/role別候補の安定性と混ぜて判断しない。",
   ];
+}
+
+function selectRoleDiverseCandidates(
+  stats: readonly MasterLabMagicOpportunityCardStats[],
+  limit: number,
+): MasterLabMagicOpportunityCardStats[] {
+  const selected: MasterLabMagicOpportunityCardStats[] = [];
+  const seenRoles = new Set<string>();
+  const ranked = [...stats].sort((a, b) =>
+    b.count - a.count ||
+    b.averageNonLethalDelta - a.averageNonLethalDelta ||
+    b.bestDelta - a.bestDelta ||
+    a.cardName.localeCompare(b.cardName),
+  );
+
+  for (const card of ranked) {
+    if (seenRoles.has(card.role)) {
+      continue;
+    }
+    selected.push(card);
+    seenRoles.add(card.role);
+    if (selected.length >= limit) {
+      return selected;
+    }
+  }
+
+  for (const card of ranked) {
+    if (!selected.some((item) => item.cardId === card.cardId)) {
+      selected.push(card);
+    }
+    if (selected.length >= limit) {
+      break;
+    }
+  }
+  return selected;
 }
 
 function mergeUsage(usages: Array<Record<string, number>>): Record<string, number> {
