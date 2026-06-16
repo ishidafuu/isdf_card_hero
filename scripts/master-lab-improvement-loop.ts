@@ -122,11 +122,12 @@ function readPlan(name: string, value: string | undefined): CliOptions["plan"] {
     value === "unit_inclusion" ||
     value === "unit_action" ||
     value === "tempo_action" ||
-    value === "tempo_confirm"
+    value === "tempo_confirm" ||
+    value === "tempo_no_lostone_confirm"
   ) {
     return value;
   }
-  throw new Error(`${name} must be one of: deck, mixed, scapegoat, magic_inclusion, unit_inclusion, unit_action, tempo_action, tempo_confirm`);
+  throw new Error(`${name} must be one of: deck, mixed, scapegoat, magic_inclusion, unit_inclusion, unit_action, tempo_action, tempo_confirm, tempo_no_lostone_confirm`);
 }
 
 function readDeckPreset(name: string, value: string | undefined): DeckPresetId {
@@ -175,7 +176,7 @@ Usage:
 
 Options:
   --candidate <id>           Candidate. Default: decoy. Values: decoy, sacrifice, timing
-  --plan <id>                Experiment plan. Default: mixed. Values: deck, mixed, scapegoat, magic_inclusion, unit_inclusion, unit_action, tempo_action, tempo_confirm
+  --plan <id>                Experiment plan. Default: mixed. Values: deck, mixed, scapegoat, magic_inclusion, unit_inclusion, unit_action, tempo_action, tempo_confirm, tempo_no_lostone_confirm
   --loops <n>                Number of hypotheses to evaluate. Default: selected plan length
   --games-per-matchup <n>    Games per final-gate matchup. Default: 5
   --deck-preset <id>         Add an explicit deck preset. Can be repeated.

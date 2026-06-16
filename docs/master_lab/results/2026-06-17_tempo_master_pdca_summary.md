@@ -42,26 +42,39 @@
 - Usage: クイックコール 50.6%、シフト 17.2%、マスターアタック 32.2%
 - Reading: 中母数でも上位は崩れず、特に投稿Pro黒8なし #1403 の妨害/テンポ構成と相性が良い。
 
+### Set 4: No-Lostone Confirmation
+
+- Report: `2026-06-17_tempo_master_no_lostone_confirm_loop_4.md`
+- Change: 1403のロストーン1枚をリ・シャッフルへ差し替えた `master-lab-tempo-1403-no-lostone` を追加。
+- Scope: 5 loops / 30 games-per-matchup / 750 games
+- Best: `tempo_no_lostone_1403_quick_shift8`
+- Result: overall 68.3%、vs Black 53.3%、vs White 83.3%、0 failure / 0 warning
+- Reading: ロストーンを抜いても白勝率はほぼ下がらなかった。白に勝ちすぎる主因はロストーン単体ではなく、1403系の妨害/テンポ構成とクイックコールの噛み合いにある。
+
 ## Current Best Shape
 
 - Master: テンポマスター
-- Deck axis: `submission-pro-no-rare8-black-1403` または `pressure-normal`
-- AI eval: `quick_call +8 / shift +8 / margin +8` が最上位。`pressure-normal` では `quick_call +16` または `margin +12` が安定控え。
+- Deck axis: 本命は `pressure-normal` 系に戻す。`master-lab-tempo-1403-no-lostone` は勝率上位だが、白に勝ちすぎるため調整候補へ降格。
+- AI eval: `pressure-normal` では `quick_call +16` または `margin +12` が安定控え。1403派生の `quick_call +8 / shift +8 / margin +8` は白メタ過多として扱う。
 - Play pattern: クイックコールで準備ターンを短縮し、即マスター打点は封じたまま盤面の先手を取る。シフトは過剰移動ではなく、後衛を下げる/前衛を戻す補助。
 
 ## Next Loop Proposal
 
-次は「採用前確認」として、上位2候補だけを 100 games-per-matchup で回すのがよい。
+次は「白基準への再調整」として、ロストーンなし前提のまま、白勝率を落とす方向で 10-12 ループ回すのがよい。
 
-1. `tempo_confirm_1403_quick_shift8`
-2. `tempo_confirm_quick_call_plus16` または `tempo_confirm_margin12`
+優先候補:
+
+1. `pressure-normal + quick_call+16`
+2. `pressure-normal + margin+12`
+3. `pressure-normal + quick_call+8`
+4. 1403派生から黄昏の風/ローテーション密度も落とした小型派生
 
 判定基準:
 
 - vs Black 50%以上
-- vs White 60%以上
+- vs White 55-65%
 - failure 0
 - warning 2以下
 - シフト率 25%以下
 
-この条件を満たすなら、テンポマスターは候補としてかなり有望。崩れる場合は、デッキ側よりクイックコール評価と採用 margin の微調整へ戻る。
+この条件を満たすなら、テンポマスターは候補としてかなり有望。白勝率が70%を超える候補は、勝率上位でも本命から外す。

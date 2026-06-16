@@ -17,7 +17,8 @@ export type MasterLabDeckPresetId =
   | "master-lab-decoy-unit-front-reach"
   | "master-lab-decoy-unit-front-growth"
   | "master-lab-decoy-unit-back-stable"
-  | "master-lab-decoy-unit-back-pressure";
+  | "master-lab-decoy-unit-back-pressure"
+  | "master-lab-tempo-1403-no-lostone";
 export type DeckSubmissionPresetId = `submission-${string}`;
 export type DeckPresetId = BuiltInDeckPresetId | MasterLabDeckPresetId | DeckSubmissionPresetId;
 export type DeckPresetGroupId = "built-in" | "master-lab" | DeckSubmissionGroupId;
@@ -152,6 +153,10 @@ const DECOY_UNIT_BACK_PRESSURE_DECK_CARD_IDS = replaceDeckCards(BLACK_PRESSURE_D
   ["card_112", "card_049"],
   ["card_053", "beyond"],
   ["card_145", "card_050"],
+]);
+
+const TEMPO_1403_NO_LOSTONE_DECK_CARD_IDS = replaceDeckCards(submissionDeckCardIds("submission-pro-no-rare8-black-1403"), [
+  ["card_113", "card_114"],
 ]);
 
 const BUILT_IN_DECK_PRESETS: DeckPresetDef[] = [
@@ -290,6 +295,16 @@ const MASTER_LAB_DECK_PRESETS: DeckPresetDef[] = [
     mode: "Master Lab",
     group: "master-lab",
   },
+  {
+    id: "master-lab-tempo-1403-no-lostone",
+    name: "テンポ実験: 1403ロストーン抜き",
+    description: "submission-pro-no-rare8-black-1403派生。ゲーム体験を損ねやすいロストーンをリ・シャッフルへ差し替える。",
+    cardIds: TEMPO_1403_NO_LOSTONE_DECK_CARD_IDS,
+    allowSpecial: false,
+    masterId: "black",
+    mode: "Master Lab",
+    group: "master-lab",
+  },
 ];
 
 export const DECK_PRESET_GROUPS: DeckPresetGroupDef[] = [
@@ -366,4 +381,12 @@ function replaceDeckCards(
     cardIds[index] = toCardId;
   }
   return cardIds;
+}
+
+function submissionDeckCardIds(presetId: DeckSubmissionPresetId): readonly string[] {
+  const preset = DECK_SUBMISSION_PRESETS.find((candidate) => candidate.id === presetId);
+  if (!preset) {
+    throw new Error(`Unknown submission deck preset: ${presetId}`);
+  }
+  return preset.cardIds;
 }

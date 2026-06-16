@@ -49,6 +49,14 @@ describe("auto play validation", () => {
     }
   });
 
+  it("provides a tempo 1403 variant without lostone", () => {
+    const cardIds = buildDeckPresetCardIds("master-lab-tempo-1403-no-lostone");
+
+    expect(cardIds).toHaveLength(30);
+    expect(cardIds).not.toContain("card_113");
+    expect(cardIds).toContain("card_114");
+  });
+
   it("runs auto play with the special showcase preset", () => {
     const result = validateAutoPlay({
       seedStart: 620,

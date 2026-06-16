@@ -6,7 +6,7 @@ import type { PlayerId } from "./types";
 
 export type MasterLabImprovementJudgement = "advance" | "hold" | "reject";
 export type MasterLabImprovementDecision = "needs_full_gate" | "continue_deck_loop" | "pivot_to_action_design";
-export type MasterLabImprovementPlanId = "deck" | "mixed" | "scapegoat" | "magic_inclusion" | "unit_inclusion" | "unit_action" | "tempo_action" | "tempo_confirm";
+export type MasterLabImprovementPlanId = "deck" | "mixed" | "scapegoat" | "magic_inclusion" | "unit_inclusion" | "unit_action" | "tempo_action" | "tempo_confirm" | "tempo_no_lostone_confirm";
 export type MasterLabImprovementExperimentKind = "deck" | "ai_eval" | "hybrid" | "warning_probe";
 
 export interface MasterLabImprovementLoopOptions extends Omit<MasterLabFinalGateOptions, "deckPreset"> {
@@ -261,6 +261,14 @@ export const DEFAULT_MASTER_LAB_TEMPO_CONFIRM_EXPERIMENTS = [
   tempoActionExperiment("tempo_confirm_margin12", "再確認: margin+12", "pressure-normal", undefined, "慎重採用でも勝率が残るかを見て、無駄撃ち耐性を確認する。", 12),
   tempoActionExperiment("tempo_confirm_black_margin12", "再確認: black-pressure / margin+12", "black-pressure", undefined, "白相手に強かった黒寄り構成を、中母数で黒相手の下振れ込みで確認する。", 12),
   tempoActionExperiment("tempo_confirm_1403_quick_shift8", "再確認: 1403 / クイック+8 / シフト+8", "submission-pro-no-rare8-black-1403", { actionBias: { quick_call: 8, shift: 8 } }, "投稿デッキ上位。pressure-normal 以外の採用余地を確認する。"),
+] as const satisfies readonly MasterLabImprovementExperiment[];
+
+export const DEFAULT_MASTER_LAB_TEMPO_NO_LOSTONE_CONFIRM_EXPERIMENTS = [
+  tempoActionExperiment("tempo_no_lostone_1403_quick_shift8", "ロストーンなし: 1403派生 / クイック+8 / シフト+8", "master-lab-tempo-1403-no-lostone", { actionBias: { quick_call: 8, shift: 8 } }, "前回最上位からロストーンを抜き、白への勝ちすぎがカード依存だったか確認する。"),
+  tempoActionExperiment("tempo_no_lostone_quick_call_plus16", "ロストーンなし: pressure / クイック+16", "pressure-normal", { actionBias: { quick_call: 16 } }, "ロストーンを使わない基準構成で、クイックコール主軸の再現性を見る。"),
+  tempoActionExperiment("tempo_no_lostone_margin12", "ロストーンなし: pressure / margin+12", "pressure-normal", undefined, "慎重採用でも白黒に対して過剰にならないか確認する。", 12),
+  tempoActionExperiment("tempo_no_lostone_eager_margin_minus4", "ロストーンなし: pressure / margin-4", "pressure-normal", undefined, "特技を早めに切るだけで成立するかを再確認する。", -4),
+  tempoActionExperiment("tempo_no_lostone_black_margin12", "ロストーンなし: black-pressure / margin+12", "black-pressure", undefined, "ロストーンを使わない黒寄り構成で、白に勝ちすぎない範囲を探る。", 12),
 ] as const satisfies readonly MasterLabImprovementExperiment[];
 
 export function runMasterLabImprovementLoop(
@@ -654,6 +662,9 @@ function selectExperimentSource(options: {
   }
   if (options.plan === "tempo_confirm") {
     return DEFAULT_MASTER_LAB_TEMPO_CONFIRM_EXPERIMENTS;
+  }
+  if (options.plan === "tempo_no_lostone_confirm") {
+    return DEFAULT_MASTER_LAB_TEMPO_NO_LOSTONE_CONFIRM_EXPERIMENTS;
   }
   return DEFAULT_MASTER_LAB_MIXED_IMPROVEMENT_EXPERIMENTS;
 }
