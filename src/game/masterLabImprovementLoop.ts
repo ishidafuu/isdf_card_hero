@@ -6,7 +6,7 @@ import type { PlayerId } from "./types";
 
 export type MasterLabImprovementJudgement = "advance" | "hold" | "reject";
 export type MasterLabImprovementDecision = "needs_full_gate" | "continue_deck_loop" | "pivot_to_action_design";
-export type MasterLabImprovementPlanId = "deck" | "mixed" | "scapegoat" | "magic_inclusion";
+export type MasterLabImprovementPlanId = "deck" | "mixed" | "scapegoat" | "magic_inclusion" | "unit_inclusion";
 export type MasterLabImprovementExperimentKind = "deck" | "ai_eval" | "hybrid" | "warning_probe";
 
 export interface MasterLabImprovementLoopOptions extends Omit<MasterLabFinalGateOptions, "deckPreset"> {
@@ -103,6 +103,10 @@ const DEFAULT_MASTER_LAB_MAGIC_INCLUSION_TUNING = {
   targetOwnerBias: { enemy: 16 },
 } satisfies MasterLabEvaluationTuning;
 const DEFAULT_MASTER_LAB_MAGIC_INCLUSION_MARGIN = 12;
+const DEFAULT_MASTER_LAB_UNIT_INCLUSION_TUNING = {
+  targetOwnerBias: { enemy: 16 },
+} satisfies MasterLabEvaluationTuning;
+const DEFAULT_MASTER_LAB_UNIT_INCLUSION_MARGIN = 12;
 
 export const DEFAULT_MASTER_LAB_IMPROVEMENT_DECK_PRESETS = [
   "pressure-normal",
@@ -192,6 +196,15 @@ export const DEFAULT_MASTER_LAB_MAGIC_INCLUSION_EXPERIMENTS = [
   magicInclusionExperiment("magic_burst", "投入: バースト", "master-lab-decoy-magic-burst", "受けた後の反撃速度を上げ、デコイが守るだけで終わらない形になるか見る。"),
   magicInclusionExperiment("magic_tech", "投入: テック", "master-lab-decoy-magic-tech", "誘惑、ヒーリング、ロストーン、リターンで状況対応力が勝率に出るか見る。"),
   magicInclusionExperiment("magic_finisher_thunder", "投入: サンダー1枚", "master-lab-decoy-magic-finisher", "サンダーを1枚だけ入れ、勝ち切り札としての伸びとピーキーな副作用を分けて見る。"),
+] as const satisfies readonly MasterLabImprovementExperiment[];
+
+export const DEFAULT_MASTER_LAB_UNIT_INCLUSION_EXPERIMENTS = [
+  unitInclusionExperiment("unit_baseline_black_pressure", "基準: black-pressure", "black-pressure", "前回基準。14前衛/8後衛/8マジックのまま、ユニット差し替え前の勝率と特技使用を再確認する。"),
+  unitInclusionExperiment("unit_front_wall", "投入: 前衛耐久", "master-lab-decoy-unit-front-wall", "ナッツロックル、デスシープ、ボムゾウを増やし、囮で守った前衛が黒速攻を受け止められるか見る。"),
+  unitInclusionExperiment("unit_front_reach", "投入: 前衛射程", "master-lab-decoy-unit-front-reach", "アーシュ＆ロロ、ボムゾウ、神斬丸を増やし、盤面干渉を前衛側で補えるか見る。"),
+  unitInclusionExperiment("unit_front_growth", "投入: 前衛育成", "master-lab-decoy-unit-front-growth", "ダイン、ホロウダイン、ナッツロックルを増やし、守った駒を制圧役に変えられるか見る。"),
+  unitInclusionExperiment("unit_back_stable", "投入: 後衛安定", "master-lab-decoy-unit-back-stable", "フーヨウ、ラティーヌ、バルキャノンを増やし、守る価値の高い後衛が勝率へ出るか見る。"),
+  unitInclusionExperiment("unit_back_pressure", "投入: 後衛圧力", "master-lab-decoy-unit-back-pressure", "バルキャノン、ビヨンド、ゼックを増やし、敵主力を後衛から削るテンポが黒速攻へ間に合うか見る。"),
 ] as const satisfies readonly MasterLabImprovementExperiment[];
 
 export function runMasterLabImprovementLoop(
@@ -350,7 +363,9 @@ function formatSummaryBullets(report: MasterLabImprovementLoopReport): string[] 
     `ミラーを除くデコイ側の最高スコアは \`${report.best.experimentId}\`（${report.best.experimentLabel}）の score ${report.best.metrics.score}。overall ${formatPercent(report.best.metrics.decoyWinRate)}、vs Black ${formatPercent(report.best.metrics.blackWinRate)}。`,
     `最上位の敵スケープゴート率は ${formatPercent(report.best.metrics.enemyScapegoatRate)}（スケープゴート内比率）。味方保護だけで勝っているのか、敵対象で戦い方が変わったのかを次回判断材料にする。`,
     `基準にした \`${report.baseline.experimentId}\` は overall ${formatPercent(report.baseline.metrics.decoyWinRate)}、vs Black ${formatPercent(report.baseline.metrics.blackWinRate)}。差分は black ${formatSignedPercent(report.best.metrics.blackWinRate - report.baseline.metrics.blackWinRate)}、overall ${formatSignedPercent(report.best.metrics.decoyWinRate - report.baseline.metrics.decoyWinRate)}。`,
-    `vs Black 50%以上かつ warning 1件以下の候補は ${stableBlackCandidates.length} 件。横展開より、上位候補の中母数再検証に進む段階。`,
+    stableBlackCandidates.length > 0
+      ? `vs Black 50%以上かつ warning 1件以下の候補は ${stableBlackCandidates.length} 件。横展開より、上位候補の中母数再検証に進む段階。`
+      : "vs Black 50%以上かつ warning 1件以下の候補は 0 件。ユニット差し替え単体では不足しているため、次は上位デッキを固定して特技評価補正を比較する段階。",
   ];
 
   if (highRateWarning) {
@@ -420,6 +435,19 @@ function magicInclusionExperiment(
     ...deckExperiment(id, label, deckPreset, hypothesis),
     labActionMargin: DEFAULT_MASTER_LAB_MAGIC_INCLUSION_MARGIN,
     labEvaluationTuning: DEFAULT_MASTER_LAB_MAGIC_INCLUSION_TUNING,
+  };
+}
+
+function unitInclusionExperiment(
+  id: string,
+  label: string,
+  deckPreset: DeckPresetId,
+  hypothesis: string,
+): MasterLabImprovementExperiment {
+  return {
+    ...deckExperiment(id, label, deckPreset, hypothesis),
+    labActionMargin: DEFAULT_MASTER_LAB_UNIT_INCLUSION_MARGIN,
+    labEvaluationTuning: DEFAULT_MASTER_LAB_UNIT_INCLUSION_TUNING,
   };
 }
 
@@ -501,6 +529,9 @@ function selectExperimentSource(options: {
   }
   if (options.plan === "magic_inclusion") {
     return DEFAULT_MASTER_LAB_MAGIC_INCLUSION_EXPERIMENTS;
+  }
+  if (options.plan === "unit_inclusion") {
+    return DEFAULT_MASTER_LAB_UNIT_INCLUSION_EXPERIMENTS;
   }
   return DEFAULT_MASTER_LAB_MIXED_IMPROVEMENT_EXPERIMENTS;
 }
@@ -710,7 +741,12 @@ function buildConclusion(
     entry.metrics.blackWinRate >= 0.5,
   ).length;
 
-  if (best.metrics.failures === 0 && (blackGain >= 0.15 || overallGain >= 0.1)) {
+  if (
+    best.metrics.failures === 0 &&
+    best.metrics.decoyWinRate >= 0.5 &&
+    best.metrics.blackWinRate >= 0.45 &&
+    (blackGain >= 0.15 || overallGain >= 0.1)
+  ) {
     return {
       decision: "needs_full_gate",
       summary: `${best.experimentLabel} が基準より伸びた。小母数の上振れを排除するため、まず上位候補を100戦マトリクスで再検証する。`,

@@ -12,7 +12,12 @@ export type MasterLabDeckPresetId =
   | "master-lab-decoy-magic-removal"
   | "master-lab-decoy-magic-burst"
   | "master-lab-decoy-magic-tech"
-  | "master-lab-decoy-magic-finisher";
+  | "master-lab-decoy-magic-finisher"
+  | "master-lab-decoy-unit-front-wall"
+  | "master-lab-decoy-unit-front-reach"
+  | "master-lab-decoy-unit-front-growth"
+  | "master-lab-decoy-unit-back-stable"
+  | "master-lab-decoy-unit-back-pressure";
 export type DeckSubmissionPresetId = `submission-${string}`;
 export type DeckPresetId = BuiltInDeckPresetId | MasterLabDeckPresetId | DeckSubmissionPresetId;
 export type DeckPresetGroupId = "built-in" | "master-lab" | DeckSubmissionGroupId;
@@ -119,6 +124,36 @@ const DECOY_MAGIC_FINISHER_DECK_CARD_IDS = replaceDeckCards(BLACK_PRESSURE_DECK_
   ["card_029", "thunder"],
 ]);
 
+const DECOY_UNIT_FRONT_WALL_DECK_CARD_IDS = replaceDeckCards(BLACK_PRESSURE_DECK_CARD_IDS, [
+  ["card_099", "card_109"],
+  ["card_067", "card_133"],
+  ["card_134", "bomuzo"],
+]);
+
+const DECOY_UNIT_FRONT_REACH_DECK_CARD_IDS = replaceDeckCards(BLACK_PRESSURE_DECK_CARD_IDS, [
+  ["card_099", "card_045"],
+  ["card_067", "bomuzo"],
+  ["card_071", "card_009"],
+]);
+
+const DECOY_UNIT_FRONT_GROWTH_DECK_CARD_IDS = replaceDeckCards(BLACK_PRESSURE_DECK_CARD_IDS, [
+  ["card_099", "card_047"],
+  ["card_067", "card_144"],
+  ["card_071", "card_109"],
+]);
+
+const DECOY_UNIT_BACK_STABLE_DECK_CARD_IDS = replaceDeckCards(BLACK_PRESSURE_DECK_CARD_IDS, [
+  ["card_145", "card_083"],
+  ["card_112", "card_053"],
+  ["card_050", "card_049"],
+]);
+
+const DECOY_UNIT_BACK_PRESSURE_DECK_CARD_IDS = replaceDeckCards(BLACK_PRESSURE_DECK_CARD_IDS, [
+  ["card_112", "card_049"],
+  ["card_053", "beyond"],
+  ["card_145", "card_050"],
+]);
+
 const BUILT_IN_DECK_PRESETS: DeckPresetDef[] = [
   {
     id: "balanced-normal",
@@ -200,6 +235,56 @@ const MASTER_LAB_DECK_PRESETS: DeckPresetDef[] = [
     name: "デコイ実験: サンダー1枚",
     description: "black-pressure派生。悪魔のダンス1枚だけをサンダーに替え、勝ち切り札の副作用を見る。",
     cardIds: DECOY_MAGIC_FINISHER_DECK_CARD_IDS,
+    allowSpecial: false,
+    masterId: "black",
+    mode: "Master Lab",
+    group: "master-lab",
+  },
+  {
+    id: "master-lab-decoy-unit-front-wall",
+    name: "デコイ実験: 前衛耐久",
+    description: "black-pressure派生。ゴーント、ゾンビ、ファントムをナッツロックル、デスシープ、ボムゾウへ替え、囮で守る前衛の粘りを見る。",
+    cardIds: DECOY_UNIT_FRONT_WALL_DECK_CARD_IDS,
+    allowSpecial: false,
+    masterId: "black",
+    mode: "Master Lab",
+    group: "master-lab",
+  },
+  {
+    id: "master-lab-decoy-unit-front-reach",
+    name: "デコイ実験: 前衛射程",
+    description: "black-pressure派生。アーシュ＆ロロ、ボムゾウ、神斬丸を増やし、後衛依存を増やさずに離れた敵へ触れる力を見る。",
+    cardIds: DECOY_UNIT_FRONT_REACH_DECK_CARD_IDS,
+    allowSpecial: false,
+    masterId: "black",
+    mode: "Master Lab",
+    group: "master-lab",
+  },
+  {
+    id: "master-lab-decoy-unit-front-growth",
+    name: "デコイ実験: 前衛育成",
+    description: "black-pressure派生。真勇者ダイン、ホロウダイン、ナッツロックルを増やし、守った駒を盤面制圧へつなげられるか見る。",
+    cardIds: DECOY_UNIT_FRONT_GROWTH_DECK_CARD_IDS,
+    allowSpecial: false,
+    masterId: "black",
+    mode: "Master Lab",
+    group: "master-lab",
+  },
+  {
+    id: "master-lab-decoy-unit-back-stable",
+    name: "デコイ実験: 後衛安定",
+    description: "black-pressure派生。フーヨウ、ラティーヌ、バルキャノンを増やし、守る価値の高い後衛を厚くする。",
+    cardIds: DECOY_UNIT_BACK_STABLE_DECK_CARD_IDS,
+    allowSpecial: false,
+    masterId: "black",
+    mode: "Master Lab",
+    group: "master-lab",
+  },
+  {
+    id: "master-lab-decoy-unit-back-pressure",
+    name: "デコイ実験: 後衛圧力",
+    description: "black-pressure派生。バルキャノン、ビヨンド、ゼックを増やし、後衛から敵主力を先に削る形を見る。",
+    cardIds: DECOY_UNIT_BACK_PRESSURE_DECK_CARD_IDS,
     allowSpecial: false,
     masterId: "black",
     mode: "Master Lab",

@@ -77,4 +77,26 @@ describe("master lab improvement loop", () => {
     expect(markdown).toContain("| Loop | Deck | Hypothesis | Score | Overall | vs Black | vs White | Avg Turns | Loss Opp HP | Action Usage | Magic | Issues | Judgement |");
     expect(markdown).toContain("マジック使用");
   }, MASTER_LAB_IMPROVEMENT_LOOP_TEST_TIMEOUT_MS);
+
+  it("runs the unit inclusion plan with master lab deck variants", () => {
+    const report = runMasterLabImprovementLoop({
+      candidateId: "decoy",
+      plan: "unit_inclusion",
+      loopCount: 3,
+      gamesPerMatchup: 1,
+      maxSteps: 700,
+      maxTurns: 160,
+    });
+
+    expect(report.entries).toHaveLength(3);
+    expect(report.entries[0].experimentId).toBe("unit_baseline_black_pressure");
+    expect(report.entries[1].deckPreset).toBe("master-lab-decoy-unit-front-wall");
+    expect(report.entries[1].labActionMargin).toBe(12);
+    expect(report.entries[1].labEvaluationTuning?.targetOwnerBias?.enemy).toBe(16);
+    expect(report.entries[2].deckPreset).toBe("master-lab-decoy-unit-front-reach");
+
+    const markdown = formatMasterLabImprovementLoopMarkdown(report);
+    expect(markdown).toContain("投入: 前衛耐久");
+    expect(markdown).toContain("target enemy +16");
+  }, MASTER_LAB_IMPROVEMENT_LOOP_TEST_TIMEOUT_MS);
 });
