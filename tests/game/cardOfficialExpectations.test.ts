@@ -671,7 +671,7 @@ describe("official card effect expectations", () => {
     expect(game.players.player.stones).toBe(0);
   });
 
-  it("card_150 スパルタス覚醒 powers up Spartas and levels it up when a stone is available", () => {
+  it("card_150 スパルタス覚醒 gives Spartas +2 attack power without leveling it up", () => {
     let game = createGameWithPlayerHand([{ cardId: "card_150", instanceId: "awakening" }]);
     game.players.player.stones = magicCost("card_150") + 1;
     game.slots.player_front_left.monster = createActiveMonster("card_001", "player");
@@ -681,10 +681,10 @@ describe("official card effect expectations", () => {
       target: { kind: "monster", slotKey: "player_front_left" },
     });
 
-    expect(game.slots.player_front_left.monster?.level).toBe(2);
-    expect(game.slots.player_front_left.monster?.investedStones).toBe(2);
+    expect(game.slots.player_front_left.monster?.level).toBe(1);
+    expect(game.slots.player_front_left.monster?.investedStones).toBe(1);
     expect(game.slots.player_front_left.monster?.powerModifier).toBe(2);
-    expect(game.players.player.stones).toBe(0);
+    expect(game.players.player.stones).toBe(1);
   });
 
   it("card_057 エスケープ removes an allied monster from the field", () => {
@@ -727,7 +727,7 @@ describe("official card effect expectations", () => {
     });
   });
 
-  it("card_061 誘惑 always removes the allied bait and randomly removes the enemy", () => {
+  it("card_061 誘惑 always removes the opposite-side bait and randomly removes the tempted monster", () => {
     let game = createGameWithPlayerHand([{ cardId: "card_061", instanceId: "tempt_success" }]);
     game.randomSeed = 7;
     game.players.player.stones = magicCost("card_061");
@@ -759,6 +759,22 @@ describe("official card effect expectations", () => {
     expect(game.slots.player_front_left.monster).toBeUndefined();
     expect(game.slots.cpu_front_left.monster?.cardId).toBe("takokke");
     expect(game.log.some((entry) => entry.includes("ランダム結果: 誘惑"))).toBe(true);
+
+    game = createGameWithPlayerHand([{ cardId: "card_061", instanceId: "tempt_ally" }]);
+    game.randomSeed = 7;
+    game.players.player.stones = magicCost("card_061");
+    game.slots.player_front_left.monster = createActiveMonster("takokke", "player");
+    game.slots.cpu_front_left.monster = createActiveMonster("takokke", "cpu");
+
+    expect(getMagicTargets(game, "tempt_ally")).toContainEqual({ kind: "monster", slotKey: "player_front_left" });
+    game = playMagic(game, {
+      handInstanceId: "tempt_ally",
+      target: { kind: "monster", slotKey: "player_front_left" },
+      secondaryTarget: { kind: "monster", slotKey: "cpu_front_left" },
+    });
+
+    expect(game.slots.cpu_front_left.monster).toBeUndefined();
+    expect(game.slots.player_front_left.monster).toBeUndefined();
   });
 
   it("card_064 黄昏の風 removes all monster effects including shield and power effects", () => {
@@ -803,6 +819,11 @@ describe("official card effect expectations", () => {
       cannotMove: true,
       commandSealed: true,
       scapegoat: true,
+      damageGuarded: true,
+    });
+    game.slots.player_front_right.monster = createActiveMonster("card_144", "player", {
+      stoneCurse: true,
+      hollow: true,
     });
     game.slots.cpu_front_left.monster = createActiveMonster("takokke", "cpu", {
       cannotMove: true,
@@ -819,8 +840,50 @@ describe("official card effect expectations", () => {
     expect(game.slots.player_front_left.monster?.cannotMove).toBe(false);
     expect(game.slots.player_front_left.monster?.commandSealed).toBe(false);
     expect(game.slots.player_front_left.monster?.scapegoat).toBe(false);
+    expect(game.slots.player_front_left.monster?.damageGuarded).toBe(true);
+    expect(game.slots.player_front_right.monster?.stoneCurse).toBe(true);
     expect(game.slots.cpu_front_left.monster?.cannotMove).toBe(true);
     expect(game.slots.cpu_front_left.monster?.commandSealed).toBe(true);
+  });
+
+  it("card_091 女神の加護 does not dodge magic damage", () => {
+    let game = createGameWithPlayerHand([{ cardId: "card_091", instanceId: "goddess" }]);
+    game.randomSeed = 7;
+    game.players.player.stones = magicCost("card_091");
+    game.slots.player_front_left.monster = createActiveMonster("takokke", "player");
+
+    game = playMagic(game, {
+      handInstanceId: "goddess",
+      target: { kind: "monster", slotKey: "player_front_left" },
+    });
+    game.currentPlayer = "cpu";
+    game.players.cpu.hand = [{ cardId: "thunder", instanceId: "thunder" }];
+    game.players.cpu.stones = magicCost("thunder");
+
+    game = playMagic(game, {
+      handInstanceId: "thunder",
+      target: { kind: "monster", slotKey: "player_front_left" },
+    });
+
+    expect(game.slots.player_front_left.monster?.hp).toBe(2);
+    expect(game.log.some((entry) => entry.includes("ランダム結果: 女神の加護"))).toBe(false);
+  });
+
+  it("card_092 マッドファイア can splash to diagonal surrounding monsters", () => {
+    let game = createGameWithPlayerHand([{ cardId: "card_092", instanceId: "mad_fire" }]);
+    game.randomSeed = 0;
+    game.players.player.stones = magicCost("card_092");
+    game.slots.cpu_front_left.monster = createActiveMonster("takokke", "cpu");
+    game.slots.cpu_back_right.monster = createActiveMonster("takokke", "cpu");
+
+    game = playMagic(game, {
+      handInstanceId: "mad_fire",
+      target: { kind: "monster", slotKey: "cpu_front_left" },
+    });
+
+    expect(game.slots.cpu_front_left.monster?.hp).toBe(3);
+    expect(game.slots.cpu_back_right.monster?.hp).toBe(4);
+    expect(game.log.some((entry) => entry.includes("ランダム結果: マッドファイア余波"))).toBe(true);
   });
 
   it("card_090 墓荒らし returns the defeated monster to the top of its owner's deck", () => {
@@ -889,7 +952,61 @@ describe("official card effect expectations", () => {
     expect(game.slots.player_front_left.monster?.deathChainSlotKey).toBeUndefined();
   });
 
-  it("card_124 エクスチェンジ toggles the exchanged master action state", () => {
+  it("card_115 ソートカード reorders only the top five deck cards", () => {
+    let game = createGameWithPlayerHand([{ cardId: "card_115", instanceId: "sort" }]);
+    game.players.player.stones = magicCost("card_115");
+    game.players.player.deck = [
+      { cardId: "takokke", instanceId: "top_1" },
+      { cardId: "yanbaru", instanceId: "top_2" },
+      { cardId: "bomuzo", instanceId: "top_3" },
+      { cardId: "sigma", instanceId: "top_4" },
+      { cardId: "healing", instanceId: "top_5" },
+      { cardId: "thunder", instanceId: "sixth" },
+    ];
+
+    game = playMagic(game, {
+      handInstanceId: "sort",
+      target: { kind: "master", playerId: "player" },
+      deckTopOrderInstanceIds: ["top_5", "top_3", "top_1", "top_4", "top_2"],
+    });
+
+    expect(game.players.player.deck.map((card) => card.instanceId)).toEqual([
+      "top_5",
+      "top_3",
+      "top_1",
+      "top_4",
+      "top_2",
+      "sixth",
+    ]);
+  });
+
+  it("card_123 カードサーチ randomly takes one card from the selected category", () => {
+    let game = createGameWithPlayerHand([{ cardId: "card_123", instanceId: "search" }]);
+    game.randomSeed = 1;
+    game.players.player.stones = magicCost("card_123");
+    game.players.player.deck = [
+      { cardId: "healing", instanceId: "magic_first" },
+      { cardId: "thunder", instanceId: "magic_second" },
+      { cardId: "card_115", instanceId: "magic_third" },
+      { cardId: "takokke", instanceId: "front_card" },
+    ];
+
+    game = playMagic(game, {
+      handInstanceId: "search",
+      target: { kind: "master", playerId: "player" },
+      searchCategory: "magic",
+    });
+
+    expect(game.players.player.hand.map((card) => card.instanceId)).toEqual(["magic_second"]);
+    expect(game.players.player.deck.map((card) => card.instanceId)).toEqual([
+      "magic_first",
+      "magic_third",
+      "front_card",
+    ]);
+    expect(game.log.some((entry) => entry.includes("ランダム結果: カードサーチ"))).toBe(true);
+  });
+
+  it("card_124 エクスチェンジ lasts until the caster's next turn starts", () => {
     let game = createGameWithPlayerHand([{ cardId: "card_124", instanceId: "exchange" }]);
     game.players.player.stones = magicCost("card_124");
 
@@ -900,6 +1017,17 @@ describe("official card effect expectations", () => {
 
     expect(game.players.player.masterActionsExchanged).toBe(true);
     expect(game.players.cpu.masterActionsExchanged).toBe(true);
+
+    game = endTurn(game);
+    expect(game.currentPlayer).toBe("cpu");
+    expect(game.players.player.masterActionsExchanged).toBe(true);
+    expect(game.players.cpu.masterActionsExchanged).toBe(true);
+
+    game = endTurn(game);
+    expect(game.currentPlayer).toBe("player");
+    expect(game.players.player.masterActionsExchanged).toBe(false);
+    expect(game.players.cpu.masterActionsExchanged).toBe(false);
+    expect(game.masterActionsExchangeExpiresOnStartOf).toBeUndefined();
   });
 
   it("card_125 かげ呪い damages the cursed monster's master when it leaves", () => {
@@ -1000,7 +1128,7 @@ describe("official card effect expectations", () => {
     expect(game.players.cpu.stones).toBe(1);
   });
 
-  it("card_035 バルバス＆パフ levels up a target with 福音の花 and then resolves its revival trait", () => {
+  it("card_035 バルバス＆パフ levels up a target with 福音の花 and then leaves without defeat revival", () => {
     let game = createGameWithPlayerHand([]);
     game.players.player.stones = 4;
     game.slots.player_back_left.monster = createActiveMonster("card_035", "player");
@@ -1014,8 +1142,9 @@ describe("official card effect expectations", () => {
 
     expect(game.slots.player_front_left.monster?.level).toBe(2);
     expect(game.slots.player_front_left.monster?.hp).toBe(getMonsterDef("takokke").levels[1].maxHp);
-    expect(game.slots.player_back_left.monster?.cardId).toBe("card_035");
-    expect(game.slots.player_back_left.monster?.revivedOnce).toBe(true);
+    expect(game.slots.player_back_left.monster).toBeUndefined();
+    expect(game.players.player.discard.some((card) => card.cardId === "card_035")).toBe(true);
+    expect(game.players.player.stones).toBe(1);
   });
 
   it("card_039 ケントゥリアス logs and applies the random miss result for ジェミニランス", () => {
@@ -1050,7 +1179,7 @@ describe("official card effect expectations", () => {
     expect(game.slots.cpu_front_left.monster?.levelFixed).toBe(true);
   });
 
-  it("card_043 ガンプ removes a monster with ヘブンズドア", () => {
+  it("card_043 ガンプ removes a monster with ヘブンズドア without defeat triggers", () => {
     let game = createGameWithPlayerHand([]);
     game.players.player.stones = 3;
     game.slots.player_back_left.monster = createActiveMonster("card_043", "player", {
@@ -1058,7 +1187,7 @@ describe("official card effect expectations", () => {
       hp: 5,
       investedStones: 2,
     });
-    game.slots.cpu_front_left.monster = createActiveMonster("takokke", "cpu");
+    game.slots.cpu_front_left.monster = createActiveMonster("card_099", "cpu");
 
     game = attackWithCommand(game, {
       attackerSlotKey: "player_back_left",
@@ -1067,6 +1196,8 @@ describe("official card effect expectations", () => {
     });
 
     expect(game.slots.cpu_front_left.monster).toBeUndefined();
+    expect(game.slots.player_back_left.monster?.stoneCurse).not.toBe(true);
+    expect(game.players.cpu.stones).toBe(1);
   });
 
   it("bomuzo ボムゾウ takes recoil when using 自爆", () => {

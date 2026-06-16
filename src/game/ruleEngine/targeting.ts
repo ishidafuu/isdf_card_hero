@@ -88,8 +88,11 @@ export function getCommandTargetsUnchecked(
   }
   if (command.name === "レベルムーブ") {
     return activeMonsterTargets.filter((target) => {
-      const targetMonster = target.kind === "monster" ? state.slots[target.slotKey].monster : undefined;
-      return !!targetMonster && targetMonster.level > 1 && !targetMonster.levelFixed;
+      if (target.kind !== "monster") {
+        return false;
+      }
+      const targetMonster = state.slots[target.slotKey].monster;
+      return !!targetMonster && targetMonster.level > 1 && !targetMonster.levelFixed && hasLevelMoveRecipient(state, target.slotKey);
     });
   }
   if (command.name === "ヘブンズドア") {
@@ -273,7 +276,12 @@ export function getMagicSecondaryTargets(state: GameState, action: Pick<MagicAct
       .filter((slotKey) => slotKey !== primarySlotKey && state.slots[slotKey].monster?.status === "active")
       .map<Target>((slotKey) => ({ kind: "monster", slotKey }));
   }
-  if (card.cardId === "card_061" || card.cardId === "card_097" || card.cardId === "card_098") {
+  if (card.cardId === "card_061") {
+    return PLAYER_SLOT_ORDER[opponentOf(state.slots[primarySlotKey].owner)]
+      .filter((slotKey) => state.slots[slotKey].monster?.status === "active")
+      .map<Target>((slotKey) => ({ kind: "monster", slotKey }));
+  }
+  if (card.cardId === "card_097" || card.cardId === "card_098") {
     return PLAYER_SLOT_ORDER[state.currentPlayer]
       .filter((slotKey) => state.slots[slotKey].monster?.status === "active")
       .map<Target>((slotKey) => ({ kind: "monster", slotKey }));
@@ -434,7 +442,7 @@ function getMagicTargetsByCardId(state: GameState, cardId: string): Target[] {
     return allyActive;
   }
   if (cardId === "card_061") {
-    return allyActive.length > 0 ? enemyActive : [];
+    return allyActive.length > 0 && enemyActive.length > 0 ? [...allyActive, ...enemyActive] : [];
   }
   if (cardId === "card_097" || cardId === "card_098") {
     return allyActive.length > 0 ? enemyActive : [];
@@ -520,6 +528,16 @@ function hasActiveAllyCard(state: GameState, playerId: PlayerId, cardId: string)
   return PLAYER_SLOT_ORDER[playerId].some((slotKey) => {
     const monster = state.slots[slotKey].monster;
     return monster?.cardId === cardId && monster.status === "active";
+  });
+}
+
+function hasLevelMoveRecipient(state: GameState, excludeSlotKey: SlotKey): boolean {
+  return FIELD_ORDER.some((slotKey) => {
+    if (slotKey === excludeSlotKey) {
+      return false;
+    }
+    const monster = state.slots[slotKey].monster;
+    return !!monster && monster.status === "active" && !monster.levelFixed && monster.level < getMonsterDef(monster.cardId).maxLevel;
   });
 }
 

@@ -649,6 +649,15 @@ describe("battle prototype rules", () => {
     expect(getCurrentMasterActionIds(game)).toEqual(["master_attack", "berserk_power", "earth_anger"]);
     game.currentPlayer = "cpu";
     expect(getCurrentMasterActionIds(game)).toEqual(["master_attack", "wake_up", "shield"]);
+
+    game.currentPlayer = "player";
+    game = endTurn(game);
+    expect(game.currentPlayer).toBe("cpu");
+    expect(getCurrentMasterActionIds(game)).toEqual(["master_attack", "wake_up", "shield"]);
+
+    game = endTurn(game);
+    expect(game.currentPlayer).toBe("player");
+    expect(getCurrentMasterActionIds(game)).toEqual(["master_attack", "wake_up", "shield"]);
   });
 
   it("lets a two-action monster spend its remaining action to focus", () => {
@@ -1641,16 +1650,14 @@ describe("battle prototype rules", () => {
     expect(next.log.at(-1)).toContain("手札から捨てた");
   });
 
-  it("copies a selected enemy with illusion mirror while keeping current HP", () => {
+  it("copies a selected enemy card identity with illusion mirror while keeping current HP", () => {
     let game = createGameWithPlayerHand([{ cardId: "card_148", instanceId: "mirror" }]);
     game.players.player.stones = magicCost("card_148");
     game.slots.player_front_left.monster = createActiveMonster("takokke", "player", { hp: 2 });
-    game.slots.cpu_front_left.monster = createActiveMonster("morgan", "cpu", {
+    game.slots.cpu_front_left.monster = createActiveMonster("polyspinner", "cpu", {
       hp: 4,
       level: 2,
       investedStones: 2,
-      revivedOnce: true,
-      usedCommandIds: ["arc_drive"],
     });
 
     game = playMagic(game, {
@@ -1660,11 +1667,12 @@ describe("battle prototype rules", () => {
     });
 
     const copied = game.slots.player_front_left.monster;
-    expect(copied?.cardId).toBe("morgan");
+    expect(copied?.cardId).toBe("polyspinner");
     expect(copied?.level).toBe(2);
     expect(copied?.hp).toBe(2);
-    expect(copied?.revivedOnce).toBe(true);
-    expect(copied?.usedCommandIds).toEqual(["arc_drive"]);
+    expect(copied?.actionLimit).toBe(2);
+    expect(copied?.revivedOnce).toBe(false);
+    expect(copied?.usedCommandIds).toBeUndefined();
   });
 
   it("returns a prepared monster to the bottom of the owner's deck with invested stones", () => {

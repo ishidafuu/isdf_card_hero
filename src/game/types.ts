@@ -191,6 +191,7 @@ export interface GameState {
   winner?: PlayerId;
   pendingLevelUp?: PendingLevelUp;
   turnMoveHistory?: MoveHistoryEntry[];
+  masterActionsExchangeExpiresOnStartOf?: PlayerId;
 }
 
 export type Target =
@@ -211,6 +212,7 @@ export interface MagicAction {
   secondaryTarget?: Target;
   secondaryHandInstanceId?: string;
   selectedHandInstanceIds?: string[];
+  deckTopOrderInstanceIds?: string[];
   searchCategory?: "front" | "back" | "magic" | "special";
 }
 

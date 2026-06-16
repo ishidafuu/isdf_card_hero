@@ -20,7 +20,6 @@ import {
   ROW_ORDER,
 } from "./ruleEngine/constants";
 import {
-  distanceBetweenSlots,
   rangedDistanceBetweenSlots,
 } from "./ruleEngine/field";
 import { appendLog, appendRandomResultLog } from "./ruleEngine/log";
@@ -141,6 +140,7 @@ export function startTurn(state: GameState, playerId: PlayerId): GameState {
 
   const player = next.players[playerId];
   appendLog(next, `${playerLabel(playerId)}のターン開始`);
+  clearExpiredMasterActionExchange(next, playerId);
 
   readyPreparedMonsters(next, playerId);
   autoAdvanceBackRow(next, playerId);
@@ -802,7 +802,7 @@ function applyMagicEffect(state: GameState, cardId: string, action: MagicAction)
   }
 
   if (cardId === "card_057" && target.kind === "monster") {
-    defeatMonster(state, target.slotKey);
+    removeMonsterFromField(state, target.slotKey, "エスケープ");
     return;
   }
 
@@ -828,19 +828,22 @@ function applyMagicEffect(state: GameState, cardId: string, action: MagicAction)
   }
 
   if (cardId === "card_061" && target.kind === "monster") {
-    const allySlotKey = action.secondaryTarget?.kind === "monster"
+    const primaryOwner = state.slots[target.slotKey].owner;
+    const requiredOtherOwner = opponentOf(primaryOwner);
+    const otherSlotKey = action.secondaryTarget?.kind === "monster"
       ? action.secondaryTarget.slotKey
-      : firstActiveSlotOf(state, state.currentPlayer);
-    if (allySlotKey) {
-      if (state.slots[allySlotKey].owner !== state.currentPlayer) {
-        throw new Error("誘惑の味方対象が不正です");
-      }
-      defeatMonster(state, allySlotKey);
+      : firstActiveSlotOf(state, requiredOtherOwner);
+    if (!otherSlotKey) {
+      throw new Error("誘惑の相手側対象がいません");
     }
+    if (state.slots[otherSlotKey].owner !== requiredOtherOwner) {
+      throw new Error("誘惑の相手側対象が不正です");
+    }
+    removeMonsterFromField(state, otherSlotKey, "誘惑");
     const tempted = randomChance(state, 0.5);
     appendRandomResultLog(state, "誘惑", tempted ? `${monsterName(requireTargetMonster(state, target.slotKey))}が消える` : `${monsterName(requireTargetMonster(state, target.slotKey))}が耐える`);
     if (tempted) {
-      defeatMonster(state, target.slotKey);
+      removeMonsterFromField(state, target.slotKey, "誘惑");
     } else {
       appendLog(state, `${monsterName(requireTargetMonster(state, target.slotKey))}は誘惑に耐えた`);
     }
@@ -970,8 +973,7 @@ function applyMagicEffect(state: GameState, cardId: string, action: MagicAction)
   }
 
   if (cardId === "card_115") {
-    state.players[state.currentPlayer].deck.sort((a, b) => a.cardId.localeCompare(b.cardId));
-    appendLog(state, "山札を並べ替えた");
+    sortTopDeckCards(state, state.currentPlayer, action.deckTopOrderInstanceIds);
     return;
   }
 
@@ -1021,8 +1023,7 @@ function applyMagicEffect(state: GameState, cardId: string, action: MagicAction)
   }
 
   if (cardId === "card_124") {
-    state.players.player.masterActionsExchanged = !state.players.player.masterActionsExchanged;
-    state.players.cpu.masterActionsExchanged = !state.players.cpu.masterActionsExchanged;
+    setMasterActionExchange(state, state.currentPlayer);
     appendLog(state, "マスター特技を入れ替えた");
     return;
   }
@@ -1075,9 +1076,6 @@ function applyMagicEffect(state: GameState, cardId: string, action: MagicAction)
   if (cardId === "card_150" && target.kind === "monster") {
     const monster = requireTargetMonster(state, target.slotKey);
     monster.powerModifier = (monster.powerModifier ?? 0) + 2;
-    if (!monster.levelFixed && monster.level < getMonsterDef(monster.cardId).maxLevel && state.players[monster.owner].stones > 0) {
-      performLevelUp(state, target.slotKey, 1);
-    }
     appendLog(state, `${monsterName(monster)}が覚醒した`);
   }
 }
@@ -1234,12 +1232,27 @@ function transformMonsterKeepingHp(state: GameState, slotKey: SlotKey, nextCardI
 }
 
 function adjacentSlotKeys(slot: SlotState): SlotKey[] {
-  return FIELD_ORDER.filter((slotKey) => distanceBetweenSlots(slot, stateSlotPlaceholder(slot, slotKey)) === 1);
+  const origin = surroundingCoord(slot);
+  return FIELD_ORDER.filter((slotKey) => {
+    if (slotKey === slot.key) {
+      return false;
+    }
+    const candidate = surroundingCoord(stateSlotPlaceholder(slotKey));
+    return Math.abs(origin.x - candidate.x) <= 1 && Math.abs(origin.y - candidate.y) <= 1;
+  });
 }
 
-function stateSlotPlaceholder(origin: SlotState, slotKey: SlotKey): SlotState {
+function stateSlotPlaceholder(slotKey: SlotKey): SlotState {
   const [owner, row, lane] = slotKey.split("_") as [PlayerId, Row, Lane];
   return { key: slotKey, owner, row, lane };
+}
+
+function surroundingCoord(slot: SlotState): { x: number; y: number } {
+  const x = slot.lane === "left" ? 0 : 1;
+  if (slot.owner === "cpu") {
+    return { x, y: slot.row === "back" ? 0 : 1 };
+  }
+  return { x, y: slot.row === "front" ? 2 : 3 };
 }
 
 function rotateFieldMonsters(state: GameState): void {
@@ -1340,23 +1353,57 @@ function searchCardToHand(
   category: NonNullable<MagicAction["searchCategory"]>,
 ): void {
   const player = state.players[playerId];
-  const deckIndex = player.deck.findIndex((card) => {
-    const def = getCardDef(card.cardId);
-    if (category === "special") {
-      return getCardPool(def) === "special";
-    }
-    if (category === "magic") {
-      return def.type === "magic";
-    }
-    return def.type === "monster" && getCardPool(def) === "normal" && def.role === category;
-  });
-  if (deckIndex < 0) {
+  const matchingDeckIndexes = player.deck
+    .map((card, deckIndex) => ({ card, deckIndex }))
+    .filter(({ card }) => isCardInSearchCategory(card, category));
+  if (matchingDeckIndexes.length === 0) {
     appendLog(state, `${categoryLabel(category)}のカードは山札になかった`);
     return;
   }
-  const [card] = player.deck.splice(deckIndex, 1);
+  const selected = matchingDeckIndexes[randomInt(state, 0, matchingDeckIndexes.length - 1)];
+  const [card] = player.deck.splice(selected.deckIndex, 1);
   player.hand.push(card);
+  appendRandomResultLog(state, "カードサーチ", `${categoryLabel(category)}から${getCardName(card.cardId)}`);
   appendLog(state, `${playerLabel(playerId)}は${categoryLabel(category)}から${getCardName(card.cardId)}を手札に入れた`);
+}
+
+function sortTopDeckCards(state: GameState, playerId: PlayerId, deckTopOrderInstanceIds?: string[]): void {
+  const player = state.players[playerId];
+  const topCount = Math.min(5, player.deck.length);
+  const topCards = player.deck.slice(0, topCount);
+  if (topCount === 0) {
+    appendLog(state, "山札に並べ替えるカードがなかった");
+    return;
+  }
+  if (!deckTopOrderInstanceIds || deckTopOrderInstanceIds.length === 0) {
+    appendLog(state, `${playerLabel(playerId)}は山札上${topCount}枚を確認した`);
+    return;
+  }
+
+  const topByInstanceId = new Map(topCards.map((card) => [card.instanceId, card]));
+  const ordered = deckTopOrderInstanceIds.map((instanceId) => topByInstanceId.get(instanceId));
+  const uniqueRequested = new Set(deckTopOrderInstanceIds);
+  if (
+    deckTopOrderInstanceIds.length !== topCount ||
+    uniqueRequested.size !== topCount ||
+    ordered.some((card) => !card)
+  ) {
+    throw new Error("山札上5枚の並べ替え指定が不正です");
+  }
+
+  player.deck.splice(0, topCount, ...(ordered as CardInstance[]));
+  appendLog(state, `${playerLabel(playerId)}は山札上${topCount}枚を並べ替えた`);
+}
+
+function isCardInSearchCategory(card: CardInstance, category: NonNullable<MagicAction["searchCategory"]>): boolean {
+  const def = getCardDef(card.cardId);
+  if (category === "special") {
+    return getCardPool(def) === "special";
+  }
+  if (category === "magic") {
+    return def.type === "magic";
+  }
+  return def.type === "monster" && getCardPool(def) === "normal" && def.role === category;
 }
 
 function returnPreparedMonsterToDeck(state: GameState, slotKey: SlotKey): void {
@@ -1403,9 +1450,11 @@ function mirrorMonster(state: GameState, slotKey: SlotKey, sourceTarget?: Target
   const currentHp = target.hp;
   target.cardId = source.cardId;
   target.level = Math.min(source.level, getMonsterDef(source.cardId).maxLevel);
+  target.actionLimit = getMonsterDef(source.cardId).actionLimit ?? 1;
   target.hp = currentHp;
-  target.revivedOnce = source.revivedOnce;
-  target.usedCommandIds = source.usedCommandIds ? [...source.usedCommandIds] : undefined;
+  target.revivedOnce = false;
+  target.usedCommandIds = undefined;
+  target.hollow = source.cardId === "card_144" ? true : undefined;
   appendLog(state, `${monsterName(target)}は${monsterName(source)}の姿を写した`);
 }
 
@@ -1677,7 +1726,7 @@ function resolveEndTurnFieldEffects(state: GameState, playerId: PlayerId): void 
     }
     if (monster.darkHoleSlotKey === slotKey) {
       appendLog(state, `${monsterName(monster)}はダークホールに飲み込まれた`);
-      defeatMonster(state, slotKey, { source: "ダークホール", kind: "effect" });
+      removeMonsterFromField(state, slotKey, "ダークホール");
     } else if (monster.darkHoleSlotKey) {
       monster.darkHoleSlotKey = undefined;
       appendLog(state, `${monsterName(monster)}はダークホールから逃れた`);
@@ -1712,9 +1761,23 @@ function clearEndOfTurnMarkers(state: GameState): void {
       monster.damageGuarded = false;
     }
   }
+  state.turnMoveHistory = [];
+}
+
+function setMasterActionExchange(state: GameState, expiresOnStartOf: PlayerId): void {
+  state.players.player.masterActionsExchanged = true;
+  state.players.cpu.masterActionsExchanged = true;
+  state.masterActionsExchangeExpiresOnStartOf = expiresOnStartOf;
+}
+
+function clearExpiredMasterActionExchange(state: GameState, playerId: PlayerId): void {
+  if (state.masterActionsExchangeExpiresOnStartOf !== playerId) {
+    return;
+  }
   state.players.player.masterActionsExchanged = false;
   state.players.cpu.masterActionsExchanged = false;
-  state.turnMoveHistory = [];
+  state.masterActionsExchangeExpiresOnStartOf = undefined;
+  appendLog(state, "マスター特技の入れ替えが戻った");
 }
 
 function recordMoveHistory(
@@ -1813,7 +1876,7 @@ function damageMonster(
     return undefined;
   }
 
-  if (monster.dodgeChance && context.kind !== "recoil") {
+  if (monster.dodgeChance && isDodgeableAttackContext(context)) {
     const dodged = randomChance(state, 0.5);
     appendRandomResultLog(state, "女神の加護", `${monsterName(monster)}が${dodged ? "回避" : "被弾"}`);
     if (dodged) {
@@ -1856,6 +1919,10 @@ function damageMonster(
   return defeatMonster(state, targetSlotKey, context);
 }
 
+function isDodgeableAttackContext(context: DamageContext): boolean {
+  return context.kind === "command" || context.kind === "master";
+}
+
 function defeatMonster(
   state: GameState,
   slotKey: SlotKey,
@@ -1881,6 +1948,25 @@ function defeatMonster(
   }
   applyDefeatCurses(state, monster, context.attackerSlotKey);
   return resolution.defeated;
+}
+
+function removeMonsterFromField(state: GameState, slotKey: SlotKey, source: string): void {
+  const slot = state.slots[slotKey];
+  const monster = slot.monster;
+  if (!monster) {
+    throw new Error("消す対象がいません");
+  }
+
+  clearDeathChain(state, slotKey);
+  const owner = state.players[monster.owner];
+  const returnedStones = monster.investedStones;
+  owner.stones += returnedStones;
+  owner.discard.push({ cardId: monster.cardId, instanceId: monster.instanceId });
+  delete slot.monster;
+  appendLog(state, `${monsterName(monster)}はフィールドを去り、${playerLabel(monster.owner)}にストーン${returnedStones}個が戻った（${source}）`);
+  if (monster.shadowCursed) {
+    decreaseMasterHp(state, monster.owner, 1, "かげ呪い");
+  }
 }
 
 function getLevelUpCapacity(state: GameState, attackerSlotKey: SlotKey, defeatedLevel: number): number {
@@ -2066,7 +2152,7 @@ function applyUtilityCommandEffect(
   }
 
   if (command.name === "ヘブンズドア" && target.kind === "monster") {
-    defeatMonster(state, target.slotKey);
+    removeMonsterFromField(state, target.slotKey, "ヘブンズドア");
     return true;
   }
 
@@ -2080,7 +2166,7 @@ function applyUtilityCommandEffect(
   }
 
   if (command.name === "マッドホール" && target.kind === "monster") {
-    defeatMonster(state, target.slotKey);
+    removeMonsterFromField(state, target.slotKey, "マッドホール");
     healMonster(state, attackerSlotKey, 1);
     attacker.powerModifier = (attacker.powerModifier ?? 0) + 1;
     appendLog(state, `${monsterName(attacker)}のパワーが1上がった`);
@@ -2098,7 +2184,7 @@ function applyUtilityCommandEffect(
   if (command.name === "パワーチャージ") {
     state.players[attacker.owner].masterPowerBonus = (state.players[attacker.owner].masterPowerBonus ?? 0) + 1;
     appendLog(state, `${playerLabel(attacker.owner)}の次のマスターアタックが1P上がった`);
-    defeatMonster(state, attackerSlotKey);
+    removeMonsterFromField(state, attackerSlotKey, "パワーチャージ");
     return true;
   }
 
@@ -2114,7 +2200,7 @@ function applyUtilityCommandEffect(
 
   if (command.name === "レベルアップ") {
     if (attacker.level >= getMonsterDef(attacker.cardId).maxLevel) {
-      defeatMonster(state, attackerSlotKey);
+      removeMonsterFromField(state, attackerSlotKey, "レベルアップ");
     } else if (!attacker.levelFixed && state.players[attacker.owner].stones > 0) {
       performLevelUp(state, attackerSlotKey, 1);
     } else {
@@ -2127,7 +2213,7 @@ function applyUtilityCommandEffect(
     const targetMonster = requireTargetMonster(state, target.slotKey);
     const maxLevel = getMonsterDef(targetMonster.cardId).maxLevel;
     if (targetMonster.level >= maxLevel) {
-      defeatMonster(state, target.slotKey);
+      removeMonsterFromField(state, target.slotKey, "夢幻の光");
     } else if (!targetMonster.levelFixed && state.players[targetMonster.owner].stones > 0) {
       performLevelUp(state, target.slotKey, 1);
     } else {
@@ -2219,7 +2305,7 @@ function applyUtilityCommandEffect(
     if (!state.slots[target.slotKey].monster?.levelFixed) {
       performLevelUp(state, target.slotKey, 1);
     }
-    defeatMonster(state, attackerSlotKey);
+    removeMonsterFromField(state, attackerSlotKey, "福音の花");
     return true;
   }
 
@@ -2332,7 +2418,7 @@ function finishCommandSideEffects(
     (attacker.cardId === "card_112" && attacker.level >= 3 && !isUpperCommand(attacker, command)) ||
     command.name === "最後の叫び"
   ) {
-    defeatMonster(state, attackerSlotKey, { source: "特技後離脱", kind: "effect" });
+    removeMonsterFromField(state, attackerSlotKey, "特技後離脱");
     return;
   }
 
@@ -2753,9 +2839,10 @@ function clearMonsterEffects(state: GameState, slotKey: SlotKey, includePowerAnd
   monster.provokeTargetSlotKey = undefined;
   clearDeathChain(state, slotKey);
   monster.darkHoleSlotKey = undefined;
-  monster.stoneCurse = false;
+  if (!monster.hollow) {
+    monster.stoneCurse = false;
+  }
   monster.damageCurse = false;
-  monster.damageGuarded = false;
   if (includePowerAndShield) {
     monster.powerUp = false;
     monster.powerModifier = 0;

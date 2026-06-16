@@ -1100,6 +1100,11 @@ function listMagicDecisions(state: GameState, weights: AiEvaluationWeights): Cpu
 }
 
 function expandMagicActions(state: GameState, baseAction: MagicAction): MagicAction[] {
+  const card = state.players[state.currentPlayer].hand.find((handCard) => handCard.instanceId === baseAction.handInstanceId);
+  if (card?.cardId === "card_115") {
+    return buildSortDeckActions(state, baseAction);
+  }
+
   const secondaryTargets = getMagicSecondaryTargets(state, baseAction);
   if (secondaryTargets.length > 0) {
     return secondaryTargets.map((secondaryTarget) => ({ ...baseAction, secondaryTarget }));
@@ -1107,7 +1112,6 @@ function expandMagicActions(state: GameState, baseAction: MagicAction): MagicAct
 
   const handChoices = getMagicHandChoices(state, baseAction.handInstanceId);
   if (handChoices.length > 0) {
-    const card = state.players[state.currentPlayer].hand.find((handCard) => handCard.instanceId === baseAction.handInstanceId);
     if (card && getMagicAiTrait(card.cardId)?.valueModel === "refresh_delta") {
       return buildRefreshActions(state, baseAction, handChoices);
     }
@@ -1120,6 +1124,15 @@ function expandMagicActions(state: GameState, baseAction: MagicAction): MagicAct
   }
 
   return [baseAction];
+}
+
+function buildSortDeckActions(state: GameState, baseAction: MagicAction): MagicAction[] {
+  const topCards = state.players[state.currentPlayer].deck.slice(0, 5);
+  if (topCards.length <= 1) {
+    return [baseAction];
+  }
+  const sortedTopCards = [...topCards].sort((a, b) => handCardKeepValue(state, b) - handCardKeepValue(state, a));
+  return [{ ...baseAction, deckTopOrderInstanceIds: sortedTopCards.map((card) => card.instanceId) }];
 }
 
 function buildRefreshActions(state: GameState, baseAction: MagicAction, handChoices: ReturnType<typeof getMagicHandChoices>): MagicAction[] {
@@ -1591,20 +1604,23 @@ function scoreShiftChangeMagicDecision(
 
 function scoreSearchMagicDecision(state: GameState, action: MagicAction, cost: number): number {
   const category = action.searchCategory ?? "front";
-  const searchedCard = state.players[state.currentPlayer].deck.find((card) => {
-    const def = getCardDef(card.cardId);
-    if (category === "special") {
-      return getCardPool(def) === "special";
-    }
-    if (category === "magic") {
-      return def.type === "magic";
-    }
-    return def.type === "monster" && getCardPool(def) === "normal" && inferMonsterAiTrait(def).role === category;
-  });
-  if (!searchedCard) {
+  const searchedCards = state.players[state.currentPlayer].deck.filter((card) => isSearchCategoryMatch(card, category));
+  if (searchedCards.length === 0) {
     return -100;
   }
-  return 18 + handCardKeepValue(state, searchedCard) * 0.35 - cost * 4;
+  const averageValue = searchedCards.reduce((total, card) => total + handCardKeepValue(state, card), 0) / searchedCards.length;
+  return 18 + averageValue * 0.35 - cost * 4;
+}
+
+function isSearchCategoryMatch(card: { cardId: string }, category: NonNullable<MagicAction["searchCategory"]>): boolean {
+  const def = getCardDef(card.cardId);
+  if (category === "special") {
+    return getCardPool(def) === "special";
+  }
+  if (category === "magic") {
+    return def.type === "magic";
+  }
+  return def.type === "monster" && getCardPool(def) === "normal" && def.role === category;
 }
 
 function scoreRefreshMagicDecision(
@@ -1759,6 +1775,9 @@ function magicReason(state: GameState, after: GameState, action: MagicAction): s
   }
   if (action.searchCategory) {
     return `${name}で${searchCategoryReasonLabel(action.searchCategory)}を探せるため使用`;
+  }
+  if (action.deckTopOrderInstanceIds) {
+    return `${name}で次のドロー順を整えられるため使用`;
   }
   if (action.secondaryHandInstanceId) {
     return `${name}で手札の高価値カードを使えるため使用`;
