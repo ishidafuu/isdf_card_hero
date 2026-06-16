@@ -122,4 +122,24 @@ describe("master lab improvement loop", () => {
     expect(markdown).toContain("挑発+16");
     expect(markdown).toContain("target enemy +16");
   }, MASTER_LAB_IMPROVEMENT_LOOP_TEST_TIMEOUT_MS);
+
+  it("runs the tempo action plan with timing candidate", () => {
+    const report = runMasterLabImprovementLoop({
+      candidateId: "timing",
+      plan: "tempo_action",
+      loopCount: 1,
+      gamesPerMatchup: 1,
+      maxSteps: 700,
+      maxTurns: 160,
+    });
+
+    expect(report.entries).toHaveLength(1);
+    expect(report.entries[0].experimentId).toBe("tempo_baseline_pressure");
+    expect(report.entries[0].labActionMargin).toBe(0);
+
+    const markdown = formatMasterLabImprovementLoopMarkdown(report);
+    expect(markdown).toContain("# Master Lab Improvement Loop: timing");
+    expect(markdown).toContain("クイックコール");
+    expect(markdown).toContain("シフト");
+  }, MASTER_LAB_IMPROVEMENT_LOOP_TEST_TIMEOUT_MS);
 });

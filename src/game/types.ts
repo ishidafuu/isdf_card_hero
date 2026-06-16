@@ -133,6 +133,7 @@ export interface MonsterState {
   damageCurse?: boolean;
   hollow?: boolean;
   damageGuarded?: boolean;
+  masterAttackBlockedUntilTurnEnd?: boolean;
   revivedOnce?: boolean;
   usedCommandIds?: string[];
 }

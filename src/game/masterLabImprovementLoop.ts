@@ -6,7 +6,7 @@ import type { PlayerId } from "./types";
 
 export type MasterLabImprovementJudgement = "advance" | "hold" | "reject";
 export type MasterLabImprovementDecision = "needs_full_gate" | "continue_deck_loop" | "pivot_to_action_design";
-export type MasterLabImprovementPlanId = "deck" | "mixed" | "scapegoat" | "magic_inclusion" | "unit_inclusion" | "unit_action";
+export type MasterLabImprovementPlanId = "deck" | "mixed" | "scapegoat" | "magic_inclusion" | "unit_inclusion" | "unit_action" | "tempo_action" | "tempo_confirm";
 export type MasterLabImprovementExperimentKind = "deck" | "ai_eval" | "hybrid" | "warning_probe";
 
 export interface MasterLabImprovementLoopOptions extends Omit<MasterLabFinalGateOptions, "deckPreset"> {
@@ -58,6 +58,8 @@ export interface MasterLabImprovementMetrics {
   allyScapegoatRate: number;
   enemyScapegoatRate: number;
   provokeRate: number;
+  quickCallRate: number;
+  shiftRate: number;
   masterAttackRate: number;
 }
 
@@ -111,6 +113,7 @@ const DEFAULT_MASTER_LAB_UNIT_ACTION_TUNING = {
   targetOwnerBias: { enemy: 16 },
 } satisfies MasterLabEvaluationTuning;
 const DEFAULT_MASTER_LAB_UNIT_ACTION_MARGIN = 12;
+const DEFAULT_MASTER_LAB_TEMPO_ACTION_MARGIN = 8;
 
 export const DEFAULT_MASTER_LAB_IMPROVEMENT_DECK_PRESETS = [
   "pressure-normal",
@@ -228,6 +231,36 @@ export const DEFAULT_MASTER_LAB_UNIT_ACTION_EXPERIMENTS = [
   unitActionExperiment("unit_action_pressure_provoke16_scapegoat_minus8", "混合: 後衛圧力 / 挑発+16 / スケープゴート-8", "master-lab-decoy-unit-back-pressure", { actionBias: { provoke: 16, scapegoat: -8 } }, "後衛圧力型で攻撃誘導と守り過多抑制を同時に試す。"),
   unitActionExperiment("unit_action_stable_provoke16_margin16", "混合: 後衛安定 / 挑発+16 / margin+16", "master-lab-decoy-unit-back-stable", { actionBias: { provoke: 16 } }, "挑発を増やしながら特技採用をさらに慎重にし、無駄撃ちを減らす。", 16),
   unitActionExperiment("unit_action_pressure_provoke16_margin16", "混合: 後衛圧力 / 挑発+16 / margin+16", "master-lab-decoy-unit-back-pressure", { actionBias: { provoke: 16 } }, "後衛圧力型で挑発を増やしつつ、通常手を上回る時だけ特技を使わせる。", 16),
+] as const satisfies readonly MasterLabImprovementExperiment[];
+
+export const DEFAULT_MASTER_LAB_TEMPO_ACTION_EXPERIMENTS = [
+  tempoActionExperiment("tempo_baseline_pressure", "基準: pressure-normal", "pressure-normal", undefined, "通常プレッシャー構成で、クイックコールとシフトが白黒どちらにも過干渉なく機能するか見る。", 0),
+  tempoActionExperiment("tempo_baseline_black_pressure", "基準: black-pressure", "black-pressure", undefined, "黒寄り構成で、バーサクではなく自軍展開速度で押し返せるか見る。", 0),
+  tempoActionExperiment("tempo_balanced_control", "比較: balanced-normal", "balanced-normal", undefined, "標準構成でテンポ特技単体の平均値を確認する。", 0),
+  tempoActionExperiment("tempo_quick_call_plus8", "AI評価: クイックコール+8", "pressure-normal", { actionBias: { quick_call: 8 } }, "登場前倒しを軽く促進し、盤面形成の速度が勝率に出るか見る。"),
+  tempoActionExperiment("tempo_quick_call_plus16", "AI評価: クイックコール+16", "pressure-normal", { actionBias: { quick_call: 16 } }, "クイックコールを主軸にした時、即マスター打点禁止でも強すぎないか見る。"),
+  tempoActionExperiment("tempo_shift_plus8", "AI評価: シフト+8", "pressure-normal", { actionBias: { shift: 8 } }, "位置調整を軽く促進し、白の陣形破壊ではなく自軍陣形補正として機能するか見る。"),
+  tempoActionExperiment("tempo_shift_plus16", "AI評価: シフト+16", "pressure-normal", { actionBias: { shift: 16 } }, "シフトを強めた時、停滞や無駄な入れ替えが増えないか確認する。"),
+  tempoActionExperiment("tempo_quick_shift_plus8", "混合: クイック+8 / シフト+8", "pressure-normal", { actionBias: { quick_call: 8, shift: 8 } }, "展開前倒しと位置調整を同時に薄く押し、テンポマスターらしさを作る。"),
+  tempoActionExperiment("tempo_quick16_shift8", "混合: クイック+16 / シフト+8", "pressure-normal", { actionBias: { quick_call: 16, shift: 8 } }, "クイックコール主軸に寄せ、シフトを補助へ置く。"),
+  tempoActionExperiment("tempo_quick8_shift16", "混合: クイック+8 / シフト+16", "pressure-normal", { actionBias: { quick_call: 8, shift: 16 } }, "シフト主軸に寄せ、盤面の手直しで勝てるかを見る。"),
+  tempoActionExperiment("tempo_margin12", "AI評価: margin+12", "pressure-normal", undefined, "特技採用を慎重にし、通常手を上回る時だけテンポ特技を使わせる。", 12),
+  tempoActionExperiment("tempo_eager_margin_minus4", "AI評価: margin-4", "pressure-normal", undefined, "特技を早めに切った場合に、展開速度の価値が出るかを見る。", -4),
+  tempoActionExperiment("tempo_black_quick_shift_plus8", "混合: black-pressure / クイック+8 / シフト+8", "black-pressure", { actionBias: { quick_call: 8, shift: 8 } }, "黒寄り構成でテンポ特技を薄く後押しし、白黒の差別化を確認する。"),
+  tempoActionExperiment("tempo_black_quick16_shift8", "混合: black-pressure / クイック+16 / シフト+8", "black-pressure", { actionBias: { quick_call: 16, shift: 8 } }, "黒相手の速度対抗としてクイックコール厚めが有効かを見る。"),
+  tempoActionExperiment("tempo_black_margin12", "AI評価: black-pressure / margin+12", "black-pressure", undefined, "黒寄り構成で慎重採用へ寄せ、暴発や停滞を抑えられるか見る。", 12),
+  tempoActionExperiment("tempo_1403_quick_shift_plus8", "投稿比較: 1403 / クイック+8 / シフト+8", "submission-pro-no-rare8-black-1403", { actionBias: { quick_call: 8, shift: 8 } }, "妨害寄り構成でもテンポ特技が単なるロックではなく盤面形成に寄与するか見る。"),
+  tempoActionExperiment("tempo_1340_quick_shift_plus8", "投稿比較: 1340 / クイック+8 / シフト+8", "submission-pro-no-rare8-white-1340", { actionBias: { quick_call: 8, shift: 8 } }, "育成寄り構成で、ホワイトのシールド育成と違う速度型になるか見る。"),
+  tempoActionExperiment("tempo_1388_quick16", "投稿比較: 1388 / クイック+16", "submission-pro-no-rare8-black-1388", { actionBias: { quick_call: 16 } }, "前寄せデッキで登場前倒しが過剰打点にならないか確認する。"),
+] as const satisfies readonly MasterLabImprovementExperiment[];
+
+export const DEFAULT_MASTER_LAB_TEMPO_CONFIRM_EXPERIMENTS = [
+  tempoActionExperiment("tempo_confirm_quick_call_plus16", "再確認: クイックコール+16", "pressure-normal", { actionBias: { quick_call: 16 } }, "2セット目の同率首位。展開前倒しを主軸にした pressure-normal の再現性を見る。"),
+  tempoActionExperiment("tempo_confirm_quick16_shift8", "再確認: クイック+16 / シフト+8", "pressure-normal", { actionBias: { quick_call: 16, shift: 8 } }, "首位同率。シフト補助を足しても過剰移動にならないか確認する。"),
+  tempoActionExperiment("tempo_confirm_eager_margin_minus4", "再確認: margin-4", "pressure-normal", undefined, "同率帯。特技を早めに切るだけで十分か、クイック補正が必要かを切り分ける。", -4),
+  tempoActionExperiment("tempo_confirm_margin12", "再確認: margin+12", "pressure-normal", undefined, "慎重採用でも勝率が残るかを見て、無駄撃ち耐性を確認する。", 12),
+  tempoActionExperiment("tempo_confirm_black_margin12", "再確認: black-pressure / margin+12", "black-pressure", undefined, "白相手に強かった黒寄り構成を、中母数で黒相手の下振れ込みで確認する。", 12),
+  tempoActionExperiment("tempo_confirm_1403_quick_shift8", "再確認: 1403 / クイック+8 / シフト+8", "submission-pro-no-rare8-black-1403", { actionBias: { quick_call: 8, shift: 8 } }, "投稿デッキ上位。pressure-normal 以外の採用余地を確認する。"),
 ] as const satisfies readonly MasterLabImprovementExperiment[];
 
 export function runMasterLabImprovementLoop(
@@ -360,12 +393,21 @@ export function formatMasterLabImprovementLoopMarkdown(report: MasterLabImprovem
     ...report.entries.flatMap(formatLoopNote),
     "## Reading",
     "",
-    "- `Overall` はミラーを除いたデコイ側の勝率。白/黒それぞれを相手にした両座席の合算を見る。",
-    "- `Loss Opp HP` はデコイ敗北時の相手マスター残HP平均。低いほど惜敗、高いほど押し切られている。",
-    "- `Usage` の `S ... (E ...)` は、S がMaster Lab特技内のスケープゴート率、E がスケープゴート内の敵対象率。",
+    ...formatReadingBullets(report),
+  ].join("\n");
+}
+
+function formatReadingBullets(report: MasterLabImprovementLoopReport): string[] {
+  const usageLine = report.candidateId === "timing"
+    ? "- `Usage` の `Q` はクイックコール率、`Shift` はシフト率。どちらもMaster Lab特技選択内の比率。"
+    : "- `Usage` の `S ... (E ...)` は、S がMaster Lab特技内のスケープゴート率、E がスケープゴート内の敵対象率。";
+  return [
+    "- `Overall` はミラーを除いた候補側の勝率。白/黒それぞれを相手にした両座席の合算を見る。",
+    "- `Loss Opp HP` は候補側敗北時の相手マスター残HP平均。低いほど惜敗、高いほど押し切られている。",
+    usageLine,
     "- `Magic` は通常マジックカードとして実際に使われた上位カード。Master Lab特技は含めない。",
     "- このループはスクリーニングであり、上位候補は中母数または100戦マトリクスで再確認する。",
-  ].join("\n");
+  ];
 }
 
 function formatSummaryBullets(report: MasterLabImprovementLoopReport): string[] {
@@ -383,8 +425,10 @@ function formatSummaryBullets(report: MasterLabImprovementLoopReport): string[] 
 
   const bullets = [
     `${report.loopCount}ループ / ${totalGames}戦スクリーニング。failure は${totalFailures}、warning は${totalWarnings}。`,
-    `ミラーを除くデコイ側の最高スコアは \`${report.best.experimentId}\`（${report.best.experimentLabel}）の score ${report.best.metrics.score}。overall ${formatPercent(report.best.metrics.decoyWinRate)}、vs Black ${formatPercent(report.best.metrics.blackWinRate)}。`,
-    `最上位の敵スケープゴート率は ${formatPercent(report.best.metrics.enemyScapegoatRate)}（スケープゴート内比率）。味方保護だけで勝っているのか、敵対象で戦い方が変わったのかを次回判断材料にする。`,
+    `ミラーを除く候補側の最高スコアは \`${report.best.experimentId}\`（${report.best.experimentLabel}）の score ${report.best.metrics.score}。overall ${formatPercent(report.best.metrics.decoyWinRate)}、vs Black ${formatPercent(report.best.metrics.blackWinRate)}。`,
+    report.candidateId === "timing"
+      ? `最上位のクイックコール率は ${formatPercent(report.best.metrics.quickCallRate)}、シフト率は ${formatPercent(report.best.metrics.shiftRate)}。展開前倒しが主軸で、シフトは補助に収まっているかを見る。`
+      : `最上位の敵スケープゴート率は ${formatPercent(report.best.metrics.enemyScapegoatRate)}（スケープゴート内比率）。味方保護だけで勝っているのか、敵対象で戦い方が変わったのかを次回判断材料にする。`,
     `基準にした \`${report.baseline.experimentId}\` は overall ${formatPercent(report.baseline.metrics.decoyWinRate)}、vs Black ${formatPercent(report.baseline.metrics.blackWinRate)}。差分は black ${formatSignedPercent(report.best.metrics.blackWinRate - report.baseline.metrics.blackWinRate)}、overall ${formatSignedPercent(report.best.metrics.decoyWinRate - report.baseline.metrics.decoyWinRate)}。`,
     stableBlackCandidates.length > 0
       ? `vs Black 50%以上かつ warning 1件以下の候補は ${stableBlackCandidates.length} 件。横展開より、上位候補の中母数再検証に進む段階。`
@@ -396,7 +440,9 @@ function formatSummaryBullets(report: MasterLabImprovementLoopReport): string[] 
       `\`${highRateWarning.deckPreset}\` は overall ${formatPercent(highRateWarning.metrics.decoyWinRate)} だが warning ${highRateWarning.metrics.warnings} 件。勝率だけなら目立つが、長期戦リスクを先に潰す必要がある。`,
     );
   }
-  bullets.push("中間検証でもスケープゴート率80%超かつ敵対象率5%未満が続くなら、単なる味方保護マスターに戻っているため、評価式より特技設計側の見直しを優先する。");
+  bullets.push(report.candidateId === "timing"
+    ? "中間検証でもシフト率が高く勝率が伸びないなら、位置調整ではなくクイックコール中心の設計へさらに寄せる。"
+    : "中間検証でもスケープゴート率80%超かつ敵対象率5%未満が続くなら、単なる味方保護マスターに戻っているため、評価式より特技設計側の見直しを優先する。");
 
   return bullets.map((bullet) => `- ${bullet}`);
 }
@@ -412,8 +458,12 @@ function formatNextLoopProposal(report: MasterLabImprovementLoopReport): string[
   const shouldPivotToAiEval = report.rankedEntries.slice(0, 5).every((entry) =>
     entry.experimentKind === "deck" || (entry.metrics.scapegoatRate >= 0.8 && entry.metrics.enemyScapegoatRate < 0.05),
   );
-  const shouldProbeEnemyScapegoat = best.metrics.enemyScapegoatRate < 0.05;
-  const proposal = shouldProbeEnemyScapegoat
+  const shouldProbeEnemyScapegoat = report.candidateId === "decoy" && best.metrics.enemyScapegoatRate < 0.05;
+  const proposal = report.candidateId === "timing"
+    ? best.metrics.blackWinRate >= 0.5
+      ? "上位テンポ条件の再現性確認を優先する。次は候補数を絞り、games-per-matchup を 20-30 に上げる。"
+      : "黒相手がまだ足りない。次はクイックコール中心の補正を残し、デッキか採用marginだけを小さく振る。"
+    : shouldProbeEnemyScapegoat
     ? "敵対象スケープゴートの使用が薄い。次は敵に付けた時だけ価値が出る状況評価、または新特技案へ寄せる。"
     : shouldConfirmTop
       ? "上位候補の再現性確認を優先する。次は候補数を減らし、games-per-matchup を 20-30 に上げる。"
@@ -429,7 +479,9 @@ function formatNextLoopProposal(report: MasterLabImprovementLoopReport): string[
     `- 提案: ${proposal}`,
     `- 次回候補: ${selected.length > 0 ? selected.join(" / ") : `\`${best.experimentId}\``}`,
     "- 目安: スクリーニング継続なら20-24ループ、本採用前の再現性確認なら3-5候補に絞って各100-150戦。",
-    "- 分岐: 上位でも敵スケープゴート率が5%未満なら、敵対象バイアスをさらに強めるより、敵に付けた時だけ価値が出る新特技案へ切り替える。",
+    report.candidateId === "timing"
+      ? "- 分岐: 中母数でも vs Black 50%を維持し warning が少なければ、Final Gate とデッキ微調整へ進む。崩れるならクイックコール補正と採用marginの再探索へ戻る。"
+      : "- 分岐: 上位でも敵スケープゴート率が5%未満なら、敵対象バイアスをさらに強めるより、敵に付けた時だけ価値が出る新特技案へ切り替える。",
   ];
 }
 
@@ -490,6 +542,25 @@ function unitActionExperiment(
     hypothesis,
     labActionMargin,
     labEvaluationTuning: mergeMasterLabEvaluationTuning(DEFAULT_MASTER_LAB_UNIT_ACTION_TUNING, labEvaluationTuning),
+  };
+}
+
+function tempoActionExperiment(
+  id: string,
+  label: string,
+  deckPreset: DeckPresetId,
+  labEvaluationTuning: MasterLabEvaluationTuning | undefined,
+  hypothesis: string,
+  labActionMargin = DEFAULT_MASTER_LAB_TEMPO_ACTION_MARGIN,
+): MasterLabImprovementExperiment {
+  return {
+    id,
+    kind: labEvaluationTuning ? "ai_eval" : "deck",
+    label,
+    deckPreset,
+    hypothesis,
+    labActionMargin,
+    ...(labEvaluationTuning ? { labEvaluationTuning } : {}),
   };
 }
 
@@ -577,6 +648,12 @@ function selectExperimentSource(options: {
   }
   if (options.plan === "unit_action") {
     return DEFAULT_MASTER_LAB_UNIT_ACTION_EXPERIMENTS;
+  }
+  if (options.plan === "tempo_action") {
+    return DEFAULT_MASTER_LAB_TEMPO_ACTION_EXPERIMENTS;
+  }
+  if (options.plan === "tempo_confirm") {
+    return DEFAULT_MASTER_LAB_TEMPO_CONFIRM_EXPERIMENTS;
   }
   return DEFAULT_MASTER_LAB_MIXED_IMPROVEMENT_EXPERIMENTS;
 }
@@ -695,6 +772,8 @@ function summarizeImprovementMetrics(
   const targetUsage = result.summary.labActionTargetUsage;
   const labDecisionCount = result.summary.labDecisionCount;
   const scapegoatUsage = usage.scapegoat ?? 0;
+  const quickCallUsage = usage.quick_call ?? 0;
+  const shiftUsage = usage.shift ?? 0;
   const metrics = {
     games: result.summary.games,
     failures: result.summary.failures,
@@ -726,6 +805,8 @@ function summarizeImprovementMetrics(
     allyScapegoatRate: rate(targetUsage["scapegoat:ally"] ?? 0, scapegoatUsage),
     enemyScapegoatRate: rate(targetUsage["scapegoat:enemy"] ?? 0, scapegoatUsage),
     provokeRate: rate(usage.provoke ?? 0, labDecisionCount),
+    quickCallRate: rate(quickCallUsage, labDecisionCount),
+    shiftRate: rate(shiftUsage, labDecisionCount),
     masterAttackRate: rate(usage.master_attack ?? 0, labDecisionCount),
   } satisfies Omit<MasterLabImprovementMetrics, "score">;
 
@@ -860,7 +941,7 @@ function buildConclusion(
     nextSteps: stableTopCount > 0
       ? [
         "上位3候補だけ games-per-matchup 20-30 で中間検証する。",
-        "共通カードを抽出して、デコイ向けの小さな固定デッキ候補を作る。",
+        "共通カードを抽出して、候補向けの小さな固定デッキ候補を作る。",
         "伸びが鈍れば、特技評価パラメータ比較へ切り替える。",
       ]
       : [
@@ -1012,6 +1093,21 @@ function describeMatchupShape(entry: MasterLabImprovementLoopEntry): string {
 
 function describeActionShape(metrics: MasterLabImprovementMetrics): string {
   const notes: string[] = [];
+  const quickCallRate = metrics.quickCallRate;
+  const shiftRate = metrics.shiftRate;
+
+  if (quickCallRate > 0 || shiftRate > 0) {
+    if (quickCallRate >= 0.35) {
+      notes.push(`クイックコール率 ${formatPercent(quickCallRate)} は高めで、展開前倒しを主軸にしている。`);
+    } else if (quickCallRate > 0) {
+      notes.push(`クイックコール率 ${formatPercent(quickCallRate)} は控えめで、必要場面だけ使っている。`);
+    }
+    if (shiftRate >= 0.25) {
+      notes.push(`シフト率 ${formatPercent(shiftRate)} は高めで、位置調整への依存が強い。`);
+    } else if (shiftRate > 0) {
+      notes.push(`シフト率 ${formatPercent(shiftRate)} は控えめで、補助的な陣形手直しに留まっている。`);
+    }
+  }
 
   if (metrics.scapegoatRate >= 0.85) {
     notes.push(`スケープゴート率 ${formatPercent(metrics.scapegoatRate)} はかなり高く、守り先の選別が甘い可能性がある。`);
@@ -1054,8 +1150,15 @@ function formatDeckMeta(masterId: string | undefined, mode: string | undefined, 
   ].join(" / ");
 }
 
-function formatActionRates(metrics: Pick<MasterLabImprovementMetrics, "scapegoatRate" | "enemyScapegoatRate" | "provokeRate" | "masterAttackRate">): string {
+function formatActionRates(metrics: Pick<MasterLabImprovementMetrics, "scapegoatRate" | "enemyScapegoatRate" | "provokeRate" | "quickCallRate" | "shiftRate" | "masterAttackRate">): string {
+  const tempoParts = metrics.quickCallRate > 0 || metrics.shiftRate > 0
+    ? [
+      `Q ${formatPercent(metrics.quickCallRate)}`,
+      `Shift ${formatPercent(metrics.shiftRate)}`,
+    ]
+    : [];
   return [
+    ...tempoParts,
     `S ${formatPercent(metrics.scapegoatRate)} (E ${formatPercent(metrics.enemyScapegoatRate)})`,
     `P ${formatPercent(metrics.provokeRate)}`,
     `A ${formatPercent(metrics.masterAttackRate)}`,

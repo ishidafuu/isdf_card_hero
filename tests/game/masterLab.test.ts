@@ -44,7 +44,7 @@ describe("master lab", () => {
     expect(timing?.actions.find((action) => action.id === "quick_call")).toMatchObject({
       kind: "experimental_effect",
       effectId: "accelerate_own_prepared_monster",
-      cost: 2,
+      cost: 1,
     });
     expect(timing?.actions.find((action) => action.id === "shift")).toMatchObject({
       kind: "experimental_effect",
@@ -234,6 +234,26 @@ describe("master lab", () => {
     expect(targetTunedEnemy?.heuristicScore).toBe((enemyScapegoat?.heuristicScore ?? 0) + 12);
     expect(scapegoat?.reason).toContain("補助評価");
     expect(chosen).toBeDefined();
+    expect(evaluations.every((evaluation) => Number.isFinite(evaluation.totalScore))).toBe(true);
+  });
+
+  it("evaluates tempo master lab actions as board-speed probes", () => {
+    const game = createInitialGame(905);
+    game.players.player.stones = 4;
+    game.slots.player_front_left.monster = createActiveMonster("takokke", "player", {
+      status: "prepared",
+    });
+    game.slots.player_front_right.monster = createActiveMonster("yanbaru", "player");
+
+    const evaluations = inspectMasterLabActionEvaluations(game, "timing", "player", {
+      actionBias: { quick_call: 8, shift: 4 },
+    });
+    const quickCall = evaluations.find((evaluation) => evaluation.option.actionId === "quick_call");
+    const shift = evaluations.find((evaluation) => evaluation.option.actionId === "shift");
+
+    expect(quickCall?.heuristicScore).toBeGreaterThan(8);
+    expect(quickCall?.after.slots.player_front_left.monster?.masterAttackBlockedUntilTurnEnd).toBe(true);
+    expect(shift?.heuristicScore).toBeGreaterThan(4);
     expect(evaluations.every((evaluation) => Number.isFinite(evaluation.totalScore))).toBe(true);
   });
 });

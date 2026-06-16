@@ -1,6 +1,7 @@
-import { getCardDef, getCardName } from "./cards";
+import { getCardDef, getCardName, getMonsterDef } from "./cards";
 import { evaluateState } from "./cpuAi";
 import { MASTER_ACTION_DEFS } from "./masters";
+import { PLAYER_SLOT_ORDER } from "./ruleEngine/constants";
 import { cloneState } from "./ruleEngine/state";
 import {
   getMagicSecondaryTargets,
@@ -11,7 +12,7 @@ import {
   targetToKey,
   useMasterAction,
 } from "./rules";
-import type { GameState, MasterActionId, PlayerId, Target } from "./types";
+import type { GameState, MasterActionId, MonsterState, PlayerId, SlotKey, Target } from "./types";
 
 export type MasterLabCandidateId = "decoy" | "sacrifice" | "timing";
 export type MasterLabCandidateStatus = "design" | "rules_probe" | "ai_probe" | "candidate";
@@ -279,7 +280,7 @@ export const MASTER_LAB_CANDIDATES: readonly MasterLabCandidate[] = [
         name: "クイックコール",
         kind: "experimental_effect",
         effectId: "accelerate_own_prepared_monster",
-        cost: 2,
+        cost: 1,
         summary: "自分の準備中モンスター1体をすぐ登場させる。そのターン、そのモンスターは相手マスターを攻撃できない。",
         notes: "相手の準備中には触らず、自分の弱い準備ターンだけを短くする。",
       },
@@ -367,8 +368,11 @@ export function playMasterLabAction(state: GameState, input: MasterLabActionInpu
     removeVirtualMagicCard(next, state.currentPlayer, virtual.handInstanceId);
     return next;
   }
+  if (action.kind === "experimental_effect") {
+    return playExperimentalMasterLabAction(state, candidate.id, action, input);
+  }
 
-  throw new Error(`${action.name} はまだMaster Lab実行に接続されていません`);
+  throw new Error("未対応のMaster Lab特技です");
 }
 
 export function inspectMasterLabActionEvaluations(
@@ -641,6 +645,52 @@ function listActionOptions(
       return secondaryTargets.map((secondaryTarget) => createActionOption(candidate.id, action, target, secondaryTarget));
     });
   }
+  if (action.kind === "experimental_effect") {
+    return listExperimentalActionOptions(state, candidate, action);
+  }
+
+  return [];
+}
+
+function listExperimentalActionOptions(
+  state: GameState,
+  candidate: MasterLabCandidate,
+  action: MasterLabExperimentalAction,
+): MasterLabActionOption[] {
+  if (candidate.id !== "timing") {
+    return [];
+  }
+  const playerId = state.currentPlayer;
+
+  if (action.id === "quick_call") {
+    return PLAYER_SLOT_ORDER[playerId]
+      .filter((slotKey) => {
+        const monster = state.slots[slotKey].monster;
+        return monster?.owner === playerId && monster.status === "prepared";
+      })
+      .map((slotKey) => createActionOption(candidate.id, action, { kind: "monster", slotKey }));
+  }
+
+  if (action.id === "shift") {
+    return PLAYER_SLOT_ORDER[playerId].flatMap((fromSlotKey) => {
+      const mover = state.slots[fromSlotKey].monster;
+      if (!mover || mover.owner !== playerId || mover.status !== "active" || mover.cannotMove) {
+        return [];
+      }
+      return PLAYER_SLOT_ORDER[playerId]
+        .filter((toSlotKey) => {
+          if (toSlotKey === fromSlotKey) {
+            return false;
+          }
+          const target = state.slots[toSlotKey].monster;
+          return (!target || (target.owner === playerId && target.status === "active")) &&
+            isUsefulTempoShiftOption(state, fromSlotKey, toSlotKey);
+        })
+        .map((toSlotKey) =>
+          createActionOption(candidate.id, action, { kind: "monster", slotKey: fromSlotKey }, { kind: "monster", slotKey: toSlotKey }),
+        );
+    });
+  }
 
   return [];
 }
@@ -664,6 +714,122 @@ function createActionOption(
       ? `${action.name} ${targetToKey(target)} / ${targetToKey(secondaryTarget)} (${cost}コ)`
       : `${action.name} ${targetToKey(target)} (${cost}コ)`,
   };
+}
+
+function playExperimentalMasterLabAction(
+  state: GameState,
+  candidateId: MasterLabCandidateId,
+  action: MasterLabExperimentalAction,
+  input: MasterLabActionInput,
+): GameState {
+  if (candidateId === "timing" && action.id === "quick_call") {
+    return playTempoQuickCall(state, action, input);
+  }
+  if (candidateId === "timing" && action.id === "shift") {
+    return playTempoShift(state, action, input);
+  }
+  throw new Error(`${action.name} はまだMaster Lab実行に接続されていません`);
+}
+
+function playTempoQuickCall(
+  state: GameState,
+  action: MasterLabExperimentalAction,
+  input: MasterLabActionInput,
+): GameState {
+  if (input.target.kind !== "monster") {
+    throw new Error("クイックコールの対象が不正です");
+  }
+  const next = createExperimentalResolverState(state, action);
+  const playerId = next.currentPlayer;
+  const monster = next.slots[input.target.slotKey].monster;
+  if (!monster || monster.owner !== playerId || monster.status !== "prepared") {
+    throw new Error("クイックコールは自分の準備中モンスターにだけ使えます");
+  }
+
+  monster.status = "active";
+  monster.actionCount = 0;
+  monster.actionLimit = getMonsterDef(monster.cardId).actionLimit ?? 1;
+  monster.masterAttackBlockedUntilTurnEnd = true;
+  next.log.push(`${labPlayerLabel(playerId)}のクイックコール: ${getCardName(monster.cardId)}が登場した`);
+  return next;
+}
+
+function playTempoShift(
+  state: GameState,
+  action: MasterLabExperimentalAction,
+  input: MasterLabActionInput,
+): GameState {
+  if (input.target.kind !== "monster" || input.secondaryTarget?.kind !== "monster") {
+    throw new Error("シフトの対象が不正です");
+  }
+  const next = createExperimentalResolverState(state, action);
+  const playerId = next.currentPlayer;
+  const fromSlotKey = input.target.slotKey;
+  const toSlotKey = input.secondaryTarget.slotKey;
+  const fromSlot = next.slots[fromSlotKey];
+  const toSlot = next.slots[toSlotKey];
+  const mover = fromSlot.monster;
+  const swapTarget = toSlot.monster;
+
+  if (!mover || mover.owner !== playerId || mover.status !== "active" || mover.cannotMove) {
+    throw new Error("シフトできる自分の登場済みモンスターを選んでください");
+  }
+  if (fromSlotKey === toSlotKey || toSlot.owner !== playerId) {
+    throw new Error("シフトは自陣の別枠にだけ使えます");
+  }
+  if (swapTarget && (swapTarget.owner !== playerId || swapTarget.status !== "active")) {
+    throw new Error("シフトは自分の登場済みモンスターとだけ入れ替えられます");
+  }
+
+  clearDarkHoleIfTempoShifted(mover, toSlotKey);
+  if (swapTarget) {
+    clearDarkHoleIfTempoShifted(swapTarget, fromSlotKey);
+  }
+  next.turnMoveHistory = [
+    ...(next.turnMoveHistory ?? []),
+    {
+      playerId,
+      fromSlotKey,
+      toSlotKey,
+      moverInstanceId: mover.instanceId,
+      ...(swapTarget ? { swappedInstanceId: swapTarget.instanceId } : {}),
+    },
+  ];
+
+  if (swapTarget) {
+    toSlot.monster = mover;
+    fromSlot.monster = swapTarget;
+    next.log.push(`${labPlayerLabel(playerId)}のシフト: ${getCardName(mover.cardId)}と${getCardName(swapTarget.cardId)}を入れ替えた`);
+  } else {
+    toSlot.monster = mover;
+    delete fromSlot.monster;
+    next.log.push(`${labPlayerLabel(playerId)}のシフト: ${getCardName(mover.cardId)}を移動した`);
+  }
+
+  return next;
+}
+
+function createExperimentalResolverState(
+  state: GameState,
+  action: MasterLabExperimentalAction,
+): GameState {
+  const cost = resolvedMasterLabActionCost(action);
+  if (state.players[state.currentPlayer].stones < cost) {
+    throw new Error("Master Lab特技に必要なストーンが足りません");
+  }
+  const next = cloneState(state);
+  next.players[next.currentPlayer].stones -= cost;
+  return next;
+}
+
+function clearDarkHoleIfTempoShifted(monster: MonsterState, toSlotKey: SlotKey): void {
+  if (monster.darkHoleSlotKey && monster.darkHoleSlotKey !== toSlotKey) {
+    monster.darkHoleSlotKey = undefined;
+  }
+}
+
+function labPlayerLabel(playerId: PlayerId): string {
+  return playerId === "player" ? "プレイヤー" : "CPU";
 }
 
 function isSameActionOption(option: MasterLabActionOption, input: MasterLabActionInput): boolean {
@@ -701,6 +867,9 @@ function masterLabActionHeuristic(
   option: MasterLabActionOption,
   perspective: PlayerId,
 ): number {
+  if (option.candidateId === "timing") {
+    return tempoMasterLabActionHeuristic(before, after, option, perspective);
+  }
   if (option.candidateId !== "decoy") {
     return 0;
   }
@@ -739,6 +908,64 @@ function masterLabActionHeuristic(
   }
 
   return 0;
+}
+
+function tempoMasterLabActionHeuristic(
+  before: GameState,
+  after: GameState,
+  option: MasterLabActionOption,
+  perspective: PlayerId,
+): number {
+  if (option.actionId === "quick_call" && option.target.kind === "monster") {
+    const beforeMonster = before.slots[option.target.slotKey].monster;
+    const afterMonster = after.slots[option.target.slotKey].monster;
+    if (!beforeMonster || !afterMonster || beforeMonster.owner !== perspective || afterMonster.status !== "active") {
+      return 0;
+    }
+    const opponent = opponentOf(perspective);
+    const ownHpPressure = before.players[perspective].masterHp <= before.players[opponent].masterHp ? 8 : 0;
+    const lowHpBonus = before.players[perspective].masterHp <= 4 ? 10 : 0;
+    const frontBonus = before.slots[option.target.slotKey].row === "front" ? 10 : 4;
+    return 22 + frontBonus + ownHpPressure + lowHpBonus + Math.max(0, afterMonster.hp) * 2;
+  }
+
+  if (option.actionId === "shift" && option.target.kind === "monster" && option.secondaryTarget?.kind === "monster") {
+    const beforeScore = tempoPlacementScore(before, option.target.slotKey) + tempoPlacementScore(before, option.secondaryTarget.slotKey);
+    const afterScore = tempoPlacementScore(after, option.target.slotKey) + tempoPlacementScore(after, option.secondaryTarget.slotKey);
+    return 12 + Math.max(-8, (afterScore - beforeScore) * 2);
+  }
+
+  return 0;
+}
+
+function tempoPlacementScore(state: GameState, slotKey: SlotKey): number {
+  const monster = state.slots[slotKey].monster;
+  if (!monster || monster.status !== "active") {
+    return 0;
+  }
+  return tempoPlacementScoreFor(state, monster, slotKey);
+}
+
+function tempoPlacementScoreFor(state: GameState, monster: MonsterState, slotKey: SlotKey): number {
+  const role = getMonsterDef(monster.cardId).role;
+  const row = state.slots[slotKey].row;
+  if (role === row) {
+    return 8;
+  }
+  return -5;
+}
+
+function isUsefulTempoShiftOption(state: GameState, fromSlotKey: SlotKey, toSlotKey: SlotKey): boolean {
+  const mover = state.slots[fromSlotKey].monster;
+  const swapTarget = state.slots[toSlotKey].monster;
+  if (!mover || mover.status !== "active") {
+    return false;
+  }
+  const beforeScore = tempoPlacementScoreFor(state, mover, fromSlotKey) +
+    (swapTarget ? tempoPlacementScoreFor(state, swapTarget, toSlotKey) : 0);
+  const afterScore = tempoPlacementScoreFor(state, mover, toSlotKey) +
+    (swapTarget ? tempoPlacementScoreFor(state, swapTarget, fromSlotKey) : 0);
+  return afterScore > beforeScore;
 }
 
 function applyMasterLabEvaluationTuning(

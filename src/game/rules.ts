@@ -1759,6 +1759,7 @@ function clearEndOfTurnMarkers(state: GameState): void {
     const monster = state.slots[slotKey].monster;
     if (monster) {
       monster.damageGuarded = false;
+      monster.masterAttackBlockedUntilTurnEnd = undefined;
     }
   }
   state.turnMoveHistory = [];

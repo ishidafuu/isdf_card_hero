@@ -78,7 +78,7 @@ export function getCommandTargetsUnchecked(
     return [{ kind: "monster", slotKey: attackerSlotKey }];
   }
   if (command.name === "それちょうだい") {
-    return [{ kind: "master", playerId: opponent }];
+    return opponentMasterTargets(monster, opponent);
   }
   if (command.name === "レベルダウン") {
     return activeMonsterTargets.filter((target) => {
@@ -117,13 +117,13 @@ export function getCommandTargetsUnchecked(
     return [
       ...activeMonsterTargets.filter((target) => target.kind === "monster"),
       { kind: "master", playerId: monster.owner },
-      { kind: "master", playerId: opponent },
+      ...opponentMasterTargets(monster, opponent),
     ];
   }
   if (command.name === "神秘のキノコ") {
     return [
       { kind: "master", playerId: monster.owner },
-      { kind: "master", playerId: opponent },
+      ...opponentMasterTargets(monster, opponent),
     ];
   }
   if (command.name === "ウォッシュ" || command.name === "レベル固定") {
@@ -157,7 +157,7 @@ export function getCommandTargetsUnchecked(
     return activeMonsterTargets.filter((target) => target.kind === "monster" && state.slots[target.slotKey].owner === opponent);
   }
   if (command.name === "ドリルブレイク") {
-    return drillBreakPartnerSlotKey(state, slot) ? [{ kind: "master", playerId: opponent }] : [];
+    return drillBreakPartnerSlotKey(state, slot) ? opponentMasterTargets(monster, opponent) : [];
   }
   if (command.rangeText === "前衛攻撃") {
     if (hasActiveAllyCard(state, monster.owner, "card_084")) {
@@ -182,13 +182,13 @@ export function getCommandTargetsUnchecked(
     return activeMonsterTargets;
   }
   if (command.range === "any_target") {
-    return [...activeMonsterTargets, { kind: "master", playerId: opponent }];
+    return [...activeMonsterTargets, ...opponentMasterTargets(monster, opponent)];
   }
   if (command.range === "master") {
-    return [{ kind: "master", playerId: opponent }];
+    return opponentMasterTargets(monster, opponent);
   }
   if (monster.canAttackAnywhere && command.id === "attack") {
-    return [...activeMonsterTargets, { kind: "master", playerId: opponent }];
+    return [...activeMonsterTargets, ...opponentMasterTargets(monster, opponent)];
   }
 
   return rangeTargets(state, slot, command, activeMonsterTargets, opponent, command.range);
@@ -494,6 +494,10 @@ function monsterTargets(
     .map<Target>((slotKey) => ({ kind: "monster", slotKey }));
 }
 
+function opponentMasterTargets(monster: MonsterState, opponent: PlayerId): Target[] {
+  return monster.masterAttackBlockedUntilTurnEnd ? [] : [{ kind: "master", playerId: opponent }];
+}
+
 function rangeTargets(
   state: GameState,
   attackerSlot: SlotState,
@@ -510,7 +514,7 @@ function rangeTargets(
     return isTargetInCommandRange(attackerSlot, targetSlot, command, range);
   });
 
-  if (isOpponentMasterInCommandRange(attackerSlot, opponent, command, range)) {
+  if (isOpponentMasterInCommandRange(attackerSlot, opponent, command, range) && !attackerSlot.monster?.masterAttackBlockedUntilTurnEnd) {
     targets.push({ kind: "master", playerId: opponent });
   }
 
