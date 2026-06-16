@@ -42,6 +42,7 @@ describe("master lab auto play", () => {
 
     expect(result.ok).toBe(true);
     expect(result.summary.labDecisionCount).toBe(0);
+    expect(result.summary.magicCardUsage).toBeDefined();
   }, MASTER_LAB_AUTO_PLAY_TEST_TIMEOUT_MS);
 
   it("can record virtual magic opportunities for lab participants", () => {
@@ -68,5 +69,6 @@ describe("master lab auto play", () => {
 
     const summary = formatMasterLabAutoPlaySummary(result);
     expect(summary).toContain("Magic opportunities:");
+    expect(summary).toContain("Magic card usage:");
   }, MASTER_LAB_AUTO_PLAY_TEST_TIMEOUT_MS);
 });

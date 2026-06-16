@@ -114,10 +114,10 @@ function readCandidate(name: string, value: string | undefined): MasterLabCandid
 }
 
 function readPlan(name: string, value: string | undefined): CliOptions["plan"] {
-  if (value === "deck" || value === "mixed" || value === "scapegoat") {
+  if (value === "deck" || value === "mixed" || value === "scapegoat" || value === "magic_inclusion") {
     return value;
   }
-  throw new Error(`${name} must be one of: deck, mixed, scapegoat`);
+  throw new Error(`${name} must be one of: deck, mixed, scapegoat, magic_inclusion`);
 }
 
 function readDeckPreset(name: string, value: string | undefined): DeckPresetId {
@@ -166,7 +166,7 @@ Usage:
 
 Options:
   --candidate <id>           Candidate. Default: decoy. Values: decoy, sacrifice, timing
-  --plan <id>                Experiment plan. Default: mixed. Values: deck, mixed, scapegoat
+  --plan <id>                Experiment plan. Default: mixed. Values: deck, mixed, scapegoat, magic_inclusion
   --loops <n>                Number of hypotheses to evaluate. Default: selected plan length
   --games-per-matchup <n>    Games per final-gate matchup. Default: 5
   --deck-preset <id>         Add an explicit deck preset. Can be repeated.

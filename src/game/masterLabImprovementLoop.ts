@@ -1,3 +1,4 @@
+import { getCardName } from "./cards";
 import { getDeckPreset, type DeckPresetId } from "./deckPresets";
 import { runMasterLabFinalGate, type MasterLabFinalGateOptions, type MasterLabFinalGateResult } from "./masterLabFinalGate";
 import type { MasterLabCandidateId, MasterLabEvaluationTuning } from "./masterLab";
@@ -5,7 +6,7 @@ import type { PlayerId } from "./types";
 
 export type MasterLabImprovementJudgement = "advance" | "hold" | "reject";
 export type MasterLabImprovementDecision = "needs_full_gate" | "continue_deck_loop" | "pivot_to_action_design";
-export type MasterLabImprovementPlanId = "deck" | "mixed" | "scapegoat";
+export type MasterLabImprovementPlanId = "deck" | "mixed" | "scapegoat" | "magic_inclusion";
 export type MasterLabImprovementExperimentKind = "deck" | "ai_eval" | "hybrid" | "warning_probe";
 
 export interface MasterLabImprovementLoopOptions extends Omit<MasterLabFinalGateOptions, "deckPreset"> {
@@ -52,6 +53,7 @@ export interface MasterLabImprovementMetrics {
   labDecisionCount: number;
   labActionUsage: Record<string, number>;
   labActionTargetUsage: Record<string, number>;
+  magicCardUsage: Record<string, number>;
   scapegoatRate: number;
   allyScapegoatRate: number;
   enemyScapegoatRate: number;
@@ -97,6 +99,10 @@ export interface MasterLabImprovementLoopReport {
 
 const DEFAULT_CANDIDATE_ID = "decoy" satisfies MasterLabCandidateId;
 const DEFAULT_GAMES_PER_MATCHUP = 5;
+const DEFAULT_MASTER_LAB_MAGIC_INCLUSION_TUNING = {
+  targetOwnerBias: { enemy: 16 },
+} satisfies MasterLabEvaluationTuning;
+const DEFAULT_MASTER_LAB_MAGIC_INCLUSION_MARGIN = 12;
 
 export const DEFAULT_MASTER_LAB_IMPROVEMENT_DECK_PRESETS = [
   "pressure-normal",
@@ -177,6 +183,15 @@ export const DEFAULT_MASTER_LAB_SCAPEGOAT_IMPROVEMENT_EXPERIMENTS = [
   aiExperiment("target_1354_enemy24_margin12", "対象評価: 1354 / enemy+24 / margin+12", "submission-pro-with-rare8-black-1354", { targetOwnerBias: { enemy: 24 } }, "長期戦候補で慎重採用を足し、敵対象の副作用を抑える。", 12),
   hybridExperiment("hybrid_black_provoke16_enemy16", "混合: 挑発+16 / enemy+16", "black-pressure", { actionBias: { provoke: 16 }, targetOwnerBias: { enemy: 16 } }, "挑発と敵スケープゴートを両方使い、回避型らしい攻撃誘導へ寄せる。"),
   hybridExperiment("hybrid_black_provoke16_enemy24_allyminus8", "混合: 挑発+16 / enemy+24 / ally-8", "black-pressure", { actionBias: { provoke: 16 }, targetOwnerBias: { enemy: 24, ally: -8 } }, "敵対象を強くしつつ挑発も増やし、味方保護一辺倒から脱却できるか見る。"),
+] as const satisfies readonly MasterLabImprovementExperiment[];
+
+export const DEFAULT_MASTER_LAB_MAGIC_INCLUSION_EXPERIMENTS = [
+  magicInclusionExperiment("magic_baseline_black_pressure", "基準: black-pressure", "black-pressure", "前回基準。マジック差し替え前の勝率、警告、通常マジック使用回数を再確認する。"),
+  magicInclusionExperiment("magic_stable_control", "投入: 安定マジック", "master-lab-decoy-magic-stable", "リ・シャッフルと盾を増やし、デコイの受けを継戦力へ変換できるか見る。"),
+  magicInclusionExperiment("magic_removal", "投入: 除去マジック", "master-lab-decoy-magic-removal", "仮想機会の多かった除去札で、敵盤面を直接減らして黒速攻を止められるか見る。"),
+  magicInclusionExperiment("magic_burst", "投入: バースト", "master-lab-decoy-magic-burst", "受けた後の反撃速度を上げ、デコイが守るだけで終わらない形になるか見る。"),
+  magicInclusionExperiment("magic_tech", "投入: テック", "master-lab-decoy-magic-tech", "誘惑、ヒーリング、ロストーン、リターンで状況対応力が勝率に出るか見る。"),
+  magicInclusionExperiment("magic_finisher_thunder", "投入: サンダー1枚", "master-lab-decoy-magic-finisher", "サンダーを1枚だけ入れ、勝ち切り札としての伸びとピーキーな副作用を分けて見る。"),
 ] as const satisfies readonly MasterLabImprovementExperiment[];
 
 export function runMasterLabImprovementLoop(
@@ -294,14 +309,14 @@ export function formatMasterLabImprovementLoopMarkdown(report: MasterLabImprovem
     "",
     "## Top Candidates",
     "",
-    "| Rank | Loop | Deck | Score | Overall | vs Black | vs White | Loss Opp HP | Usage | Issues | Judgement |",
-    "| --- | ---: | --- | ---: | ---: | ---: | ---: | ---: | --- | --- | --- |",
+    "| Rank | Loop | Deck | Score | Overall | vs Black | vs White | Loss Opp HP | Usage | Magic | Issues | Judgement |",
+    "| --- | ---: | --- | ---: | ---: | ---: | ---: | ---: | --- | --- | --- | --- |",
     ...report.rankedEntries.slice(0, 5).map((entry, rank) => formatEntryRow(entry, rank + 1)),
     "",
     "## Loop Results",
     "",
-    "| Loop | Deck | Hypothesis | Score | Overall | vs Black | vs White | Avg Turns | Loss Opp HP | Action Usage | Issues | Judgement |",
-    "| ---: | --- | --- | ---: | ---: | ---: | ---: | ---: | ---: | --- | --- | --- |",
+    "| Loop | Deck | Hypothesis | Score | Overall | vs Black | vs White | Avg Turns | Loss Opp HP | Action Usage | Magic | Issues | Judgement |",
+    "| ---: | --- | --- | ---: | ---: | ---: | ---: | ---: | ---: | --- | --- | --- | --- |",
     ...report.entries.map(formatLoopRow),
     "",
     "## Loop Notes",
@@ -312,6 +327,7 @@ export function formatMasterLabImprovementLoopMarkdown(report: MasterLabImprovem
     "- `Overall` はミラーを除いたデコイ側の勝率。白/黒それぞれを相手にした両座席の合算を見る。",
     "- `Loss Opp HP` はデコイ敗北時の相手マスター残HP平均。低いほど惜敗、高いほど押し切られている。",
     "- `Usage` の `S ... (E ...)` は、S がMaster Lab特技内のスケープゴート率、E がスケープゴート内の敵対象率。",
+    "- `Magic` は通常マジックカードとして実際に使われた上位カード。Master Lab特技は含めない。",
     "- このループはスクリーニングであり、上位候補は中母数または100戦マトリクスで再確認する。",
   ].join("\n");
 }
@@ -394,6 +410,19 @@ function deckExperiment(
   };
 }
 
+function magicInclusionExperiment(
+  id: string,
+  label: string,
+  deckPreset: DeckPresetId,
+  hypothesis: string,
+): MasterLabImprovementExperiment {
+  return {
+    ...deckExperiment(id, label, deckPreset, hypothesis),
+    labActionMargin: DEFAULT_MASTER_LAB_MAGIC_INCLUSION_MARGIN,
+    labEvaluationTuning: DEFAULT_MASTER_LAB_MAGIC_INCLUSION_TUNING,
+  };
+}
+
 function aiExperiment(
   id: string,
   label: string,
@@ -469,6 +498,9 @@ function selectExperimentSource(options: {
   }
   if (options.plan === "scapegoat") {
     return DEFAULT_MASTER_LAB_SCAPEGOAT_IMPROVEMENT_EXPERIMENTS;
+  }
+  if (options.plan === "magic_inclusion") {
+    return DEFAULT_MASTER_LAB_MAGIC_INCLUSION_EXPERIMENTS;
   }
   return DEFAULT_MASTER_LAB_MIXED_IMPROVEMENT_EXPERIMENTS;
 }
@@ -593,6 +625,7 @@ function summarizeImprovementMetrics(
     labDecisionCount,
     labActionUsage: usage,
     labActionTargetUsage: targetUsage,
+    magicCardUsage: result.summary.magicCardUsage,
     scapegoatRate: rate(scapegoatUsage, labDecisionCount),
     allyScapegoatRate: rate(targetUsage["scapegoat:ally"] ?? 0, scapegoatUsage),
     enemyScapegoatRate: rate(targetUsage["scapegoat:enemy"] ?? 0, scapegoatUsage),
@@ -773,6 +806,7 @@ function formatEntryRow(entry: MasterLabImprovementLoopEntry, rank: number): str
     formatWinLossRate(metrics.whiteWins, metrics.whiteLosses, metrics.whiteWinRate),
     formatMaybeNumber(metrics.averageOpponentHpOnLoss),
     formatActionRates(metrics),
+    formatMagicUsage(metrics.magicCardUsage),
     formatIssues(metrics),
     entry.judgement,
   ].join(" | ").replace(/^/, "| ").replace(/$/, " |");
@@ -791,6 +825,7 @@ function formatLoopRow(entry: MasterLabImprovementLoopEntry): string {
     metrics.averageTurns,
     formatMaybeNumber(metrics.averageOpponentHpOnLoss),
     formatActionRates(metrics),
+    formatMagicUsage(metrics.magicCardUsage),
     formatIssues(metrics),
     entry.judgement,
   ].join(" | ").replace(/^/, "| ").replace(/$/, " |");
@@ -817,6 +852,7 @@ function formatLoopNote(entry: MasterLabImprovementLoopEntry): string[] {
     `- 結果: score ${metrics.score}、overall ${formatWinLossInline(metrics.decoyWins, metrics.decoyLosses, metrics.decoyWinRate)}、vs Black ${formatWinLossInline(metrics.blackWins, metrics.blackLosses, metrics.blackWinRate)}、vs White ${formatWinLossInline(metrics.whiteWins, metrics.whiteLosses, metrics.whiteWinRate)}、${formatIssues(metrics)}。`,
     `- 読み解き: ${describeMatchupShape(entry)}`,
     `- 特技傾向: ${describeActionShape(metrics)}`,
+    `- マジック使用: ${formatMagicUsageText(metrics.magicCardUsage)}`,
     `- 次アクション: ${entry.nextAction}`,
     "",
   ];
@@ -913,6 +949,23 @@ function formatActionRates(metrics: Pick<MasterLabImprovementMetrics, "scapegoat
     `P ${formatPercent(metrics.provokeRate)}`,
     `A ${formatPercent(metrics.masterAttackRate)}`,
   ].join("<br>");
+}
+
+function formatMagicUsage(usage: Record<string, number>): string {
+  const top = topMagicUsage(usage, 4).map(({ cardId, count }) => `${getCardName(cardId)} ${count}`);
+  return top.length > 0 ? top.join("<br>") : "-";
+}
+
+function formatMagicUsageText(usage: Record<string, number>): string {
+  const top = topMagicUsage(usage, 6).map(({ cardId, count }) => `${getCardName(cardId)} ${count}回`);
+  return top.length > 0 ? top.join(" / ") : "通常マジック使用なし";
+}
+
+function topMagicUsage(usage: Record<string, number>, limit: number): Array<{ cardId: string; count: number }> {
+  return Object.entries(usage ?? {})
+    .sort(([, a], [, b]) => b - a)
+    .slice(0, limit)
+    .map(([cardId, count]) => ({ cardId, count }));
 }
 
 function formatExperimentTuning(

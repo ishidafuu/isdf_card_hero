@@ -56,4 +56,25 @@ describe("master lab improvement loop", () => {
     expect(markdown).toContain("(E ");
     expect(markdown).toContain("敵スケープゴート率");
   }, MASTER_LAB_IMPROVEMENT_LOOP_TEST_TIMEOUT_MS);
+
+  it("runs the magic inclusion plan with master lab deck variants", () => {
+    const report = runMasterLabImprovementLoop({
+      candidateId: "decoy",
+      plan: "magic_inclusion",
+      loopCount: 2,
+      gamesPerMatchup: 1,
+      maxSteps: 700,
+      maxTurns: 160,
+    });
+
+    expect(report.entries).toHaveLength(2);
+    expect(report.entries[0].experimentId).toBe("magic_baseline_black_pressure");
+    expect(report.entries[1].deckPreset).toBe("master-lab-decoy-magic-stable");
+    expect(report.entries[1].metrics.magicCardUsage).toBeDefined();
+
+    const markdown = formatMasterLabImprovementLoopMarkdown(report);
+    expect(markdown).toContain("投入: 安定マジック");
+    expect(markdown).toContain("| Loop | Deck | Hypothesis | Score | Overall | vs Black | vs White | Avg Turns | Loss Opp HP | Action Usage | Magic | Issues | Judgement |");
+    expect(markdown).toContain("マジック使用");
+  }, MASTER_LAB_IMPROVEMENT_LOOP_TEST_TIMEOUT_MS);
 });

@@ -7,9 +7,15 @@ import {
 import type { MasterId } from "./types";
 
 export type BuiltInDeckPresetId = "balanced-normal" | "pressure-normal" | "black-pressure" | "special-showcase";
+export type MasterLabDeckPresetId =
+  | "master-lab-decoy-magic-stable"
+  | "master-lab-decoy-magic-removal"
+  | "master-lab-decoy-magic-burst"
+  | "master-lab-decoy-magic-tech"
+  | "master-lab-decoy-magic-finisher";
 export type DeckSubmissionPresetId = `submission-${string}`;
-export type DeckPresetId = BuiltInDeckPresetId | DeckSubmissionPresetId;
-export type DeckPresetGroupId = "built-in" | DeckSubmissionGroupId;
+export type DeckPresetId = BuiltInDeckPresetId | MasterLabDeckPresetId | DeckSubmissionPresetId;
+export type DeckPresetGroupId = "built-in" | "master-lab" | DeckSubmissionGroupId;
 
 export interface DeckPresetDef {
   id: DeckPresetId;
@@ -82,6 +88,37 @@ const SPECIAL_SHOWCASE_DECK_CARD_IDS = [
   "card_143",
 ] as const;
 
+const DECOY_MAGIC_STABLE_DECK_CARD_IDS = replaceDeckCards(BLACK_PRESSURE_DECK_CARD_IDS, [
+  ["card_120", "card_114"],
+  ["card_130", "card_030"],
+  ["card_029", "card_089"],
+]);
+
+const DECOY_MAGIC_REMOVAL_DECK_CARD_IDS = replaceDeckCards(BLACK_PRESSURE_DECK_CARD_IDS, [
+  ["card_120", "card_092"],
+  ["card_130", "card_026"],
+  ["card_029", "card_056"],
+  ["card_093", "card_126"],
+]);
+
+const DECOY_MAGIC_BURST_DECK_CARD_IDS = replaceDeckCards(BLACK_PRESSURE_DECK_CARD_IDS, [
+  ["card_120", "power_up"],
+  ["card_130", "power_up"],
+  ["card_029", "card_094"],
+  ["card_093", "card_094"],
+]);
+
+const DECOY_MAGIC_TECH_DECK_CARD_IDS = replaceDeckCards(BLACK_PRESSURE_DECK_CARD_IDS, [
+  ["card_120", "card_061"],
+  ["card_130", "healing"],
+  ["card_029", "card_113"],
+  ["card_093", "card_122"],
+]);
+
+const DECOY_MAGIC_FINISHER_DECK_CARD_IDS = replaceDeckCards(BLACK_PRESSURE_DECK_CARD_IDS, [
+  ["card_029", "thunder"],
+]);
+
 const BUILT_IN_DECK_PRESETS: DeckPresetDef[] = [
   {
     id: "balanced-normal",
@@ -117,13 +154,68 @@ const BUILT_IN_DECK_PRESETS: DeckPresetDef[] = [
   },
 ];
 
+const MASTER_LAB_DECK_PRESETS: DeckPresetDef[] = [
+  {
+    id: "master-lab-decoy-magic-stable",
+    name: "デコイ実験: 安定マジック",
+    description: "black-pressure派生。リ・シャッフル、二重の盾、竜の盾で継戦と防御を厚くする。",
+    cardIds: DECOY_MAGIC_STABLE_DECK_CARD_IDS,
+    allowSpecial: false,
+    masterId: "black",
+    mode: "Master Lab",
+    group: "master-lab",
+  },
+  {
+    id: "master-lab-decoy-magic-removal",
+    name: "デコイ実験: 除去マジック",
+    description: "black-pressure派生。マッドファイア、スパーク、ブラックレイン、大地の怒りで盤面干渉を厚くする。",
+    cardIds: DECOY_MAGIC_REMOVAL_DECK_CARD_IDS,
+    allowSpecial: false,
+    masterId: "black",
+    mode: "Master Lab",
+    group: "master-lab",
+  },
+  {
+    id: "master-lab-decoy-magic-burst",
+    name: "デコイ実験: バースト",
+    description: "black-pressure派生。パワーアップとバーサクパワーを増やし、受けた後の反撃速度を見る。",
+    cardIds: DECOY_MAGIC_BURST_DECK_CARD_IDS,
+    allowSpecial: false,
+    masterId: "black",
+    mode: "Master Lab",
+    group: "master-lab",
+  },
+  {
+    id: "master-lab-decoy-magic-tech",
+    name: "デコイ実験: テック",
+    description: "black-pressure派生。誘惑、ヒーリング、ロストーン、リターンで状況対応力を見る。",
+    cardIds: DECOY_MAGIC_TECH_DECK_CARD_IDS,
+    allowSpecial: false,
+    masterId: "black",
+    mode: "Master Lab",
+    group: "master-lab",
+  },
+  {
+    id: "master-lab-decoy-magic-finisher",
+    name: "デコイ実験: サンダー1枚",
+    description: "black-pressure派生。悪魔のダンス1枚だけをサンダーに替え、勝ち切り札の副作用を見る。",
+    cardIds: DECOY_MAGIC_FINISHER_DECK_CARD_IDS,
+    allowSpecial: false,
+    masterId: "black",
+    mode: "Master Lab",
+    group: "master-lab",
+  },
+];
+
 export const DECK_PRESET_GROUPS: DeckPresetGroupDef[] = [
   { id: "built-in", name: "標準プリセット" },
+  { id: "master-lab", name: "Master Lab実験" },
   ...DECK_SUBMISSION_PRESET_GROUPS.map((group) => ({ id: group.id, name: group.name })),
 ];
 
 export const DECK_PRESETS: DeckPresetDef[] = [
   ...BUILT_IN_DECK_PRESETS,
+  ...MASTER_LAB_DECK_PRESETS,
   ...DECK_SUBMISSION_PRESETS,
 ];
 
@@ -174,4 +266,19 @@ export function validateDeckPresets(): void {
       throw new Error(`${presetId} deck preset is invalid: ${summary.errors.join(" / ")}`);
     }
   }
+}
+
+function replaceDeckCards(
+  baseCardIds: readonly string[],
+  replacements: ReadonlyArray<readonly [fromCardId: string, toCardId: string]>,
+): string[] {
+  const cardIds = [...baseCardIds];
+  for (const [fromCardId, toCardId] of replacements) {
+    const index = cardIds.indexOf(fromCardId);
+    if (index < 0) {
+      throw new Error(`Cannot replace missing deck card: ${fromCardId}`);
+    }
+    cardIds[index] = toCardId;
+  }
+  return cardIds;
 }
