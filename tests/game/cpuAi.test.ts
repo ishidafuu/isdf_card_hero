@@ -100,6 +100,96 @@ describe("cpu ai", () => {
     ).toBe(false);
   });
 
+  it("uses Bomuzo self-bomb to avoid becoming opponent level-up feed", () => {
+    const game = createCpuGame();
+    game.players.cpu.hand = [];
+    game.players.cpu.stones = 0;
+    game.players.player.stones = 2;
+    game.slots.cpu_front_left.monster = createActiveMonster("bomuzo", "cpu", {
+      hp: 2,
+      instanceId: "cpu_doomed_bomuzo",
+    });
+    game.slots.player_front_left.monster = createActiveMonster("sigma", "player", {
+      hp: 5,
+      level: 2,
+      investedStones: 2,
+      instanceId: "player_feed_sigma",
+    });
+
+    const decision = chooseCpuDecision(game);
+
+    expect(decision.type).toBe("attack");
+    if (decision.type === "attack") {
+      expect(decision.action.attackerSlotKey).toBe("cpu_front_left");
+      expect(decision.action.commandId).toBe("self_bomb");
+      expect(decision.action.target).toEqual({ kind: "monster", slotKey: "player_front_left" });
+    }
+  });
+
+  it("allows black backline ally attacks only when they set up berserk feed denial", () => {
+    const game = createCpuGame();
+    game.players.cpu.masterId = "black";
+    game.players.cpu.hand = [];
+    game.players.cpu.stones = 3;
+    game.players.player.stones = 2;
+    game.slots.cpu_front_left.monster = createActiveMonster("takokke", "cpu", {
+      hp: 3,
+      level: 2,
+      investedStones: 2,
+      cannotActUntilDamaged: true,
+      instanceId: "cpu_feed_takokke",
+    });
+    game.slots.cpu_back_left.monster = createActiveMonster("morgan", "cpu", {
+      hp: 1,
+      instanceId: "cpu_setup_morgan",
+    });
+    game.slots.player_front_left.monster = createActiveMonster("sigma", "player", {
+      hp: 4,
+      level: 2,
+      investedStones: 2,
+      instanceId: "player_front_sigma",
+    });
+    game.slots.player_back_left.monster = createActiveMonster("yanbaru", "player", {
+      instanceId: "player_back_yanbaru",
+    });
+
+    const setupDecision = listCpuDecisions(game).find(
+      (decision) =>
+        decision.type === "attack" &&
+        decision.action.attackerSlotKey === "cpu_back_left" &&
+        decision.action.target.kind === "monster" &&
+        decision.action.target.slotKey === "cpu_front_left",
+    );
+    expect(setupDecision).toBeDefined();
+    if (!setupDecision || setupDecision.type !== "attack") {
+      return;
+    }
+    expect(setupDecision.reason).toContain("餌");
+
+    let next = applyCpuDecision(game, setupDecision);
+    expect(next.slots.cpu_front_left.monster?.hp).toBe(1);
+    expect(next.slots.cpu_front_left.monster?.cannotActUntilDamaged).toBe(false);
+
+    const berserkDecision = chooseCpuDecision(next);
+    expect(berserkDecision.type).toBe("master_action");
+    if (berserkDecision.type !== "master_action") {
+      return;
+    }
+    expect(berserkDecision.actionId).toBe("berserk_power");
+    expect(berserkDecision.target).toEqual({ kind: "monster", slotKey: "cpu_front_left" });
+
+    next = applyCpuDecision(next, berserkDecision);
+    const selfDestructAttack = chooseCpuDecision(next);
+    expect(selfDestructAttack.type).toBe("attack");
+    if (selfDestructAttack.type !== "attack") {
+      return;
+    }
+    expect(selfDestructAttack.action.attackerSlotKey).toBe("cpu_front_left");
+
+    next = applyCpuDecision(next, selfDestructAttack);
+    expect(next.slots.cpu_front_left.monster).toBeUndefined();
+  });
+
   it("does not choose a zero-damage attack", () => {
     const game = createCpuGame();
     game.players.cpu.hand = [];
@@ -230,6 +320,37 @@ describe("cpu ai", () => {
     if (decision.type === "master_action") {
       expect(decision.actionId).toBe("berserk_power");
       expect(decision.target).toEqual({ kind: "monster", slotKey: "cpu_front_left" });
+    }
+  });
+
+  it("prefers white level-up with meaningful HP recovery over full-HP level-up", () => {
+    const game = createCpuGame();
+    game.players.cpu.masterId = "white";
+    game.players.cpu.hand = [];
+    game.players.cpu.stones = 1;
+    game.slots.cpu_front_left.monster = createActiveMonster("takokke", "cpu", {
+      hp: 5,
+      instanceId: "cpu_full_takokke",
+    });
+    game.slots.cpu_front_right.monster = createActiveMonster("takokke", "cpu", {
+      hp: 2,
+      instanceId: "cpu_wounded_takokke",
+    });
+    game.slots.player_front_left.monster = createActiveMonster("takokke", "player", {
+      hp: 2,
+      instanceId: "player_left_takokke",
+    });
+    game.slots.player_front_right.monster = createActiveMonster("takokke", "player", {
+      hp: 2,
+      instanceId: "player_right_takokke",
+    });
+
+    const decision = chooseCpuDecision(game, { profile: "strong" });
+
+    expect(decision.type).toBe("attack");
+    if (decision.type === "attack") {
+      expect(decision.action.attackerSlotKey).toBe("cpu_front_right");
+      expect(decision.action.target).toEqual({ kind: "monster", slotKey: "player_front_right" });
     }
   });
 

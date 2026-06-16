@@ -13,6 +13,7 @@ import {
   getMagicSecondaryTargets,
   getMagicTargets,
   getCurrentMasterActionIds,
+  getMasterActionCost,
   getMasterActionTargets,
   getMonsterCommands,
   getMovableTargets,
@@ -585,7 +586,11 @@ function listAttackDecisions(state: GameState, weights: AiEvaluationWeights): Cp
 
     for (const command of getMonsterCommands(monster)) {
       for (const target of getCommandTargets(state, slotKey, command.id)) {
-        if (isOwnedMonsterTarget(state, target, playerId) && !canUseOwnedMonsterTargetForCommand(state, slotKey, command.id)) {
+        if (
+          isOwnedMonsterTarget(state, target, playerId) &&
+          !canUseOwnedMonsterTargetForCommand(state, slotKey, command.id) &&
+          !isPotentialBerserkFeedDenialSetupAttack(state, slotKey, command, target)
+        ) {
           continue;
         }
 
@@ -658,7 +663,8 @@ function scoreAttackDecision(state: GameState, after: GameState, action: Command
     return 1_000_000;
   }
 
-  const recoilPenalty = attackerWasDefeated(state, after, action.attackerSlotKey) ? -120 : 0;
+  const attackerDefeated = attackerWasDefeated(state, after, action.attackerSlotKey);
+  const recoilPenalty = attackerDefeated ? -120 + selfRemovalFeedDenialBonus(state, after, action.attackerSlotKey) : 0;
   const stateDelta = evaluateState(after, playerId, weights) - evaluateState(state, playerId, weights);
   if (action.secondaryHandInstanceId) {
     return scoreCommandHandChoiceDecision(state, action, stateDelta, recoilPenalty);
@@ -677,9 +683,25 @@ function scoreAttackDecision(state: GameState, after: GameState, action: Command
     return -100;
   }
 
+  if (targetBefore.owner === playerId) {
+    const ownedMonsterAttackScore = scoreOwnedMonsterAttackDecision(state, after, action, targetBefore, targetAfter, weights);
+    if (ownedMonsterAttackScore > -90) {
+      return ownedMonsterAttackScore;
+    }
+    if (!targetAfter || targetBefore.hp > targetAfter.hp) {
+      return -100;
+    }
+  }
+
   if (!targetAfter) {
     const levelGain = attackerLevelGain(state, after, action.attackerSlotKey);
-    return weights.monsterKillBase + monsterValue(state, action.target.slotKey) + 80 * levelGain + recoilPenalty;
+    return (
+      weights.monsterKillBase +
+      monsterValue(state, action.target.slotKey) +
+      80 * levelGain +
+      levelUpHpTimingBonus(state, after, action.attackerSlotKey) +
+      recoilPenalty
+    );
   }
 
   const damage = targetBefore.hp - targetAfter.hp;
@@ -739,6 +761,206 @@ function scoreZeroDamageMonsterAttack(
   return stateDelta > 8 ? 30 + stateDelta + recoilPenalty : -100;
 }
 
+function scoreOwnedMonsterAttackDecision(
+  state: GameState,
+  after: GameState,
+  action: CommandAction,
+  targetBefore: MonsterState,
+  targetAfter: MonsterState | undefined,
+  weights: AiEvaluationWeights,
+): number {
+  if (action.target.kind !== "monster" || targetBefore.owner !== state.currentPlayer) {
+    return -100;
+  }
+  if (!targetAfter || targetAfter.instanceId !== targetBefore.instanceId) {
+    return -100;
+  }
+
+  const damage = targetBefore.hp - targetAfter.hp;
+  if (damage <= 0 || targetAfter.hp !== 1) {
+    return -100;
+  }
+
+  let berserkState: GameState;
+  try {
+    berserkState = useMasterAction(after, "berserk_power", action.target);
+  } catch {
+    return -100;
+  }
+
+  const followUp = bestBerserkSelfDestructAttackScore(berserkState, action.target.slotKey, weights);
+  const deniedFeed = opponentLevelFeedValue(state, action.target.slotKey);
+  if (followUp <= 0 || deniedFeed <= 0) {
+    return -100;
+  }
+
+  return 96 + Math.min(155, deniedFeed * 0.65) + followUp * 0.45 - damage * 8;
+}
+
+function isPotentialBerserkFeedDenialSetupAttack(
+  state: GameState,
+  attackerSlotKey: SlotKey,
+  command: ReturnType<typeof getMonsterCommands>[number],
+  target: Target,
+): boolean {
+  if (target.kind !== "monster" || state.players[state.currentPlayer].masterId !== "black") {
+    return false;
+  }
+  if (
+    !getCurrentMasterActionIds(state).includes("berserk_power") ||
+    state.players[state.currentPlayer].stones < getMasterActionCost("berserk_power")
+  ) {
+    return false;
+  }
+
+  const attackerSlot = state.slots[attackerSlotKey];
+  const attacker = attackerSlot.monster;
+  const targetSlot = state.slots[target.slotKey];
+  const targetMonster = targetSlot.monster;
+  if (
+    !attacker ||
+    !targetMonster ||
+    targetMonster.owner !== state.currentPlayer ||
+    targetMonster.status !== "active" ||
+    targetMonster.berserkPower ||
+    targetMonster.actionCount >= targetMonster.actionLimit ||
+    attackerSlot.row !== "back" ||
+    targetSlot.row !== "front" ||
+    targetMonster.hp <= 1
+  ) {
+    return false;
+  }
+
+  const damage = estimateMonsterDamage(targetMonster, attacker, command);
+  return damage > 0 && targetMonster.hp - damage === 1 && opponentLevelFeedValue(state, target.slotKey) > 0;
+}
+
+function selfRemovalFeedDenialBonus(state: GameState, after: GameState, attackerSlotKey: SlotKey): number {
+  const before = state.slots[attackerSlotKey].monster;
+  const current = after.slots[attackerSlotKey].monster;
+  if (!before || current?.instanceId === before.instanceId) {
+    return 0;
+  }
+
+  const deniedFeed = opponentLevelFeedValue(state, attackerSlotKey);
+  return deniedFeed > 0 ? Math.min(250, 140 + deniedFeed * 0.8) : 0;
+}
+
+function levelUpHpTimingBonus(state: GameState, after: GameState, attackerSlotKey: SlotKey): number {
+  const before = state.slots[attackerSlotKey].monster;
+  const current = after.slots[attackerSlotKey].monster;
+  if (!before || !current || current.instanceId !== before.instanceId || current.level <= before.level) {
+    return 0;
+  }
+  if (state.players[before.owner].masterId !== "white") {
+    return 0;
+  }
+
+  const missingHp = Math.max(0, monsterMaxHp(before) - before.hp);
+  if (missingHp > 0) {
+    return Math.min(130, 30 + missingHp * 28 + Math.max(0, current.hp - before.hp) * 4);
+  }
+
+  return -26 * (current.level - before.level);
+}
+
+function opponentLevelFeedValue(state: GameState, slotKey: SlotKey): number {
+  const target = state.slots[slotKey].monster;
+  if (!target || target.status !== "active") {
+    return 0;
+  }
+
+  const opponent = opponentOf(target.owner);
+  if (state.players[opponent].stones <= 0) {
+    return 0;
+  }
+
+  const readyState = readyPlayerForTacticalEvaluation(state, opponent);
+  let best = 0;
+  for (const attackerSlotKey of FIELD_ORDER_BY_PLAYER[opponent]) {
+    const attacker = readyState.slots[attackerSlotKey].monster;
+    if (!attacker?.status || attacker.status !== "active" || attacker.actionCount >= attacker.actionLimit || attacker.levelFixed) {
+      continue;
+    }
+    const levelRoom = getMonsterDef(attacker.cardId).maxLevel - attacker.level;
+    const levelGain = Math.min(target.level, state.players[opponent].stones, levelRoom);
+    if (levelGain <= 0) {
+      continue;
+    }
+    for (const command of getMonsterCommands(attacker)) {
+      for (const candidate of getCommandTargets(readyState, attackerSlotKey, command.id)) {
+        if (candidate.kind !== "monster" || candidate.slotKey !== slotKey) {
+          continue;
+        }
+        const targetInReadyState = readyState.slots[slotKey].monster;
+        if (targetInReadyState && estimateMonsterDamage(targetInReadyState, attacker, command) >= targetInReadyState.hp) {
+          best = Math.max(best, 72 * levelGain + monsterValue(state, slotKey) * 0.22);
+        }
+      }
+    }
+  }
+  return best;
+}
+
+function bestBerserkSelfDestructAttackScore(
+  state: GameState,
+  attackerSlotKey: SlotKey,
+  weights: AiEvaluationWeights = DEFAULT_AI_EVALUATION_WEIGHTS,
+): number {
+  const attacker = state.slots[attackerSlotKey].monster;
+  if (!attacker || attacker.owner !== state.currentPlayer || attacker.status !== "active" || attacker.hp > 1 || !attacker.berserkPower) {
+    return 0;
+  }
+
+  let best = 0;
+  for (const command of getMonsterCommands(attacker)) {
+    for (const target of getCommandTargets(state, attackerSlotKey, command.id)) {
+      if (isOwnedMonsterTarget(state, target, attacker.owner)) {
+        continue;
+      }
+      let after: GameState;
+      try {
+        after = attackWithCommand(state, { attackerSlotKey, commandId: command.id, target });
+      } catch {
+        continue;
+      }
+      if (!attackerWasDefeated(state, after, attackerSlotKey)) {
+        continue;
+      }
+
+      const deniedFeed = Math.min(95, opponentLevelFeedValue(state, attackerSlotKey) * 0.32);
+      if (target.kind === "master") {
+        const damage = Math.max(0, state.players[target.playerId].masterHp - after.players[target.playerId].masterHp);
+        best = Math.max(best, (damage > 0 ? masterDamageScore(state, attacker.owner, damage, weights) : 8) + deniedFeed);
+        continue;
+      }
+
+      const beforeTarget = state.slots[target.slotKey].monster;
+      const currentTarget = after.slots[target.slotKey].monster;
+      if (!beforeTarget) {
+        continue;
+      }
+      if (!currentTarget || currentTarget.instanceId !== beforeTarget.instanceId) {
+        best = Math.max(best, weights.monsterKillBase + monsterValue(state, target.slotKey) * 0.65 + deniedFeed);
+        continue;
+      }
+      const damage = Math.max(0, beforeTarget.hp - currentTarget.hp);
+      if (damage > 0) {
+        best = Math.max(best, damage * (weights.monsterDamagePerPoint + 4) + deniedFeed);
+      }
+    }
+  }
+  return best;
+}
+
+function monsterMaxHp(monster: MonsterState): number {
+  return Math.max(
+    ...getMonsterDef(monster.cardId).levels
+      .filter((level) => level.level === monster.level)
+      .map((level) => level.maxHp),
+  );
+}
+
 function shouldPruneDeckOutUnresolvedLethalThreat(state: GameState, after: GameState, targetSlotKey: SlotKey): boolean {
   if (!isDeckOutRace(state)) {
     return false;
@@ -789,6 +1011,9 @@ function attackReason(state: GameState, after: GameState, action: CommandAction)
   }
   if (action.target.kind === "master") {
     return "相手マスターへ実ダメージを与えられるため攻撃";
+  }
+  if (state.slots[action.target.slotKey].monster?.owner === state.currentPlayer) {
+    return "バーサク反動で相手のレベルアップ餌を避ける準備のため味方を攻撃";
   }
   if (!after.slots[action.target.slotKey].monster) {
     return "敵モンスターを撃破できるため攻撃";
@@ -1021,6 +1246,18 @@ function createBerserkPowerDecision(state: GameState, target: Target): CpuDecisi
   }
 
   const after = useMasterAction(state, "berserk_power", target);
+  const feedDenialSelfDestructScore = bestBerserkSelfDestructAttackScore(after, target.slotKey);
+  const deniedFeed = opponentLevelFeedValue(state, target.slotKey);
+  if (monster.hp <= 1 && feedDenialSelfDestructScore > 0 && deniedFeed > 0) {
+    return {
+      type: "master_action",
+      actionId: "berserk_power",
+      target,
+      reason: "バーサク反動で相手のレベルアップ餌を避けられるため使用",
+      score: 36 + Math.min(120, deniedFeed * 0.4) + feedDenialSelfDestructScore * 0.32 - 18,
+    };
+  }
+
   const beforeBest = bestAttackOpportunityScore(state, target.slotKey);
   const afterBest = bestAttackOpportunityScore(after, target.slotKey);
   const improvement = afterBest - beforeBest;
@@ -1403,6 +1640,10 @@ function scoreFocus(state: GameState, slotKey: SlotKey): number {
   }
   if (monster.hp <= 2 && state.slots[slotKey].row === "front") {
     score -= 10;
+  }
+  const feedValue = opponentLevelFeedValue(state, slotKey);
+  if (feedValue > 0) {
+    score -= 45 + Math.min(90, feedValue * 0.35);
   }
   if (getMonsterAiTrait(monster.cardId).role === "back") {
     score += 8;
