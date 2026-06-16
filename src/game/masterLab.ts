@@ -116,6 +116,7 @@ export interface MasterLabActionEvaluation {
 export interface MasterLabEvaluationTuning {
   actionBias?: Partial<Record<string, number>>;
   actionMultiplier?: Partial<Record<string, number>>;
+  targetOwnerBias?: Partial<Record<"ally" | "enemy", number>>;
 }
 
 const MASTER_LAB_VIRTUAL_CARD_PREFIX = "__master_lab_virtual__";
@@ -384,6 +385,8 @@ export function inspectMasterLabActionEvaluations(
       const heuristicScore = applyMasterLabEvaluationTuning(
         masterLabActionHeuristic(state, after, option, perspective),
         option,
+        state,
+        perspective,
         tuning,
       );
       const totalScore = stateScoreDelta + heuristicScore;
@@ -704,10 +707,19 @@ function masterLabActionHeuristic(
 
   if (option.actionId === "scapegoat" && option.target.kind === "monster") {
     const target = after.slots[option.target.slotKey].monster;
-    if (!target?.scapegoat || target.owner !== perspective) {
+    if (!target?.scapegoat) {
       return 0;
     }
     const opponent = opponentOf(perspective);
+    if (target.owner === opponent) {
+      const enemyMasterHp = before.players[opponent].masterHp;
+      const masterLethalPenalty = enemyMasterHp <= 3 ? -28 : 0;
+      const importantTargetBonus = target.level * 14 + Math.max(0, target.hp) * 2;
+      return 20 + importantTargetBonus + masterLethalPenalty;
+    }
+    if (target.owner !== perspective) {
+      return 0;
+    }
     const hpPressure = before.players[perspective].masterHp <= before.players[opponent].masterHp ? 22 : 8;
     const lowHpBonus = before.players[perspective].masterHp <= 3 ? 24 : 0;
     return 34 + hpPressure + lowHpBonus + Math.max(0, target.hp) * 3;
@@ -732,11 +744,26 @@ function masterLabActionHeuristic(
 function applyMasterLabEvaluationTuning(
   heuristicScore: number,
   option: MasterLabActionOption,
+  state: GameState,
+  perspective: PlayerId,
   tuning: MasterLabEvaluationTuning,
 ): number {
   const multiplier = tuning.actionMultiplier?.[option.actionId] ?? 1;
   const bias = tuning.actionBias?.[option.actionId] ?? 0;
-  return heuristicScore * multiplier + bias;
+  const relation = targetOwnerRelation(state, option.target, perspective);
+  const ownerBias = relation && option.actionId === "scapegoat" ? tuning.targetOwnerBias?.[relation] ?? 0 : 0;
+  return heuristicScore * multiplier + bias + ownerBias;
+}
+
+function targetOwnerRelation(state: GameState, target: Target, perspective: PlayerId): "ally" | "enemy" | undefined {
+  if (target.kind === "master") {
+    return target.playerId === perspective ? "ally" : "enemy";
+  }
+  const owner = state.slots[target.slotKey].monster?.owner;
+  if (!owner) {
+    return undefined;
+  }
+  return owner === perspective ? "ally" : "enemy";
 }
 
 function masterLabEvaluationReason(

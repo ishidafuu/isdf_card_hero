@@ -435,11 +435,14 @@ function getMagicTargetsByCardId(state: GameState, cardId: string): Target[] {
   if (cardId === "card_056" || cardId === "card_064" || cardId === "card_093" || cardId === "card_114" || cardId === "card_115" || cardId === "card_116" || cardId === "card_120" || cardId === "card_121" || cardId === "card_123" || cardId === "card_124" || cardId === "card_126") {
     return ownMaster;
   }
-  if (cardId === "card_057" || cardId === "card_063" || cardId === "card_065" || cardId === "card_128") {
+  if (cardId === "card_057" || cardId === "card_063" || cardId === "card_065") {
     if (cardId === "card_065" && !state.players[playerId].hand.some((card) => isSummonableMonsterCard(card.cardId))) {
       return [];
     }
     return allyActive;
+  }
+  if (cardId === "card_128") {
+    return activeTargets;
   }
   if (cardId === "card_061") {
     return allyActive.length > 0 && enemyActive.length > 0 ? [...allyActive, ...enemyActive] : [];

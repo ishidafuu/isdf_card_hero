@@ -36,6 +36,7 @@ export interface MasterLabFinalGateResult {
     warnings: number;
     labDecisionCount: number;
     labActionUsage: Record<string, number>;
+    labActionTargetUsage: Record<string, number>;
     issueSeeds: number[];
   };
   adoptionJudgement: "ready_for_review" | "needs_iteration";
@@ -106,6 +107,7 @@ export function runMasterLabFinalGate(options: MasterLabFinalGateOptions = {}): 
   const ok = runs.every((run) => run.result.ok);
   const issueSeeds = uniqueSorted(runs.flatMap((run) => run.result.issues.map((issue) => issue.seed)));
   const labActionUsage = mergeUsage(runs.map((run) => run.result.summary.labActionUsage));
+  const labActionTargetUsage = mergeUsage(runs.map((run) => run.result.summary.labActionTargetUsage));
   const notes = buildJudgementNotes(runs, labDecisionCount);
 
   return {
@@ -118,6 +120,7 @@ export function runMasterLabFinalGate(options: MasterLabFinalGateOptions = {}): 
       warnings,
       labDecisionCount,
       labActionUsage,
+      labActionTargetUsage,
       issueSeeds,
     },
     adoptionJudgement: ok && failures === 0 && labDecisionCount > 0 ? "ready_for_review" : "needs_iteration",
@@ -135,6 +138,7 @@ export function formatMasterLabFinalGateMarkdown(result: MasterLabFinalGateResul
     `Issues: ${result.summary.failures} failures, ${result.summary.warnings} warnings`,
     `Master Lab decisions: ${result.summary.labDecisionCount}`,
     `Master Lab action usage: ${formatUsage(result.summary.labActionUsage)}`,
+    `Master Lab target usage: ${formatUsage(result.summary.labActionTargetUsage)}`,
     "",
     "## Runs",
     "",

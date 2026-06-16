@@ -16,7 +16,7 @@ import {
   type MasterLabEvaluationTuning,
 } from "./masterLab";
 import { createInitialGame, runAutoStep, targetToKey } from "./rules";
-import type { GameState, MasterId, PlayerId, SlotKey } from "./types";
+import type { GameState, MasterId, PlayerId, SlotKey, Target } from "./types";
 
 export type MasterLabParticipantId = MasterId | MasterLabCandidateId;
 export type MasterLabIssueKind = "exception" | "unresolved_level_up" | "stagnation" | "step_limit" | "turn_limit" | "long_game";
@@ -115,6 +115,7 @@ export interface MasterLabGameResult {
   warningCount: number;
   labDecisionCount: number;
   labActionUsage: Record<string, number>;
+  labActionTargetUsage: Record<string, number>;
   logTail?: string[];
   stateSummary?: MasterLabGameStateSummary;
   history?: MasterLabDecisionEvent[];
@@ -136,6 +137,7 @@ export interface MasterLabAutoPlayResult {
     maxTurns: number;
     labDecisionCount: number;
     labActionUsage: Record<string, number>;
+    labActionTargetUsage: Record<string, number>;
   };
 }
 
@@ -208,6 +210,7 @@ export function validateMasterLabAutoPlay(options: MasterLabAutoPlayOptions = {}
       maxTurns: Math.max(0, ...games.map((game) => game.turns)),
       labDecisionCount: games.reduce((total, game) => total + game.labDecisionCount, 0),
       labActionUsage: mergeUsage(games.map((game) => game.labActionUsage)),
+      labActionTargetUsage: mergeUsage(games.map((game) => game.labActionTargetUsage)),
     },
   };
 }
@@ -224,6 +227,7 @@ export function formatMasterLabAutoPlaySummary(result: MasterLabAutoPlayResult):
     `Max: ${result.summary.maxSteps} steps / ${result.summary.maxTurns} turns`,
     `Master Lab decisions: ${result.summary.labDecisionCount}`,
     `Master Lab action usage: ${formatUsage(result.summary.labActionUsage)}`,
+    `Master Lab target usage: ${formatUsage(result.summary.labActionTargetUsage)}`,
     `Issues: ${result.summary.failures} failures, ${result.summary.warnings} warnings`,
   ];
 
@@ -284,6 +288,7 @@ function runMasterLabAutoPlayGame(
   let previousSignature = progressSignature(game);
   let step = 0;
   const labActionUsage: Record<string, number> = {};
+  const labActionTargetUsage: Record<string, number> = {};
 
   try {
     for (; step < options.maxSteps && !game.winner; step += 1) {
@@ -303,6 +308,7 @@ function runMasterLabAutoPlayGame(
         game = transition.next;
         if (transition.source === "master_lab") {
           labActionUsage[transition.actionId] = (labActionUsage[transition.actionId] ?? 0) + 1;
+          labActionTargetUsage[transition.targetUsageKey] = (labActionTargetUsage[transition.targetUsageKey] ?? 0) + 1;
         }
       }
 
@@ -339,6 +345,7 @@ function runMasterLabAutoPlayGame(
       warningCount,
       labDecisionCount: Object.values(labActionUsage).reduce((total, count) => total + count, 0),
       labActionUsage,
+      labActionTargetUsage,
       ...(options.includeGameHistory
         ? {
             logTail: game.log.slice(-20),
@@ -355,7 +362,7 @@ function runMasterLabDecisionStep(
   game: GameState,
   step: number,
   context: MasterLabRunContext,
-): { next: GameState; source: "cpu" } | { next: GameState; source: "master_lab"; actionId: string } {
+): { next: GameState; source: "cpu" } | { next: GameState; source: "master_lab"; actionId: string; targetUsageKey: string } {
   const selected = chooseMixedDecision(game, context.options);
   const beforeSummary = summarizeMasterLabGameState(game, context.options.participants);
   const logBefore = game.log;
@@ -381,9 +388,26 @@ function runMasterLabDecisionStep(
   };
   pushHistory(context, event, context.options.historyLimit);
   if (selected.source === "master_lab") {
-    return { next, source: "master_lab", actionId: selected.evaluation.option.actionId };
+    const option = selected.evaluation.option;
+    return {
+      next,
+      source: "master_lab",
+      actionId: option.actionId,
+      targetUsageKey: labActionTargetUsageKey(game, option.actionId, option.target),
+    };
   }
   return { next, source: "cpu" };
+}
+
+function labActionTargetUsageKey(game: GameState, actionId: string, target: Target): string {
+  if (target.kind === "master") {
+    return `${actionId}:${target.playerId === game.currentPlayer ? "ally" : "enemy"}`;
+  }
+  const owner = game.slots[target.slotKey].monster?.owner;
+  if (!owner) {
+    return `${actionId}:none`;
+  }
+  return `${actionId}:${owner === game.currentPlayer ? "ally" : "enemy"}`;
 }
 
 function chooseMixedDecision(game: GameState, options: ResolvedMasterLabAutoPlayOptions): SelectedDecision {

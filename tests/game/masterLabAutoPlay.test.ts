@@ -22,10 +22,13 @@ describe("master lab auto play", () => {
     expect(result.games).toHaveLength(1);
     expect(result.games[0].stateSummary?.players.player.baseMasterId).toBe("white");
     expect(result.summary.failures).toBe(0);
+    expect(result.games[0].labActionTargetUsage).toBeDefined();
+    expect(result.summary.labActionTargetUsage).toBeDefined();
 
     const summary = formatMasterLabAutoPlaySummary(result);
     expect(summary).toContain("Master Lab auto play: PASS");
     expect(summary).toContain("Participants: player decoy, cpu black");
+    expect(summary).toContain("Master Lab target usage:");
   }, MASTER_LAB_AUTO_PLAY_TEST_TIMEOUT_MS);
 
   it("keeps normal master matchups available in the lab runner", () => {

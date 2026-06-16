@@ -59,13 +59,23 @@ describe("master lab", () => {
     const game = createInitialGame(900);
     game.players.player.stones = 2;
     game.slots.player_front_left.monster = createActiveMonster("takokke", "player");
+    game.slots.cpu_front_left.monster = createActiveMonster("takokke", "cpu");
 
-    const option = listMasterLabActionOptions(game, "decoy").find((item) => item.actionId === "scapegoat");
-    expect(option).toMatchObject({
-      actionName: "スケープゴート",
-      cost: 2,
-      target: { kind: "monster", slotKey: "player_front_left" },
-    });
+    const options = listMasterLabActionOptions(game, "decoy").filter((item) => item.actionId === "scapegoat");
+    expect(options).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          actionName: "スケープゴート",
+          cost: 2,
+          target: { kind: "monster", slotKey: "player_front_left" },
+        }),
+        expect.objectContaining({
+          actionName: "スケープゴート",
+          cost: 2,
+          target: { kind: "monster", slotKey: "cpu_front_left" },
+        }),
+      ]),
+    );
 
     const next = playMasterLabAction(game, {
       candidateId: "decoy",
@@ -78,6 +88,23 @@ describe("master lab", () => {
     expect(next.players.player.hand.some((card) => card.instanceId.startsWith("__master_lab_virtual__"))).toBe(false);
     expect(next.players.player.discard.some((card) => card.instanceId.startsWith("__master_lab_virtual__"))).toBe(false);
     expect(game.slots.player_front_left.monster?.scapegoat).toBeUndefined();
+  });
+
+  it("resolves enemy scapegoat as a decoy master target", () => {
+    const game = createInitialGame(904);
+    game.players.player.stones = 2;
+    game.slots.player_front_left.monster = createActiveMonster("takokke", "player");
+    game.slots.cpu_front_left.monster = createActiveMonster("takokke", "cpu");
+
+    const next = playMasterLabAction(game, {
+      candidateId: "decoy",
+      actionId: "scapegoat",
+      target: { kind: "monster", slotKey: "cpu_front_left" },
+    });
+
+    expect(next.players.player.stones).toBe(0);
+    expect(next.slots.cpu_front_left.monster?.scapegoat).toBe(true);
+    expect(next.slots.player_front_left.monster?.scapegoat).toBeUndefined();
   });
 
   it("resolves provoke with an explicit bait target and the lab action cost", () => {
@@ -131,12 +158,41 @@ describe("master lab", () => {
     const tunedEvaluations = inspectMasterLabActionEvaluations(game, "decoy", "player", {
       actionBias: { scapegoat: 10 },
     });
-    const scapegoat = evaluations.find((evaluation) => evaluation.option.actionId === "scapegoat");
-    const tunedScapegoat = tunedEvaluations.find((evaluation) => evaluation.option.actionId === "scapegoat");
+    const targetTunedEvaluations = inspectMasterLabActionEvaluations(game, "decoy", "player", {
+      targetOwnerBias: { enemy: 12, ally: -6 },
+    });
+    const scapegoat = evaluations.find((evaluation) =>
+      evaluation.option.actionId === "scapegoat" &&
+      evaluation.option.target.kind === "monster" &&
+      evaluation.option.target.slotKey === "player_front_left",
+    );
+    const enemyScapegoat = evaluations.find((evaluation) =>
+      evaluation.option.actionId === "scapegoat" &&
+      evaluation.option.target.kind === "monster" &&
+      evaluation.option.target.slotKey === "cpu_front_left",
+    );
+    const tunedScapegoat = tunedEvaluations.find((evaluation) =>
+      evaluation.option.actionId === "scapegoat" &&
+      evaluation.option.target.kind === "monster" &&
+      evaluation.option.target.slotKey === "player_front_left",
+    );
+    const targetTunedAlly = targetTunedEvaluations.find((evaluation) =>
+      evaluation.option.actionId === "scapegoat" &&
+      evaluation.option.target.kind === "monster" &&
+      evaluation.option.target.slotKey === "player_front_left",
+    );
+    const targetTunedEnemy = targetTunedEvaluations.find((evaluation) =>
+      evaluation.option.actionId === "scapegoat" &&
+      evaluation.option.target.kind === "monster" &&
+      evaluation.option.target.slotKey === "cpu_front_left",
+    );
     const chosen = chooseMasterLabAction(game, "decoy", "player");
 
     expect(scapegoat?.heuristicScore).toBeGreaterThan(0);
+    expect(enemyScapegoat?.heuristicScore).toBeGreaterThan(0);
     expect(tunedScapegoat?.heuristicScore).toBe((scapegoat?.heuristicScore ?? 0) + 10);
+    expect(targetTunedAlly?.heuristicScore).toBe((scapegoat?.heuristicScore ?? 0) - 6);
+    expect(targetTunedEnemy?.heuristicScore).toBe((enemyScapegoat?.heuristicScore ?? 0) + 12);
     expect(scapegoat?.reason).toContain("補助評価");
     expect(chosen).toBeDefined();
     expect(evaluations.every((evaluation) => Number.isFinite(evaluation.totalScore))).toBe(true);

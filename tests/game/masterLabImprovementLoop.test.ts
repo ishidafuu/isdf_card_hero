@@ -35,4 +35,25 @@ describe("master lab improvement loop", () => {
     expect(markdown).toContain("次アクション");
     expect(markdown).toContain("pressure-normal");
   }, MASTER_LAB_IMPROVEMENT_LOOP_TEST_TIMEOUT_MS);
+
+  it("runs the scapegoat target plan and reports enemy target rates", () => {
+    const report = runMasterLabImprovementLoop({
+      candidateId: "decoy",
+      plan: "scapegoat",
+      loopCount: 6,
+      gamesPerMatchup: 1,
+      maxSteps: 700,
+      maxTurns: 160,
+    });
+
+    expect(report.entries).toHaveLength(6);
+    expect(report.entries[5].experimentId).toBe("target_black_enemy_plus8");
+    expect(report.entries[5].labEvaluationTuning?.targetOwnerBias?.enemy).toBe(8);
+    expect(report.best.metrics.labActionTargetUsage).toBeDefined();
+
+    const markdown = formatMasterLabImprovementLoopMarkdown(report);
+    expect(markdown).toContain("target enemy +8");
+    expect(markdown).toContain("(E ");
+    expect(markdown).toContain("敵スケープゴート率");
+  }, MASTER_LAB_IMPROVEMENT_LOOP_TEST_TIMEOUT_MS);
 });

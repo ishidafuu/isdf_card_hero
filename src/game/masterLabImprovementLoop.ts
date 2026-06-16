@@ -5,7 +5,7 @@ import type { PlayerId } from "./types";
 
 export type MasterLabImprovementJudgement = "advance" | "hold" | "reject";
 export type MasterLabImprovementDecision = "needs_full_gate" | "continue_deck_loop" | "pivot_to_action_design";
-export type MasterLabImprovementPlanId = "deck" | "mixed";
+export type MasterLabImprovementPlanId = "deck" | "mixed" | "scapegoat";
 export type MasterLabImprovementExperimentKind = "deck" | "ai_eval" | "hybrid" | "warning_probe";
 
 export interface MasterLabImprovementLoopOptions extends Omit<MasterLabFinalGateOptions, "deckPreset"> {
@@ -51,7 +51,10 @@ export interface MasterLabImprovementMetrics {
   mirrorWarnings: number;
   labDecisionCount: number;
   labActionUsage: Record<string, number>;
+  labActionTargetUsage: Record<string, number>;
   scapegoatRate: number;
+  allyScapegoatRate: number;
+  enemyScapegoatRate: number;
   provokeRate: number;
   masterAttackRate: number;
 }
@@ -146,6 +149,36 @@ export const DEFAULT_MASTER_LAB_MIXED_IMPROVEMENT_EXPERIMENTS = [
   hybridExperiment("hybrid_1354_warning_trim", "混合: 1354 / 挑発+16 / スケープゴート-16", "submission-pro-with-rare8-black-1354", { actionBias: { provoke: 16, scapegoat: -16 } }, "warningの多い高勝率候補で、スケープゴート過多を落として安定化するか見る。"),
 ] as const satisfies readonly MasterLabImprovementExperiment[];
 
+export const DEFAULT_MASTER_LAB_SCAPEGOAT_IMPROVEMENT_EXPERIMENTS = [
+  deckExperiment("deck_black_pressure", "基準: black-pressure", "black-pressure", "前回上位。敵スケープゴート解禁後も黒耐性が残るか見る。"),
+  aiExperiment("ai_black_strict_margin12", "再確認: 特技採用margin+12", "black-pressure", undefined, "前回最上位の慎重運用を、敵スケープゴート解禁後の基準にする。", 12),
+  deckExperiment("deck_beatdown_lock", "再確認: ビートダウン&ロック", "submission-pro-no-rare8-black-1403", "妨害寄りデッキで、敵対象スケープゴートが攻撃順の誘導として働くか見る。"),
+  deckExperiment("deck_agito_growth", "再確認: アギト育成", "submission-pro-no-rare8-white-1340", "育成寄り構成で、敵の主力を囮化する価値が出るか見る。"),
+  {
+    ...deckExperiment("deck_1354_warning_probe", "警告診断: 黒速攻&殲滅", "submission-pro-with-rare8-black-1354", "高勝率だがwarningが出やすい候補で、敵スケープゴートが長期戦リスクを増やすか見る。"),
+    kind: "warning_probe",
+  },
+  aiExperiment("target_black_enemy_plus8", "対象評価: enemy+8 / black-pressure", "black-pressure", { targetOwnerBias: { enemy: 8 } }, "敵モンスターへのスケープゴートを軽く後押しし、実際に選ばれる入口を作る。"),
+  aiExperiment("target_black_enemy_plus16", "対象評価: enemy+16 / black-pressure", "black-pressure", { targetOwnerBias: { enemy: 16 } }, "敵対象を明確に評価し、勝率と使用率の両方を見る。"),
+  aiExperiment("target_black_enemy_plus24", "対象評価: enemy+24 / black-pressure", "black-pressure", { targetOwnerBias: { enemy: 24 } }, "敵対象を強く押した時に、リーサルを逃す副作用が出るか見る。"),
+  aiExperiment("target_black_ally_minus8", "対象評価: ally-8 / black-pressure", "black-pressure", { targetOwnerBias: { ally: -8 } }, "味方保護の過多を少し抑え、敵対象へ自然に寄るか見る。"),
+  aiExperiment("target_black_ally_minus16", "対象評価: ally-16 / black-pressure", "black-pressure", { targetOwnerBias: { ally: -16 } }, "味方保護を強めに抑えた場合、防御力が落ちすぎないか測る。"),
+  aiExperiment("target_black_enemy16_allyminus8", "対象評価: enemy+16 / ally-8", "black-pressure", { targetOwnerBias: { enemy: 16, ally: -8 } }, "敵対象を伸ばしつつ味方連打を抑え、行動の質を変えられるか見る。"),
+  aiExperiment("target_black_enemy24_allyminus16", "対象評価: enemy+24 / ally-16", "black-pressure", { targetOwnerBias: { enemy: 24, ally: -16 } }, "敵対象へ強く寄せた極端条件で、勝率低下の境界を探る。"),
+  aiExperiment("target_black_enemy16_margin12", "対象評価: enemy+16 / margin+12", "black-pressure", { targetOwnerBias: { enemy: 16 } }, "慎重採用と敵対象評価を併用し、無駄撃ちを抑えながら質を変える。", 12),
+  aiExperiment("target_black_enemy24_margin12", "対象評価: enemy+24 / margin+12", "black-pressure", { targetOwnerBias: { enemy: 24 } }, "敵対象を強く評価しても、CPU通常手を上回る時だけ採用すれば安定するか見る。", 12),
+  aiExperiment("target_pressure_enemy16", "対象評価: enemy+16 / pressure-normal", "pressure-normal", { targetOwnerBias: { enemy: 16 } }, "通常プレッシャー構成でも敵対象の価値が再現するか見る。"),
+  aiExperiment("target_pressure_enemy24", "対象評価: enemy+24 / pressure-normal", "pressure-normal", { targetOwnerBias: { enemy: 24 } }, "基準デッキで敵対象を強めた時、白相手の勝率を壊さないか見る。"),
+  aiExperiment("target_pressure_enemy16_allyminus8", "対象評価: pressure / enemy+16 / ally-8", "pressure-normal", { targetOwnerBias: { enemy: 16, ally: -8 } }, "通常構成で味方保護を減らし、敵対象の実用域を探る。"),
+  aiExperiment("target_1403_enemy16", "対象評価: 1403 / enemy+16", "submission-pro-no-rare8-black-1403", { targetOwnerBias: { enemy: 16 } }, "妨害デッキで敵主力の囮化が除去テンポと噛み合うか見る。"),
+  aiExperiment("target_1403_enemy24_allyminus8", "対象評価: 1403 / enemy+24 / ally-8", "submission-pro-no-rare8-black-1403", { targetOwnerBias: { enemy: 24, ally: -8 } }, "妨害寄りで敵対象を強め、攻撃順誘導の上限を探る。"),
+  aiExperiment("target_1340_enemy16", "対象評価: 1340 / enemy+16", "submission-pro-no-rare8-white-1340", { targetOwnerBias: { enemy: 16 } }, "育成デッキで敵対象がレベル差のやり取りに関与できるか見る。"),
+  aiExperiment("target_1354_enemy16_allyminus16", "対象評価: 1354 / enemy+16 / ally-16", "submission-pro-with-rare8-black-1354", { targetOwnerBias: { enemy: 16, ally: -16 } }, "高勝率候補の味方スケープゴート過多を強く落とし、warningが減るか見る。"),
+  aiExperiment("target_1354_enemy24_margin12", "対象評価: 1354 / enemy+24 / margin+12", "submission-pro-with-rare8-black-1354", { targetOwnerBias: { enemy: 24 } }, "長期戦候補で慎重採用を足し、敵対象の副作用を抑える。", 12),
+  hybridExperiment("hybrid_black_provoke16_enemy16", "混合: 挑発+16 / enemy+16", "black-pressure", { actionBias: { provoke: 16 }, targetOwnerBias: { enemy: 16 } }, "挑発と敵スケープゴートを両方使い、回避型らしい攻撃誘導へ寄せる。"),
+  hybridExperiment("hybrid_black_provoke16_enemy24_allyminus8", "混合: 挑発+16 / enemy+24 / ally-8", "black-pressure", { actionBias: { provoke: 16 }, targetOwnerBias: { enemy: 24, ally: -8 } }, "敵対象を強くしつつ挑発も増やし、味方保護一辺倒から脱却できるか見る。"),
+] as const satisfies readonly MasterLabImprovementExperiment[];
+
 export function runMasterLabImprovementLoop(
   options: MasterLabImprovementLoopOptions = {},
 ): MasterLabImprovementLoopReport {
@@ -201,7 +234,10 @@ export function runMasterLabImprovementLoop(
 
   const entries = rawEntries.map((entry) => assignEntryJudgement(entry, bestRawEntry.metrics.score));
   const rankedEntries = [...entries].sort(compareImprovementEntries);
-  const baseline = entries.find((entry) => entry.deckPreset === "pressure-normal") ?? entries[0];
+  const baseline = entries.find((entry) => entry.experimentId === "deck_pressure_baseline")
+    ?? entries.find((entry) => entry.experimentId === "deck_black_pressure")
+    ?? entries.find((entry) => entry.deckPreset === "pressure-normal")
+    ?? entries[0];
   const best = rankedEntries[0];
   if (!baseline || !best) {
     throw new Error("No master lab improvement loop entries were evaluated");
@@ -275,6 +311,7 @@ export function formatMasterLabImprovementLoopMarkdown(report: MasterLabImprovem
     "",
     "- `Overall` はミラーを除いたデコイ側の勝率。白/黒それぞれを相手にした両座席の合算を見る。",
     "- `Loss Opp HP` はデコイ敗北時の相手マスター残HP平均。低いほど惜敗、高いほど押し切られている。",
+    "- `Usage` の `S ... (E ...)` は、S がMaster Lab特技内のスケープゴート率、E がスケープゴート内の敵対象率。",
     "- このループはスクリーニングであり、上位候補は中母数または100戦マトリクスで再確認する。",
   ].join("\n");
 }
@@ -295,6 +332,7 @@ function formatSummaryBullets(report: MasterLabImprovementLoopReport): string[] 
   const bullets = [
     `${report.loopCount}ループ / ${totalGames}戦スクリーニング。failure は${totalFailures}、warning は${totalWarnings}。`,
     `ミラーを除くデコイ側の最高スコアは \`${report.best.experimentId}\`（${report.best.experimentLabel}）の score ${report.best.metrics.score}。overall ${formatPercent(report.best.metrics.decoyWinRate)}、vs Black ${formatPercent(report.best.metrics.blackWinRate)}。`,
+    `最上位の敵スケープゴート率は ${formatPercent(report.best.metrics.enemyScapegoatRate)}（スケープゴート内比率）。味方保護だけで勝っているのか、敵対象で戦い方が変わったのかを次回判断材料にする。`,
     `基準にした \`${report.baseline.experimentId}\` は overall ${formatPercent(report.baseline.metrics.decoyWinRate)}、vs Black ${formatPercent(report.baseline.metrics.blackWinRate)}。差分は black ${formatSignedPercent(report.best.metrics.blackWinRate - report.baseline.metrics.blackWinRate)}、overall ${formatSignedPercent(report.best.metrics.decoyWinRate - report.baseline.metrics.decoyWinRate)}。`,
     `vs Black 50%以上かつ warning 1件以下の候補は ${stableBlackCandidates.length} 件。横展開より、上位候補の中母数再検証に進む段階。`,
   ];
@@ -304,7 +342,7 @@ function formatSummaryBullets(report: MasterLabImprovementLoopReport): string[] 
       `\`${highRateWarning.deckPreset}\` は overall ${formatPercent(highRateWarning.metrics.decoyWinRate)} だが warning ${highRateWarning.metrics.warnings} 件。勝率だけなら目立つが、長期戦リスクを先に潰す必要がある。`,
     );
   }
-  bullets.push("中間検証でもスケープゴート率80%超が続くなら、デッキ探索を止めて挑発/スケープゴートの評価式・コスト調整へ移るべき。");
+  bullets.push("中間検証でもスケープゴート率80%超かつ敵対象率5%未満が続くなら、単なる味方保護マスターに戻っているため、評価式より特技設計側の見直しを優先する。");
 
   return bullets.map((bullet) => `- ${bullet}`);
 }
@@ -318,11 +356,14 @@ function formatNextLoopProposal(report: MasterLabImprovementLoopReport): string[
   const best = report.best;
   const shouldConfirmTop = best.metrics.blackWinRate >= 0.5 && best.metrics.warnings <= 1;
   const shouldPivotToAiEval = report.rankedEntries.slice(0, 5).every((entry) =>
-    entry.experimentKind === "deck" || entry.metrics.scapegoatRate >= 0.8,
+    entry.experimentKind === "deck" || (entry.metrics.scapegoatRate >= 0.8 && entry.metrics.enemyScapegoatRate < 0.05),
   );
-  const proposal = shouldConfirmTop
-    ? "上位候補の再現性確認を優先する。次は候補数を減らし、games-per-matchup を 20-30 に上げる。"
-    : shouldPivotToAiEval
+  const shouldProbeEnemyScapegoat = best.metrics.enemyScapegoatRate < 0.05;
+  const proposal = shouldProbeEnemyScapegoat
+    ? "敵対象スケープゴートの使用が薄い。次は敵に付けた時だけ価値が出る状況評価、または新特技案へ寄せる。"
+    : shouldConfirmTop
+      ? "上位候補の再現性確認を優先する。次は候補数を減らし、games-per-matchup を 20-30 に上げる。"
+      : shouldPivotToAiEval
       ? "デッキ差だけでは伸びが鈍い。次はデッキを固定し、挑発/スケープゴート評価補正だけを20候補ほど比較する。"
       : "混合ループをもう一度回す。上位のデッキと評価補正を掛け合わせ、外れた軸は減らす。";
 
@@ -334,7 +375,7 @@ function formatNextLoopProposal(report: MasterLabImprovementLoopReport): string[
     `- 提案: ${proposal}`,
     `- 次回候補: ${selected.length > 0 ? selected.join(" / ") : `\`${best.experimentId}\``}`,
     "- 目安: スクリーニング継続なら20-24ループ、本採用前の再現性確認なら3-5候補に絞って各100-150戦。",
-    "- 分岐: 上位でもスケープゴート率80%超が続くなら、次はスケープゴート抑制と挑発強化のAI評価ループへ寄せる。",
+    "- 分岐: 上位でも敵スケープゴート率が5%未満なら、敵対象バイアスをさらに強めるより、敵に付けた時だけ価値が出る新特技案へ切り替える。",
   ];
 }
 
@@ -425,6 +466,9 @@ function selectExperimentSource(options: {
     return DEFAULT_MASTER_LAB_IMPROVEMENT_DECK_PRESETS.map((deckPreset) =>
       deckExperiment(`deck_${deckPreset}`, `デッキ探索: ${deckPreset}`, deckPreset, buildHypothesis(deckPreset)),
     );
+  }
+  if (options.plan === "scapegoat") {
+    return DEFAULT_MASTER_LAB_SCAPEGOAT_IMPROVEMENT_EXPERIMENTS;
   }
   return DEFAULT_MASTER_LAB_MIXED_IMPROVEMENT_EXPERIMENTS;
 }
@@ -520,7 +564,9 @@ function summarizeImprovementMetrics(
   }
 
   const usage = result.summary.labActionUsage;
+  const targetUsage = result.summary.labActionTargetUsage;
   const labDecisionCount = result.summary.labDecisionCount;
+  const scapegoatUsage = usage.scapegoat ?? 0;
   const metrics = {
     games: result.summary.games,
     failures: result.summary.failures,
@@ -546,7 +592,10 @@ function summarizeImprovementMetrics(
     mirrorWarnings,
     labDecisionCount,
     labActionUsage: usage,
-    scapegoatRate: rate(usage.scapegoat ?? 0, labDecisionCount),
+    labActionTargetUsage: targetUsage,
+    scapegoatRate: rate(scapegoatUsage, labDecisionCount),
+    allyScapegoatRate: rate(targetUsage["scapegoat:ally"] ?? 0, scapegoatUsage),
+    enemyScapegoatRate: rate(targetUsage["scapegoat:enemy"] ?? 0, scapegoatUsage),
     provokeRate: rate(usage.provoke ?? 0, labDecisionCount),
     masterAttackRate: rate(usage.master_attack ?? 0, labDecisionCount),
   } satisfies Omit<MasterLabImprovementMetrics, "score">;
@@ -565,6 +614,7 @@ function scoreMetrics(metrics: Omit<MasterLabImprovementMetrics, "score">): numb
     ? 0
     : clamp((metrics.averageDecoyHpOnWin - 1) / 9, 0, 1) * 4;
   const scapegoatOverusePenalty = Math.max(0, metrics.scapegoatRate - 0.82) * 16;
+  const enemyScapegoatBonus = clamp(metrics.enemyScapegoatRate / 0.18, 0, 1) * 2;
   const longGamePenalty = Math.max(0, metrics.averageTurns - 34) * 0.25 + Math.max(0, metrics.mirrorMaxTurns - 34) * 0.2;
   const safetyPenalty = metrics.failures * 100 + metrics.warnings * 5 + metrics.mirrorWarnings * 2;
 
@@ -573,7 +623,8 @@ function scoreMetrics(metrics: Omit<MasterLabImprovementMetrics, "score">): numb
     metrics.blackWinRate * 34 +
     metrics.whiteWinRate * 16 +
     lossQuality +
-    winQuality -
+    winQuality +
+    enemyScapegoatBonus -
     scapegoatOverusePenalty -
     longGamePenalty -
     safetyPenalty,
@@ -823,6 +874,14 @@ function describeActionShape(metrics: MasterLabImprovementMetrics): string {
     notes.push(`スケープゴート率 ${formatPercent(metrics.scapegoatRate)} は比較的抑えられている。`);
   }
 
+  if (metrics.enemyScapegoatRate >= 0.18) {
+    notes.push(`敵スケープゴート率 ${formatPercent(metrics.enemyScapegoatRate)} は十分に出ており、味方保護とは違う攻撃誘導が発生している。`);
+  } else if (metrics.enemyScapegoatRate >= 0.05) {
+    notes.push(`敵スケープゴート率 ${formatPercent(metrics.enemyScapegoatRate)} は少量だが観測できる。`);
+  } else {
+    notes.push(`敵スケープゴート率 ${formatPercent(metrics.enemyScapegoatRate)} はほぼ出ておらず、実質は味方保護に寄っている。`);
+  }
+
   if (metrics.provokeRate >= 0.16) {
     notes.push(`挑発率 ${formatPercent(metrics.provokeRate)} は高めで、攻撃順の誘導も使えている。`);
   } else if (metrics.provokeRate <= 0.1) {
@@ -848,9 +907,9 @@ function formatDeckMeta(masterId: string | undefined, mode: string | undefined, 
   ].join(" / ");
 }
 
-function formatActionRates(metrics: Pick<MasterLabImprovementMetrics, "scapegoatRate" | "provokeRate" | "masterAttackRate">): string {
+function formatActionRates(metrics: Pick<MasterLabImprovementMetrics, "scapegoatRate" | "enemyScapegoatRate" | "provokeRate" | "masterAttackRate">): string {
   return [
-    `S ${formatPercent(metrics.scapegoatRate)}`,
+    `S ${formatPercent(metrics.scapegoatRate)} (E ${formatPercent(metrics.enemyScapegoatRate)})`,
     `P ${formatPercent(metrics.provokeRate)}`,
     `A ${formatPercent(metrics.masterAttackRate)}`,
   ].join("<br>");
@@ -877,6 +936,14 @@ function formatExperimentTuning(
       ...Object.entries(multiplier)
         .sort(([a], [b]) => a.localeCompare(b))
         .map(([actionId, value]) => `${actionId} x${value}`),
+    );
+  }
+  const targetBias = entry.labEvaluationTuning?.targetOwnerBias;
+  if (targetBias) {
+    parts.push(
+      ...Object.entries(targetBias)
+        .sort(([a], [b]) => a.localeCompare(b))
+        .map(([relation, value]) => `target ${relation} ${formatSigned(value ?? 0)}`),
     );
   }
   return parts.length > 0 ? parts.join("<br>") : "baseline";

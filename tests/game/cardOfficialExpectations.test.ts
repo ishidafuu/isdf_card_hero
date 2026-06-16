@@ -1071,6 +1071,26 @@ describe("official card effect expectations", () => {
     expect(game.slots.player_front_left.monster?.hp).toBe(2);
   });
 
+  it("card_128 スケープゴート can redirect enemy master damage to the chosen enemy monster", () => {
+    let game = createGameWithPlayerHand([{ cardId: "card_128", instanceId: "scapegoat" }]);
+    game.players.player.stones = magicCost("card_128");
+    game.slots.player_front_left.monster = createActiveMonster("takokke", "player", { level: 2, hp: 6, investedStones: 2 });
+    game.slots.cpu_front_left.monster = createActiveMonster("takokke", "cpu");
+
+    game = playMagic(game, {
+      handInstanceId: "scapegoat",
+      target: { kind: "monster", slotKey: "cpu_front_left" },
+    });
+    game = attackWithCommand(game, {
+      attackerSlotKey: "player_front_left",
+      commandId: "attack",
+      target: { kind: "master", playerId: "cpu" },
+    });
+
+    expect(game.players.cpu.masterHp).toBe(10);
+    expect(game.slots.cpu_front_left.monster?.hp).toBe(2);
+  });
+
   it("card_129 ソウルチャージ applies focus and boosts only the upper command once", () => {
     let game = createGameWithPlayerHand([{ cardId: "card_129", instanceId: "charge" }]);
     game.players.player.stones = magicCost("card_129");
