@@ -19,12 +19,20 @@ describe("master lab improvement loop", () => {
     expect(report.entries).toHaveLength(2);
     expect(report.rankedEntries).toHaveLength(2);
     expect(report.entries[0].result.summary.games).toBe(5);
+    expect(report.entries[0].experimentKind).toBe("deck");
+    expect(report.entries[0].experimentLabel).toContain("通常プレッシャー");
     expect(report.best.metrics.games).toBe(5);
     expect(report.conclusion.nextSteps.length).toBeGreaterThan(0);
 
     const markdown = formatMasterLabImprovementLoopMarkdown(report);
     expect(markdown).toContain("# Master Lab Improvement Loop: decoy");
+    expect(markdown).toContain("## Summary");
+    expect(markdown).toContain("## Next Loop Proposal");
+    expect(markdown).toContain("## Loop Schedule");
     expect(markdown).toContain("## Loop Results");
+    expect(markdown).toContain("## Loop Notes");
+    expect(markdown).toContain("### Loop 1:");
+    expect(markdown).toContain("次アクション");
     expect(markdown).toContain("pressure-normal");
   }, MASTER_LAB_IMPROVEMENT_LOOP_TEST_TIMEOUT_MS);
 });

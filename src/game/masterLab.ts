@@ -113,6 +113,11 @@ export interface MasterLabActionEvaluation {
   after: GameState;
 }
 
+export interface MasterLabEvaluationTuning {
+  actionBias?: Partial<Record<string, number>>;
+  actionMultiplier?: Partial<Record<string, number>>;
+}
+
 const MASTER_LAB_VIRTUAL_CARD_PREFIX = "__master_lab_virtual__";
 
 export const MASTER_LAB_ROADMAP: readonly MasterLabRoadmapPhase[] = [
@@ -369,13 +374,18 @@ export function inspectMasterLabActionEvaluations(
   state: GameState,
   candidateId: MasterLabCandidateId,
   perspective: PlayerId = state.currentPlayer,
+  tuning: MasterLabEvaluationTuning = {},
 ): MasterLabActionEvaluation[] {
   const beforeScore = evaluateState(state, perspective);
   return listMasterLabActionOptions(state, candidateId).flatMap((option, index) => {
     try {
       const after = playMasterLabAction(state, option);
       const stateScoreDelta = evaluateState(after, perspective) - beforeScore;
-      const heuristicScore = masterLabActionHeuristic(state, after, option, perspective);
+      const heuristicScore = applyMasterLabEvaluationTuning(
+        masterLabActionHeuristic(state, after, option, perspective),
+        option,
+        tuning,
+      );
       const totalScore = stateScoreDelta + heuristicScore;
       return [{
         option,
@@ -395,8 +405,9 @@ export function chooseMasterLabAction(
   state: GameState,
   candidateId: MasterLabCandidateId,
   perspective: PlayerId = state.currentPlayer,
+  tuning: MasterLabEvaluationTuning = {},
 ): MasterLabActionEvaluation | undefined {
-  return inspectMasterLabActionEvaluations(state, candidateId, perspective)
+  return inspectMasterLabActionEvaluations(state, candidateId, perspective, tuning)
     .sort((a, b) => b.totalScore - a.totalScore || a.option.summary.localeCompare(b.option.summary))[0];
 }
 
@@ -716,6 +727,16 @@ function masterLabActionHeuristic(
   }
 
   return 0;
+}
+
+function applyMasterLabEvaluationTuning(
+  heuristicScore: number,
+  option: MasterLabActionOption,
+  tuning: MasterLabEvaluationTuning,
+): number {
+  const multiplier = tuning.actionMultiplier?.[option.actionId] ?? 1;
+  const bias = tuning.actionBias?.[option.actionId] ?? 0;
+  return heuristicScore * multiplier + bias;
 }
 
 function masterLabEvaluationReason(

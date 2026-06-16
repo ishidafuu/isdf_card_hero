@@ -48,7 +48,7 @@ async function writeReport(path: string, content: string): Promise<void> {
 function parseArgs(args: string[]): CliOptions {
   const parsed: CliOptions = {
     candidateId: "decoy",
-    loopCount: 20,
+    plan: "mixed",
     gamesPerMatchup: 5,
     maxSteps: 700,
     maxTurns: 160,
@@ -59,6 +59,9 @@ function parseArgs(args: string[]): CliOptions {
     const next = args[i + 1];
     if (arg === "--candidate") {
       parsed.candidateId = readCandidate(arg, next);
+      i += 1;
+    } else if (arg === "--plan") {
+      parsed.plan = readPlan(arg, next);
       i += 1;
     } else if (arg === "--loops") {
       parsed.loopCount = readNumber(arg, next);
@@ -110,6 +113,13 @@ function readCandidate(name: string, value: string | undefined): MasterLabCandid
   throw new Error(`${name} must be one of: decoy, sacrifice, timing`);
 }
 
+function readPlan(name: string, value: string | undefined): CliOptions["plan"] {
+  if (value === "deck" || value === "mixed") {
+    return value;
+  }
+  throw new Error(`${name} must be one of: deck, mixed`);
+}
+
 function readDeckPreset(name: string, value: string | undefined): DeckPresetId {
   if (!value) {
     throw new Error(`${name} requires a value`);
@@ -156,7 +166,8 @@ Usage:
 
 Options:
   --candidate <id>           Candidate. Default: decoy. Values: decoy, sacrifice, timing
-  --loops <n>                Number of deck hypotheses to evaluate. Default: 20
+  --plan <id>                Experiment plan. Default: mixed. Values: deck, mixed
+  --loops <n>                Number of hypotheses to evaluate. Default: selected plan length
   --games-per-matchup <n>    Games per final-gate matchup. Default: 5
   --deck-preset <id>         Add an explicit deck preset. Can be repeated.
   --max-steps <n>            Failure threshold per game. Default: 700

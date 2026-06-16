@@ -1,14 +1,28 @@
 import { getDeckPreset, type DeckPresetId } from "./deckPresets";
 import { runMasterLabFinalGate, type MasterLabFinalGateOptions, type MasterLabFinalGateResult } from "./masterLabFinalGate";
-import type { MasterLabCandidateId } from "./masterLab";
+import type { MasterLabCandidateId, MasterLabEvaluationTuning } from "./masterLab";
 import type { PlayerId } from "./types";
 
 export type MasterLabImprovementJudgement = "advance" | "hold" | "reject";
 export type MasterLabImprovementDecision = "needs_full_gate" | "continue_deck_loop" | "pivot_to_action_design";
+export type MasterLabImprovementPlanId = "deck" | "mixed";
+export type MasterLabImprovementExperimentKind = "deck" | "ai_eval" | "hybrid" | "warning_probe";
 
 export interface MasterLabImprovementLoopOptions extends Omit<MasterLabFinalGateOptions, "deckPreset"> {
+  plan?: MasterLabImprovementPlanId;
   loopCount?: number;
   deckPresets?: readonly DeckPresetId[];
+  experiments?: readonly MasterLabImprovementExperiment[];
+}
+
+export interface MasterLabImprovementExperiment {
+  id: string;
+  kind: MasterLabImprovementExperimentKind;
+  label: string;
+  deckPreset: DeckPresetId;
+  hypothesis: string;
+  labActionMargin?: number;
+  labEvaluationTuning?: MasterLabEvaluationTuning;
 }
 
 export interface MasterLabImprovementMetrics {
@@ -44,10 +58,15 @@ export interface MasterLabImprovementMetrics {
 
 export interface MasterLabImprovementLoopEntry {
   index: number;
+  experimentId: string;
+  experimentKind: MasterLabImprovementExperimentKind;
+  experimentLabel: string;
   deckPreset: DeckPresetId;
   deckName: string;
   deckMeta: string;
   hypothesis: string;
+  labActionMargin?: number;
+  labEvaluationTuning?: MasterLabEvaluationTuning;
   result: MasterLabFinalGateResult;
   metrics: MasterLabImprovementMetrics;
   judgement: MasterLabImprovementJudgement;
@@ -99,34 +118,76 @@ export const DEFAULT_MASTER_LAB_IMPROVEMENT_DECK_PRESETS = [
   "submission-pro-with-rare8-black-1328",
 ] as const satisfies readonly DeckPresetId[];
 
+export const DEFAULT_MASTER_LAB_MIXED_IMPROVEMENT_EXPERIMENTS = [
+  deckExperiment("deck_pressure_baseline", "デッキ基準: 通常プレッシャー", "pressure-normal", "前回基準。白相手の安定と黒相手の最低ラインを再確認する。"),
+  deckExperiment("deck_black_pressure", "デッキ本命: ブラック検証", "black-pressure", "前回最上位。黒耐性60%が再現するか見る。"),
+  deckExperiment("deck_balanced_control", "デッキ比較: 通常バランス", "balanced-normal", "攻撃寄りでない標準構成を比較し、守り過多の弱さを再確認する。"),
+  deckExperiment("deck_beatdown_lock", "デッキ控え: ビートダウン&ロック", "submission-pro-no-rare8-black-1403", "前回hold。除去/妨害寄りで白相手に強い形が残るか見る。"),
+  deckExperiment("deck_agito_growth", "デッキ控え: アギト育成", "submission-pro-no-rare8-white-1340", "白系育成で黒相手50%が再現するか確認する。"),
+  {
+    ...deckExperiment("deck_1354_warning_probe", "警告診断: 黒速攻&殲滅", "submission-pro-with-rare8-black-1354", "勝率は高いがwarningが多かったため、長期戦リスクを再確認する。"),
+    kind: "warning_probe",
+  },
+  deckExperiment("deck_direct_damage_probe", "デッキ診断: HP直撃", "submission-pro-with-rare8-black-1328", "直撃密度だけでは勝てない仮説を再確認する。"),
+  deckExperiment("deck_defense_probe", "デッキ診断: 極端なぼうえい", "submission-pro-no-rare8-white-1347", "防御密度を上げた場合にデコイがホワイト化しないか見る。"),
+  aiExperiment("ai_black_provoke_plus8", "AI評価: 挑発+8 / black-pressure", "black-pressure", { actionBias: { provoke: 8 } }, "黒相手に挑発を少し厚くし、バーサク打点の当たり先を曲げられるか見る。"),
+  aiExperiment("ai_black_provoke_plus16", "AI評価: 挑発+16 / black-pressure", "black-pressure", { actionBias: { provoke: 16 } }, "挑発評価を明確に上げ、スケープゴート偏重を緩められるか見る。"),
+  aiExperiment("ai_black_provoke_plus24", "AI評価: 挑発+24 / black-pressure", "black-pressure", { actionBias: { provoke: 24 } }, "挑発を強めすぎた時に白相手や長期戦が崩れないか見る。"),
+  aiExperiment("ai_black_scapegoat_minus8", "AI評価: スケープゴート-8 / black-pressure", "black-pressure", { actionBias: { scapegoat: -8 } }, "スケープゴート連打を少し抑えても黒耐性が残るか見る。"),
+  aiExperiment("ai_black_scapegoat_minus16", "AI評価: スケープゴート-16 / black-pressure", "black-pressure", { actionBias: { scapegoat: -16 } }, "スケープゴート依存を強く抑えた時の勝率低下を測る。"),
+  aiExperiment("ai_pressure_provoke_plus16", "AI評価: 挑発+16 / pressure-normal", "pressure-normal", { actionBias: { provoke: 16 } }, "白安定寄りの基準デッキで挑発厚めが黒耐性を足せるか見る。"),
+  aiExperiment("ai_pressure_scapegoat_minus8", "AI評価: スケープゴート-8 / pressure-normal", "pressure-normal", { actionBias: { scapegoat: -8 } }, "基準デッキでスケープゴート依存を抑えても勝率が残るか見る。"),
+  aiExperiment("ai_pressure_master_attack_minus8", "AI評価: マスター攻撃-8 / pressure-normal", "pressure-normal", { actionBias: { master_attack: -8 } }, "通常攻撃へ逃げる場面を減らし、防御特技を選ばせる価値を見る。"),
+  aiExperiment("ai_black_strict_margin12", "AI評価: 特技採用margin+12 / black-pressure", "black-pressure", undefined, "CPU通常手より明確に強い時だけ特技を使わせ、連打リスクを下げる。", 12),
+  aiExperiment("ai_pressure_eager_margin_minus8", "AI評価: 特技採用margin-8 / pressure-normal", "pressure-normal", undefined, "特技を早めに切る挙動が黒速攻へ間に合うか見る。", -8),
+  hybridExperiment("hybrid_black_provoke16_scapegoat_minus8", "混合: black-pressure / 挑発+16 / スケープゴート-8", "black-pressure", { actionBias: { provoke: 16, scapegoat: -8 } }, "前回本命デッキに、挑発強化とスケープゴート抑制を同時に入れる。"),
+  hybridExperiment("hybrid_pressure_provoke16_scapegoat_minus8", "混合: pressure-normal / 挑発+16 / スケープゴート-8", "pressure-normal", { actionBias: { provoke: 16, scapegoat: -8 } }, "白安定を維持しながら黒速攻への受けを厚くする。"),
+  hybridExperiment("hybrid_1403_provoke16_scapegoat_minus8", "混合: 1403 / 挑発+16 / スケープゴート-8", "submission-pro-no-rare8-black-1403", { actionBias: { provoke: 16, scapegoat: -8 } }, "妨害寄りデッキで挑発の攻撃順誘導が噛み合うか見る。"),
+  hybridExperiment("hybrid_1354_warning_trim", "混合: 1354 / 挑発+16 / スケープゴート-16", "submission-pro-with-rare8-black-1354", { actionBias: { provoke: 16, scapegoat: -16 } }, "warningの多い高勝率候補で、スケープゴート過多を落として安定化するか見る。"),
+] as const satisfies readonly MasterLabImprovementExperiment[];
+
 export function runMasterLabImprovementLoop(
   options: MasterLabImprovementLoopOptions = {},
 ): MasterLabImprovementLoopReport {
   const {
     deckPresets: explicitDeckPresets,
+    experiments: explicitExperiments,
     loopCount: explicitLoopCount,
+    plan = "mixed",
     ...finalGateOptions
   } = options;
   const candidateId = finalGateOptions.candidateId ?? DEFAULT_CANDIDATE_ID;
   const gamesPerMatchup = finalGateOptions.gamesPerMatchup ?? DEFAULT_GAMES_PER_MATCHUP;
-  const deckPresets = selectDeckPresets(explicitDeckPresets, explicitLoopCount);
+  const experiments = selectExperiments({
+    explicitDeckPresets,
+    explicitExperiments,
+    explicitLoopCount,
+    plan,
+  });
 
-  const rawEntries = deckPresets.map((deckPreset, index): Omit<MasterLabImprovementLoopEntry, "judgement" | "nextAction"> => {
+  const rawEntries = experiments.map((experiment, index): Omit<MasterLabImprovementLoopEntry, "judgement" | "nextAction"> => {
     const result = runMasterLabFinalGate({
       ...finalGateOptions,
       candidateId,
       gamesPerMatchup,
-      deckPreset,
+      deckPreset: experiment.deckPreset,
+      labActionMargin: experiment.labActionMargin ?? finalGateOptions.labActionMargin,
+      labEvaluationTuning: experiment.labEvaluationTuning ?? finalGateOptions.labEvaluationTuning,
       includeGameHistory: true,
       historyLimit: finalGateOptions.historyLimit ?? 8,
     });
-    const preset = getDeckPreset(deckPreset);
+    const preset = getDeckPreset(experiment.deckPreset);
     return {
       index: index + 1,
-      deckPreset,
+      experimentId: experiment.id,
+      experimentKind: experiment.kind,
+      experimentLabel: experiment.label,
+      deckPreset: experiment.deckPreset,
       deckName: preset.name,
       deckMeta: formatDeckMeta(preset.masterId, preset.mode, preset.allowSpecial),
-      hypothesis: buildHypothesis(deckPreset),
+      hypothesis: experiment.hypothesis,
+      labActionMargin: experiment.labActionMargin,
+      labEvaluationTuning: experiment.labEvaluationTuning,
       result,
       metrics: summarizeImprovementMetrics(result, candidateId),
     };
@@ -181,6 +242,20 @@ export function formatMasterLabImprovementLoopMarkdown(report: MasterLabImprovem
     "",
     ...report.conclusion.nextSteps.map((step) => `- ${step}`),
     "",
+    "## Summary",
+    "",
+    ...formatSummaryBullets(report),
+    "",
+    "## Next Loop Proposal",
+    "",
+    ...formatNextLoopProposal(report),
+    "",
+    "## Loop Schedule",
+    "",
+    "| Loop | Kind | Experiment | Deck | AI Eval | Hypothesis |",
+    "| ---: | --- | --- | --- | --- | --- |",
+    ...report.entries.map(formatScheduleRow),
+    "",
     "## Top Candidates",
     "",
     "| Rank | Loop | Deck | Score | Overall | vs Black | vs White | Loss Opp HP | Usage | Issues | Judgement |",
@@ -193,31 +268,165 @@ export function formatMasterLabImprovementLoopMarkdown(report: MasterLabImprovem
     "| ---: | --- | --- | ---: | ---: | ---: | ---: | ---: | ---: | --- | --- | --- |",
     ...report.entries.map(formatLoopRow),
     "",
+    "## Loop Notes",
+    "",
+    ...report.entries.flatMap(formatLoopNote),
     "## Reading",
     "",
     "- `Overall` はミラーを除いたデコイ側の勝率。白/黒それぞれを相手にした両座席の合算を見る。",
     "- `Loss Opp HP` はデコイ敗北時の相手マスター残HP平均。低いほど惜敗、高いほど押し切られている。",
-    "- この20ループはスクリーニングであり、上位候補は100戦マトリクスで再確認する。",
+    "- このループはスクリーニングであり、上位候補は中母数または100戦マトリクスで再確認する。",
   ].join("\n");
 }
 
-function selectDeckPresets(
-  explicitDeckPresets: readonly DeckPresetId[] | undefined,
-  explicitLoopCount: number | undefined,
-): readonly DeckPresetId[] {
-  const source = explicitDeckPresets && explicitDeckPresets.length > 0
-    ? explicitDeckPresets
-    : DEFAULT_MASTER_LAB_IMPROVEMENT_DECK_PRESETS;
-  const loopCount = Number.isInteger(explicitLoopCount) && explicitLoopCount !== undefined
-    ? explicitLoopCount
+function formatSummaryBullets(report: MasterLabImprovementLoopReport): string[] {
+  const totalWarnings = report.entries.reduce((total, entry) => total + entry.metrics.warnings, 0);
+  const totalFailures = report.entries.reduce((total, entry) => total + entry.metrics.failures, 0);
+  const totalGames = report.entries.reduce((total, entry) => total + entry.metrics.games, 0);
+  const stableBlackCandidates = report.entries.filter((entry) =>
+    entry.metrics.failures === 0 &&
+    entry.metrics.warnings <= 1 &&
+    entry.metrics.blackWinRate >= 0.5,
+  );
+  const highRateWarning = report.entries
+    .filter((entry) => entry.metrics.decoyWinRate >= report.best.metrics.decoyWinRate && entry.metrics.warnings > report.best.metrics.warnings)
+    .sort((a, b) => b.metrics.warnings - a.metrics.warnings || b.metrics.decoyWinRate - a.metrics.decoyWinRate)[0];
+
+  const bullets = [
+    `${report.loopCount}ループ / ${totalGames}戦スクリーニング。failure は${totalFailures}、warning は${totalWarnings}。`,
+    `ミラーを除くデコイ側の最高スコアは \`${report.best.experimentId}\`（${report.best.experimentLabel}）の score ${report.best.metrics.score}。overall ${formatPercent(report.best.metrics.decoyWinRate)}、vs Black ${formatPercent(report.best.metrics.blackWinRate)}。`,
+    `基準にした \`${report.baseline.experimentId}\` は overall ${formatPercent(report.baseline.metrics.decoyWinRate)}、vs Black ${formatPercent(report.baseline.metrics.blackWinRate)}。差分は black ${formatSignedPercent(report.best.metrics.blackWinRate - report.baseline.metrics.blackWinRate)}、overall ${formatSignedPercent(report.best.metrics.decoyWinRate - report.baseline.metrics.decoyWinRate)}。`,
+    `vs Black 50%以上かつ warning 1件以下の候補は ${stableBlackCandidates.length} 件。横展開より、上位候補の中母数再検証に進む段階。`,
+  ];
+
+  if (highRateWarning) {
+    bullets.push(
+      `\`${highRateWarning.deckPreset}\` は overall ${formatPercent(highRateWarning.metrics.decoyWinRate)} だが warning ${highRateWarning.metrics.warnings} 件。勝率だけなら目立つが、長期戦リスクを先に潰す必要がある。`,
+    );
+  }
+  bullets.push("中間検証でもスケープゴート率80%超が続くなら、デッキ探索を止めて挑発/スケープゴートの評価式・コスト調整へ移るべき。");
+
+  return bullets.map((bullet) => `- ${bullet}`);
+}
+
+function formatNextLoopProposal(report: MasterLabImprovementLoopReport): string[] {
+  const stableTop = report.rankedEntries.filter((entry) =>
+    entry.metrics.failures === 0 &&
+    entry.metrics.warnings <= 1 &&
+    entry.metrics.decoyWinRate >= 0.5,
+  );
+  const best = report.best;
+  const shouldConfirmTop = best.metrics.blackWinRate >= 0.5 && best.metrics.warnings <= 1;
+  const shouldPivotToAiEval = report.rankedEntries.slice(0, 5).every((entry) =>
+    entry.experimentKind === "deck" || entry.metrics.scapegoatRate >= 0.8,
+  );
+  const proposal = shouldConfirmTop
+    ? "上位候補の再現性確認を優先する。次は候補数を減らし、games-per-matchup を 20-30 に上げる。"
+    : shouldPivotToAiEval
+      ? "デッキ差だけでは伸びが鈍い。次はデッキを固定し、挑発/スケープゴート評価補正だけを20候補ほど比較する。"
+      : "混合ループをもう一度回す。上位のデッキと評価補正を掛け合わせ、外れた軸は減らす。";
+
+  const selected = stableTop.slice(0, 4).map((entry) =>
+    `\`${entry.experimentId}\` (${entry.deckPreset}, score ${entry.metrics.score})`,
+  );
+
+  return [
+    `- 提案: ${proposal}`,
+    `- 次回候補: ${selected.length > 0 ? selected.join(" / ") : `\`${best.experimentId}\``}`,
+    "- 目安: スクリーニング継続なら20-24ループ、本採用前の再現性確認なら3-5候補に絞って各100-150戦。",
+    "- 分岐: 上位でもスケープゴート率80%超が続くなら、次はスケープゴート抑制と挑発強化のAI評価ループへ寄せる。",
+  ];
+}
+
+function deckExperiment(
+  id: string,
+  label: string,
+  deckPreset: DeckPresetId,
+  hypothesis: string,
+): MasterLabImprovementExperiment {
+  return {
+    id,
+    kind: "deck",
+    label,
+    deckPreset,
+    hypothesis,
+  };
+}
+
+function aiExperiment(
+  id: string,
+  label: string,
+  deckPreset: DeckPresetId,
+  labEvaluationTuning: MasterLabEvaluationTuning | undefined,
+  hypothesis: string,
+  labActionMargin?: number,
+): MasterLabImprovementExperiment {
+  return {
+    id,
+    kind: "ai_eval",
+    label,
+    deckPreset,
+    hypothesis,
+    ...(labActionMargin !== undefined ? { labActionMargin } : {}),
+    ...(labEvaluationTuning ? { labEvaluationTuning } : {}),
+  };
+}
+
+function hybridExperiment(
+  id: string,
+  label: string,
+  deckPreset: DeckPresetId,
+  labEvaluationTuning: MasterLabEvaluationTuning,
+  hypothesis: string,
+): MasterLabImprovementExperiment {
+  return {
+    id,
+    kind: "hybrid",
+    label,
+    deckPreset,
+    hypothesis,
+    labEvaluationTuning,
+  };
+}
+
+function selectExperiments(options: {
+  explicitDeckPresets: readonly DeckPresetId[] | undefined;
+  explicitExperiments: readonly MasterLabImprovementExperiment[] | undefined;
+  explicitLoopCount: number | undefined;
+  plan: MasterLabImprovementPlanId;
+}): readonly MasterLabImprovementExperiment[] {
+  const source = selectExperimentSource(options);
+  const loopCount = Number.isInteger(options.explicitLoopCount) && options.explicitLoopCount !== undefined
+    ? options.explicitLoopCount
     : source.length;
   if (loopCount <= 0) {
     throw new Error("loopCount must be greater than 0");
   }
   if (loopCount > source.length) {
-    throw new Error(`loopCount ${loopCount} exceeds selected deck preset count ${source.length}`);
+    throw new Error(`loopCount ${loopCount} exceeds selected experiment count ${source.length}`);
   }
   return source.slice(0, loopCount);
+}
+
+function selectExperimentSource(options: {
+  explicitDeckPresets: readonly DeckPresetId[] | undefined;
+  explicitExperiments: readonly MasterLabImprovementExperiment[] | undefined;
+  plan: MasterLabImprovementPlanId;
+}): readonly MasterLabImprovementExperiment[] {
+  if (options.explicitExperiments && options.explicitExperiments.length > 0) {
+    return options.explicitExperiments;
+  }
+  if (options.explicitDeckPresets && options.explicitDeckPresets.length > 0) {
+    return options.explicitDeckPresets.map((deckPreset) =>
+      deckExperiment(`deck_${deckPreset}`, `デッキ指定: ${deckPreset}`, deckPreset, buildHypothesis(deckPreset)),
+    );
+  }
+  if (options.plan === "deck") {
+    return DEFAULT_MASTER_LAB_IMPROVEMENT_DECK_PRESETS.map((deckPreset) =>
+      deckExperiment(`deck_${deckPreset}`, `デッキ探索: ${deckPreset}`, deckPreset, buildHypothesis(deckPreset)),
+    );
+  }
+  return DEFAULT_MASTER_LAB_MIXED_IMPROVEMENT_EXPERIMENTS;
 }
 
 function summarizeImprovementMetrics(
@@ -420,14 +629,14 @@ function buildConclusion(
   if (best.metrics.failures === 0 && (blackGain >= 0.15 || overallGain >= 0.1)) {
     return {
       decision: "needs_full_gate",
-      summary: `${best.deckName} が基準より伸びた。小母数の上振れを排除するため、まず上位候補を100戦マトリクスで再検証する。`,
+      summary: `${best.experimentLabel} が基準より伸びた。小母数の上振れを排除するため、まず上位候補を100戦マトリクスで再検証する。`,
       reasons: [
-        `${best.deckPreset}: overall ${formatPercent(best.metrics.decoyWinRate)} / vs Black ${formatPercent(best.metrics.blackWinRate)} / score ${best.metrics.score}`,
-        `baseline ${baseline.deckPreset}: overall ${formatPercent(baseline.metrics.decoyWinRate)} / vs Black ${formatPercent(baseline.metrics.blackWinRate)}`,
+        `${best.experimentId}: ${best.deckPreset} / overall ${formatPercent(best.metrics.decoyWinRate)} / vs Black ${formatPercent(best.metrics.blackWinRate)} / score ${best.metrics.score}`,
+        `baseline ${baseline.experimentId}: ${baseline.deckPreset} / overall ${formatPercent(baseline.metrics.decoyWinRate)} / vs Black ${formatPercent(baseline.metrics.blackWinRate)}`,
         `black gain ${formatSignedPercent(blackGain)}, overall gain ${formatSignedPercent(overallGain)}`,
       ],
       nextSteps: [
-        `${best.deckPreset} を games-per-matchup 100 で再実行する。`,
+        `${best.experimentId} を games-per-matchup 100 で再実行する。`,
         "上位3件の負けログを見て、スケープゴート過多か挑発不足かを分類する。",
         "100戦でも黒相手が50%を超えるなら、デッキ調整ループを継続する。",
       ],
@@ -455,7 +664,7 @@ function buildConclusion(
     decision: "continue_deck_loop",
     summary: "明確な採用候補はまだ本検証待ちだが、デッキ側の差は出ている。候補を絞り、同系統の微調整を続ける価値がある。",
     reasons: [
-      `${best.deckPreset}: overall ${formatPercent(best.metrics.decoyWinRate)} / vs Black ${formatPercent(best.metrics.blackWinRate)}`,
+      `${best.experimentId}: ${best.deckPreset} / overall ${formatPercent(best.metrics.decoyWinRate)} / vs Black ${formatPercent(best.metrics.blackWinRate)}`,
       `baselineとの差分は black ${formatSignedPercent(blackGain)}, overall ${formatSignedPercent(overallGain)}`,
       `vs Black 50%以上の安定候補が ${stableTopCount} 件ある`,
     ],
@@ -506,7 +715,7 @@ function formatEntryRow(entry: MasterLabImprovementLoopEntry, rank: number): str
   return [
     rank,
     entry.index,
-    escapeMarkdownTableCell(`${entry.deckPreset}<br>${entry.deckName}`),
+    escapeMarkdownTableCell(`${entry.experimentId}<br>${entry.experimentLabel}<br>${entry.deckPreset}`),
     metrics.score,
     formatWinLossRate(metrics.decoyWins, metrics.decoyLosses, metrics.decoyWinRate),
     formatWinLossRate(metrics.blackWins, metrics.blackLosses, metrics.blackWinRate),
@@ -522,7 +731,7 @@ function formatLoopRow(entry: MasterLabImprovementLoopEntry): string {
   const metrics = entry.metrics;
   return [
     entry.index,
-    escapeMarkdownTableCell(`${entry.deckPreset}<br>${entry.deckName}<br>${entry.deckMeta}`),
+    escapeMarkdownTableCell(`${entry.experimentId}<br>${entry.experimentLabel}<br>${entry.deckPreset}<br>${entry.deckMeta}`),
     escapeMarkdownTableCell(entry.hypothesis),
     metrics.score,
     formatWinLossRate(metrics.decoyWins, metrics.decoyLosses, metrics.decoyWinRate),
@@ -534,6 +743,101 @@ function formatLoopRow(entry: MasterLabImprovementLoopEntry): string {
     formatIssues(metrics),
     entry.judgement,
   ].join(" | ").replace(/^/, "| ").replace(/$/, " |");
+}
+
+function formatScheduleRow(entry: MasterLabImprovementLoopEntry): string {
+  return [
+    entry.index,
+    entry.experimentKind,
+    escapeMarkdownTableCell(`${entry.experimentId}<br>${entry.experimentLabel}`),
+    escapeMarkdownTableCell(`${entry.deckPreset}<br>${entry.deckName}`),
+    formatExperimentTuning(entry),
+    escapeMarkdownTableCell(entry.hypothesis),
+  ].join(" | ").replace(/^/, "| ").replace(/$/, " |");
+}
+
+function formatLoopNote(entry: MasterLabImprovementLoopEntry): string[] {
+  const metrics = entry.metrics;
+  return [
+    `### Loop ${entry.index}: ${entry.experimentLabel}`,
+    "",
+    `- 対象: \`${entry.deckPreset}\`（${entry.deckMeta}）。${entry.hypothesis}`,
+    `- AI評価: ${formatExperimentTuning(entry)}`,
+    `- 結果: score ${metrics.score}、overall ${formatWinLossInline(metrics.decoyWins, metrics.decoyLosses, metrics.decoyWinRate)}、vs Black ${formatWinLossInline(metrics.blackWins, metrics.blackLosses, metrics.blackWinRate)}、vs White ${formatWinLossInline(metrics.whiteWins, metrics.whiteLosses, metrics.whiteWinRate)}、${formatIssues(metrics)}。`,
+    `- 読み解き: ${describeMatchupShape(entry)}`,
+    `- 特技傾向: ${describeActionShape(metrics)}`,
+    `- 次アクション: ${entry.nextAction}`,
+    "",
+  ];
+}
+
+function describeMatchupShape(entry: MasterLabImprovementLoopEntry): string {
+  const metrics = entry.metrics;
+  const notes: string[] = [];
+
+  if (metrics.failures > 0) {
+    notes.push("failure が出ているため、勝率以前に安全性確認が必要。");
+  } else if (metrics.warnings >= 3) {
+    notes.push("勝ち星があっても warning が多く、長期戦または停滞のリスクが評価を下げている。");
+  } else if (metrics.warnings > 0) {
+    notes.push("大きく壊れてはいないが、警告seedは中母数検証前にログ確認したい。");
+  } else {
+    notes.push("自動対戦上の安全性はこの小母数では問題なし。");
+  }
+
+  if (metrics.blackWinRate >= 0.55 && metrics.whiteWinRate >= 0.5) {
+    notes.push("黒速攻に押し負けず、白相手にも最低限の勝ち筋を残している。");
+  } else if (metrics.blackWinRate >= 0.5 && metrics.whiteWinRate < 0.5) {
+    notes.push("黒相手の受けは見えるが、白相手の盤面制圧にはやや押されている。");
+  } else if (metrics.blackWinRate < 0.35 && metrics.whiteWinRate >= 0.5) {
+    notes.push("白相手には戦える一方、主目的の黒速攻対策としては弱い。");
+  } else if (metrics.blackWinRate < 0.35 && metrics.whiteWinRate < 0.35) {
+    notes.push("白黒どちらにも通りにくく、デコイの受け特技を活かす前に押し切られている。");
+  } else if (metrics.decoyWinRate >= 0.5) {
+    notes.push("全体では五分以上だが、黒相手の再現性はまだ足りない。");
+  } else {
+    notes.push("勝率面では採用圏に届かず、同系カード差し替えの優先度も低い。");
+  }
+
+  if (metrics.averageOpponentHpOnLoss !== undefined) {
+    if (metrics.averageOpponentHpOnLoss <= 4) {
+      notes.push(`負け試合の相手残HP平均は ${metrics.averageOpponentHpOnLoss.toFixed(1)} で、惜敗寄り。`);
+    } else if (metrics.averageOpponentHpOnLoss >= 6) {
+      notes.push(`負け試合の相手残HP平均は ${metrics.averageOpponentHpOnLoss.toFixed(1)} で、押し切られ方が重い。`);
+    } else {
+      notes.push(`負け試合の相手残HP平均は ${metrics.averageOpponentHpOnLoss.toFixed(1)} で、中程度の負け方。`);
+    }
+  }
+
+  return notes.join(" ");
+}
+
+function describeActionShape(metrics: MasterLabImprovementMetrics): string {
+  const notes: string[] = [];
+
+  if (metrics.scapegoatRate >= 0.85) {
+    notes.push(`スケープゴート率 ${formatPercent(metrics.scapegoatRate)} はかなり高く、守り先の選別が甘い可能性がある。`);
+  } else if (metrics.scapegoatRate >= 0.8) {
+    notes.push(`スケープゴート率 ${formatPercent(metrics.scapegoatRate)} は高めで、受けの主軸になっている。`);
+  } else {
+    notes.push(`スケープゴート率 ${formatPercent(metrics.scapegoatRate)} は比較的抑えられている。`);
+  }
+
+  if (metrics.provokeRate >= 0.16) {
+    notes.push(`挑発率 ${formatPercent(metrics.provokeRate)} は高めで、攻撃順の誘導も使えている。`);
+  } else if (metrics.provokeRate <= 0.1) {
+    notes.push(`挑発率 ${formatPercent(metrics.provokeRate)} は低く、黒の高打点を曲げる役割が薄い。`);
+  } else {
+    notes.push(`挑発率 ${formatPercent(metrics.provokeRate)} は中程度。`);
+  }
+
+  if (metrics.masterAttackRate >= 0.15) {
+    notes.push(`マスター攻撃率 ${formatPercent(metrics.masterAttackRate)} が高く、特技より通常攻撃へ逃げる場面が多い。`);
+  } else if (metrics.masterAttackRate <= 0.03) {
+    notes.push(`マスター攻撃率 ${formatPercent(metrics.masterAttackRate)} は低く、防御特技にかなり寄っている。`);
+  }
+
+  return notes.join(" ");
 }
 
 function formatDeckMeta(masterId: string | undefined, mode: string | undefined, allowSpecial: boolean): string {
@@ -552,12 +856,42 @@ function formatActionRates(metrics: Pick<MasterLabImprovementMetrics, "scapegoat
   ].join("<br>");
 }
 
+function formatExperimentTuning(
+  entry: Pick<MasterLabImprovementLoopEntry, "labActionMargin" | "labEvaluationTuning">,
+): string {
+  const parts: string[] = [];
+  if (entry.labActionMargin !== undefined) {
+    parts.push(`margin ${formatSigned(entry.labActionMargin)}`);
+  }
+  const bias = entry.labEvaluationTuning?.actionBias;
+  if (bias) {
+    parts.push(
+      ...Object.entries(bias)
+        .sort(([a], [b]) => a.localeCompare(b))
+        .map(([actionId, value]) => `${actionId} ${formatSigned(value ?? 0)}`),
+    );
+  }
+  const multiplier = entry.labEvaluationTuning?.actionMultiplier;
+  if (multiplier) {
+    parts.push(
+      ...Object.entries(multiplier)
+        .sort(([a], [b]) => a.localeCompare(b))
+        .map(([actionId, value]) => `${actionId} x${value}`),
+    );
+  }
+  return parts.length > 0 ? parts.join("<br>") : "baseline";
+}
+
 function formatIssues(metrics: Pick<MasterLabImprovementMetrics, "failures" | "warnings">): string {
   return `${metrics.failures}F/${metrics.warnings}W`;
 }
 
 function formatWinLossRate(wins: number, losses: number, rateValue: number): string {
   return `${wins}-${losses}<br>${formatPercent(rateValue)}`;
+}
+
+function formatWinLossInline(wins: number, losses: number, rateValue: number): string {
+  return `${wins}-${losses} / ${formatPercent(rateValue)}`;
 }
 
 function formatMaybeNumber(value: number | undefined): string {
@@ -583,6 +917,10 @@ function formatPercent(value: number): string {
 function formatSignedPercent(value: number): string {
   const sign = value >= 0 ? "+" : "";
   return `${sign}${formatPercent(value)}`;
+}
+
+function formatSigned(value: number): string {
+  return value >= 0 ? `+${value}` : String(value);
 }
 
 function escapeMarkdownTableCell(value: string): string {

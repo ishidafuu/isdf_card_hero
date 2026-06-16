@@ -13,6 +13,7 @@ import {
   playMasterLabAction,
   type MasterLabActionEvaluation,
   type MasterLabCandidateId,
+  type MasterLabEvaluationTuning,
 } from "./masterLab";
 import { createInitialGame, runAutoStep, targetToKey } from "./rules";
 import type { GameState, MasterId, PlayerId, SlotKey } from "./types";
@@ -38,6 +39,7 @@ export interface MasterLabAutoPlayOptions {
   aiProfile?: CpuAiProfile;
   aiProfiles?: Partial<CpuAiProfiles>;
   labActionMargin?: number;
+  labEvaluationTuning?: MasterLabEvaluationTuning;
   includeGameHistory?: boolean;
 }
 
@@ -163,6 +165,7 @@ const DEFAULT_OPTIONS = {
   participants: { player: "decoy", cpu: "black" } satisfies Record<PlayerId, MasterLabParticipantId>,
   aiProfile: "stable" as const satisfies CpuAiProfile,
   labActionMargin: 0,
+  labEvaluationTuning: {} satisfies MasterLabEvaluationTuning,
 };
 
 export function validateMasterLabAutoPlay(options: MasterLabAutoPlayOptions = {}): MasterLabAutoPlayResult {
@@ -267,6 +270,7 @@ function resolveOptions(options: MasterLabAutoPlayOptions): ResolvedMasterLabAut
       cpu: options.participants?.cpu ?? DEFAULT_OPTIONS.participants.cpu,
     },
     labActionMargin: options.labActionMargin ?? DEFAULT_OPTIONS.labActionMargin,
+    labEvaluationTuning: options.labEvaluationTuning ?? DEFAULT_OPTIONS.labEvaluationTuning,
   };
 }
 
@@ -401,9 +405,9 @@ function chooseMixedDecision(game: GameState, options: ResolvedMasterLabAutoPlay
     allowsCpuDecisionForLabSeat(evaluation.decision),
   );
   const bestCpu = cpuEvaluations.sort((a, b) => b.totalScore - a.totalScore || b.decision.score - a.decision.score)[0];
-  const labEvaluations = inspectMasterLabActionEvaluations(game, participant, game.currentPlayer)
+  const labEvaluations = inspectMasterLabActionEvaluations(game, participant, game.currentPlayer, options.labEvaluationTuning)
     .sort((a, b) => b.totalScore - a.totalScore || a.option.summary.localeCompare(b.option.summary));
-  const bestLab = labEvaluations[0] ?? chooseMasterLabAction(game, participant, game.currentPlayer);
+  const bestLab = labEvaluations[0] ?? chooseMasterLabAction(game, participant, game.currentPlayer, options.labEvaluationTuning);
 
   if (bestLab && (!bestCpu || bestLab.totalScore >= bestCpu.totalScore + options.labActionMargin)) {
     return {

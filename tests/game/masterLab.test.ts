@@ -128,10 +128,15 @@ describe("master lab", () => {
     game.slots.cpu_front_left.monster = createActiveMonster("takokke", "cpu");
 
     const evaluations = inspectMasterLabActionEvaluations(game, "decoy", "player");
+    const tunedEvaluations = inspectMasterLabActionEvaluations(game, "decoy", "player", {
+      actionBias: { scapegoat: 10 },
+    });
     const scapegoat = evaluations.find((evaluation) => evaluation.option.actionId === "scapegoat");
+    const tunedScapegoat = tunedEvaluations.find((evaluation) => evaluation.option.actionId === "scapegoat");
     const chosen = chooseMasterLabAction(game, "decoy", "player");
 
     expect(scapegoat?.heuristicScore).toBeGreaterThan(0);
+    expect(tunedScapegoat?.heuristicScore).toBe((scapegoat?.heuristicScore ?? 0) + 10);
     expect(scapegoat?.reason).toContain("補助評価");
     expect(chosen).toBeDefined();
     expect(evaluations.every((evaluation) => Number.isFinite(evaluation.totalScore))).toBe(true);
