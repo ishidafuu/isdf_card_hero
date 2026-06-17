@@ -36,13 +36,18 @@ describe("master lab auto play", () => {
       seedStart: 931,
       count: 1,
       participants: { player: "white", cpu: "black" },
+      deckPresets: { player: "pressure-normal", cpu: "black-pressure" },
       maxSteps: 700,
       maxTurns: 160,
     });
 
     expect(result.ok).toBe(true);
+    expect(result.options.deckPresets).toEqual({ player: "pressure-normal", cpu: "black-pressure" });
     expect(result.summary.labDecisionCount).toBe(0);
     expect(result.summary.magicCardUsage).toBeDefined();
+
+    const summary = formatMasterLabAutoPlaySummary(result);
+    expect(summary).toContain("Seat deck presets: player pressure-normal, cpu black-pressure");
   }, MASTER_LAB_AUTO_PLAY_TEST_TIMEOUT_MS);
 
   it("can record virtual magic opportunities for lab participants", () => {

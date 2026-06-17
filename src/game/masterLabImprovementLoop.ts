@@ -9,7 +9,7 @@ export type MasterLabImprovementDecision = "needs_full_gate" | "continue_deck_lo
 export type MasterLabImprovementPlanId = "deck" | "mixed" | "scapegoat" | "magic_inclusion" | "unit_inclusion" | "unit_action" | "tempo_action" | "tempo_confirm" | "tempo_no_lostone_confirm";
 export type MasterLabImprovementExperimentKind = "deck" | "ai_eval" | "hybrid" | "warning_probe";
 
-export interface MasterLabImprovementLoopOptions extends Omit<MasterLabFinalGateOptions, "deckPreset"> {
+export interface MasterLabImprovementLoopOptions extends Omit<MasterLabFinalGateOptions, "deckPreset" | "deckPresets"> {
   plan?: MasterLabImprovementPlanId;
   loopCount?: number;
   deckPresets?: readonly DeckPresetId[];

@@ -20,6 +20,7 @@ import { createInitialGame, runAutoStep, targetToKey } from "./rules";
 import type { GameState, MasterId, PlayerId, SlotKey, Target } from "./types";
 
 export type MasterLabParticipantId = MasterId | MasterLabCandidateId;
+export type MasterLabDeckPresetOption = "random" | DeckPresetId;
 export type MasterLabIssueKind = "exception" | "unresolved_level_up" | "stagnation" | "step_limit" | "turn_limit" | "long_game";
 export type MasterLabIssueSeverity = "failure" | "warning";
 export type MasterLabDecisionSource = "cpu" | "master_lab";
@@ -35,7 +36,8 @@ export interface MasterLabAutoPlayOptions {
   seedStart?: number;
   seedEnd?: number;
   count?: number;
-  deckPreset?: "random" | DeckPresetId;
+  deckPreset?: MasterLabDeckPresetOption;
+  deckPresets?: Partial<Record<PlayerId, MasterLabDeckPresetOption>>;
   participants?: Partial<Record<PlayerId, MasterLabParticipantId>>;
   maxSteps?: number;
   maxTurns?: number;
@@ -53,10 +55,11 @@ export interface MasterLabAutoPlayOptions {
 }
 
 type ResolvedMasterLabAutoPlayOptions = Required<
-  Omit<MasterLabAutoPlayOptions, "seedEnd" | "failOnWarnings" | "participants" | "aiProfiles" | "magicOpportunity">
+  Omit<MasterLabAutoPlayOptions, "seedEnd" | "failOnWarnings" | "deckPresets" | "participants" | "aiProfiles" | "magicOpportunity">
 > & {
   seedEnd: number;
   failOnWarnings: boolean;
+  deckPresets: Record<PlayerId, MasterLabDeckPresetOption>;
   participants: Record<PlayerId, MasterLabParticipantId>;
   aiProfiles: CpuAiProfiles;
   magicOpportunity: MasterLabMagicOpportunityOptions | undefined;
@@ -268,6 +271,7 @@ export function formatMasterLabAutoPlaySummary(result: MasterLabAutoPlayResult):
     `Master Lab auto play: ${result.ok ? "PASS" : "FAIL"}`,
     `Seeds: ${result.options.seedStart}-${result.options.seedEnd} (${result.summary.games} games)`,
     `Deck preset: ${result.options.deckPreset}`,
+    `Seat deck presets: player ${result.options.deckPresets.player}, cpu ${result.options.deckPresets.cpu}`,
     `Participants: player ${result.options.participants.player}, cpu ${result.options.participants.cpu}`,
     `Base masters: player ${baseMasterFor(result.options.participants.player)}, cpu ${baseMasterFor(result.options.participants.cpu)}`,
     `AI profiles: player ${result.options.aiProfiles.player}, cpu ${result.options.aiProfiles.cpu}`,
@@ -297,6 +301,7 @@ function resolveOptions(options: MasterLabAutoPlayOptions): ResolvedMasterLabAut
   const count = integerOption(options.count, DEFAULT_OPTIONS.count);
   const seedEnd = integerOption(options.seedEnd, seedStart + count - 1);
   const fallbackAiProfile = options.aiProfile ?? DEFAULT_OPTIONS.aiProfile;
+  const deckPreset = options.deckPreset ?? DEFAULT_OPTIONS.deckPreset;
   if (seedEnd < seedStart) {
     throw new Error("seedEnd must be greater than or equal to seedStart");
   }
@@ -313,7 +318,11 @@ function resolveOptions(options: MasterLabAutoPlayOptions): ResolvedMasterLabAut
     historyLimit: integerOption(options.historyLimit, DEFAULT_OPTIONS.historyLimit),
     failOnWarnings: options.failOnWarnings ?? DEFAULT_OPTIONS.failOnWarnings,
     includeGameHistory: options.includeGameHistory ?? DEFAULT_OPTIONS.includeGameHistory,
-    deckPreset: options.deckPreset ?? DEFAULT_OPTIONS.deckPreset,
+    deckPreset,
+    deckPresets: {
+      player: options.deckPresets?.player ?? deckPreset,
+      cpu: options.deckPresets?.cpu ?? deckPreset,
+    },
     aiProfile: fallbackAiProfile,
     aiProfiles: {
       player: options.aiProfiles?.player ?? fallbackAiProfile,
@@ -647,18 +656,30 @@ function createMasterLabInitialGame(seed: number, options: ResolvedMasterLabAuto
     player: baseMasterFor(options.participants.player),
     cpu: baseMasterFor(options.participants.cpu),
   } satisfies Record<PlayerId, MasterId>;
+  const playerDeck = resolveDeckForSeat(options.deckPresets.player);
+  const cpuDeck = resolveDeckForSeat(options.deckPresets.cpu);
 
-  if (options.deckPreset === "random") {
-    return createInitialGame(seed, { masterIds });
-  }
-  const cardIds = buildDeckPresetCardIds(options.deckPreset);
-  const allowSpecial = deckPresetAllowsSpecial(options.deckPreset);
   return createInitialGame(seed, {
     masterIds,
-    playerDeckCardIds: cardIds,
-    cpuDeckCardIds: cardIds,
-    allowSpecialDecks: { player: allowSpecial, cpu: allowSpecial },
+    ...(playerDeck ? { playerDeckCardIds: playerDeck.cardIds } : {}),
+    ...(cpuDeck ? { cpuDeckCardIds: cpuDeck.cardIds } : {}),
+    allowSpecialDecks: {
+      player: playerDeck?.allowSpecial ?? false,
+      cpu: cpuDeck?.allowSpecial ?? false,
+    },
   });
+}
+
+function resolveDeckForSeat(
+  deckPreset: MasterLabDeckPresetOption,
+): { cardIds: string[]; allowSpecial: boolean } | undefined {
+  if (deckPreset === "random") {
+    return undefined;
+  }
+  return {
+    cardIds: buildDeckPresetCardIds(deckPreset),
+    allowSpecial: deckPresetAllowsSpecial(deckPreset),
+  };
 }
 
 function baseMasterFor(participant: MasterLabParticipantId): MasterId {
