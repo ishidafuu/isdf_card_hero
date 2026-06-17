@@ -4,6 +4,7 @@ import {
   inspectCpuDecisionEvaluations,
   type CpuAiProfile,
   type CpuAiProfiles,
+  type CpuAiTuning,
   type CpuDecision,
 } from "./cpuAi";
 import { getCardDef } from "./cards";
@@ -48,6 +49,7 @@ export interface MasterLabAutoPlayOptions {
   failOnWarnings?: boolean;
   aiProfile?: CpuAiProfile;
   aiProfiles?: Partial<CpuAiProfiles>;
+  aiTunings?: Partial<Record<PlayerId, CpuAiTuning>>;
   labActionMargin?: number;
   labEvaluationTuning?: MasterLabEvaluationTuning;
   includeGameHistory?: boolean;
@@ -55,13 +57,14 @@ export interface MasterLabAutoPlayOptions {
 }
 
 type ResolvedMasterLabAutoPlayOptions = Required<
-  Omit<MasterLabAutoPlayOptions, "seedEnd" | "failOnWarnings" | "deckPresets" | "participants" | "aiProfiles" | "magicOpportunity">
+  Omit<MasterLabAutoPlayOptions, "seedEnd" | "failOnWarnings" | "deckPresets" | "participants" | "aiProfiles" | "aiTunings" | "magicOpportunity">
 > & {
   seedEnd: number;
   failOnWarnings: boolean;
   deckPresets: Record<PlayerId, MasterLabDeckPresetOption>;
   participants: Record<PlayerId, MasterLabParticipantId>;
   aiProfiles: CpuAiProfiles;
+  aiTunings: Partial<Record<PlayerId, CpuAiTuning>>;
   magicOpportunity: MasterLabMagicOpportunityOptions | undefined;
 };
 
@@ -333,6 +336,7 @@ function resolveOptions(options: MasterLabAutoPlayOptions): ResolvedMasterLabAut
       player: options.aiProfiles?.player ?? fallbackAiProfile,
       cpu: options.aiProfiles?.cpu ?? fallbackAiProfile,
     },
+    aiTunings: options.aiTunings ?? {},
     participants: {
       player: options.participants?.player ?? DEFAULT_OPTIONS.participants.player,
       cpu: options.participants?.cpu ?? DEFAULT_OPTIONS.participants.cpu,
@@ -373,7 +377,7 @@ function runMasterLabAutoPlayGame(
       }
 
       if (game.pendingLevelUp) {
-        game = runAutoStep(game, { profiles: options.aiProfiles });
+        game = runAutoStep(game, { profiles: options.aiProfiles, tunings: options.aiTunings });
         if (game.pendingLevelUp) {
           pushIssue(context, "unresolved_level_up", "failure", game, step, "level-up prompt remained after auto resolution");
           break;
@@ -563,7 +567,10 @@ function inspectMagicOpportunityRecords(
     const handInstanceId = magicOpportunityHandInstanceId(cardId);
     const virtual = structuredClone(game) as GameState;
     virtual.players[virtual.currentPlayer].hand.push({ cardId, instanceId: handInstanceId });
-    const opportunity = inspectCpuDecisionEvaluations(virtual, { profiles: context.options.aiProfiles })
+    const opportunity = inspectCpuDecisionEvaluations(virtual, {
+      profiles: context.options.aiProfiles,
+      tunings: context.options.aiTunings,
+    })
       .filter((evaluation) =>
         evaluation.decision.type === "magic" &&
         evaluation.decision.action.handInstanceId === handInstanceId,
@@ -628,7 +635,7 @@ function labActionTargetUsageKey(game: GameState, actionId: string, target: Targ
 
 function chooseMixedDecision(game: GameState, options: ResolvedMasterLabAutoPlayOptions): SelectedDecision {
   const participant = options.participants[game.currentPlayer];
-  const profileOptions = { profiles: options.aiProfiles };
+  const profileOptions = { profiles: options.aiProfiles, tunings: options.aiTunings };
   if (!isMasterLabCandidateId(participant)) {
     const decision = chooseCpuDecision(game, profileOptions);
     return {

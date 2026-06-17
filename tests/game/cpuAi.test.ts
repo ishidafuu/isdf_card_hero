@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { getMonsterDef } from "../../src/game/cards";
-import { applyCpuDecision, chooseCpuDecision, listCpuDecisions } from "../../src/game/cpuAi";
+import { applyCpuDecision, chooseCpuDecision, inspectCpuDecisionEvaluations, listCpuDecisions } from "../../src/game/cpuAi";
 import { attackWithCommand, createInitialGame, endTurn, runAutoStep, runCpuStep } from "../../src/game/rules";
 import type { CardInstance, GameState, MonsterState, PlayerId } from "../../src/game/types";
 
@@ -304,6 +304,26 @@ describe("cpu ai", () => {
       expect(decision.actionId).toBe("master_attack");
       expect(decision.target).toEqual({ kind: "monster", slotKey: "player_front_left" });
     }
+  });
+
+  it("applies per-seat action tuning to evaluation scores", () => {
+    const game = createCpuGame();
+    game.players.cpu.hand = [];
+    game.players.cpu.stones = 3;
+    game.slots.player_front_left.monster = createActiveMonster("takokke", "player", { hp: 2 });
+
+    const findMasterAttack = (options = {}) =>
+      inspectCpuDecisionEvaluations(game, options).find(
+        (evaluation) =>
+          evaluation.decision.type === "master_action" &&
+          evaluation.decision.actionId === "master_attack",
+      );
+    const baseline = findMasterAttack();
+    const tuned = findMasterAttack({ tunings: { cpu: { actionBias: { master_attack: -25 } } } });
+
+    expect(baseline).toBeDefined();
+    expect(tuned).toBeDefined();
+    expect(tuned?.totalScore).toBeCloseTo((baseline?.totalScore ?? 0) - 25);
   });
 
   it("uses black master berserk power when it creates a monster kill", () => {

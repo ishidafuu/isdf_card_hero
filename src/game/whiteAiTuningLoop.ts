@@ -1,0 +1,807 @@
+import { getCardName } from "./cards";
+import {
+  buildDeckPresetCardIds,
+  getDeckPreset,
+  type DeckPresetId,
+} from "./deckPresets";
+import {
+  validateMasterLabAutoPlay,
+  type MasterLabAutoPlayOptions,
+  type MasterLabAutoPlayResult,
+  type MasterLabParticipantId,
+} from "./masterLabAutoPlay";
+import type { MasterLabEvaluationTuning } from "./masterLab";
+import type { CpuAiProfile, CpuAiTuning } from "./cpuAi";
+import type { PlayerId } from "./types";
+
+export type WhiteAiTuningExperimentKind = "baseline" | "action_bias" | "weights" | "hybrid" | "deck";
+export type WhiteAiTuningOpponentCategory = "black" | "decoy" | "white";
+
+export interface WhiteAiTuningLoopOptions extends Pick<
+  MasterLabAutoPlayOptions,
+  "maxSteps" | "maxTurns" | "stagnationLimit" | "longGameSteps" | "longGameTurns" | "failOnWarnings"
+> {
+  variants?: readonly WhiteAiTuningVariant[];
+  opponents?: readonly WhiteAiTuningOpponent[];
+  variantIds?: readonly string[];
+  gamesPerMatchup?: number;
+  seedStart?: number;
+  loopCount?: number;
+}
+
+export interface WhiteAiTuningVariant {
+  id: string;
+  kind: WhiteAiTuningExperimentKind;
+  label: string;
+  deckPreset: DeckPresetId;
+  aiProfile: CpuAiProfile;
+  tuning?: CpuAiTuning;
+  hypothesis: string;
+}
+
+export interface WhiteAiTuningOpponent {
+  id: string;
+  category: WhiteAiTuningOpponentCategory;
+  label: string;
+  participant: MasterLabParticipantId;
+  deckPreset: DeckPresetId;
+  aiProfile: CpuAiProfile;
+  labActionMargin?: number;
+  labEvaluationTuning?: MasterLabEvaluationTuning;
+}
+
+export interface WhiteAiTuningRun {
+  id: string;
+  variantId: string;
+  opponentId: string;
+  opponentCategory: WhiteAiTuningOpponentCategory;
+  candidateSeat: PlayerId;
+  seedStart: number;
+  games: number;
+  result: MasterLabAutoPlayResult;
+}
+
+export interface WhiteAiTuningMatchupStats {
+  games: number;
+  wins: number;
+  losses: number;
+  draws: number;
+  winPointRate: number;
+}
+
+export interface WhiteAiTuningStanding {
+  variant: WhiteAiTuningVariant;
+  games: number;
+  wins: number;
+  losses: number;
+  draws: number;
+  winPointRate: number;
+  score: number;
+  averageSteps: number;
+  averageTurns: number;
+  failures: number;
+  warnings: number;
+  bannedCardCount: number;
+  averageOpponentHpOnLoss?: number;
+  masterActionUsage: Record<string, number>;
+  matchups: Record<WhiteAiTuningOpponentCategory, WhiteAiTuningMatchupStats>;
+  notes: string[];
+}
+
+export interface WhiteAiTuningReport {
+  generatedAt: string;
+  gamesPerMatchup: number;
+  variants: readonly WhiteAiTuningVariant[];
+  opponents: readonly WhiteAiTuningOpponent[];
+  runs: WhiteAiTuningRun[];
+  standings: WhiteAiTuningStanding[];
+  conclusion: {
+    summary: string;
+    nextSteps: string[];
+  };
+}
+
+const BANNED_CARD_IDS = ["card_113"] as const;
+
+export const DEFAULT_WHITE_AI_TUNING_OPPONENTS = [
+  {
+    id: "black_pressure_strong",
+    category: "black",
+    label: "黒: black-pressure / strong",
+    participant: "black",
+    deckPreset: "black-pressure",
+    aiProfile: "strong",
+  },
+  {
+    id: "black_pressure_pressure",
+    category: "black",
+    label: "黒: black-pressure / pressure",
+    participant: "black",
+    deckPreset: "black-pressure",
+    aiProfile: "pressure",
+  },
+  {
+    id: "decoy_back_stable",
+    category: "decoy",
+    label: "デコイ: 後衛安定 / enemy+16",
+    participant: "decoy",
+    deckPreset: "master-lab-decoy-unit-back-stable",
+    aiProfile: "strong",
+    labActionMargin: 12,
+    labEvaluationTuning: { targetOwnerBias: { enemy: 16 } },
+  },
+  {
+    id: "white_pressure_strong",
+    category: "white",
+    label: "白基準: pressure-normal / strong",
+    participant: "white",
+    deckPreset: "pressure-normal",
+    aiProfile: "strong",
+  },
+] as const satisfies readonly WhiteAiTuningOpponent[];
+
+export const DEFAULT_WHITE_AI_TUNING_VARIANTS = [
+  baselineVariant("pressure_white_baseline", "基準: pressure-normal / white", "pressure-normal", "white", "現行白専用AIの基準。黒速攻へどこまで耐えるかを見る。"),
+  baselineVariant("pressure_strong_baseline", "比較: pressure-normal / strong", "pressure-normal", "strong", "白専用補正なしの強AI。white profileの差分基準にする。"),
+  baselineVariant("balanced_white_baseline", "比較: balanced-normal / white", "balanced-normal", "white", "標準構成で白AIの守備寄り判断が安定するかを見る。"),
+  baselineVariant("white494_white_baseline", "比較: 投稿494 / white", "submission-pro-no-rare8-white-494", "white", "投稿白デッキ候補で、白AIの上限と癖を見る。"),
+  baselineVariant("white1340_white_baseline", "比較: 投稿1340 / white", "submission-pro-no-rare8-white-1340", "white", "育成寄り白デッキで、守ってレベルを上げる筋が伸びるかを見る。"),
+  baselineVariant("white1347_defensive_baseline", "比較: 投稿1347 / defensive", "submission-pro-no-rare8-white-1347", "defensive", "防御密度の高い候補で、長期戦化しすぎないかを見る。"),
+  actionVariant("pressure_wake_plus8", "特技: wake_up+8", "pressure-normal", { actionBias: { wake_up: 8 } }, "準備中の味方を早めに起こし、黒の速度に盤面展開で対抗できるか見る。"),
+  actionVariant("pressure_wake_plus16", "特技: wake_up+16", "pressure-normal", { actionBias: { wake_up: 16 } }, "ウェイクアップを明確に厚くし、使いすぎの副作用を測る。"),
+  actionVariant("pressure_shield_plus8", "特技: shield+8", "pressure-normal", { actionBias: { shield: 8 } }, "守る価値のある駒を残しやすくし、レベルアップまでつなげる。"),
+  actionVariant("pressure_shield_minus8", "特技: shield-8", "pressure-normal", { actionBias: { shield: -8 } }, "守りすぎで反撃が遅い仮説を確認する。"),
+  actionVariant("pressure_master_attack_minus8", "特技: master_attack-8", "pressure-normal", { actionBias: { master_attack: -8 } }, "白がマスターアタックへ逃げすぎていないかを切り分ける。"),
+  actionVariant("pressure_master_attack_plus8", "特技: master_attack+8", "pressure-normal", { actionBias: { master_attack: 8 } }, "白が盤面処理をマスターアタックで補う価値を確認する。"),
+  actionVariant("pressure_attack_master_plus8", "攻撃: attack_master+8", "pressure-normal", { actionBias: { attack_master: 8 } }, "決着力不足の補正として、本体打点を少し押す。"),
+  actionVariant("pressure_attack_monster_plus4", "攻撃: attack_monster+4", "pressure-normal", { actionBias: { attack_monster: 4 } }, "盤面制圧補正を薄く入れ、+8より副作用が少ないか見る。"),
+  actionVariant("pressure_attack_monster_plus8", "攻撃: attack_monster+8", "pressure-normal", { actionBias: { attack_monster: 8 } }, "盤面制圧を少し厚くし、黒の前のめり展開を止める。"),
+  actionVariant("pressure_attack_monster_plus12", "攻撃: attack_monster+12", "pressure-normal", { actionBias: { attack_monster: 12 } }, "盤面制圧補正を強め、黒耐性の上限と勝ち切り遅延を測る。"),
+  actionVariant("pressure_attack_monster_plus16", "攻撃: attack_monster+16", "pressure-normal", { actionBias: { attack_monster: 16 } }, "盤面処理へ強く寄せた時、白らしさを保てるかの上限確認。"),
+  actionVariant("pressure_wake8_shield8", "混合: wake_up+8 / shield+8", "pressure-normal", { actionBias: { wake_up: 8, shield: 8 } }, "展開前倒しと保護を薄く両立し、白らしい制圧へ寄せる。"),
+  actionVariant("pressure_attack_monster8_shield4", "混合: attack_monster+8 / shield+4", "pressure-normal", { actionBias: { attack_monster: 8, shield: 4 } }, "盤面処理を主軸にしつつ、倒されると困る駒だけ少し守る。"),
+  actionVariant("pressure_attack_monster8_wake4", "混合: attack_monster+8 / wake_up+4", "pressure-normal", { actionBias: { attack_monster: 8, wake_up: 4 } }, "盤面処理の補助としてウェイクアップを薄く足し、反撃速度を確保する。"),
+  actionVariant("pressure_attack_monster8_closeout4", "混合: attack_monster+8 / attack_master+4", "pressure-normal", { actionBias: { attack_monster: 8, attack_master: 4 } }, "盤面処理に寄せすぎた時の決着力不足を本体攻撃補正で補う。"),
+  actionVariant("pressure_wake16_shield_minus8", "混合: wake_up+16 / shield-8", "pressure-normal", { actionBias: { wake_up: 16, shield: -8 } }, "守るより起こして動かす形へ寄せ、速度不足を補えるか見る。"),
+  weightVariant("weights_level_up", "重み: レベルアップ最大化", "pressure-normal", {
+    weights: { futureOwnLevelUp: 0.3, futureOpponentLevelUp: 0.28, futureOwnThreatenedMonster: 0.34, masterDamageBase: 90 },
+  }, "白の本筋である、守った駒のレベルアップ期待をさらに強める。"),
+  weightVariant("weights_guard", "重み: 保護重視", "pressure-normal", {
+    weights: { masterHp: 92, healPerPoint: 34, futureOwnLevelUp: 0.22, futureOwnThreatenedMonster: 0.38 },
+    actionBias: { shield: 6 },
+  }, "黒速攻を受け止める方向へ寄せ、長期戦化の副作用を見る。"),
+  weightVariant("weights_counter", "重み: 反撃重視", "pressure-normal", {
+    weights: { masterDamageBase: 104, monsterKillBase: 270, futureOpponentThreatenedMonster: 0.22 },
+    actionBias: { attack_master: 4 },
+  }, "守った後に勝ち切れない問題へ、本体打点と敵駒圧力で対処する。"),
+  weightVariant("weights_deny", "重み: 相手レベルアップ拒否", "pressure-normal", {
+    weights: { monsterKillBase: 320, futureOpponentLevelUp: 0.36, futureOwnThreatenedMonster: 0.32 },
+    actionBias: { attack_monster: 4 },
+  }, "黒のバーサク供養に近い、相手のレベルアップ機会を奪う判断を強める。"),
+  weightVariant("weights_deny_attack_monster8", "重み: 拒否 + attack_monster+8", "pressure-normal", {
+    weights: { monsterKillBase: 320, futureOpponentLevelUp: 0.36, futureOwnThreatenedMonster: 0.32 },
+    actionBias: { attack_monster: 8 },
+  }, "相手レベルアップ拒否と盤面攻撃補正を合わせ、黒速攻を盤面から止める。"),
+  weightVariant("weights_stone_light", "重み: ストーン軽視", "pressure-normal", {
+    weights: { stone: 3, genericMagicCost: 6 },
+    actionBias: { wake_up: 4, shield: 4 },
+  }, "白特技を温存しすぎる仮説を確認し、石を盤面へ変換しやすくする。"),
+  weightVariant("weights_stone_guard", "重み: ストーン温存", "pressure-normal", {
+    weights: { stone: 8, genericMagicCost: 10, futureOwnThreatenedMonster: 0.34 },
+    actionBias: { shield: 8 },
+  }, "石の尽き方が負け筋なら、必要な盾だけ撃つ形が安定するか見る。"),
+  hybridVariant("pressure_full_hybrid", "複合: レベルアップ + wake/shield", "pressure-normal", {
+    weights: { futureOwnLevelUp: 0.28, futureOpponentLevelUp: 0.3, futureOwnThreatenedMonster: 0.36 },
+    actionBias: { wake_up: 8, shield: 6, attack_monster: 4 },
+  }, "白の主筋を広く押し、単独補正より安定するかを見る。"),
+  hybridVariant("white494_wake8", "投稿494: wake_up+8", "submission-pro-no-rare8-white-494", {
+    actionBias: { wake_up: 8 },
+  }, "投稿白デッキでウェイクアップ補正が再現するかを見る。"),
+  hybridVariant("white494_guard", "投稿494: 保護重視", "submission-pro-no-rare8-white-494", {
+    weights: { futureOwnLevelUp: 0.26, futureOwnThreatenedMonster: 0.36 },
+    actionBias: { shield: 8 },
+  }, "投稿白デッキで守って育てる筋が黒相手に間に合うか見る。"),
+  hybridVariant("white1340_level", "投稿1340: レベルアップ重視", "submission-pro-no-rare8-white-1340", {
+    weights: { futureOwnLevelUp: 0.32, futureOpponentLevelUp: 0.28 },
+    actionBias: { shield: 6, wake_up: 6 },
+  }, "育成寄りデッキで白AIの本筋を最大化する。"),
+  hybridVariant("balanced_guard", "balanced: 保護重視", "balanced-normal", {
+    weights: { masterHp: 92, futureOwnThreatenedMonster: 0.36 },
+    actionBias: { shield: 8 },
+  }, "標準構成で過剰防御にならず黒に耐えられるか見る。"),
+  hybridVariant("balanced_attack_monster8", "balanced: attack_monster+8", "balanced-normal", {
+    actionBias: { attack_monster: 8 },
+  }, "標準構成でも盤面処理補正が再現するかを見る。"),
+  hybridVariant("balanced_wake8_shield8", "balanced: wake/shield+8", "balanced-normal", {
+    actionBias: { wake_up: 8, shield: 8 },
+  }, "標準構成で展開と保護を同時に押した場合の平均値を見る。"),
+] as const satisfies readonly WhiteAiTuningVariant[];
+
+export function runWhiteAiTuningLoop(options: WhiteAiTuningLoopOptions = {}): WhiteAiTuningReport {
+  const opponents = options.opponents ?? DEFAULT_WHITE_AI_TUNING_OPPONENTS;
+  const variants = selectVariants(options);
+  const gamesPerMatchup = integerOption(options.gamesPerMatchup, 2);
+  const seedStart = integerOption(options.seedStart, 9000);
+  const runs: WhiteAiTuningRun[] = [];
+  let runIndex = 0;
+
+  for (const variant of variants) {
+    for (const opponent of opponents) {
+      for (const candidateSeat of ["player", "cpu"] as const) {
+        const runSeedStart = seedStart + runIndex * gamesPerMatchup;
+        const run = runWhiteAiTuningMatchup({
+          variant,
+          opponent,
+          candidateSeat,
+          seedStart: runSeedStart,
+          gamesPerMatchup,
+          options,
+        });
+        runs.push(run);
+        runIndex += 1;
+      }
+    }
+  }
+
+  const standings = summarizeStandings(variants, runs);
+  return {
+    generatedAt: new Date().toISOString(),
+    gamesPerMatchup,
+    variants,
+    opponents,
+    runs,
+    standings,
+    conclusion: buildConclusion(standings),
+  };
+}
+
+export function formatWhiteAiTuningLoopMarkdown(report: WhiteAiTuningReport): string {
+  return [
+    "# White AI Tuning Loop",
+    "",
+    `生成: ${report.generatedAt}`,
+    `候補: ${report.variants.length}`,
+    `相手: ${report.opponents.map((opponent) => opponent.id).join(", ")}`,
+    `試行: ${report.gamesPerMatchup} games/matchup/direction`,
+    `総試合: ${report.runs.reduce((total, run) => total + run.result.summary.games, 0)}`,
+    "",
+    "## Conclusion",
+    "",
+    report.conclusion.summary,
+    "",
+    "### Next Steps",
+    "",
+    ...report.conclusion.nextSteps.map((step) => `- ${step}`),
+    "",
+    "## Top Candidates",
+    "",
+    "| Rank | Variant | Kind | Deck | Score | W-L-D | Overall | vs Black | vs Decoy | vs White | Avg Turns | Loss Opp HP | Usage | Issues | Notes |",
+    "| ---: | --- | --- | --- | ---: | --- | ---: | ---: | ---: | ---: | ---: | ---: | --- | --- | --- |",
+    ...report.standings.slice(0, 8).map((standing, index) => formatStandingRow(standing, index + 1)),
+    "",
+    "## Loop Results",
+    "",
+    "| Rank | Variant | Hypothesis | Tuning | Score | Overall | vs Black | vs Decoy | vs White | Usage | Notes |",
+    "| ---: | --- | --- | --- | ---: | ---: | ---: | ---: | ---: | --- | --- |",
+    ...report.standings.map((standing, index) => formatLoopResultRow(standing, index + 1)),
+    "",
+    "## Runs",
+    "",
+    "| Run | Candidate Seat | Opponent | Result | Issues |",
+    "| --- | --- | --- | --- | --- |",
+    ...report.runs.map(formatRunRow),
+    "",
+    "## Reading",
+    "",
+    "- `Overall` と `vs ...` は引き分けを0.5勝として扱う勝ち点率。",
+    "- `vs Black` は黒速攻耐性の主指標。`black_pressure_strong` と `black_pressure_pressure` の両方を合算している。",
+    "- `vs Decoy` は現行第三マスターへの基準維持。高すぎる場合は白が基準を超えすぎていないかを見る。",
+    "- `vs White` は現行白基準との比較診断。採用判断では黒耐性と長期戦リスクを優先する。",
+    "- `Usage` は候補白側の通常マスター特技使用回数。`wake_up` / `shield` / `master_attack` の偏りを見る。",
+    "- `Loss Opp HP` は候補白側が負けた時の相手残HP平均。低いほど惜敗、高いほど押し切られ。",
+    "- ロストーン入りデッキは `Notes` に出る。現方針では本命候補から外す。",
+  ].join("\n");
+}
+
+function runWhiteAiTuningMatchup(options: {
+  variant: WhiteAiTuningVariant;
+  opponent: WhiteAiTuningOpponent;
+  candidateSeat: PlayerId;
+  seedStart: number;
+  gamesPerMatchup: number;
+  options: WhiteAiTuningLoopOptions;
+}): WhiteAiTuningRun {
+  const candidate = variantSeatConfig(options.variant);
+  const opponent = opponentSeatConfig(options.opponent);
+  const player = options.candidateSeat === "player" ? candidate : opponent;
+  const cpu = options.candidateSeat === "cpu" ? candidate : opponent;
+  const labOptions = labOptionsForSeats(player, cpu);
+
+  return {
+    id: `${options.variant.id}_vs_${options.opponent.id}_${options.candidateSeat}`,
+    variantId: options.variant.id,
+    opponentId: options.opponent.id,
+    opponentCategory: options.opponent.category,
+    candidateSeat: options.candidateSeat,
+    seedStart: options.seedStart,
+    games: options.gamesPerMatchup,
+    result: validateMasterLabAutoPlay({
+      seedStart: options.seedStart,
+      count: options.gamesPerMatchup,
+      maxSteps: options.options.maxSteps ?? 700,
+      maxTurns: options.options.maxTurns ?? 160,
+      stagnationLimit: options.options.stagnationLimit,
+      longGameSteps: options.options.longGameSteps,
+      longGameTurns: options.options.longGameTurns,
+      failOnWarnings: options.options.failOnWarnings,
+      includeGameHistory: true,
+      historyLimit: 4,
+      participants: {
+        player: player.participant,
+        cpu: cpu.participant,
+      },
+      deckPresets: {
+        player: player.deckPreset,
+        cpu: cpu.deckPreset,
+      },
+      aiProfiles: {
+        player: player.aiProfile,
+        cpu: cpu.aiProfile,
+      },
+      aiTunings: {
+        ...(player.tuning ? { player: player.tuning } : {}),
+        ...(cpu.tuning ? { cpu: cpu.tuning } : {}),
+      },
+      ...labOptions,
+    }),
+  };
+}
+
+interface SeatConfig {
+  participant: MasterLabParticipantId;
+  deckPreset: DeckPresetId;
+  aiProfile: CpuAiProfile;
+  tuning?: CpuAiTuning;
+  labActionMargin?: number;
+  labEvaluationTuning?: MasterLabEvaluationTuning;
+}
+
+function variantSeatConfig(variant: WhiteAiTuningVariant): SeatConfig {
+  return {
+    participant: "white",
+    deckPreset: variant.deckPreset,
+    aiProfile: variant.aiProfile,
+    ...(variant.tuning ? { tuning: variant.tuning } : {}),
+  };
+}
+
+function opponentSeatConfig(opponent: WhiteAiTuningOpponent): SeatConfig {
+  return {
+    participant: opponent.participant,
+    deckPreset: opponent.deckPreset,
+    aiProfile: opponent.aiProfile,
+    ...(opponent.labActionMargin !== undefined ? { labActionMargin: opponent.labActionMargin } : {}),
+    ...(opponent.labEvaluationTuning ? { labEvaluationTuning: opponent.labEvaluationTuning } : {}),
+  };
+}
+
+function labOptionsForSeats(
+  player: SeatConfig,
+  cpu: SeatConfig,
+): Pick<MasterLabAutoPlayOptions, "labActionMargin" | "labEvaluationTuning"> {
+  const labSeat = isLabParticipant(player.participant)
+    ? player
+    : isLabParticipant(cpu.participant)
+      ? cpu
+      : undefined;
+  return {
+    ...(labSeat?.labActionMargin !== undefined ? { labActionMargin: labSeat.labActionMargin } : {}),
+    ...(labSeat?.labEvaluationTuning ? { labEvaluationTuning: labSeat.labEvaluationTuning } : {}),
+  };
+}
+
+function summarizeStandings(
+  variants: readonly WhiteAiTuningVariant[],
+  runs: readonly WhiteAiTuningRun[],
+): WhiteAiTuningStanding[] {
+  const records = new Map(variants.map((variant) => [variant.id, createStandingRecord(variant)]));
+
+  for (const run of runs) {
+    const standing = records.get(run.variantId);
+    if (!standing) {
+      continue;
+    }
+    for (const game of run.result.games) {
+      applyGameResult(standing, run, game);
+    }
+  }
+
+  return [...records.values()]
+    .map(finalizeStanding)
+    .sort((a, b) =>
+      b.score - a.score ||
+      b.matchups.black.winPointRate - a.matchups.black.winPointRate ||
+      b.winPointRate - a.winPointRate ||
+      a.variant.id.localeCompare(b.variant.id),
+    );
+}
+
+function createStandingRecord(variant: WhiteAiTuningVariant): WhiteAiTuningStanding {
+  return {
+    variant,
+    games: 0,
+    wins: 0,
+    losses: 0,
+    draws: 0,
+    winPointRate: 0,
+    score: 0,
+    averageSteps: 0,
+    averageTurns: 0,
+    failures: 0,
+    warnings: 0,
+    bannedCardCount: bannedCardCount(variant.deckPreset),
+    masterActionUsage: {},
+    matchups: {
+      black: emptyMatchupStats(),
+      decoy: emptyMatchupStats(),
+      white: emptyMatchupStats(),
+    },
+    notes: [],
+  };
+}
+
+function applyGameResult(
+  standing: WhiteAiTuningStanding,
+  run: WhiteAiTuningRun,
+  game: MasterLabAutoPlayResult["games"][number],
+): void {
+  const candidateSeat = run.candidateSeat;
+  const opponentSeat = candidateSeat === "player" ? "cpu" : "player";
+  standing.games += 1;
+  standing.averageSteps += game.steps;
+  standing.averageTurns += game.turns;
+  standing.failures += game.issueCount;
+  standing.warnings += game.warningCount;
+  addUsage(standing.masterActionUsage, game.masterActionUsageByPlayer[candidateSeat]);
+
+  const matchup = standing.matchups[run.opponentCategory];
+  matchup.games += 1;
+  if (!game.winner) {
+    standing.draws += 1;
+    matchup.draws += 1;
+    return;
+  }
+  if (game.winner === candidateSeat) {
+    standing.wins += 1;
+    matchup.wins += 1;
+  } else {
+    standing.losses += 1;
+    matchup.losses += 1;
+    const opponentHp = game.stateSummary?.players[opponentSeat].hp;
+    if (opponentHp !== undefined) {
+      standing.averageOpponentHpOnLoss = (standing.averageOpponentHpOnLoss ?? 0) + opponentHp;
+    }
+  }
+}
+
+function finalizeStanding(standing: WhiteAiTuningStanding): WhiteAiTuningStanding {
+  const games = Math.max(standing.games, 1);
+  const finalizedMatchups = {
+    black: finalizeMatchupStats(standing.matchups.black),
+    decoy: finalizeMatchupStats(standing.matchups.decoy),
+    white: finalizeMatchupStats(standing.matchups.white),
+  };
+  const winPointRate = rate(standing.wins + standing.draws * 0.5, standing.games);
+  const playedMatchups = Object.values(finalizedMatchups).filter((matchup) => matchup.games > 0);
+  const matchupFloor = playedMatchups.length > 0 ? Math.min(...playedMatchups.map((matchup) => matchup.winPointRate)) : 0;
+  const averageSteps = round1(standing.averageSteps / games);
+  const averageTurns = round1(standing.averageTurns / games);
+  const speedScore = clamp((42 - averageTurns) / 20, 0, 1);
+  const safetyPenalty = standing.failures * 24 + standing.warnings * 6;
+  const bannedPenalty = standing.bannedCardCount * 14;
+  const decoyOverrunPenalty = finalizedMatchups.decoy.games > 0
+    ? Math.max(0, finalizedMatchups.decoy.winPointRate - 0.75) * 8
+    : 0;
+  const lossOpponentHp = standing.losses > 0 && standing.averageOpponentHpOnLoss !== undefined
+    ? round1(standing.averageOpponentHpOnLoss / standing.losses)
+    : undefined;
+  const score = round1(
+    finalizedMatchups.black.winPointRate * 46 +
+    finalizedMatchups.decoy.winPointRate * 16 +
+    finalizedMatchups.white.winPointRate * 8 +
+    winPointRate * 12 +
+    matchupFloor * 12 +
+    speedScore * 6 -
+    safetyPenalty -
+    bannedPenalty -
+    decoyOverrunPenalty,
+  );
+
+  return {
+    ...standing,
+    winPointRate: round3(winPointRate),
+    score,
+    averageSteps,
+    averageTurns,
+    averageOpponentHpOnLoss: lossOpponentHp,
+    matchups: finalizedMatchups,
+    notes: buildStandingNotes(standing, finalizedMatchups, averageTurns, lossOpponentHp),
+  };
+}
+
+function buildConclusion(standings: readonly WhiteAiTuningStanding[]): WhiteAiTuningReport["conclusion"] {
+  const best = standings[0];
+  const baseline = standings.find((standing) => standing.variant.id === "pressure_white_baseline");
+  const blackStable = standings.filter((standing) =>
+    standing.failures === 0 &&
+    standing.warnings <= 1 &&
+    standing.matchups.black.winPointRate >= 0.45,
+  );
+  const top = standings.slice(0, 5);
+  const nextSteps: string[] = [];
+
+  if (!best) {
+    return {
+      summary: "白AI候補は評価されていない。",
+      nextSteps: ["候補数と相手セットを確認して再実行する。"],
+    };
+  }
+
+  const baselineBlackDelta = baseline
+    ? best.matchups.black.winPointRate - baseline.matchups.black.winPointRate
+    : 0;
+
+  if (best.failures > 0 || best.warnings > 1) {
+    nextSteps.push(`首位 \`${best.variant.id}\` は issue が ${best.failures}F/${best.warnings}W あるため、採用前に該当seedを確認する。`);
+  }
+  if (blackStable.length > 0) {
+    nextSteps.push(`次は \`${blackStable.slice(0, 4).map((standing) => standing.variant.id).join("`, `")}\` を games-per-matchup 8-12 で確認する。`);
+  } else {
+    nextSteps.push("vs Black 45%以上かつwarning少なめの候補が薄い。次ループは敗戦ログを広げ、シールド後に反撃できない局面とウェイクアップが遅い局面を分ける。");
+  }
+  if (best.matchups.black.winPointRate < 0.45) {
+    nextSteps.push("首位でもvs Black 45%未満なら、白の恒久重みを上げる前にデッキ側の黒対策カードとAIの守る対象を同時に見る。");
+  }
+  if (best.masterActionUsage.shield && best.masterActionUsage.wake_up && best.masterActionUsage.shield > best.masterActionUsage.wake_up * 2) {
+    nextSteps.push("首位はシールド寄り。確認ループでは `wake_up` 補正を少し足す条件を横に置き、守った後の勝ち切り不足を確認する。");
+  }
+  nextSteps.push("採用候補を白プロファイルへ反映する場合は、今回の実験用 `actionBias` をそのまま入れず、対応する局面評価へ還元する。");
+  nextSteps.push("次回レポートでは上位候補の負けログから、相手残HPが低い惜敗と高HPの完敗を分けてカード/AIどちらを触るか決める。");
+
+  return {
+    summary: [
+      `首位は \`${best.variant.id}\`（score ${best.score} / overall ${formatPercent(best.winPointRate)} / vs Black ${formatPercent(best.matchups.black.winPointRate)}）。`,
+      baseline ? `現行 \`pressure_white_baseline\` 比の vs Black 差分は ${formatSignedPercent(baselineBlackDelta)}。` : "",
+      `安定候補（vs Black 45%以上、0F/1W以下）は ${blackStable.length} 件。`,
+      `上位候補: ${top.map((standing) => `${standing.variant.id} ${formatPercent(standing.matchups.black.winPointRate)}`).join(" / ")}。`,
+    ].filter(Boolean).join(" "),
+    nextSteps,
+  };
+}
+
+function buildStandingNotes(
+  standing: WhiteAiTuningStanding,
+  matchups: Record<WhiteAiTuningOpponentCategory, WhiteAiTuningMatchupStats>,
+  averageTurns: number,
+  averageOpponentHpOnLoss: number | undefined,
+): string[] {
+  const notes: string[] = [];
+  if (standing.bannedCardCount > 0) {
+    notes.push(`${getCardName(BANNED_CARD_IDS[0])}入り`);
+  }
+  if (standing.failures > 0) {
+    notes.push(`failure ${standing.failures}`);
+  }
+  if (standing.warnings > 0) {
+    notes.push(`warning ${standing.warnings}`);
+  }
+  if (matchups.black.games > 0 && matchups.black.winPointRate < 0.4) {
+    notes.push("黒に弱い");
+  }
+  if (matchups.black.games > 0 && matchups.black.winPointRate >= 0.5) {
+    notes.push("黒耐性あり");
+  }
+  if (averageTurns > 42) {
+    notes.push("長期戦寄り");
+  }
+  if (averageOpponentHpOnLoss !== undefined && averageOpponentHpOnLoss <= 3) {
+    notes.push("惜敗多め");
+  }
+  if ((standing.masterActionUsage.shield ?? 0) > (standing.masterActionUsage.wake_up ?? 0) * 2 && (standing.masterActionUsage.shield ?? 0) >= 8) {
+    notes.push("シールド偏重");
+  }
+  return notes.length > 0 ? notes : ["-"];
+}
+
+function formatStandingRow(standing: WhiteAiTuningStanding, rank: number): string {
+  return [
+    rank,
+    escapeCell(`${standing.variant.id}<br>${standing.variant.label}`),
+    standing.variant.kind,
+    escapeCell(`${standing.variant.deckPreset}<br>${getDeckPreset(standing.variant.deckPreset).name}`),
+    standing.score,
+    `${standing.wins}-${standing.losses}-${standing.draws}`,
+    formatPercent(standing.winPointRate),
+    formatMatchup(standing.matchups.black),
+    formatMatchup(standing.matchups.decoy),
+    formatMatchup(standing.matchups.white),
+    standing.averageTurns,
+    standing.averageOpponentHpOnLoss ?? "-",
+    formatUsage(standing.masterActionUsage),
+    `${standing.failures}F/${standing.warnings}W`,
+    escapeCell(standing.notes.join("<br>")),
+  ].join(" | ").replace(/^/, "| ").replace(/$/, " |");
+}
+
+function formatLoopResultRow(standing: WhiteAiTuningStanding, rank: number): string {
+  return [
+    rank,
+    escapeCell(`${standing.variant.id}<br>${standing.variant.label}`),
+    escapeCell(standing.variant.hypothesis),
+    escapeCell(formatTuning(standing.variant.tuning)),
+    standing.score,
+    formatPercent(standing.winPointRate),
+    formatMatchup(standing.matchups.black),
+    formatMatchup(standing.matchups.decoy),
+    formatMatchup(standing.matchups.white),
+    formatUsage(standing.masterActionUsage),
+    escapeCell(standing.notes.join("<br>")),
+  ].join(" | ").replace(/^/, "| ").replace(/$/, " |");
+}
+
+function formatRunRow(run: WhiteAiTuningRun): string {
+  return [
+    run.id,
+    run.candidateSeat,
+    run.opponentId,
+    `P ${run.result.summary.winners.player} / C ${run.result.summary.winners.cpu} / D ${run.result.summary.undecided}`,
+    `${run.result.summary.failures}F/${run.result.summary.warnings}W`,
+  ].join(" | ").replace(/^/, "| ").replace(/$/, " |");
+}
+
+function baselineVariant(
+  id: string,
+  label: string,
+  deckPreset: DeckPresetId,
+  aiProfile: CpuAiProfile,
+  hypothesis: string,
+): WhiteAiTuningVariant {
+  return { id, kind: "baseline", label, deckPreset, aiProfile, hypothesis };
+}
+
+function actionVariant(
+  id: string,
+  label: string,
+  deckPreset: DeckPresetId,
+  tuning: CpuAiTuning,
+  hypothesis: string,
+): WhiteAiTuningVariant {
+  return { id, kind: "action_bias", label, deckPreset, aiProfile: "white", tuning, hypothesis };
+}
+
+function weightVariant(
+  id: string,
+  label: string,
+  deckPreset: DeckPresetId,
+  tuning: CpuAiTuning,
+  hypothesis: string,
+): WhiteAiTuningVariant {
+  return { id, kind: "weights", label, deckPreset, aiProfile: "white", tuning, hypothesis };
+}
+
+function hybridVariant(
+  id: string,
+  label: string,
+  deckPreset: DeckPresetId,
+  tuning: CpuAiTuning,
+  hypothesis: string,
+): WhiteAiTuningVariant {
+  return { id, kind: "hybrid", label, deckPreset, aiProfile: "white", tuning, hypothesis };
+}
+
+function selectVariants(options: WhiteAiTuningLoopOptions): readonly WhiteAiTuningVariant[] {
+  const source = options.variants ?? DEFAULT_WHITE_AI_TUNING_VARIANTS;
+  const variantIdSet = options.variantIds && options.variantIds.length > 0
+    ? new Set(options.variantIds)
+    : undefined;
+  const selected = variantIdSet ? source.filter((variant) => variantIdSet.has(variant.id)) : source;
+  const loopCount = Number.isInteger(options.loopCount) && options.loopCount !== undefined
+    ? options.loopCount
+    : selected.length;
+  return selected.slice(0, Math.max(0, loopCount));
+}
+
+function emptyMatchupStats(): WhiteAiTuningMatchupStats {
+  return { games: 0, wins: 0, losses: 0, draws: 0, winPointRate: 0 };
+}
+
+function finalizeMatchupStats(stats: WhiteAiTuningMatchupStats): WhiteAiTuningMatchupStats {
+  return {
+    ...stats,
+    winPointRate: round3(rate(stats.wins + stats.draws * 0.5, stats.games)),
+  };
+}
+
+function addUsage(target: Record<string, number>, source: Record<string, number>): void {
+  for (const [key, value] of Object.entries(source)) {
+    target[key] = (target[key] ?? 0) + value;
+  }
+}
+
+function bannedCardCount(deckPreset: DeckPresetId): number {
+  const cardIds = buildDeckPresetCardIds(deckPreset);
+  return cardIds.filter((cardId) => (BANNED_CARD_IDS as readonly string[]).includes(cardId)).length;
+}
+
+function isLabParticipant(participant: MasterLabParticipantId): boolean {
+  return participant === "decoy" || participant === "sacrifice" || participant === "timing";
+}
+
+function formatMatchup(stats: WhiteAiTuningMatchupStats): string {
+  return stats.games > 0
+    ? `${formatPercent(stats.winPointRate)} (${stats.wins}-${stats.losses}-${stats.draws})`
+    : "-";
+}
+
+function formatUsage(usage: Record<string, number>): string {
+  const entries = Object.entries(usage)
+    .filter(([, count]) => count > 0)
+    .sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0]));
+  if (entries.length === 0) {
+    return "-";
+  }
+  return entries.slice(0, 5).map(([key, count]) => `${key}:${count}`).join(", ");
+}
+
+function formatTuning(tuning: CpuAiTuning | undefined): string {
+  if (!tuning) {
+    return "-";
+  }
+  const parts: string[] = [];
+  const actionBias = Object.entries(tuning.actionBias ?? {});
+  if (actionBias.length > 0) {
+    parts.push(`action ${actionBias.map(([key, value]) => `${key}${formatSignedNumber(value)}`).join(", ")}`);
+  }
+  const weights = Object.entries(tuning.weights ?? {});
+  if (weights.length > 0) {
+    parts.push(`weights ${weights.map(([key, value]) => `${key}:${value}`).join(", ")}`);
+  }
+  return parts.join("<br>");
+}
+
+function rate(points: number, games: number): number {
+  return games > 0 ? points / games : 0;
+}
+
+function integerOption(value: number | undefined, fallback: number): number {
+  return Number.isInteger(value) && value !== undefined ? value : fallback;
+}
+
+function clamp(value: number, min: number, max: number): number {
+  return Math.max(min, Math.min(max, value));
+}
+
+function round1(value: number): number {
+  return Math.round(value * 10) / 10;
+}
+
+function round3(value: number): number {
+  return Math.round(value * 1000) / 1000;
+}
+
+function formatPercent(value: number): string {
+  return `${round1(value * 100)}%`;
+}
+
+function formatSignedPercent(value: number): string {
+  const rounded = round1(value * 100);
+  return `${rounded >= 0 ? "+" : ""}${rounded}%`;
+}
+
+function formatSignedNumber(value: number): string {
+  return `${value >= 0 ? "+" : ""}${value}`;
+}
+
+function escapeCell(value: string): string {
+  return value.replace(/\|/g, "\\|").replace(/\n/g, "<br>");
+}

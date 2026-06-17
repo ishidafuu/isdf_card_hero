@@ -74,6 +74,7 @@ type CpuAiProfileConfig = {
   sameTurnSearchDiscount: number;
   beamScoreThreshold: number;
   weights: AiEvaluationWeights;
+  tuning?: CpuAiTuning;
 };
 
 const NO_THREAT: IncomingThreat = { threatened: false, lethal: false, maxDamage: 0 };
@@ -81,10 +82,28 @@ const NO_THREAT: IncomingThreat = { threatened: false, lethal: false, maxDamage:
 export const CPU_AI_PROFILES = ["stable", "strong", "pressure", "defensive", "white"] as const;
 export type CpuAiProfile = (typeof CPU_AI_PROFILES)[number];
 export type CpuAiProfiles = Record<PlayerId, CpuAiProfile>;
+export type CpuAiDecisionBiasId =
+  | MasterActionId
+  | "attack"
+  | "attack_master"
+  | "attack_monster"
+  | "master_action"
+  | "magic"
+  | "summon"
+  | "move"
+  | "focus"
+  | "end_turn";
+
+export interface CpuAiTuning {
+  weights?: Partial<AiEvaluationWeights>;
+  actionBias?: Partial<Record<CpuAiDecisionBiasId, number>>;
+}
 
 export interface CpuAiOptions {
   profile?: CpuAiProfile;
   profiles?: Partial<CpuAiProfiles>;
+  tuning?: CpuAiTuning;
+  tunings?: Partial<Record<PlayerId, CpuAiTuning>>;
 }
 
 const CPU_AI_PROFILE_CONFIG: Record<CpuAiProfile, CpuAiProfileConfig> = {
@@ -189,7 +208,7 @@ export function runCpuDecisionStep(state: GameState, options: CpuAiOptions = {})
 
 export function chooseCpuDecision(state: GameState, options: CpuAiOptions = {}): CpuDecision {
   const perspective = state.currentPlayer;
-  const config = CPU_AI_PROFILE_CONFIG[resolveCpuAiProfile(state, options)];
+  const config = resolveCpuAiConfig(state, options);
   let best: EvaluatedDecision | undefined;
   const evaluated = evaluateCpuDecisions(state, perspective, config);
 
@@ -212,7 +231,7 @@ export function inspectCpuDecisionEvaluations(
   options: CpuAiOptions = {},
 ): CpuDecisionEvaluation[] {
   const perspective = state.currentPlayer;
-  const config = CPU_AI_PROFILE_CONFIG[resolveCpuAiProfile(state, options)];
+  const config = resolveCpuAiConfig(state, options);
   return evaluateCpuDecisions(state, perspective, config).map(({ decision, totalScore, index }) => ({
     decision,
     totalScore,
@@ -222,6 +241,19 @@ export function inspectCpuDecisionEvaluations(
 
 function resolveCpuAiProfile(state: GameState, options: CpuAiOptions): CpuAiProfile {
   return options.profiles?.[state.currentPlayer] ?? options.profile ?? "stable";
+}
+
+function resolveCpuAiConfig(state: GameState, options: CpuAiOptions): CpuAiProfileConfig {
+  const base = CPU_AI_PROFILE_CONFIG[resolveCpuAiProfile(state, options)];
+  const tuning = options.tunings?.[state.currentPlayer] ?? options.tuning;
+  if (!tuning) {
+    return base;
+  }
+  return {
+    ...base,
+    weights: tuning.weights ? { ...base.weights, ...tuning.weights } : base.weights,
+    tuning,
+  };
 }
 
 function evaluateCpuDecisions(
@@ -235,7 +267,7 @@ function evaluateCpuDecisions(
   const decisions = listCpuDecisions(state, config.weights);
 
   const evaluated = decisions.flatMap((decision, index) => {
-    const transition = evaluateDecisionTransition(state, decision, perspective, beforeScore, beforeFutureScore, false, config.weights);
+    const transition = evaluateDecisionTransition(state, decision, perspective, beforeScore, beforeFutureScore, false, config);
     if (!transition) {
       return [];
     }
@@ -273,6 +305,7 @@ function evaluateCpuDecisions(
     }
     const detailedScore =
       candidate.decision.score +
+      decisionTuningBonus(candidate.decision, config) +
       evaluateState(candidate.after, perspective, config.weights) -
       beforeScore +
       evaluateFutureTacticalValue(candidate.after, perspective, true, config.weights) -
@@ -385,7 +418,7 @@ function evaluateDecisionTransition(
   beforeScore: number,
   beforeFutureScore: number,
   detailedFuture: boolean,
-  weights: AiEvaluationWeights,
+  config: CpuAiProfileConfig,
 ): { after: GameState; totalScore: number } | undefined {
   let after: GameState;
   try {
@@ -398,11 +431,37 @@ function evaluateDecisionTransition(
     after,
     totalScore:
       decision.score +
-      evaluateState(after, perspective, weights) -
+      decisionTuningBonus(decision, config) +
+      evaluateState(after, perspective, config.weights) -
       beforeScore +
-      evaluateFutureTacticalValue(after, perspective, detailedFuture, weights) -
+      evaluateFutureTacticalValue(after, perspective, detailedFuture, config.weights) -
       beforeFutureScore,
   };
+}
+
+function decisionTuningBonus(decision: CpuDecision, config: CpuAiProfileConfig): number {
+  const bias = config.tuning?.actionBias;
+  if (!bias) {
+    return 0;
+  }
+
+  let bonus = 0;
+  for (const id of decisionBiasIds(decision)) {
+    bonus += bias[id] ?? 0;
+  }
+  return bonus;
+}
+
+function decisionBiasIds(decision: CpuDecision): CpuAiDecisionBiasId[] {
+  if (decision.type === "attack") {
+    return decision.action.target.kind === "master"
+      ? ["attack", "attack_master"]
+      : ["attack", "attack_monster"];
+  }
+  if (decision.type === "master_action") {
+    return ["master_action", decision.actionId];
+  }
+  return [decision.type];
 }
 
 function evaluateSameTurnContinuation(state: GameState, perspective: PlayerId, beforeFollowUpScore: number): number {
@@ -445,7 +504,7 @@ function evaluateImmediateCpuDecisions(state: GameState, perspective: PlayerId, 
   const beforeScore = evaluateState(state, perspective, config.weights);
   const beforeFutureScore = evaluateFutureTacticalValue(state, perspective, false, config.weights);
   return listCpuDecisions(state, config.weights).flatMap((decision, index) => {
-    const transition = evaluateDecisionTransition(state, decision, perspective, beforeScore, beforeFutureScore, false, config.weights);
+    const transition = evaluateDecisionTransition(state, decision, perspective, beforeScore, beforeFutureScore, false, config);
     return transition ? [{ decision, totalScore: transition.totalScore, index, after: transition.after }] : [];
   });
 }
