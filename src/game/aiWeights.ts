@@ -1,4 +1,4 @@
-export type AiEvaluationProfile = "stable" | "strong" | "pressure" | "defensive";
+export type AiEvaluationProfile = "stable" | "strong" | "pressure" | "defensive" | "white";
 
 export interface AiEvaluationWeights {
   masterHp: number;
@@ -13,6 +13,10 @@ export interface AiEvaluationWeights {
   monsterDamageMagicCost: number;
   monsterKillMagicCost: number;
   healPerPoint: number;
+  futureOwnLevelUp: number;
+  futureOpponentLevelUp: number;
+  futureOwnThreatenedMonster: number;
+  futureOpponentThreatenedMonster: number;
 }
 
 const BASE_WEIGHTS: AiEvaluationWeights = {
@@ -28,6 +32,10 @@ const BASE_WEIGHTS: AiEvaluationWeights = {
   monsterDamageMagicCost: 8,
   monsterKillMagicCost: 8,
   healPerPoint: 26,
+  futureOwnLevelUp: 0.12,
+  futureOpponentLevelUp: 0.18,
+  futureOwnThreatenedMonster: 0.24,
+  futureOpponentThreatenedMonster: 0.16,
 };
 
 export const AI_EVALUATION_WEIGHTS = {
@@ -59,6 +67,20 @@ export const AI_EVALUATION_WEIGHTS = {
     monsterDamagePerPoint: 28,
     genericMagicCost: 6,
     healPerPoint: 34,
+  },
+  white: {
+    ...BASE_WEIGHTS,
+    masterHp: 86,
+    stone: 5,
+    masterDamageBase: 94,
+    monsterKillBase: 295,
+    monsterDamagePerPoint: 25,
+    genericMagicCost: 8,
+    healPerPoint: 30,
+    futureOwnLevelUp: 0.18,
+    futureOpponentLevelUp: 0.22,
+    futureOwnThreatenedMonster: 0.28,
+    futureOpponentThreatenedMonster: 0.17,
   },
 } satisfies Record<AiEvaluationProfile, AiEvaluationWeights>;
 

@@ -69,6 +69,7 @@ export interface CoreMasterTuningStanding {
   bannedCardCount: number;
   labDecisionCount: number;
   labActionUsage: Record<string, number>;
+  masterActionUsage: Record<string, number>;
   matchups: Record<CoreMasterTuningMasterId, CoreMasterTuningMatchupStats>;
   notes: string[];
 }
@@ -108,6 +109,15 @@ export const DEFAULT_CORE_MASTER_TUNING_VARIANTS = [
     hypothesis: "白基準。ウェイクアップとシールドの両方を使える攻撃寄り標準形を見る。",
   },
   {
+    id: "white_pressure_white",
+    masterId: "white",
+    label: "白: 通常プレッシャー / white",
+    participant: "white",
+    deckPreset: "pressure-normal",
+    aiProfile: "white",
+    hypothesis: "白専用AI。レベルアップ筋と守る価値のある駒を強めに評価し、黒速攻へ耐えるか見る。",
+  },
+  {
     id: "white_balanced_defensive",
     masterId: "white",
     label: "白: 通常バランス / defensive",
@@ -124,6 +134,15 @@ export const DEFAULT_CORE_MASTER_TUNING_VARIANTS = [
     deckPreset: "submission-pro-no-rare8-white-494",
     aiProfile: "strong",
     hypothesis: "投稿白デッキの安定候補。白基準の上限として使えるかを見る。",
+  },
+  {
+    id: "white_494_white",
+    masterId: "white",
+    label: "白: 投稿494 / white",
+    participant: "white",
+    deckPreset: "submission-pro-no-rare8-white-494",
+    aiProfile: "white",
+    hypothesis: "投稿白デッキに白専用AIを合わせ、強い選択肢を使い切れるかを見る。",
   },
   {
     id: "black_pressure_pressure",
@@ -279,8 +298,8 @@ export function formatCoreMasterTuningLoopMarkdown(report: CoreMasterTuningRepor
     "",
     "## Standings",
     "",
-    "| Rank | Master | Variant | Deck | AI | Score | W-L-D | Win% | vs White | vs Black | vs Decoy | Avg Turns | Issues | Lab Usage | Notes |",
-    "| ---: | --- | --- | --- | --- | ---: | --- | ---: | ---: | ---: | ---: | ---: | --- | --- | --- |",
+    "| Rank | Master | Variant | Deck | AI | Score | W-L-D | Win% | vs White | vs Black | vs Decoy | Avg Turns | Issues | Master Usage | Lab Usage | Notes |",
+    "| ---: | --- | --- | --- | --- | ---: | --- | ---: | ---: | ---: | ---: | ---: | --- | --- | --- | --- |",
     ...report.standings.map((standing, index) => formatStandingRow(standing, index + 1)),
     "",
     "## Runs",
@@ -293,6 +312,7 @@ export function formatCoreMasterTuningLoopMarkdown(report: CoreMasterTuningRepor
     "",
     "- `Win%` は引き分けを0.5勝として扱う勝ち点率。",
     "- `vs White/Black/Decoy` は相手マスター別の勝ち点率。同一マスター同士は初回ループでは省略。",
+    "- `Master Usage` は通常マスター特技。白AIの `shield` / `wake_up`、黒AIの `berserk_power` などを見る。",
     "- `Lab Usage` はデコイ特技のみ。白黒は通常AIのマスター特技をそのまま使う。",
     "- ロストーン入りデッキは `Notes` に出る。現方針では本命候補から外す。",
   ].join("\n");
@@ -335,6 +355,8 @@ function summarizeStandings(
         addUsage(cpu.labActionUsage, game.labActionUsage);
         cpu.labDecisionCount += game.labDecisionCount;
       }
+      addUsage(player.masterActionUsage, game.masterActionUsageByPlayer.player);
+      addUsage(cpu.masterActionUsage, game.masterActionUsageByPlayer.cpu);
     }
   }
 
@@ -364,6 +386,7 @@ function createStandingRecord(variant: CoreMasterTuningVariant): CoreMasterTunin
     bannedCardCount: bannedCardCount(variant.deckPreset),
     labDecisionCount: 0,
     labActionUsage: {},
+    masterActionUsage: {},
     matchups: {
       white: emptyMatchupStats(),
       black: emptyMatchupStats(),
@@ -468,6 +491,7 @@ function buildConclusion(
   const white = bestByMaster.get("white");
   const black = bestByMaster.get("black");
   const decoy = bestByMaster.get("decoy");
+  const whiteStrong = standings.find((standing) => standing.variant.id === "white_pressure_strong");
   const issues = standings.reduce((total, standing) => total + standing.failures + standing.warnings, 0);
   const whiteOverpowered = [black, decoy].filter((standing) =>
     standing && standing.matchups.white.games > 0 && standing.matchups.white.winPointRate > 0.65,
@@ -480,6 +504,15 @@ function buildConclusion(
   }
   if (whiteOverpowered.length > 0) {
     nextSteps.push(`白に勝ちすぎている候補（${whiteOverpowered.map((standing) => standing.variant.id).join(", ")}）は本命から外し、白基準に近い構成へ戻す。`);
+  }
+  if (white && white.variant.aiProfile === "white") {
+    const strongDelta = whiteStrong ? white.winPointRate - whiteStrong.winPointRate : 0;
+    nextSteps.push(
+      `白AIは \`${white.variant.id}\` を中母数で確認する。strong比の総合差分は ${formatSignedPercent(strongDelta)}、vs Black は ${formatPercent(white.matchups.black.winPointRate)}。`,
+    );
+  }
+  if (white && white.matchups.black.games > 0 && white.matchups.black.winPointRate < 0.45) {
+    nextSteps.push("白のvs Blackが45%未満なら、次は重み追加ではなく、敗戦ログからシールド後の反撃不足とウェイクアップ後の攻撃継続を分類する。");
   }
   if (weakIntoBlack) {
     nextSteps.push("デコイのvs Blackが45%未満なら、デッキより挑発タイミングと守る対象の評価を優先して調整する。");
@@ -541,6 +574,7 @@ function formatStandingRow(standing: CoreMasterTuningStanding, rank: number): st
     formatMatchup(standing.matchups.decoy),
     standing.averageTurns,
     `${standing.failures}F/${standing.warnings}W`,
+    formatUsage(standing.masterActionUsage),
     formatUsage(standing.labActionUsage),
     escapeCell(standing.notes.join("<br>")),
   ].join(" | ").replace(/^/, "| ").replace(/$/, " |");
@@ -624,6 +658,11 @@ function round3(value: number): number {
 
 function formatPercent(value: number): string {
   return `${Math.round(value * 1000) / 10}%`;
+}
+
+function formatSignedPercent(value: number): string {
+  const sign = value >= 0 ? "+" : "";
+  return `${sign}${formatPercent(value)}`;
 }
 
 function escapeCell(value: string): string {

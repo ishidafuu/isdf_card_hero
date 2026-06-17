@@ -144,6 +144,8 @@ export interface MasterLabGameResult {
   labDecisionCount: number;
   labActionUsage: Record<string, number>;
   labActionTargetUsage: Record<string, number>;
+  masterActionUsage: Record<string, number>;
+  masterActionUsageByPlayer: Record<PlayerId, Record<string, number>>;
   magicCardUsage: Record<string, number>;
   magicOpportunityCount: number;
   magicOpportunityUsage: Record<string, number>;
@@ -174,6 +176,7 @@ export interface MasterLabAutoPlayResult {
     labDecisionCount: number;
     labActionUsage: Record<string, number>;
     labActionTargetUsage: Record<string, number>;
+    masterActionUsage: Record<string, number>;
     magicCardUsage: Record<string, number>;
     magicOpportunityCount: number;
     magicOpportunityUsage: Record<string, number>;
@@ -255,6 +258,7 @@ export function validateMasterLabAutoPlay(options: MasterLabAutoPlayOptions = {}
       labDecisionCount: games.reduce((total, game) => total + game.labDecisionCount, 0),
       labActionUsage: mergeUsage(games.map((game) => game.labActionUsage)),
       labActionTargetUsage: mergeUsage(games.map((game) => game.labActionTargetUsage)),
+      masterActionUsage: mergeUsage(games.map((game) => game.masterActionUsage)),
       magicCardUsage: mergeUsage(games.map((game) => game.magicCardUsage)),
       magicOpportunityCount: games.reduce((total, game) => total + game.magicOpportunityCount, 0),
       magicOpportunityUsage: mergeUsage(games.map((game) => game.magicOpportunityUsage)),
@@ -280,6 +284,7 @@ export function formatMasterLabAutoPlaySummary(result: MasterLabAutoPlayResult):
     `Master Lab decisions: ${result.summary.labDecisionCount}`,
     `Master Lab action usage: ${formatUsage(result.summary.labActionUsage)}`,
     `Master Lab target usage: ${formatUsage(result.summary.labActionTargetUsage)}`,
+    `Master action usage: ${formatUsage(result.summary.masterActionUsage)}`,
     `Magic card usage: ${formatUsage(result.summary.magicCardUsage)}`,
     `Magic opportunities: ${result.summary.magicOpportunityCount}`,
     `Issues: ${result.summary.failures} failures, ${result.summary.warnings} warnings`,
@@ -349,6 +354,8 @@ function runMasterLabAutoPlayGame(
   let step = 0;
   const labActionUsage: Record<string, number> = {};
   const labActionTargetUsage: Record<string, number> = {};
+  const masterActionUsage: Record<string, number> = {};
+  const masterActionUsageByPlayer: Record<PlayerId, Record<string, number>> = { player: {}, cpu: {} };
   const magicCardUsage: Record<string, number> = {};
   const magicOpportunityRecords: MasterLabMagicOpportunityRecord[] = [];
   let magicOpportunityCount = 0;
@@ -390,6 +397,11 @@ function runMasterLabAutoPlayGame(
         if (transition.source === "master_lab") {
           labActionUsage[transition.actionId] = (labActionUsage[transition.actionId] ?? 0) + 1;
           labActionTargetUsage[transition.targetUsageKey] = (labActionTargetUsage[transition.targetUsageKey] ?? 0) + 1;
+        }
+        if (transition.source === "cpu" && transition.masterActionId) {
+          masterActionUsage[transition.masterActionId] = (masterActionUsage[transition.masterActionId] ?? 0) + 1;
+          masterActionUsageByPlayer[transition.player][transition.masterActionId] =
+            (masterActionUsageByPlayer[transition.player][transition.masterActionId] ?? 0) + 1;
         }
         if (transition.source === "cpu" && transition.magicCardId) {
           magicCardUsage[transition.magicCardId] = (magicCardUsage[transition.magicCardId] ?? 0) + 1;
@@ -434,6 +446,8 @@ function runMasterLabAutoPlayGame(
       labDecisionCount: Object.values(labActionUsage).reduce((total, count) => total + count, 0),
       labActionUsage,
       labActionTargetUsage,
+      masterActionUsage,
+      masterActionUsageByPlayer,
       magicCardUsage,
       magicOpportunityCount,
       magicOpportunityUsage,
@@ -459,8 +473,8 @@ function runMasterLabDecisionStep(
   step: number,
   context: MasterLabRunContext,
 ): (
-  { next: GameState; source: "cpu"; magicCardId?: string; magicOpportunityRecords: MasterLabMagicOpportunityRecord[] } |
-  { next: GameState; source: "master_lab"; actionId: string; targetUsageKey: string; magicOpportunityRecords: MasterLabMagicOpportunityRecord[] }
+  { next: GameState; source: "cpu"; player: PlayerId; magicCardId?: string; masterActionId?: string; magicOpportunityRecords: MasterLabMagicOpportunityRecord[] } |
+  { next: GameState; source: "master_lab"; player: PlayerId; actionId: string; targetUsageKey: string; magicOpportunityRecords: MasterLabMagicOpportunityRecord[] }
 ) {
   const selected = chooseMixedDecision(game, context.options);
   const beforeSummary = summarizeMasterLabGameState(game, context.options.participants);
@@ -474,6 +488,9 @@ function runMasterLabDecisionStep(
     const action = selected.decision.action;
     magicCardId = game.players[game.currentPlayer].hand.find((card) => card.instanceId === action.handInstanceId)?.cardId;
   }
+  const masterActionId = selected.source === "cpu" && selected.decision.type === "master_action"
+    ? selected.decision.actionId
+    : undefined;
   const next = selected.source === "master_lab"
     ? playMasterLabAction(game, selected.evaluation.option)
     : applyCpuDecision(game, selected.decision);
@@ -498,6 +515,7 @@ function runMasterLabDecisionStep(
     return {
       next,
       source: "master_lab",
+      player: game.currentPlayer,
       actionId: option.actionId,
       targetUsageKey: labActionTargetUsageKey(game, option.actionId, option.target),
       magicOpportunityRecords,
@@ -506,7 +524,9 @@ function runMasterLabDecisionStep(
   return {
     next,
     source: "cpu",
+    player: game.currentPlayer,
     magicCardId,
+    masterActionId,
     magicOpportunityRecords,
   };
 }

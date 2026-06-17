@@ -78,7 +78,7 @@ type CpuAiProfileConfig = {
 
 const NO_THREAT: IncomingThreat = { threatened: false, lethal: false, maxDamage: 0 };
 
-export const CPU_AI_PROFILES = ["stable", "strong", "pressure", "defensive"] as const;
+export const CPU_AI_PROFILES = ["stable", "strong", "pressure", "defensive", "white"] as const;
 export type CpuAiProfile = (typeof CPU_AI_PROFILES)[number];
 export type CpuAiProfiles = Record<PlayerId, CpuAiProfile>;
 
@@ -119,6 +119,14 @@ const CPU_AI_PROFILE_CONFIG: Record<CpuAiProfile, CpuAiProfileConfig> = {
     sameTurnSearchDiscount: 0.52,
     beamScoreThreshold: 10,
     weights: AI_EVALUATION_WEIGHTS.defensive,
+  },
+  white: {
+    detailedWidth: 4,
+    sameTurnSearchDepth: 3,
+    sameTurnSearchWidth: 4,
+    sameTurnSearchDiscount: 0.54,
+    beamScoreThreshold: 8,
+    weights: AI_EVALUATION_WEIGHTS.white,
   },
 };
 
@@ -557,15 +565,15 @@ function evaluateFutureTacticalValue(
     detailedScore =
       ownLethalPressure -
       opponentLethalThreat +
-      opponentThreatenedMonsterValue * 0.16 -
-      ownThreatenedMonsterValue * 0.24;
+      opponentThreatenedMonsterValue * weights.futureOpponentThreatenedMonster -
+      ownThreatenedMonsterValue * weights.futureOwnThreatenedMonster;
   }
 
   return (
     ownBestAttack * 0.08 -
     opponentBestAttack * 0.16 +
-    ownLevelUpPotential * 0.12 -
-    opponentLevelUpPotential * 0.18 +
+    ownLevelUpPotential * weights.futureOwnLevelUp -
+    opponentLevelUpPotential * weights.futureOpponentLevelUp +
     detailedScore +
     ownHandPressure +
     enemyHandPressure +

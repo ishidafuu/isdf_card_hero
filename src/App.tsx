@@ -358,6 +358,22 @@ function aiProfileSummary(profiles: CpuAiProfiles): string {
   return `P ${profiles.player} / C ${profiles.cpu}`;
 }
 
+function aiProfileLabel(profile: CpuAiProfile): string {
+  if (profile === "stable") {
+    return "Stable";
+  }
+  if (profile === "strong") {
+    return "Strong";
+  }
+  if (profile === "pressure") {
+    return "Pressure";
+  }
+  if (profile === "defensive") {
+    return "Defensive";
+  }
+  return "White";
+}
+
 function historyDeckSummary(settings: DeckSettings | undefined): string {
   const normalized = normalizeDeckSettings(settings);
   return PLAYER_IDS
@@ -1913,8 +1929,9 @@ export function App() {
               value={battleSettings.aiProfiles.player}
               onChange={(event) => handleBattleAiProfileChange("player", event.target.value)}
             >
-              <option value="stable">Stable</option>
-              <option value="strong">Strong</option>
+              {CPU_AI_PROFILES.map((profile) => (
+                <option value={profile} key={profile}>{aiProfileLabel(profile)}</option>
+              ))}
             </select>
           </label>
           <label className="battle-setting-control">
@@ -1923,8 +1940,9 @@ export function App() {
               value={battleSettings.aiProfiles.cpu}
               onChange={(event) => handleBattleAiProfileChange("cpu", event.target.value)}
             >
-              <option value="stable">Stable</option>
-              <option value="strong">Strong</option>
+              {CPU_AI_PROFILES.map((profile) => (
+                <option value={profile} key={profile}>{aiProfileLabel(profile)}</option>
+              ))}
             </select>
           </label>
           <label className="battle-setting-control">
