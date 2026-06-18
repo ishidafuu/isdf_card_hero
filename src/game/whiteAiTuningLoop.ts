@@ -190,7 +190,10 @@ export const DEFAULT_WHITE_AI_TUNING_VARIANTS = [
   actionVariant("pressure_master_attack_minus8", "特技: master_attack-8", "pressure-normal", { actionBias: { master_attack: -8 } }, "白がマスターアタックへ逃げすぎていないかを切り分ける。"),
   actionVariant("pressure_master_attack_plus8", "特技: master_attack+8", "pressure-normal", { actionBias: { master_attack: 8 } }, "白が盤面処理をマスターアタックで補う価値を確認する。"),
   actionVariant("pressure_attack_master_plus8", "攻撃: attack_master+8", "pressure-normal", { actionBias: { attack_master: 8 } }, "決着力不足の補正として、本体打点を少し押す。"),
+  actionVariant("pressure_attack_monster_plus2", "攻撃: attack_monster+2", "pressure-normal", { actionBias: { attack_monster: 2 } }, "盤面制圧補正を最小限にし、+4が強すぎないかの下限を見る。"),
   actionVariant("pressure_attack_monster_plus4", "攻撃: attack_monster+4", "pressure-normal", { actionBias: { attack_monster: 4 } }, "盤面制圧補正を薄く入れ、+8より副作用が少ないか見る。"),
+  actionVariant("pressure_attack_monster_plus6", "攻撃: attack_monster+6", "pressure-normal", { actionBias: { attack_monster: 6 } }, "盤面制圧補正を+4より少し強め、黒耐性と白基準への勝ちすぎを確認する。"),
+  actionVariant("pressure_attack_monster_plus4_shield_minus2", "混合: attack_monster+4 / shield-2", "pressure-normal", { actionBias: { attack_monster: 4, shield: -2 } }, "盤面処理補正を残しつつ、成果化しないシールドを軽く抑えられるか見る。"),
   hybridVariant("pressure_attack_monster4_stone_conserve", "状況: attack_monster+4 / 石温存", "pressure-normal", {
     actionBias: { attack_monster: 4 },
     situationalBias: { setupLowStonePenalty: 12 },
