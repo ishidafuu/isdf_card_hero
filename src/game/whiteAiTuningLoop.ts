@@ -270,6 +270,12 @@ export const DEFAULT_WHITE_AI_TUNING_VARIANTS = [
   hybridVariant("pressure_white_second_shield_guard_v1", "本実装候補: 白2枚目低石盾抑制", "pressure-normal", {
     situationalBias: { whiteSecondShieldLowStonePenalty: 8 },
   }, "白マスター限定で、同ターン2枚目以降のシールドで残石1以下になる過剰コミットを抑える。"),
+  hybridVariant("pressure_white_second_shield_guard_light_v1", "本実装候補: 白2枚目低石盾抑制軽量", "pressure-normal", {
+    situationalBias: { whiteSecondShieldLowStonePenalty: 4 },
+  }, "同ターン2枚目以降の低石シールドだけを軽く抑え、必要な育成防御まで削らないか確認する。"),
+  hybridVariant("pressure_white_second_shield_guard_plus12_v1", "本実装候補: 白2枚目低石盾抑制+12", "pressure-normal", {
+    situationalBias: { whiteSecondShieldLowStonePenalty: 12 },
+  }, "同ターン2枚目以降の低石シールド抑制を強め、過剰コミットの減少幅を見る。"),
   hybridVariant("pressure_white_shield_quality_second_guard_v1", "本実装候補: 白盾品質+2枚目抑制", "pressure-normal", {
     situationalBias: { whiteShieldThreatConversionBonus: 8, whiteSecondShieldLowStonePenalty: 8 },
   }, "質の高い盾を押しつつ、2枚目低石シールドの全力投入を抑える。"),

@@ -168,6 +168,13 @@ export interface MoveHistoryEntry {
   swappedInstanceId?: string;
 }
 
+export interface MasterActionHistoryEntry {
+  playerId: PlayerId;
+  actionId: MasterActionId;
+  target: Target;
+  turnNumber: number;
+}
+
 export interface PendingLevelUp {
   playerId: PlayerId;
   attackerSlotKey: SlotKey;
@@ -192,6 +199,7 @@ export interface GameState {
   winner?: PlayerId;
   pendingLevelUp?: PendingLevelUp;
   turnMoveHistory?: MoveHistoryEntry[];
+  turnMasterActionHistory?: MasterActionHistoryEntry[];
   masterActionsExchangeExpiresOnStartOf?: PlayerId;
 }
 

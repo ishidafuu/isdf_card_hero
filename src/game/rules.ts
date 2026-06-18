@@ -582,6 +582,7 @@ export function useMasterAction(
     throw new Error("マスター特技に必要なストーンが足りません");
   }
   player.stones -= cost;
+  recordMasterActionHistory(next, actionId, target);
 
   if (actionId === "master_attack") {
     if (target.kind !== "monster") {
@@ -1763,6 +1764,7 @@ function clearEndOfTurnMarkers(state: GameState): void {
     }
   }
   state.turnMoveHistory = [];
+  state.turnMasterActionHistory = [];
 }
 
 function setMasterActionExchange(state: GameState, expiresOnStartOf: PlayerId): void {
@@ -1796,6 +1798,18 @@ function recordMoveHistory(
       toSlotKey,
       moverInstanceId: mover.instanceId,
       swappedInstanceId: swappedMonster?.instanceId,
+    },
+  ];
+}
+
+function recordMasterActionHistory(state: GameState, actionId: MasterActionId, target: Target): void {
+  state.turnMasterActionHistory = [
+    ...(state.turnMasterActionHistory ?? []),
+    {
+      playerId: state.currentPlayer,
+      actionId,
+      target,
+      turnNumber: state.turnNumber,
     },
   ];
 }

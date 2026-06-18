@@ -165,6 +165,11 @@ const CPU_AI_PROFILE_CONFIG: Record<CpuAiProfile, CpuAiProfileConfig> = {
     sameTurnSearchDiscount: 0.54,
     beamScoreThreshold: 8,
     weights: AI_EVALUATION_WEIGHTS.white,
+    tuning: {
+      situationalBias: {
+        whiteSecondShieldLowStonePenalty: 12,
+      },
+    },
   },
 };
 
@@ -264,7 +269,7 @@ function resolveCpuAiProfile(state: GameState, options: CpuAiOptions): CpuAiProf
 
 function resolveCpuAiConfig(state: GameState, options: CpuAiOptions): CpuAiProfileConfig {
   const base = CPU_AI_PROFILE_CONFIG[resolveCpuAiProfile(state, options)];
-  const tuning = options.tunings?.[state.currentPlayer] ?? options.tuning;
+  const tuning = mergeCpuAiTuning(base.tuning, options.tunings?.[state.currentPlayer] ?? options.tuning);
   if (!tuning) {
     return base;
   }
@@ -272,6 +277,22 @@ function resolveCpuAiConfig(state: GameState, options: CpuAiOptions): CpuAiProfi
     ...base,
     weights: tuning.weights ? { ...base.weights, ...tuning.weights } : base.weights,
     tuning,
+  };
+}
+
+function mergeCpuAiTuning(base: CpuAiTuning | undefined, override: CpuAiTuning | undefined): CpuAiTuning | undefined {
+  if (!base) {
+    return override;
+  }
+  if (!override) {
+    return base;
+  }
+  return {
+    weights: base.weights || override.weights ? { ...base.weights, ...override.weights } : undefined,
+    actionBias: base.actionBias || override.actionBias ? { ...base.actionBias, ...override.actionBias } : undefined,
+    situationalBias: base.situationalBias || override.situationalBias
+      ? { ...base.situationalBias, ...override.situationalBias }
+      : undefined,
   };
 }
 
@@ -907,11 +928,15 @@ function whiteSecondShieldLowStoneDecisionPenalty(
   ) {
     return 0;
   }
-  return ownShieldedMonsterCount(before, perspective) > 0 ? value : 0;
+  return currentTurnMasterActionCount(before, perspective, "shield") > 0 ? value : 0;
 }
 
 function ownShieldedMonsterCount(state: GameState, perspective: PlayerId): number {
   return FIELD_ORDER_BY_PLAYER[perspective].filter((slotKey) => state.slots[slotKey].monster?.shielded).length;
+}
+
+function currentTurnMasterActionCount(state: GameState, perspective: PlayerId, actionId: MasterActionId): number {
+  return (state.turnMasterActionHistory ?? []).filter((entry) => entry.playerId === perspective && entry.actionId === actionId).length;
 }
 
 function whiteEnemyFrontAttackTarget(

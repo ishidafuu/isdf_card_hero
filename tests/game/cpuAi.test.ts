@@ -634,6 +634,14 @@ describe("cpu ai", () => {
     game.slots.cpu_front_left.monster = createActiveMonster("beyond", "cpu", { hp: 2 });
     game.slots.cpu_back_left.monster = createActiveMonster("takokke", "cpu", { shielded: true });
     game.slots.player_front_left.monster = createActiveMonster("takokke", "player");
+    game.turnMasterActionHistory = [
+      {
+        playerId: "cpu",
+        actionId: "shield",
+        target: { kind: "monster", slotKey: "cpu_back_left" },
+        turnNumber: game.turnNumber,
+      },
+    ];
 
     const findShield = (options = {}) =>
       inspectCpuDecisionEvaluations(game, options).find(
@@ -649,6 +657,67 @@ describe("cpu ai", () => {
     expect(baseline).toBeDefined();
     expect(tuned).toBeDefined();
     expect(tuned?.totalScore).toBeCloseTo((baseline?.totalScore ?? 0) - 7);
+  });
+
+  it("does not penalize a first current-turn shield just because a previous shield remains", () => {
+    const game = createCpuGame();
+    game.players.cpu.masterId = "white";
+    game.players.cpu.hand = [];
+    game.players.cpu.stones = 3;
+    game.slots.cpu_front_left.monster = createActiveMonster("beyond", "cpu", { hp: 2 });
+    game.slots.cpu_back_left.monster = createActiveMonster("takokke", "cpu", { shielded: true });
+    game.slots.player_front_left.monster = createActiveMonster("takokke", "player");
+
+    const findShield = (options = {}) =>
+      inspectCpuDecisionEvaluations(game, options).find(
+        (evaluation) =>
+          evaluation.decision.type === "master_action" &&
+          evaluation.decision.actionId === "shield" &&
+          evaluation.decision.target.kind === "monster" &&
+          evaluation.decision.target.slotKey === "cpu_front_left",
+      );
+    const baseline = findShield();
+    const tuned = findShield({ tunings: { cpu: { situationalBias: { whiteSecondShieldLowStonePenalty: 7 } } } });
+
+    expect(baseline).toBeDefined();
+    expect(tuned).toBeDefined();
+    expect(tuned?.totalScore).toBeCloseTo(baseline?.totalScore ?? 0);
+  });
+
+  it("uses the same-turn second shield guard in the default white profile", () => {
+    const game = createCpuGame();
+    game.players.cpu.masterId = "white";
+    game.players.cpu.hand = [];
+    game.players.cpu.stones = 3;
+    game.slots.cpu_front_left.monster = createActiveMonster("beyond", "cpu", { hp: 2 });
+    game.slots.cpu_back_left.monster = createActiveMonster("takokke", "cpu", { shielded: true });
+    game.slots.player_front_left.monster = createActiveMonster("takokke", "player");
+    game.turnMasterActionHistory = [
+      {
+        playerId: "cpu",
+        actionId: "shield",
+        target: { kind: "monster", slotKey: "cpu_back_left" },
+        turnNumber: game.turnNumber,
+      },
+    ];
+
+    const findShield = (options = {}) =>
+      inspectCpuDecisionEvaluations(game, options).find(
+        (evaluation) =>
+          evaluation.decision.type === "master_action" &&
+          evaluation.decision.actionId === "shield" &&
+          evaluation.decision.target.kind === "monster" &&
+          evaluation.decision.target.slotKey === "cpu_front_left",
+      );
+    const defaultWhite = findShield({ profile: "white" });
+    const withoutGuard = findShield({
+      profile: "white",
+      tuning: { situationalBias: { whiteSecondShieldLowStonePenalty: 0 } },
+    });
+
+    expect(defaultWhite).toBeDefined();
+    expect(withoutGuard).toBeDefined();
+    expect(defaultWhite?.totalScore).toBeCloseTo((withoutGuard?.totalScore ?? 0) - 12);
   });
 
   it("uses black master berserk power when it creates a monster kill", () => {
