@@ -460,6 +460,99 @@ describe("cpu ai", () => {
     expect(tuned?.totalScore).toBeCloseTo((baseline?.totalScore ?? 0) + 10);
   });
 
+  it("does not penalize urgent white shields with strict shield tuning", () => {
+    const game = createCpuGame();
+    game.players.cpu.masterId = "white";
+    game.players.cpu.hand = [];
+    game.players.cpu.stones = 4;
+    game.slots.cpu_front_left.monster = createActiveMonster("beyond", "cpu", { hp: 2 });
+    game.slots.player_front_left.monster = createActiveMonster("takokke", "player");
+    const findUrgentShield = (options = {}) =>
+      inspectCpuDecisionEvaluations(game, options).find(
+        (evaluation) =>
+          evaluation.decision.type === "master_action" &&
+          evaluation.decision.actionId === "shield" &&
+          evaluation.decision.target.kind === "monster" &&
+          evaluation.decision.target.slotKey === "cpu_front_left",
+      );
+    const urgentBaseline = findUrgentShield();
+    const urgentTuned = findUrgentShield({ tunings: { cpu: { situationalBias: { whiteStrictShieldPenalty: 10 } } } });
+
+    expect(urgentBaseline).toBeDefined();
+    expect(urgentTuned).toBeDefined();
+    expect(urgentTuned?.totalScore).toBeCloseTo(urgentBaseline?.totalScore ?? 0);
+  });
+
+  it("penalizes low-stone white shield, wake, and summon setup by decision type", () => {
+    const shieldGame = createCpuGame();
+    shieldGame.players.cpu.masterId = "white";
+    shieldGame.players.cpu.hand = [];
+    shieldGame.players.cpu.stones = 3;
+    shieldGame.slots.cpu_front_left.monster = createActiveMonster("beyond", "cpu", { hp: 2 });
+    shieldGame.slots.player_front_left.monster = createActiveMonster("takokke", "player");
+    const findShield = (options = {}) =>
+      inspectCpuDecisionEvaluations(shieldGame, options).find(
+        (evaluation) =>
+          evaluation.decision.type === "master_action" &&
+          evaluation.decision.actionId === "shield" &&
+          evaluation.decision.target.kind === "monster" &&
+          evaluation.decision.target.slotKey === "cpu_front_left",
+      );
+    const shieldBaseline = findShield();
+    const shieldTuned = findShield({ tunings: { cpu: { situationalBias: { whiteLowStoneShieldPenalty: 7 } } } });
+
+    const wakeGame = createCpuGame();
+    wakeGame.players.cpu.masterId = "white";
+    wakeGame.players.cpu.hand = [];
+    wakeGame.players.cpu.stones = 3;
+    wakeGame.slots.cpu_back_left.monster = createActiveMonster("morgan", "cpu", { status: "prepared" });
+    const findWake = (options = {}) =>
+      inspectCpuDecisionEvaluations(wakeGame, options).find(
+        (evaluation) =>
+          evaluation.decision.type === "master_action" &&
+          evaluation.decision.actionId === "wake_up" &&
+          evaluation.decision.target.kind === "monster" &&
+          evaluation.decision.target.slotKey === "cpu_back_left",
+      );
+    const wakeBaseline = findWake();
+    const wakeTuned = findWake({ tunings: { cpu: { situationalBias: { whiteLowStoneWakePenalty: 7 } } } });
+
+    const summonGame = createCpuGame([{ cardId: "takokke", instanceId: "cpu_summon_takokke" }]);
+    summonGame.players.cpu.masterId = "white";
+    summonGame.players.cpu.stones = 2;
+    const findSummon = (options = {}) =>
+      inspectCpuDecisionEvaluations(summonGame, options).find(
+        (evaluation) => evaluation.decision.type === "summon" && evaluation.decision.handInstanceId === "cpu_summon_takokke",
+      );
+    const summonBaseline = findSummon();
+    const summonTuned = findSummon({ tunings: { cpu: { situationalBias: { whiteLowStoneSummonPenalty: 7 } } } });
+
+    const focusGame = createCpuGame();
+    focusGame.players.cpu.masterId = "white";
+    focusGame.players.cpu.hand = [];
+    focusGame.players.cpu.stones = 1;
+    focusGame.slots.cpu_front_left.monster = createActiveMonster("takokke", "cpu");
+    const findFocus = (options = {}) =>
+      inspectCpuDecisionEvaluations(focusGame, options).find(
+        (evaluation) => evaluation.decision.type === "focus" && evaluation.decision.slotKey === "cpu_front_left",
+      );
+    const focusBaseline = findFocus();
+    const focusTuned = findFocus({ tunings: { cpu: { situationalBias: { whiteLowStoneFocusPenalty: 7 } } } });
+
+    expect(shieldBaseline).toBeDefined();
+    expect(shieldTuned).toBeDefined();
+    expect(shieldTuned?.totalScore).toBeCloseTo((shieldBaseline?.totalScore ?? 0) - 7);
+    expect(wakeBaseline).toBeDefined();
+    expect(wakeTuned).toBeDefined();
+    expect(wakeTuned?.totalScore).toBeCloseTo((wakeBaseline?.totalScore ?? 0) - 7);
+    expect(summonBaseline).toBeDefined();
+    expect(summonTuned).toBeDefined();
+    expect(summonTuned?.totalScore).toBeCloseTo((summonBaseline?.totalScore ?? 0) - 7);
+    expect(focusBaseline).toBeDefined();
+    expect(focusTuned).toBeDefined();
+    expect(focusTuned?.totalScore).toBeCloseTo((focusBaseline?.totalScore ?? 0) - 7);
+  });
+
   it("uses black master berserk power when it creates a monster kill", () => {
     const game = createCpuGame();
     game.players.cpu.masterId = "black";

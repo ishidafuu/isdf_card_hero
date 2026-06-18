@@ -222,6 +222,33 @@ export const DEFAULT_WHITE_AI_TUNING_VARIANTS = [
   hybridVariant("pressure_white_pygmy_front_setup_v1", "本実装候補: 白ピグミィ撃破圏+10", "pressure-normal", {
     situationalBias: { whitePygmyFrontSetupBonus: 10 },
   }, "白マスター限定で、ピグミィが敵前衛を撃破圏へ入れる小打点を評価する。"),
+  hybridVariant("pressure_white_strict_shield_v1", "本実装候補: 白成果化盾-10", "pressure-normal", {
+    situationalBias: { whiteStrictShieldPenalty: 10 },
+  }, "白マスター限定で、致死回避・脅威軽減・次ターン成果化につながらないシールドを抑える。"),
+  hybridVariant("pressure_white_low_stone_shield_wake_v1", "本実装候補: 白低石盾起動抑制", "pressure-normal", {
+    situationalBias: { whiteLowStoneShieldPenalty: 10, whiteLowStoneWakePenalty: 8 },
+  }, "白マスター限定で、石1以下になるシールド/ウェイクアップ布石を抑え、次ターンの選択肢を残す。"),
+  hybridVariant("pressure_white_low_stone_summon_v1", "本実装候補: 白低石召喚抑制", "pressure-normal", {
+    situationalBias: { whiteLowStoneSummonPenalty: 8 },
+  }, "白マスター限定で、石1以下になる召喚布石を抑え、特技用ストーンの枯渇を避ける。"),
+  hybridVariant("pressure_white_low_stone_setup_v1", "本実装候補: 白低石布石抑制", "pressure-normal", {
+    situationalBias: { setupLowStonePenalty: 10 },
+  }, "白マスター限定ではなく汎用フックで、石1以下になる布石全般を抑える。focus低石化が多い監査結果の対照候補。"),
+  hybridVariant("pressure_white_low_stone_setup_light_v1", "本実装候補: 白低石布石抑制軽量", "pressure-normal", {
+    situationalBias: { setupLowStonePenalty: 4 },
+  }, "全布石低石抑制を弱め、強すぎる抑制で反撃速度を落としていないか確認する。"),
+  hybridVariant("pressure_white_low_stone_focus_v1", "本実装候補: 白低石focus抑制", "pressure-normal", {
+    situationalBias: { whiteLowStoneFocusPenalty: 8 },
+  }, "負け監査で多かった、石1以下のままfocusする布石だけを抑える。"),
+  hybridVariant("pressure_white_low_stone_focus_light_v1", "本実装候補: 白低石focus抑制軽量", "pressure-normal", {
+    situationalBias: { whiteLowStoneFocusPenalty: 4 },
+  }, "focus抑制を薄く入れ、待ちすぎの副作用を抑えながら石枯渇を減らす。"),
+  hybridVariant("pressure_white_low_stone_focus_guard_v1", "本実装候補: 白低石focus+盾起動抑制", "pressure-normal", {
+    situationalBias: { whiteLowStoneFocusPenalty: 6, whiteLowStoneShieldPenalty: 4, whiteLowStoneWakePenalty: 4 },
+  }, "低石focusを主対象にしつつ、シールド/ウェイクアップの低石化も薄く抑える。"),
+  hybridVariant("pressure_white_strict_shield_low_stone_v1", "本実装候補: 白盾精査+低石抑制", "pressure-normal", {
+    situationalBias: { whiteStrictShieldPenalty: 8, whiteLowStoneShieldPenalty: 6, whiteLowStoneWakePenalty: 6 },
+  }, "成果化しないシールド抑制と低石シールド/ウェイクアップ抑制を薄く併用する。"),
   actionVariant("pressure_attack_monster_plus8", "攻撃: attack_monster+8", "pressure-normal", { actionBias: { attack_monster: 8 } }, "盤面制圧を少し厚くし、黒の前のめり展開を止める。"),
   actionVariant("pressure_attack_monster4_shield2", "混合: attack_monster+4 / shield+2", "pressure-normal", { actionBias: { attack_monster: 4, shield: 2 } }, "盤面処理と守りを薄く両立し、石枯渇を避ける現実的補正を見る。"),
   actionVariant("pressure_attack_monster_plus12", "攻撃: attack_monster+12", "pressure-normal", { actionBias: { attack_monster: 12 } }, "盤面制圧補正を強め、黒耐性の上限と勝ち切り遅延を測る。"),

@@ -26,6 +26,7 @@
     "lab:masters:magic-opportunity": "vite-node scripts/master-lab-magic-opportunity.ts",
     "lab:masters:core-tune": "vite-node scripts/core-master-tuning-loop.ts",
     "lab:masters:white-ai": "vite-node scripts/white-ai-tuning-loop.ts",
+    "lab:masters:white-ai-loss-audit": "vite-node scripts/white-ai-loss-audit.ts",
     "lab:masters:white-ai-diff": "vite-node scripts/white-ai-decision-diff-loop.ts",
     "lab:masters:select": "vite-node scripts/master-lab-selection-loop.ts",
     "audit:deck-submissions": "vite-node scripts/deck-submission-audit.ts",

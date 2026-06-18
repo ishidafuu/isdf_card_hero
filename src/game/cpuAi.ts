@@ -106,6 +106,11 @@ export interface CpuAiTuning {
     whiteBlackFrontThreatBonus?: number;
     whiteActiveFrontWorkBonus?: number;
     whitePygmyFrontSetupBonus?: number;
+    whiteStrictShieldPenalty?: number;
+    whiteLowStoneShieldPenalty?: number;
+    whiteLowStoneWakePenalty?: number;
+    whiteLowStoneSummonPenalty?: number;
+    whiteLowStoneFocusPenalty?: number;
   };
 }
 
@@ -505,6 +510,21 @@ function decisionSituationalBonus(
   if (bias.whitePygmyFrontSetupBonus) {
     bonus += whitePygmyFrontSetupDecisionBonus(before, after, decision, perspective, bias.whitePygmyFrontSetupBonus);
   }
+  if (bias.whiteStrictShieldPenalty) {
+    bonus -= whiteStrictShieldDecisionPenalty(before, after, decision, perspective, bias.whiteStrictShieldPenalty);
+  }
+  if (bias.whiteLowStoneShieldPenalty) {
+    bonus -= whiteLowStoneSetupDecisionPenalty(before, after, decision, perspective, bias.whiteLowStoneShieldPenalty, "shield");
+  }
+  if (bias.whiteLowStoneWakePenalty) {
+    bonus -= whiteLowStoneSetupDecisionPenalty(before, after, decision, perspective, bias.whiteLowStoneWakePenalty, "wake_up");
+  }
+  if (bias.whiteLowStoneSummonPenalty) {
+    bonus -= whiteLowStoneSetupDecisionPenalty(before, after, decision, perspective, bias.whiteLowStoneSummonPenalty, "summon");
+  }
+  if (bias.whiteLowStoneFocusPenalty) {
+    bonus -= whiteLowStoneSetupDecisionPenalty(before, after, decision, perspective, bias.whiteLowStoneFocusPenalty, "focus");
+  }
   return bonus;
 }
 
@@ -721,6 +741,73 @@ function whitePygmyFrontSetupDecisionBonus(
     return 0;
   }
   return bestAttackOpportunityScore(after, undefined, targetSlotKey) >= 300 || targetAfter.hp <= 2 ? value : 0;
+}
+
+function whiteStrictShieldDecisionPenalty(
+  before: GameState,
+  after: GameState,
+  decision: CpuDecision,
+  perspective: PlayerId,
+  value: number,
+): number {
+  if (
+    value <= 0 ||
+    before.players[perspective].masterId !== "white" ||
+    decision.type !== "master_action" ||
+    decision.actionId !== "shield" ||
+    decision.target.kind !== "monster"
+  ) {
+    return 0;
+  }
+  if (isConvertibleShieldDecision(after, decision, perspective) || isUrgentShieldDecision(before, after, decision, perspective)) {
+    return 0;
+  }
+  return value;
+}
+
+function isUrgentShieldDecision(
+  before: GameState,
+  after: GameState,
+  decision: CpuDecision,
+  perspective: PlayerId,
+): boolean {
+  if (decision.type !== "master_action" || decision.actionId !== "shield" || decision.target.kind !== "monster") {
+    return false;
+  }
+  const target = before.slots[decision.target.slotKey].monster;
+  const targetAfter = after.slots[decision.target.slotKey].monster;
+  if (!target || target.owner !== perspective || !targetAfter || targetAfter.owner !== perspective) {
+    return false;
+  }
+
+  const threat = incomingThreat(before, decision.target.slotKey);
+  const threatAfterShield = incomingThreat(after, decision.target.slotKey);
+  return threat.lethal || (threat.threatened && threatAfterShield.maxDamage < threat.maxDamage);
+}
+
+function whiteLowStoneSetupDecisionPenalty(
+  before: GameState,
+  after: GameState,
+  decision: CpuDecision,
+  perspective: PlayerId,
+  value: number,
+  kind: "shield" | "wake_up" | "summon" | "focus",
+): number {
+  if (
+    value <= 0 ||
+    before.players[perspective].masterId !== "white" ||
+    after.players[perspective].stones > 1 ||
+    !isSetupDecision(before, after, decision, perspective)
+  ) {
+    return 0;
+  }
+  if (kind === "summon") {
+    return decision.type === "summon" ? value : 0;
+  }
+  if (kind === "focus") {
+    return decision.type === "focus" ? value : 0;
+  }
+  return decision.type === "master_action" && decision.actionId === kind ? value : 0;
 }
 
 function whiteEnemyFrontAttackTarget(
