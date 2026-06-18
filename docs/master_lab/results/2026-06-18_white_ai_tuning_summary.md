@@ -64,3 +64,4 @@
 - `docs/master_lab/results/2026-06-18_white_ai_tuning_loop_2_confirm.md`
 - `docs/master_lab/results/2026-06-18_white_ai_tuning_loop_3_attack_monster_focus.md`
 - `docs/master_lab/results/2026-06-18_white_ai_tuning_loop_4_final_confirm.md`
+- `docs/master_lab/results/2026-06-18_white_ai_turn_intent_followup.md`
