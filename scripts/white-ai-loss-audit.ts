@@ -28,6 +28,32 @@ interface OutcomeAudit {
   seeds: number[];
   intent: WhiteAiTurnIntentMetrics;
   lowStoneByDecision: Record<string, number>;
+  targetQuality: TargetQualityAudit;
+}
+
+interface TargetQualityAudit {
+  shield: ShieldTargetAudit;
+  wake: WakeTargetAudit;
+}
+
+interface ShieldTargetAudit {
+  uses: number;
+  nextOwnTurnAttack: number;
+  nextOwnTurnLevelUp: number;
+  removedBeforeNextOwnTurn: number;
+  threatOrConversionReason: number;
+  secondShieldSameTurn: number;
+  lowStoneSecondShield: number;
+}
+
+interface WakeTargetAudit {
+  uses: number;
+  sameTurnAttack: number;
+  sameTurnExecution: number;
+  nextOwnTurnAttack: number;
+  nextOwnTurnLevelUp: number;
+  lowStoneAfterWake: number;
+  lowStoneNoSameTurnWork: number;
 }
 
 interface VariantAudit {
@@ -101,6 +127,7 @@ function buildAuditReport(loopReport: ReturnType<typeof runWhiteAiTuningLoop>): 
       outcomeAudit.totalTurns += game.turns;
       addIntentMetrics(outcomeAudit.intent, intent.metrics);
       addLowStoneByDecision(outcomeAudit.lowStoneByDecision, intent.lowStoneByDecision);
+      addTargetQualityAudit(outcomeAudit.targetQuality, intent.targetQuality);
       if (outcome === "win") {
         audit.wins += 1;
       } else if (outcome === "loss") {
@@ -154,6 +181,7 @@ function createOutcomeAudit(): OutcomeAudit {
     seeds: [],
     intent: emptyIntentMetrics(),
     lowStoneByDecision: {},
+    targetQuality: emptyTargetQualityAudit(),
   };
 }
 
@@ -190,15 +218,28 @@ function buildNotes(audit: VariantAudit): string[] {
   if (audit.outcomes.loss.intent.shieldUses >= 4 && lossShieldConv <= 0.25) {
     notes.push("負け側の盾成果化が低い");
   }
+  if (
+    audit.outcomes.loss.targetQuality.shield.uses >= 4 &&
+    rate(audit.outcomes.loss.targetQuality.shield.nextOwnTurnAttack, audit.outcomes.loss.targetQuality.shield.uses) < 0.25
+  ) {
+    notes.push("負け側の盾対象が次ターン攻撃しない");
+  }
+  if (
+    audit.outcomes.loss.targetQuality.wake.uses >= 4 &&
+    rate(audit.outcomes.loss.targetQuality.wake.sameTurnAttack, audit.outcomes.loss.targetQuality.wake.uses) < 0.3
+  ) {
+    notes.push("負け側のウェイク即仕事が低い");
+  }
   return notes.length > 0 ? notes : ["-"];
 }
 
 function summarizeAuditIntentMetrics(
   history: readonly MasterLabDecisionEvent[],
   candidateSeat: PlayerId,
-): { metrics: WhiteAiTurnIntentMetrics; lowStoneByDecision: Record<string, number> } {
+): { metrics: WhiteAiTurnIntentMetrics; lowStoneByDecision: Record<string, number>; targetQuality: TargetQualityAudit } {
   const metrics = emptyIntentMetrics();
   const lowStoneByDecision: Record<string, number> = {};
+  const targetQuality = emptyTargetQualityAudit();
 
   for (let index = 0; index < history.length; index += 1) {
     const event = history[index];
@@ -227,6 +268,12 @@ function summarizeAuditIntentMetrics(
       } else {
         metrics.shieldNoConversion += 1;
       }
+      addShieldTargetAudit(targetQuality.shield, history, index, candidateSeat, shieldTargetSlotKey);
+    }
+
+    const wakeTargetSlotKey = wakeTargetSlotKeyForEvent(event);
+    if (wakeTargetSlotKey) {
+      addWakeTargetAudit(targetQuality.wake, history, index, candidateSeat, wakeTargetSlotKey);
     }
 
     if (intent.woundedLevelUpHeal) {
@@ -248,7 +295,207 @@ function summarizeAuditIntentMetrics(
     }
   }
 
-  return { metrics, lowStoneByDecision };
+  return { metrics, lowStoneByDecision, targetQuality };
+}
+
+function addShieldTargetAudit(
+  target: ShieldTargetAudit,
+  history: readonly MasterLabDecisionEvent[],
+  shieldEventIndex: number,
+  candidateSeat: PlayerId,
+  shieldTargetSlotKey: string,
+): void {
+  const event = history[shieldEventIndex];
+  if (!event) {
+    return;
+  }
+
+  target.uses += 1;
+  if (shieldReasonSuggestsThreatOrConversion(event.reason)) {
+    target.threatOrConversionReason += 1;
+  }
+  if (previousSameTurnShieldCount(history, shieldEventIndex, candidateSeat) > 0) {
+    target.secondShieldSameTurn += 1;
+    if (event.after.players[candidateSeat].stones <= 1) {
+      target.lowStoneSecondShield += 1;
+    }
+  }
+
+  const nextTurnNumber = nextOwnTurnNumberAfter(history, shieldEventIndex, candidateSeat);
+  if (nextTurnNumber === undefined) {
+    return;
+  }
+  if (slotAttacksOnTurn(history, shieldEventIndex, candidateSeat, shieldTargetSlotKey, nextTurnNumber)) {
+    target.nextOwnTurnAttack += 1;
+  }
+  if (slotLevelsUpOnTurn(history, shieldEventIndex, candidateSeat, shieldTargetSlotKey, nextTurnNumber)) {
+    target.nextOwnTurnLevelUp += 1;
+  }
+  if (slotRemovedBeforeTurn(history, shieldEventIndex, candidateSeat, shieldTargetSlotKey, nextTurnNumber)) {
+    target.removedBeforeNextOwnTurn += 1;
+  }
+}
+
+function addWakeTargetAudit(
+  target: WakeTargetAudit,
+  history: readonly MasterLabDecisionEvent[],
+  wakeEventIndex: number,
+  candidateSeat: PlayerId,
+  wakeTargetSlotKey: string,
+): void {
+  const event = history[wakeEventIndex];
+  if (!event) {
+    return;
+  }
+
+  target.uses += 1;
+  const sameTurnAttack = slotAttacksOnTurn(history, wakeEventIndex, candidateSeat, wakeTargetSlotKey, event.turnNumber);
+  const sameTurnExecution = slotExecutesOnTurn(history, wakeEventIndex, candidateSeat, wakeTargetSlotKey, event.turnNumber);
+  if (sameTurnAttack) {
+    target.sameTurnAttack += 1;
+  }
+  if (sameTurnExecution) {
+    target.sameTurnExecution += 1;
+  }
+  if (event.after.players[candidateSeat].stones <= 1) {
+    target.lowStoneAfterWake += 1;
+    if (!sameTurnAttack && !sameTurnExecution) {
+      target.lowStoneNoSameTurnWork += 1;
+    }
+  }
+
+  const nextTurnNumber = nextOwnTurnNumberAfter(history, wakeEventIndex, candidateSeat);
+  if (nextTurnNumber === undefined) {
+    return;
+  }
+  if (slotAttacksOnTurn(history, wakeEventIndex, candidateSeat, wakeTargetSlotKey, nextTurnNumber)) {
+    target.nextOwnTurnAttack += 1;
+  }
+  if (slotLevelsUpOnTurn(history, wakeEventIndex, candidateSeat, wakeTargetSlotKey, nextTurnNumber)) {
+    target.nextOwnTurnLevelUp += 1;
+  }
+}
+
+function nextOwnTurnNumberAfter(
+  history: readonly MasterLabDecisionEvent[],
+  eventIndex: number,
+  candidateSeat: PlayerId,
+): number | undefined {
+  const event = history[eventIndex];
+  if (!event) {
+    return undefined;
+  }
+  return history
+    .slice(eventIndex + 1)
+    .find((candidate) => candidate.player === candidateSeat && candidate.turnNumber > event.turnNumber)
+    ?.turnNumber;
+}
+
+function slotAttacksOnTurn(
+  history: readonly MasterLabDecisionEvent[],
+  eventIndex: number,
+  candidateSeat: PlayerId,
+  slotKey: string,
+  turnNumber: number,
+): boolean {
+  return history.some((event, index) =>
+    index > eventIndex &&
+    event.player === candidateSeat &&
+    event.turnNumber === turnNumber &&
+    event.source === "cpu" &&
+    event.decision.startsWith("attack:") &&
+    actorSlotKeyForEvent(event) === slotKey,
+  );
+}
+
+function slotExecutesOnTurn(
+  history: readonly MasterLabDecisionEvent[],
+  eventIndex: number,
+  candidateSeat: PlayerId,
+  slotKey: string,
+  turnNumber: number,
+): boolean {
+  return history.some((event, index) =>
+    index > eventIndex &&
+    event.player === candidateSeat &&
+    event.turnNumber === turnNumber &&
+    event.source === "cpu" &&
+    actorSlotKeyForEvent(event) === slotKey &&
+    analyzeAuditIntentEvent(event, candidateSeat).execution,
+  );
+}
+
+function slotLevelsUpOnTurn(
+  history: readonly MasterLabDecisionEvent[],
+  eventIndex: number,
+  candidateSeat: PlayerId,
+  slotKey: string,
+  turnNumber: number,
+): boolean {
+  return history.some((event, index) => {
+    if (index <= eventIndex || event.turnNumber !== turnNumber) {
+      return false;
+    }
+    const before = slotByKey(event.before, slotKey);
+    const after = slotByKey(event.after, slotKey);
+    return !!(
+      before?.owner === candidateSeat &&
+      after?.owner === candidateSeat &&
+      before.card === after.card &&
+      before.level !== undefined &&
+      after.level !== undefined &&
+      after.level > before.level
+    );
+  });
+}
+
+function slotRemovedBeforeTurn(
+  history: readonly MasterLabDecisionEvent[],
+  eventIndex: number,
+  candidateSeat: PlayerId,
+  slotKey: string,
+  turnNumber: number,
+): boolean {
+  const event = history[eventIndex];
+  const protectedSlot = event ? slotByKey(event.after, slotKey) : undefined;
+  if (!event || protectedSlot?.owner !== candidateSeat || !protectedSlot.card) {
+    return false;
+  }
+  return history.some((candidate, index) => {
+    if (index <= eventIndex || candidate.turnNumber >= turnNumber) {
+      return false;
+    }
+    const current = slotByKey(candidate.after, slotKey);
+    return !current?.card || current.owner !== candidateSeat || current.card !== protectedSlot.card;
+  });
+}
+
+function previousSameTurnShieldCount(
+  history: readonly MasterLabDecisionEvent[],
+  eventIndex: number,
+  candidateSeat: PlayerId,
+): number {
+  const event = history[eventIndex];
+  if (!event) {
+    return 0;
+  }
+  return history
+    .slice(0, eventIndex)
+    .filter((candidate) =>
+      candidate.player === candidateSeat &&
+      candidate.turnNumber === event.turnNumber &&
+      candidate.source === "cpu" &&
+      candidate.decision.startsWith("master:shield"),
+    ).length;
+}
+
+function shieldReasonSuggestsThreatOrConversion(reason: string): boolean {
+  return (
+    reason.includes("致死") ||
+    reason.includes("倒され") ||
+    reason.includes("レベルアップ") ||
+    reason.includes("守れる")
+  );
 }
 
 interface AuditIntentEventAnalysis {
@@ -439,6 +686,13 @@ function shieldTargetSlotKeyForEvent(event: MasterLabDecisionEvent): string | un
   return event.decision.slice("master:shield->monster:".length);
 }
 
+function wakeTargetSlotKeyForEvent(event: MasterLabDecisionEvent): string | undefined {
+  if (!event.decision.startsWith("master:wake_up->monster:")) {
+    return undefined;
+  }
+  return event.decision.slice("master:wake_up->monster:".length);
+}
+
 function slotByKey(summary: MasterLabGameStateSummary, slotKey: string): MasterLabGameStateSummary["slots"][number] | undefined {
   return summary.slots.find((slot) => slot.slotKey === slotKey);
 }
@@ -489,6 +743,15 @@ function addLowStoneByDecision(target: Record<string, number>, source: Record<st
   }
 }
 
+function addTargetQualityAudit(target: TargetQualityAudit, source: TargetQualityAudit): void {
+  for (const key of Object.keys(target.shield) as Array<keyof ShieldTargetAudit>) {
+    target.shield[key] += source.shield[key];
+  }
+  for (const key of Object.keys(target.wake) as Array<keyof WakeTargetAudit>) {
+    target.wake[key] += source.wake[key];
+  }
+}
+
 function emptyIntentMetrics(): WhiteAiTurnIntentMetrics {
   return {
     totalActions: 0,
@@ -507,6 +770,29 @@ function emptyIntentMetrics(): WhiteAiTurnIntentMetrics {
   };
 }
 
+function emptyTargetQualityAudit(): TargetQualityAudit {
+  return {
+    shield: {
+      uses: 0,
+      nextOwnTurnAttack: 0,
+      nextOwnTurnLevelUp: 0,
+      removedBeforeNextOwnTurn: 0,
+      threatOrConversionReason: 0,
+      secondShieldSameTurn: 0,
+      lowStoneSecondShield: 0,
+    },
+    wake: {
+      uses: 0,
+      sameTurnAttack: 0,
+      sameTurnExecution: 0,
+      nextOwnTurnAttack: 0,
+      nextOwnTurnLevelUp: 0,
+      lowStoneAfterWake: 0,
+      lowStoneNoSameTurnWork: 0,
+    },
+  };
+}
+
 function formatAuditMarkdown(report: WhiteAiLossAuditReport): string {
   return [
     "# White AI Loss Audit",
@@ -518,8 +804,8 @@ function formatAuditMarkdown(report: WhiteAiLossAuditReport): string {
     "",
     "## Summary",
     "",
-    "| Variant | W-L-D | Avg Turns | Loss Opp HP | Loss Seeds | Win Intent | Loss Intent | Loss LowS By Action | Notes |",
-    "| --- | --- | ---: | ---: | --- | --- | --- | --- | --- |",
+    "| Variant | W-L-D | Avg Turns | Loss Opp HP | Loss Seeds | Win Intent | Loss Intent | Win Target Quality | Loss Target Quality | Loss LowS By Action | Notes |",
+    "| --- | --- | ---: | ---: | --- | --- | --- | --- | --- | --- | --- |",
     ...report.audits.map(formatAuditRow),
     "",
     "## Reading",
@@ -527,6 +813,8 @@ function formatAuditMarkdown(report: WhiteAiLossAuditReport): string {
     "- `Win Intent` / `Loss Intent` は候補白側CPU行動だけを集計している。",
     "- `LowS` は布石後に残ストーンが1以下になった割合。",
     "- `ShieldConv` はシールド対象が次の自ターンに攻撃または成果行動へつながった割合。",
+    "- `Target Quality` の `SAtk` は盾対象が次自ターンに攻撃した率、`S2Low` は同ターン2枚目以降のシールドで残石1以下になった回数。",
+    "- `Target Quality` の `WNow` はウェイクアップ対象が同ターンに攻撃した率、`WLowNo` は低石で起こして同ターン仕事しなかった回数。",
     "- `Loss LowS By Action` は負け試合で低石化した布石の行動種別。ここが偏るほど、次候補の狙いを絞りやすい。",
   ].join("\n");
 }
@@ -540,6 +828,8 @@ function formatAuditRow(audit: VariantAudit): string {
     audit.outcomes.loss.seeds.slice(0, 12).join(", ") || "-",
     formatIntent(audit.outcomes.win.intent),
     formatIntent(audit.outcomes.loss.intent),
+    formatTargetQuality(audit.outcomes.win.targetQuality),
+    formatTargetQuality(audit.outcomes.loss.targetQuality),
     formatLowStoneByDecision(audit.outcomes.loss.lowStoneByDecision),
     audit.notes.join("<br>"),
   ].map(escapeCell).join(" | ").replace(/^/, "| ").replace(/$/, " |");
@@ -564,6 +854,29 @@ function formatIntentLowStone(metrics: WhiteAiTurnIntentMetrics): string {
 function formatLowStoneByDecision(source: Record<string, number>): string {
   const entries = Object.entries(source).sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0]));
   return entries.length > 0 ? entries.map(([key, value]) => `${key}:${value}`).join(", ") : "-";
+}
+
+function formatTargetQuality(target: TargetQualityAudit): string {
+  return [
+    target.shield.uses > 0
+      ? [
+          `S ${target.shield.uses}`,
+          `SAtk ${formatPercent(rate(target.shield.nextOwnTurnAttack, target.shield.uses))}`,
+          `SLv ${target.shield.nextOwnTurnLevelUp}`,
+          `SDead ${formatPercent(rate(target.shield.removedBeforeNextOwnTurn, target.shield.uses))}`,
+          `S2Low ${target.shield.lowStoneSecondShield}/${target.shield.secondShieldSameTurn}`,
+        ].join(" ")
+      : "S -",
+    target.wake.uses > 0
+      ? [
+          `W ${target.wake.uses}`,
+          `WNow ${formatPercent(rate(target.wake.sameTurnAttack, target.wake.uses))}`,
+          `WExec ${formatPercent(rate(target.wake.sameTurnExecution, target.wake.uses))}`,
+          `WNext ${formatPercent(rate(target.wake.nextOwnTurnAttack, target.wake.uses))}`,
+          `WLowNo ${target.wake.lowStoneNoSameTurnWork}/${target.wake.lowStoneAfterWake}`,
+        ].join(" ")
+      : "W -",
+  ].join("<br>");
 }
 
 function parseArgs(args: string[]): CliOptions {

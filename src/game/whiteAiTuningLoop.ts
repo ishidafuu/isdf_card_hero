@@ -249,6 +249,30 @@ export const DEFAULT_WHITE_AI_TUNING_VARIANTS = [
   hybridVariant("pressure_white_strict_shield_low_stone_v1", "本実装候補: 白盾精査+低石抑制", "pressure-normal", {
     situationalBias: { whiteStrictShieldPenalty: 8, whiteLowStoneShieldPenalty: 6, whiteLowStoneWakePenalty: 6 },
   }, "成果化しないシールド抑制と低石シールド/ウェイクアップ抑制を薄く併用する。"),
+  hybridVariant("pressure_white_shield_threat_conversion_v1", "本実装候補: 白盾脅威/成果化+8", "pressure-normal", {
+    situationalBias: { whiteShieldThreatConversionBonus: 8 },
+  }, "白マスター限定で、脅威軽減または次ターン成果化が見えるシールドだけを加点する。"),
+  hybridVariant("pressure_white_shield_threat_conversion_plus12_v1", "本実装候補: 白盾脅威/成果化+12", "pressure-normal", {
+    situationalBias: { whiteShieldThreatConversionBonus: 12 },
+  }, "成果化シールド加点を強め、2枚守りより質の高い1枚守りへ寄るか確認する。"),
+  hybridVariant("pressure_white_wake_immediate_work_v1", "本実装候補: 白起動即仕事+8", "pressure-normal", {
+    situationalBias: { whiteWakeImmediateWorkBonus: 8 },
+  }, "白マスター限定で、起こした味方が即攻撃またはレベルアップ筋へつながるウェイクアップを加点する。"),
+  hybridVariant("pressure_white_shield_wake_quality_v1", "本実装候補: 白盾起動品質+8", "pressure-normal", {
+    situationalBias: { whiteShieldThreatConversionBonus: 8, whiteWakeImmediateWorkBonus: 8 },
+  }, "シールドとウェイクアップを、消費量ではなく次ターン成果化の質で押す。"),
+  hybridVariant("pressure_white_closeout_after_shield_v1", "本実装候補: 白盾後詰め+8", "pressure-normal", {
+    situationalBias: { whiteCloseoutAfterShieldBonus: 8 },
+  }, "既に守った駒がいる局面で、相手HP3以下へ詰める手を加点して守り続けを避ける。"),
+  hybridVariant("pressure_white_next_turn_plan_quality_v1", "本実装候補: 白次ターン布石品質", "pressure-normal", {
+    situationalBias: { whiteShieldThreatConversionBonus: 8, whiteWakeImmediateWorkBonus: 8, whiteCloseoutAfterShieldBonus: 6 },
+  }, "盾/起動の対象品質と、守った後の詰めを同時に見る本命複合候補。"),
+  hybridVariant("pressure_white_second_shield_guard_v1", "本実装候補: 白2枚目低石盾抑制", "pressure-normal", {
+    situationalBias: { whiteSecondShieldLowStonePenalty: 8 },
+  }, "白マスター限定で、同ターン2枚目以降のシールドで残石1以下になる過剰コミットを抑える。"),
+  hybridVariant("pressure_white_shield_quality_second_guard_v1", "本実装候補: 白盾品質+2枚目抑制", "pressure-normal", {
+    situationalBias: { whiteShieldThreatConversionBonus: 8, whiteSecondShieldLowStonePenalty: 8 },
+  }, "質の高い盾を押しつつ、2枚目低石シールドの全力投入を抑える。"),
   actionVariant("pressure_attack_monster_plus8", "攻撃: attack_monster+8", "pressure-normal", { actionBias: { attack_monster: 8 } }, "盤面制圧を少し厚くし、黒の前のめり展開を止める。"),
   actionVariant("pressure_attack_monster4_shield2", "混合: attack_monster+4 / shield+2", "pressure-normal", { actionBias: { attack_monster: 4, shield: 2 } }, "盤面処理と守りを薄く両立し、石枯渇を避ける現実的補正を見る。"),
   actionVariant("pressure_attack_monster_plus12", "攻撃: attack_monster+12", "pressure-normal", { actionBias: { attack_monster: 12 } }, "盤面制圧補正を強め、黒耐性の上限と勝ち切り遅延を測る。"),

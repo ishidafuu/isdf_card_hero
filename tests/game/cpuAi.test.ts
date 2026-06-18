@@ -553,6 +553,104 @@ describe("cpu ai", () => {
     expect(focusTuned?.totalScore).toBeCloseTo((focusBaseline?.totalScore ?? 0) - 7);
   });
 
+  it("bonuses white shield and wake decisions when they convert into work", () => {
+    const shieldGame = createCpuGame();
+    shieldGame.players.cpu.masterId = "white";
+    shieldGame.players.cpu.hand = [];
+    shieldGame.players.cpu.stones = 4;
+    shieldGame.slots.cpu_front_left.monster = createActiveMonster("beyond", "cpu", { hp: 2 });
+    shieldGame.slots.player_front_left.monster = createActiveMonster("takokke", "player");
+    const findShield = (options = {}) =>
+      inspectCpuDecisionEvaluations(shieldGame, options).find(
+        (evaluation) =>
+          evaluation.decision.type === "master_action" &&
+          evaluation.decision.actionId === "shield" &&
+          evaluation.decision.target.kind === "monster" &&
+          evaluation.decision.target.slotKey === "cpu_front_left",
+      );
+    const shieldBaseline = findShield();
+    const shieldTuned = findShield({ tunings: { cpu: { situationalBias: { whiteShieldThreatConversionBonus: 8 } } } });
+
+    const wakeGame = createCpuGame();
+    wakeGame.players.cpu.masterId = "white";
+    wakeGame.players.cpu.hand = [];
+    wakeGame.players.cpu.stones = 4;
+    wakeGame.slots.cpu_back_left.monster = createActiveMonster("morgan", "cpu", {
+      status: "prepared",
+      level: 2,
+      hp: 4,
+    });
+    const findWake = (options = {}) =>
+      inspectCpuDecisionEvaluations(wakeGame, options).find(
+        (evaluation) =>
+          evaluation.decision.type === "master_action" &&
+          evaluation.decision.actionId === "wake_up" &&
+          evaluation.decision.target.kind === "monster" &&
+          evaluation.decision.target.slotKey === "cpu_back_left",
+      );
+    const wakeBaseline = findWake();
+    const wakeTuned = findWake({ tunings: { cpu: { situationalBias: { whiteWakeImmediateWorkBonus: 8 } } } });
+
+    expect(shieldBaseline).toBeDefined();
+    expect(shieldTuned).toBeDefined();
+    expect(shieldTuned?.totalScore).toBeCloseTo((shieldBaseline?.totalScore ?? 0) + 8);
+    expect(wakeBaseline).toBeDefined();
+    expect(wakeTuned).toBeDefined();
+    expect(wakeTuned?.totalScore).toBeCloseTo((wakeBaseline?.totalScore ?? 0) + 8);
+  });
+
+  it("bonuses white closeout pressure after a shield is already committed", () => {
+    const game = createCpuGame();
+    game.players.cpu.masterId = "white";
+    game.players.cpu.hand = [];
+    game.players.cpu.stones = 0;
+    game.players.player.masterHp = 3;
+    game.slots.cpu_back_left.monster = createActiveMonster("morgan", "cpu", {
+      hp: 4,
+      level: 2,
+      shielded: true,
+    });
+
+    const findMasterAttack = (options = {}) =>
+      inspectCpuDecisionEvaluations(game, options).find(
+        (evaluation) =>
+          evaluation.decision.type === "attack" &&
+          evaluation.decision.action.attackerSlotKey === "cpu_back_left" &&
+          evaluation.decision.action.target.kind === "master",
+      );
+    const baseline = findMasterAttack();
+    const tuned = findMasterAttack({ tunings: { cpu: { situationalBias: { whiteCloseoutAfterShieldBonus: 8 } } } });
+
+    expect(baseline).toBeDefined();
+    expect(tuned).toBeDefined();
+    expect(tuned?.totalScore).toBeCloseTo((baseline?.totalScore ?? 0) + 8);
+  });
+
+  it("penalizes a second low-stone white shield commitment", () => {
+    const game = createCpuGame();
+    game.players.cpu.masterId = "white";
+    game.players.cpu.hand = [];
+    game.players.cpu.stones = 3;
+    game.slots.cpu_front_left.monster = createActiveMonster("beyond", "cpu", { hp: 2 });
+    game.slots.cpu_back_left.monster = createActiveMonster("takokke", "cpu", { shielded: true });
+    game.slots.player_front_left.monster = createActiveMonster("takokke", "player");
+
+    const findShield = (options = {}) =>
+      inspectCpuDecisionEvaluations(game, options).find(
+        (evaluation) =>
+          evaluation.decision.type === "master_action" &&
+          evaluation.decision.actionId === "shield" &&
+          evaluation.decision.target.kind === "monster" &&
+          evaluation.decision.target.slotKey === "cpu_front_left",
+      );
+    const baseline = findShield();
+    const tuned = findShield({ tunings: { cpu: { situationalBias: { whiteSecondShieldLowStonePenalty: 7 } } } });
+
+    expect(baseline).toBeDefined();
+    expect(tuned).toBeDefined();
+    expect(tuned?.totalScore).toBeCloseTo((baseline?.totalScore ?? 0) - 7);
+  });
+
   it("uses black master berserk power when it creates a monster kill", () => {
     const game = createCpuGame();
     game.players.cpu.masterId = "black";

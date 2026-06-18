@@ -111,6 +111,10 @@ export interface CpuAiTuning {
     whiteLowStoneWakePenalty?: number;
     whiteLowStoneSummonPenalty?: number;
     whiteLowStoneFocusPenalty?: number;
+    whiteShieldThreatConversionBonus?: number;
+    whiteWakeImmediateWorkBonus?: number;
+    whiteCloseoutAfterShieldBonus?: number;
+    whiteSecondShieldLowStonePenalty?: number;
   };
 }
 
@@ -525,6 +529,18 @@ function decisionSituationalBonus(
   if (bias.whiteLowStoneFocusPenalty) {
     bonus -= whiteLowStoneSetupDecisionPenalty(before, after, decision, perspective, bias.whiteLowStoneFocusPenalty, "focus");
   }
+  if (bias.whiteShieldThreatConversionBonus) {
+    bonus += whiteShieldThreatConversionDecisionBonus(before, after, decision, perspective, bias.whiteShieldThreatConversionBonus);
+  }
+  if (bias.whiteWakeImmediateWorkBonus) {
+    bonus += whiteWakeImmediateWorkDecisionBonus(before, after, decision, perspective, bias.whiteWakeImmediateWorkBonus);
+  }
+  if (bias.whiteCloseoutAfterShieldBonus) {
+    bonus += whiteCloseoutAfterShieldDecisionBonus(before, after, decision, perspective, bias.whiteCloseoutAfterShieldBonus);
+  }
+  if (bias.whiteSecondShieldLowStonePenalty) {
+    bonus -= whiteSecondShieldLowStoneDecisionPenalty(before, after, decision, perspective, bias.whiteSecondShieldLowStonePenalty);
+  }
   return bonus;
 }
 
@@ -808,6 +824,94 @@ function whiteLowStoneSetupDecisionPenalty(
     return decision.type === "focus" ? value : 0;
   }
   return decision.type === "master_action" && decision.actionId === kind ? value : 0;
+}
+
+function whiteShieldThreatConversionDecisionBonus(
+  before: GameState,
+  after: GameState,
+  decision: CpuDecision,
+  perspective: PlayerId,
+  value: number,
+): number {
+  if (
+    value <= 0 ||
+    before.players[perspective].masterId !== "white" ||
+    decision.type !== "master_action" ||
+    decision.actionId !== "shield" ||
+    decision.target.kind !== "monster"
+  ) {
+    return 0;
+  }
+  const urgent = isUrgentShieldDecision(before, after, decision, perspective);
+  const convertible = isConvertibleShieldDecision(after, decision, perspective);
+  return urgent || convertible ? value : 0;
+}
+
+function whiteWakeImmediateWorkDecisionBonus(
+  before: GameState,
+  after: GameState,
+  decision: CpuDecision,
+  perspective: PlayerId,
+  value: number,
+): number {
+  if (
+    value <= 0 ||
+    before.players[perspective].masterId !== "white" ||
+    decision.type !== "master_action" ||
+    decision.actionId !== "wake_up" ||
+    decision.target.kind !== "monster"
+  ) {
+    return 0;
+  }
+  const target = after.slots[decision.target.slotKey].monster;
+  if (!target || target.owner !== perspective || target.status !== "active") {
+    return 0;
+  }
+  return bestAttackOpportunityScore(after, decision.target.slotKey) > 0 ||
+    nextTurnLevelUpPotential(after, decision.target.slotKey) > 0
+    ? value
+    : 0;
+}
+
+function whiteCloseoutAfterShieldDecisionBonus(
+  before: GameState,
+  after: GameState,
+  decision: CpuDecision,
+  perspective: PlayerId,
+  value: number,
+): number {
+  if (value <= 0 || before.players[perspective].masterId !== "white" || ownShieldedMonsterCount(before, perspective) <= 0) {
+    return 0;
+  }
+  const opponent = opponentOf(perspective);
+  const damage = before.players[opponent].masterHp - after.players[opponent].masterHp;
+  if (damage <= 0 || after.players[opponent].masterHp > 3) {
+    return 0;
+  }
+  return decision.type === "attack" || decision.type === "master_action" || decision.type === "magic" ? value : 0;
+}
+
+function whiteSecondShieldLowStoneDecisionPenalty(
+  before: GameState,
+  after: GameState,
+  decision: CpuDecision,
+  perspective: PlayerId,
+  value: number,
+): number {
+  if (
+    value <= 0 ||
+    before.players[perspective].masterId !== "white" ||
+    decision.type !== "master_action" ||
+    decision.actionId !== "shield" ||
+    after.players[perspective].stones > 1
+  ) {
+    return 0;
+  }
+  return ownShieldedMonsterCount(before, perspective) > 0 ? value : 0;
+}
+
+function ownShieldedMonsterCount(state: GameState, perspective: PlayerId): number {
+  return FIELD_ORDER_BY_PLAYER[perspective].filter((slotKey) => state.slots[slotKey].monster?.shielded).length;
 }
 
 function whiteEnemyFrontAttackTarget(
