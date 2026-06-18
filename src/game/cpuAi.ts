@@ -101,6 +101,7 @@ export interface CpuAiTuning {
     setupLowStonePenalty?: number;
     shieldConversionBonus?: number;
     antiBerserkFrontBonus?: number;
+    whiteMonsterPressureBonus?: number;
   };
 }
 
@@ -485,6 +486,9 @@ function decisionSituationalBonus(
   if (bias.antiBerserkFrontBonus && isAntiBerserkFrontDecision(before, after, decision, perspective)) {
     bonus += bias.antiBerserkFrontBonus;
   }
+  if (bias.whiteMonsterPressureBonus) {
+    bonus += whiteMonsterPressureDecisionBonus(before, after, decision, perspective, bias.whiteMonsterPressureBonus);
+  }
   return bonus;
 }
 
@@ -599,6 +603,33 @@ function targetedEnemyFrontSlot(before: GameState, decision: CpuDecision, perspe
     return undefined;
   }
   return target.slotKey;
+}
+
+function whiteMonsterPressureDecisionBonus(
+  before: GameState,
+  after: GameState,
+  decision: CpuDecision,
+  perspective: PlayerId,
+  value: number,
+): number {
+  if (
+    value <= 0 ||
+    before.players[perspective].masterId !== "white" ||
+    decision.type !== "attack" ||
+    decision.action.target.kind !== "monster"
+  ) {
+    return 0;
+  }
+  const opponent = opponentOf(perspective);
+  const targetBefore = before.slots[decision.action.target.slotKey].monster;
+  const targetAfter = after.slots[decision.action.target.slotKey].monster;
+  if (!targetBefore || targetBefore.owner !== opponent) {
+    return 0;
+  }
+  if (!targetAfter || targetAfter.owner !== opponent || targetAfter.instanceId !== targetBefore.instanceId) {
+    return value;
+  }
+  return targetAfter.hp < targetBefore.hp ? value : 0;
 }
 
 function decisionBiasIds(decision: CpuDecision): CpuAiDecisionBiasId[] {

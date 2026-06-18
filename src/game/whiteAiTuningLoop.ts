@@ -206,6 +206,9 @@ export const DEFAULT_WHITE_AI_TUNING_VARIANTS = [
     actionBias: { attack_monster: 4 },
     situationalBias: { antiBerserkFrontBonus: 16 },
   }, "黒相手のバーサク打点源になりやすい敵前衛処理だけを状況加点する。"),
+  hybridVariant("pressure_white_monster_pressure_v1", "本実装候補: 白盤面処理+4", "pressure-normal", {
+    situationalBias: { whiteMonsterPressureBonus: 4 },
+  }, "白マスター限定で、敵モンスターへの実ダメージ/撃破評価だけを薄く上げる。"),
   actionVariant("pressure_attack_monster_plus8", "攻撃: attack_monster+8", "pressure-normal", { actionBias: { attack_monster: 8 } }, "盤面制圧を少し厚くし、黒の前のめり展開を止める。"),
   actionVariant("pressure_attack_monster4_shield2", "混合: attack_monster+4 / shield+2", "pressure-normal", { actionBias: { attack_monster: 4, shield: 2 } }, "盤面処理と守りを薄く両立し、石枯渇を避ける現実的補正を見る。"),
   actionVariant("pressure_attack_monster_plus12", "攻撃: attack_monster+12", "pressure-normal", { actionBias: { attack_monster: 12 } }, "盤面制圧補正を強め、黒耐性の上限と勝ち切り遅延を測る。"),
