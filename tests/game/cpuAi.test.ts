@@ -349,6 +349,37 @@ describe("cpu ai", () => {
     expect(tuned?.totalScore).toBeCloseTo((baseline?.totalScore ?? 0) + 4);
   });
 
+  it("applies white enemy front attack tuning only to white enemy front attacks", () => {
+    const game = createCpuGame();
+    game.players.cpu.masterId = "white";
+    game.players.cpu.hand = [];
+    game.players.cpu.stones = 0;
+    game.slots.cpu_front_left.monster = createActiveMonster("takokke", "cpu");
+    game.slots.player_front_left.monster = createActiveMonster("takokke", "player", { hp: 5 });
+
+    const findFrontAttack = (options = {}) =>
+      inspectCpuDecisionEvaluations(game, options).find(
+        (evaluation) =>
+          evaluation.decision.type === "attack" &&
+          evaluation.decision.action.target.kind === "monster" &&
+          evaluation.decision.action.target.slotKey === "player_front_left",
+      );
+    const baseline = findFrontAttack();
+    const tuned = findFrontAttack({ tunings: { cpu: { situationalBias: { whiteEnemyFrontAttackBonus: 4 } } } });
+
+    game.players.cpu.masterId = "black";
+    const blackTuned = findFrontAttack({ tunings: { cpu: { situationalBias: { whiteEnemyFrontAttackBonus: 4 } } } });
+
+    expect(baseline).toBeDefined();
+    expect(tuned).toBeDefined();
+    expect(tuned?.totalScore).toBeCloseTo((baseline?.totalScore ?? 0) + 4);
+
+    const blackBaseline = findFrontAttack();
+    expect(blackBaseline).toBeDefined();
+    expect(blackTuned).toBeDefined();
+    expect(blackTuned?.totalScore).toBeCloseTo(blackBaseline?.totalScore ?? 0);
+  });
+
   it("uses black master berserk power when it creates a monster kill", () => {
     const game = createCpuGame();
     game.players.cpu.masterId = "black";

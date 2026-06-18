@@ -88,6 +88,8 @@ function parseArgs(args: string[]): CliOptions {
       i += 1;
     } else if (arg === "--fail-on-warnings") {
       parsed.failOnWarnings = true;
+    } else if (arg === "--no-history") {
+      parsed.includeGameHistory = false;
     } else if (arg === "--markdown") {
       parsed.markdownPath = readString(arg, next);
       i += 1;
@@ -140,6 +142,7 @@ Options:
   --max-steps <n>           Failure threshold per game. Default: 700
   --max-turns <n>           Failure threshold per game. Default: 160
   --fail-on-warnings        Treat warnings as non-ok inside each run.
+  --no-history              Skip per-game decision history for faster screening. Intent metrics will be empty.
   --markdown <path>         Write a Markdown report.
   --json <path>             Write a JSON report.
 `);
