@@ -380,6 +380,86 @@ describe("cpu ai", () => {
     expect(blackTuned?.totalScore).toBeCloseTo(blackBaseline?.totalScore ?? 0);
   });
 
+  it("applies white black front threat tuning only to black front damage sources", () => {
+    const game = createCpuGame();
+    game.players.cpu.masterId = "white";
+    game.players.cpu.hand = [];
+    game.players.cpu.stones = 0;
+    game.players.player.masterId = "black";
+    game.players.player.stones = 3;
+    game.slots.cpu_front_left.monster = createActiveMonster("takokke", "cpu");
+    game.slots.player_front_left.monster = createActiveMonster("takokke", "player", { hp: 5 });
+
+    const findFrontAttack = (options = {}) =>
+      inspectCpuDecisionEvaluations(game, options).find(
+        (evaluation) =>
+          evaluation.decision.type === "attack" &&
+          evaluation.decision.action.target.kind === "monster" &&
+          evaluation.decision.action.target.slotKey === "player_front_left",
+      );
+    const baseline = findFrontAttack();
+    const tuned = findFrontAttack({ tunings: { cpu: { situationalBias: { whiteBlackFrontThreatBonus: 8 } } } });
+
+    game.players.player.masterId = "white";
+    const whiteOpponentBaseline = findFrontAttack();
+    const whiteOpponentTuned = findFrontAttack({ tunings: { cpu: { situationalBias: { whiteBlackFrontThreatBonus: 8 } } } });
+
+    expect(baseline).toBeDefined();
+    expect(tuned).toBeDefined();
+    expect(tuned?.totalScore).toBeCloseTo((baseline?.totalScore ?? 0) + 8);
+    expect(whiteOpponentBaseline).toBeDefined();
+    expect(whiteOpponentTuned).toBeDefined();
+    expect(whiteOpponentTuned?.totalScore).toBeCloseTo(whiteOpponentBaseline?.totalScore ?? 0);
+  });
+
+  it("applies white active front work tuning only when an enemy front is damaged", () => {
+    const game = createCpuGame();
+    game.players.cpu.masterId = "white";
+    game.players.cpu.hand = [];
+    game.players.cpu.stones = 0;
+    game.slots.cpu_front_left.monster = createActiveMonster("takokke", "cpu");
+    game.slots.player_front_left.monster = createActiveMonster("takokke", "player", { hp: 5 });
+
+    const findFrontAttack = (options = {}) =>
+      inspectCpuDecisionEvaluations(game, options).find(
+        (evaluation) =>
+          evaluation.decision.type === "attack" &&
+          evaluation.decision.action.target.kind === "monster" &&
+          evaluation.decision.action.target.slotKey === "player_front_left",
+      );
+    const baseline = findFrontAttack();
+    const tuned = findFrontAttack({ tunings: { cpu: { situationalBias: { whiteActiveFrontWorkBonus: 4 } } } });
+
+    expect(baseline).toBeDefined();
+    expect(tuned).toBeDefined();
+    expect(tuned?.totalScore).toBeCloseTo((baseline?.totalScore ?? 0) + 4);
+  });
+
+  it("applies white pygmy front setup tuning when Pygmy creates a front kill range", () => {
+    const game = createCpuGame();
+    game.players.cpu.masterId = "white";
+    game.players.cpu.hand = [];
+    game.players.cpu.stones = 0;
+    game.slots.cpu_back_left.monster = createActiveMonster("card_051", "cpu");
+    game.slots.cpu_front_left.monster = createActiveMonster("takokke", "cpu");
+    game.slots.player_front_left.monster = createActiveMonster("takokke", "player", { hp: 3 });
+
+    const findPygmyFrontAttack = (options = {}) =>
+      inspectCpuDecisionEvaluations(game, options).find(
+        (evaluation) =>
+          evaluation.decision.type === "attack" &&
+          evaluation.decision.action.attackerSlotKey === "cpu_back_left" &&
+          evaluation.decision.action.target.kind === "monster" &&
+          evaluation.decision.action.target.slotKey === "player_front_left",
+      );
+    const baseline = findPygmyFrontAttack();
+    const tuned = findPygmyFrontAttack({ tunings: { cpu: { situationalBias: { whitePygmyFrontSetupBonus: 10 } } } });
+
+    expect(baseline).toBeDefined();
+    expect(tuned).toBeDefined();
+    expect(tuned?.totalScore).toBeCloseTo((baseline?.totalScore ?? 0) + 10);
+  });
+
   it("uses black master berserk power when it creates a monster kill", () => {
     const game = createCpuGame();
     game.players.cpu.masterId = "black";

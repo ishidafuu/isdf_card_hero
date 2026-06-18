@@ -1,6 +1,7 @@
 import { mkdir, writeFile } from "node:fs/promises";
 import { dirname } from "node:path";
 import {
+  DEFAULT_WHITE_AI_TUNING_OPPONENTS,
   formatWhiteAiTuningLoopMarkdown,
   runWhiteAiTuningLoop,
   type WhiteAiTuningLoopOptions,
@@ -9,6 +10,7 @@ import {
 interface CliOptions extends WhiteAiTuningLoopOptions {
   markdownPath?: string;
   jsonPath?: string;
+  opponentIds?: string[];
 }
 
 const options = parseArgs(process.argv.slice(2));
@@ -80,6 +82,9 @@ function parseArgs(args: string[]): CliOptions {
     } else if (arg === "--variant") {
       parsed.variantIds = [...(parsed.variantIds ?? []), readString(arg, next)];
       i += 1;
+    } else if (arg === "--opponent") {
+      parsed.opponentIds = [...(parsed.opponentIds ?? []), readString(arg, next)];
+      i += 1;
     } else if (arg === "--max-steps") {
       parsed.maxSteps = readNumber(arg, next);
       i += 1;
@@ -106,6 +111,15 @@ function parseArgs(args: string[]): CliOptions {
 
   if (parsed.variantIds?.length === 0) {
     delete parsed.variantIds;
+  }
+  if (parsed.opponentIds?.length) {
+    parsed.opponents = parsed.opponentIds.map((id) => {
+      const opponent = DEFAULT_WHITE_AI_TUNING_OPPONENTS.find((candidate) => candidate.id === id);
+      if (!opponent) {
+        throw new Error(`Unknown opponent: ${id}`);
+      }
+      return opponent;
+    });
   }
   return parsed;
 }
@@ -139,6 +153,7 @@ Options:
   --seed-start <n>          First seed. Default: 9000
   --loop-count <n>          Limit variants from the default schedule.
   --variant <id>            Run only the specified variant. Can be repeated.
+  --opponent <id>           Run only the specified opponent. Can be repeated.
   --max-steps <n>           Failure threshold per game. Default: 700
   --max-turns <n>           Failure threshold per game. Default: 160
   --fail-on-warnings        Treat warnings as non-ok inside each run.

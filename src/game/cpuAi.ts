@@ -103,6 +103,9 @@ export interface CpuAiTuning {
     antiBerserkFrontBonus?: number;
     whiteMonsterPressureBonus?: number;
     whiteEnemyFrontAttackBonus?: number;
+    whiteBlackFrontThreatBonus?: number;
+    whiteActiveFrontWorkBonus?: number;
+    whitePygmyFrontSetupBonus?: number;
   };
 }
 
@@ -493,6 +496,15 @@ function decisionSituationalBonus(
   if (bias.whiteEnemyFrontAttackBonus) {
     bonus += whiteEnemyFrontAttackDecisionBonus(before, decision, perspective, bias.whiteEnemyFrontAttackBonus);
   }
+  if (bias.whiteBlackFrontThreatBonus) {
+    bonus += whiteBlackFrontThreatDecisionBonus(before, after, decision, perspective, bias.whiteBlackFrontThreatBonus);
+  }
+  if (bias.whiteActiveFrontWorkBonus) {
+    bonus += whiteActiveFrontWorkDecisionBonus(before, after, decision, perspective, bias.whiteActiveFrontWorkBonus);
+  }
+  if (bias.whitePygmyFrontSetupBonus) {
+    bonus += whitePygmyFrontSetupDecisionBonus(before, after, decision, perspective, bias.whitePygmyFrontSetupBonus);
+  }
   return bonus;
 }
 
@@ -652,6 +664,129 @@ function whiteEnemyFrontAttackDecisionBonus(
   }
   const targetSlot = before.slots[decision.action.target.slotKey];
   return targetSlot.row === "front" && targetSlot.monster?.owner === opponentOf(perspective) ? value : 0;
+}
+
+function whiteBlackFrontThreatDecisionBonus(
+  before: GameState,
+  after: GameState,
+  decision: CpuDecision,
+  perspective: PlayerId,
+  value: number,
+): number {
+  const targetSlotKey = whiteEnemyFrontAttackTarget(before, decision, perspective);
+  if (!targetSlotKey || before.players[opponentOf(perspective)].masterId !== "black") {
+    return 0;
+  }
+  if (!enemyTargetWasDamagedOrRemoved(before, after, targetSlotKey, perspective)) {
+    return 0;
+  }
+  return blackFrontMasterDamagePotential(before, targetSlotKey, opponentOf(perspective)) > 0 ? value : 0;
+}
+
+function whiteActiveFrontWorkDecisionBonus(
+  before: GameState,
+  after: GameState,
+  decision: CpuDecision,
+  perspective: PlayerId,
+  value: number,
+): number {
+  const targetSlotKey = whiteEnemyFrontAttackTarget(before, decision, perspective);
+  if (!targetSlotKey || !enemyTargetWasDamagedOrRemoved(before, after, targetSlotKey, perspective)) {
+    return 0;
+  }
+  return value;
+}
+
+function whitePygmyFrontSetupDecisionBonus(
+  before: GameState,
+  after: GameState,
+  decision: CpuDecision,
+  perspective: PlayerId,
+  value: number,
+): number {
+  const targetSlotKey = whiteEnemyFrontAttackTarget(before, decision, perspective);
+  if (!targetSlotKey || decision.type !== "attack") {
+    return 0;
+  }
+  const attacker = before.slots[decision.action.attackerSlotKey].monster;
+  if (attacker?.cardId !== "card_051") {
+    return 0;
+  }
+  const targetBefore = before.slots[targetSlotKey].monster;
+  const targetAfter = after.slots[targetSlotKey].monster;
+  if (!targetBefore || !targetAfter || targetAfter.owner !== opponentOf(perspective) || targetAfter.instanceId !== targetBefore.instanceId) {
+    return 0;
+  }
+  if (targetAfter.hp >= targetBefore.hp) {
+    return 0;
+  }
+  return bestAttackOpportunityScore(after, undefined, targetSlotKey) >= 300 || targetAfter.hp <= 2 ? value : 0;
+}
+
+function whiteEnemyFrontAttackTarget(
+  before: GameState,
+  decision: CpuDecision,
+  perspective: PlayerId,
+): SlotKey | undefined {
+  if (
+    before.players[perspective].masterId !== "white" ||
+    decision.type !== "attack" ||
+    decision.action.target.kind !== "monster"
+  ) {
+    return undefined;
+  }
+  const targetSlotKey = decision.action.target.slotKey;
+  const targetSlot = before.slots[targetSlotKey];
+  return targetSlot.row === "front" && targetSlot.monster?.owner === opponentOf(perspective) ? targetSlotKey : undefined;
+}
+
+function enemyTargetWasDamagedOrRemoved(
+  before: GameState,
+  after: GameState,
+  targetSlotKey: SlotKey,
+  perspective: PlayerId,
+): boolean {
+  const targetBefore = before.slots[targetSlotKey].monster;
+  const targetAfter = after.slots[targetSlotKey].monster;
+  if (!targetBefore || targetBefore.owner !== opponentOf(perspective)) {
+    return false;
+  }
+  if (!targetAfter || targetAfter.owner !== targetBefore.owner || targetAfter.instanceId !== targetBefore.instanceId) {
+    return true;
+  }
+  return targetAfter.hp < targetBefore.hp;
+}
+
+function blackFrontMasterDamagePotential(state: GameState, slotKey: SlotKey, attackerId: PlayerId): number {
+  const directDamage = directMasterDamageFromSlot(state, slotKey, attackerId);
+  const canBerserk =
+    state.players[attackerId].masterId === "black" &&
+    state.players[attackerId].stones >= getMasterActionCost("berserk_power");
+  return Math.max(directDamage, canBerserk ? directMasterDamageFromSlotWithPowerBonus(state, slotKey, attackerId, 1) : 0);
+}
+
+function directMasterDamageFromSlotWithPowerBonus(
+  state: GameState,
+  slotKey: SlotKey,
+  attackerId: PlayerId,
+  powerBonus: number,
+): number {
+  const readyState = readyPlayerForTacticalEvaluation(state, attackerId);
+  const monster = readyState.slots[slotKey].monster;
+  if (!monster || monster.owner !== attackerId || monster.actionCount >= monster.actionLimit) {
+    return 0;
+  }
+
+  const opponent = opponentOf(attackerId);
+  let bestDamage = 0;
+  for (const command of getMonsterCommands(monster)) {
+    for (const target of getCommandTargets(readyState, slotKey, command.id)) {
+      if (target.kind === "master" && target.playerId === opponent) {
+        bestDamage = Math.max(bestDamage, Math.max(0, estimateCommandPower(monster, command) + powerBonus - 2));
+      }
+    }
+  }
+  return bestDamage;
 }
 
 function decisionBiasIds(decision: CpuDecision): CpuAiDecisionBiasId[] {
