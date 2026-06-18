@@ -191,6 +191,18 @@ export const DEFAULT_WHITE_AI_TUNING_VARIANTS = [
   actionVariant("pressure_master_attack_plus8", "特技: master_attack+8", "pressure-normal", { actionBias: { master_attack: 8 } }, "白が盤面処理をマスターアタックで補う価値を確認する。"),
   actionVariant("pressure_attack_master_plus8", "攻撃: attack_master+8", "pressure-normal", { actionBias: { attack_master: 8 } }, "決着力不足の補正として、本体打点を少し押す。"),
   actionVariant("pressure_attack_monster_plus4", "攻撃: attack_monster+4", "pressure-normal", { actionBias: { attack_monster: 4 } }, "盤面制圧補正を薄く入れ、+8より副作用が少ないか見る。"),
+  hybridVariant("pressure_attack_monster4_stone_conserve", "状況: attack_monster+4 / 石温存", "pressure-normal", {
+    actionBias: { attack_monster: 4 },
+    situationalBias: { setupLowStonePenalty: 12 },
+  }, "盤面処理補正は残し、布石後に石が1以下になる手を少し抑える。"),
+  hybridVariant("pressure_attack_monster4_shield_convert", "状況: attack_monster+4 / 成果化シールド", "pressure-normal", {
+    actionBias: { attack_monster: 4 },
+    situationalBias: { shieldConversionBonus: 12 },
+  }, "シールド対象が次ターン攻撃・撃破・レベルアップへ変換できる時だけ少し押す。"),
+  hybridVariant("pressure_attack_monster4_anti_berserk_front", "状況: attack_monster+4 / 対黒前衛処理", "pressure-normal", {
+    actionBias: { attack_monster: 4 },
+    situationalBias: { antiBerserkFrontBonus: 16 },
+  }, "黒相手のバーサク打点源になりやすい敵前衛処理だけを状況加点する。"),
   actionVariant("pressure_attack_monster_plus8", "攻撃: attack_monster+8", "pressure-normal", { actionBias: { attack_monster: 8 } }, "盤面制圧を少し厚くし、黒の前のめり展開を止める。"),
   actionVariant("pressure_attack_monster4_shield2", "混合: attack_monster+4 / shield+2", "pressure-normal", { actionBias: { attack_monster: 4, shield: 2 } }, "盤面処理と守りを薄く両立し、石枯渇を避ける現実的補正を見る。"),
   actionVariant("pressure_attack_monster_plus12", "攻撃: attack_monster+12", "pressure-normal", { actionBias: { attack_monster: 12 } }, "盤面制圧補正を強め、黒耐性の上限と勝ち切り遅延を測る。"),
@@ -1136,6 +1148,10 @@ function formatTuning(tuning: CpuAiTuning | undefined): string {
   const weights = Object.entries(tuning.weights ?? {});
   if (weights.length > 0) {
     parts.push(`weights ${weights.map(([key, value]) => `${key}:${value}`).join(", ")}`);
+  }
+  const situationalBias = Object.entries(tuning.situationalBias ?? {});
+  if (situationalBias.length > 0) {
+    parts.push(`situational ${situationalBias.map(([key, value]) => `${key}:${value}`).join(", ")}`);
   }
   return parts.join("<br>");
 }

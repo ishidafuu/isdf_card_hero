@@ -97,6 +97,11 @@ export type CpuAiDecisionBiasId =
 export interface CpuAiTuning {
   weights?: Partial<AiEvaluationWeights>;
   actionBias?: Partial<Record<CpuAiDecisionBiasId, number>>;
+  situationalBias?: {
+    setupLowStonePenalty?: number;
+    shieldConversionBonus?: number;
+    antiBerserkFrontBonus?: number;
+  };
 }
 
 export interface CpuAiOptions {
@@ -306,6 +311,7 @@ function evaluateCpuDecisions(
     const detailedScore =
       candidate.decision.score +
       decisionTuningBonus(candidate.decision, config) +
+      decisionSituationalBonus(state, candidate.after, candidate.decision, perspective, config) +
       evaluateState(candidate.after, perspective, config.weights) -
       beforeScore +
       evaluateFutureTacticalValue(candidate.after, perspective, true, config.weights) -
@@ -432,6 +438,7 @@ function evaluateDecisionTransition(
     totalScore:
       decision.score +
       decisionTuningBonus(decision, config) +
+      decisionSituationalBonus(state, after, decision, perspective, config) +
       evaluateState(after, perspective, config.weights) -
       beforeScore +
       evaluateFutureTacticalValue(after, perspective, detailedFuture, config.weights) -
@@ -450,6 +457,148 @@ function decisionTuningBonus(decision: CpuDecision, config: CpuAiProfileConfig):
     bonus += bias[id] ?? 0;
   }
   return bonus;
+}
+
+function decisionSituationalBonus(
+  before: GameState,
+  after: GameState,
+  decision: CpuDecision,
+  perspective: PlayerId,
+  config: CpuAiProfileConfig,
+): number {
+  const bias = config.tuning?.situationalBias;
+  if (!bias) {
+    return 0;
+  }
+
+  let bonus = 0;
+  if (
+    bias.setupLowStonePenalty &&
+    after.players[perspective].stones <= 1 &&
+    isSetupDecision(before, after, decision, perspective)
+  ) {
+    bonus -= bias.setupLowStonePenalty;
+  }
+  if (bias.shieldConversionBonus && isConvertibleShieldDecision(after, decision, perspective)) {
+    bonus += bias.shieldConversionBonus;
+  }
+  if (bias.antiBerserkFrontBonus && isAntiBerserkFrontDecision(before, after, decision, perspective)) {
+    bonus += bias.antiBerserkFrontBonus;
+  }
+  return bonus;
+}
+
+function isSetupDecision(
+  before: GameState,
+  after: GameState,
+  decision: CpuDecision,
+  perspective: PlayerId,
+): boolean {
+  const opponent = opponentOf(perspective);
+  if (after.winner || after.players[opponent].masterHp < before.players[opponent].masterHp) {
+    return false;
+  }
+  if (enemyMonsterWasRemoved(before, after, perspective) || ownMonsterLeveledUp(before, after, perspective)) {
+    return false;
+  }
+  if (decision.type === "attack" && decision.action.target.kind === "monster") {
+    const beforeTarget = before.slots[decision.action.target.slotKey].monster;
+    const afterTarget = after.slots[decision.action.target.slotKey].monster;
+    return !!(
+      beforeTarget &&
+      afterTarget &&
+      beforeTarget.instanceId === afterTarget.instanceId &&
+      beforeTarget.owner === opponent &&
+      afterTarget.owner === opponent &&
+      afterTarget.hp < beforeTarget.hp
+    );
+  }
+  return (
+    decision.type === "summon" ||
+    decision.type === "move" ||
+    decision.type === "focus" ||
+    (decision.type === "master_action" && (decision.actionId === "shield" || decision.actionId === "wake_up"))
+  );
+}
+
+function enemyMonsterWasRemoved(before: GameState, after: GameState, perspective: PlayerId): boolean {
+  const opponent = opponentOf(perspective);
+  return ALL_FIELD_ORDER.some((slotKey) => {
+    const beforeMonster = before.slots[slotKey].monster;
+    const afterMonster = after.slots[slotKey].monster;
+    return !!(
+      beforeMonster?.owner === opponent &&
+      (!afterMonster || afterMonster.owner !== opponent || afterMonster.instanceId !== beforeMonster.instanceId)
+    );
+  });
+}
+
+function ownMonsterLeveledUp(before: GameState, after: GameState, perspective: PlayerId): boolean {
+  return ALL_FIELD_ORDER.some((slotKey) => {
+    const beforeMonster = before.slots[slotKey].monster;
+    const afterMonster = after.slots[slotKey].monster;
+    return !!(
+      beforeMonster?.owner === perspective &&
+      afterMonster?.owner === perspective &&
+      beforeMonster.instanceId === afterMonster.instanceId &&
+      afterMonster.level > beforeMonster.level
+    );
+  });
+}
+
+function isConvertibleShieldDecision(after: GameState, decision: CpuDecision, perspective: PlayerId): boolean {
+  if (decision.type !== "master_action" || decision.actionId !== "shield" || decision.target.kind !== "monster") {
+    return false;
+  }
+  const target = after.slots[decision.target.slotKey].monster;
+  if (!target || target.owner !== perspective) {
+    return false;
+  }
+  return (
+    nextTurnLevelUpPotential(after, decision.target.slotKey) > 0 ||
+    directMasterDamageFromSlot(after, decision.target.slotKey, perspective) > 0 ||
+    bestAttackOpportunityScore(after, decision.target.slotKey) >= 220
+  );
+}
+
+function isAntiBerserkFrontDecision(
+  before: GameState,
+  after: GameState,
+  decision: CpuDecision,
+  perspective: PlayerId,
+): boolean {
+  const target = targetedEnemyFrontSlot(before, decision, perspective);
+  if (!target) {
+    return false;
+  }
+  const opponent = opponentOf(perspective);
+  const opponentIsBlack = before.players[opponent].masterId === "black";
+  const opponentCanBerserk = opponentIsBlack && before.players[opponent].stones >= getMasterActionCost("berserk_power");
+  if (!opponentIsBlack && !opponentCanBerserk) {
+    return false;
+  }
+  const beforeMonster = before.slots[target].monster;
+  const afterMonster = after.slots[target].monster;
+  return !!(
+    beforeMonster?.owner === opponent &&
+    (!afterMonster || afterMonster.owner !== opponent || afterMonster.instanceId !== beforeMonster.instanceId || afterMonster.hp < beforeMonster.hp)
+  );
+}
+
+function targetedEnemyFrontSlot(before: GameState, decision: CpuDecision, perspective: PlayerId): SlotKey | undefined {
+  const target = decision.type === "attack"
+    ? decision.action.target
+    : decision.type === "master_action" && decision.actionId === "master_attack"
+      ? decision.target
+      : undefined;
+  if (target?.kind !== "monster") {
+    return undefined;
+  }
+  const slot = before.slots[target.slotKey];
+  if (slot.row !== "front" || slot.monster?.owner !== opponentOf(perspective)) {
+    return undefined;
+  }
+  return target.slotKey;
 }
 
 function decisionBiasIds(decision: CpuDecision): CpuAiDecisionBiasId[] {
