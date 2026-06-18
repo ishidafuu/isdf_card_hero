@@ -24,9 +24,11 @@ describe("white ai tuning loop", () => {
     expect(report.standings).toHaveLength(1);
     expect(report.standings[0].games).toBe(2);
     expect(report.standings[0].matchups.black.games).toBe(2);
+    expect(report.standings[0].turnIntentMetrics.totalActions).toBeGreaterThan(0);
 
     const markdown = formatWhiteAiTuningLoopMarkdown(report);
     expect(markdown).toContain("# White AI Tuning Loop");
     expect(markdown).toContain("vs Black");
+    expect(markdown).toContain("Intent");
   }, WHITE_AI_TUNING_LOOP_TEST_TIMEOUT_MS);
 });

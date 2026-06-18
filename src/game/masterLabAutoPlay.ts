@@ -105,6 +105,9 @@ export interface MasterLabGameStateSummary {
     hp?: number;
     level?: number;
     status?: string;
+    actionCount?: number;
+    actionLimit?: number;
+    shielded?: boolean;
     scapegoat?: boolean;
     provokeTargetSlotKey?: SlotKey;
   }>;
@@ -775,6 +778,9 @@ function summarizeMasterLabGameState(
         hp: monster?.hp,
         level: monster?.level,
         status: monster?.status,
+        actionCount: monster?.actionCount,
+        actionLimit: monster?.actionLimit,
+        shielded: monster?.shielded,
         scapegoat: monster?.scapegoat,
         provokeTargetSlotKey: monster?.provokeTargetSlotKey,
       };

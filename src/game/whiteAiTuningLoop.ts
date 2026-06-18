@@ -1,4 +1,4 @@
-import { getCardName } from "./cards";
+import { getCardName, getMonsterDef } from "./cards";
 import {
   buildDeckPresetCardIds,
   getDeckPreset,
@@ -6,6 +6,8 @@ import {
 } from "./deckPresets";
 import {
   validateMasterLabAutoPlay,
+  type MasterLabDecisionEvent,
+  type MasterLabGameStateSummary,
   type MasterLabAutoPlayOptions,
   type MasterLabAutoPlayResult,
   type MasterLabParticipantId,
@@ -84,8 +86,25 @@ export interface WhiteAiTuningStanding {
   bannedCardCount: number;
   averageOpponentHpOnLoss?: number;
   masterActionUsage: Record<string, number>;
+  turnIntentMetrics: WhiteAiTurnIntentMetrics;
   matchups: Record<WhiteAiTuningOpponentCategory, WhiteAiTuningMatchupStats>;
   notes: string[];
+}
+
+export interface WhiteAiTurnIntentMetrics {
+  totalActions: number;
+  executionActions: number;
+  setupActions: number;
+  lowStoneAfterSetup: number;
+  shieldUses: number;
+  shieldConvertedNextTurn: number;
+  shieldNoConversion: number;
+  woundedLevelUpHeal: number;
+  pygmyActions: number;
+  pygmySetupHits: number;
+  polyspinnerFirstActions: number;
+  polyspinnerPurposefulFirstAction: number;
+  polyspinnerWasteAction: number;
 }
 
 export interface WhiteAiTuningReport {
@@ -102,6 +121,23 @@ export interface WhiteAiTuningReport {
 }
 
 const BANNED_CARD_IDS = ["card_113"] as const;
+const PIGMY_CARD_ID = "card_051";
+const POLYSPINNER_CARD_ID = "polyspinner";
+const TURN_INTENT_METRIC_KEYS = [
+  "totalActions",
+  "executionActions",
+  "setupActions",
+  "lowStoneAfterSetup",
+  "shieldUses",
+  "shieldConvertedNextTurn",
+  "shieldNoConversion",
+  "woundedLevelUpHeal",
+  "pygmyActions",
+  "pygmySetupHits",
+  "polyspinnerFirstActions",
+  "polyspinnerPurposefulFirstAction",
+  "polyspinnerWasteAction",
+] as const satisfies readonly (keyof WhiteAiTurnIntentMetrics)[];
 
 export const DEFAULT_WHITE_AI_TUNING_OPPONENTS = [
   {
@@ -156,6 +192,7 @@ export const DEFAULT_WHITE_AI_TUNING_VARIANTS = [
   actionVariant("pressure_attack_master_plus8", "攻撃: attack_master+8", "pressure-normal", { actionBias: { attack_master: 8 } }, "決着力不足の補正として、本体打点を少し押す。"),
   actionVariant("pressure_attack_monster_plus4", "攻撃: attack_monster+4", "pressure-normal", { actionBias: { attack_monster: 4 } }, "盤面制圧補正を薄く入れ、+8より副作用が少ないか見る。"),
   actionVariant("pressure_attack_monster_plus8", "攻撃: attack_monster+8", "pressure-normal", { actionBias: { attack_monster: 8 } }, "盤面制圧を少し厚くし、黒の前のめり展開を止める。"),
+  actionVariant("pressure_attack_monster4_shield2", "混合: attack_monster+4 / shield+2", "pressure-normal", { actionBias: { attack_monster: 4, shield: 2 } }, "盤面処理と守りを薄く両立し、石枯渇を避ける現実的補正を見る。"),
   actionVariant("pressure_attack_monster_plus12", "攻撃: attack_monster+12", "pressure-normal", { actionBias: { attack_monster: 12 } }, "盤面制圧補正を強め、黒耐性の上限と勝ち切り遅延を測る。"),
   actionVariant("pressure_attack_monster_plus16", "攻撃: attack_monster+16", "pressure-normal", { actionBias: { attack_monster: 16 } }, "盤面処理へ強く寄せた時、白らしさを保てるかの上限確認。"),
   actionVariant("pressure_wake8_shield8", "混合: wake_up+8 / shield+8", "pressure-normal", { actionBias: { wake_up: 8, shield: 8 } }, "展開前倒しと保護を薄く両立し、白らしい制圧へ寄せる。"),
@@ -190,6 +227,14 @@ export const DEFAULT_WHITE_AI_TUNING_VARIANTS = [
     weights: { stone: 8, genericMagicCost: 10, futureOwnThreatenedMonster: 0.34 },
     actionBias: { shield: 8 },
   }, "石の尽き方が負け筋なら、必要な盾だけ撃つ形が安定するか見る。"),
+  weightVariant("stone_guard_no_proactive_shield", "診断: 石温存 / 予防シールド抑制", "pressure-normal", {
+    weights: { stone: 9, genericMagicCost: 11, futureOwnThreatenedMonster: 0.32 },
+    actionBias: { shield: -4, master_attack: -4 },
+  }, "石を残し、成果の薄いシールドと非リーサルのマスターアタックを抑える。"),
+  weightVariant("wounded_levelup_setup", "診断: 負傷レベルアップ布石", "pressure-normal", {
+    weights: { futureOwnLevelUp: 0.32, futureOpponentLevelUp: 0.26, futureOwnThreatenedMonster: 0.32, healPerPoint: 34 },
+    actionBias: { shield: 2, attack_monster: 4 },
+  }, "負傷モンスターを守ってレベルアップ回復へ変換する布石を薄く強める。"),
   hybridVariant("pressure_full_hybrid", "複合: レベルアップ + wake/shield", "pressure-normal", {
     weights: { futureOwnLevelUp: 0.28, futureOpponentLevelUp: 0.3, futureOwnThreatenedMonster: 0.36 },
     actionBias: { wake_up: 8, shield: 6, attack_monster: 4 },
@@ -275,14 +320,14 @@ export function formatWhiteAiTuningLoopMarkdown(report: WhiteAiTuningReport): st
     "",
     "## Top Candidates",
     "",
-    "| Rank | Variant | Kind | Deck | Score | W-L-D | Overall | vs Black | vs Decoy | vs White | Avg Turns | Loss Opp HP | Usage | Issues | Notes |",
-    "| ---: | --- | --- | --- | ---: | --- | ---: | ---: | ---: | ---: | ---: | ---: | --- | --- | --- |",
+    "| Rank | Variant | Kind | Deck | Score | W-L-D | Overall | vs Black | vs Decoy | vs White | Avg Turns | Loss Opp HP | Usage | Intent | Issues | Notes |",
+    "| ---: | --- | --- | --- | ---: | --- | ---: | ---: | ---: | ---: | ---: | ---: | --- | --- | --- | --- |",
     ...report.standings.slice(0, 8).map((standing, index) => formatStandingRow(standing, index + 1)),
     "",
     "## Loop Results",
     "",
-    "| Rank | Variant | Hypothesis | Tuning | Score | Overall | vs Black | vs Decoy | vs White | Usage | Notes |",
-    "| ---: | --- | --- | --- | ---: | ---: | ---: | ---: | ---: | --- | --- |",
+    "| Rank | Variant | Hypothesis | Tuning | Score | Overall | vs Black | vs Decoy | vs White | Usage | Intent | Notes |",
+    "| ---: | --- | --- | --- | ---: | ---: | ---: | ---: | ---: | --- | --- | --- |",
     ...report.standings.map((standing, index) => formatLoopResultRow(standing, index + 1)),
     "",
     "## Runs",
@@ -298,6 +343,8 @@ export function formatWhiteAiTuningLoopMarkdown(report: WhiteAiTuningReport): st
     "- `vs Decoy` は現行第三マスターへの基準維持。高すぎる場合は白が基準を超えすぎていないかを見る。",
     "- `vs White` は現行白基準との比較診断。採用判断では黒耐性と長期戦リスクを優先する。",
     "- `Usage` は候補白側の通常マスター特技使用回数。`wake_up` / `shield` / `master_attack` の偏りを見る。",
+    "- `Intent` は白側行動の診断値。`Ex` はこのターンの仕事率、`Setup` は布石率、`LowS` は布石後に石が1以下、`ShieldConv` はシールドが次ターン成果へ変換された率。",
+    "- `Pygmy` はピグミィの小打点が撃破圏作りに寄与した回数、`Poly` はポリスピナー1回目行動が同ターン成果へつながった率。",
     "- `Loss Opp HP` は候補白側が負けた時の相手残HP平均。低いほど惜敗、高いほど押し切られ。",
     "- ロストーン入りデッキは `Notes` に出る。現方針では本命候補から外す。",
   ].join("\n");
@@ -335,7 +382,7 @@ function runWhiteAiTuningMatchup(options: {
       longGameTurns: options.options.longGameTurns,
       failOnWarnings: options.options.failOnWarnings,
       includeGameHistory: true,
-      historyLimit: 4,
+      historyLimit: options.options.maxSteps ?? 700,
       participants: {
         player: player.participant,
         cpu: cpu.participant,
@@ -441,6 +488,7 @@ function createStandingRecord(variant: WhiteAiTuningVariant): WhiteAiTuningStand
     warnings: 0,
     bannedCardCount: bannedCardCount(variant.deckPreset),
     masterActionUsage: {},
+    turnIntentMetrics: emptyTurnIntentMetrics(),
     matchups: {
       black: emptyMatchupStats(),
       decoy: emptyMatchupStats(),
@@ -463,6 +511,7 @@ function applyGameResult(
   standing.failures += game.issueCount;
   standing.warnings += game.warningCount;
   addUsage(standing.masterActionUsage, game.masterActionUsageByPlayer[candidateSeat]);
+  addTurnIntentMetrics(standing.turnIntentMetrics, summarizeTurnIntentMetrics(game.history ?? [], candidateSeat));
 
   const matchup = standing.matchups[run.opponentCategory];
   matchup.games += 1;
@@ -505,6 +554,7 @@ function finalizeStanding(standing: WhiteAiTuningStanding): WhiteAiTuningStandin
   const lossOpponentHp = standing.losses > 0 && standing.averageOpponentHpOnLoss !== undefined
     ? round1(standing.averageOpponentHpOnLoss / standing.losses)
     : undefined;
+  const intentScore = turnIntentScore(standing.turnIntentMetrics);
   const score = round1(
     finalizedMatchups.black.winPointRate * 46 +
     finalizedMatchups.decoy.winPointRate * 16 +
@@ -514,7 +564,8 @@ function finalizeStanding(standing: WhiteAiTuningStanding): WhiteAiTuningStandin
     speedScore * 6 -
     safetyPenalty -
     bannedPenalty -
-    decoyOverrunPenalty,
+    decoyOverrunPenalty +
+    intentScore,
   );
 
   return {
@@ -610,6 +661,14 @@ function buildStandingNotes(
   if ((standing.masterActionUsage.shield ?? 0) > (standing.masterActionUsage.wake_up ?? 0) * 2 && (standing.masterActionUsage.shield ?? 0) >= 8) {
     notes.push("シールド偏重");
   }
+  const shieldNoConversionRate = rate(standing.turnIntentMetrics.shieldNoConversion, standing.turnIntentMetrics.shieldUses);
+  if (shieldNoConversionRate >= 0.45 && standing.turnIntentMetrics.shieldUses >= 8) {
+    notes.push("盾の成果化不足");
+  }
+  const lowStoneSetupRate = rate(standing.turnIntentMetrics.lowStoneAfterSetup, standing.turnIntentMetrics.setupActions);
+  if (lowStoneSetupRate >= 0.35 && standing.turnIntentMetrics.setupActions >= 8) {
+    notes.push("布石後の石枯渇");
+  }
   return notes.length > 0 ? notes : ["-"];
 }
 
@@ -628,6 +687,7 @@ function formatStandingRow(standing: WhiteAiTuningStanding, rank: number): strin
     standing.averageTurns,
     standing.averageOpponentHpOnLoss ?? "-",
     formatUsage(standing.masterActionUsage),
+    formatTurnIntentMetrics(standing.turnIntentMetrics),
     `${standing.failures}F/${standing.warnings}W`,
     escapeCell(standing.notes.join("<br>")),
   ].join(" | ").replace(/^/, "| ").replace(/$/, " |");
@@ -645,6 +705,7 @@ function formatLoopResultRow(standing: WhiteAiTuningStanding, rank: number): str
     formatMatchup(standing.matchups.decoy),
     formatMatchup(standing.matchups.white),
     formatUsage(standing.masterActionUsage),
+    formatTurnIntentMetrics(standing.turnIntentMetrics),
     escapeCell(standing.notes.join("<br>")),
   ].join(" | ").replace(/^/, "| ").replace(/$/, " |");
 }
@@ -657,6 +718,260 @@ function formatRunRow(run: WhiteAiTuningRun): string {
     `P ${run.result.summary.winners.player} / C ${run.result.summary.winners.cpu} / D ${run.result.summary.undecided}`,
     `${run.result.summary.failures}F/${run.result.summary.warnings}W`,
   ].join(" | ").replace(/^/, "| ").replace(/$/, " |");
+}
+
+function summarizeTurnIntentMetrics(
+  history: readonly MasterLabDecisionEvent[],
+  candidateSeat: PlayerId,
+): WhiteAiTurnIntentMetrics {
+  const metrics = emptyTurnIntentMetrics();
+  for (let index = 0; index < history.length; index += 1) {
+    const event = history[index];
+    if (!event || event.player !== candidateSeat || event.source !== "cpu") {
+      continue;
+    }
+
+    const intent = analyzeTurnIntentEvent(event, candidateSeat);
+    metrics.totalActions += 1;
+    if (intent.execution) {
+      metrics.executionActions += 1;
+    } else if (intent.setup) {
+      metrics.setupActions += 1;
+      if (event.after.players[candidateSeat].stones <= 1) {
+        metrics.lowStoneAfterSetup += 1;
+      }
+    }
+
+    const shieldTargetSlotKey = shieldTargetSlotKeyForEvent(event);
+    if (shieldTargetSlotKey) {
+      metrics.shieldUses += 1;
+      if (shieldConvertedOnNextOwnTurn(history, index, candidateSeat, shieldTargetSlotKey)) {
+        metrics.shieldConvertedNextTurn += 1;
+      } else {
+        metrics.shieldNoConversion += 1;
+      }
+    }
+
+    if (intent.woundedLevelUpHeal) {
+      metrics.woundedLevelUpHeal += 1;
+    }
+    if (intent.attackerCard === PIGMY_CARD_ID) {
+      metrics.pygmyActions += 1;
+      if (intent.enemyDamaged && !intent.enemyKilled) {
+        metrics.pygmySetupHits += 1;
+      }
+    }
+    if (isPolyspinnerFirstAction(event, intent.actorSlotKey)) {
+      metrics.polyspinnerFirstActions += 1;
+      if (intent.execution || laterSameTurnPolyspinnerExecution(history, index, candidateSeat)) {
+        metrics.polyspinnerPurposefulFirstAction += 1;
+      } else {
+        metrics.polyspinnerWasteAction += 1;
+      }
+    }
+  }
+  return metrics;
+}
+
+interface TurnIntentEventAnalysis {
+  execution: boolean;
+  setup: boolean;
+  enemyDamaged: boolean;
+  enemyKilled: boolean;
+  woundedLevelUpHeal: boolean;
+  actorSlotKey?: string;
+  attackerCard?: string;
+}
+
+function analyzeTurnIntentEvent(
+  event: MasterLabDecisionEvent,
+  candidateSeat: PlayerId,
+): TurnIntentEventAnalysis {
+  const opponentSeat = opponentSeatOf(candidateSeat);
+  const actorSlotKey = actorSlotKeyForEvent(event);
+  const actorSlot = actorSlotKey ? slotByKey(event.before, actorSlotKey) : undefined;
+  const targetSlotKey = targetSlotKeyForEvent(event);
+  const targetBefore = targetSlotKey ? slotByKey(event.before, targetSlotKey) : undefined;
+  const targetAfter = targetSlotKey ? slotByKey(event.after, targetSlotKey) : undefined;
+  const enemyDamaged = !!(
+    targetBefore?.owner === opponentSeat &&
+    targetAfter?.owner === opponentSeat &&
+    targetBefore.card === targetAfter.card &&
+    targetBefore.hp !== undefined &&
+    targetAfter.hp !== undefined &&
+    targetAfter.hp < targetBefore.hp
+  );
+  const enemyKilled = !!(
+    targetBefore?.owner === opponentSeat &&
+    targetBefore.card &&
+    (!targetAfter?.card || targetAfter.owner !== opponentSeat || targetAfter.card !== targetBefore.card)
+  );
+  const ownLevelUp = event.before.slots.some((beforeSlot) => {
+    const afterSlot = slotByKey(event.after, beforeSlot.slotKey);
+    return (
+      beforeSlot.owner === candidateSeat &&
+      afterSlot?.owner === candidateSeat &&
+      beforeSlot.card === afterSlot.card &&
+      beforeSlot.level !== undefined &&
+      afterSlot.level !== undefined &&
+      afterSlot.level > beforeSlot.level
+    );
+  });
+  const woundedLevelUpHeal = event.before.slots.some((beforeSlot) => {
+    const afterSlot = slotByKey(event.after, beforeSlot.slotKey);
+    if (
+      beforeSlot.owner !== candidateSeat ||
+      afterSlot?.owner !== candidateSeat ||
+      !beforeSlot.card ||
+      beforeSlot.card !== afterSlot.card ||
+      beforeSlot.level === undefined ||
+      afterSlot.level === undefined ||
+      beforeSlot.hp === undefined ||
+      afterSlot.hp === undefined ||
+      afterSlot.level <= beforeSlot.level ||
+      afterSlot.hp <= beforeSlot.hp
+    ) {
+      return false;
+    }
+    return beforeSlot.hp < monsterMaxHpAtLevel(beforeSlot.card, beforeSlot.level);
+  });
+  const masterHpDamage = event.after.players[opponentSeat].hp < event.before.players[opponentSeat].hp;
+  const execution = !!event.after.winner || masterHpDamage || enemyKilled || ownLevelUp;
+  const setup = !execution && (
+    event.decision.startsWith("summon:") ||
+    event.decision.startsWith("move:") ||
+    event.decision.startsWith("focus:") ||
+    event.decision.startsWith("master:shield") ||
+    event.decision.startsWith("master:wake_up") ||
+    enemyDamaged
+  );
+
+  return {
+    execution,
+    setup,
+    enemyDamaged,
+    enemyKilled,
+    woundedLevelUpHeal,
+    actorSlotKey,
+    attackerCard: actorSlot?.card,
+  };
+}
+
+function shieldConvertedOnNextOwnTurn(
+  history: readonly MasterLabDecisionEvent[],
+  shieldEventIndex: number,
+  candidateSeat: PlayerId,
+  shieldTargetSlotKey: string,
+): boolean {
+  const shieldEvent = history[shieldEventIndex];
+  if (!shieldEvent) {
+    return false;
+  }
+  const shieldedSlot = slotByKey(shieldEvent.after, shieldTargetSlotKey);
+  if (shieldedSlot?.owner !== candidateSeat || !shieldedSlot.card) {
+    return false;
+  }
+  const nextTurnNumber = history
+    .slice(shieldEventIndex + 1)
+    .find((event) => event.player === candidateSeat && event.turnNumber > shieldEvent.turnNumber)
+    ?.turnNumber;
+  if (nextTurnNumber === undefined) {
+    return false;
+  }
+
+  return history.some((event, index) => {
+    if (index <= shieldEventIndex || event.player !== candidateSeat || event.turnNumber !== nextTurnNumber || event.source !== "cpu") {
+      return false;
+    }
+    const actorSlotKey = actorSlotKeyForEvent(event);
+    if (actorSlotKey !== shieldTargetSlotKey) {
+      return false;
+    }
+    const actorSlot = slotByKey(event.before, actorSlotKey);
+    if (actorSlot?.owner !== candidateSeat || actorSlot.card !== shieldedSlot.card) {
+      return false;
+    }
+    const analysis = analyzeTurnIntentEvent(event, candidateSeat);
+    return analysis.execution || event.decision.startsWith("attack:");
+  });
+}
+
+function laterSameTurnPolyspinnerExecution(
+  history: readonly MasterLabDecisionEvent[],
+  firstActionIndex: number,
+  candidateSeat: PlayerId,
+): boolean {
+  const first = history[firstActionIndex];
+  if (!first) {
+    return false;
+  }
+  for (let index = firstActionIndex + 1; index < history.length; index += 1) {
+    const event = history[index];
+    if (!event || event.turnNumber !== first.turnNumber) {
+      break;
+    }
+    if (event.player !== candidateSeat || event.source !== "cpu") {
+      continue;
+    }
+    const actorSlotKey = actorSlotKeyForEvent(event);
+    const actorSlot = actorSlotKey ? slotByKey(event.before, actorSlotKey) : undefined;
+    if (actorSlot?.card !== POLYSPINNER_CARD_ID) {
+      continue;
+    }
+    if (analyzeTurnIntentEvent(event, candidateSeat).execution) {
+      return true;
+    }
+  }
+  return false;
+}
+
+function isPolyspinnerFirstAction(event: MasterLabDecisionEvent, actorSlotKey: string | undefined): boolean {
+  if (!actorSlotKey) {
+    return false;
+  }
+  const beforeSlot = slotByKey(event.before, actorSlotKey);
+  if (beforeSlot?.card !== POLYSPINNER_CARD_ID || beforeSlot.actionCount !== 0) {
+    return false;
+  }
+  return event.decision.startsWith("attack:") || event.decision.startsWith("move:") || event.decision.startsWith("focus:");
+}
+
+function actorSlotKeyForEvent(event: MasterLabDecisionEvent): string | undefined {
+  if (event.decision.startsWith("attack:")) {
+    return event.decision.split(":")[1];
+  }
+  if (event.decision.startsWith("move:")) {
+    return event.decision.slice("move:".length).split("->")[0];
+  }
+  if (event.decision.startsWith("focus:")) {
+    return event.decision.slice("focus:".length);
+  }
+  return undefined;
+}
+
+function targetSlotKeyForEvent(event: MasterLabDecisionEvent): string | undefined {
+  const target = event.decision.split("->")[1];
+  return target?.startsWith("monster:") ? target.slice("monster:".length) : undefined;
+}
+
+function shieldTargetSlotKeyForEvent(event: MasterLabDecisionEvent): string | undefined {
+  if (!event.decision.startsWith("master:shield->monster:")) {
+    return undefined;
+  }
+  return event.decision.slice("master:shield->monster:".length);
+}
+
+function slotByKey(summary: MasterLabGameStateSummary, slotKey: string): MasterLabGameStateSummary["slots"][number] | undefined {
+  return summary.slots.find((slot) => slot.slotKey === slotKey);
+}
+
+function monsterMaxHpAtLevel(cardId: string, level: number): number {
+  const def = getMonsterDef(cardId);
+  return def.levels.find((levelDef) => levelDef.level === level)?.maxHp ?? def.levels[0]?.maxHp ?? 0;
+}
+
+function opponentSeatOf(playerId: PlayerId): PlayerId {
+  return playerId === "player" ? "cpu" : "player";
 }
 
 function baselineVariant(
@@ -715,6 +1030,24 @@ function emptyMatchupStats(): WhiteAiTuningMatchupStats {
   return { games: 0, wins: 0, losses: 0, draws: 0, winPointRate: 0 };
 }
 
+function emptyTurnIntentMetrics(): WhiteAiTurnIntentMetrics {
+  return {
+    totalActions: 0,
+    executionActions: 0,
+    setupActions: 0,
+    lowStoneAfterSetup: 0,
+    shieldUses: 0,
+    shieldConvertedNextTurn: 0,
+    shieldNoConversion: 0,
+    woundedLevelUpHeal: 0,
+    pygmyActions: 0,
+    pygmySetupHits: 0,
+    polyspinnerFirstActions: 0,
+    polyspinnerPurposefulFirstAction: 0,
+    polyspinnerWasteAction: 0,
+  };
+}
+
 function finalizeMatchupStats(stats: WhiteAiTuningMatchupStats): WhiteAiTuningMatchupStats {
   return {
     ...stats,
@@ -726,6 +1059,30 @@ function addUsage(target: Record<string, number>, source: Record<string, number>
   for (const [key, value] of Object.entries(source)) {
     target[key] = (target[key] ?? 0) + value;
   }
+}
+
+function addTurnIntentMetrics(target: WhiteAiTurnIntentMetrics, source: WhiteAiTurnIntentMetrics): void {
+  for (const key of TURN_INTENT_METRIC_KEYS) {
+    target[key] += source[key];
+  }
+}
+
+function turnIntentScore(metrics: WhiteAiTurnIntentMetrics): number {
+  const shieldConversionRate = rate(metrics.shieldConvertedNextTurn, metrics.shieldUses);
+  const lowStoneSetupRate = rate(metrics.lowStoneAfterSetup, metrics.setupActions);
+  const polyPurposeRate = rate(metrics.polyspinnerPurposefulFirstAction, metrics.polyspinnerFirstActions);
+  const polyWasteRate = rate(metrics.polyspinnerWasteAction, metrics.polyspinnerFirstActions);
+  const woundedLevelUpHealRate = rate(metrics.woundedLevelUpHeal, metrics.totalActions);
+  const pygmySetupRate = rate(metrics.pygmySetupHits, metrics.totalActions);
+
+  return round1(
+    shieldConversionRate * 4 -
+    lowStoneSetupRate * 6 +
+    polyPurposeRate * 2 -
+    polyWasteRate * 2 +
+    woundedLevelUpHealRate * 10 +
+    pygmySetupRate * 4,
+  );
 }
 
 function bannedCardCount(deckPreset: DeckPresetId): number {
@@ -751,6 +1108,20 @@ function formatUsage(usage: Record<string, number>): string {
     return "-";
   }
   return entries.slice(0, 5).map(([key, count]) => `${key}:${count}`).join(", ");
+}
+
+function formatTurnIntentMetrics(metrics: WhiteAiTurnIntentMetrics): string {
+  if (metrics.totalActions <= 0) {
+    return "-";
+  }
+  return [
+    `Ex ${formatPercent(rate(metrics.executionActions, metrics.totalActions))}`,
+    `Setup ${formatPercent(rate(metrics.setupActions, metrics.totalActions))}`,
+    `LowS ${formatPercent(rate(metrics.lowStoneAfterSetup, metrics.setupActions))}`,
+    `ShieldConv ${formatPercent(rate(metrics.shieldConvertedNextTurn, metrics.shieldUses))}`,
+    `Pygmy ${metrics.pygmySetupHits}/${metrics.pygmyActions}`,
+    `Poly ${formatPercent(rate(metrics.polyspinnerPurposefulFirstAction, metrics.polyspinnerFirstActions))}`,
+  ].join("<br>");
 }
 
 function formatTuning(tuning: CpuAiTuning | undefined): string {
