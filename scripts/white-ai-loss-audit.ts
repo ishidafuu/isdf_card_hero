@@ -34,6 +34,7 @@ interface OutcomeAudit {
 interface TargetQualityAudit {
   shield: ShieldTargetAudit;
   wake: WakeTargetAudit;
+  focus: FocusTargetAudit;
 }
 
 interface ShieldTargetAudit {
@@ -44,6 +45,8 @@ interface ShieldTargetAudit {
   threatOrConversionReason: number;
   secondShieldSameTurn: number;
   lowStoneSecondShield: number;
+  attacksReceivedBeforeNextOwnTurn: number;
+  multiAttackBeforeNextOwnTurn: number;
 }
 
 interface WakeTargetAudit {
@@ -52,8 +55,19 @@ interface WakeTargetAudit {
   sameTurnExecution: number;
   nextOwnTurnAttack: number;
   nextOwnTurnLevelUp: number;
+  removedBeforeNextOwnTurn: number;
   lowStoneAfterWake: number;
   lowStoneNoSameTurnWork: number;
+}
+
+interface FocusTargetAudit {
+  uses: number;
+  lowStoneFocus: number;
+  nextOwnTurnAttack: number;
+  nextOwnTurnExecution: number;
+  nextOwnTurnLevelUp: number;
+  removedBeforeNextOwnTurn: number;
+  lowStoneNoNextWork: number;
 }
 
 interface VariantAudit {
@@ -276,6 +290,11 @@ function summarizeAuditIntentMetrics(
       addWakeTargetAudit(targetQuality.wake, history, index, candidateSeat, wakeTargetSlotKey);
     }
 
+    const focusSlotKey = focusSlotKeyForEvent(event);
+    if (focusSlotKey) {
+      addFocusTargetAudit(targetQuality.focus, history, index, candidateSeat, focusSlotKey);
+    }
+
     if (intent.woundedLevelUpHeal) {
       metrics.woundedLevelUpHeal += 1;
     }
@@ -334,6 +353,11 @@ function addShieldTargetAudit(
   if (slotRemovedBeforeTurn(history, shieldEventIndex, candidateSeat, shieldTargetSlotKey, nextTurnNumber)) {
     target.removedBeforeNextOwnTurn += 1;
   }
+  const attacksReceived = attacksReceivedBeforeTurn(history, shieldEventIndex, candidateSeat, shieldTargetSlotKey, nextTurnNumber);
+  target.attacksReceivedBeforeNextOwnTurn += attacksReceived;
+  if (attacksReceived >= 2) {
+    target.multiAttackBeforeNextOwnTurn += 1;
+  }
 }
 
 function addWakeTargetAudit(
@@ -373,6 +397,52 @@ function addWakeTargetAudit(
   }
   if (slotLevelsUpOnTurn(history, wakeEventIndex, candidateSeat, wakeTargetSlotKey, nextTurnNumber)) {
     target.nextOwnTurnLevelUp += 1;
+  }
+  if (slotRemovedBeforeTurn(history, wakeEventIndex, candidateSeat, wakeTargetSlotKey, nextTurnNumber)) {
+    target.removedBeforeNextOwnTurn += 1;
+  }
+}
+
+function addFocusTargetAudit(
+  target: FocusTargetAudit,
+  history: readonly MasterLabDecisionEvent[],
+  focusEventIndex: number,
+  candidateSeat: PlayerId,
+  focusSlotKey: string,
+): void {
+  const event = history[focusEventIndex];
+  if (!event) {
+    return;
+  }
+
+  target.uses += 1;
+  const lowStone = event.after.players[candidateSeat].stones <= 1;
+  if (lowStone) {
+    target.lowStoneFocus += 1;
+  }
+
+  const nextTurnNumber = nextOwnTurnNumberAfter(history, focusEventIndex, candidateSeat);
+  if (nextTurnNumber === undefined) {
+    return;
+  }
+
+  const nextAttack = slotAttacksOnTurn(history, focusEventIndex, candidateSeat, focusSlotKey, nextTurnNumber);
+  const nextExecution = slotExecutesOnTurn(history, focusEventIndex, candidateSeat, focusSlotKey, nextTurnNumber);
+  const nextLevelUp = slotLevelsUpOnTurn(history, focusEventIndex, candidateSeat, focusSlotKey, nextTurnNumber);
+  if (nextAttack) {
+    target.nextOwnTurnAttack += 1;
+  }
+  if (nextExecution) {
+    target.nextOwnTurnExecution += 1;
+  }
+  if (nextLevelUp) {
+    target.nextOwnTurnLevelUp += 1;
+  }
+  if (slotRemovedBeforeTurn(history, focusEventIndex, candidateSeat, focusSlotKey, nextTurnNumber)) {
+    target.removedBeforeNextOwnTurn += 1;
+  }
+  if (lowStone && !nextAttack && !nextExecution && !nextLevelUp) {
+    target.lowStoneNoNextWork += 1;
   }
 }
 
@@ -468,6 +538,22 @@ function slotRemovedBeforeTurn(
     const current = slotByKey(candidate.after, slotKey);
     return !current?.card || current.owner !== candidateSeat || current.card !== protectedSlot.card;
   });
+}
+
+function attacksReceivedBeforeTurn(
+  history: readonly MasterLabDecisionEvent[],
+  eventIndex: number,
+  candidateSeat: PlayerId,
+  slotKey: string,
+  turnNumber: number,
+): number {
+  return history.filter((event, index) =>
+    index > eventIndex &&
+    event.player !== candidateSeat &&
+    event.turnNumber < turnNumber &&
+    (event.decision.startsWith("attack:") || event.decision.startsWith("master:master_attack")) &&
+    targetSlotKeyForEvent(event) === slotKey,
+  ).length;
 }
 
 function previousSameTurnShieldCount(
@@ -693,6 +779,10 @@ function wakeTargetSlotKeyForEvent(event: MasterLabDecisionEvent): string | unde
   return event.decision.slice("master:wake_up->monster:".length);
 }
 
+function focusSlotKeyForEvent(event: MasterLabDecisionEvent): string | undefined {
+  return event.decision.startsWith("focus:") ? event.decision.slice("focus:".length) : undefined;
+}
+
 function slotByKey(summary: MasterLabGameStateSummary, slotKey: string): MasterLabGameStateSummary["slots"][number] | undefined {
   return summary.slots.find((slot) => slot.slotKey === slotKey);
 }
@@ -750,6 +840,9 @@ function addTargetQualityAudit(target: TargetQualityAudit, source: TargetQuality
   for (const key of Object.keys(target.wake) as Array<keyof WakeTargetAudit>) {
     target.wake[key] += source.wake[key];
   }
+  for (const key of Object.keys(target.focus) as Array<keyof FocusTargetAudit>) {
+    target.focus[key] += source.focus[key];
+  }
 }
 
 function emptyIntentMetrics(): WhiteAiTurnIntentMetrics {
@@ -780,6 +873,8 @@ function emptyTargetQualityAudit(): TargetQualityAudit {
       threatOrConversionReason: 0,
       secondShieldSameTurn: 0,
       lowStoneSecondShield: 0,
+      attacksReceivedBeforeNextOwnTurn: 0,
+      multiAttackBeforeNextOwnTurn: 0,
     },
     wake: {
       uses: 0,
@@ -787,8 +882,18 @@ function emptyTargetQualityAudit(): TargetQualityAudit {
       sameTurnExecution: 0,
       nextOwnTurnAttack: 0,
       nextOwnTurnLevelUp: 0,
+      removedBeforeNextOwnTurn: 0,
       lowStoneAfterWake: 0,
       lowStoneNoSameTurnWork: 0,
+    },
+    focus: {
+      uses: 0,
+      lowStoneFocus: 0,
+      nextOwnTurnAttack: 0,
+      nextOwnTurnExecution: 0,
+      nextOwnTurnLevelUp: 0,
+      removedBeforeNextOwnTurn: 0,
+      lowStoneNoNextWork: 0,
     },
   };
 }
@@ -814,7 +919,9 @@ function formatAuditMarkdown(report: WhiteAiLossAuditReport): string {
     "- `LowS` は布石後に残ストーンが1以下になった割合。",
     "- `ShieldConv` はシールド対象が次の自ターンに攻撃または成果行動へつながった割合。",
     "- `Target Quality` の `SAtk` は盾対象が次自ターンに攻撃した率、`S2Low` は同ターン2枚目以降のシールドで残石1以下になった回数。",
-    "- `Target Quality` の `WNow` はウェイクアップ対象が同ターンに攻撃した率、`WLowNo` は低石で起こして同ターン仕事しなかった回数。",
+    "- `Target Quality` の `SHit` は盾対象が次自ターンまでに受けた攻撃回数、`SMulti` は2回以上攻撃された盾対象数。",
+    "- `Target Quality` の `WNow` はウェイクアップ対象が同ターンに攻撃した率、`WDead` は次自ターン前に倒された率、`WLowNo` は低石で起こして同ターン仕事しなかった回数。",
+    "- `Target Quality` の `FNext` はfocus対象が次自ターンに攻撃した率、`FLowNo` は低石focus後に次自ターン仕事へ変換されなかった回数。",
     "- `Loss LowS By Action` は負け試合で低石化した布石の行動種別。ここが偏るほど、次候補の狙いを絞りやすい。",
   ].join("\n");
 }
@@ -865,6 +972,8 @@ function formatTargetQuality(target: TargetQualityAudit): string {
           `SLv ${target.shield.nextOwnTurnLevelUp}`,
           `SDead ${formatPercent(rate(target.shield.removedBeforeNextOwnTurn, target.shield.uses))}`,
           `S2Low ${target.shield.lowStoneSecondShield}/${target.shield.secondShieldSameTurn}`,
+          `SHit ${target.shield.attacksReceivedBeforeNextOwnTurn}`,
+          `SMulti ${target.shield.multiAttackBeforeNextOwnTurn}`,
         ].join(" ")
       : "S -",
     target.wake.uses > 0
@@ -873,9 +982,21 @@ function formatTargetQuality(target: TargetQualityAudit): string {
           `WNow ${formatPercent(rate(target.wake.sameTurnAttack, target.wake.uses))}`,
           `WExec ${formatPercent(rate(target.wake.sameTurnExecution, target.wake.uses))}`,
           `WNext ${formatPercent(rate(target.wake.nextOwnTurnAttack, target.wake.uses))}`,
+          `WDead ${formatPercent(rate(target.wake.removedBeforeNextOwnTurn, target.wake.uses))}`,
           `WLowNo ${target.wake.lowStoneNoSameTurnWork}/${target.wake.lowStoneAfterWake}`,
         ].join(" ")
       : "W -",
+    target.focus.uses > 0
+      ? [
+          `F ${target.focus.uses}`,
+          `FLow ${target.focus.lowStoneFocus}`,
+          `FNext ${formatPercent(rate(target.focus.nextOwnTurnAttack, target.focus.uses))}`,
+          `FExec ${formatPercent(rate(target.focus.nextOwnTurnExecution, target.focus.uses))}`,
+          `FLv ${target.focus.nextOwnTurnLevelUp}`,
+          `FDead ${formatPercent(rate(target.focus.removedBeforeNextOwnTurn, target.focus.uses))}`,
+          `FLowNo ${target.focus.lowStoneNoNextWork}/${target.focus.lowStoneFocus}`,
+        ].join(" ")
+      : "F -",
   ].join("<br>");
 }
 

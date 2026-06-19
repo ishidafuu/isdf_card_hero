@@ -720,6 +720,70 @@ describe("cpu ai", () => {
     expect(defaultWhite?.totalScore).toBeCloseTo((withoutGuard?.totalScore ?? 0) - 12);
   });
 
+  it("bonuses low-stone white focus only when it converts into next-turn work", () => {
+    const game = createCpuGame();
+    game.players.cpu.masterId = "white";
+    game.players.cpu.hand = [];
+    game.players.cpu.stones = 1;
+    game.slots.cpu_front_left.monster = createActiveMonster("takokke", "cpu");
+    game.slots.player_front_left.monster = createActiveMonster("takokke", "player", { hp: 2 });
+
+    const findFocus = (options = {}) =>
+      inspectCpuDecisionEvaluations(game, options).find(
+        (evaluation) => evaluation.decision.type === "focus" && evaluation.decision.slotKey === "cpu_front_left",
+      );
+    const baseline = findFocus();
+    const tuned = findFocus({ tunings: { cpu: { situationalBias: { whiteLowStoneFocusConversionBonus: 9 } } } });
+
+    expect(baseline).toBeDefined();
+    expect(tuned).toBeDefined();
+    expect(tuned?.totalScore).toBeCloseTo((baseline?.totalScore ?? 0) + 9);
+  });
+
+  it("bonuses white wake-up when work is visible and exposure is not lethal", () => {
+    const game = createCpuGame();
+    game.players.cpu.masterId = "white";
+    game.players.cpu.hand = [];
+    game.players.cpu.stones = 4;
+    game.slots.cpu_back_left.monster = createActiveMonster("morgan", "cpu", {
+      status: "prepared",
+      level: 2,
+      hp: 4,
+    });
+
+    const findWake = (options = {}) =>
+      inspectCpuDecisionEvaluations(game, options).find(
+        (evaluation) =>
+          evaluation.decision.type === "master_action" &&
+          evaluation.decision.actionId === "wake_up" &&
+          evaluation.decision.target.kind === "monster" &&
+          evaluation.decision.target.slotKey === "cpu_back_left",
+      );
+    const baseline = findWake();
+    const tuned = findWake({ tunings: { cpu: { situationalBias: { whiteWakeSafeWorkBonus: 7 } } } });
+
+    expect(baseline).toBeDefined();
+    expect(tuned).toBeDefined();
+    expect(tuned?.totalScore).toBeCloseTo((baseline?.totalScore ?? 0) + 7);
+  });
+
+  it("keeps a backline opening monster in the back row when no front guard is available", () => {
+    const game = createCpuGame([{ instanceId: "cpu_beyond_hand", cardId: "beyond" }]);
+    game.players.cpu.masterId = "white";
+    game.players.cpu.stones = 1;
+    for (const slot of Object.values(game.slots)) {
+      delete slot.monster;
+    }
+
+    const decision = chooseCpuDecision(game, { profile: "white" });
+
+    expect(decision.type).toBe("summon");
+    if (decision.type === "summon") {
+      expect(decision.handInstanceId).toBe("cpu_beyond_hand");
+      expect(decision.slotKey).toContain("_back_");
+    }
+  });
+
   it("uses black master berserk power when it creates a monster kill", () => {
     const game = createCpuGame();
     game.players.cpu.masterId = "black";

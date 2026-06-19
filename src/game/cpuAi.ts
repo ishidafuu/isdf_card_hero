@@ -115,6 +115,8 @@ export interface CpuAiTuning {
     whiteWakeImmediateWorkBonus?: number;
     whiteCloseoutAfterShieldBonus?: number;
     whiteSecondShieldLowStonePenalty?: number;
+    whiteLowStoneFocusConversionBonus?: number;
+    whiteWakeSafeWorkBonus?: number;
   };
 }
 
@@ -562,6 +564,12 @@ function decisionSituationalBonus(
   if (bias.whiteSecondShieldLowStonePenalty) {
     bonus -= whiteSecondShieldLowStoneDecisionPenalty(before, after, decision, perspective, bias.whiteSecondShieldLowStonePenalty);
   }
+  if (bias.whiteLowStoneFocusConversionBonus) {
+    bonus += whiteLowStoneFocusConversionDecisionBonus(before, after, decision, perspective, bias.whiteLowStoneFocusConversionBonus);
+  }
+  if (bias.whiteWakeSafeWorkBonus) {
+    bonus += whiteWakeSafeWorkDecisionBonus(before, after, decision, perspective, bias.whiteWakeSafeWorkBonus);
+  }
   return bonus;
 }
 
@@ -929,6 +937,67 @@ function whiteSecondShieldLowStoneDecisionPenalty(
     return 0;
   }
   return currentTurnMasterActionCount(before, perspective, "shield") > 0 ? value : 0;
+}
+
+function whiteLowStoneFocusConversionDecisionBonus(
+  before: GameState,
+  after: GameState,
+  decision: CpuDecision,
+  perspective: PlayerId,
+  value: number,
+): number {
+  if (
+    value <= 0 ||
+    before.players[perspective].masterId !== "white" ||
+    decision.type !== "focus" ||
+    after.players[perspective].stones > 1 ||
+    !isSetupDecision(before, after, decision, perspective)
+  ) {
+    return 0;
+  }
+  return nextTurnWorkPotential(after, decision.slotKey, perspective) > 0 ? value : 0;
+}
+
+function whiteWakeSafeWorkDecisionBonus(
+  before: GameState,
+  after: GameState,
+  decision: CpuDecision,
+  perspective: PlayerId,
+  value: number,
+): number {
+  if (
+    value <= 0 ||
+    before.players[perspective].masterId !== "white" ||
+    decision.type !== "master_action" ||
+    decision.actionId !== "wake_up" ||
+    decision.target.kind !== "monster"
+  ) {
+    return 0;
+  }
+  const targetSlotKey = decision.target.slotKey;
+  const target = after.slots[targetSlotKey].monster;
+  if (!target || target.owner !== perspective || target.status !== "active") {
+    return 0;
+  }
+  const threat = incomingThreat(after, targetSlotKey);
+  if (threat.lethal) {
+    return 0;
+  }
+  return bestAttackOpportunityScore(after, targetSlotKey) > 0 || nextTurnWorkPotential(after, targetSlotKey, perspective) > 0
+    ? value
+    : 0;
+}
+
+function nextTurnWorkPotential(state: GameState, slotKey: SlotKey, perspective: PlayerId): number {
+  const monster = state.slots[slotKey].monster;
+  if (!monster || monster.owner !== perspective || monster.status !== "active") {
+    return 0;
+  }
+  const readyState = readyPlayerForTacticalEvaluation(state, perspective);
+  const nextAttack = bestAttackOpportunityScore(readyState, slotKey);
+  const directDamage = directMasterDamageFromSlot(state, slotKey, perspective);
+  const levelUp = nextTurnLevelUpPotential(state, slotKey);
+  return Math.max(nextAttack >= 260 ? nextAttack : 0, directDamage * 100, levelUp);
 }
 
 function ownShieldedMonsterCount(state: GameState, perspective: PlayerId): number {

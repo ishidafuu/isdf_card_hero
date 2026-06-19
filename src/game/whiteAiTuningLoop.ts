@@ -279,6 +279,18 @@ export const DEFAULT_WHITE_AI_TUNING_VARIANTS = [
   hybridVariant("pressure_white_shield_quality_second_guard_v1", "本実装候補: 白盾品質+2枚目抑制", "pressure-normal", {
     situationalBias: { whiteShieldThreatConversionBonus: 8, whiteSecondShieldLowStonePenalty: 8 },
   }, "質の高い盾を押しつつ、2枚目低石シールドの全力投入を抑える。"),
+  hybridVariant("pressure_white_low_stone_focus_conversion_v1", "本実装候補: 白低石focus成果化+8", "pressure-normal", {
+    situationalBias: { whiteLowStoneFocusConversionBonus: 8 },
+  }, "白マスター限定で、低石でも次ターン攻撃/レベルアップへ変換できるfocusだけを加点する。"),
+  hybridVariant("pressure_white_wake_safe_work_v1", "本実装候補: 白安全ウェイク仕事+8", "pressure-normal", {
+    situationalBias: { whiteWakeSafeWorkBonus: 8 },
+  }, "白マスター限定で、起こした味方が露出死しにくく、同ターンまたは次ターンの仕事が見えるウェイクアップを加点する。"),
+  hybridVariant("pressure_white_focus_wake_quality_v1", "本実装候補: 白focus/wake布石品質", "pressure-normal", {
+    situationalBias: { whiteLowStoneFocusConversionBonus: 8, whiteWakeSafeWorkBonus: 8 },
+  }, "低石focusと自陣ウェイクを、消費量ではなく次ターンの仕事へ変換できる品質で押す。"),
+  hybridVariant("pressure_white_focus_wake_quality_light_v1", "本実装候補: 白focus/wake布石品質軽量", "pressure-normal", {
+    situationalBias: { whiteLowStoneFocusConversionBonus: 4, whiteWakeSafeWorkBonus: 4 },
+  }, "focus/wake品質加点を薄く入れ、+8複合の上振れや守り寄り副作用を抑える。"),
   actionVariant("pressure_attack_monster_plus8", "攻撃: attack_monster+8", "pressure-normal", { actionBias: { attack_monster: 8 } }, "盤面制圧を少し厚くし、黒の前のめり展開を止める。"),
   actionVariant("pressure_attack_monster4_shield2", "混合: attack_monster+4 / shield+2", "pressure-normal", { actionBias: { attack_monster: 4, shield: 2 } }, "盤面処理と守りを薄く両立し、石枯渇を避ける現実的補正を見る。"),
   actionVariant("pressure_attack_monster_plus12", "攻撃: attack_monster+12", "pressure-normal", { actionBias: { attack_monster: 12 } }, "盤面制圧補正を強め、黒耐性の上限と勝ち切り遅延を測る。"),
