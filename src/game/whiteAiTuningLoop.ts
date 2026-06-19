@@ -216,6 +216,12 @@ export const DEFAULT_WHITE_AI_TUNING_VARIANTS = [
   hybridVariant("pressure_white_black_front_threat_v1", "本実装候補: 白黒前衛脅威処理+8", "pressure-normal", {
     situationalBias: { whiteBlackFrontThreatBonus: 8 },
   }, "白マスター限定で、黒の次ターン打点源になりうる敵前衛を削る時だけ加点する。"),
+  hybridVariant("pressure_white_black_front_threat_plus12_v1", "本実装候補: 白黒前衛脅威処理+12", "pressure-normal", {
+    situationalBias: { whiteBlackFrontThreatBonus: 12 },
+  }, "採用済み+8より黒前衛打点源処理を強め、過剰前衛攻撃にならない上限を確認する。"),
+  hybridVariant("pressure_white_black_front_threat_plus16_v1", "本実装候補: 白黒前衛脅威処理+16", "pressure-normal", {
+    situationalBias: { whiteBlackFrontThreatBonus: 16 },
+  }, "黒前衛打点源処理をかなり強め、白の育成/防御を壊さない上限を確認する。"),
   hybridVariant("pressure_white_active_front_work_v1", "本実装候補: 白既存駒前衛仕事+4", "pressure-normal", {
     situationalBias: { whiteActiveFrontWorkBonus: 4 },
   }, "白マスター限定で、召喚より既存アクティブ駒で敵前衛を削る行動を薄く上げる。"),
