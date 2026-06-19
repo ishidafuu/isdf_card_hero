@@ -29,6 +29,7 @@ interface OutcomeAudit {
   intent: WhiteAiTurnIntentMetrics;
   lowStoneByDecision: Record<string, number>;
   targetQuality: TargetQualityAudit;
+  focusReason: FocusReasonAudit;
 }
 
 interface TargetQualityAudit {
@@ -68,6 +69,17 @@ interface FocusTargetAudit {
   nextOwnTurnLevelUp: number;
   removedBeforeNextOwnTurn: number;
   lowStoneNoNextWork: number;
+}
+
+interface FocusReasonAudit {
+  lowStoneFocus: number;
+  noOtherReadyMonster: number;
+  otherReadyMonster: number;
+  frontEnemyInReach: number;
+  summonWindow: number;
+  wakeWindow: number;
+  masterAttackWindow: number;
+  blackFrontThreatLeft: number;
 }
 
 interface VariantAudit {
@@ -142,6 +154,7 @@ function buildAuditReport(loopReport: ReturnType<typeof runWhiteAiTuningLoop>): 
       addIntentMetrics(outcomeAudit.intent, intent.metrics);
       addLowStoneByDecision(outcomeAudit.lowStoneByDecision, intent.lowStoneByDecision);
       addTargetQualityAudit(outcomeAudit.targetQuality, intent.targetQuality);
+      addFocusReasonAudit(outcomeAudit.focusReason, intent.focusReason);
       if (outcome === "win") {
         audit.wins += 1;
       } else if (outcome === "loss") {
@@ -196,6 +209,7 @@ function createOutcomeAudit(): OutcomeAudit {
     intent: emptyIntentMetrics(),
     lowStoneByDecision: {},
     targetQuality: emptyTargetQualityAudit(),
+    focusReason: emptyFocusReasonAudit(),
   };
 }
 
@@ -250,10 +264,16 @@ function buildNotes(audit: VariantAudit): string[] {
 function summarizeAuditIntentMetrics(
   history: readonly MasterLabDecisionEvent[],
   candidateSeat: PlayerId,
-): { metrics: WhiteAiTurnIntentMetrics; lowStoneByDecision: Record<string, number>; targetQuality: TargetQualityAudit } {
+): {
+  metrics: WhiteAiTurnIntentMetrics;
+  lowStoneByDecision: Record<string, number>;
+  targetQuality: TargetQualityAudit;
+  focusReason: FocusReasonAudit;
+} {
   const metrics = emptyIntentMetrics();
   const lowStoneByDecision: Record<string, number> = {};
   const targetQuality = emptyTargetQualityAudit();
+  const focusReason = emptyFocusReasonAudit();
 
   for (let index = 0; index < history.length; index += 1) {
     const event = history[index];
@@ -293,6 +313,7 @@ function summarizeAuditIntentMetrics(
     const focusSlotKey = focusSlotKeyForEvent(event);
     if (focusSlotKey) {
       addFocusTargetAudit(targetQuality.focus, history, index, candidateSeat, focusSlotKey);
+      addFocusReasonAuditForEvent(focusReason, event, candidateSeat, focusSlotKey);
     }
 
     if (intent.woundedLevelUpHeal) {
@@ -314,7 +335,7 @@ function summarizeAuditIntentMetrics(
     }
   }
 
-  return { metrics, lowStoneByDecision, targetQuality };
+  return { metrics, lowStoneByDecision, targetQuality, focusReason };
 }
 
 function addShieldTargetAudit(
@@ -444,6 +465,103 @@ function addFocusTargetAudit(
   if (lowStone && !nextAttack && !nextExecution && !nextLevelUp) {
     target.lowStoneNoNextWork += 1;
   }
+}
+
+function addFocusReasonAuditForEvent(
+  target: FocusReasonAudit,
+  event: MasterLabDecisionEvent,
+  candidateSeat: PlayerId,
+  focusSlotKey: string,
+): void {
+  if (event.after.players[candidateSeat].stones > 1) {
+    return;
+  }
+
+  target.lowStoneFocus += 1;
+  const opponentSeat = opponentSeatOf(candidateSeat);
+  const otherReady = ownReadyMonsterSlots(event.before, candidateSeat).filter((slot) => slot.slotKey !== focusSlotKey);
+  if (otherReady.length > 0) {
+    target.otherReadyMonster += 1;
+  } else {
+    target.noOtherReadyMonster += 1;
+  }
+  if (frontEnemyInReach(event.before, candidateSeat)) {
+    target.frontEnemyInReach += 1;
+  }
+  if (canLikelySummon(event.before, candidateSeat)) {
+    target.summonWindow += 1;
+  }
+  if (canLikelyWake(event.before, candidateSeat)) {
+    target.wakeWindow += 1;
+  }
+  if (event.before.players[candidateSeat].stones >= 3 && event.before.players[opponentSeat].hp > 0) {
+    target.masterAttackWindow += 1;
+  }
+  if (blackFrontThreatRemains(event.after, opponentSeat)) {
+    target.blackFrontThreatLeft += 1;
+  }
+}
+
+function ownReadyMonsterSlots(
+  state: MasterLabGameStateSummary,
+  playerId: PlayerId,
+): MasterLabGameStateSummary["slots"] {
+  return state.slots.filter((slot) =>
+    slot.owner === playerId &&
+    !!slot.card &&
+    slot.status === "active" &&
+    (slot.actionCount ?? 0) < (slot.actionLimit ?? 1),
+  );
+}
+
+function frontEnemyInReach(state: MasterLabGameStateSummary, playerId: PlayerId): boolean {
+  const opponentSeat = opponentSeatOf(playerId);
+  return ownReadyMonsterSlots(state, playerId).some((slot) => {
+    const lane = laneForSlotKey(slot.slotKey);
+    return isFrontSlot(slot.slotKey) && state.slots.some((targetSlot) =>
+      targetSlot.owner === opponentSeat &&
+      !!targetSlot.card &&
+      isFrontSlot(targetSlot.slotKey) &&
+      laneForSlotKey(targetSlot.slotKey) === lane,
+    );
+  });
+}
+
+function canLikelySummon(state: MasterLabGameStateSummary, playerId: PlayerId): boolean {
+  return (
+    state.players[playerId].hand > 0 &&
+    state.players[playerId].stones >= 1 &&
+    state.slots.some((slot) => slot.slotKey.startsWith(`${playerId}_`) && !slot.card)
+  );
+}
+
+function canLikelyWake(state: MasterLabGameStateSummary, playerId: PlayerId): boolean {
+  return (
+    state.players[playerId].stones >= 2 &&
+    state.slots.some((slot) => slot.owner === playerId && !!slot.card && slot.status === "prepared")
+  );
+}
+
+function blackFrontThreatRemains(state: MasterLabGameStateSummary, opponentSeat: PlayerId): boolean {
+  return (
+    state.players[opponentSeat].baseMasterId === "black" &&
+    state.players[opponentSeat].stones >= 3 &&
+    state.slots.some((slot) => slot.owner === opponentSeat && !!slot.card && slot.status === "active" && isFrontSlot(slot.slotKey))
+  );
+}
+
+function isFrontSlot(slotKey: string): boolean {
+  return slotKey.includes("_front_");
+}
+
+function laneForSlotKey(slotKey: string): "left" | "right" | undefined {
+  if (slotKey.endsWith("_left")) {
+    return "left";
+  }
+  if (slotKey.endsWith("_right")) {
+    return "right";
+  }
+  return undefined;
 }
 
 function nextOwnTurnNumberAfter(
@@ -845,6 +963,12 @@ function addTargetQualityAudit(target: TargetQualityAudit, source: TargetQuality
   }
 }
 
+function addFocusReasonAudit(target: FocusReasonAudit, source: FocusReasonAudit): void {
+  for (const key of Object.keys(target) as Array<keyof FocusReasonAudit>) {
+    target[key] += source[key];
+  }
+}
+
 function emptyIntentMetrics(): WhiteAiTurnIntentMetrics {
   return {
     totalActions: 0,
@@ -898,6 +1022,19 @@ function emptyTargetQualityAudit(): TargetQualityAudit {
   };
 }
 
+function emptyFocusReasonAudit(): FocusReasonAudit {
+  return {
+    lowStoneFocus: 0,
+    noOtherReadyMonster: 0,
+    otherReadyMonster: 0,
+    frontEnemyInReach: 0,
+    summonWindow: 0,
+    wakeWindow: 0,
+    masterAttackWindow: 0,
+    blackFrontThreatLeft: 0,
+  };
+}
+
 function formatAuditMarkdown(report: WhiteAiLossAuditReport): string {
   return [
     "# White AI Loss Audit",
@@ -909,8 +1046,8 @@ function formatAuditMarkdown(report: WhiteAiLossAuditReport): string {
     "",
     "## Summary",
     "",
-    "| Variant | W-L-D | Avg Turns | Loss Opp HP | Loss Seeds | Win Intent | Loss Intent | Win Target Quality | Loss Target Quality | Loss LowS By Action | Notes |",
-    "| --- | --- | ---: | ---: | --- | --- | --- | --- | --- | --- | --- |",
+    "| Variant | W-L-D | Avg Turns | Loss Opp HP | Loss Seeds | Win Intent | Loss Intent | Win Target Quality | Loss Target Quality | Loss LowS By Action | Loss Focus Reason | Notes |",
+    "| --- | --- | ---: | ---: | --- | --- | --- | --- | --- | --- | --- | --- |",
     ...report.audits.map(formatAuditRow),
     "",
     "## Reading",
@@ -923,6 +1060,7 @@ function formatAuditMarkdown(report: WhiteAiLossAuditReport): string {
     "- `Target Quality` の `WNow` はウェイクアップ対象が同ターンに攻撃した率、`WDead` は次自ターン前に倒された率、`WLowNo` は低石で起こして同ターン仕事しなかった回数。",
     "- `Target Quality` の `FNext` はfocus対象が次自ターンに攻撃した率、`FLowNo` は低石focus後に次自ターン仕事へ変換されなかった回数。",
     "- `Loss LowS By Action` は負け試合で低石化した布石の行動種別。ここが偏るほど、次候補の狙いを絞りやすい。",
+    "- `Loss Focus Reason` は負け試合の低石focus直前に残っていた代替手の粗い監査。`NoOther` は他の行動可能味方なし、`Other` は他の行動可能味方あり、`FrontReach` は同列前衛へ触れる味方あり、`Summon` / `Wake` / `MA` は召喚・ウェイク・マスターアタック余地あり、`BlkThreat` は黒前衛打点源が残った回数。",
   ].join("\n");
 }
 
@@ -938,6 +1076,7 @@ function formatAuditRow(audit: VariantAudit): string {
     formatTargetQuality(audit.outcomes.win.targetQuality),
     formatTargetQuality(audit.outcomes.loss.targetQuality),
     formatLowStoneByDecision(audit.outcomes.loss.lowStoneByDecision),
+    formatFocusReason(audit.outcomes.loss.focusReason),
     audit.notes.join("<br>"),
   ].map(escapeCell).join(" | ").replace(/^/, "| ").replace(/$/, " |");
 }
@@ -997,6 +1136,22 @@ function formatTargetQuality(target: TargetQualityAudit): string {
           `FLowNo ${target.focus.lowStoneNoNextWork}/${target.focus.lowStoneFocus}`,
         ].join(" ")
       : "F -",
+  ].join("<br>");
+}
+
+function formatFocusReason(source: FocusReasonAudit): string {
+  if (source.lowStoneFocus <= 0) {
+    return "-";
+  }
+  return [
+    `LowF ${source.lowStoneFocus}`,
+    `NoOther ${formatPercent(rate(source.noOtherReadyMonster, source.lowStoneFocus))}`,
+    `Other ${formatPercent(rate(source.otherReadyMonster, source.lowStoneFocus))}`,
+    `FrontReach ${formatPercent(rate(source.frontEnemyInReach, source.lowStoneFocus))}`,
+    `Summon ${formatPercent(rate(source.summonWindow, source.lowStoneFocus))}`,
+    `Wake ${formatPercent(rate(source.wakeWindow, source.lowStoneFocus))}`,
+    `MA ${formatPercent(rate(source.masterAttackWindow, source.lowStoneFocus))}`,
+    `BlkThreat ${formatPercent(rate(source.blackFrontThreatLeft, source.lowStoneFocus))}`,
   ].join("<br>");
 }
 

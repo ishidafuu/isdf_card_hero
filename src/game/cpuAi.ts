@@ -117,6 +117,7 @@ export interface CpuAiTuning {
     whiteSecondShieldLowStonePenalty?: number;
     whiteLowStoneFocusConversionBonus?: number;
     whiteWakeSafeWorkBonus?: number;
+    whiteLowStoneFocusMissedAttackPenalty?: number;
   };
 }
 
@@ -570,6 +571,15 @@ function decisionSituationalBonus(
   if (bias.whiteWakeSafeWorkBonus) {
     bonus += whiteWakeSafeWorkDecisionBonus(before, after, decision, perspective, bias.whiteWakeSafeWorkBonus);
   }
+  if (bias.whiteLowStoneFocusMissedAttackPenalty) {
+    bonus -= whiteLowStoneFocusMissedAttackDecisionPenalty(
+      before,
+      after,
+      decision,
+      perspective,
+      bias.whiteLowStoneFocusMissedAttackPenalty,
+    );
+  }
   return bonus;
 }
 
@@ -986,6 +996,25 @@ function whiteWakeSafeWorkDecisionBonus(
   return bestAttackOpportunityScore(after, targetSlotKey) > 0 || nextTurnWorkPotential(after, targetSlotKey, perspective) > 0
     ? value
     : 0;
+}
+
+function whiteLowStoneFocusMissedAttackDecisionPenalty(
+  before: GameState,
+  after: GameState,
+  decision: CpuDecision,
+  perspective: PlayerId,
+  value: number,
+): number {
+  if (
+    value <= 0 ||
+    before.players[perspective].masterId !== "white" ||
+    decision.type !== "focus" ||
+    after.players[perspective].stones > 1 ||
+    !isSetupDecision(before, after, decision, perspective)
+  ) {
+    return 0;
+  }
+  return bestAttackOpportunityScoreForPlayer(before, perspective) > 0 ? value : 0;
 }
 
 function nextTurnWorkPotential(state: GameState, slotKey: SlotKey, perspective: PlayerId): number {

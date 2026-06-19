@@ -740,6 +740,51 @@ describe("cpu ai", () => {
     expect(tuned?.totalScore).toBeCloseTo((baseline?.totalScore ?? 0) + 9);
   });
 
+  it("penalizes low-stone white focus when an attack is still available", () => {
+    const game = createCpuGame();
+    game.players.cpu.masterId = "white";
+    game.players.cpu.hand = [];
+    game.players.cpu.stones = 1;
+    for (const slot of Object.values(game.slots)) {
+      delete slot.monster;
+    }
+    game.slots.cpu_front_left.monster = createActiveMonster("takokke", "cpu");
+    game.slots.player_front_left.monster = createActiveMonster("takokke", "player", { hp: 3 });
+
+    const findFocus = (options = {}) =>
+      inspectCpuDecisionEvaluations(game, options).find(
+        (evaluation) => evaluation.decision.type === "focus" && evaluation.decision.slotKey === "cpu_front_left",
+      );
+    const baseline = findFocus();
+    const tuned = findFocus({ tunings: { cpu: { situationalBias: { whiteLowStoneFocusMissedAttackPenalty: 7 } } } });
+
+    expect(baseline).toBeDefined();
+    expect(tuned).toBeDefined();
+    expect(tuned?.totalScore).toBeCloseTo((baseline?.totalScore ?? 0) - 7);
+  });
+
+  it("does not penalize low-stone white focus when no attack is available", () => {
+    const game = createCpuGame();
+    game.players.cpu.masterId = "white";
+    game.players.cpu.hand = [];
+    game.players.cpu.stones = 1;
+    for (const slot of Object.values(game.slots)) {
+      delete slot.monster;
+    }
+    game.slots.cpu_back_left.monster = createActiveMonster("takokke", "cpu");
+
+    const findFocus = (options = {}) =>
+      inspectCpuDecisionEvaluations(game, options).find(
+        (evaluation) => evaluation.decision.type === "focus" && evaluation.decision.slotKey === "cpu_back_left",
+      );
+    const baseline = findFocus();
+    const tuned = findFocus({ tunings: { cpu: { situationalBias: { whiteLowStoneFocusMissedAttackPenalty: 7 } } } });
+
+    expect(baseline).toBeDefined();
+    expect(tuned).toBeDefined();
+    expect(tuned?.totalScore).toBeCloseTo(baseline?.totalScore ?? 0);
+  });
+
   it("bonuses white wake-up when work is visible and exposure is not lethal", () => {
     const game = createCpuGame();
     game.players.cpu.masterId = "white";

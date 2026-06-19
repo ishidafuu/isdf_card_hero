@@ -291,6 +291,12 @@ export const DEFAULT_WHITE_AI_TUNING_VARIANTS = [
   hybridVariant("pressure_white_focus_wake_quality_light_v1", "本実装候補: 白focus/wake布石品質軽量", "pressure-normal", {
     situationalBias: { whiteLowStoneFocusConversionBonus: 4, whiteWakeSafeWorkBonus: 4 },
   }, "focus/wake品質加点を薄く入れ、+8複合の上振れや守り寄り副作用を抑える。"),
+  hybridVariant("pressure_white_low_stone_focus_missed_attack_light_v1", "本実装候補: 白低石focus攻撃見送り抑制軽量", "pressure-normal", {
+    situationalBias: { whiteLowStoneFocusMissedAttackPenalty: 4 },
+  }, "白マスター限定で、攻撃という同ターンの仕事が残っている低石focusだけを軽く抑える。"),
+  hybridVariant("pressure_white_low_stone_focus_missed_attack_v1", "本実装候補: 白低石focus攻撃見送り抑制", "pressure-normal", {
+    situationalBias: { whiteLowStoneFocusMissedAttackPenalty: 8 },
+  }, "白マスター限定で、攻撃可能なのに低石focusで布石へ寄る局面を抑え、このターンの仕事を優先する。"),
   actionVariant("pressure_attack_monster_plus8", "攻撃: attack_monster+8", "pressure-normal", { actionBias: { attack_monster: 8 } }, "盤面制圧を少し厚くし、黒の前のめり展開を止める。"),
   actionVariant("pressure_attack_monster4_shield2", "混合: attack_monster+4 / shield+2", "pressure-normal", { actionBias: { attack_monster: 4, shield: 2 } }, "盤面処理と守りを薄く両立し、石枯渇を避ける現実的補正を見る。"),
   actionVariant("pressure_attack_monster_plus12", "攻撃: attack_monster+12", "pressure-normal", { actionBias: { attack_monster: 12 } }, "盤面制圧補正を強め、黒耐性の上限と勝ち切り遅延を測る。"),
