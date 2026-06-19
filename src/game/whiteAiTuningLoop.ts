@@ -309,6 +309,15 @@ export const DEFAULT_WHITE_AI_TUNING_VARIANTS = [
   hybridVariant("pressure_white_redirect_marked_attack_guard_v1", "本実装候補: 白誘導印攻撃抑制", "pressure-normal", {
     situationalBias: { whiteRedirectMarkedAttackPenalty: 8 },
   }, "挑発/スケープゴート印のある敵へ低成果攻撃を吸われる局面を抑え、Decoy相手の攻撃誘導に乗りすぎないか確認する。"),
+  hybridVariant("pressure_white_threat_left_low_stone_setup_guard_light_v1", "本実装候補: 白脅威残り低石布石抑制軽量", "pressure-normal", {
+    situationalBias: { whiteThreatLeftLowStoneSetupPenalty: 6 },
+  }, "白マスター限定で、敵前衛脅威が残る低石布石だけを軽く抑え、緊急/成果化シールドや仕事が見える起動/集中は残す。"),
+  hybridVariant("pressure_white_threat_left_low_stone_setup_guard_v1", "本実装候補: 白脅威残り低石布石抑制", "pressure-normal", {
+    situationalBias: { whiteThreatLeftLowStoneSetupPenalty: 10 },
+  }, "敵前衛脅威が残るまま石1以下へ落ちる布石を抑え、このターンの処理と次ターンの防御余力を優先する。"),
+  hybridVariant("pressure_white_threat_left_focus_missed_attack_v1", "本実装候補: 白脅威残り布石+対黒focus手がかり", "pressure-normal", {
+    situationalBias: { whiteThreatLeftLowStoneSetupPenalty: 6, whiteLowStoneFocusMissedAttackPenalty: 4 },
+  }, "汎用の脅威残り低石布石抑制に、黒限定で有効だった攻撃見送りfocus抑制を軽く混ぜ、副作用の有無を見る。"),
   actionVariant("pressure_attack_monster_plus8", "攻撃: attack_monster+8", "pressure-normal", { actionBias: { attack_monster: 8 } }, "盤面制圧を少し厚くし、黒の前のめり展開を止める。"),
   actionVariant("pressure_attack_monster4_shield2", "混合: attack_monster+4 / shield+2", "pressure-normal", { actionBias: { attack_monster: 4, shield: 2 } }, "盤面処理と守りを薄く両立し、石枯渇を避ける現実的補正を見る。"),
   actionVariant("pressure_attack_monster_plus12", "攻撃: attack_monster+12", "pressure-normal", { actionBias: { attack_monster: 12 } }, "盤面制圧補正を強め、黒耐性の上限と勝ち切り遅延を測る。"),

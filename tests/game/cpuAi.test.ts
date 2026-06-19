@@ -412,6 +412,34 @@ describe("cpu ai", () => {
     expect(whiteOpponentTuned?.totalScore).toBeCloseTo(whiteOpponentBaseline?.totalScore ?? 0);
   });
 
+  it("uses black front threat handling in the default white profile", () => {
+    const game = createCpuGame();
+    game.players.cpu.masterId = "white";
+    game.players.cpu.hand = [];
+    game.players.cpu.stones = 0;
+    game.players.player.masterId = "black";
+    game.players.player.stones = 3;
+    game.slots.cpu_front_left.monster = createActiveMonster("takokke", "cpu");
+    game.slots.player_front_left.monster = createActiveMonster("takokke", "player", { hp: 5 });
+
+    const findFrontAttack = (options = {}) =>
+      inspectCpuDecisionEvaluations(game, options).find(
+        (evaluation) =>
+          evaluation.decision.type === "attack" &&
+          evaluation.decision.action.target.kind === "monster" &&
+          evaluation.decision.action.target.slotKey === "player_front_left",
+      );
+    const disabled = findFrontAttack({
+      profile: "white",
+      tunings: { cpu: { situationalBias: { whiteBlackFrontThreatBonus: 0 } } },
+    });
+    const defaultWhite = findFrontAttack({ profile: "white" });
+
+    expect(disabled).toBeDefined();
+    expect(defaultWhite).toBeDefined();
+    expect(defaultWhite?.totalScore).toBeCloseTo((disabled?.totalScore ?? 0) + 8);
+  });
+
   it("applies white active front work tuning only when an enemy front is damaged", () => {
     const game = createCpuGame();
     game.players.cpu.masterId = "white";
@@ -551,6 +579,55 @@ describe("cpu ai", () => {
     expect(focusBaseline).toBeDefined();
     expect(focusTuned).toBeDefined();
     expect(focusTuned?.totalScore).toBeCloseTo((focusBaseline?.totalScore ?? 0) - 7);
+  });
+
+  it("penalizes low-stone setup while enemy front threats remain", () => {
+    const game = createCpuGame([{ cardId: "takokke", instanceId: "cpu_threat_left_summon" }]);
+    game.players.cpu.masterId = "white";
+    game.players.cpu.stones = 1;
+    for (const slot of Object.values(game.slots)) {
+      delete slot.monster;
+    }
+    game.slots.cpu_front_left.monster = createActiveMonster("beyond", "cpu", { hp: 3 });
+    game.slots.player_front_left.monster = createActiveMonster("takokke", "player");
+
+    const findSummon = (options = {}) =>
+      inspectCpuDecisionEvaluations(game, options).find(
+        (evaluation) => evaluation.decision.type === "summon" && evaluation.decision.handInstanceId === "cpu_threat_left_summon",
+      );
+    const baseline = findSummon();
+    const tuned = findSummon({ tunings: { cpu: { situationalBias: { whiteThreatLeftLowStoneSetupPenalty: 7 } } } });
+
+    expect(baseline).toBeDefined();
+    expect(tuned).toBeDefined();
+    expect(tuned?.totalScore).toBeCloseTo((baseline?.totalScore ?? 0) - 7);
+  });
+
+  it("does not penalize urgent low-stone shield while enemy front threats remain", () => {
+    const game = createCpuGame();
+    game.players.cpu.masterId = "white";
+    game.players.cpu.hand = [];
+    game.players.cpu.stones = 2;
+    for (const slot of Object.values(game.slots)) {
+      delete slot.monster;
+    }
+    game.slots.cpu_front_left.monster = createActiveMonster("beyond", "cpu", { hp: 2 });
+    game.slots.player_front_left.monster = createActiveMonster("takokke", "player");
+
+    const findShield = (options = {}) =>
+      inspectCpuDecisionEvaluations(game, options).find(
+        (evaluation) =>
+          evaluation.decision.type === "master_action" &&
+          evaluation.decision.actionId === "shield" &&
+          evaluation.decision.target.kind === "monster" &&
+          evaluation.decision.target.slotKey === "cpu_front_left",
+      );
+    const baseline = findShield();
+    const tuned = findShield({ tunings: { cpu: { situationalBias: { whiteThreatLeftLowStoneSetupPenalty: 7 } } } });
+
+    expect(baseline).toBeDefined();
+    expect(tuned).toBeDefined();
+    expect(tuned?.totalScore).toBeCloseTo(baseline?.totalScore ?? 0);
   });
 
   it("bonuses white shield and wake decisions when they convert into work", () => {

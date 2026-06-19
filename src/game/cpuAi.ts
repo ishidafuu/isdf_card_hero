@@ -121,6 +121,7 @@ export interface CpuAiTuning {
     whiteThreatSourceAttackBonus?: number;
     whiteSetupAfterThreatReductionBonus?: number;
     whiteRedirectMarkedAttackPenalty?: number;
+    whiteThreatLeftLowStoneSetupPenalty?: number;
   };
 }
 
@@ -174,6 +175,7 @@ const CPU_AI_PROFILE_CONFIG: Record<CpuAiProfile, CpuAiProfileConfig> = {
     tuning: {
       situationalBias: {
         whiteSecondShieldLowStonePenalty: 12,
+        whiteBlackFrontThreatBonus: 8,
       },
     },
   },
@@ -598,6 +600,15 @@ function decisionSituationalBonus(
   if (bias.whiteRedirectMarkedAttackPenalty) {
     bonus -= whiteRedirectMarkedAttackDecisionPenalty(before, after, decision, perspective, bias.whiteRedirectMarkedAttackPenalty);
   }
+  if (bias.whiteThreatLeftLowStoneSetupPenalty) {
+    bonus -= whiteThreatLeftLowStoneSetupDecisionPenalty(
+      before,
+      after,
+      decision,
+      perspective,
+      bias.whiteThreatLeftLowStoneSetupPenalty,
+    );
+  }
   return bonus;
 }
 
@@ -870,6 +881,44 @@ function whiteRedirectMarkedAttackDecisionPenalty(
   }
   const damage = targetBefore.hp - targetAfter.hp;
   return damage <= 0 || targetAfter.hp > 2 ? value : 0;
+}
+
+function whiteThreatLeftLowStoneSetupDecisionPenalty(
+  before: GameState,
+  after: GameState,
+  decision: CpuDecision,
+  perspective: PlayerId,
+  value: number,
+): number {
+  if (
+    value <= 0 ||
+    before.players[perspective].masterId !== "white" ||
+    after.players[perspective].stones > 1 ||
+    !isSetupDecision(before, after, decision, perspective) ||
+    !hasEnemyFrontThreatSource(after, perspective)
+  ) {
+    return 0;
+  }
+  return isHighQualityThreatFacingSetup(before, after, decision, perspective) ? 0 : value;
+}
+
+function isHighQualityThreatFacingSetup(
+  before: GameState,
+  after: GameState,
+  decision: CpuDecision,
+  perspective: PlayerId,
+): boolean {
+  if (decision.type === "master_action" && decision.actionId === "shield") {
+    return isUrgentShieldDecision(before, after, decision, perspective) || isConvertibleShieldDecision(after, decision, perspective);
+  }
+  if (decision.type === "master_action" && decision.actionId === "wake_up") {
+    return whiteWakeSafeWorkDecisionBonus(before, after, decision, perspective, 1) > 0;
+  }
+  if (decision.type === "focus") {
+    const threat = incomingThreat(after, decision.slotKey);
+    return !threat.lethal && nextTurnWorkPotential(after, decision.slotKey, perspective) > 0;
+  }
+  return false;
 }
 
 function whiteStrictShieldDecisionPenalty(
