@@ -811,6 +811,36 @@ describe("cpu ai", () => {
     expect(tuned?.totalScore).toBeCloseTo((baseline?.totalScore ?? 0) + 7);
   });
 
+  it("treats spent enemy front attackers as next-turn threat sources", () => {
+    const game = createCpuGame();
+    game.players.cpu.masterId = "white";
+    game.players.player.masterId = "white";
+    game.players.cpu.hand = [];
+    for (const slot of Object.values(game.slots)) {
+      delete slot.monster;
+    }
+    game.slots.cpu_front_left.monster = createActiveMonster("takokke", "cpu");
+    game.slots.player_front_left.monster = createActiveMonster("takokke", "player", {
+      hp: 3,
+      actionCount: 1,
+    });
+
+    const findAttack = (options = {}) =>
+      inspectCpuDecisionEvaluations(game, options).find(
+        (evaluation) =>
+          evaluation.decision.type === "attack" &&
+          evaluation.decision.action.attackerSlotKey === "cpu_front_left" &&
+          evaluation.decision.action.target.kind === "monster" &&
+          evaluation.decision.action.target.slotKey === "player_front_left",
+      );
+    const baseline = findAttack();
+    const tuned = findAttack({ tunings: { cpu: { situationalBias: { whiteThreatSourceAttackBonus: 7 } } } });
+
+    expect(baseline).toBeDefined();
+    expect(tuned).toBeDefined();
+    expect(tuned?.totalScore).toBeCloseTo((baseline?.totalScore ?? 0) + 7);
+  });
+
   it("bonuses low-stone setup only after current-turn work has cleared front threats", () => {
     const clearGame = createCpuGame();
     clearGame.players.cpu.masterId = "white";

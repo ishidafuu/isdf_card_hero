@@ -766,11 +766,8 @@ function whiteBlackFrontThreatDecisionBonus(
   perspective: PlayerId,
   value: number,
 ): number {
-  const targetSlotKey = whiteEnemyFrontAttackTarget(before, decision, perspective);
+  const targetSlotKey = whiteDamagingEnemyFrontAttackTarget(before, after, decision, perspective);
   if (!targetSlotKey || before.players[opponentOf(perspective)].masterId !== "black") {
-    return 0;
-  }
-  if (!enemyTargetWasDamagedOrRemoved(before, after, targetSlotKey, perspective)) {
     return 0;
   }
   return blackFrontMasterDamagePotential(before, targetSlotKey, opponentOf(perspective)) > 0 ? value : 0;
@@ -783,11 +780,7 @@ function whiteActiveFrontWorkDecisionBonus(
   perspective: PlayerId,
   value: number,
 ): number {
-  const targetSlotKey = whiteEnemyFrontAttackTarget(before, decision, perspective);
-  if (!targetSlotKey || !enemyTargetWasDamagedOrRemoved(before, after, targetSlotKey, perspective)) {
-    return 0;
-  }
-  return value;
+  return whiteDamagingEnemyFrontAttackTarget(before, after, decision, perspective) ? value : 0;
 }
 
 function whitePygmyFrontSetupDecisionBonus(
@@ -823,8 +816,8 @@ function whiteThreatSourceAttackDecisionBonus(
   perspective: PlayerId,
   value: number,
 ): number {
-  const targetSlotKey = whiteEnemyFrontAttackTarget(before, decision, perspective);
-  if (!targetSlotKey || !enemyTargetWasDamagedOrRemoved(before, after, targetSlotKey, perspective)) {
+  const targetSlotKey = whiteDamagingEnemyFrontAttackTarget(before, after, decision, perspective);
+  if (!targetSlotKey) {
     return 0;
   }
   return enemyFrontThreatSourcePotential(before, targetSlotKey, perspective) > 0 ? value : 0;
@@ -1135,6 +1128,19 @@ function whiteEnemyFrontAttackTarget(
   return targetSlot.row === "front" && targetSlot.monster?.owner === opponentOf(perspective) ? targetSlotKey : undefined;
 }
 
+function whiteDamagingEnemyFrontAttackTarget(
+  before: GameState,
+  after: GameState,
+  decision: CpuDecision,
+  perspective: PlayerId,
+): SlotKey | undefined {
+  const targetSlotKey = whiteEnemyFrontAttackTarget(before, decision, perspective);
+  if (!targetSlotKey || !enemyTargetWasDamagedOrRemoved(before, after, targetSlotKey, perspective)) {
+    return undefined;
+  }
+  return targetSlotKey;
+}
+
 function enemyTargetWasDamagedOrRemoved(
   before: GameState,
   after: GameState,
@@ -1162,14 +1168,14 @@ function blackFrontMasterDamagePotential(state: GameState, slotKey: SlotKey, att
 
 function enemyFrontThreatSourcePotential(state: GameState, slotKey: SlotKey, perspective: PlayerId): number {
   const opponent = opponentOf(perspective);
-  const slot = state.slots[slotKey];
+  const readyState = readyPlayerForTacticalEvaluation(state, opponent);
+  const slot = readyState.slots[slotKey];
   const monster = slot.monster;
   if (!monster || monster.owner !== opponent || monster.status !== "active" || slot.row !== "front") {
     return 0;
   }
-  const scopedState = { ...state, currentPlayer: opponent } as GameState;
   return Math.max(
-    bestAttackOpportunityScore(scopedState, slotKey),
+    bestAttackOpportunityScore(readyState, slotKey),
     blackFrontMasterDamagePotential(state, slotKey, opponent) * 100,
   );
 }
