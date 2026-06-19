@@ -30,6 +30,7 @@ interface OutcomeAudit {
   lowStoneByDecision: Record<string, number>;
   targetQuality: TargetQualityAudit;
   focusReason: FocusReasonAudit;
+  threatBeforeSetup: ThreatBeforeSetupAudit;
 }
 
 interface TargetQualityAudit {
@@ -80,6 +81,17 @@ interface FocusReasonAudit {
   wakeWindow: number;
   masterAttackWindow: number;
   blackFrontThreatLeft: number;
+}
+
+interface ThreatBeforeSetupAudit {
+  lowStoneSetup: number;
+  enemyFrontThreatBefore: number;
+  reducibleFrontThreatBefore: number;
+  enemyFrontThreatLeftAfter: number;
+  blackFrontThreatLeftAfter: number;
+  setupAfterSpentActionNoThreat: number;
+  redirectMarkedAttacks: number;
+  redirectMarkedNoExecution: number;
 }
 
 interface VariantAudit {
@@ -155,6 +167,7 @@ function buildAuditReport(loopReport: ReturnType<typeof runWhiteAiTuningLoop>): 
       addLowStoneByDecision(outcomeAudit.lowStoneByDecision, intent.lowStoneByDecision);
       addTargetQualityAudit(outcomeAudit.targetQuality, intent.targetQuality);
       addFocusReasonAudit(outcomeAudit.focusReason, intent.focusReason);
+      addThreatBeforeSetupAudit(outcomeAudit.threatBeforeSetup, intent.threatBeforeSetup);
       if (outcome === "win") {
         audit.wins += 1;
       } else if (outcome === "loss") {
@@ -210,6 +223,7 @@ function createOutcomeAudit(): OutcomeAudit {
     lowStoneByDecision: {},
     targetQuality: emptyTargetQualityAudit(),
     focusReason: emptyFocusReasonAudit(),
+    threatBeforeSetup: emptyThreatBeforeSetupAudit(),
   };
 }
 
@@ -269,11 +283,13 @@ function summarizeAuditIntentMetrics(
   lowStoneByDecision: Record<string, number>;
   targetQuality: TargetQualityAudit;
   focusReason: FocusReasonAudit;
+  threatBeforeSetup: ThreatBeforeSetupAudit;
 } {
   const metrics = emptyIntentMetrics();
   const lowStoneByDecision: Record<string, number> = {};
   const targetQuality = emptyTargetQualityAudit();
   const focusReason = emptyFocusReasonAudit();
+  const threatBeforeSetup = emptyThreatBeforeSetupAudit();
 
   for (let index = 0; index < history.length; index += 1) {
     const event = history[index];
@@ -291,8 +307,10 @@ function summarizeAuditIntentMetrics(
         metrics.lowStoneAfterSetup += 1;
         const kind = decisionKind(event.decision);
         lowStoneByDecision[kind] = (lowStoneByDecision[kind] ?? 0) + 1;
+        addLowStoneSetupThreatAudit(threatBeforeSetup, event, candidateSeat);
       }
     }
+    addRedirectMarkedAttackAudit(threatBeforeSetup, event, candidateSeat, intent);
 
     const shieldTargetSlotKey = shieldTargetSlotKeyForEvent(event);
     if (shieldTargetSlotKey) {
@@ -335,7 +353,7 @@ function summarizeAuditIntentMetrics(
     }
   }
 
-  return { metrics, lowStoneByDecision, targetQuality, focusReason };
+  return { metrics, lowStoneByDecision, targetQuality, focusReason, threatBeforeSetup };
 }
 
 function addShieldTargetAudit(
@@ -502,6 +520,55 @@ function addFocusReasonAuditForEvent(
   }
 }
 
+function addLowStoneSetupThreatAudit(
+  target: ThreatBeforeSetupAudit,
+  event: MasterLabDecisionEvent,
+  candidateSeat: PlayerId,
+): void {
+  target.lowStoneSetup += 1;
+  const opponentSeat = opponentSeatOf(candidateSeat);
+  const threatBefore = enemyFrontThreatRemains(event.before, candidateSeat);
+  const threatAfter = enemyFrontThreatRemains(event.after, candidateSeat);
+  if (threatBefore) {
+    target.enemyFrontThreatBefore += 1;
+  }
+  if (frontEnemyInReach(event.before, candidateSeat)) {
+    target.reducibleFrontThreatBefore += 1;
+  }
+  if (threatAfter) {
+    target.enemyFrontThreatLeftAfter += 1;
+  }
+  if (blackFrontThreatRemains(event.after, opponentSeat)) {
+    target.blackFrontThreatLeftAfter += 1;
+  }
+  if (ownSpentMonsterActionCount(event.before, candidateSeat) > 0 && !threatBefore) {
+    target.setupAfterSpentActionNoThreat += 1;
+  }
+}
+
+function addRedirectMarkedAttackAudit(
+  target: ThreatBeforeSetupAudit,
+  event: MasterLabDecisionEvent,
+  candidateSeat: PlayerId,
+  intent: AuditIntentEventAnalysis,
+): void {
+  if (!event.decision.startsWith("attack:")) {
+    return;
+  }
+  const targetSlotKey = targetSlotKeyForEvent(event);
+  const targetSlot = targetSlotKey ? slotByKey(event.before, targetSlotKey) : undefined;
+  if (targetSlot?.owner !== opponentSeatOf(candidateSeat) || !targetSlot.card) {
+    return;
+  }
+  if (!targetSlot.scapegoat && !targetSlot.provokeTargetSlotKey) {
+    return;
+  }
+  target.redirectMarkedAttacks += 1;
+  if (!intent.execution) {
+    target.redirectMarkedNoExecution += 1;
+  }
+}
+
 function ownReadyMonsterSlots(
   state: MasterLabGameStateSummary,
   playerId: PlayerId,
@@ -548,6 +615,15 @@ function blackFrontThreatRemains(state: MasterLabGameStateSummary, opponentSeat:
     state.players[opponentSeat].stones >= 3 &&
     state.slots.some((slot) => slot.owner === opponentSeat && !!slot.card && slot.status === "active" && isFrontSlot(slot.slotKey))
   );
+}
+
+function enemyFrontThreatRemains(state: MasterLabGameStateSummary, playerId: PlayerId): boolean {
+  const opponentSeat = opponentSeatOf(playerId);
+  return state.slots.some((slot) => slot.owner === opponentSeat && !!slot.card && slot.status === "active" && isFrontSlot(slot.slotKey));
+}
+
+function ownSpentMonsterActionCount(state: MasterLabGameStateSummary, playerId: PlayerId): number {
+  return state.slots.filter((slot) => slot.owner === playerId && !!slot.card && (slot.actionCount ?? 0) > 0).length;
 }
 
 function isFrontSlot(slotKey: string): boolean {
@@ -969,6 +1045,12 @@ function addFocusReasonAudit(target: FocusReasonAudit, source: FocusReasonAudit)
   }
 }
 
+function addThreatBeforeSetupAudit(target: ThreatBeforeSetupAudit, source: ThreatBeforeSetupAudit): void {
+  for (const key of Object.keys(target) as Array<keyof ThreatBeforeSetupAudit>) {
+    target[key] += source[key];
+  }
+}
+
 function emptyIntentMetrics(): WhiteAiTurnIntentMetrics {
   return {
     totalActions: 0,
@@ -1035,6 +1117,19 @@ function emptyFocusReasonAudit(): FocusReasonAudit {
   };
 }
 
+function emptyThreatBeforeSetupAudit(): ThreatBeforeSetupAudit {
+  return {
+    lowStoneSetup: 0,
+    enemyFrontThreatBefore: 0,
+    reducibleFrontThreatBefore: 0,
+    enemyFrontThreatLeftAfter: 0,
+    blackFrontThreatLeftAfter: 0,
+    setupAfterSpentActionNoThreat: 0,
+    redirectMarkedAttacks: 0,
+    redirectMarkedNoExecution: 0,
+  };
+}
+
 function formatAuditMarkdown(report: WhiteAiLossAuditReport): string {
   return [
     "# White AI Loss Audit",
@@ -1046,8 +1141,8 @@ function formatAuditMarkdown(report: WhiteAiLossAuditReport): string {
     "",
     "## Summary",
     "",
-    "| Variant | W-L-D | Avg Turns | Loss Opp HP | Loss Seeds | Win Intent | Loss Intent | Win Target Quality | Loss Target Quality | Loss LowS By Action | Loss Focus Reason | Notes |",
-    "| --- | --- | ---: | ---: | --- | --- | --- | --- | --- | --- | --- | --- |",
+    "| Variant | W-L-D | Avg Turns | Loss Opp HP | Loss Seeds | Win Intent | Loss Intent | Win Target Quality | Loss Target Quality | Loss LowS By Action | Loss Focus Reason | Loss Threat Before Setup | Notes |",
+    "| --- | --- | ---: | ---: | --- | --- | --- | --- | --- | --- | --- | --- | --- |",
     ...report.audits.map(formatAuditRow),
     "",
     "## Reading",
@@ -1061,6 +1156,7 @@ function formatAuditMarkdown(report: WhiteAiLossAuditReport): string {
     "- `Target Quality` の `FNext` はfocus対象が次自ターンに攻撃した率、`FLowNo` は低石focus後に次自ターン仕事へ変換されなかった回数。",
     "- `Loss LowS By Action` は負け試合で低石化した布石の行動種別。ここが偏るほど、次候補の狙いを絞りやすい。",
     "- `Loss Focus Reason` は負け試合の低石focus直前に残っていた代替手の粗い監査。`NoOther` は他の行動可能味方なし、`Other` は他の行動可能味方あり、`FrontReach` は同列前衛へ触れる味方あり、`Summon` / `Wake` / `MA` は召喚・ウェイク・マスターアタック余地あり、`BlkThreat` は黒前衛打点源が残った回数。",
+    "- `Loss Threat Before Setup` は負け試合の低石布石前後の脅威監査。`ThreatB` は布石前に敵前衛脅威あり、`Reducible` は既存アクティブ駒で同列前衛へ触れた率、`ThreatA` は布石後も敵前衛脅威あり、`ClearSetup` は何か行動した後に脅威なしで布石した率、`RedirectNo` は挑発/スケープゴート印つき対象への攻撃が成果にならなかった率。",
   ].join("\n");
 }
 
@@ -1077,6 +1173,7 @@ function formatAuditRow(audit: VariantAudit): string {
     formatTargetQuality(audit.outcomes.loss.targetQuality),
     formatLowStoneByDecision(audit.outcomes.loss.lowStoneByDecision),
     formatFocusReason(audit.outcomes.loss.focusReason),
+    formatThreatBeforeSetup(audit.outcomes.loss.threatBeforeSetup),
     audit.notes.join("<br>"),
   ].map(escapeCell).join(" | ").replace(/^/, "| ").replace(/$/, " |");
 }
@@ -1152,6 +1249,22 @@ function formatFocusReason(source: FocusReasonAudit): string {
     `Wake ${formatPercent(rate(source.wakeWindow, source.lowStoneFocus))}`,
     `MA ${formatPercent(rate(source.masterAttackWindow, source.lowStoneFocus))}`,
     `BlkThreat ${formatPercent(rate(source.blackFrontThreatLeft, source.lowStoneFocus))}`,
+  ].join("<br>");
+}
+
+function formatThreatBeforeSetup(source: ThreatBeforeSetupAudit): string {
+  if (source.lowStoneSetup <= 0 && source.redirectMarkedAttacks <= 0) {
+    return "-";
+  }
+  return [
+    `LowSetup ${source.lowStoneSetup}`,
+    `ThreatB ${formatPercent(rate(source.enemyFrontThreatBefore, source.lowStoneSetup))}`,
+    `Reducible ${formatPercent(rate(source.reducibleFrontThreatBefore, source.lowStoneSetup))}`,
+    `ThreatA ${formatPercent(rate(source.enemyFrontThreatLeftAfter, source.lowStoneSetup))}`,
+    `BlkA ${formatPercent(rate(source.blackFrontThreatLeftAfter, source.lowStoneSetup))}`,
+    `ClearSetup ${formatPercent(rate(source.setupAfterSpentActionNoThreat, source.lowStoneSetup))}`,
+    `Redirect ${source.redirectMarkedAttacks}`,
+    `RedirectNo ${formatPercent(rate(source.redirectMarkedNoExecution, source.redirectMarkedAttacks))}`,
   ].join("<br>");
 }
 

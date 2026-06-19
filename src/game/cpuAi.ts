@@ -118,6 +118,9 @@ export interface CpuAiTuning {
     whiteLowStoneFocusConversionBonus?: number;
     whiteWakeSafeWorkBonus?: number;
     whiteLowStoneFocusMissedAttackPenalty?: number;
+    whiteThreatSourceAttackBonus?: number;
+    whiteSetupAfterThreatReductionBonus?: number;
+    whiteRedirectMarkedAttackPenalty?: number;
   };
 }
 
@@ -580,6 +583,21 @@ function decisionSituationalBonus(
       bias.whiteLowStoneFocusMissedAttackPenalty,
     );
   }
+  if (bias.whiteThreatSourceAttackBonus) {
+    bonus += whiteThreatSourceAttackDecisionBonus(before, after, decision, perspective, bias.whiteThreatSourceAttackBonus);
+  }
+  if (bias.whiteSetupAfterThreatReductionBonus) {
+    bonus += whiteSetupAfterThreatReductionDecisionBonus(
+      before,
+      after,
+      decision,
+      perspective,
+      bias.whiteSetupAfterThreatReductionBonus,
+    );
+  }
+  if (bias.whiteRedirectMarkedAttackPenalty) {
+    bonus -= whiteRedirectMarkedAttackDecisionPenalty(before, after, decision, perspective, bias.whiteRedirectMarkedAttackPenalty);
+  }
   return bonus;
 }
 
@@ -796,6 +814,69 @@ function whitePygmyFrontSetupDecisionBonus(
     return 0;
   }
   return bestAttackOpportunityScore(after, undefined, targetSlotKey) >= 300 || targetAfter.hp <= 2 ? value : 0;
+}
+
+function whiteThreatSourceAttackDecisionBonus(
+  before: GameState,
+  after: GameState,
+  decision: CpuDecision,
+  perspective: PlayerId,
+  value: number,
+): number {
+  const targetSlotKey = whiteEnemyFrontAttackTarget(before, decision, perspective);
+  if (!targetSlotKey || !enemyTargetWasDamagedOrRemoved(before, after, targetSlotKey, perspective)) {
+    return 0;
+  }
+  return enemyFrontThreatSourcePotential(before, targetSlotKey, perspective) > 0 ? value : 0;
+}
+
+function whiteSetupAfterThreatReductionDecisionBonus(
+  before: GameState,
+  after: GameState,
+  decision: CpuDecision,
+  perspective: PlayerId,
+  value: number,
+): number {
+  if (
+    value <= 0 ||
+    before.players[perspective].masterId !== "white" ||
+    after.players[perspective].stones > 1 ||
+    !isSetupDecision(before, after, decision, perspective)
+  ) {
+    return 0;
+  }
+  if (currentTurnSpentMonsterActionCount(before, perspective) <= 0 || hasEnemyFrontThreatSource(before, perspective)) {
+    return 0;
+  }
+  return value;
+}
+
+function whiteRedirectMarkedAttackDecisionPenalty(
+  before: GameState,
+  after: GameState,
+  decision: CpuDecision,
+  perspective: PlayerId,
+  value: number,
+): number {
+  if (
+    value <= 0 ||
+    before.players[perspective].masterId !== "white" ||
+    decision.type !== "attack" ||
+    decision.action.target.kind !== "monster"
+  ) {
+    return 0;
+  }
+  const targetSlotKey = decision.action.target.slotKey;
+  const targetBefore = before.slots[targetSlotKey].monster;
+  if (!targetBefore || targetBefore.owner !== opponentOf(perspective) || (!targetBefore.scapegoat && !targetBefore.provokeTargetSlotKey)) {
+    return 0;
+  }
+  const targetAfter = after.slots[targetSlotKey].monster;
+  if (!targetAfter || targetAfter.owner !== targetBefore.owner || targetAfter.instanceId !== targetBefore.instanceId) {
+    return 0;
+  }
+  const damage = targetBefore.hp - targetAfter.hp;
+  return damage <= 0 || targetAfter.hp > 2 ? value : 0;
 }
 
 function whiteStrictShieldDecisionPenalty(
@@ -1077,6 +1158,31 @@ function blackFrontMasterDamagePotential(state: GameState, slotKey: SlotKey, att
     state.players[attackerId].masterId === "black" &&
     state.players[attackerId].stones >= getMasterActionCost("berserk_power");
   return Math.max(directDamage, canBerserk ? directMasterDamageFromSlotWithPowerBonus(state, slotKey, attackerId, 1) : 0);
+}
+
+function enemyFrontThreatSourcePotential(state: GameState, slotKey: SlotKey, perspective: PlayerId): number {
+  const opponent = opponentOf(perspective);
+  const slot = state.slots[slotKey];
+  const monster = slot.monster;
+  if (!monster || monster.owner !== opponent || monster.status !== "active" || slot.row !== "front") {
+    return 0;
+  }
+  const scopedState = { ...state, currentPlayer: opponent } as GameState;
+  return Math.max(
+    bestAttackOpportunityScore(scopedState, slotKey),
+    blackFrontMasterDamagePotential(state, slotKey, opponent) * 100,
+  );
+}
+
+function hasEnemyFrontThreatSource(state: GameState, perspective: PlayerId): boolean {
+  return FIELD_ORDER_BY_PLAYER[opponentOf(perspective)].some((slotKey) => enemyFrontThreatSourcePotential(state, slotKey, perspective) > 0);
+}
+
+function currentTurnSpentMonsterActionCount(state: GameState, perspective: PlayerId): number {
+  return FIELD_ORDER_BY_PLAYER[perspective].filter((slotKey) => {
+    const monster = state.slots[slotKey].monster;
+    return !!monster && monster.owner === perspective && monster.actionCount > 0;
+  }).length;
 }
 
 function directMasterDamageFromSlotWithPowerBonus(

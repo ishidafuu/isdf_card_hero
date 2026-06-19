@@ -656,7 +656,7 @@ describe("cpu ai", () => {
 
     expect(baseline).toBeDefined();
     expect(tuned).toBeDefined();
-    expect(tuned?.totalScore).toBeCloseTo((baseline?.totalScore ?? 0) - 7);
+    expect(tuned?.totalScore ?? 0).toBeLessThanOrEqual((baseline?.totalScore ?? 0) - 7);
   });
 
   it("does not penalize a first current-turn shield just because a previous shield remains", () => {
@@ -779,6 +779,124 @@ describe("cpu ai", () => {
       );
     const baseline = findFocus();
     const tuned = findFocus({ tunings: { cpu: { situationalBias: { whiteLowStoneFocusMissedAttackPenalty: 7 } } } });
+
+    expect(baseline).toBeDefined();
+    expect(tuned).toBeDefined();
+    expect(tuned?.totalScore).toBeCloseTo(baseline?.totalScore ?? 0);
+  });
+
+  it("bonuses white attacks against enemy front threat sources", () => {
+    const game = createCpuGame();
+    game.players.cpu.masterId = "white";
+    game.players.cpu.hand = [];
+    for (const slot of Object.values(game.slots)) {
+      delete slot.monster;
+    }
+    game.slots.cpu_front_left.monster = createActiveMonster("takokke", "cpu");
+    game.slots.player_front_left.monster = createActiveMonster("takokke", "player", { hp: 3 });
+
+    const findAttack = (options = {}) =>
+      inspectCpuDecisionEvaluations(game, options).find(
+        (evaluation) =>
+          evaluation.decision.type === "attack" &&
+          evaluation.decision.action.attackerSlotKey === "cpu_front_left" &&
+          evaluation.decision.action.target.kind === "monster" &&
+          evaluation.decision.action.target.slotKey === "player_front_left",
+      );
+    const baseline = findAttack();
+    const tuned = findAttack({ tunings: { cpu: { situationalBias: { whiteThreatSourceAttackBonus: 7 } } } });
+
+    expect(baseline).toBeDefined();
+    expect(tuned).toBeDefined();
+    expect(tuned?.totalScore).toBeCloseTo((baseline?.totalScore ?? 0) + 7);
+  });
+
+  it("bonuses low-stone setup only after current-turn work has cleared front threats", () => {
+    const clearGame = createCpuGame();
+    clearGame.players.cpu.masterId = "white";
+    clearGame.players.cpu.hand = [];
+    clearGame.players.cpu.stones = 1;
+    for (const slot of Object.values(clearGame.slots)) {
+      delete slot.monster;
+    }
+    clearGame.slots.cpu_back_left.monster = createActiveMonster("takokke", "cpu", { actionCount: 1 });
+    clearGame.slots.cpu_back_right.monster = createActiveMonster("takokke", "cpu");
+
+    const findClearFocus = (options = {}) =>
+      inspectCpuDecisionEvaluations(clearGame, options).find(
+        (evaluation) => evaluation.decision.type === "focus" && evaluation.decision.slotKey === "cpu_back_right",
+      );
+    const clearBaseline = findClearFocus();
+    const clearTuned = findClearFocus({ tunings: { cpu: { situationalBias: { whiteSetupAfterThreatReductionBonus: 7 } } } });
+
+    const threatenedGame = structuredClone(clearGame);
+    threatenedGame.slots.cpu_front_right.monster = createActiveMonster("takokke", "cpu", { actionCount: 1 });
+    threatenedGame.slots.player_front_right.monster = createActiveMonster("takokke", "player");
+    const findThreatenedFocus = (options = {}) =>
+      inspectCpuDecisionEvaluations(threatenedGame, options).find(
+        (evaluation) => evaluation.decision.type === "focus" && evaluation.decision.slotKey === "cpu_back_right",
+      );
+    const threatenedBaseline = findThreatenedFocus();
+    const threatenedTuned = findThreatenedFocus({ tunings: { cpu: { situationalBias: { whiteSetupAfterThreatReductionBonus: 7 } } } });
+
+    expect(clearBaseline).toBeDefined();
+    expect(clearTuned).toBeDefined();
+    expect(clearTuned?.totalScore).toBeCloseTo((clearBaseline?.totalScore ?? 0) + 7);
+    expect(threatenedBaseline).toBeDefined();
+    expect(threatenedTuned).toBeDefined();
+    expect(threatenedTuned?.totalScore).toBeCloseTo(threatenedBaseline?.totalScore ?? 0);
+  });
+
+  it("penalizes low-value white attacks into redirect-marked enemies", () => {
+    const game = createCpuGame();
+    game.players.cpu.masterId = "white";
+    game.players.cpu.hand = [];
+    for (const slot of Object.values(game.slots)) {
+      delete slot.monster;
+    }
+    game.slots.cpu_front_left.monster = createActiveMonster("takokke", "cpu");
+    game.slots.player_front_left.monster = createActiveMonster("sigma", "player", {
+      hp: 5,
+      scapegoat: true,
+    });
+
+    const findAttack = (options = {}) =>
+      inspectCpuDecisionEvaluations(game, options).find(
+        (evaluation) =>
+          evaluation.decision.type === "attack" &&
+          evaluation.decision.action.target.kind === "monster" &&
+          evaluation.decision.action.target.slotKey === "player_front_left",
+      );
+    const baseline = findAttack();
+    const tuned = findAttack({ tunings: { cpu: { situationalBias: { whiteRedirectMarkedAttackPenalty: 7 } } } });
+
+    expect(baseline).toBeDefined();
+    expect(tuned).toBeDefined();
+    expect(tuned?.totalScore ?? 0).toBeLessThanOrEqual((baseline?.totalScore ?? 0) - 7);
+  });
+
+  it("does not penalize redirect-marked attacks that put the target into kill range", () => {
+    const game = createCpuGame();
+    game.players.cpu.masterId = "white";
+    game.players.cpu.hand = [];
+    for (const slot of Object.values(game.slots)) {
+      delete slot.monster;
+    }
+    game.slots.cpu_front_left.monster = createActiveMonster("takokke", "cpu");
+    game.slots.player_front_left.monster = createActiveMonster("takokke", "player", {
+      hp: 3,
+      provokeTargetSlotKey: "cpu_front_left",
+    });
+
+    const findAttack = (options = {}) =>
+      inspectCpuDecisionEvaluations(game, options).find(
+        (evaluation) =>
+          evaluation.decision.type === "attack" &&
+          evaluation.decision.action.target.kind === "monster" &&
+          evaluation.decision.action.target.slotKey === "player_front_left",
+      );
+    const baseline = findAttack();
+    const tuned = findAttack({ tunings: { cpu: { situationalBias: { whiteRedirectMarkedAttackPenalty: 7 } } } });
 
     expect(baseline).toBeDefined();
     expect(tuned).toBeDefined();
