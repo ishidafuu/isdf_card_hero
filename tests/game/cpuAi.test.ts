@@ -82,6 +82,46 @@ describe("cpu ai", () => {
     }
   });
 
+  it("uses Drill Break damage when scoring focus deterrence", () => {
+    const drillBreakReady = createCpuGame();
+    drillBreakReady.players.cpu.hand = [];
+    drillBreakReady.players.cpu.stones = 0;
+    drillBreakReady.slots.cpu_front_right.monster = createActiveMonster("card_107", "cpu", {
+      level: 2,
+      hp: 5,
+      investedStones: 2,
+    });
+    drillBreakReady.slots.cpu_front_left.monster = createActiveMonster("card_108", "cpu", {
+      level: 2,
+      hp: 5,
+      investedStones: 2,
+    });
+
+    const partnerSpent = createCpuGame();
+    partnerSpent.players.cpu.hand = [];
+    partnerSpent.players.cpu.stones = 0;
+    partnerSpent.slots.cpu_front_right.monster = createActiveMonster("card_107", "cpu", {
+      level: 2,
+      hp: 5,
+      investedStones: 2,
+    });
+    partnerSpent.slots.cpu_front_left.monster = createActiveMonster("card_108", "cpu", {
+      level: 2,
+      hp: 5,
+      investedStones: 2,
+      actionCount: 1,
+    });
+
+    const readyRaonFocus = listCpuDecisions(drillBreakReady).find(
+      (decision) => decision.type === "focus" && decision.slotKey === "cpu_front_right",
+    );
+    const spentRaonFocus = listCpuDecisions(partnerSpent).find(
+      (decision) => decision.type === "focus" && decision.slotKey === "cpu_front_right",
+    );
+
+    expect(readyRaonFocus?.score).toBeLessThan((spentRaonFocus?.score ?? 0) - 80);
+  });
+
   it("does not list attacks against allied monsters", () => {
     const game = createCpuGame();
     game.players.cpu.hand = [];

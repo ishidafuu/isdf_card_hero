@@ -48,6 +48,7 @@ import type {
   SlotState,
   Target,
 } from "./types";
+import { drillBreakPartnerSlotKey, isPrimaryDrillBreakAttacker } from "./ruleEngine/drillBreak";
 
 const FIELD_ORDER_BY_PLAYER: Record<PlayerId, SlotKey[]> = {
   cpu: ["cpu_back_left", "cpu_back_right", "cpu_front_left", "cpu_front_right"],
@@ -1281,7 +1282,7 @@ function directMasterDamageFromSlotWithPowerBonus(
   for (const command of getMonsterCommands(monster)) {
     for (const target of getCommandTargets(readyState, slotKey, command.id)) {
       if (target.kind === "master" && target.playerId === opponent) {
-        bestDamage = Math.max(bestDamage, Math.max(0, estimateCommandPower(monster, command) + powerBonus - 2));
+        bestDamage = Math.max(bestDamage, Math.max(0, estimateCommandPower(readyState, slotKey, command) + powerBonus - 2));
       }
     }
   }
@@ -1734,7 +1735,7 @@ function isPotentialBerserkFeedDenialSetupAttack(
     return false;
   }
 
-  const damage = estimateMonsterDamage(targetMonster, attacker, command);
+  const damage = estimateMonsterDamage(state, targetMonster, attackerSlotKey, command);
   return damage > 0 && targetMonster.hp - damage === 1 && opponentLevelFeedValue(state, target.slotKey) > 0;
 }
 
@@ -1796,7 +1797,7 @@ function opponentLevelFeedValue(state: GameState, slotKey: SlotKey): number {
           continue;
         }
         const targetInReadyState = readyState.slots[slotKey].monster;
-        if (targetInReadyState && estimateMonsterDamage(targetInReadyState, attacker, command) >= targetInReadyState.hp) {
+        if (targetInReadyState && estimateMonsterDamage(readyState, targetInReadyState, attackerSlotKey, command) >= targetInReadyState.hp) {
           best = Math.max(best, 72 * levelGain + monsterValue(state, slotKey) * 0.22);
         }
       }
@@ -3006,7 +3007,7 @@ function bestDirectMasterDamageForPlayer(state: GameState, playerId: PlayerId): 
     for (const command of getMonsterCommands(monster)) {
       for (const target of getCommandTargets(scopedState, slotKey, command.id)) {
         if (target.kind === "master" && target.playerId === opponent) {
-          bestDamage = Math.max(bestDamage, Math.max(0, estimateCommandPower(monster, command) - 2));
+          bestDamage = Math.max(bestDamage, Math.max(0, estimateCommandPower(scopedState, slotKey, command) - 2));
         }
       }
     }
@@ -3027,7 +3028,7 @@ function directMasterDamageFromSlot(state: GameState, slotKey: SlotKey, attacker
   for (const command of getMonsterCommands(monster)) {
     for (const target of getCommandTargets(readyState, slotKey, command.id)) {
       if (target.kind === "master" && target.playerId === opponent) {
-        bestDamage = Math.max(bestDamage, Math.max(0, estimateCommandPower(monster, command) - 2));
+        bestDamage = Math.max(bestDamage, Math.max(0, estimateCommandPower(readyState, slotKey, command) - 2));
       }
     }
   }
@@ -3067,7 +3068,12 @@ function buildThreatModel(state: GameState, attackerId: PlayerId): ThreatModel {
     for (const command of getMonsterCommands(monster)) {
       for (const target of getCommandTargets(readyState, slotKey, command.id)) {
         if (target.kind === "master" && target.playerId !== attackerId) {
-          bestMasterDamage[target.playerId] = Math.max(bestMasterDamage[target.playerId], Math.max(0, estimateCommandPower(monster, command) - 2));
+          if (command.name !== "ドリルブレイク" || isPrimaryDrillBreakAttacker(readyState.slots[slotKey])) {
+            bestMasterDamage[target.playerId] = Math.max(
+              bestMasterDamage[target.playerId],
+              Math.max(0, estimateCommandPower(readyState, slotKey, command) - 2),
+            );
+          }
           continue;
         }
         if (target.kind !== "monster" || readyState.slots[target.slotKey].owner === attackerId) {
@@ -3077,7 +3083,7 @@ function buildThreatModel(state: GameState, attackerId: PlayerId): ThreatModel {
         if (!targetMonster) {
           continue;
         }
-        updateMonsterThreat(monsterThreats, target.slotKey, estimateMonsterDamage(targetMonster, monster, command), targetMonster.hp);
+        updateMonsterThreat(monsterThreats, target.slotKey, estimateMonsterDamage(readyState, targetMonster, slotKey, command), targetMonster.hp);
       }
     }
     const actionCount = Math.max(1, monster.actionLimit - monster.actionCount);
@@ -3279,7 +3285,7 @@ function nextTurnLevelUpPotential(state: GameState, slotKey: SlotKey): number {
       if (!targetMonster) {
         continue;
       }
-      const damage = estimateMonsterDamage(targetMonster, readyMonster, command);
+      const damage = estimateMonsterDamage(readyState, targetMonster, slotKey, command);
       if (damage < targetMonster.hp) {
         continue;
       }
@@ -3305,7 +3311,7 @@ function estimateAttackScore(state: GameState, attackerSlotKey: SlotKey, command
     return -100;
   }
   if (target.kind === "master") {
-    const damage = Math.max(0, estimateCommandPower(attacker, command) - 2);
+    const damage = Math.max(0, estimateCommandPower(state, attackerSlotKey, command) - 2);
     return damage > 0 ? masterDamageScore(state, attacker.owner, damage) : -100;
   }
 
@@ -3313,18 +3319,23 @@ function estimateAttackScore(state: GameState, attackerSlotKey: SlotKey, command
   if (!targetMonster) {
     return -100;
   }
-  const damage = estimateMonsterDamage(targetMonster, attacker, command);
+  const damage = estimateMonsterDamage(state, targetMonster, attackerSlotKey, command);
   if (damage >= targetMonster.hp) {
     return 300 + monsterValue(state, target.slotKey);
   }
   return damage > 0 ? 25 * damage : -100;
 }
 
-function estimateMonsterDamage(target: MonsterState, attacker: MonsterState, command: ReturnType<typeof getMonsterCommands>[number]): number {
+function estimateMonsterDamage(
+  state: GameState,
+  target: MonsterState,
+  attackerSlotKey: SlotKey,
+  command: ReturnType<typeof getMonsterCommands>[number],
+): number {
   if (target.immune) {
     return 0;
   }
-  let damage = estimateCommandPower(attacker, command);
+  let damage = estimateCommandPower(state, attackerSlotKey, command);
   if (target.shielded) {
     damage = Math.max(0, damage - 1);
   }
@@ -3337,8 +3348,19 @@ function estimateMonsterDamage(target: MonsterState, attacker: MonsterState, com
   return damage;
 }
 
-function estimateCommandPower(monster: MonsterState, command: ReturnType<typeof getMonsterCommands>[number]): number {
-  let power = command.power;
+function estimateCommandPower(
+  state: GameState,
+  attackerSlotKey: SlotKey,
+  command: ReturnType<typeof getMonsterCommands>[number],
+): number {
+  const monster = state.slots[attackerSlotKey].monster;
+  if (!monster) {
+    return 0;
+  }
+  const basePower = command.name === "ドリルブレイク"
+    ? estimateDrillBreakPower(state, attackerSlotKey)
+    : command.power;
+  let power = monster.powerOverride ?? basePower;
   const upperCommand = getMonsterCommands(monster)[0];
   if (monster.focused && upperCommand?.id === command.id) {
     power += 1;
@@ -3346,14 +3368,22 @@ function estimateCommandPower(monster: MonsterState, command: ReturnType<typeof 
   if (monster.powerUp) {
     power += 1;
   }
-  if (monster.powerOverride !== undefined) {
-    power = monster.powerOverride;
-  }
   power += monster.powerModifier ?? 0;
   if (monster.berserkPower) {
     power += 1;
   }
   return Math.max(0, power);
+}
+
+function estimateDrillBreakPower(state: GameState, attackerSlotKey: SlotKey): number {
+  const attackerSlot = state.slots[attackerSlotKey];
+  const attacker = attackerSlot.monster;
+  const partnerSlotKey = drillBreakPartnerSlotKey(state, attackerSlot);
+  const partner = partnerSlotKey ? state.slots[partnerSlotKey].monster : undefined;
+  if (!attacker || !partner) {
+    return 0;
+  }
+  return (getMonsterCommands(attacker)[0]?.power ?? 0) + (getMonsterCommands(partner)[0]?.power ?? 0);
 }
 
 function findMonsterSlot(state: GameState, instanceId: string): SlotKey | undefined {

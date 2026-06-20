@@ -2,6 +2,7 @@ import { getCardDef, getCardDefsByPool, getCardMemberRatingAverage, getCardPool,
 import { getMagicAiTrait } from "./aiTraits";
 import { getMonsterAiTrait } from "./aiUnitTraits";
 import { FIELD_ORDER, PLAYER_SLOT_ORDER } from "./ruleEngine/constants";
+import { drillBreakPartnerSlotKey } from "./ruleEngine/drillBreak";
 import { isOpponentMasterInCommandRange, isTargetInCommandRange } from "./ruleEngine/field";
 import type {
   CardDef,
@@ -358,22 +359,22 @@ function estimateBoardOffense(state: GameState, slotKey: SlotKey): number {
   let commandFlex = 0;
 
   for (const command of commands) {
-    const power = estimateCommandPowerForEvaluation(monster, command);
+    const power = estimateBoardCommandPower(state, slotKey, command);
     commandFlex = Math.max(commandFlex, commandReachScore(command) - (command.stoneCost ?? 0) * 5);
     for (const targetKey of FIELD_ORDER) {
       const targetSlot = state.slots[targetKey];
       const target = targetSlot.monster;
-      if (!target || target.owner === monster.owner || !canCommandReachMonster(slot, targetSlot, command)) {
+      if (!target || target.owner === monster.owner || !canCommandReachMonsterForBoard(command, slot, targetSlot)) {
         continue;
       }
-      const damage = estimateMonsterDamage(target, monster, command);
+      const damage = estimateMonsterDamage(state, target, slotKey, command);
       const targetValue = target.level * 25 + target.investedStones * 8 + target.hp * 6;
       const score = damage >= target.hp ? 90 + targetValue : damage * 24;
       bestTargetScore = Math.max(bestTargetScore, score);
     }
 
     const opponent = otherPlayer(monster.owner);
-    if (canCommandReachMaster(slot, opponent, command)) {
+    if (canCommandReachMasterForBoard(state, slotKey, opponent, command)) {
       const masterDamage = Math.max(0, power - 2);
       bestTargetScore = Math.max(bestTargetScore, masterDamage * 60);
     }
@@ -399,10 +400,10 @@ function estimateNextLevelUpOpportunity(state: GameState, slotKey: SlotKey): num
     for (const targetKey of FIELD_ORDER) {
       const targetSlot = state.slots[targetKey];
       const target = targetSlot.monster;
-      if (!target || target.owner === monster.owner || !canCommandReachMonster(slot, targetSlot, command)) {
+      if (!target || target.owner === monster.owner || !canCommandReachMonsterForBoard(command, slot, targetSlot)) {
         continue;
       }
-      const damage = estimateMonsterDamage(target, monster, command);
+      const damage = estimateMonsterDamage(state, target, slotKey, command);
       if (damage < target.hp) {
         continue;
       }
@@ -446,10 +447,10 @@ function incomingThreat(state: GameState, targetSlotKey: SlotKey): ThreatEstimat
       continue;
     }
     for (const command of getMonsterCommandsForState(attacker)) {
-      if (!canCommandReachMonster(attackerSlot, targetSlot, command)) {
+      if (!canCommandReachMonsterForBoard(command, attackerSlot, targetSlot)) {
         continue;
       }
-      const damage = estimateMonsterDamage(target, attacker, command);
+      const damage = estimateMonsterDamage(state, target, attackerSlotKey, command);
       if (damage > 0) {
         threatened = true;
         maxDamage = Math.max(maxDamage, damage);
@@ -463,11 +464,11 @@ function incomingThreat(state: GameState, targetSlotKey: SlotKey): ThreatEstimat
   return { threatened, lethal, maxDamage };
 }
 
-function estimateMonsterDamage(target: MonsterState, attacker: MonsterState, command: CommandDef): number {
+function estimateMonsterDamage(state: GameState, target: MonsterState, attackerSlotKey: SlotKey, command: CommandDef): number {
   if (target.immune) {
     return 0;
   }
-  let damage = estimateCommandPowerForEvaluation(attacker, command);
+  let damage = estimateBoardCommandPower(state, attackerSlotKey, command);
   if (target.shielded) {
     damage = Math.max(0, damage - 1);
   }
@@ -478,6 +479,41 @@ function estimateMonsterDamage(target: MonsterState, attacker: MonsterState, com
     damage = Math.max(0, Math.floor(damage / 2));
   }
   return damage;
+}
+
+function estimateBoardCommandPower(state: GameState, attackerSlotKey: SlotKey, command: CommandDef): number {
+  const attackerSlot = state.slots[attackerSlotKey];
+  const attacker = attackerSlot.monster;
+  if (!attacker) {
+    return 0;
+  }
+  const basePower = command.name === "ドリルブレイク"
+    ? estimateDrillBreakPower(state, attackerSlotKey)
+    : command.power;
+  let power = attacker.powerOverride ?? basePower;
+  const upperCommand = getMonsterCommandsForState(attacker)[0];
+  if (attacker.focused && upperCommand?.id === command.id) {
+    power += 1;
+  }
+  if (attacker.powerUp) {
+    power += 1;
+  }
+  power += attacker.powerModifier ?? 0;
+  if (attacker.berserkPower) {
+    power += 1;
+  }
+  return Math.max(0, power);
+}
+
+function estimateDrillBreakPower(state: GameState, attackerSlotKey: SlotKey): number {
+  const attackerSlot = state.slots[attackerSlotKey];
+  const attacker = attackerSlot.monster;
+  const partnerSlotKey = drillBreakPartnerSlotKey(state, attackerSlot);
+  const partner = partnerSlotKey ? state.slots[partnerSlotKey].monster : undefined;
+  if (!attacker || !partner) {
+    return 0;
+  }
+  return (getMonsterCommandsForState(attacker)[0]?.power ?? 0) + (getMonsterCommandsForState(partner)[0]?.power ?? 0);
 }
 
 function getMonsterCommandsForState(monster: MonsterState): CommandDef[] {
@@ -500,6 +536,13 @@ function canCommandReachMonster(attackerSlot: SlotState, targetSlot: SlotState, 
   return isTargetInCommandRange(attackerSlot, targetSlot, command, command.range);
 }
 
+function canCommandReachMonsterForBoard(command: CommandDef, attackerSlot: SlotState, targetSlot: SlotState): boolean {
+  if (command.name === "ドリルブレイク") {
+    return false;
+  }
+  return canCommandReachMonster(attackerSlot, targetSlot, command);
+}
+
 function canCommandReachMaster(attackerSlot: SlotState, opponent: PlayerId, command: CommandDef): boolean {
   if (command.range === "any_target" || command.range === "master") {
     return true;
@@ -508,6 +551,13 @@ function canCommandReachMaster(attackerSlot: SlotState, opponent: PlayerId, comm
     return false;
   }
   return isOpponentMasterInCommandRange(attackerSlot, opponent, command, command.range);
+}
+
+function canCommandReachMasterForBoard(state: GameState, attackerSlotKey: SlotKey, opponent: PlayerId, command: CommandDef): boolean {
+  if (command.name === "ドリルブレイク") {
+    return !!drillBreakPartnerSlotKey(state, state.slots[attackerSlotKey]);
+  }
+  return canCommandReachMaster(state.slots[attackerSlotKey], opponent, command);
 }
 
 function commandReachScore(command: CommandDef): number {

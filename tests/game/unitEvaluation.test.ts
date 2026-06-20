@@ -61,6 +61,34 @@ describe("unit evaluation", () => {
     expect(evaluation?.reasons.some((reason) => reason.includes("撃破圏"))).toBe(true);
   });
 
+  it("scores Drill Break board offense only while the partner can act", () => {
+    const pairGame = createEvaluationGame();
+    pairGame.slots.player_front_right.monster = createMonster("card_107", "player", {
+      level: 2,
+      investedStones: 2,
+    });
+    pairGame.slots.player_front_left.monster = createMonster("card_108", "player", {
+      level: 2,
+      investedStones: 2,
+    });
+
+    const spentPartnerGame = createEvaluationGame();
+    spentPartnerGame.slots.player_front_right.monster = createMonster("card_107", "player", {
+      level: 2,
+      investedStones: 2,
+    });
+    spentPartnerGame.slots.player_front_left.monster = createMonster("card_108", "player", {
+      level: 2,
+      investedStones: 2,
+      actionCount: 1,
+    });
+
+    const pairRaon = evaluateBoardUnit(pairGame, "player_front_right");
+    const spentPartnerRaon = evaluateBoardUnit(spentPartnerGame, "player_front_right");
+
+    expect(pairRaon?.offense).toBeGreaterThan((spentPartnerRaon?.offense ?? 0) + 100);
+  });
+
   it("reflects representative card traits in relative card evaluation", () => {
     const polyspinner = evaluateCard("polyspinner");
     const takokke = evaluateCard("takokke");

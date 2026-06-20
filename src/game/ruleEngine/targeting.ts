@@ -16,6 +16,7 @@ import type {
   Target,
 } from "../types";
 import { FIELD_ORDER, PLAYER_SLOT_ORDER } from "./constants";
+import { drillBreakPartnerSlotKey } from "./drillBreak";
 import { isOpponentMasterInCommandRange, isTargetInCommandRange } from "./field";
 
 export function getCommandTargets(
@@ -635,28 +636,6 @@ function findFirstOtherActiveSlot(state: GameState, slotKey: SlotKey): SlotKey |
 function findSwapPartnerSlot(state: GameState, slotKey: SlotKey): SlotKey | undefined {
   const slot = state.slots[slotKey];
   return PLAYER_SLOT_ORDER[slot.owner].find((candidate) => candidate !== slotKey && state.slots[candidate].monster?.status === "active");
-}
-
-function drillBreakPartnerSlotKey(state: GameState, attackerSlot: SlotState): SlotKey | undefined {
-  const attacker = attackerSlot.monster;
-  if (!attacker) {
-    return undefined;
-  }
-  const requirement = attacker.cardId === "card_107"
-    ? { partnerCardId: "card_108", attackerLane: "right" as const, partnerLane: "left" as const }
-    : attacker.cardId === "card_108"
-      ? { partnerCardId: "card_107", attackerLane: "left" as const, partnerLane: "right" as const }
-      : undefined;
-  if (!requirement || attackerSlot.row !== "front" || attackerSlot.lane !== requirement.attackerLane) {
-    return undefined;
-  }
-  const partnerSlotKey = makeSlotKey(attacker.owner, "front", requirement.partnerLane);
-  const partner = state.slots[partnerSlotKey].monster;
-  return partner?.cardId === requirement.partnerCardId &&
-    partner.status === "active" &&
-    partner.actionCount < partner.actionLimit
-    ? partnerSlotKey
-    : undefined;
 }
 
 function sweepingAttackSlot(state: GameState, attackerSlotKey: SlotKey): SlotState {
