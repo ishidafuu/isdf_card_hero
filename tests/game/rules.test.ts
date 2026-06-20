@@ -868,6 +868,50 @@ describe("battle prototype rules", () => {
 
     expect(next.players.cpu.masterHp).toBe(6);
     expect(next.players.cpu.stones).toBe(4);
+    expect(next.slots.player_front_right.monster?.actionCount).toBe(1);
+    expect(next.slots.player_front_left.monster?.actionCount).toBe(1);
+    expect(getCommandTargets(next, "player_front_left", "ドリルブレイク")).toEqual([]);
+  });
+
+  it("requires the Drill Break partner to have an action available", () => {
+    const game = createInitialGame(132);
+    game.slots.player_front_right.monster = createActiveMonster("card_107", "player", {
+      level: 2,
+      hp: 5,
+      investedStones: 2,
+    });
+    game.slots.player_front_left.monster = createActiveMonster("card_108", "player", {
+      level: 2,
+      hp: 5,
+      investedStones: 2,
+      actionCount: 1,
+    });
+
+    expect(getCommandTargets(game, "player_front_right", "ドリルブレイク")).toEqual([]);
+  });
+
+  it("clears the Drill Break partner focus when spending its action", () => {
+    const game = createInitialGame(133);
+    game.slots.player_front_right.monster = createActiveMonster("card_107", "player", {
+      level: 2,
+      hp: 5,
+      investedStones: 2,
+    });
+    game.slots.player_front_left.monster = createActiveMonster("card_108", "player", {
+      level: 2,
+      hp: 5,
+      investedStones: 2,
+      focused: true,
+    });
+
+    const next = attackWithCommand(game, {
+      attackerSlotKey: "player_front_right",
+      commandId: "ドリルブレイク",
+      target: { kind: "master", playerId: "cpu" },
+    });
+
+    expect(next.slots.player_front_left.monster?.actionCount).toBe(1);
+    expect(next.slots.player_front_left.monster?.focused).toBe(false);
   });
 
   it("moves Gungnir forward before sweep attacking", () => {

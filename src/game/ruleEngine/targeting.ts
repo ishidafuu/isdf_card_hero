@@ -652,7 +652,9 @@ function drillBreakPartnerSlotKey(state: GameState, attackerSlot: SlotState): Sl
   }
   const partnerSlotKey = makeSlotKey(attacker.owner, "front", requirement.partnerLane);
   const partner = state.slots[partnerSlotKey].monster;
-  return partner?.cardId === requirement.partnerCardId && partner.status === "active"
+  return partner?.cardId === requirement.partnerCardId &&
+    partner.status === "active" &&
+    partner.actionCount < partner.actionLimit
     ? partnerSlotKey
     : undefined;
 }

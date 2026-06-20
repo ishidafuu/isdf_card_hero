@@ -350,6 +350,9 @@ export function attackWithCommand(state: GameState, action: CommandAction): Game
   const hadDamageCurse = !!attacker.damageCurse;
   const basePower = getCommandBasePower(next, slot, command, action.target);
   const power = consumeAttackPowerBonuses(attacker, command, basePower);
+  if (command.name === "ドリルブレイク") {
+    consumeDrillBreakPartnerAction(next, slot);
+  }
   appendLog(next, `${playerLabel(next.currentPlayer)}の${monsterName(attacker)}: ${command.name} ${power}P`);
   if (cost > (command.stoneCost ?? 0)) {
     appendLog(next, `${monsterName(attacker)}はストーン呪で追加コストを払った`);
@@ -2732,6 +2735,16 @@ function drillBreakPower(state: GameState, attackerSlot: SlotState): number {
   return (getMonsterCommands(attacker)[0]?.power ?? 0) + (getMonsterCommands(partner)[0]?.power ?? 0);
 }
 
+function consumeDrillBreakPartnerAction(state: GameState, attackerSlot: SlotState): void {
+  const partnerSlotKey = drillBreakPartnerSlotKey(state, attackerSlot);
+  const partner = partnerSlotKey ? state.slots[partnerSlotKey].monster : undefined;
+  if (!partner) {
+    return;
+  }
+  partner.actionCount = partner.actionLimit;
+  partner.focused = false;
+}
+
 function drillBreakPartnerSlotKey(state: GameState, attackerSlot: SlotState): SlotKey | undefined {
   const attacker = attackerSlot.monster;
   if (!attacker) {
@@ -2747,7 +2760,9 @@ function drillBreakPartnerSlotKey(state: GameState, attackerSlot: SlotState): Sl
   }
   const partnerSlotKey = makeSlotKey(attacker.owner, "front", requirement.partnerLane);
   const partner = state.slots[partnerSlotKey].monster;
-  return partner?.cardId === requirement.partnerCardId && partner.status === "active"
+  return partner?.cardId === requirement.partnerCardId &&
+    partner.status === "active" &&
+    partner.actionCount < partner.actionLimit
     ? partnerSlotKey
     : undefined;
 }

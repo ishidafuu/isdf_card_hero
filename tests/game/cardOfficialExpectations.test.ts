@@ -1844,6 +1844,8 @@ describe("official card effect expectations", () => {
     });
 
     expect(game.players.cpu.masterHp).toBe(6);
+    expect(game.slots.player_front_right.monster?.actionCount).toBe(1);
+    expect(game.slots.player_front_left.monster?.actionCount).toBe(1);
   });
 
   it("card_111 ダロス draws one card with ドローフォース only under the hand limit", () => {
