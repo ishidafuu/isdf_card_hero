@@ -17,6 +17,7 @@
     "compare:ai-weights": "vite-node scripts/ai-weight-comparison.ts",
     "simulate:card-adjustment": "vite-node scripts/card-adjustment-simulation.ts",
     "safety:card-adjustment": "vite-node scripts/card-adjustment-safety.ts",
+    "audit:drill-break-ai": "vite-node scripts/drill-break-ai-recheck.ts",
     "improve:ai-loop": "vite-node scripts/ai-improvement-loop.ts",
     "diff:ai": "vite-node scripts/ai-decision-diff.ts",
     "lab:masters": "vite-node scripts/master-lab-report.ts",
