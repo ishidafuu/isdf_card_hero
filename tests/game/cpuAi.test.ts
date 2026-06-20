@@ -440,6 +440,43 @@ describe("cpu ai", () => {
     expect(defaultWhite?.totalScore).toBeCloseTo((disabled?.totalScore ?? 0) + 8);
   });
 
+  it("applies monster pressure handling to the default white profile only against black", () => {
+    const game = createCpuGame();
+    game.players.cpu.masterId = "white";
+    game.players.cpu.hand = [];
+    game.players.cpu.stones = 0;
+    game.players.player.masterId = "black";
+    game.slots.cpu_front_left.monster = createActiveMonster("takokke", "cpu");
+    game.slots.player_front_left.monster = createActiveMonster("takokke", "player", { hp: 5 });
+
+    const findFrontAttack = (options = {}) =>
+      inspectCpuDecisionEvaluations(game, options).find(
+        (evaluation) =>
+          evaluation.decision.type === "attack" &&
+          evaluation.decision.action.target.kind === "monster" &&
+          evaluation.decision.action.target.slotKey === "player_front_left",
+      );
+    const disabled = findFrontAttack({
+      profile: "white",
+      tunings: { cpu: { situationalBias: { whiteMonsterPressureBonus: 0 } } },
+    });
+    const defaultWhite = findFrontAttack({ profile: "white" });
+
+    game.players.player.masterId = "white";
+    const whiteOpponentBaseline = findFrontAttack({
+      profile: "white",
+      tunings: { cpu: { situationalBias: { whiteMonsterPressureBonus: 0 } } },
+    });
+    const whiteOpponentDefault = findFrontAttack({ profile: "white" });
+
+    expect(disabled).toBeDefined();
+    expect(defaultWhite).toBeDefined();
+    expect(defaultWhite?.totalScore).toBeCloseTo((disabled?.totalScore ?? 0) + 4);
+    expect(whiteOpponentBaseline).toBeDefined();
+    expect(whiteOpponentDefault).toBeDefined();
+    expect(whiteOpponentDefault?.totalScore).toBeCloseTo(whiteOpponentBaseline?.totalScore ?? 0);
+  });
+
   it("applies white active front work tuning only when an enemy front is damaged", () => {
     const game = createCpuGame();
     game.players.cpu.masterId = "white";

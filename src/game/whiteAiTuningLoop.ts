@@ -303,6 +303,18 @@ export const DEFAULT_WHITE_AI_TUNING_VARIANTS = [
   hybridVariant("pressure_white_low_stone_focus_missed_attack_v1", "本実装候補: 白低石focus攻撃見送り抑制", "pressure-normal", {
     situationalBias: { whiteLowStoneFocusMissedAttackPenalty: 8 },
   }, "白マスター限定で、攻撃可能なのに低石focusで布石へ寄る局面を抑え、このターンの仕事を優先する。"),
+  hybridVariant("pressure_white_vs_black_attack4_focus_guard_v1", "対黒専用: attack_monster+4 / 低石focus抑制", "pressure-normal", {
+    actionBias: { attack_monster: 4 },
+    situationalBias: { whiteLowStoneFocusMissedAttackPenalty: 4 },
+  }, "対黒専用候補。盤面処理を薄く押しつつ、攻撃可能なのに低石focusへ寄る黒戦の負け筋を軽く抑える。"),
+  hybridVariant("pressure_white_vs_black_attack4_front16_v1", "対黒専用: attack_monster+4 / 黒前衛脅威+16", "pressure-normal", {
+    actionBias: { attack_monster: 4 },
+    situationalBias: { whiteBlackFrontThreatBonus: 16 },
+  }, "対黒専用候補。盤面処理を薄く押しつつ、バーサク打点源になる黒前衛処理を採用値+8より強める。"),
+  hybridVariant("pressure_white_vs_black_attack4_front16_focus_guard_v1", "対黒専用: attack_monster+4 / 黒前衛+16 / focus抑制", "pressure-normal", {
+    actionBias: { attack_monster: 4 },
+    situationalBias: { whiteBlackFrontThreatBonus: 16, whiteLowStoneFocusMissedAttackPenalty: 4 },
+  }, "対黒専用候補。盤面処理、黒前衛処理、低石focus抑制を軽く複合し、速攻への押し返し性能を見る。"),
   hybridVariant("pressure_white_threat_source_attack_v1", "本実装候補: 白脅威源攻撃+8", "pressure-normal", {
     situationalBias: { whiteThreatSourceAttackBonus: 8 },
   }, "白マスター限定で、敵前衛の次ターン打点源を削る攻撃を加点する。"),

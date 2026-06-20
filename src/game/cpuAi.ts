@@ -181,6 +181,12 @@ const CPU_AI_PROFILE_CONFIG: Record<CpuAiProfile, CpuAiProfileConfig> = {
   },
 };
 
+const WHITE_VS_BLACK_MATCHUP_TUNING = {
+  situationalBias: {
+    whiteMonsterPressureBonus: 4,
+  },
+} satisfies CpuAiTuning;
+
 export type CpuDecision =
   | {
       type: "attack";
@@ -276,8 +282,13 @@ function resolveCpuAiProfile(state: GameState, options: CpuAiOptions): CpuAiProf
 }
 
 function resolveCpuAiConfig(state: GameState, options: CpuAiOptions): CpuAiProfileConfig {
-  const base = CPU_AI_PROFILE_CONFIG[resolveCpuAiProfile(state, options)];
-  const tuning = mergeCpuAiTuning(base.tuning, options.tunings?.[state.currentPlayer] ?? options.tuning);
+  const profile = resolveCpuAiProfile(state, options);
+  const base = CPU_AI_PROFILE_CONFIG[profile];
+  const matchupTuning = resolveCpuAiMatchupTuning(state, profile);
+  const tuning = mergeCpuAiTuning(
+    mergeCpuAiTuning(base.tuning, matchupTuning),
+    options.tunings?.[state.currentPlayer] ?? options.tuning,
+  );
   if (!tuning) {
     return base;
   }
@@ -286,6 +297,19 @@ function resolveCpuAiConfig(state: GameState, options: CpuAiOptions): CpuAiProfi
     weights: tuning.weights ? { ...base.weights, ...tuning.weights } : base.weights,
     tuning,
   };
+}
+
+function resolveCpuAiMatchupTuning(state: GameState, profile: CpuAiProfile): CpuAiTuning | undefined {
+  const perspective = state.currentPlayer;
+  const opponent = opponentOf(perspective);
+  if (
+    profile === "white" &&
+    state.players[perspective].masterId === "white" &&
+    state.players[opponent].masterId === "black"
+  ) {
+    return WHITE_VS_BLACK_MATCHUP_TUNING;
+  }
+  return undefined;
 }
 
 function mergeCpuAiTuning(base: CpuAiTuning | undefined, override: CpuAiTuning | undefined): CpuAiTuning | undefined {
