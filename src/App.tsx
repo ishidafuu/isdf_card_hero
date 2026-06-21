@@ -5613,7 +5613,10 @@ function BoardSlot({
   const visibleMonsterCardId = visibleMonster && !prepared ? visibleMonster.cardId : undefined;
   const showCardBack = Boolean(monster && prepared);
   const monsterStatusBadges = visibleMonster ? getBoardStatusBadges(visibleMonster) : [];
-  const actionSpent = visibleMonster?.status === "active" && visibleMonster.actionCount >= visibleMonster.actionLimit;
+  const actionSpent =
+    visibleMonster?.owner === "player" &&
+    visibleMonster.status === "active" &&
+    visibleMonster.actionCount >= visibleMonster.actionLimit;
 
   return (
     <button
