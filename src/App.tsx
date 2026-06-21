@@ -123,6 +123,8 @@ const AUTO_SPEED_PRESETS = [
 ] as const;
 const MAX_VISIBLE_RESOURCE_ICONS = 10;
 const DEFAULT_BATTLE_SEED = 20260612;
+const DEFAULT_PLAYER_DECK_PRESET_ID = "submission-pro-no-rare8-white-1377" satisfies DeckPresetId;
+const DEFAULT_CPU_DECK_PRESET_ID = "balanced-normal" satisfies DeckPresetId;
 const BATTLE_HISTORY_STORAGE_KEY = "card-hero:battle-history:v1";
 const BATTLE_PRESETS_STORAGE_KEY = "card-hero:battle-presets:v1";
 const BATTLE_HISTORY_LIMIT = 20;
@@ -471,6 +473,22 @@ function createDeckSettings(seed: number): DeckSettings {
   };
 }
 
+function createDefaultDeckSettings(seed: number): DeckSettings {
+  const settings = createDeckSettings(seed);
+  return {
+    ...settings,
+    fixed: { ...settings.fixed, player: true },
+    allowSpecial: {
+      ...settings.allowSpecial,
+      player: deckPresetAllowsSpecial(DEFAULT_PLAYER_DECK_PRESET_ID),
+    },
+    text: {
+      ...settings.text,
+      player: deckTextFromCardIds(buildDeckPresetCardIds(DEFAULT_PLAYER_DECK_PRESET_ID)),
+    },
+  };
+}
+
 function createDeckSettingsFromPreset(playerPresetId: DeckPresetId, cpuPresetId = playerPresetId): DeckSettings {
   return {
     fixed: { player: true, cpu: true },
@@ -488,13 +506,13 @@ function createDeckSettingsFromPreset(playerPresetId: DeckPresetId, cpuPresetId 
 const BUILT_IN_MATCH_PRESETS: BuiltInMatchPreset[] = [
   {
     id: "standard-random",
-    name: "通常ランダム",
-    description: "通常カードのみ。Player vs CPU、ホワイト同士、stable AI。",
+    name: "白#1377デフォルト",
+    description: "Playerは投稿Pro白8なし #1377。CPUは通常カードランダム、ホワイト同士、stable AI。",
     create: () => ({
       settings: createBattleSettings(DEFAULT_BATTLE_SEED),
-      deckSettings: createDeckSettings(DEFAULT_BATTLE_SEED),
+      deckSettings: createDefaultDeckSettings(DEFAULT_BATTLE_SEED),
     }),
-    deckPresetIds: { player: "balanced-normal", cpu: "balanced-normal" },
+    deckPresetIds: { player: DEFAULT_PLAYER_DECK_PRESET_ID, cpu: DEFAULT_CPU_DECK_PRESET_ID },
   },
   {
     id: "black-cpu-duel",
@@ -942,10 +960,10 @@ function normalizeSeedInput(value: string, fallback: number): number {
 
 export function App() {
   const [battleSettings, setBattleSettings] = useState<BattleSettings>(() => createBattleSettings(DEFAULT_BATTLE_SEED));
-  const [deckSettings, setDeckSettings] = useState<DeckSettings>(() => createDeckSettings(DEFAULT_BATTLE_SEED));
+  const [deckSettings, setDeckSettings] = useState<DeckSettings>(() => createDefaultDeckSettings(DEFAULT_BATTLE_SEED));
   const [deckPickerIds, setDeckPickerIds] = useState<Record<PlayerId, string>>(() => createDeckPickerIds());
   const [game, setGame] = useState<GameState>(() =>
-    createGameFromSettings(createBattleSettings(DEFAULT_BATTLE_SEED), createDeckSettings(DEFAULT_BATTLE_SEED)),
+    createGameFromSettings(createBattleSettings(DEFAULT_BATTLE_SEED), createDefaultDeckSettings(DEFAULT_BATTLE_SEED)),
   );
   const [selection, setSelection] = useState<Selection | undefined>();
   const [pendingDropAction, setPendingDropAction] = useState<PendingDropAction | undefined>();
@@ -965,8 +983,8 @@ export function App() {
   const [savedPresetId, setSavedPresetId] = useState<string>("");
   const [battlePresetName, setBattlePresetName] = useState("My Battle Preset");
   const [deckPresetPickerIds, setDeckPresetPickerIds] = useState<Record<PlayerId, DeckPresetId>>({
-    player: "balanced-normal",
-    cpu: "balanced-normal",
+    player: DEFAULT_PLAYER_DECK_PRESET_ID,
+    cpu: DEFAULT_CPU_DECK_PRESET_ID,
   });
   const [deckSetupTarget, setDeckSetupTarget] = useState<PlayerId>("player");
   const [deckPresetFilters, setDeckPresetFilters] = useState<Record<PlayerId, DeckPresetFilters>>(() => createDeckPresetFilters());
