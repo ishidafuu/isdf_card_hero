@@ -1513,6 +1513,21 @@ button:disabled {
   text-align: left;
 }
 
+.command-button.is-ready {
+  background: #f5fbf4;
+  border-color: #7fb17a;
+  box-shadow: inset 0 0 0 1px rgba(57, 115, 103, 0.12);
+}
+
+.command-button.is-ready:hover:not(:disabled) {
+  border-color: #2f6845;
+  box-shadow: inset 0 0 0 1px rgba(47, 104, 69, 0.28);
+}
+
+.command-button.is-unavailable {
+  background: #f8faf4;
+}
+
 .command-button-main {
   align-items: center;
   display: inline-flex;
@@ -1558,6 +1573,65 @@ button:disabled {
   border-top: 1px solid #d8ded2;
   margin-top: 10px;
   padding-top: 10px;
+}
+
+.available-actions-panel {
+  background: #f4faf2;
+  border: 1px solid #bdd6b8;
+  border-radius: 8px;
+  display: grid;
+  gap: 8px;
+  padding: 10px;
+}
+
+.available-actions-heading {
+  align-items: center;
+  display: flex;
+  gap: 8px;
+  justify-content: space-between;
+}
+
+.available-actions-heading strong {
+  color: #24452d;
+  font-size: 14px;
+  line-height: 1.2;
+}
+
+.available-action-list {
+  display: grid;
+  gap: 6px;
+}
+
+.available-actions-empty {
+  color: #4b5652;
+  font-size: 13px;
+  line-height: 1.35;
+  margin: 0;
+}
+
+.unavailable-actions {
+  border-top: 1px solid rgba(47, 104, 69, 0.16);
+  padding-top: 7px;
+}
+
+.unavailable-actions summary {
+  color: #56615d;
+  cursor: pointer;
+  font-size: 12px;
+  font-weight: 800;
+  line-height: 1.2;
+}
+
+.unavailable-action-list {
+  margin-top: 8px;
+}
+
+.selected-unit-info {
+  border-top: 1px solid #d8ded2;
+  display: grid;
+  gap: 0;
+  margin-top: 12px;
+  padding-top: 12px;
 }
 
 .pending-action {

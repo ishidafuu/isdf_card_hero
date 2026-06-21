@@ -5760,6 +5760,16 @@ interface MonsterCommandsProps {
   onMove: (targets: SlotKey[]) => void;
 }
 
+interface UnitActionItem {
+  key: string;
+  icon: string;
+  title: string;
+  meta: string;
+  disabledReason?: string;
+  readyLabel: string;
+  onClick: () => void;
+}
+
 function MonsterCommands({ game, slotKey, onCommand, onFocus, onMove }: MonsterCommandsProps) {
   const slot = game.slots[slotKey];
   const monster = game.slots[slotKey].monster;
@@ -5770,80 +5780,117 @@ function MonsterCommands({ game, slotKey, onCommand, onFocus, onMove }: MonsterC
   const moveTargets = getMovableTargets(game, slotKey);
   const moveDisabledReason = getMoveDisabledReason(game, slotKey, moveTargets);
   const focusDisabledReason = getFocusDisabledReason(game, slotKey);
+  const commandActions: UnitActionItem[] = hidePreparedInfo
+    ? []
+    : getMonsterCommands(monster).map((command, index) => {
+        const targets = getCommandTargets(game, slotKey, command.id);
+        const disabledReason = getCommandDisabledReason(game, slotKey, command, targets);
+        return {
+          key: `command_${command.id}_${index}`,
+          icon: commandIcon(command),
+          title: `${command.name} ${command.power}P`,
+          meta: commandActionSummary(command),
+          disabledReason,
+          readyLabel: `対象 ${targets.length}`,
+          onClick: () => onCommand(command.id, targets),
+        };
+      });
+  const unitActions: UnitActionItem[] = hidePreparedInfo
+    ? []
+    : [
+        ...commandActions,
+        {
+          key: "move",
+          icon: "🧭",
+          title: "移動 / 入れ替え",
+          meta: "自陣内 / 空きマスまたは味方と入れ替え",
+          disabledReason: moveDisabledReason,
+          readyLabel: `候補 ${moveTargets.length}`,
+          onClick: () => onMove(moveTargets),
+        },
+        {
+          key: "focus",
+          icon: "💪",
+          title: "ためる",
+          meta: "上の技+1P / 被ダメージ-1 / 行動後に解除",
+          disabledReason: focusDisabledReason,
+          readyLabel: "使用可",
+          onClick: onFocus,
+        },
+      ];
+  const readyActions = unitActions.filter((action) => !action.disabledReason);
+  const unavailableActions = unitActions.filter((action) => action.disabledReason);
+  const renderActionButton = (action: UnitActionItem) => (
+    <button
+      className={`command-button ${action.disabledReason ? "is-unavailable" : "is-ready"}`}
+      key={action.key}
+      type="button"
+      onClick={action.onClick}
+      disabled={!!action.disabledReason}
+      title={action.disabledReason ?? action.readyLabel}
+    >
+      <span className="command-button-main">
+        <Icon icon={action.icon} />
+        <strong>{action.title}</strong>
+      </span>
+      <span className="command-button-meta">{action.meta}</span>
+      <span className={action.disabledReason ? "command-button-reason" : "command-button-ready"}>
+        {action.disabledReason ?? action.readyLabel}
+      </span>
+    </button>
+  );
 
   return (
     <div className="selected-detail">
-      <h3>
-        {hidePreparedInfo ? <CardBackArt /> : <CardIcon cardId={monster.cardId} />}
-        {hidePreparedInfo ? "裏向きカード" : `${getMonsterDisplayName(monster)} Lv${monster.level}`}
-      </h3>
-      <div className="card-meta-row">
-        <span>{playerLabel(slot.owner)}</span>
-        <span>{slotLabel(slotKey)}</span>
-        <span><Icon icon={monster.status === "prepared" ? "🂠" : "⚡"} /> {monster.status === "prepared" ? "裏向き" : `${monster.actionCount}/${monster.actionLimit}行動`}</span>
-        {!hidePreparedInfo && <span><Icon icon="❤️" /> HP {monster.hp}</span>}
-        {!hidePreparedInfo && <span><Icon icon="🪨" /> 投資 {monster.investedStones}</span>}
-      </div>
       {hidePreparedInfo ? (
-        <p className="hint"><Icon icon="🔒" /> CPUの裏向きカードの情報は非公開です。</p>
+        <section className="available-actions-panel">
+          <div className="available-actions-heading">
+            <span className="pending-action-section-label">今できること</span>
+            <strong>情報非公開</strong>
+          </div>
+          <p className="available-actions-empty"><Icon icon="🔒" /> CPUの裏向きカードの情報は非公開です。</p>
+        </section>
       ) : (
-        <div className="board-card-detail">
-          <CardDetail cardId={monster.cardId} game={game} slotKey={slotKey} showTitle={false} />
-        </div>
+        <section className="available-actions-panel">
+          <div className="available-actions-heading">
+            <span className="pending-action-section-label">今できること</span>
+            <strong>{readyActions.length > 0 ? `${readyActions.length}件実行できます` : "今できる行動はありません"}</strong>
+          </div>
+          {readyActions.length > 0 ? (
+            <div className="available-action-list">
+              {readyActions.map(renderActionButton)}
+            </div>
+          ) : (
+            <p className="available-actions-empty"><Icon icon="⏸️" /> 行動条件を満たしていません。</p>
+          )}
+          {unavailableActions.length > 0 && (
+            <details className="unavailable-actions">
+              <summary>今はできないこと {unavailableActions.length}</summary>
+              <div className="available-action-list unavailable-action-list">
+                {unavailableActions.map(renderActionButton)}
+              </div>
+            </details>
+          )}
+        </section>
       )}
-      {!hidePreparedInfo && (
-        <div className="button-stack">
-          {getMonsterCommands(monster).map((command, index) => {
-            const targets = getCommandTargets(game, slotKey, command.id);
-            const disabledReason = getCommandDisabledReason(game, slotKey, command, targets);
-            return (
-              <button
-                className="command-button"
-                key={`${command.id}_${index}`}
-                type="button"
-                onClick={() => onCommand(command.id, targets)}
-                disabled={!!disabledReason}
-                title={disabledReason ?? `${targets.length}対象`}
-              >
-                <span className="command-button-main">
-                  <Icon icon={commandIcon(command)} />
-                  <strong>{command.name} {command.power}P</strong>
-                </span>
-                <span className="command-button-meta">{commandActionSummary(command)}</span>
-                <span className={disabledReason ? "command-button-reason" : "command-button-ready"}>
-                  {disabledReason ?? `対象 ${targets.length}`}
-                </span>
-              </button>
-            );
-          })}
-          <button
-            className="command-button"
-            type="button"
-            onClick={() => onMove(moveTargets)}
-            disabled={!!moveDisabledReason}
-            title={moveDisabledReason ?? `${moveTargets.length}マス`}
-          >
-            <span className="command-button-main"><Icon icon="🧭" /><strong>Move / Swap</strong></span>
-            <span className="command-button-meta">自陣内 / 空きマスまたは味方と入れ替え</span>
-            <span className={moveDisabledReason ? "command-button-reason" : "command-button-ready"}>
-              {moveDisabledReason ?? `候補 ${moveTargets.length}`}
-            </span>
-          </button>
-          <button
-            className="command-button"
-            type="button"
-            onClick={onFocus}
-            disabled={!!focusDisabledReason}
-            title={focusDisabledReason ?? "次の上の技+1P / 被ダメージ-1"}
-          >
-            <span className="command-button-main"><Icon icon="💪" /><strong>ためる</strong></span>
-            <span className="command-button-meta">上の技+1P / 被ダメージ-1 / 行動後に解除</span>
-            <span className={focusDisabledReason ? "command-button-reason" : "command-button-ready"}>
-              {focusDisabledReason ?? "使用可"}
-            </span>
-          </button>
+      <section className="selected-unit-info">
+        <h3>
+          {hidePreparedInfo ? <CardBackArt /> : <CardIcon cardId={monster.cardId} />}
+          {hidePreparedInfo ? "裏向きカード" : `${getMonsterDisplayName(monster)} Lv${monster.level}`}
+        </h3>
+        <div className="card-meta-row">
+          <span>{playerLabel(slot.owner)}</span>
+          <span>{slotLabel(slotKey)}</span>
+          <span><Icon icon={monster.status === "prepared" ? "🂠" : "⚡"} /> {monster.status === "prepared" ? "裏向き" : `${monster.actionCount}/${monster.actionLimit}行動`}</span>
+          {!hidePreparedInfo && <span><Icon icon="❤️" /> HP {monster.hp}</span>}
+          {!hidePreparedInfo && <span><Icon icon="🪨" /> 投資 {monster.investedStones}</span>}
         </div>
-      )}
+        {!hidePreparedInfo && (
+          <div className="board-card-detail">
+            <CardDetail cardId={monster.cardId} game={game} slotKey={slotKey} showTitle={false} />
+          </div>
+        )}
+      </section>
     </div>
   );
 }
