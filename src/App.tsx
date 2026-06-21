@@ -129,6 +129,7 @@ const BATTLE_HISTORY_LIMIT = 20;
 
 type Selection =
   | { kind: "hand"; instanceId: string }
+  | { kind: "master"; playerId: PlayerId }
   | { kind: "monster"; slotKey: SlotKey }
   | { kind: "command"; attackerSlotKey: SlotKey; commandId: string; targets: Target[] }
   | { kind: "commandSecondaryTarget"; attackerSlotKey: SlotKey; commandId: string; target: Target; targets: Target[] }
@@ -142,11 +143,13 @@ type Selection =
 
 type DragPayload =
   | { kind: "hand"; instanceId: string }
+  | { kind: "master"; playerId: PlayerId }
   | { kind: "monster"; slotKey: SlotKey };
 
 type PendingDropAction =
   | { kind: "magic"; handInstanceId: string; target: Target }
   | { kind: "attackTarget"; attackerSlotKey: SlotKey; target: Target; commandIds: string[] }
+  | { kind: "masterTarget"; playerId: PlayerId; target: Target; masterActionIds: MasterActionId[]; magicHandInstanceIds: string[] }
   | { kind: "move"; fromSlotKey: SlotKey; toSlotKey: SlotKey };
 
 type ZoneView =
@@ -1635,6 +1638,14 @@ export function App() {
     startDrag(event, { kind: "monster", slotKey });
   }
 
+  function handleMasterDragStart(event: DragEvent<HTMLButtonElement>, playerId: PlayerId) {
+    if (!canDragMaster(playerId)) {
+      event.preventDefault();
+      return;
+    }
+    startDrag(event, { kind: "master", playerId });
+  }
+
   function startDrag(event: DragEvent<HTMLElement>, payload: DragPayload) {
     if (controlsDisabled) {
       event.preventDefault();
@@ -1653,6 +1664,13 @@ export function App() {
       return;
     }
     startPointerDrag(event, { kind: "monster", slotKey });
+  }
+
+  function handleMasterPointerDown(event: ReactPointerEvent<HTMLButtonElement>, playerId: PlayerId) {
+    if (!canDragMaster(playerId)) {
+      return;
+    }
+    startPointerDrag(event, { kind: "master", playerId });
   }
 
   function startPointerDrag(event: ReactPointerEvent<HTMLElement>, payload: DragPayload) {
@@ -1792,6 +1810,9 @@ export function App() {
       if (parsed.kind === "monster" && typeof parsed.slotKey === "string" && parsed.slotKey in game.slots) {
         return { kind: "monster", slotKey: parsed.slotKey as SlotKey };
       }
+      if (parsed.kind === "master" && (parsed.playerId === "player" || parsed.playerId === "cpu")) {
+        return { kind: "master", playerId: parsed.playerId };
+      }
     } catch {
       return undefined;
     }
@@ -1850,6 +1871,18 @@ export function App() {
       return undefined;
     }
 
+    if (payload.kind === "master") {
+      if (payload.playerId !== game.currentPlayer || target.kind !== "monster") {
+        return undefined;
+      }
+      const masterActionIds = getMasterActionsTargetingTarget(game, target);
+      const magicHandInstanceIds = getMagicCardsTargetingTarget(game, target).map((card) => card.instanceId);
+      if (masterActionIds.length === 0 && magicHandInstanceIds.length === 0) {
+        return undefined;
+      }
+      return { kind: "masterTarget", playerId: payload.playerId, target, masterActionIds, magicHandInstanceIds };
+    }
+
     const source = game.slots[payload.slotKey];
     const monster = source.monster;
     if (!monster || monster.owner !== game.currentPlayer || monster.status !== "active" || monster.actionCount >= monster.actionLimit) {
@@ -1868,6 +1901,10 @@ export function App() {
       return undefined;
     }
     return { kind: "attackTarget", attackerSlotKey: payload.slotKey, commandIds, target };
+  }
+
+  function canDragMaster(playerId: PlayerId): boolean {
+    return !controlsDisabled && playerId === game.currentPlayer && !game.players[playerId].masterFrozen;
   }
 
   function canDragMonsterFromSlot(slotKey: SlotKey): boolean {
@@ -1892,6 +1929,9 @@ export function App() {
       resolveMagicPrimaryTarget(pendingDropAction.handInstanceId, pendingDropAction.target);
       return;
     }
+    if (pendingDropAction.kind === "masterTarget") {
+      return;
+    }
     if (pendingDropAction.kind === "move") {
       applyChange((state) => moveMonster(state, pendingDropAction.fromSlotKey, pendingDropAction.toSlotKey));
       return;
@@ -1903,6 +1943,20 @@ export function App() {
       return;
     }
     resolveCommandPrimaryTarget(pendingDropAction.attackerSlotKey, commandId, pendingDropAction.target);
+  }
+
+  function handlePendingMasterAction(actionId: MasterActionId) {
+    if (!pendingDropAction || pendingDropAction.kind !== "masterTarget") {
+      return;
+    }
+    applyChange((state) => useMasterAction(state, actionId, pendingDropAction.target));
+  }
+
+  function handlePendingMasterMagic(instanceId: string) {
+    if (!pendingDropAction || pendingDropAction.kind !== "masterTarget") {
+      return;
+    }
+    resolveMagicPrimaryTarget(instanceId, pendingDropAction.target);
   }
 
   function handleCancelPendingDropAction() {
@@ -1997,6 +2051,8 @@ export function App() {
             action={pendingDropAction}
             game={game}
             onAttackCommand={handlePendingAttackCommand}
+            onMasterAction={handlePendingMasterAction}
+            onMasterMagic={handlePendingMasterMagic}
             onConfirm={handleConfirmPendingDropAction}
             onCancel={handleCancelPendingDropAction}
           />
@@ -2448,11 +2504,15 @@ export function App() {
                             "master",
                             cell.playerId === "cpu" ? "master-cpu" : "master-player",
                             `master-${masterId}`,
+                            isSelectedSourceMaster(selection, pendingDropAction, cell.playerId) ? "selected" : "",
                             targetKeys.has(`master:${cell.playerId}`) ? "targetable" : "",
                             targetRole ? `target-${targetRole}` : "",
                             visualEffect?.masters.includes(cell.playerId) ? `effect-active effect-${visualEffect.kind}` : "",
                             damageFlash?.defeated ? "effect-defeated" : "",
                           ].join(" ")}
+                          draggable={canDragMaster(cell.playerId)}
+                          onDragStart={(event) => handleMasterDragStart(event, cell.playerId)}
+                          onPointerDown={(event) => handleMasterPointerDown(event, cell.playerId)}
                           onDragOver={handleDragOver}
                           onDrop={(event) => handleMasterDrop(event, cell.playerId)}
                           data-master-id={cell.playerId}
@@ -3022,6 +3082,16 @@ function operationReasonFromPendingDrop(game: GameState, action: PendingDropActi
       tone: "ok",
     };
   }
+  if (action.kind === "masterTarget") {
+    const masterActionCount = getPendingMasterActions(game, action).length;
+    const magicCount = getPendingMasterMagicCards(game, action).length;
+    return {
+      icon: "🎮",
+      label: "マスター操作",
+      text: `${targetLabel(game, action.target)}に対して、マスター特技${masterActionCount}件 / 手札マジック${magicCount}件から選べます。`,
+      tone: masterActionCount + magicCount > 0 ? "ok" : "warn",
+    };
+  }
   return {
     icon: "🧭",
     label: "ドラッグ移動",
@@ -3194,6 +3264,24 @@ function getPendingDropActionPreviews(game: GameState, action: PendingDropAction
         fallback: "ドラッグ移動を確定します。",
         apply: () => moveMonster(game, action.fromSlotKey, action.toSlotKey),
       }),
+    ];
+  }
+  if (action.kind === "masterTarget") {
+    return [
+      ...getPendingMasterActions(game, action).map((actionId) =>
+        previewStateChange({
+          game,
+          key: `pending_master_${actionId}_${targetToKey(action.target)}`,
+          target: action.target,
+          icon: masterActionIcon(actionId),
+          label: `${masterActionLabel(actionId)} -> ${targetLabel(game, action.target)}`,
+          fallback: "マスター特技を解決します。",
+          apply: () => useMasterAction(game, actionId, action.target),
+        }),
+      ),
+      ...getPendingMasterMagicCards(game, action).map((card) =>
+        previewMagicAction(game, card.instanceId, action.target, `pending_master_magic_${card.instanceId}_${targetToKey(action.target)}`),
+      ),
     ];
   }
   return action.commandIds.map((commandId) =>
@@ -3767,12 +3855,16 @@ interface PendingDropActionPanelProps {
   action: PendingDropAction;
   game: GameState;
   onAttackCommand: (commandId: string) => void;
+  onMasterAction: (actionId: MasterActionId) => void;
+  onMasterMagic: (instanceId: string) => void;
   onConfirm: () => void;
   onCancel: () => void;
 }
 
-function PendingDropActionPanel({ action, game, onAttackCommand, onConfirm, onCancel }: PendingDropActionPanelProps) {
+function PendingDropActionPanel({ action, game, onAttackCommand, onMasterAction, onMasterMagic, onConfirm, onCancel }: PendingDropActionPanelProps) {
   const attackCommands = action.kind === "attackTarget" ? getPendingAttackCommands(game, action) : [];
+  const masterActions = action.kind === "masterTarget" ? getPendingMasterActions(game, action) : [];
+  const magicCards = action.kind === "masterTarget" ? getPendingMasterMagicCards(game, action) : [];
 
   return (
     <div className="pending-action">
@@ -3785,6 +3877,27 @@ function PendingDropActionPanel({ action, game, onAttackCommand, onConfirm, onCa
               <Icon icon={commandIcon(command)} /> {command.name} {command.power}P
             </button>
           ))}
+          <button type="button" onClick={onCancel}>
+            <Icon icon="✕" /> キャンセル
+          </button>
+        </div>
+      ) : action.kind === "masterTarget" ? (
+        <div className="button-stack">
+          {masterActions.length > 0 && <span className="pending-action-section-label">Master</span>}
+          {masterActions.map((actionId) => (
+            <button type="button" key={actionId} onClick={() => onMasterAction(actionId)}>
+              <Icon icon={masterActionIcon(actionId)} /> {masterActionLabel(actionId)} {getMasterActionCost(actionId)}
+            </button>
+          ))}
+          {magicCards.length > 0 && <span className="pending-action-section-label">Magic</span>}
+          {magicCards.map((card) => {
+            const def = getCardDef(card.cardId);
+            return (
+              <button type="button" key={card.instanceId} onClick={() => onMasterMagic(card.instanceId)}>
+                <CardIcon cardId={card.cardId} /> {getCardName(card.cardId)} {def.type === "magic" ? def.cost : ""}
+              </button>
+            );
+          })}
           <button type="button" onClick={onCancel}>
             <Icon icon="✕" /> キャンセル
           </button>
@@ -5723,6 +5836,9 @@ function selectionFromPendingDropAction(action: PendingDropAction): Selection {
   if (action.kind === "magic") {
     return { kind: "hand", instanceId: action.handInstanceId };
   }
+  if (action.kind === "masterTarget") {
+    return { kind: "master", playerId: action.playerId };
+  }
   if (action.kind === "move") {
     return { kind: "monster", slotKey: action.fromSlotKey };
   }
@@ -5767,9 +5883,19 @@ function isSelectedSourceHand(selection: Selection | undefined, action: PendingD
   return selection?.kind === "hand" && selection.instanceId === instanceId;
 }
 
+function isSelectedSourceMaster(selection: Selection | undefined, action: PendingDropAction | undefined, playerId: PlayerId): boolean {
+  if (action?.kind === "masterTarget") {
+    return action.playerId === playerId;
+  }
+  return selection?.kind === "master" && selection.playerId === playerId;
+}
+
 function pendingDropActionIcon(action: PendingDropAction): string {
   if (action.kind === "magic") {
     return "✨";
+  }
+  if (action.kind === "masterTarget") {
+    return "🎮";
   }
   if (action.kind === "move") {
     return "🧭";
@@ -5781,6 +5907,9 @@ function pendingDropActionTitle(action: PendingDropAction): string {
   if (action.kind === "magic") {
     return "マジック";
   }
+  if (action.kind === "masterTarget") {
+    return "Master / Magic";
+  }
   if (action.kind === "move") {
     return "Move / Swap";
   }
@@ -5791,6 +5920,11 @@ function pendingDropActionDescription(action: PendingDropAction, game: GameState
   if (action.kind === "magic") {
     return `${handCardLabel(game, action.handInstanceId)} -> ${targetLabel(game, action.target)}`;
   }
+  if (action.kind === "masterTarget") {
+    const masterActionCount = getPendingMasterActions(game, action).length;
+    const magicCount = getPendingMasterMagicCards(game, action).length;
+    return `${playerLabel(action.playerId)}マスター -> ${targetLabel(game, action.target)} / Master ${masterActionCount}・Magic ${magicCount}`;
+  }
   if (action.kind === "move") {
     return `${slotMonsterLabel(game, action.fromSlotKey)} -> ${targetLabel(game, { kind: "monster", slotKey: action.toSlotKey })}`;
   }
@@ -5800,6 +5934,34 @@ function pendingDropActionDescription(action: PendingDropAction, game: GameState
 function getPendingAttackCommands(game: GameState, action: Extract<PendingDropAction, { kind: "attackTarget" }>): CommandDef[] {
   return getCommandsTargetingTarget(game, action.attackerSlotKey, action.target)
     .filter((command) => action.commandIds.includes(command.id));
+}
+
+function getPendingMasterActions(game: GameState, action: Extract<PendingDropAction, { kind: "masterTarget" }>): MasterActionId[] {
+  return getMasterActionsTargetingTarget(game, action.target)
+    .filter((actionId) => action.masterActionIds.includes(actionId));
+}
+
+function getPendingMasterMagicCards(game: GameState, action: Extract<PendingDropAction, { kind: "masterTarget" }>): CardInstance[] {
+  const availableIds = new Set(action.magicHandInstanceIds);
+  return getMagicCardsTargetingTarget(game, action.target)
+    .filter((card) => availableIds.has(card.instanceId));
+}
+
+function getMasterActionsTargetingTarget(game: GameState, target: Target): MasterActionId[] {
+  return getCurrentMasterActionIds(game)
+    .filter((actionId) =>
+      getMasterActionTargets(game, actionId)
+        .some((candidateTarget) => targetToKey(candidateTarget) === targetToKey(target)),
+    );
+}
+
+function getMagicCardsTargetingTarget(game: GameState, target: Target): CardInstance[] {
+  return game.players[game.currentPlayer].hand
+    .filter((card) => {
+      const def = getCardDef(card.cardId);
+      return def.type === "magic" && getMagicTargets(game, card.instanceId)
+        .some((candidateTarget) => targetToKey(candidateTarget) === targetToKey(target));
+    });
 }
 
 function getCommandsTargetingTarget(game: GameState, attackerSlotKey: SlotKey, target: Target): CommandDef[] {

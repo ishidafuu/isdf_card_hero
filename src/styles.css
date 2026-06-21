@@ -608,7 +608,8 @@ button:disabled {
   background: #f2fbf5;
 }
 
-.board-slot.selected {
+.board-slot.selected,
+.master.selected {
   border-color: #2f5f91;
   box-shadow: inset 0 0 0 2px #2f5f91;
 }
@@ -1364,6 +1365,14 @@ button:disabled {
   color: #4b5652;
   font-size: 13px;
   line-height: 1.35;
+}
+
+.pending-action-section-label {
+  color: #56615d;
+  font-size: 11px;
+  font-weight: 900;
+  letter-spacing: 0;
+  text-transform: uppercase;
 }
 
 .target-summary {
