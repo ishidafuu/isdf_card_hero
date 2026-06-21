@@ -304,6 +304,7 @@ interface VisualEffect {
   slotDamageFlashes: SlotDamageFlash[];
   masterDamageFlashes: MasterDamageFlash[];
   action?: BoardActionEffect;
+  logs: string[];
 }
 
 interface BoardActionEffect {
@@ -313,6 +314,25 @@ interface BoardActionEffect {
   source?: BoardAnchor;
   target?: BoardAnchor;
   targets: BoardAnchor[];
+}
+
+interface ActionPreview {
+  key: string;
+  targetKey?: string;
+  icon: string;
+  label: string;
+  summary: string;
+  detail?: string;
+  tone?: "ok" | "warn" | "danger";
+  badge?: string;
+  logs: string[];
+}
+
+interface NextActionCue {
+  icon: string;
+  label: string;
+  value: string;
+  tone?: "ok" | "warn" | "danger";
 }
 
 interface BoardPoint {
@@ -759,6 +779,17 @@ function findLatestSpectatorAttention(log: string[]): BattleReplayEvent | undefi
   return undefined;
 }
 
+function findRecentSpectatorAttention(log: string[], limit: number): BattleReplayEvent[] {
+  const events: BattleReplayEvent[] = [];
+  for (let index = log.length - 1; index >= 0 && events.length < limit; index -= 1) {
+    const entry = log[index];
+    if (isSpectatorAttentionLog(entry) || entry.includes("判断:")) {
+      events.push({ index, entry });
+    }
+  }
+  return events.reverse();
+}
+
 function isSpectatorAttentionLog(entry: string): boolean {
   return (
     entry.includes("勝利") ||
@@ -1018,6 +1049,16 @@ export function App() {
   );
   const selectedLogEntry = selectedLogIndex !== undefined ? game.log[selectedLogIndex] : undefined;
   const latestSpectatorAttention = useMemo(() => findLatestSpectatorAttention(game.log), [game.log]);
+  const actionPreviews = useMemo(
+    () => getActionPreviews(game, selection, pendingDropAction),
+    [game, pendingDropAction, selection],
+  );
+  const previewByTargetKey = useMemo(() => {
+    const entries = actionPreviews.flatMap((preview) => preview.targetKey ? [[preview.targetKey, preview] as const] : []);
+    return new Map(entries);
+  }, [actionPreviews]);
+  const nextActionCues = useMemo(() => getNextActionCues(game, controlsDisabled), [controlsDisabled, game]);
+  const recentSpectatorAttention = useMemo(() => findRecentSpectatorAttention(game.log, 4), [game.log]);
 
   useEffect(() => {
     if (selectedLogIndex === undefined) {
@@ -1959,7 +2000,10 @@ export function App() {
             onConfirm={handleConfirmPendingDropAction}
             onCancel={handleCancelPendingDropAction}
           />
-          <OperationReasonPanel game={game} selection={selection} pendingDropAction={pendingDropAction} error={error} />
+          <ActionPreviewPanel previews={actionPreviews} />
+          {(error || actionPreviews.length === 0) && (
+            <OperationReasonPanel game={game} selection={selection} pendingDropAction={pendingDropAction} error={error} />
+          )}
         </section>
       );
     }
@@ -1980,6 +2024,14 @@ export function App() {
             </span>
           )}
         </div>
+        <TurnPhaseStrip
+          game={game}
+          selection={selection}
+          pendingDropAction={pendingDropAction}
+          cpuVsCpu={cpuVsCpu}
+          autoPlayEnabled={autoPlayEnabled}
+          spectatorPaused={spectatorPaused}
+        />
         <div className="battle-control-body">
           <div className="battle-control-actions">
             <div className="battle-playback-row">
@@ -2070,14 +2122,35 @@ export function App() {
             )}
           </div>
           <div className="battle-control-status">
+            <NextActionCuePanel cues={nextActionCues} />
             <TargetSelectionSummary selection={selection} game={game} />
-            {hasOperationContext ? (
-              <OperationReasonPanel game={game} selection={selection} pendingDropAction={pendingDropAction} error={error} />
-            ) : (
-              <p className="hint battle-control-empty-hint">
-                <Icon icon="☝️" /> 手札、味方モンスター、またはマスター特技を選択
-              </p>
+            <ActionPreviewPanel previews={actionPreviews} />
+            {cpuVsCpu && (
+              <SpectatorReviewPanel
+                recent={recentSpectatorAttention}
+                onOpenCpuHistory={() => setZoneView({ kind: "cpuHistory" })}
+                onOpenEffects={() => setZoneView({ kind: "effects" })}
+              />
             )}
+            {hasOperationContext && (error || actionPreviews.length === 0) ? (
+              <OperationReasonPanel game={game} selection={selection} pendingDropAction={pendingDropAction} error={error} />
+            ) : !hasOperationContext ? (
+              <p className="hint battle-control-empty-hint">
+                {cpuVsCpu ? (
+                  <>
+                    <Icon icon="👁️" /> 注目イベントで停止し、CPU履歴とEffectsで判断を確認
+                  </>
+                ) : game.currentPlayer === "cpu" ? (
+                  <>
+                    <Icon icon="🧠" /> CPU解決中。ログまたはCPU履歴で判断理由を確認
+                  </>
+                ) : (
+                  <>
+                    <Icon icon="☝️" /> 手札、味方モンスター、またはマスター特技を選択
+                  </>
+                )}
+              </p>
+            ) : null}
             {selection?.kind === "command" && (
               <p className="hint">攻撃対象を選択してください。</p>
             )}
@@ -2336,6 +2409,7 @@ export function App() {
           <div className="battle-primary">
             <div className="board" aria-label="field">
               {visualEffect?.action && <BoardActionOverlay action={visualEffect.action} effectId={visualEffect.id} />}
+              {visualEffect && <ResolutionFeed effect={visualEffect} />}
               {BOARD_CELLS.map((row, rowIndex) => (
                 <div className="board-row" key={rowIndex}>
                   {row.map((cell) => {
@@ -2348,6 +2422,7 @@ export function App() {
                           selected={isSelectedSourceSlot(selection, pendingDropAction, cell.slotKey)}
                           targetable={targetKeys.has(`monster:${cell.slotKey}`)}
                           targetRole={targetRoleForTarget(game, { kind: "monster", slotKey: cell.slotKey }, targetKeys, selection, pendingDropAction)}
+                          preview={previewByTargetKey.get(`monster:${cell.slotKey}`)}
                           effectKind={visualEffect?.slots.includes(cell.slotKey) ? visualEffect.kind : undefined}
                           effectId={visualEffect?.id}
                           damageFlash={visualEffect?.slotDamageFlashes.find((flash) => flash.slotKey === cell.slotKey)}
@@ -2393,6 +2468,11 @@ export function App() {
                             hand={game.players[cell.playerId].hand.length}
                           />
                           {targetRole && <span className="target-badge">{targetRoleLabel(targetRole)}</span>}
+                          {previewByTargetKey.get(`master:${cell.playerId}`)?.badge && (
+                            <span className="target-preview-badge">
+                              {previewByTargetKey.get(`master:${cell.playerId}`)?.badge}
+                            </span>
+                          )}
                           <DamageBubble key={visualEffect?.id} flash={damageFlash} />
                         </button>
                       );
@@ -2663,6 +2743,142 @@ function TargetChipList({ game, targets }: { game: GameState; targets: Target[] 
   );
 }
 
+function TurnPhaseStrip({
+  game,
+  selection,
+  pendingDropAction,
+  cpuVsCpu,
+  autoPlayEnabled,
+  spectatorPaused,
+}: {
+  game: GameState;
+  selection: Selection | undefined;
+  pendingDropAction: PendingDropAction | undefined;
+  cpuVsCpu: boolean;
+  autoPlayEnabled: boolean;
+  spectatorPaused: boolean;
+}) {
+  const active = getActivePhaseId(game, selection, pendingDropAction, cpuVsCpu, autoPlayEnabled, spectatorPaused);
+  const steps = [
+    { id: "start", icon: "⏭️", label: "Turn" },
+    { id: "main", icon: "🃏", label: "Act" },
+    { id: "target", icon: "🎯", label: "Target" },
+    { id: "resolve", icon: "💥", label: "Resolve" },
+    { id: "end", icon: "✅", label: "End" },
+  ] as const;
+
+  return (
+    <div className="turn-phase-strip" aria-label="turn phase">
+      {steps.map((step) => (
+        <span className={step.id === active ? "active" : ""} key={step.id}>
+          <Icon icon={step.icon} /> {step.label}
+        </span>
+      ))}
+    </div>
+  );
+}
+
+function getActivePhaseId(
+  game: GameState,
+  selection: Selection | undefined,
+  pendingDropAction: PendingDropAction | undefined,
+  cpuVsCpu: boolean,
+  autoPlayEnabled: boolean,
+  spectatorPaused: boolean,
+): "start" | "main" | "target" | "resolve" | "end" {
+  if (game.winner) {
+    return "end";
+  }
+  if (game.pendingLevelUp || (cpuVsCpu && !spectatorPaused) || autoPlayEnabled || game.currentPlayer === "cpu") {
+    return "resolve";
+  }
+  if (selection || pendingDropAction) {
+    return "target";
+  }
+  return game.turnNumber <= 1 ? "start" : "main";
+}
+
+function NextActionCuePanel({ cues }: { cues: NextActionCue[] }) {
+  if (cues.length === 0) {
+    return null;
+  }
+  return (
+    <div className="next-action-panel">
+      <strong><Icon icon="🧭" /> Next</strong>
+      <span className="next-action-chip-list">
+        {cues.map((cue) => (
+          <span className={cue.tone ? `next-action-chip next-action-${cue.tone}` : "next-action-chip"} key={cue.label}>
+            <Icon icon={cue.icon} /> {cue.label} <b>{cue.value}</b>
+          </span>
+        ))}
+      </span>
+    </div>
+  );
+}
+
+function ActionPreviewPanel({ previews }: { previews: ActionPreview[] }) {
+  if (previews.length === 0) {
+    return null;
+  }
+  const visible = previews.slice(0, 3);
+  return (
+    <div className="action-preview-panel">
+      <strong><Icon icon="🔎" /> Result Preview</strong>
+      <ol>
+        {visible.map((preview) => (
+          <li className={preview.tone ? `action-preview-${preview.tone}` : ""} key={preview.key} title={preview.detail}>
+            <span>
+              <Icon icon={preview.icon} /> {preview.label}
+              {preview.badge && <b>{preview.badge}</b>}
+            </span>
+            <p>{preview.summary}</p>
+          </li>
+        ))}
+      </ol>
+      {previews.length > visible.length && <p className="preview-more">他 {previews.length - visible.length} 候補</p>}
+    </div>
+  );
+}
+
+function SpectatorReviewPanel({
+  recent,
+  onOpenCpuHistory,
+  onOpenEffects,
+}: {
+  recent: BattleReplayEvent[];
+  onOpenCpuHistory: () => void;
+  onOpenEffects: () => void;
+}) {
+  return (
+    <div className="spectator-review-panel">
+      <div className="spectator-review-heading">
+        <strong><Icon icon="👁️" /> Attention</strong>
+        <span>{recent.length}件</span>
+      </div>
+      {recent.length === 0 ? (
+        <p className="empty-note">注目イベント待ちです。</p>
+      ) : (
+        <ol>
+          {recent.map((event) => (
+            <li className={logTone(event.entry)} key={`${event.index}_${event.entry}`}>
+              <span>#{event.index + 1}</span>
+              <p><Icon icon={logIcon(event.entry)} /> {event.entry}</p>
+            </li>
+          ))}
+        </ol>
+      )}
+      <div className="spectator-review-actions">
+        <button type="button" onClick={onOpenCpuHistory}>
+          <Icon icon="🧠" /> CPU AI
+        </button>
+        <button type="button" onClick={onOpenEffects}>
+          <Icon icon="📜" /> Effects
+        </button>
+      </div>
+    </div>
+  );
+}
+
 function LatestEventSummary({ log }: { log: string[] }) {
   const latest = log.at(-1);
   if (!latest) {
@@ -2878,6 +3094,397 @@ function operationReasonsForMonster(game: GameState, slotKey: SlotKey): Operatio
     text: `${slotMonsterLabel(game, slotKey)}は${monster.actionLimit - monster.actionCount}回行動できます。${commands.join(" / ")} / Move ${moveTargets.length}件。`,
     tone: "ok",
   }];
+}
+
+function getActionPreviews(
+  game: GameState,
+  selection: Selection | undefined,
+  pendingDropAction: PendingDropAction | undefined,
+): ActionPreview[] {
+  if (game.winner || game.pendingLevelUp) {
+    return [];
+  }
+  if (pendingDropAction) {
+    return getPendingDropActionPreviews(game, pendingDropAction);
+  }
+  if (!selection) {
+    return [];
+  }
+  if (selection.kind === "hand") {
+    return getHandActionPreviews(game, selection.instanceId);
+  }
+  if (selection.kind === "command") {
+    return selection.targets.map((target) =>
+      previewCommandAction(game, selection.attackerSlotKey, selection.commandId, target, `command_${selection.commandId}_${targetToKey(target)}`),
+    );
+  }
+  if (selection.kind === "masterAction") {
+    return selection.targets.map((target) =>
+      previewStateChange({
+        game,
+        key: `master_${selection.actionId}_${targetToKey(target)}`,
+        target,
+        icon: masterActionIcon(selection.actionId),
+        label: `${masterActionLabel(selection.actionId)} -> ${targetLabel(game, target)}`,
+        fallback: "マスター特技を解決します。",
+        apply: () => useMasterAction(game, selection.actionId, target),
+      }),
+    );
+  }
+  if (selection.kind === "move") {
+    return selection.targets.map((slotKey) =>
+      previewStateChange({
+        game,
+        key: `move_${selection.fromSlotKey}_${slotKey}`,
+        target: { kind: "monster", slotKey },
+        icon: "🧭",
+        label: `${slotMonsterLabel(game, selection.fromSlotKey)} -> ${slotLabel(slotKey)}`,
+        fallback: "移動または入れ替えを解決します。",
+        apply: () => moveMonster(game, selection.fromSlotKey, slotKey),
+      }),
+    );
+  }
+  if (selection.kind === "magicSecondaryTarget") {
+    return selection.targets.map((target) =>
+      previewStateChange({
+        game,
+        key: `magic_secondary_${selection.handInstanceId}_${targetToKey(target)}`,
+        target,
+        icon: "✨",
+        label: `${handCardLabel(game, selection.handInstanceId)} -> ${targetLabel(game, selection.target)} + ${targetLabel(game, target)}`,
+        fallback: "追加対象を含めてマジックを解決します。",
+        apply: () => playMagic(game, { handInstanceId: selection.handInstanceId, target: selection.target, secondaryTarget: target }),
+      }),
+    );
+  }
+  if (selection.kind === "commandSecondaryTarget") {
+    return selection.targets.map((target) =>
+      previewStateChange({
+        game,
+        key: `command_secondary_${selection.commandId}_${targetToKey(target)}`,
+        target,
+        icon: "⚔️",
+        label: `${targetLabel(game, selection.target)} + ${targetLabel(game, target)}`,
+        fallback: "追加対象を含めて攻撃を解決します。",
+        apply: () =>
+          attackWithCommand(game, {
+            attackerSlotKey: selection.attackerSlotKey,
+            commandId: selection.commandId,
+            target: selection.target,
+            secondaryTarget: target,
+          }),
+      }),
+    );
+  }
+  return [];
+}
+
+function getPendingDropActionPreviews(game: GameState, action: PendingDropAction): ActionPreview[] {
+  if (action.kind === "magic") {
+    return [previewMagicAction(game, action.handInstanceId, action.target, `pending_magic_${targetToKey(action.target)}`)];
+  }
+  if (action.kind === "move") {
+    return [
+      previewStateChange({
+        game,
+        key: `pending_move_${action.fromSlotKey}_${action.toSlotKey}`,
+        target: { kind: "monster", slotKey: action.toSlotKey },
+        icon: "🧭",
+        label: `${slotMonsterLabel(game, action.fromSlotKey)} -> ${slotLabel(action.toSlotKey)}`,
+        fallback: "ドラッグ移動を確定します。",
+        apply: () => moveMonster(game, action.fromSlotKey, action.toSlotKey),
+      }),
+    ];
+  }
+  return action.commandIds.map((commandId) =>
+    previewCommandAction(game, action.attackerSlotKey, commandId, action.target, `pending_attack_${commandId}_${targetToKey(action.target)}`),
+  );
+}
+
+function getHandActionPreviews(game: GameState, instanceId: string): ActionPreview[] {
+  const card = getHandCard(game, instanceId);
+  if (!card) {
+    return [];
+  }
+  const def = getCardDef(card.cardId);
+  if (def.type === "monster") {
+    return BOARD_SLOT_KEYS
+      .filter((slotKey) => canSummonTo(game, instanceId, slotKey))
+      .map((slotKey) =>
+        previewStateChange({
+          game,
+          key: `summon_${instanceId}_${slotKey}`,
+          target: { kind: "monster", slotKey },
+          icon: "🂠",
+          label: `${def.name} -> ${slotLabel(slotKey)}`,
+          fallback: "準備中で召喚します。",
+          apply: () => summonMonster(game, instanceId, slotKey),
+        }),
+      );
+  }
+  return getMagicTargets(game, instanceId).map((target) => previewMagicAction(game, instanceId, target, `magic_${instanceId}_${targetToKey(target)}`));
+}
+
+function previewMagicAction(game: GameState, handInstanceId: string, target: Target, key: string): ActionPreview {
+  const secondaryTargets = getMagicSecondaryTargets(game, { handInstanceId, target });
+  if (secondaryTargets.length > 0) {
+    return choicePreview(game, key, target, "✨", `${handCardLabel(game, handInstanceId)} -> ${targetLabel(game, target)}`, `追加対象 ${secondaryTargets.length}件を選ぶと解決します。`);
+  }
+  const handChoices = getMagicHandChoices(game, handInstanceId);
+  if (handChoices.length > 0) {
+    return choicePreview(game, key, target, "✋", `${handCardLabel(game, handInstanceId)} -> ${targetLabel(game, target)}`, `手札選択 ${handChoices.length}件が必要です。`);
+  }
+  const categories = getMagicSearchCategories(game, handInstanceId);
+  if (categories.length > 0) {
+    return choicePreview(game, key, target, "🔎", `${handCardLabel(game, handInstanceId)} -> ${targetLabel(game, target)}`, "山札から探すカテゴリを選ぶと解決します。");
+  }
+  return previewStateChange({
+    game,
+    key,
+    target,
+    icon: "✨",
+    label: `${handCardLabel(game, handInstanceId)} -> ${targetLabel(game, target)}`,
+    fallback: "マジックを解決します。",
+    apply: () => playMagic(game, { handInstanceId, target }),
+  });
+}
+
+function previewCommandAction(
+  game: GameState,
+  attackerSlotKey: SlotKey,
+  commandId: string,
+  target: Target,
+  key: string,
+): ActionPreview {
+  const monster = game.slots[attackerSlotKey].monster;
+  const command = monster ? getMonsterCommands(monster).find((candidate) => candidate.id === commandId) : undefined;
+  const label = `${command?.name ?? "攻撃"} -> ${targetLabel(game, target)}`;
+  const secondaryTargets = getCommandSecondaryTargets(game, { attackerSlotKey, commandId, target });
+  if (secondaryTargets.length > 0) {
+    return choicePreview(game, key, target, command ? commandIcon(command) : "⚔️", label, `追加対象 ${secondaryTargets.length}件を選ぶと解決します。`);
+  }
+  const handChoices = getCommandHandChoices(game, attackerSlotKey, commandId);
+  if (handChoices.length > 0) {
+    return choicePreview(game, key, target, command ? commandIcon(command) : "⚔️", label, `手札選択 ${handChoices.length}件が必要です。`);
+  }
+  return previewStateChange({
+    game,
+    key,
+    target,
+    icon: command ? commandIcon(command) : "⚔️",
+    label,
+    fallback: "攻撃を解決します。",
+    apply: () => attackWithCommand(game, { attackerSlotKey, commandId, target }),
+  });
+}
+
+function choicePreview(
+  game: GameState,
+  key: string,
+  target: Target,
+  icon: string,
+  label: string,
+  summary: string,
+): ActionPreview {
+  return {
+    key,
+    targetKey: targetToKey(target),
+    icon,
+    label,
+    summary,
+    tone: "warn",
+    badge: "追加選択",
+    logs: [],
+    detail: targetLabel(game, target),
+  };
+}
+
+function previewStateChange({
+  game,
+  key,
+  target,
+  icon,
+  label,
+  fallback,
+  apply,
+}: {
+  game: GameState;
+  key: string;
+  target?: Target;
+  icon: string;
+  label: string;
+  fallback: string;
+  apply: () => GameState;
+}): ActionPreview {
+  try {
+    const next = apply();
+    const logs = actionFeedLogs(getAppendedLogs(game.log, next.log));
+    const summary = summarizeStateDelta(game, next, target) ?? logs[0] ?? fallback;
+    return {
+      key,
+      targetKey: target ? targetToKey(target) : undefined,
+      icon,
+      label,
+      summary,
+      detail: logs.length > 0 ? logs.join(" / ") : undefined,
+      tone: next.winner ? "danger" : next.pendingLevelUp ? "ok" : "ok",
+      badge: target ? previewBadgeForTarget(game, next, target) : undefined,
+      logs,
+    };
+  } catch (caught) {
+    return {
+      key,
+      targetKey: target ? targetToKey(target) : undefined,
+      icon: "⚠️",
+      label,
+      summary: caught instanceof Error ? caught.message : "プレビューできません",
+      tone: "danger",
+      badge: "不可",
+      logs: [],
+    };
+  }
+}
+
+function summarizeStateDelta(previous: GameState, next: GameState, _target?: Target): string | undefined {
+  const playerDelta = resourceDeltaSummary(previous, next, previous.currentPlayer);
+  const winner = next.winner ? `${playerLabel(next.winner)}勝利` : "";
+  const pending = next.pendingLevelUp ? "レベルアップ選択へ" : "";
+  return [playerDelta, pending, winner].filter(Boolean).join(" / ") || undefined;
+}
+
+function resourceDeltaSummary(previous: GameState, next: GameState, playerId: PlayerId): string | undefined {
+  const before = previous.players[playerId];
+  const after = next.players[playerId];
+  const parts = [
+    numericDeltaLabel("Stone", before.stones, after.stones),
+    numericDeltaLabel("Hand", before.hand.length, after.hand.length),
+    numericDeltaLabel("Deck", before.deck.length, after.deck.length),
+  ].filter(Boolean);
+  return parts.length > 0 ? parts.join(" ") : undefined;
+}
+
+function numericDeltaLabel(label: string, before: number, after: number): string | undefined {
+  const delta = after - before;
+  if (delta === 0) {
+    return undefined;
+  }
+  return `${label} ${delta > 0 ? "+" : ""}${delta}`;
+}
+
+function previewBadgeForTarget(previous: GameState, next: GameState, target: Target): string | undefined {
+  if (target.kind === "master") {
+    const beforeHp = previous.players[target.playerId].masterHp;
+    const afterHp = next.players[target.playerId].masterHp;
+    if (beforeHp !== afterHp) {
+      return `❤️ ${beforeHp}->${afterHp}`;
+    }
+    return resourceDeltaSummary(previous, next, target.playerId);
+  }
+
+  const before = previous.slots[target.slotKey].monster;
+  const after = next.slots[target.slotKey].monster;
+  if (before && !after) {
+    return "KO";
+  }
+  if (!before && after) {
+    return after.status === "prepared" ? "召喚" : "登場";
+  }
+  if (before && after) {
+    if (before.instanceId !== after.instanceId) {
+      return "入替";
+    }
+    if (before.hp !== after.hp) {
+      return `HP ${before.hp}->${after.hp}`;
+    }
+    if (before.level !== after.level) {
+      return `Lv ${before.level}->${after.level}`;
+    }
+    if (before.status !== after.status) {
+      return after.status === "active" ? "登場" : "準備";
+    }
+    const flags = [
+      !before.shielded && after.shielded ? "盾" : "",
+      !before.focused && after.focused ? "気合" : "",
+      !before.berserkPower && after.berserkPower ? "バーサク" : "",
+      !before.powerUp && after.powerUp ? "P+1" : "",
+    ].filter(Boolean);
+    if (flags.length > 0) {
+      return flags.join("/");
+    }
+  }
+  return undefined;
+}
+
+function getNextActionCues(game: GameState, controlsDisabled: boolean): NextActionCue[] {
+  if (game.winner) {
+    return [{ icon: "🏆", label: "Result", value: `${playerLabel(game.winner)}勝利`, tone: "ok" }];
+  }
+  if (game.pendingLevelUp) {
+    return [{ icon: "✨", label: "Level Up", value: `0-${game.pendingLevelUp.maxLevels}`, tone: "warn" }];
+  }
+  if (game.currentPlayer !== "player") {
+    return [{ icon: "🧠", label: "CPU", value: playerLabel(game.currentPlayer), tone: "warn" }];
+  }
+  if (controlsDisabled) {
+    return [{ icon: "⏳", label: "Wait", value: "解決中", tone: "warn" }];
+  }
+
+  const summon = countPlayableSummons(game);
+  const magic = countPlayableMagic(game);
+  const monsterActions = countMonsterActions(game);
+  const masterActions = countPlayableMasterActions(game);
+  const hpDraw = game.players.player.deck.length > 0 ? 1 : 0;
+  const activeTotal = summon + magic + monsterActions.attack + monsterActions.move + monsterActions.focus + masterActions + hpDraw;
+  return [
+    { icon: "🂠", label: "Summon", value: String(summon), tone: summon > 0 ? "ok" : undefined },
+    { icon: "✨", label: "Magic", value: String(magic), tone: magic > 0 ? "ok" : undefined },
+    { icon: "⚔️", label: "Attack", value: String(monsterActions.attack), tone: monsterActions.attack > 0 ? "ok" : undefined },
+    { icon: "🧭", label: "Move", value: String(monsterActions.move), tone: monsterActions.move > 0 ? "ok" : undefined },
+    { icon: "💪", label: "Focus", value: String(monsterActions.focus), tone: monsterActions.focus > 0 ? "ok" : undefined },
+    { icon: "🎮", label: "Master", value: String(masterActions + hpDraw), tone: masterActions + hpDraw > 0 ? "ok" : undefined },
+    { icon: "⏭️", label: "End", value: activeTotal === 0 ? "推奨" : "可", tone: activeTotal === 0 ? "warn" : undefined },
+  ];
+}
+
+function countPlayableSummons(game: GameState): number {
+  return game.players.player.hand.filter((card) => {
+    const def = getCardDef(card.cardId);
+    return def.type === "monster" && BOARD_SLOT_KEYS.some((slotKey) => canSummonTo(game, card.instanceId, slotKey));
+  }).length;
+}
+
+function countPlayableMagic(game: GameState): number {
+  return game.players.player.hand.filter((card) => {
+    const def = getCardDef(card.cardId);
+    return def.type === "magic" && def.cost <= game.players.player.stones && getMagicTargets(game, card.instanceId).length > 0;
+  }).length;
+}
+
+function countMonsterActions(game: GameState): { attack: number; move: number; focus: number } {
+  return BOARD_SLOT_KEYS.reduce((total, slotKey) => {
+    const monster = game.slots[slotKey].monster;
+    if (!monster || monster.owner !== "player") {
+      return total;
+    }
+    const actionReason = getMonsterActionDisabledReason(game, slotKey);
+    if (actionReason) {
+      return total;
+    }
+    const attack = getMonsterCommands(monster).some((command) => getCommandTargets(game, slotKey, command.id).length > 0) ? 1 : 0;
+    const move = getMovableTargets(game, slotKey).length > 0 ? 1 : 0;
+    const focus = canFocusMonster(game, slotKey) && !monster.focused ? 1 : 0;
+    return {
+      attack: total.attack + attack,
+      move: total.move + move,
+      focus: total.focus + focus,
+    };
+  }, { attack: 0, move: 0, focus: 0 });
+}
+
+function countPlayableMasterActions(game: GameState): number {
+  return getCurrentMasterActionIds(game).filter((actionId) =>
+    getMasterActionCost(actionId) <= game.players.player.stones && getMasterActionTargets(game, actionId).length > 0,
+  ).length;
 }
 
 function BattleResultSummary({ game }: { game: GameState }) {
@@ -4772,6 +5379,7 @@ interface BoardSlotProps {
   selected: boolean;
   targetable: boolean;
   targetRole?: TargetRole;
+  preview?: ActionPreview;
   effectKind?: EffectKind;
   effectId?: number;
   damageFlash?: DamageFlash;
@@ -4832,12 +5440,29 @@ function BoardActionOverlay({ action, effectId }: { action: BoardActionEffect; e
   );
 }
 
+function ResolutionFeed({ effect }: { effect: VisualEffect }) {
+  if (effect.logs.length === 0) {
+    return null;
+  }
+
+  return (
+    <div className="resolution-feed" aria-live="polite">
+      {effect.logs.map((entry, index) => (
+        <span className={`resolution-feed-item ${logTone(entry)}`} key={`${effect.id}_${index}_${entry}`}>
+          <Icon icon={logIcon(entry)} /> {entry}
+        </span>
+      ))}
+    </div>
+  );
+}
+
 function BoardSlot({
   slotKey,
   game,
   selected,
   targetable,
   targetRole,
+  preview,
   effectKind,
   effectId,
   damageFlash,
@@ -4876,6 +5501,7 @@ function BoardSlot({
     >
       <span className="slot-label">{label}</span>
       {targetRole && <span className="target-badge">{targetRoleLabel(targetRole)}</span>}
+      {preview?.badge && <span className="target-preview-badge">{preview.badge}</span>}
       {monster && hidePreparedInfo ? (
         <span className="monster-card hidden-prepared">
           <strong><Icon icon="🂠" /> 準備中カード</strong>
@@ -5404,7 +6030,15 @@ function createVisualEffect(previous: GameState, next: GameState, id: number): V
     slotDamageFlashes,
     masterDamageFlashes,
     action: createBoardActionEffect(previous, next, appendedLogs, kind, slotDamageFlashes, masterDamageFlashes),
+    logs: actionFeedLogs(appendedLogs),
   };
+}
+
+function actionFeedLogs(logs: string[]): string[] {
+  return logs
+    .filter((entry) => !entry.includes("判断:"))
+    .filter((entry) => logCategoryLabel(entry) !== "その他")
+    .slice(-3);
 }
 
 function createBoardActionEffect(
@@ -5989,13 +6623,17 @@ function HandCardContent({ cardId }: HandCardContentProps) {
           <CardPoolChip cardId={def.id} compact />
         </span>
         <span className="hand-card-meta"><Icon icon="🪨" /> Cost {def.cost} / {targetKindsLabel(def.targetKinds)}</span>
-        <span className="hand-card-text">{def.description}</span>
+        <span className="hand-card-text">{def.category ?? def.description}</span>
+        <span className="hand-card-hover-detail">{def.description}</span>
       </>
     );
   }
 
   const firstLevel = def.levels[0];
   const maxHpText = def.levels.map((level) => `Lv${level.level} HP${level.maxHp}`).join(" / ");
+  const hpRangeText = def.levels.length > 1
+    ? `HP ${def.levels[0].maxHp}-${def.levels[def.levels.length - 1].maxHp}`
+    : `HP ${def.levels[0].maxHp}`;
   const commandText = firstLevel.commands.map(commandSummary).join(" / ");
   const isSpecial = getCardPool(def) === "special";
   return (
@@ -6006,9 +6644,13 @@ function HandCardContent({ cardId }: HandCardContentProps) {
         <CardPoolChip cardId={def.id} compact />
       </span>
       <span className="hand-card-meta">
-        {isSpecial ? <><Icon icon="✨" /> {superEvolutionText(def)}</> : <><Icon icon="🪨" /> 召喚 1</>} / <Icon icon="❤️" /> {maxHpText}
+        {isSpecial ? <><Icon icon="✨" /> {superEvolutionText(def)}</> : <><Icon icon="🪨" /> 召喚 1</>} / <Icon icon="❤️" /> {hpRangeText}
       </span>
       <span className="hand-card-text">{commandText}</span>
+      <span className="hand-card-hover-detail">
+        MaxLv {def.maxLevel} / {maxHpText} / {commandText}
+        {def.catchcopy ? ` / ${def.catchcopy}` : ""}
+      </span>
     </>
   );
 }
