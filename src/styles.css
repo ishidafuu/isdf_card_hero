@@ -1104,6 +1104,18 @@ button:disabled {
   padding: 2px 4px;
 }
 
+.board-effect-chip.guarded {
+  background: rgba(41, 67, 89, 0.92);
+  border-color: rgba(18, 35, 51, 0.45);
+  color: #f7fbff;
+}
+
+.board-slot.action-spent .board-effect-chip.guarded {
+  background: rgba(41, 67, 89, 0.88);
+  border-color: rgba(18, 35, 51, 0.38);
+  color: #f7fbff;
+}
+
 .card-notes {
   color: #4b5652;
   display: grid;

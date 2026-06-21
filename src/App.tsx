@@ -5729,7 +5729,12 @@ function BoardSlot({
           {monsterStatusBadges.length > 0 && (
             <span className="board-effect-row">
               {monsterStatusBadges.map((badge) => (
-                <span className="board-effect-chip" title={badge.label} aria-label={badge.label} key={badge.label}>
+                <span
+                  className={["board-effect-chip", badge.className ?? ""].join(" ")}
+                  title={badge.label}
+                  aria-label={badge.label}
+                  key={badge.label}
+                >
                   {badge.icon}
                 </span>
               ))}
@@ -5746,8 +5751,9 @@ function BoardSlot({
   );
 }
 
-function getBoardStatusBadges(monster: MonsterState): Array<{ icon: string; label: string }> {
+function getBoardStatusBadges(monster: MonsterState): Array<{ icon: string; label: string; className?: string }> {
   return [
+    monster.damageGuarded ? { icon: "仮", label: "仮死状態", className: "guarded" } : undefined,
     monster.focused ? { icon: "💪", label: "気合い" } : undefined,
     monster.powerUp ? { icon: "⬆️", label: "パワー+1" } : undefined,
     monster.berserkPower ? { icon: "🔥", label: "バーサク" } : undefined,
@@ -5771,7 +5777,7 @@ function getBoardStatusBadges(monster: MonsterState): Array<{ icon: string; labe
     monster.deathChainSlotKey ? { icon: "鎖", label: "道連れ" } : undefined,
     monster.darkHoleSlotKey ? { icon: "穴", label: "ブラックホール" } : undefined,
     monster.stoneCostMultiplier && monster.stoneCostMultiplier > 1 ? { icon: "🪨", label: `石コストx${monster.stoneCostMultiplier}` } : undefined,
-  ].filter((badge): badge is { icon: string; label: string } => Boolean(badge));
+  ].filter((badge): badge is { icon: string; label: string; className?: string } => Boolean(badge));
 }
 
 function FieldBaseArt({ slotKey, cardId, showCardBack = false }: { slotKey: SlotKey; cardId?: string; showCardBack?: boolean }) {
@@ -6843,6 +6849,7 @@ function slotSignature(game: GameState, slotKey: SlotKey): string {
     monster.halfShielded,
     monster.oneShotShield,
     monster.reviveOnDefeat,
+    monster.damageGuarded,
     monster.shadowCursed,
     monster.scapegoat,
     monster.canAttackAnywhere,
