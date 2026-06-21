@@ -1649,23 +1649,6 @@ button:disabled {
   margin: 0;
 }
 
-.unavailable-actions {
-  border-top: 1px solid rgba(47, 104, 69, 0.16);
-  padding-top: 7px;
-}
-
-.unavailable-actions summary {
-  color: #56615d;
-  cursor: pointer;
-  font-size: 12px;
-  font-weight: 800;
-  line-height: 1.2;
-}
-
-.unavailable-action-list {
-  margin-top: 8px;
-}
-
 .selected-unit-info {
   border-top: 1px solid #d8ded2;
   display: grid;

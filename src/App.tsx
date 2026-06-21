@@ -5827,7 +5827,6 @@ function MonsterCommands({ game, slotKey, onCommand, onFocus, onMove }: MonsterC
         },
       ];
   const readyActions = unitActions.filter((action) => !action.disabledReason);
-  const unavailableActions = unitActions.filter((action) => action.disabledReason);
   const renderActionButton = (action: UnitActionItem) => (
     <button
       className={`command-button ${action.disabledReason ? "is-unavailable" : "is-ready"}`}
@@ -5864,20 +5863,12 @@ function MonsterCommands({ game, slotKey, onCommand, onFocus, onMove }: MonsterC
             <span className="pending-action-section-label">今できること</span>
             <strong>{readyActions.length > 0 ? `${readyActions.length}件実行できます` : "今できる行動はありません"}</strong>
           </div>
-          {readyActions.length > 0 ? (
+          {unitActions.length > 0 ? (
             <div className="available-action-list">
-              {readyActions.map(renderActionButton)}
+              {unitActions.map(renderActionButton)}
             </div>
           ) : (
             <p className="available-actions-empty"><Icon icon="⏸️" /> 行動条件を満たしていません。</p>
-          )}
-          {unavailableActions.length > 0 && (
-            <details className="unavailable-actions">
-              <summary>今はできないこと {unavailableActions.length}</summary>
-              <div className="available-action-list unavailable-action-list">
-                {unavailableActions.map(renderActionButton)}
-              </div>
-            </details>
           )}
         </section>
       )}
