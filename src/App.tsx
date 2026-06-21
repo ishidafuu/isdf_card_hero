@@ -5609,6 +5609,7 @@ function BoardSlot({
   const prepared = monster?.status === "prepared";
   const hidePreparedInfo = prepared && monster.owner !== "player";
   const label = slotLabel(slotKey);
+  const visibleMonsterCardId = monster && !hidePreparedInfo ? monster.cardId : undefined;
   const monsterStatusBadges = monster
     ? [
         monster.focused ? "💪 気合い" : "",
@@ -5639,7 +5640,7 @@ function BoardSlot({
       onDrop={onDrop}
       onClick={onClick}
     >
-      <FieldBaseArt slotKey={slotKey} />
+      <FieldBaseArt slotKey={slotKey} cardId={visibleMonsterCardId} />
       <span className="slot-label">{label}</span>
       {targetRole && <span className="target-badge">{targetRoleLabel(targetRole)}</span>}
       {preview?.badge && <span className="target-preview-badge">{preview.badge}</span>}
@@ -5648,7 +5649,7 @@ function BoardSlot({
           <CardBackArt />
           {!hidePreparedInfo && (
             <>
-              <strong><CardIcon cardId={monster.cardId} /> <span className="monster-name">{getMonsterDisplayName(monster)}</span></strong>
+              <strong><span className="monster-name">{getMonsterDisplayName(monster)}</span></strong>
               <span className="monster-stat-line"><Icon icon="✨" /> Lv{monster.level} / <Icon icon="❤️" /> HP {monster.hp}</span>
               <MonsterTraitSummary cardId={monster.cardId} />
             </>
@@ -5656,7 +5657,7 @@ function BoardSlot({
         </span>
       ) : monster ? (
         <span className="monster-card">
-          <strong><CardIcon cardId={monster.cardId} /> <span className="monster-name">{getMonsterDisplayName(monster)}</span></strong>
+          <strong><span className="monster-name">{getMonsterDisplayName(monster)}</span></strong>
           <span className="monster-stat-line">
             <Icon icon="✨" /> Lv{monster.level} / <Icon icon="❤️" /> HP {monster.hp} / <Icon icon="⚡" />
             {monster.actionCount}/{monster.actionLimit}
@@ -5672,16 +5673,22 @@ function BoardSlot({
   );
 }
 
-function FieldBaseArt({ slotKey }: { slotKey: SlotKey }) {
+function FieldBaseArt({ slotKey, cardId }: { slotKey: SlotKey; cardId?: string }) {
   return (
-    <span className="field-base-art" aria-hidden="true">
+    <span className={`field-base-art ${cardId ? "with-unit" : ""}`} aria-hidden="true">
       <img
+        className="field-base-image"
         src={getFieldBaseImageUrl(slotKey)}
         alt=""
         loading="lazy"
         decoding="async"
         referrerPolicy="no-referrer"
       />
+      {cardId && (
+        <span className="field-unit-icon">
+          <CardIcon cardId={cardId} />
+        </span>
+      )}
     </span>
   );
 }
