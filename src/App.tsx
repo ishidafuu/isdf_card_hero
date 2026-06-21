@@ -5609,6 +5609,14 @@ function BoardSlot({
   const prepared = monster?.status === "prepared";
   const hidePreparedInfo = prepared && monster.owner !== "player";
   const label = slotLabel(slotKey);
+  const monsterStatusBadges = monster
+    ? [
+        monster.focused ? "💪 気合い" : "",
+        monster.powerUp ? "⬆️ P+1" : "",
+        monster.berserkPower ? "🔥 バーサク" : "",
+        monster.shielded ? "🛡️ 盾" : "",
+      ].filter(Boolean)
+    : [];
 
   return (
     <button
@@ -5640,29 +5648,21 @@ function BoardSlot({
           <CardBackArt />
           {!hidePreparedInfo && (
             <>
-              <strong><CardIcon cardId={monster.cardId} /> {getMonsterDisplayName(monster)}</strong>
-              <span><Icon icon="✨" /> Lv{monster.level} / <Icon icon="❤️" /> HP {monster.hp}</span>
+              <strong><CardIcon cardId={monster.cardId} /> <span className="monster-name">{getMonsterDisplayName(monster)}</span></strong>
+              <span className="monster-stat-line"><Icon icon="✨" /> Lv{monster.level} / <Icon icon="❤️" /> HP {monster.hp}</span>
               <MonsterTraitSummary cardId={monster.cardId} />
             </>
           )}
         </span>
       ) : monster ? (
         <span className="monster-card">
-          <strong><CardIcon cardId={monster.cardId} /> {getMonsterDisplayName(monster)}</strong>
-          <span><Icon icon="✨" /> Lv{monster.level} / <Icon icon="❤️" /> HP {monster.hp}</span>
-          <span>
-            <Icon icon="⚡" />
-            {monster.actionCount}/{monster.actionLimit}行動
+          <strong><CardIcon cardId={monster.cardId} /> <span className="monster-name">{getMonsterDisplayName(monster)}</span></strong>
+          <span className="monster-stat-line">
+            <Icon icon="✨" /> Lv{monster.level} / <Icon icon="❤️" /> HP {monster.hp} / <Icon icon="⚡" />
+            {monster.actionCount}/{monster.actionLimit}
           </span>
           <MonsterTraitSummary cardId={monster.cardId} />
-          <span>
-            {[
-              monster.focused ? "💪 気合い 上技+1/被ダメ-1" : "",
-              monster.powerUp ? "⬆️ P+1" : "",
-              monster.berserkPower ? "🔥 バーサク" : "",
-              monster.shielded ? "🛡️ 盾" : "",
-            ].filter(Boolean).join(" ")}
-          </span>
+          {monsterStatusBadges.length > 0 && <span className="monster-state-line">{monsterStatusBadges.join(" ")}</span>}
         </span>
       ) : (
         <span className="empty-slot"><Icon icon="□" /> Empty</span>
@@ -7053,9 +7053,13 @@ function MonsterTraitSummary({ cardId }: { cardId: string }) {
 
   return (
     <span className="monster-trait-line" title={traitNotes.join("\n")}>
-      <Icon icon="🧬" /> {traitNotes.join(" / ")}
+      <Icon icon="🧬" /> {traitNotes.map(compactTraitSummary).join(" / ")}
     </span>
   );
+}
+
+function compactTraitSummary(summary: string): string {
+  return summary.split(/\s+/)[0] ?? summary;
 }
 
 function commandSummary(command: CommandDef): string {

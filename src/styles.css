@@ -617,7 +617,7 @@ button:disabled {
 
 .board-slot {
   aspect-ratio: 2.35 / 1;
-  overflow: visible;
+  overflow: hidden;
   position: relative;
 }
 
@@ -854,6 +854,7 @@ button:disabled {
 .monster-card {
   display: grid;
   gap: 3px;
+  min-width: 0;
 }
 
 .prepared-card {
@@ -906,6 +907,13 @@ button:disabled {
   min-width: 0;
 }
 
+.monster-name {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
 .board-slot .monster-card > strong .card-image-icon,
 .hand-card-title .card-image-icon {
   height: 40px;
@@ -918,7 +926,7 @@ button:disabled {
   width: 34px;
 }
 
-.monster-card span,
+.monster-card > span,
 .empty-slot {
   align-items: center;
   color: #56615d;
@@ -931,6 +939,41 @@ button:disabled {
 .monster-card .monster-trait-line {
   color: #46544e;
   line-height: 1.25;
+}
+
+.board-slot .monster-card {
+  flex: 1 1 auto;
+  gap: 1px;
+  max-height: none;
+  min-height: 0;
+  overflow: hidden;
+}
+
+.board-slot .monster-card strong {
+  display: grid;
+  gap: 4px;
+  grid-template-columns: 28px minmax(0, 1fr);
+  line-height: 1.15;
+}
+
+.board-slot .monster-card > strong .card-image-icon {
+  height: 28px;
+  width: 28px;
+}
+
+.board-slot .monster-card > span {
+  flex-wrap: nowrap;
+  font-size: 11px;
+  line-height: 1.18;
+  max-width: 100%;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.board-slot .monster-card .monster-trait-line {
+  display: inline-flex;
 }
 
 .card-notes {
