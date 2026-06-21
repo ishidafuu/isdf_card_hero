@@ -126,6 +126,7 @@ const DEFAULT_BATTLE_SEED = 20260612;
 const BATTLE_HISTORY_STORAGE_KEY = "card-hero:battle-history:v1";
 const BATTLE_PRESETS_STORAGE_KEY = "card-hero:battle-presets:v1";
 const BATTLE_HISTORY_LIMIT = 20;
+const CARD_BACK_IMAGE_URL = "https://www.cardhero-bu.com/static/images/icon/card.jpg";
 
 type Selection =
   | { kind: "hand"; instanceId: string }
@@ -5676,10 +5677,14 @@ function DamageBubble({ flash }: { flash?: DamageFlash }) {
 function CardBackArt() {
   return (
     <span className="card-back-art" aria-label="裏向きカード" role="img">
-      <span className="card-back-frame" aria-hidden="true">
-        <span className="card-back-gem" />
-        <span className="card-back-cross" />
-      </span>
+      <img
+        src={CARD_BACK_IMAGE_URL}
+        alt=""
+        aria-hidden="true"
+        loading="lazy"
+        decoding="async"
+        referrerPolicy="no-referrer"
+      />
     </span>
   );
 }
