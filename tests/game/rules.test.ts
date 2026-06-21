@@ -495,13 +495,14 @@ describe("battle prototype rules", () => {
 
     expect(game.pendingLevelUp?.maxLevels).toBe(1);
     expect(game.pendingLevelUp?.superOptions).toEqual([{ handInstanceId: "bombking", cardId: "card_006" }]);
+    expect(game.slots.player_front_left.monster?.hp).toBe(2);
 
     game = resolveLevelUp(game, 1, "bombking");
 
     const superMonster = game.slots.player_front_left.monster;
     expect(superMonster?.cardId).toBe("card_006");
     expect(superMonster?.level).toBe(3);
-    expect(superMonster?.hp).toBe(1);
+    expect(superMonster?.hp).toBe(4);
     expect(superMonster?.investedStones).toBe(3);
     expect(game.players.player.hand).toEqual([]);
     expect(game.players.player.discard.some((card) => card.cardId === "bomuzo")).toBe(true);

@@ -6,7 +6,6 @@ const pendingLevelUp: PendingLevelUp = {
   playerId: "player",
   attackerSlotKey: "player_front_left",
   maxLevels: 2,
-  recoilDamage: 0,
   superOptions: [{ handInstanceId: "super_a", cardId: "card_006" }],
 };
 

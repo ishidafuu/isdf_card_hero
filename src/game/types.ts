@@ -179,7 +179,6 @@ export interface PendingLevelUp {
   playerId: PlayerId;
   attackerSlotKey: SlotKey;
   maxLevels: number;
-  recoilDamage: number;
   superOptions?: SuperLevelUpOption[];
 }
 

@@ -61,7 +61,6 @@ describe("official card effect expectations", () => {
         playerId: "player",
         attackerSlotKey: "player_front_left",
         maxLevels: requiredLevels,
-        recoilDamage: 0,
         superOptions: [{ handInstanceId: "super_card", cardId: special.id }],
       };
 
@@ -1231,13 +1230,35 @@ describe("official card effect expectations", () => {
       target: { kind: "monster", slotKey: "cpu_front_left" },
     });
 
-    expect(game.pendingLevelUp?.recoilDamage).toBe(2);
     expect(game.slots.cpu_front_left.monster).toBeUndefined();
+    expect(game.slots.player_front_left.monster?.hp).toBe(4);
+    expect(game.pendingLevelUp?.maxLevels).toBe(1);
 
     game = resolveLevelUp(game, 0);
 
     expect(game.slots.player_front_left.monster?.hp).toBe(4);
     expect(game.slots.player_front_left.monster?.shielded).toBe(true);
+  });
+
+  it("bomuzo ボムゾウ applies 自爆 recoil before level-up healing", () => {
+    let game = createGameWithPlayerHand([]);
+    game.players.player.stones = 1;
+    game.slots.player_front_left.monster = createActiveMonster("bomuzo", "player");
+    game.slots.cpu_front_left.monster = createActiveMonster("takokke", "cpu", { hp: 1 });
+
+    game = attackWithCommand(game, {
+      attackerSlotKey: "player_front_left",
+      commandId: "self_bomb",
+      target: { kind: "monster", slotKey: "cpu_front_left" },
+    });
+
+    expect(game.pendingLevelUp?.maxLevels).toBe(1);
+    expect(game.slots.player_front_left.monster).toMatchObject({ level: 1, hp: 4 });
+
+    game = resolveLevelUp(game, 1);
+
+    expect(game.pendingLevelUp).toBeUndefined();
+    expect(game.slots.player_front_left.monster).toMatchObject({ level: 2, hp: 5 });
   });
 
   it("polyspinner ポリスピナー can act twice in one turn", () => {

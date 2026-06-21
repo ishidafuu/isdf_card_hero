@@ -446,33 +446,40 @@ export function attackWithCommand(state: GameState, action: CommandAction): Game
   const maxLevels = getLevelUpCapacity(next, levelUpSlotKey, defeated.level);
   if (maxLevels > 0 && next.currentPlayer === "player") {
     finishCommandSideEffects(next, resolvedAttackerSlotKey, command, hadBerserkPower, hadDamageCurse);
-    if (!next.slots[levelUpSlotKey].monster) {
+    const recoilDamage = getCommandRecoilDamage(command, power);
+    if (!next.winner && recoilDamage) {
+      applyRecoil(next, resolvedAttackerSlotKey, recoilDamage);
+    }
+    const updatedMaxLevels = next.winner ? 0 : getLevelUpCapacity(next, levelUpSlotKey, defeated.level);
+    const levelUpMonster = next.slots[levelUpSlotKey].monster;
+    if (!levelUpMonster || updatedMaxLevels <= 0) {
       return next;
     }
-    const superOptions = getSuperLevelUpOptions(next, levelUpSlotKey, maxLevels);
+    const superOptions = getSuperLevelUpOptions(next, levelUpSlotKey, updatedMaxLevels);
     next.pendingLevelUp = {
       playerId: "player",
       attackerSlotKey: levelUpSlotKey,
-      maxLevels,
-      recoilDamage: getCommandRecoilDamage(command, power),
+      maxLevels: updatedMaxLevels,
       superOptions: superOptions.length > 0 ? superOptions : undefined,
     };
-    appendLog(next, `${monsterName(attacker)}は${maxLevels}レベルまで上げられる`);
+    appendLog(next, `${monsterName(levelUpMonster)}は${updatedMaxLevels}レベルまで上げられる`);
     return next;
   }
 
-  if (maxLevels > 0) {
-    const superOption = chooseSuperLevelUpOption(next, { superOptions: getSuperLevelUpOptions(next, levelUpSlotKey, maxLevels) });
-    if (superOption) {
-      performSuperLevelUp(next, levelUpSlotKey, superOption.handInstanceId);
-    } else {
-      performLevelUp(next, levelUpSlotKey, maxLevels);
-    }
-  }
   finishCommandSideEffects(next, resolvedAttackerSlotKey, command, hadBerserkPower, hadDamageCurse);
   const recoilDamage = getCommandRecoilDamage(command, power);
   if (recoilDamage) {
     applyRecoil(next, resolvedAttackerSlotKey, recoilDamage);
+  }
+
+  const updatedMaxLevels = next.winner ? 0 : getLevelUpCapacity(next, levelUpSlotKey, defeated.level);
+  if (updatedMaxLevels > 0) {
+    const superOption = chooseSuperLevelUpOption(next, { superOptions: getSuperLevelUpOptions(next, levelUpSlotKey, updatedMaxLevels) });
+    if (superOption) {
+      performSuperLevelUp(next, levelUpSlotKey, superOption.handInstanceId);
+    } else {
+      performLevelUp(next, levelUpSlotKey, updatedMaxLevels);
+    }
   }
   return next;
 }
@@ -503,13 +510,7 @@ export function resolveLevelUp(state: GameState, levels: number, superHandInstan
     appendLog(next, "レベルアップしなかった");
   }
 
-  const recoilDamage = pending.recoilDamage;
-  const attackerSlotKey = pending.attackerSlotKey;
   delete next.pendingLevelUp;
-
-  if (recoilDamage > 0 && !next.winner) {
-    applyRecoil(next, attackerSlotKey, recoilDamage);
-  }
 
   return next;
 }
