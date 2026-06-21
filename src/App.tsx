@@ -2058,15 +2058,17 @@ export function App() {
     if (pendingDropAction) {
       return (
         <section className="battle-control-panel">
-          <PendingDropActionPanel
-            action={pendingDropAction}
-            game={game}
-            onAttackCommand={handlePendingAttackCommand}
-            onMasterAction={handlePendingMasterAction}
-            onMasterMagic={handlePendingMasterMagic}
-            onConfirm={handleConfirmPendingDropAction}
-            onCancel={handleCancelPendingDropAction}
-          />
+          {pendingDropAction.kind !== "attackTarget" && (
+            <PendingDropActionPanel
+              action={pendingDropAction}
+              game={game}
+              onAttackCommand={handlePendingAttackCommand}
+              onMasterAction={handlePendingMasterAction}
+              onMasterMagic={handlePendingMasterMagic}
+              onConfirm={handleConfirmPendingDropAction}
+              onCancel={handleCancelPendingDropAction}
+            />
+          )}
           <ActionPreviewPanel previews={actionPreviews} />
           {(error || actionPreviews.length === 0) && (
             <OperationReasonPanel game={game} selection={selection} pendingDropAction={pendingDropAction} error={error} />
