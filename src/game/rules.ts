@@ -276,6 +276,9 @@ export function moveMonster(
   if (to.monster && to.monster.status !== "active") {
     throw new Error("準備中モンスターとは入れ替えられません");
   }
+  if (to.monster && !canSwapByActionAvailability(mover, to.monster)) {
+    throw new Error("行動状態が異なる味方とは入れ替えられません");
+  }
 
   next.players[mover.owner].stones -= actionCost;
   mover.actionCount += 1;
@@ -296,6 +299,14 @@ export function moveMonster(
 
   applyDamageCurseAfterAction(next, toSlotKey);
   return next;
+}
+
+function hasRemainingMonsterAction(monster: MonsterState): boolean {
+  return monster.status === "active" && monster.actionCount < monster.actionLimit;
+}
+
+function canSwapByActionAvailability(mover: MonsterState, other: MonsterState): boolean {
+  return hasRemainingMonsterAction(mover) === hasRemainingMonsterAction(other);
 }
 
 export function focusMonster(state: GameState, slotKey: SlotKey): GameState {
@@ -1497,7 +1508,7 @@ export function getMovableTargets(state: GameState, fromSlotKey: SlotKey): SlotK
       return false;
     }
     const target = state.slots[slotKey].monster;
-    return !target || target.status === "active";
+    return !target || (target.status === "active" && canSwapByActionAvailability(mover, target));
   });
 }
 

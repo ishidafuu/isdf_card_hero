@@ -34,6 +34,7 @@ import {
   getMovableTargets,
   getMonsterCommands,
   getMonsterDisplayName,
+  moveMonster,
   playMagic,
   resolveLevelUp,
   startTurn,
@@ -370,6 +371,29 @@ describe("battle prototype rules", () => {
       kind: "master",
       playerId: "player",
     });
+  });
+
+  it("prevents movement swaps between allies with different remaining action state", () => {
+    const game = createInitialGame(124);
+    game.slots.player_front_left.monster = createActiveMonster("takokke", "player");
+    game.slots.player_back_left.monster = createActiveMonster("yanbaru", "player", {
+      actionCount: 1,
+      actionLimit: 1,
+    });
+    game.slots.player_front_right.monster = createActiveMonster("sigma", "player");
+
+    const targets = getMovableTargets(game, "player_front_left");
+
+    expect(targets).not.toContain("player_back_left");
+    expect(targets).toContain("player_front_right");
+    expect(() => moveMonster(game, "player_front_left", "player_back_left")).toThrow(
+      "行動状態が異なる味方とは入れ替えられません",
+    );
+
+    const swapped = moveMonster(game, "player_front_left", "player_front_right");
+
+    expect(swapped.slots.player_front_right.monster?.cardId).toBe("takokke");
+    expect(swapped.slots.player_front_left.monster?.cardId).toBe("sigma");
   });
 
   it("creates a player choice when a monster can level up after defeating a monster", () => {
