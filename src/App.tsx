@@ -35,6 +35,7 @@ import {
   getMagicSecondaryTargets,
   getMagicTargets,
   getMasterActionCost,
+  getMasterActionIdsForPlayer,
   getMasterActionTargets,
   getMonsterCommands,
   getMonsterDisplayName,
@@ -1359,27 +1360,26 @@ export function App() {
     if (consumeSuppressedClick()) {
       return;
     }
-    if (game.currentPlayer !== "player" || game.winner || game.pendingLevelUp) {
-      return;
-    }
     if (pendingDropAction) {
       return;
     }
     const target: Target = { kind: "master", playerId };
-    if (selection?.kind === "masterAction" && targetKeys.has(targetToKey(target))) {
-      applyChange((state) => useMasterAction(state, selection.actionId, target));
-      return;
-    }
-    if (selection?.kind === "command" && targetKeys.has(targetToKey(target))) {
-      resolveCommandPrimaryTarget(selection.attackerSlotKey, selection.commandId, target);
-      return;
-    }
-    if (selection?.kind === "hand" && targetKeys.has(targetToKey(target))) {
-      resolveMagicPrimaryTarget(selection.instanceId, target);
-      return;
+    if (!game.winner && !game.pendingLevelUp) {
+      if (selection?.kind === "masterAction" && targetKeys.has(targetToKey(target))) {
+        applyChange((state) => useMasterAction(state, selection.actionId, target));
+        return;
+      }
+      if (selection?.kind === "command" && targetKeys.has(targetToKey(target))) {
+        resolveCommandPrimaryTarget(selection.attackerSlotKey, selection.commandId, target);
+        return;
+      }
+      if (selection?.kind === "hand" && targetKeys.has(targetToKey(target))) {
+        resolveMagicPrimaryTarget(selection.instanceId, target);
+        return;
+      }
     }
     setPendingDropAction(undefined);
-    setSelection(undefined);
+    setSelection({ kind: "master", playerId });
     setError("");
   }
 
@@ -1996,6 +1996,7 @@ export function App() {
 
   const selectedMonster =
     selection?.kind === "monster" ? game.slots[selection.slotKey].monster : undefined;
+  const selectedMasterPlayerId = selection?.kind === "master" ? selection.playerId : undefined;
   const selectedHand =
     selection?.kind === "hand" ? currentPlayer.hand.find((card) => card.instanceId === selection.instanceId) : undefined;
   const infoWorkspaceOpen = isInfoWorkspaceView(zoneView);
@@ -2031,33 +2032,11 @@ export function App() {
       );
     }
 
-    if (pendingDropAction) {
-      return (
-        <section className="battle-control-panel">
-          {pendingDropAction.kind !== "attackTarget" && (
-            <PendingDropActionPanel
-              action={pendingDropAction}
-              game={game}
-              onAttackCommand={handlePendingAttackCommand}
-              onMasterAction={handlePendingMasterAction}
-              onMasterMagic={handlePendingMasterMagic}
-              onConfirm={handleConfirmPendingDropAction}
-              onCancel={handleCancelPendingDropAction}
-            />
-          )}
-          <ActionPreviewPanel previews={actionPreviews} />
-          {(error || actionPreviews.length === 0) && (
-            <OperationReasonPanel game={game} selection={selection} pendingDropAction={pendingDropAction} error={error} />
-          )}
-        </section>
-      );
-    }
-
     return (
       <section className={`battle-control-panel ${cpuVsCpu ? "spectator" : ""}`}>
         <div className="battle-control-heading">
           <div>
-            <h2>{cpuVsCpu ? <><Icon icon="👁️" /> Spectator</> : <><Icon icon="🎮" /> Turn Controls</>}</h2>
+            <h2>{cpuVsCpu ? <><Icon icon="👁️" /> Spectator</> : <><Icon icon="🎮" /> Turn Flow</>}</h2>
             <p>{turnStatus}</p>
           </div>
           {cpuVsCpu && (
@@ -2131,40 +2110,12 @@ export function App() {
                   <Icon icon="▶️" /> Resume
                 </button>
               )}
-            </div>
-            {!cpuVsCpu && (
-              <div className="battle-action-grid">
-                {getCurrentMasterActionIds(game).map((actionId) => {
-                  const action = getMasterActionDef(actionId);
-                  const targets = getMasterActionTargets(game, actionId);
-                  return (
-                    <button
-                      key={actionId}
-                      type="button"
-                      onClick={() => {
-                        setPendingDropAction(undefined);
-                        setSelection({ kind: "masterAction", actionId, targets });
-                        setError("");
-                      }}
-                      disabled={controlsDisabled || targets.length === 0}
-                      title={action.summary}
-                    >
-                      <Icon icon={masterActionIcon(actionId)} /> {action.name} {getMasterActionCost(actionId)}
-                    </button>
-                  );
-                })}
-                <button
-                  type="button"
-                  onClick={() => applyChange(useMasterHpDraw)}
-                  disabled={controlsDisabled || currentPlayer.deck.length === 0}
-                >
-                  <Icon icon="🩸" /> HP Draw
-                </button>
+              {!cpuVsCpu && (
                 <button type="button" onClick={handleEndTurn} disabled={controlsDisabled}>
                   <Icon icon="⏭️" /> End Turn
                 </button>
-              </div>
-            )}
+              )}
+            </div>
           </div>
           <div className="battle-control-status">
             <NextActionCuePanel cues={nextActionCues} />
@@ -2191,7 +2142,7 @@ export function App() {
                   </>
                 ) : (
                   <>
-                    <Icon icon="☝️" /> 手札、味方モンスター、またはマスター特技を選択
+                    <Icon icon="☝️" /> 手札、味方モンスター、またはマスターを選択
                   </>
                 )}
               </p>
@@ -2622,6 +2573,18 @@ export function App() {
                 onSuper={(handInstanceId) => applyChange((state) => resolveLevelUp(state, game.pendingLevelUp!.maxLevels, handInstanceId))}
               />
             </section>
+          ) : pendingDropAction ? (
+            <section className="side-context-panel card-info-panel">
+              <PendingDropActionPanel
+                action={pendingDropAction}
+                game={game}
+                onAttackCommand={handlePendingAttackCommand}
+                onMasterAction={handlePendingMasterAction}
+                onMasterMagic={handlePendingMasterMagic}
+                onConfirm={handleConfirmPendingDropAction}
+                onCancel={handleCancelPendingDropAction}
+              />
+            </section>
           ) : isAdditionalChoiceSelection(selection) ? (
             <section className="side-context-panel card-info-panel">
               <AdditionalChoicePanel
@@ -2713,6 +2676,20 @@ export function App() {
                     }),
                   );
                 }}
+              />
+            </section>
+          ) : selectedMasterPlayerId ? (
+            <section className="side-context-panel card-info-panel">
+              <MasterCommands
+                game={game}
+                playerId={selectedMasterPlayerId}
+                disabled={controlsDisabled}
+                onMasterAction={(actionId, targets) => {
+                  setPendingDropAction(undefined);
+                  setSelection({ kind: "masterAction", actionId, targets });
+                  setError("");
+                }}
+                onHpDraw={() => applyChange(useMasterHpDraw)}
               />
             </section>
           ) : selectedMonster && selection?.kind === "monster" ? (
@@ -3016,7 +2993,7 @@ function getOperationReasonItems(
       icon: "☝️",
       label: "未選択",
       text: game.currentPlayer === "player"
-        ? "手札、味方モンスター、またはマスター特技を選ぶと候補が盤面に表示されます。"
+        ? "手札、味方モンスター、またはマスターを選ぶと右の行動窓に操作が表示されます。"
         : "CPUターン中です。ログのCPUフィルタかCPU履歴で判断理由を確認できます。",
     });
     return items;
@@ -3026,6 +3003,15 @@ function getOperationReasonItems(
   }
   if (selection.kind === "monster") {
     return [...items, ...operationReasonsForMonster(game, selection.slotKey)];
+  }
+  if (selection.kind === "master") {
+    items.push({
+      icon: "🎮",
+      label: "マスター選択中",
+      text: `${playerLabel(selection.playerId)}マスターの行動は右の行動窓から選びます。`,
+      tone: selection.playerId === game.currentPlayer ? "ok" : "warn",
+    });
+    return items;
   }
   if (selection.kind === "command") {
     const monster = game.slots[selection.attackerSlotKey].monster;
@@ -5860,6 +5846,148 @@ interface UnitActionItem {
   onClick: () => void;
   selected?: boolean;
   selectedLabel?: string;
+}
+
+interface MasterCommandsProps {
+  game: GameState;
+  playerId: PlayerId;
+  disabled: boolean;
+  onMasterAction: (actionId: MasterActionId, targets: Target[]) => void;
+  onHpDraw: () => void;
+}
+
+function MasterCommands({ game, playerId, disabled, onMasterAction, onHpDraw }: MasterCommandsProps) {
+  const player = game.players[playerId];
+  const isCurrentMaster = playerId === game.currentPlayer;
+  const actionIds = getMasterActionIdsForPlayer(game, playerId);
+  const masterActions: UnitActionItem[] = actionIds.map((actionId) => {
+    const action = getMasterActionDef(actionId);
+    const targets = isCurrentMaster ? getMasterActionTargets(game, actionId) : [];
+    const disabledReason = getMasterActionDisabledReason(game, playerId, actionId, targets, disabled);
+    return {
+      key: actionId,
+      icon: masterActionIcon(actionId),
+      title: `${action.name} ${getMasterActionCost(actionId)}`,
+      meta: action.summary,
+      disabledReason,
+      readyLabel: `候補 ${targets.length}`,
+      onClick: () => onMasterAction(actionId, targets),
+    };
+  });
+  const hpDrawDisabledReason = getMasterHpDrawDisabledReason(game, playerId, disabled);
+  const masterActionItems: UnitActionItem[] = [
+    ...masterActions,
+    {
+      key: "hp_draw",
+      icon: "🩸",
+      title: "HP Draw",
+      meta: "マスターHPを1減らして1枚引く / 減ったHP分Stone+1",
+      disabledReason: hpDrawDisabledReason,
+      readyLabel: "使用可",
+      onClick: onHpDraw,
+    },
+  ];
+  const readyActions = masterActionItems.filter((action) => !action.disabledReason);
+  const renderActionButton = (action: UnitActionItem) => (
+    <button
+      className={`command-button ${action.disabledReason ? "is-unavailable" : "is-ready"}`}
+      key={action.key}
+      type="button"
+      onClick={action.onClick}
+      disabled={!!action.disabledReason}
+      title={action.disabledReason ?? action.readyLabel}
+    >
+      <span className="command-button-main">
+        <Icon icon={action.icon} />
+        <strong>{action.title}</strong>
+      </span>
+      <span className="command-button-meta">{action.meta}</span>
+      <span className={action.disabledReason ? "command-button-reason" : "command-button-ready"}>
+        {action.disabledReason ?? action.readyLabel}
+      </span>
+    </button>
+  );
+
+  return (
+    <div className="selected-detail">
+      <section className="available-actions-panel">
+        <div className="available-actions-heading">
+          <span className="pending-action-section-label">今できること</span>
+          <strong>{readyActions.length > 0 ? `${readyActions.length}件実行できます` : "今できる行動はありません"}</strong>
+        </div>
+        <div className="available-action-list">
+          {masterActionItems.map(renderActionButton)}
+        </div>
+      </section>
+      <section className="selected-unit-info selected-master-info">
+        <MasterResourceDisplay
+          masterId={player.masterId}
+          label={`${playerId === "cpu" ? "CPU" : "Player"} ${getMasterName(player.masterId)}`}
+          active={game.currentPlayer === playerId}
+          hp={player.masterHp}
+          stones={player.stones}
+          deck={player.deck.length}
+          hand={player.hand.length}
+        />
+      </section>
+    </div>
+  );
+}
+
+function getMasterActionDisabledReason(
+  game: GameState,
+  playerId: PlayerId,
+  actionId: MasterActionId,
+  targets: Target[],
+  controlsDisabled: boolean,
+): string | undefined {
+  const player = game.players[playerId];
+  if (playerId !== game.currentPlayer) {
+    return `${playerLabel(playerId)}のターンではありません`;
+  }
+  if (game.winner) {
+    return "勝敗決定済み";
+  }
+  if (game.pendingLevelUp) {
+    return "レベルアップ選択中";
+  }
+  if (controlsDisabled) {
+    return "操作できない状態です";
+  }
+  if (player.masterFrozen) {
+    return "マスターは行動できません";
+  }
+  const cost = getMasterActionCost(actionId);
+  if (player.stones < cost) {
+    return `Stone不足: 必要${cost} / 所持${player.stones}`;
+  }
+  if (targets.length === 0) {
+    return "対象なし";
+  }
+  return undefined;
+}
+
+function getMasterHpDrawDisabledReason(game: GameState, playerId: PlayerId, controlsDisabled: boolean): string | undefined {
+  const player = game.players[playerId];
+  if (playerId !== game.currentPlayer) {
+    return `${playerLabel(playerId)}のターンではありません`;
+  }
+  if (game.winner) {
+    return "勝敗決定済み";
+  }
+  if (game.pendingLevelUp) {
+    return "レベルアップ選択中";
+  }
+  if (controlsDisabled) {
+    return "操作できない状態です";
+  }
+  if (player.masterFrozen) {
+    return "マスターは行動できません";
+  }
+  if (player.deck.length === 0) {
+    return "山札が0枚";
+  }
+  return undefined;
 }
 
 function MonsterCommands({
