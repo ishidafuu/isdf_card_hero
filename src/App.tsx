@@ -74,7 +74,7 @@ import {
   type DeckBattleScoreSnapshotSuiteId,
 } from "./game/deckBattleScoreSnapshots";
 import { evaluateBoardUnit, evaluateCard, type UnitEvaluation } from "./game/unitEvaluation";
-import type { CardInstance, CardPool, CommandDef, GameState, MagicAction, MagicCardDef, MagicTargetKind, MasterActionId, MasterId, PlayerId, SlotKey, Target } from "./game/types";
+import type { CardInstance, CardPool, CommandDef, GameState, MagicAction, MagicCardDef, MagicTargetKind, MasterActionId, MasterId, PlayerId, Row, SlotKey, Target } from "./game/types";
 import type { DeckValidationSummary } from "./game/cards";
 
 type BoardCell =
@@ -127,6 +127,16 @@ const BATTLE_HISTORY_STORAGE_KEY = "card-hero:battle-history:v1";
 const BATTLE_PRESETS_STORAGE_KEY = "card-hero:battle-presets:v1";
 const BATTLE_HISTORY_LIMIT = 20;
 const CARD_BACK_IMAGE_URL = "https://www.cardhero-bu.com/static/images/icon/card.jpg";
+const FIELD_BASE_IMAGE_URLS: Record<PlayerId, Record<Row, string>> = {
+  cpu: {
+    front: "https://www.cardhero-bu.com/static/images/icon/ff1.jpg",
+    back: "https://www.cardhero-bu.com/static/images/icon/fb1.jpg",
+  },
+  player: {
+    front: "https://www.cardhero-bu.com/static/images/icon/ff2.jpg",
+    back: "https://www.cardhero-bu.com/static/images/icon/fb2.jpg",
+  },
+};
 
 type Selection =
   | { kind: "hand"; instanceId: string }
@@ -5621,6 +5631,7 @@ function BoardSlot({
       onDrop={onDrop}
       onClick={onClick}
     >
+      <FieldBaseArt slotKey={slotKey} />
       <span className="slot-label">{label}</span>
       {targetRole && <span className="target-badge">{targetRoleLabel(targetRole)}</span>}
       {preview?.badge && <span className="target-preview-badge">{preview.badge}</span>}
@@ -5658,6 +5669,20 @@ function BoardSlot({
       )}
       <DamageBubble key={effectId} flash={damageFlash} />
     </button>
+  );
+}
+
+function FieldBaseArt({ slotKey }: { slotKey: SlotKey }) {
+  return (
+    <span className="field-base-art" aria-hidden="true">
+      <img
+        src={getFieldBaseImageUrl(slotKey)}
+        alt=""
+        loading="lazy"
+        decoding="async"
+        referrerPolicy="no-referrer"
+      />
+    </span>
   );
 }
 
@@ -7159,6 +7184,11 @@ function slotLabel(slotKey: SlotKey): string {
   const rowLabel = row === "front" ? "前" : "後";
   const laneLabel = lane === "left" ? "L" : "R";
   return `${ownerLabel}${rowLabel}${laneLabel}`;
+}
+
+function getFieldBaseImageUrl(slotKey: SlotKey): string {
+  const [owner, row] = slotKey.split("_") as [PlayerId, Row, string];
+  return FIELD_BASE_IMAGE_URLS[owner][row];
 }
 
 interface IconProps {

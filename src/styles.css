@@ -621,6 +621,11 @@ button:disabled {
   position: relative;
 }
 
+.board-slot > :not(.field-base-art) {
+  position: relative;
+  z-index: 1;
+}
+
 .blocked-cell {
   align-items: center;
   background: #e5e2d8;
@@ -637,6 +642,25 @@ button:disabled {
 
 .board-slot.player {
   background: #f2fbf5;
+}
+
+.field-base-art {
+  bottom: 6px;
+  height: 32px;
+  opacity: 0.74;
+  pointer-events: none;
+  position: absolute;
+  right: 6px;
+  width: 32px;
+  z-index: 0;
+}
+
+.field-base-art img {
+  border-radius: 4px;
+  box-shadow: 0 4px 10px rgba(31, 35, 34, 0.18);
+  height: 100%;
+  image-rendering: pixelated;
+  width: 100%;
 }
 
 .board-slot.selected,
