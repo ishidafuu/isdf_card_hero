@@ -5588,7 +5588,8 @@ function BoardSlot({
 }: BoardSlotProps) {
   const slot = game.slots[slotKey];
   const monster = slot.monster;
-  const hidePreparedInfo = monster?.status === "prepared" && monster.owner !== "player";
+  const prepared = monster?.status === "prepared";
+  const hidePreparedInfo = prepared && monster.owner !== "player";
   const label = slotLabel(slotKey);
 
   return (
@@ -5615,18 +5616,24 @@ function BoardSlot({
       <span className="slot-label">{label}</span>
       {targetRole && <span className="target-badge">{targetRoleLabel(targetRole)}</span>}
       {preview?.badge && <span className="target-preview-badge">{preview.badge}</span>}
-      {monster && hidePreparedInfo ? (
-        <span className="monster-card hidden-prepared">
-          <strong><Icon icon="🂠" /> 準備中カード</strong>
-          <span><Icon icon="🔒" /> 情報非公開</span>
+      {monster && prepared ? (
+        <span className={`monster-card prepared-card ${hidePreparedInfo ? "hidden-prepared" : ""}`}>
+          <CardBackArt />
+          {!hidePreparedInfo && (
+            <>
+              <strong><CardIcon cardId={monster.cardId} /> {getMonsterDisplayName(monster)}</strong>
+              <span><Icon icon="✨" /> Lv{monster.level} / <Icon icon="❤️" /> HP {monster.hp}</span>
+              <MonsterTraitSummary cardId={monster.cardId} />
+            </>
+          )}
         </span>
       ) : monster ? (
         <span className="monster-card">
           <strong><CardIcon cardId={monster.cardId} /> {getMonsterDisplayName(monster)}</strong>
           <span><Icon icon="✨" /> Lv{monster.level} / <Icon icon="❤️" /> HP {monster.hp}</span>
           <span>
-            <Icon icon={monster.status === "prepared" ? "🕒" : "⚡"} />
-            {monster.status === "prepared" ? "準備中" : `${monster.actionCount}/${monster.actionLimit}行動`}
+            <Icon icon="⚡" />
+            {monster.actionCount}/{monster.actionLimit}行動
           </span>
           <MonsterTraitSummary cardId={monster.cardId} />
           <span>
@@ -5659,6 +5666,17 @@ function DamageBubble({ flash }: { flash?: DamageFlash }) {
   );
 }
 
+function CardBackArt() {
+  return (
+    <span className="card-back-art" aria-label="裏向きカード" role="img">
+      <span className="card-back-frame" aria-hidden="true">
+        <span className="card-back-gem" />
+        <span className="card-back-cross" />
+      </span>
+    </span>
+  );
+}
+
 interface MonsterCommandsProps {
   game: GameState;
   slotKey: SlotKey;
@@ -5681,18 +5699,18 @@ function MonsterCommands({ game, slotKey, onCommand, onFocus, onMove }: MonsterC
   return (
     <div className="selected-detail">
       <h3>
-        {hidePreparedInfo ? <Icon icon="🂠" /> : <CardIcon cardId={monster.cardId} />}
-        {hidePreparedInfo ? "準備中カード" : `${getMonsterDisplayName(monster)} Lv${monster.level}`}
+        {hidePreparedInfo ? <CardBackArt /> : <CardIcon cardId={monster.cardId} />}
+        {hidePreparedInfo ? "裏向きカード" : `${getMonsterDisplayName(monster)} Lv${monster.level}`}
       </h3>
       <div className="card-meta-row">
         <span>{playerLabel(slot.owner)}</span>
         <span>{slotLabel(slotKey)}</span>
-        <span><Icon icon={monster.status === "prepared" ? "🕒" : "⚡"} /> {monster.status === "prepared" ? "準備中" : `${monster.actionCount}/${monster.actionLimit}行動`}</span>
+        <span><Icon icon={monster.status === "prepared" ? "🂠" : "⚡"} /> {monster.status === "prepared" ? "裏向き" : `${monster.actionCount}/${monster.actionLimit}行動`}</span>
         {!hidePreparedInfo && <span><Icon icon="❤️" /> HP {monster.hp}</span>}
         {!hidePreparedInfo && <span><Icon icon="🪨" /> 投資 {monster.investedStones}</span>}
       </div>
       {hidePreparedInfo ? (
-        <p className="hint"><Icon icon="🔒" /> CPUの準備中カードの情報は非公開です。</p>
+        <p className="hint"><Icon icon="🔒" /> CPUの裏向きカードの情報は非公開です。</p>
       ) : (
         <div className="board-card-detail">
           <CardDetail cardId={monster.cardId} game={game} slotKey={slotKey} showTitle={false} />
@@ -5817,7 +5835,7 @@ function getMonsterActionDisabledReason(game: GameState, slotKey: SlotKey): stri
     return "相手のカードです";
   }
   if (monster.status !== "active") {
-    return "準備中のため行動不可";
+    return "裏向きのため行動不可";
   }
   if (monster.actionCount >= monster.actionLimit) {
     return "このターンは行動済み";
