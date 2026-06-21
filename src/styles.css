@@ -354,20 +354,51 @@ button:disabled {
 }
 
 .master-resource-display {
-  align-content: center;
+  align-items: center;
+  display: grid;
+  gap: 6px;
+  grid-template-columns: 44px minmax(0, 1fr);
+  width: 100%;
+}
+
+.master-portrait {
+  align-items: center;
+  aspect-ratio: 1;
+  background: rgba(248, 250, 244, 0.72);
+  border: 1px solid rgba(48, 58, 55, 0.18);
+  border-radius: 7px;
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.55);
+  display: inline-flex;
+  justify-content: center;
+  overflow: hidden;
+  width: 44px;
+}
+
+.master-portrait img {
+  height: 100%;
+  image-rendering: pixelated;
+  object-fit: cover;
+  width: 100%;
+}
+
+.master-resource-main {
   display: grid;
   gap: 4px;
-  justify-items: stretch;
-  width: 100%;
+  min-width: 0;
 }
 
 .master-name {
   align-items: center;
   color: #303a37;
-  display: inline-flex;
+  display: flex;
   font-size: 12px;
   justify-content: center;
   line-height: 1.15;
+  max-width: 100%;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .resource-row {

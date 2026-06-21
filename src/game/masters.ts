@@ -11,6 +11,7 @@ export interface MasterDef {
   id: MasterId;
   name: string;
   actions: MasterActionId[];
+  iconUrl: string;
 }
 
 export const MASTER_ACTION_DEFS: Record<MasterActionId, MasterActionDef> = {
@@ -51,11 +52,13 @@ export const MASTER_DEFS: Record<MasterId, MasterDef> = {
     id: "white",
     name: "ホワイトマスター",
     actions: ["master_attack", "wake_up", "shield"],
+    iconUrl: "https://www.cardhero-bu.com/static/images/icon/m3.jpg",
   },
   black: {
     id: "black",
     name: "ブラックマスター",
     actions: ["master_attack", "berserk_power", "earth_anger"],
+    iconUrl: "https://www.cardhero-bu.com/static/images/icon/m2.jpg",
   },
 };
 
@@ -67,6 +70,10 @@ export function getMasterDef(masterId: MasterId): MasterDef {
 
 export function getMasterName(masterId: MasterId): string {
   return getMasterDef(masterId).name;
+}
+
+export function getMasterIconUrl(masterId: MasterId): string {
+  return getMasterDef(masterId).iconUrl;
 }
 
 export function getMasterActionDef(actionId: MasterActionId): MasterActionDef {

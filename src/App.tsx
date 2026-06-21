@@ -51,7 +51,7 @@ import {
   useMasterAction,
   useMasterHpDraw,
 } from "./game/rules";
-import { getMasterActionDef, getMasterName, MASTER_IDS } from "./game/masters";
+import { getMasterActionDef, getMasterIconUrl, getMasterName, MASTER_IDS } from "./game/masters";
 import { CPU_AI_PROFILES, type CpuAiProfile, type CpuAiProfiles } from "./game/cpuAi";
 import {
   buildDeckPresetCardIds,
@@ -2520,6 +2520,7 @@ export function App() {
                           aria-label={`${masterLabel} HP ${game.players[cell.playerId].masterHp} Stone ${game.players[cell.playerId].stones} Deck ${game.players[cell.playerId].deck.length} Hand ${game.players[cell.playerId].hand.length}`}
                         >
                           <MasterResourceDisplay
+                            masterId={masterId}
                             label={masterLabel}
                             active={game.currentPlayer === cell.playerId}
                             hp={game.players[cell.playerId].masterHp}
@@ -3816,6 +3817,7 @@ function StatusIconCount({ label, icon, amount, cap }: StatusIconCountProps) {
 }
 
 interface MasterResourceDisplayProps {
+  masterId: MasterId;
   label: string;
   active: boolean;
   hp: number;
@@ -3824,14 +3826,19 @@ interface MasterResourceDisplayProps {
   hand: number;
 }
 
-function MasterResourceDisplay({ label, active, hp, stones, deck, hand }: MasterResourceDisplayProps) {
+function MasterResourceDisplay({ masterId, label, active, hp, stones, deck, hand }: MasterResourceDisplayProps) {
   return (
     <div className="master-resource-display">
-      <strong className="master-name">{active ? <Icon icon="▶️" /> : null}{label}</strong>
-      <ResourceNumberRow label="HP" icon="❤️" amount={hp} />
-      <ResourceNumberRow label="Stone" icon="🪨" amount={stones} />
-      <ResourceNumberRow label="Deck" icon="🂠" amount={deck} />
-      <ResourceNumberRow label="Hand" icon="🃏" amount={hand} />
+      <span className="master-portrait" aria-hidden="true">
+        <img src={getMasterIconUrl(masterId)} alt="" loading="lazy" decoding="async" referrerPolicy="no-referrer" />
+      </span>
+      <span className="master-resource-main">
+        <strong className="master-name">{active ? <Icon icon="▶️" /> : null}{label}</strong>
+        <ResourceNumberRow label="HP" icon="❤️" amount={hp} />
+        <ResourceNumberRow label="Stone" icon="🪨" amount={stones} />
+        <ResourceNumberRow label="Deck" icon="🂠" amount={deck} />
+        <ResourceNumberRow label="Hand" icon="🃏" amount={hand} />
+      </span>
     </div>
   );
 }
