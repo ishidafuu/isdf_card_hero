@@ -74,7 +74,7 @@ import {
   type DeckBattleScoreSnapshotSuiteId,
 } from "./game/deckBattleScoreSnapshots";
 import { evaluateBoardUnit, evaluateCard, type UnitEvaluation } from "./game/unitEvaluation";
-import type { CardInstance, CardPool, CommandDef, GameState, MagicAction, MagicCardDef, MagicTargetKind, MasterActionId, MasterId, PlayerId, Row, SlotKey, Target } from "./game/types";
+import type { CardInstance, CardPool, CommandDef, GameState, MagicAction, MagicCardDef, MagicTargetKind, MasterActionId, MasterId, MonsterState, PlayerId, Row, SlotKey, Target } from "./game/types";
 import type { DeckValidationSummary } from "./game/cards";
 
 type BoardCell =
@@ -5609,15 +5609,10 @@ function BoardSlot({
   const prepared = monster?.status === "prepared";
   const hidePreparedInfo = prepared && monster.owner !== "player";
   const label = slotLabel(slotKey);
-  const visibleMonsterCardId = monster && !hidePreparedInfo ? monster.cardId : undefined;
-  const monsterStatusBadges = monster
-    ? [
-        monster.focused ? "💪 気合い" : "",
-        monster.powerUp ? "⬆️ P+1" : "",
-        monster.berserkPower ? "🔥 バーサク" : "",
-        monster.shielded ? "🛡️ 盾" : "",
-      ].filter(Boolean)
-    : [];
+  const visibleMonster = monster && !hidePreparedInfo ? monster : undefined;
+  const visibleMonsterCardId = visibleMonster && !prepared ? visibleMonster.cardId : undefined;
+  const showCardBack = Boolean(monster && prepared);
+  const monsterStatusBadges = visibleMonster ? getBoardStatusBadges(visibleMonster) : [];
 
   return (
     <button
@@ -5640,42 +5635,67 @@ function BoardSlot({
       onDrop={onDrop}
       onClick={onClick}
     >
-      <FieldBaseArt slotKey={slotKey} cardId={visibleMonsterCardId} />
+      <FieldBaseArt slotKey={slotKey} cardId={visibleMonsterCardId} showCardBack={showCardBack} />
       <span className="slot-label">{label}</span>
       {targetRole && <span className="target-badge">{targetRoleLabel(targetRole)}</span>}
       {preview?.badge && <span className="target-preview-badge">{preview.badge}</span>}
-      {monster && prepared ? (
-        <span className={`monster-card prepared-card ${hidePreparedInfo ? "hidden-prepared" : ""}`}>
-          <CardBackArt />
-          {!hidePreparedInfo && (
-            <>
-              <strong><span className="monster-name">{getMonsterDisplayName(monster)}</span></strong>
-              <span className="monster-stat-line"><Icon icon="✨" /> Lv{monster.level} / <Icon icon="❤️" /> HP {monster.hp}</span>
-              <MonsterTraitSummary cardId={monster.cardId} />
-            </>
+      {visibleMonster ? (
+        <span className="monster-card board-monster-summary" aria-label={`${getMonsterDisplayName(visibleMonster)} Lv${visibleMonster.level} HP ${visibleMonster.hp}`}>
+          <span className="board-vitals">
+            <span className="board-vital-chip"><Icon icon="✨" /> Lv{visibleMonster.level}</span>
+            <span className="board-vital-chip"><Icon icon="❤️" /> HP {visibleMonster.hp}</span>
+          </span>
+          {monsterStatusBadges.length > 0 && (
+            <span className="board-effect-row">
+              {monsterStatusBadges.map((badge) => (
+                <span className="board-effect-chip" title={badge.label} aria-label={badge.label} key={badge.label}>
+                  {badge.icon}
+                </span>
+              ))}
+            </span>
           )}
         </span>
       ) : monster ? (
-        <span className="monster-card">
-          <strong><span className="monster-name">{getMonsterDisplayName(monster)}</span></strong>
-          <span className="monster-stat-line">
-            <Icon icon="✨" /> Lv{monster.level} / <Icon icon="❤️" /> HP {monster.hp} / <Icon icon="⚡" />
-            {monster.actionCount}/{monster.actionLimit}
-          </span>
-          <MonsterTraitSummary cardId={monster.cardId} />
-          {monsterStatusBadges.length > 0 && <span className="monster-state-line">{monsterStatusBadges.join(" ")}</span>}
-        </span>
+        <span className="hidden-prepared" aria-label="裏向きカード" />
       ) : (
-        <span className="empty-slot"><Icon icon="□" /> Empty</span>
+        null
       )}
       <DamageBubble key={effectId} flash={damageFlash} />
     </button>
   );
 }
 
-function FieldBaseArt({ slotKey, cardId }: { slotKey: SlotKey; cardId?: string }) {
+function getBoardStatusBadges(monster: MonsterState): Array<{ icon: string; label: string }> {
+  return [
+    monster.focused ? { icon: "💪", label: "気合い" } : undefined,
+    monster.powerUp ? { icon: "⬆️", label: "パワー+1" } : undefined,
+    monster.berserkPower ? { icon: "🔥", label: "バーサク" } : undefined,
+    monster.shielded ? { icon: "🛡️", label: "盾" } : undefined,
+    monster.halfShielded ? { icon: "🛡️", label: "半減盾" } : undefined,
+    monster.oneShotShield ? { icon: "◇", label: "一回盾" } : undefined,
+    monster.dragonShield ? { icon: "🐉", label: "竜の盾" } : undefined,
+    monster.immune ? { icon: "◎", label: "無敵" } : undefined,
+    monster.dodgeChance ? { icon: "💨", label: "回避" } : undefined,
+    monster.levelFixed ? { icon: "🔒", label: "レベル固定" } : undefined,
+    monster.cannotMove ? { icon: "⛔", label: "移動不可" } : undefined,
+    monster.commandSealed ? { icon: "封", label: "特技封印" } : undefined,
+    monster.cannotActUntilDamaged ? { icon: "眠", label: "行動不可" } : undefined,
+    monster.canAttackAnywhere ? { icon: "🎯", label: "どこでも攻撃" } : undefined,
+    monster.reviveOnDefeat ? { icon: "↩", label: "復活" } : undefined,
+    monster.scapegoat ? { icon: "身", label: "身代わり" } : undefined,
+    monster.shadowCursed ? { icon: "影", label: "影呪い" } : undefined,
+    monster.stoneCurse ? { icon: "石", label: "石呪い" } : undefined,
+    monster.damageCurse ? { icon: "痛", label: "ダメージ呪い" } : undefined,
+    monster.provokeTargetSlotKey ? { icon: "囮", label: "挑発" } : undefined,
+    monster.deathChainSlotKey ? { icon: "鎖", label: "道連れ" } : undefined,
+    monster.darkHoleSlotKey ? { icon: "穴", label: "ブラックホール" } : undefined,
+    monster.stoneCostMultiplier && monster.stoneCostMultiplier > 1 ? { icon: "🪨", label: `石コストx${monster.stoneCostMultiplier}` } : undefined,
+  ].filter((badge): badge is { icon: string; label: string } => Boolean(badge));
+}
+
+function FieldBaseArt({ slotKey, cardId, showCardBack = false }: { slotKey: SlotKey; cardId?: string; showCardBack?: boolean }) {
   return (
-    <span className={`field-base-art ${cardId ? "with-unit" : ""}`} aria-hidden="true">
+    <span className={`field-base-art ${cardId || showCardBack ? "with-unit" : ""}`} aria-hidden="true">
       <img
         className="field-base-image"
         src={getFieldBaseImageUrl(slotKey)}
@@ -5684,11 +5704,22 @@ function FieldBaseArt({ slotKey, cardId }: { slotKey: SlotKey; cardId?: string }
         decoding="async"
         referrerPolicy="no-referrer"
       />
-      {cardId && (
+      {showCardBack ? (
+        <span className="field-unit-icon field-card-back-icon">
+          <img
+            src={CARD_BACK_IMAGE_URL}
+            alt=""
+            aria-hidden="true"
+            loading="lazy"
+            decoding="async"
+            referrerPolicy="no-referrer"
+          />
+        </span>
+      ) : cardId ? (
         <span className="field-unit-icon">
           <CardIcon cardId={cardId} />
         </span>
-      )}
+      ) : null}
     </span>
   );
 }

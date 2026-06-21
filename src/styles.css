@@ -645,18 +645,18 @@ button:disabled {
 }
 
 .field-base-art {
-  bottom: 6px;
-  height: 32px;
+  bottom: 8px;
+  height: 52px;
   pointer-events: none;
   position: absolute;
-  right: 6px;
-  width: 32px;
+  right: 8px;
+  width: 52px;
   z-index: 1;
 }
 
 .field-base-art.with-unit {
-  height: 32px;
-  width: 32px;
+  height: 52px;
+  width: 52px;
 }
 
 .field-base-image {
@@ -690,8 +690,15 @@ button:disabled {
   width: 100%;
 }
 
+.field-card-back-icon img {
+  height: 100%;
+  image-rendering: pixelated;
+  object-fit: cover;
+  width: 100%;
+}
+
 .field-unit-icon .ui-icon {
-  font-size: 24px;
+  font-size: 36px;
   margin-right: 0;
 }
 
@@ -897,7 +904,7 @@ button:disabled {
 .hidden-prepared {
   color: #4b5652;
   justify-items: center;
-  margin-top: 4px;
+  min-height: 1px;
 }
 
 .hidden-prepared strong {
@@ -974,12 +981,13 @@ button:disabled {
 }
 
 .board-slot .monster-card {
+  align-content: end;
   flex: 1 1 auto;
-  gap: 1px;
+  gap: 4px;
   max-height: none;
   min-height: 0;
   overflow: hidden;
-  padding-right: 36px;
+  padding-right: 62px;
 }
 
 .board-slot .monster-card strong {
@@ -1007,6 +1015,53 @@ button:disabled {
 
 .board-slot .monster-card .monster-trait-line {
   display: inline-flex;
+}
+
+.board-monster-summary {
+  margin-top: auto;
+}
+
+.board-vitals,
+.board-effect-row {
+  display: inline-flex;
+  flex-wrap: wrap;
+  gap: 3px;
+  max-width: 100%;
+  min-width: 0;
+  overflow: visible;
+  text-overflow: clip;
+  white-space: normal;
+}
+
+.board-vital-chip,
+.board-effect-chip {
+  align-items: center;
+  background: rgba(248, 250, 244, 0.82);
+  border: 1px solid rgba(48, 58, 55, 0.12);
+  border-radius: 999px;
+  display: inline-flex;
+  font-weight: 800;
+  line-height: 1;
+  min-height: 18px;
+}
+
+.board-vital-chip {
+  color: #2f3a36;
+  font-size: 11px;
+  gap: 1px;
+  padding: 3px 5px;
+}
+
+.board-vital-chip .ui-icon {
+  margin-right: 1px;
+}
+
+.board-effect-chip {
+  color: #303a37;
+  font-size: 12px;
+  justify-content: center;
+  min-width: 20px;
+  padding: 2px 4px;
 }
 
 .card-notes {
