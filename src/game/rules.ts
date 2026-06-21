@@ -280,14 +280,20 @@ export function moveMonster(
     throw new Error("行動状態が異なる味方とは入れ替えられません");
   }
 
+  const other = to.monster;
   next.players[mover.owner].stones -= actionCost;
-  mover.actionCount += 1;
+  if (other) {
+    mover.actionCount = mover.actionLimit;
+    other.actionCount = other.actionLimit;
+    other.focused = false;
+  } else {
+    mover.actionCount += 1;
+  }
   mover.focused = false;
   clearDarkHoleIfMoved(mover, toSlotKey);
-  recordMoveHistory(next, mover, fromSlotKey, toSlotKey, to.monster);
+  recordMoveHistory(next, mover, fromSlotKey, toSlotKey, other);
 
-  if (to.monster) {
-    const other = to.monster;
+  if (other) {
     to.monster = mover;
     from.monster = other;
     appendLog(next, `${monsterName(mover)}と${monsterName(other)}の位置を入れ替えた`);

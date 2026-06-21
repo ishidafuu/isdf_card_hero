@@ -396,6 +396,25 @@ describe("battle prototype rules", () => {
     expect(swapped.slots.player_front_left.monster?.cardId).toBe("sigma");
   });
 
+  it("spends both allies actions when movement swaps their slots", () => {
+    const game = createInitialGame(125);
+    game.slots.player_front_left.monster = createActiveMonster("polyspinner", "player");
+    game.slots.player_front_right.monster = createActiveMonster("takokke", "player");
+
+    const swapped = moveMonster(game, "player_front_left", "player_front_right");
+
+    expect(swapped.slots.player_front_right.monster).toMatchObject({
+      cardId: "polyspinner",
+      actionCount: 2,
+      actionLimit: 2,
+    });
+    expect(swapped.slots.player_front_left.monster).toMatchObject({
+      cardId: "takokke",
+      actionCount: 1,
+      actionLimit: 1,
+    });
+  });
+
   it("creates a player choice when a monster can level up after defeating a monster", () => {
     const game = createInitialGame(105);
     game.players.player.stones = 1;
