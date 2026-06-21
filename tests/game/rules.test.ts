@@ -420,6 +420,39 @@ describe("battle prototype rules", () => {
     expect(next.players.player.stones).toBe(0);
   });
 
+  it("keeps the level-up choice pending when resolving a two-level chance one level at a time", () => {
+    const game = createInitialGame(107);
+    game.players.player.stones = 2;
+    game.slots.player_front_left.monster = createActiveMonster("sigma", "player");
+    game.slots.cpu_front_left.monster = createActiveMonster("takokke", "cpu", {
+      hp: 1,
+      level: 2,
+      investedStones: 2,
+    });
+
+    const pending = attackWithCommand(game, {
+      attackerSlotKey: "player_front_left",
+      commandId: "attack",
+      target: { kind: "monster", slotKey: "cpu_front_left" },
+    });
+
+    expect(pending.pendingLevelUp?.maxLevels).toBe(2);
+
+    const firstStep = resolveLevelUp(pending, 1);
+    const afterFirst = firstStep.slots.player_front_left.monster;
+    expect(afterFirst?.level).toBe(2);
+    expect(afterFirst?.investedStones).toBe(2);
+    expect(firstStep.players.player.stones).toBe(1);
+    expect(firstStep.pendingLevelUp?.maxLevels).toBe(1);
+
+    const secondStep = resolveLevelUp(firstStep, 1);
+    const afterSecond = secondStep.slots.player_front_left.monster;
+    expect(afterSecond?.level).toBe(3);
+    expect(afterSecond?.investedStones).toBe(3);
+    expect(secondStep.players.player.stones).toBe(0);
+    expect(secondStep.pendingLevelUp).toBeUndefined();
+  });
+
   it("uses a matching super card from hand when resolving level up", () => {
     let game = createGameWithPlayerHand([{ cardId: "card_006", instanceId: "bombking" }]);
     game.players.player.stones = 1;

@@ -2013,48 +2013,6 @@ export function App() {
       );
     }
 
-    if (game.pendingLevelUp) {
-      return (
-        <section className="battle-control-panel battle-control-alert">
-          <div className="battle-control-heading">
-            <div>
-              <h2><Icon icon="✨" /> Level Up</h2>
-              <p>上げるレベル数を選択</p>
-            </div>
-          </div>
-          <div className="button-row">
-            {Array.from({ length: game.pendingLevelUp.maxLevels + 1 }, (_, level) => (
-              <button
-                key={level}
-                type="button"
-                onClick={() => applyChange((state) => resolveLevelUp(state, level))}
-                disabled={autoPlayEnabled}
-              >
-                {level}
-              </button>
-            ))}
-          </div>
-          {game.pendingLevelUp.superOptions && game.pendingLevelUp.superOptions.length > 0 && (
-            <>
-              <p className="hint">スーパーカードで変身</p>
-              <div className="button-row">
-                {game.pendingLevelUp.superOptions.map((option) => (
-                  <button
-                    key={option.handInstanceId}
-                    type="button"
-                    onClick={() => applyChange((state) => resolveLevelUp(state, game.pendingLevelUp!.maxLevels, option.handInstanceId))}
-                    disabled={autoPlayEnabled}
-                  >
-                    <CardIcon cardId={option.cardId} /> {getCardName(option.cardId)}
-                  </button>
-                ))}
-              </div>
-            </>
-          )}
-        </section>
-      );
-    }
-
     if (pendingDropAction) {
       return (
         <section className="battle-control-panel">
@@ -2637,7 +2595,16 @@ export function App() {
             <LatestEventSummary log={game.log} />
           </section>
 
-          {isAdditionalChoiceSelection(selection) ? (
+          {game.pendingLevelUp ? (
+            <section className="side-context-panel card-info-panel level-up-decision-panel">
+              <LevelUpDecisionPanel
+                game={game}
+                onAccept={() => applyChange((state) => resolveLevelUp(state, 1))}
+                onDecline={() => applyChange((state) => resolveLevelUp(state, 0))}
+                onSuper={(handInstanceId) => applyChange((state) => resolveLevelUp(state, game.pendingLevelUp!.maxLevels, handInstanceId))}
+              />
+            </section>
+          ) : isAdditionalChoiceSelection(selection) ? (
             <section className="side-context-panel card-info-panel">
               <AdditionalChoicePanel
                 selection={selection}
@@ -4074,6 +4041,89 @@ function AdditionalChoicePanel({
         ))}
         <button type="button" onClick={onCancel}><Icon icon="✕" /> キャンセル</button>
       </div>
+    </div>
+  );
+}
+
+interface LevelUpDecisionPanelProps {
+  game: GameState;
+  onAccept: () => void;
+  onDecline: () => void;
+  onSuper: (handInstanceId: string) => void;
+}
+
+function LevelUpDecisionPanel({ game, onAccept, onDecline, onSuper }: LevelUpDecisionPanelProps) {
+  const pending = game.pendingLevelUp;
+  if (!pending) {
+    return null;
+  }
+
+  const monster = game.slots[pending.attackerSlotKey].monster;
+  if (!monster) {
+    return (
+      <div className="selected-detail level-up-decision">
+        <h3><Icon icon="✨" /> Level Up</h3>
+        <p className="hint">対象モンスターが見つかりません。</p>
+        <div className="button-row">
+          <button type="button" onClick={onDecline}>NO</button>
+        </div>
+      </div>
+    );
+  }
+
+  const def = getMonsterDef(monster.cardId);
+  const currentLevelInfo = def.levels.find((level) => level.level === monster.level) ?? def.levels[0];
+  const nextLevel = Math.min(monster.level + 1, def.maxLevel);
+  const nextLevelInfo = def.levels.find((level) => level.level === nextLevel) ?? currentLevelInfo;
+  const canNormalLevelUp = !monster.levelFixed && monster.level < def.maxLevel && game.players[monster.owner].stones > 0;
+
+  return (
+    <div className="selected-detail level-up-decision">
+      <div className="level-up-heading">
+        <h3><CardIcon cardId={monster.cardId} /> {getMonsterDisplayName(monster)} Lv{monster.level}</h3>
+        <span><Icon icon="✨" /> 残り {pending.maxLevels}</span>
+      </div>
+      <p className="hint">Lv{nextLevel} にレベルアップしますか？</p>
+      <div className="level-up-preview">
+        <div className="level-up-preview-card current">
+          <span className="pending-action-section-label">現在</span>
+          <strong><Icon icon="✨" /> Lv{monster.level} / <Icon icon="❤️" /> HP {monster.hp}/{currentLevelInfo.maxHp}</strong>
+          <ul>
+            {currentLevelInfo.commands.map((command, index) => (
+              <li key={`${command.id}_current_${index}`}>{commandSummary(command)}</li>
+            ))}
+          </ul>
+        </div>
+        <div className="level-up-preview-card next">
+          <span className="pending-action-section-label">YES後</span>
+          <strong><Icon icon="✨" /> Lv{nextLevel} / <Icon icon="❤️" /> HP {nextLevelInfo.maxHp}</strong>
+          <ul>
+            {nextLevelInfo.commands.map((command, index) => (
+              <li key={`${command.id}_next_${index}`}>{commandSummary(command)}</li>
+            ))}
+          </ul>
+        </div>
+      </div>
+      <div className="level-up-choice-row">
+        <button type="button" className="primary-button" onClick={onAccept} disabled={!canNormalLevelUp}>
+          YES Lv{nextLevel}
+        </button>
+        <button type="button" onClick={onDecline}>
+          NO
+        </button>
+      </div>
+      {pending.superOptions && pending.superOptions.length > 0 && (
+        <div className="level-up-super-options">
+          <span className="pending-action-section-label">スーパー化</span>
+          <div className="button-stack">
+            {pending.superOptions.map((option) => (
+              <button type="button" key={option.handInstanceId} onClick={() => onSuper(option.handInstanceId)}>
+                <CardIcon cardId={option.cardId} /> {getCardName(option.cardId)}
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
     </div>
   );
 }

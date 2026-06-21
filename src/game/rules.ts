@@ -477,7 +477,17 @@ export function resolveLevelUp(state: GameState, levels: number, superHandInstan
   if (choice.kind === "super") {
     performSuperLevelUp(next, pending.attackerSlotKey, choice.handInstanceId);
   } else if (choice.kind === "level") {
-    performLevelUp(next, pending.attackerSlotKey, choice.levels);
+    const raisedLevels = performLevelUp(next, pending.attackerSlotKey, choice.levels);
+    const remainingLevels = pending.maxLevels - raisedLevels;
+    if (raisedLevels > 0 && choice.levels < pending.maxLevels && remainingLevels > 0 && next.slots[pending.attackerSlotKey].monster) {
+      const superOptions = getSuperLevelUpOptions(next, pending.attackerSlotKey, remainingLevels);
+      next.pendingLevelUp = {
+        ...pending,
+        maxLevels: remainingLevels,
+        superOptions: superOptions.length > 0 ? superOptions : undefined,
+      };
+      return next;
+    }
   } else {
     appendLog(next, "レベルアップしなかった");
   }
@@ -2002,26 +2012,27 @@ function getPotentialMaxLevel(state: GameState, monster: MonsterState): number {
   return Math.max(def.maxLevel, ...superEntryLevels);
 }
 
-function performLevelUp(state: GameState, attackerSlotKey: SlotKey, levels: number): void {
+function performLevelUp(state: GameState, attackerSlotKey: SlotKey, levels: number): number {
   const monster = state.slots[attackerSlotKey].monster;
   if (!monster || levels <= 0) {
-    return;
+    return 0;
   }
   if (monster.levelFixed) {
     appendLog(state, `${monsterName(monster)}はレベル固定中のためレベルアップできない`);
-    return;
+    return 0;
   }
   const player = state.players[monster.owner];
   const def = getMonsterDef(monster.cardId);
   const actual = Math.min(levels, def.maxLevel - monster.level, player.stones);
   if (actual <= 0) {
-    return;
+    return 0;
   }
   monster.level += actual;
   monster.investedStones += actual;
   player.stones -= actual;
   monster.hp = getMonsterMaxHp(monster);
   appendLog(state, `${monsterName(monster)}はLv${monster.level}になり、HPが全回復した`);
+  return actual;
 }
 
 function getSuperLevelUpOptions(state: GameState, slotKey: SlotKey, maxLevels: number): SuperLevelUpOption[] {
