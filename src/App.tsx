@@ -1875,6 +1875,223 @@ export function App() {
   const selectedHand =
     selection?.kind === "hand" ? currentPlayer.hand.find((card) => card.instanceId === selection.instanceId) : undefined;
   const infoWorkspaceOpen = isInfoWorkspaceView(zoneView);
+  const hasOperationContext = Boolean(selection || pendingDropAction || error);
+
+  function renderBattleControlPanel() {
+    if (game.winner) {
+      return (
+        <section className="battle-control-panel battle-control-result">
+          <div className="battle-control-heading">
+            <div>
+              <h2><Icon icon="🏆" /> {playerLabel(game.winner)} Win</h2>
+              <p>
+                Seed {activeBattleSettings.seed} / 先攻 {playerLabel(activeBattleSettings.firstPlayer)} /
+                {activeBattleSettings.mode === "cpu-vs-cpu" ? " CPU vs CPU" : " Player vs CPU"} /
+                AI {aiProfileSummary(activeBattleSettings.aiProfiles)}
+              </p>
+            </div>
+            <BattleResultSummary game={game} />
+          </div>
+          <div className="battle-action-grid compact">
+            <button type="button" onClick={handleNewGame} disabled={fixedDeckError}>
+              <Icon icon="🔄" /> 同じ条件で再戦
+            </button>
+            <button type="button" onClick={handleRandomSeedNewGame} disabled={fixedDeckError}>
+              <Icon icon="🎲" /> Seedを変えて再戦
+            </button>
+            <button type="button" onClick={() => setZoneView({ kind: "deckSetup" })}>
+              <Icon icon="🧩" /> デッキ設定
+            </button>
+          </div>
+        </section>
+      );
+    }
+
+    if (game.pendingLevelUp) {
+      return (
+        <section className="battle-control-panel battle-control-alert">
+          <div className="battle-control-heading">
+            <div>
+              <h2><Icon icon="✨" /> Level Up</h2>
+              <p>上げるレベル数を選択</p>
+            </div>
+          </div>
+          <div className="button-row">
+            {Array.from({ length: game.pendingLevelUp.maxLevels + 1 }, (_, level) => (
+              <button
+                key={level}
+                type="button"
+                onClick={() => applyChange((state) => resolveLevelUp(state, level))}
+                disabled={autoPlayEnabled}
+              >
+                {level}
+              </button>
+            ))}
+          </div>
+          {game.pendingLevelUp.superOptions && game.pendingLevelUp.superOptions.length > 0 && (
+            <>
+              <p className="hint">スーパーカードで変身</p>
+              <div className="button-row">
+                {game.pendingLevelUp.superOptions.map((option) => (
+                  <button
+                    key={option.handInstanceId}
+                    type="button"
+                    onClick={() => applyChange((state) => resolveLevelUp(state, game.pendingLevelUp!.maxLevels, option.handInstanceId))}
+                    disabled={autoPlayEnabled}
+                  >
+                    <CardIcon cardId={option.cardId} /> {getCardName(option.cardId)}
+                  </button>
+                ))}
+              </div>
+            </>
+          )}
+        </section>
+      );
+    }
+
+    if (pendingDropAction) {
+      return (
+        <section className="battle-control-panel">
+          <PendingDropActionPanel
+            action={pendingDropAction}
+            game={game}
+            onAttackCommand={handlePendingAttackCommand}
+            onConfirm={handleConfirmPendingDropAction}
+            onCancel={handleCancelPendingDropAction}
+          />
+          <OperationReasonPanel game={game} selection={selection} pendingDropAction={pendingDropAction} error={error} />
+        </section>
+      );
+    }
+
+    return (
+      <section className={`battle-control-panel ${cpuVsCpu ? "spectator" : ""}`}>
+        <div className="battle-control-heading">
+          <div>
+            <h2>{cpuVsCpu ? <><Icon icon="👁️" /> Spectator</> : <><Icon icon="🎮" /> Turn Controls</>}</h2>
+            <p>{turnStatus}</p>
+          </div>
+          {cpuVsCpu && (
+            <span className={`spectator-status-inline ${spectatorPaused ? "paused" : ""}`}>
+              {spectatorPaused ? <Icon icon="⏸️" /> : <Icon icon="👁️" />}
+              {latestSpectatorAttention
+                ? `#${latestSpectatorAttention.index + 1} ${latestSpectatorAttention.entry}`
+                : "注目イベント待ち"}
+            </span>
+          )}
+        </div>
+        <div className="battle-control-body">
+          <div className="battle-control-actions">
+            <div className="battle-playback-row">
+              {!cpuVsCpu && (
+                <button type="button" onClick={() => setAutoPlayEnabled((enabled) => !enabled)}>
+                  <Icon icon={autoPlayEnabled ? "⏸️" : "▶️"} /> {autoPlayEnabled ? "Auto Stop" : "Auto Play"}
+                </button>
+              )}
+              <label className="auto-delay-control">
+                Wait
+                <input
+                  type="number"
+                  min={AUTO_STEP_DELAY_MIN_MS}
+                  max={AUTO_STEP_DELAY_MAX_MS}
+                  step={AUTO_STEP_DELAY_STEP_MS}
+                  value={autoStepDelayMs}
+                  onChange={(event) => handleAutoDelayChange(event.target.value)}
+                />
+                ms
+              </label>
+              {cpuVsCpu && (
+                <div className="auto-speed-presets" aria-label="CPU vs CPU speed presets">
+                  {AUTO_SPEED_PRESETS.map((preset) => (
+                    <button
+                      type="button"
+                      className={autoStepDelayMs === preset.delayMs ? "selected" : ""}
+                      onClick={() => handleAutoSpeedPreset(preset.delayMs)}
+                      key={preset.label}
+                    >
+                      {preset.label}
+                    </button>
+                  ))}
+                </div>
+              )}
+              {cpuVsCpu && (
+                <label className="spectator-toggle">
+                  <input
+                    type="checkbox"
+                    checked={spectatorPauseOnAttention}
+                    onChange={(event) => {
+                      setSpectatorPauseOnAttention(event.target.checked);
+                      if (!event.target.checked) {
+                        setSpectatorPaused(false);
+                      }
+                    }}
+                  />
+                  注目停止
+                </label>
+              )}
+              {cpuVsCpu && spectatorPaused && (
+                <button type="button" onClick={() => setSpectatorPaused(false)}>
+                  <Icon icon="▶️" /> Resume
+                </button>
+              )}
+            </div>
+            {!cpuVsCpu && (
+              <div className="battle-action-grid">
+                {getCurrentMasterActionIds(game).map((actionId) => {
+                  const action = getMasterActionDef(actionId);
+                  const targets = getMasterActionTargets(game, actionId);
+                  return (
+                    <button
+                      key={actionId}
+                      type="button"
+                      onClick={() => {
+                        setPendingDropAction(undefined);
+                        setSelection({ kind: "masterAction", actionId, targets });
+                        setError("");
+                      }}
+                      disabled={controlsDisabled || targets.length === 0}
+                      title={action.summary}
+                    >
+                      <Icon icon={masterActionIcon(actionId)} /> {action.name} {getMasterActionCost(actionId)}
+                    </button>
+                  );
+                })}
+                <button
+                  type="button"
+                  onClick={() => applyChange(useMasterHpDraw)}
+                  disabled={controlsDisabled || currentPlayer.deck.length === 0}
+                >
+                  <Icon icon="🩸" /> HP Draw
+                </button>
+                <button type="button" onClick={handleEndTurn} disabled={controlsDisabled}>
+                  <Icon icon="⏭️" /> End Turn
+                </button>
+              </div>
+            )}
+          </div>
+          <div className="battle-control-status">
+            <TargetSelectionSummary selection={selection} game={game} />
+            {hasOperationContext ? (
+              <OperationReasonPanel game={game} selection={selection} pendingDropAction={pendingDropAction} error={error} />
+            ) : (
+              <p className="hint battle-control-empty-hint">
+                <Icon icon="☝️" /> 手札、味方モンスター、またはマスター特技を選択
+              </p>
+            )}
+            {selection?.kind === "command" && (
+              <p className="hint">攻撃対象を選択してください。</p>
+            )}
+            {selection?.kind === "move" && (
+              <p className="hint">移動先または入れ替え先を選択してください。</p>
+            )}
+            {selection?.kind === "masterAction" && (
+              <p className="hint">マスター特技の対象を選択してください。</p>
+            )}
+          </div>
+        </div>
+      </section>
+    );
+  }
 
   return (
     <main className={`app-shell ${pointerDragging ? "dragging" : ""}`}>
@@ -1882,16 +2099,6 @@ export function App() {
         <div>
           <h1>Card Hero Prototype</h1>
           <p>Turn {game.turnNumber} / {turnStatus}</p>
-          {cpuVsCpu && (
-            <div className={`spectator-status ${spectatorPaused ? "paused" : ""}`}>
-              <strong><Icon icon={spectatorPaused ? "⏸️" : "👁️"} /> Spectator</strong>
-              <span>
-                {latestSpectatorAttention
-                  ? `#${latestSpectatorAttention.index + 1} ${latestSpectatorAttention.entry}`
-                  : "注目イベント待ち"}
-              </span>
-            </div>
-          )}
         </div>
         <div className="topbar-actions">
           <label className="battle-setting-control">
@@ -1967,55 +2174,6 @@ export function App() {
               ))}
             </select>
           </label>
-          <button type="button" onClick={() => setAutoPlayEnabled((enabled) => !enabled)} disabled={cpuVsCpu}>
-            <Icon icon={autoPlayEnabled ? "⏸️" : "▶️"} /> {autoPlayEnabled ? "Auto Stop" : "Auto Play"}
-          </button>
-          <label className="auto-delay-control">
-            Wait
-            <input
-              type="number"
-              min={AUTO_STEP_DELAY_MIN_MS}
-              max={AUTO_STEP_DELAY_MAX_MS}
-              step={AUTO_STEP_DELAY_STEP_MS}
-              value={autoStepDelayMs}
-              onChange={(event) => handleAutoDelayChange(event.target.value)}
-            />
-            ms
-          </label>
-          {cpuVsCpu && (
-            <div className="auto-speed-presets" aria-label="CPU vs CPU speed presets">
-              {AUTO_SPEED_PRESETS.map((preset) => (
-                <button
-                  type="button"
-                  className={autoStepDelayMs === preset.delayMs ? "selected" : ""}
-                  onClick={() => handleAutoSpeedPreset(preset.delayMs)}
-                  key={preset.label}
-                >
-                  {preset.label}
-                </button>
-              ))}
-            </div>
-          )}
-          {cpuVsCpu && (
-            <label className="spectator-toggle">
-              <input
-                type="checkbox"
-                checked={spectatorPauseOnAttention}
-                onChange={(event) => {
-                  setSpectatorPauseOnAttention(event.target.checked);
-                  if (!event.target.checked) {
-                    setSpectatorPaused(false);
-                  }
-                }}
-              />
-              注目停止
-            </label>
-          )}
-          {cpuVsCpu && spectatorPaused && (
-            <button type="button" onClick={() => setSpectatorPaused(false)}>
-              <Icon icon="▶️" /> Resume
-            </button>
-          )}
           <button type="button" onClick={handleRandomSeed}>
             <Icon icon="🎲" /> Seed
           </button>
@@ -2248,6 +2406,7 @@ export function App() {
                 </div>
               ))}
             </div>
+            {renderBattleControlPanel()}
             <section className="hand-area">
             <div className="hand-heading">
               <h2>Hand</h2>
@@ -2324,73 +2483,7 @@ export function App() {
             <LatestEventSummary log={game.log} />
           </section>
 
-          {game.winner ? (
-            <section className="notice">
-              <h2><Icon icon="🏆" /> {playerLabel(game.winner)} Win</h2>
-              <p>
-                Seed {activeBattleSettings.seed} / 先攻 {playerLabel(activeBattleSettings.firstPlayer)} /
-                {activeBattleSettings.mode === "cpu-vs-cpu" ? " CPU vs CPU" : " Player vs CPU"} /
-                AI {aiProfileSummary(activeBattleSettings.aiProfiles)}
-              </p>
-              <BattleResultSummary game={game} />
-              <div className="button-stack">
-                <button type="button" onClick={handleNewGame} disabled={fixedDeckError}>
-                  <Icon icon="🔄" /> 同じ条件で再戦
-                </button>
-                <button type="button" onClick={handleRandomSeedNewGame} disabled={fixedDeckError}>
-                  <Icon icon="🎲" /> Seedを変えて再戦
-                </button>
-                <button type="button" onClick={() => setZoneView({ kind: "deckSetup" })}>
-                  <Icon icon="🧩" /> デッキ設定
-                </button>
-              </div>
-            </section>
-          ) : game.pendingLevelUp ? (
-            <section className="notice">
-              <h2><Icon icon="✨" /> Level Up</h2>
-              <p>上げるレベル数を選択</p>
-              <div className="button-row">
-                {Array.from({ length: game.pendingLevelUp.maxLevels + 1 }, (_, level) => (
-                  <button
-                    key={level}
-                    type="button"
-                    onClick={() => applyChange((state) => resolveLevelUp(state, level))}
-                    disabled={autoPlayEnabled}
-                  >
-                    {level}
-                  </button>
-                ))}
-              </div>
-              {game.pendingLevelUp.superOptions && game.pendingLevelUp.superOptions.length > 0 && (
-                <>
-                  <p>スーパーカードで変身</p>
-                  <div className="button-row">
-                    {game.pendingLevelUp.superOptions.map((option) => (
-                      <button
-                        key={option.handInstanceId}
-                        type="button"
-                        onClick={() => applyChange((state) => resolveLevelUp(state, game.pendingLevelUp!.maxLevels, option.handInstanceId))}
-                        disabled={autoPlayEnabled}
-                      >
-                        <CardIcon cardId={option.cardId} /> {getCardName(option.cardId)}
-                      </button>
-                    ))}
-                  </div>
-                </>
-              )}
-            </section>
-          ) : pendingDropAction ? (
-            <section className="side-context-panel">
-              <PendingDropActionPanel
-                action={pendingDropAction}
-                game={game}
-                onAttackCommand={handlePendingAttackCommand}
-                onConfirm={handleConfirmPendingDropAction}
-                onCancel={handleCancelPendingDropAction}
-              />
-              <OperationReasonPanel game={game} selection={selection} pendingDropAction={pendingDropAction} error={error} />
-            </section>
-          ) : isAdditionalChoiceSelection(selection) ? (
+          {isAdditionalChoiceSelection(selection) ? (
             <section className="side-context-panel card-info-panel">
               <AdditionalChoicePanel
                 selection={selection}
@@ -2482,7 +2575,6 @@ export function App() {
                   );
                 }}
               />
-              <OperationReasonPanel game={game} selection={selection} pendingDropAction={pendingDropAction} error={error} />
             </section>
           ) : selectedMonster && selection?.kind === "monster" ? (
             <section className="side-context-panel card-info-panel">
@@ -2499,7 +2591,6 @@ export function App() {
                   setSelection({ kind: "move", fromSlotKey: selection.slotKey, targets });
                 }}
               />
-              <OperationReasonPanel game={game} selection={selection} pendingDropAction={pendingDropAction} error={error} />
             </section>
           ) : selectedHand ? (
             <section className="side-context-panel card-info-panel">
@@ -2509,55 +2600,8 @@ export function App() {
                 disabled={controlsDisabled}
                 onDiscard={() => applyChange((state) => discardHandCard(state, selectedHand.instanceId))}
               />
-              <OperationReasonPanel game={game} selection={selection} pendingDropAction={pendingDropAction} error={error} />
             </section>
-          ) : (
-            <section className="actions">
-              <h2>Actions</h2>
-              <TargetSelectionSummary selection={selection} game={game} />
-              <OperationReasonPanel game={game} selection={selection} pendingDropAction={pendingDropAction} error={error} />
-              <div className="button-stack">
-                {getCurrentMasterActionIds(game).map((actionId) => {
-                  const action = getMasterActionDef(actionId);
-                  const targets = getMasterActionTargets(game, actionId);
-                  return (
-                    <button
-                      key={actionId}
-                      type="button"
-                      onClick={() => {
-                        setPendingDropAction(undefined);
-                        setSelection({ kind: "masterAction", actionId, targets });
-                        setError("");
-                      }}
-                      disabled={controlsDisabled || targets.length === 0}
-                      title={action.summary}
-                    >
-                      <Icon icon={masterActionIcon(actionId)} /> {action.name} {getMasterActionCost(actionId)}
-                    </button>
-                  );
-                })}
-                <button
-                  type="button"
-                  onClick={() => applyChange(useMasterHpDraw)}
-                  disabled={controlsDisabled || currentPlayer.deck.length === 0}
-                >
-                  <Icon icon="🩸" /> HP Draw
-                </button>
-                <button type="button" onClick={handleEndTurn} disabled={controlsDisabled}>
-                  <Icon icon="⏭️" /> End Turn
-                </button>
-              </div>
-              {selection?.kind === "command" && (
-                <p className="hint">攻撃対象を選択してください。</p>
-              )}
-              {selection?.kind === "move" && (
-                <p className="hint">移動先または入れ替え先を選択してください。</p>
-              )}
-              {selection?.kind === "masterAction" && (
-                <p className="hint">マスター特技の対象を選択してください。</p>
-              )}
-            </section>
-          )}
+          ) : null}
           <BattleHistoryPanel history={battleHistory} onReplay={handleReplayHistory} onClear={handleClearBattleHistory} />
         </aside>
       </section>
@@ -3089,10 +3133,10 @@ function MasterResourceDisplay({ label, active, hp, stones, deck, hand }: Master
   return (
     <div className="master-resource-display">
       <strong className="master-name">{active ? <Icon icon="▶️" /> : null}{label}</strong>
-      <ResourceIconRow label="HP" icon="❤️" amount={hp} />
-      <ResourceIconRow label="Stone" icon="🪨" amount={stones} cap={MAX_VISIBLE_RESOURCE_ICONS} />
+      <ResourceNumberRow label="HP" icon="❤️" amount={hp} />
+      <ResourceNumberRow label="Stone" icon="🪨" amount={stones} />
       <ResourceNumberRow label="Deck" icon="🂠" amount={deck} />
-      <ResourceIconRow label="Hand" icon="🃏" amount={hand} cap={MAX_VISIBLE_RESOURCE_ICONS} />
+      <ResourceNumberRow label="Hand" icon="🃏" amount={hand} />
     </div>
   );
 }
@@ -3108,30 +3152,6 @@ function ResourceNumberRow({ label, icon, amount }: ResourceNumberRowProps) {
     <div className="resource-row resource-number-row" title={`${label}: ${amount}`}>
       <span className="resource-label">{label}</span>
       <span className="resource-number"><Icon icon={icon} />{amount}</span>
-    </div>
-  );
-}
-
-interface ResourceIconRowProps {
-  label: string;
-  icon: string;
-  amount: number;
-  cap?: number;
-}
-
-function ResourceIconRow({ label, icon, amount, cap }: ResourceIconRowProps) {
-  const visibleAmount = Math.max(0, cap ? Math.min(amount, cap) : amount);
-  const extraAmount = cap && amount > cap ? amount - cap : 0;
-
-  return (
-    <div className="resource-row" title={`${label}: ${amount}`}>
-      <span className="resource-label">{label}</span>
-      <span className="resource-icons" aria-hidden="true">
-        {Array.from({ length: visibleAmount }, (_, index) => (
-          <span className="resource-icon" key={`${label}_${index}`}>{icon}</span>
-        ))}
-        {extraAmount ? <span className="resource-overflow">+{extraAmount}</span> : null}
-      </span>
     </div>
   );
 }
@@ -5238,7 +5258,7 @@ function isZoneView(view: ZoneView | undefined, playerId: PlayerId, zone: Extrac
 }
 
 function isInfoWorkspaceView(view: ZoneView | undefined): boolean {
-  return view?.kind === "deckSetup" || view?.kind === "aiLab";
+  return view?.kind === "deckSetup" || view?.kind === "aiLab" || view?.kind === "catalog";
 }
 
 function toggleZoneView(current: ZoneView | undefined, next: ZoneView): ZoneView | undefined {
@@ -5970,7 +5990,6 @@ function HandCardContent({ cardId }: HandCardContentProps) {
         </span>
         <span className="hand-card-meta"><Icon icon="🪨" /> Cost {def.cost} / {targetKindsLabel(def.targetKinds)}</span>
         <span className="hand-card-text">{def.description}</span>
-        <CardNotes card={def} compact />
       </>
     );
   }
@@ -5987,11 +6006,9 @@ function HandCardContent({ cardId }: HandCardContentProps) {
         <CardPoolChip cardId={def.id} compact />
       </span>
       <span className="hand-card-meta">
-        {isSpecial ? <><Icon icon="✨" /> {superEvolutionText(def)}</> : <><Icon icon="🪨" /> 召喚 1</>} / <Icon icon="✨" /> MaxLv {def.maxLevel}
+        {isSpecial ? <><Icon icon="✨" /> {superEvolutionText(def)}</> : <><Icon icon="🪨" /> 召喚 1</>} / <Icon icon="❤️" /> {maxHpText}
       </span>
-      <span className="hand-card-meta"><Icon icon="❤️" /> {maxHpText}</span>
       <span className="hand-card-text">{commandText}</span>
-      <CardNotes card={def} compact />
     </>
   );
 }
