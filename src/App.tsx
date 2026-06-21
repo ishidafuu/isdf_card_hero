@@ -5613,6 +5613,7 @@ function BoardSlot({
   const visibleMonsterCardId = visibleMonster && !prepared ? visibleMonster.cardId : undefined;
   const showCardBack = Boolean(monster && prepared);
   const monsterStatusBadges = visibleMonster ? getBoardStatusBadges(visibleMonster) : [];
+  const actionSpent = visibleMonster?.status === "active" && visibleMonster.actionCount >= visibleMonster.actionLimit;
 
   return (
     <button
@@ -5624,6 +5625,7 @@ function BoardSlot({
         targetable ? "targetable" : "",
         targetRole ? `target-${targetRole}` : "",
         monster?.status === "prepared" ? "prepared" : "",
+        actionSpent ? "action-spent" : "",
         effectKind ? `effect-active effect-${effectKind}` : "",
         damageFlash?.defeated ? "effect-defeated" : "",
       ].join(" ")}
@@ -5640,7 +5642,10 @@ function BoardSlot({
       {targetRole && <span className="target-badge">{targetRoleLabel(targetRole)}</span>}
       {preview?.badge && <span className="target-preview-badge">{preview.badge}</span>}
       {visibleMonster ? (
-        <span className="monster-card board-monster-summary" aria-label={`${getMonsterDisplayName(visibleMonster)} Lv${visibleMonster.level} HP ${visibleMonster.hp}`}>
+        <span
+          className="monster-card board-monster-summary"
+          aria-label={`${getMonsterDisplayName(visibleMonster)} Lv${visibleMonster.level} HP ${visibleMonster.hp}${actionSpent ? " 行動済み" : ""}`}
+        >
           <span className="board-vitals">
             <span className="board-vital-chip"><Icon icon="✨" /> Lv{visibleMonster.level}</span>
             <span className="board-vital-chip"><Icon icon="❤️" /> HP {visibleMonster.hp}</span>

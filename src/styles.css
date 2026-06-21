@@ -644,6 +644,27 @@ button:disabled {
   background: #f2fbf5;
 }
 
+.board-slot.action-spent {
+  background: #ecefed;
+  color: #6b736f;
+}
+
+.board-slot.action-spent .slot-label {
+  color: #8a938e;
+}
+
+.board-slot.action-spent .field-base-art {
+  filter: grayscale(1) saturate(0.2);
+  opacity: 0.52;
+}
+
+.board-slot.action-spent .board-vital-chip,
+.board-slot.action-spent .board-effect-chip {
+  background: rgba(238, 240, 236, 0.9);
+  border-color: rgba(87, 96, 91, 0.18);
+  color: #68716c;
+}
+
 .field-base-art {
   bottom: 8px;
   height: 52px;
