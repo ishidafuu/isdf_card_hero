@@ -2732,6 +2732,7 @@ export function App() {
             <section className="side-context-panel card-info-panel">
               <MonsterCommands
                 game={game}
+                pendingDropAction={pendingDropAction}
                 slotKey={selection.slotKey}
                 onCommand={(commandId, targets) => {
                   setPendingDropAction(undefined);
@@ -2742,6 +2743,8 @@ export function App() {
                   setPendingDropAction(undefined);
                   setSelection({ kind: "move", fromSlotKey: selection.slotKey, targets });
                 }}
+                onPendingAttackCommand={handlePendingAttackCommand}
+                onPendingMoveConfirm={handleConfirmPendingDropAction}
               />
             </section>
           ) : selectedHand ? (
@@ -5762,10 +5765,13 @@ function CardBackArt() {
 
 interface MonsterCommandsProps {
   game: GameState;
+  pendingDropAction?: PendingDropAction;
   slotKey: SlotKey;
   onCommand: (commandId: string, targets: Target[]) => void;
   onFocus: () => void;
   onMove: (targets: SlotKey[]) => void;
+  onPendingAttackCommand: (commandId: string) => void;
+  onPendingMoveConfirm: () => void;
 }
 
 interface UnitActionItem {
@@ -5776,15 +5782,34 @@ interface UnitActionItem {
   disabledReason?: string;
   readyLabel: string;
   onClick: () => void;
+  selected?: boolean;
+  selectedLabel?: string;
 }
 
-function MonsterCommands({ game, slotKey, onCommand, onFocus, onMove }: MonsterCommandsProps) {
+function MonsterCommands({
+  game,
+  pendingDropAction,
+  slotKey,
+  onCommand,
+  onFocus,
+  onMove,
+  onPendingAttackCommand,
+  onPendingMoveConfirm,
+}: MonsterCommandsProps) {
   const slot = game.slots[slotKey];
   const monster = game.slots[slotKey].monster;
   if (!monster) {
     return null;
   }
   const hidePreparedInfo = monster.status === "prepared" && monster.owner !== "player";
+  const pendingAttackAction =
+    pendingDropAction?.kind === "attackTarget" && pendingDropAction.attackerSlotKey === slotKey
+      ? pendingDropAction
+      : undefined;
+  const pendingMoveAction =
+    pendingDropAction?.kind === "move" && pendingDropAction.fromSlotKey === slotKey
+      ? pendingDropAction
+      : undefined;
   const moveTargets = getMovableTargets(game, slotKey);
   const moveDisabledReason = getMoveDisabledReason(game, slotKey, moveTargets);
   const focusDisabledReason = getFocusDisabledReason(game, slotKey);
@@ -5793,6 +5818,7 @@ function MonsterCommands({ game, slotKey, onCommand, onFocus, onMove }: MonsterC
     : getMonsterCommands(monster).map((command, index) => {
         const targets = getCommandTargets(game, slotKey, command.id);
         const disabledReason = getCommandDisabledReason(game, slotKey, command, targets);
+        const selected = pendingAttackAction?.commandIds.includes(command.id) ?? false;
         return {
           key: `command_${command.id}_${index}`,
           icon: commandIcon(command),
@@ -5800,7 +5826,9 @@ function MonsterCommands({ game, slotKey, onCommand, onFocus, onMove }: MonsterC
           meta: commandActionSummary(command),
           disabledReason,
           readyLabel: `対象 ${targets.length}`,
-          onClick: () => onCommand(command.id, targets),
+          onClick: selected ? () => onPendingAttackCommand(command.id) : () => onCommand(command.id, targets),
+          selected,
+          selectedLabel: selected ? "選択中 / クリックで発火" : undefined,
         };
       });
   const unitActions: UnitActionItem[] = hidePreparedInfo
@@ -5814,7 +5842,9 @@ function MonsterCommands({ game, slotKey, onCommand, onFocus, onMove }: MonsterC
           meta: "自陣内 / 空きマスまたは味方と入れ替え",
           disabledReason: moveDisabledReason,
           readyLabel: `候補 ${moveTargets.length}`,
-          onClick: () => onMove(moveTargets),
+          onClick: pendingMoveAction ? onPendingMoveConfirm : () => onMove(moveTargets),
+          selected: Boolean(pendingMoveAction),
+          selectedLabel: pendingMoveAction ? "選択中 / クリックで確定" : undefined,
         },
         {
           key: "focus",
@@ -5829,20 +5859,21 @@ function MonsterCommands({ game, slotKey, onCommand, onFocus, onMove }: MonsterC
   const readyActions = unitActions.filter((action) => !action.disabledReason);
   const renderActionButton = (action: UnitActionItem) => (
     <button
-      className={`command-button ${action.disabledReason ? "is-unavailable" : "is-ready"}`}
+      className={`command-button ${action.disabledReason ? "is-unavailable" : "is-ready"}${action.selected ? " is-selected" : ""}`}
       key={action.key}
       type="button"
       onClick={action.onClick}
       disabled={!!action.disabledReason}
-      title={action.disabledReason ?? action.readyLabel}
+      title={action.selected ? action.selectedLabel : action.disabledReason ?? action.readyLabel}
+      aria-pressed={action.selected || undefined}
     >
       <span className="command-button-main">
         <Icon icon={action.icon} />
         <strong>{action.title}</strong>
       </span>
       <span className="command-button-meta">{action.meta}</span>
-      <span className={action.disabledReason ? "command-button-reason" : "command-button-ready"}>
-        {action.disabledReason ?? action.readyLabel}
+      <span className={action.selected ? "command-button-selected" : action.disabledReason ? "command-button-reason" : "command-button-ready"}>
+        {action.selected ? action.selectedLabel : action.disabledReason ?? action.readyLabel}
       </span>
     </button>
   );
