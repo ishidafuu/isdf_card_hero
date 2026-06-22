@@ -2360,12 +2360,13 @@ button:disabled {
 
 .hand-card {
   align-items: start;
+  align-content: start;
   display: grid;
-  flex: 1 0 150px;
-  gap: 5px;
-  max-width: 190px;
-  min-height: 104px;
-  min-width: 150px;
+  flex: 0 0 138px;
+  gap: 6px;
+  max-width: 160px;
+  min-height: 68px;
+  min-width: 138px;
   padding: 8px;
   position: relative;
   scroll-snap-align: start;
@@ -2426,7 +2427,6 @@ button:disabled {
   align-items: flex-start;
   display: flex;
   gap: 5px;
-  justify-content: space-between;
   min-width: 0;
 }
 
@@ -2441,49 +2441,12 @@ button:disabled {
   overflow-wrap: anywhere;
 }
 
-.hand-card-meta,
-.hand-card-text {
-  line-height: 1.35;
-}
-
-.hand-card-text {
-  display: -webkit-box;
-  min-height: 17px;
-  overflow: hidden;
-  -webkit-box-orient: vertical;
-  -webkit-line-clamp: 1;
-}
-
-.hand-card .card-note-text {
-  display: -webkit-box;
-  overflow: hidden;
-  -webkit-box-orient: vertical;
-  -webkit-line-clamp: 2;
-}
-
-.hand-card-hover-detail {
-  background: rgba(29, 37, 39, 0.94);
-  border: 1px solid rgba(255, 255, 255, 0.24);
-  border-radius: 7px;
-  bottom: 6px;
-  box-shadow: 0 10px 24px rgba(29, 37, 39, 0.22);
-  color: #fff !important;
-  display: none;
-  font-size: 11px !important;
-  left: 6px;
-  line-height: 1.35;
-  max-height: calc(100% - 12px);
-  overflow: auto;
-  padding: 7px 8px;
-  position: absolute;
-  right: 6px;
-  z-index: 20;
-}
-
-.hand-card:hover .hand-card-hover-detail,
-.hand-card:focus-visible .hand-card-hover-detail,
-.hand-card.selected .hand-card-hover-detail {
-  display: block;
+.hand-card-hp {
+  align-items: center;
+  display: inline-flex;
+  font-weight: 800;
+  gap: 3px;
+  line-height: 1.2;
 }
 
 .hand-action-panel {
@@ -4603,7 +4566,7 @@ button:disabled {
   }
 
   .hand-card {
-    flex-basis: 156px;
+    flex-basis: 138px;
   }
 
   .monster-card strong {

@@ -7770,38 +7770,18 @@ function HandCardContent({ cardId }: HandCardContentProps) {
       <>
         <span className="hand-card-title">
           <strong><CardIcon cardId={def.id} /> {def.name}</strong>
-          <span className="card-chip magic">魔法</span>
-          <CardPoolChip cardId={def.id} compact />
         </span>
-        <span className="hand-card-meta"><Icon icon="🪨" /> Cost {def.cost} / {targetKindsLabel(def.targetKinds)}</span>
-        <span className="hand-card-text">{def.category ?? def.description}</span>
-        <span className="hand-card-hover-detail">{def.description}</span>
       </>
     );
   }
 
-  const firstLevel = def.levels[0];
-  const maxHpText = def.levels.map((level) => `Lv${level.level} HP${level.maxHp}`).join(" / ");
-  const hpRangeText = def.levels.length > 1
-    ? `HP ${def.levels[0].maxHp}-${def.levels[def.levels.length - 1].maxHp}`
-    : `HP ${def.levels[0].maxHp}`;
-  const commandText = firstLevel.commands.map(commandSummary).join(" / ");
-  const isSpecial = getCardPool(def) === "special";
+  const hpText = `HP ${def.levels[0].maxHp}`;
   return (
     <>
       <span className="hand-card-title">
         <strong><CardIcon cardId={def.id} /> {def.name}</strong>
-        <span className="card-chip"><Icon icon={isSpecial ? "★" : roleIcon(def.role)} /> {isSpecial ? "スーパー" : def.role === "front" ? "前衛" : "後衛"}</span>
-        <CardPoolChip cardId={def.id} compact />
       </span>
-      <span className="hand-card-meta">
-        {isSpecial ? <><Icon icon="✨" /> {superEvolutionText(def)}</> : <><Icon icon="🪨" /> 召喚 1</>} / <Icon icon="❤️" /> {hpRangeText}
-      </span>
-      <span className="hand-card-text">{commandText}</span>
-      <span className="hand-card-hover-detail">
-        MaxLv {def.maxLevel} / {maxHpText} / {commandText}
-        {def.catchcopy ? ` / ${def.catchcopy}` : ""}
-      </span>
+      <span className="hand-card-hp"><Icon icon="❤️" /> {hpText}</span>
     </>
   );
 }
