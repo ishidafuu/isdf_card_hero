@@ -52,6 +52,7 @@ import {
   useMasterAction,
   useMasterHpDraw,
 } from "./game/rules";
+import { HAND_LIMIT } from "./game/ruleEngine/constants";
 import { getMasterActionDef, getMasterIconUrl, getMasterName, MASTER_IDS } from "./game/masters";
 import { CPU_AI_PROFILES, type CpuAiProfile, type CpuAiProfiles } from "./game/cpuAi";
 import {
@@ -4669,6 +4670,7 @@ interface HandCardPanelProps {
 
 function HandCardPanel({ card, game, disabled, onDiscard }: HandCardPanelProps) {
   const def = getCardDef(card.cardId);
+  const canDiscardForHandLimit = game.players[game.currentPlayer].hand.length > HAND_LIMIT;
   const actionHint = def.type === "monster"
     ? getCardPool(def) === "special"
       ? "スーパー化条件を満たしたレベルアップ時に使用"
@@ -4680,7 +4682,13 @@ function HandCardPanel({ card, game, disabled, onDiscard }: HandCardPanelProps) 
       <CardDetail cardId={card.cardId} game={game} />
       <div className="hand-action-panel">
         <span className="hint"><Icon icon={def.type === "monster" ? "🂠" : "🎯"} /> {actionHint}</span>
-        <button type="button" className="danger-button" onClick={onDiscard} disabled={disabled}>
+        <button
+          type="button"
+          className="danger-button"
+          onClick={onDiscard}
+          disabled={disabled || !canDiscardForHandLimit}
+          title={canDiscardForHandLimit ? "手札上限を超えたカードを捨てます" : `手札が${HAND_LIMIT}枚を超えている時だけ捨てられます`}
+        >
           <Icon icon="🗑️" /> 手札から捨てる
         </button>
       </div>

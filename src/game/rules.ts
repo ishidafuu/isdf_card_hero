@@ -10,6 +10,7 @@ import {
 } from "./cards";
 import { applyCpuDecision, chooseCpuDecision, type CpuAiOptions } from "./cpuAi";
 import {
+  DRAW_FIVE_HAND_SIZE,
   FIELD_ORDER,
   HAND_LIMIT,
   LANE_ORDER,
@@ -559,6 +560,9 @@ export function discardHandCard(state: GameState, handInstanceId: string): GameS
   ensureActionAllowed(next);
 
   const player = next.players[next.currentPlayer];
+  if (player.hand.length <= HAND_LIMIT) {
+    throw new Error("手札上限を超えている時だけ捨てられます");
+  }
   const handIndex = player.hand.findIndex((card) => card.instanceId === handInstanceId);
   if (handIndex < 0) {
     throw new Error("捨てるカードが手札にありません");
@@ -1377,7 +1381,7 @@ function refreshSelectedHand(state: GameState, playerId: PlayerId, selectedHandI
 
 function drawUntilHandLimit(state: GameState, playerId: PlayerId): void {
   const player = state.players[playerId];
-  while (player.hand.length < HAND_LIMIT) {
+  while (player.hand.length < DRAW_FIVE_HAND_SIZE) {
     if (player.deck.length === 0) {
       forceDraw(state, playerId, "ドロー5");
       return;

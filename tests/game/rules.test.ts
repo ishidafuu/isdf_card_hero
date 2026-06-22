@@ -1735,7 +1735,7 @@ describe("battle prototype rules", () => {
     expect(game.slots.player_front_left.monster?.hp).toBe(afterFirstHit);
   });
 
-  it("discards the oldest cards until the hand has 5 cards at turn end", () => {
+  it("discards the oldest cards until the hand has 6 cards at turn end", () => {
     const game = createGameWithPlayerHand([
       { cardId: "takokke", instanceId: "old_1" },
       { cardId: "bomuzo", instanceId: "old_2" },
@@ -1749,26 +1749,34 @@ describe("battle prototype rules", () => {
     const next = endTurn(game);
 
     expect(next.players.player.hand.map((card) => card.instanceId)).toEqual([
+      "old_2",
       "old_3",
       "old_4",
       "old_5",
       "old_6",
       "old_7",
     ]);
-    expect(next.players.player.discard.map((card) => card.instanceId)).toEqual(["old_1", "old_2"]);
+    expect(next.players.player.discard.map((card) => card.instanceId)).toEqual(["old_1"]);
   });
 
-  it("lets the current player explicitly discard a hand card", () => {
+  it("lets the current player explicitly discard a hand card only above the hand limit", () => {
     const game = createGameWithPlayerHand([
       { cardId: "takokke", instanceId: "keep" },
+      { cardId: "bomuzo", instanceId: "keep_2" },
+      { cardId: "polyspinner", instanceId: "keep_3" },
+      { cardId: "beyond", instanceId: "keep_4" },
+      { cardId: "yanbaru", instanceId: "keep_5" },
+      { cardId: "morgan", instanceId: "keep_6" },
       { cardId: "sigma", instanceId: "discard" },
     ]);
 
     const next = discardHandCard(game, "discard");
 
-    expect(next.players.player.hand.map((card) => card.instanceId)).toEqual(["keep"]);
+    expect(next.players.player.hand.map((card) => card.instanceId)).toEqual(["keep", "keep_2", "keep_3", "keep_4", "keep_5", "keep_6"]);
     expect(next.players.player.discard.map((card) => card.instanceId)).toEqual(["discard"]);
     expect(next.log.at(-1)).toContain("手札から捨てた");
+
+    expect(() => discardHandCard(next, "keep")).toThrow("手札上限を超えている時だけ捨てられます");
   });
 
   it("copies a selected enemy card identity with illusion mirror while keeping current HP", () => {
