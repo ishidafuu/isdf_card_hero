@@ -73,6 +73,11 @@ import type {
 
 export { FIELD_ORDER, PLAYER_SLOT_ORDER } from "./ruleEngine/constants";
 
+const ROTATION_SLOT_ORDER: Record<PlayerId, SlotKey[]> = {
+  player: ["player_front_left", "player_front_right", "player_back_right", "player_back_left"],
+  cpu: ["cpu_front_left", "cpu_front_right", "cpu_back_right", "cpu_back_left"],
+};
+
 export interface CreateInitialGameOptions {
   firstPlayer?: PlayerId;
   masterIds?: Partial<Record<PlayerId, MasterId>>;
@@ -1312,7 +1317,7 @@ function rotatePlayerMonsters(
   withLog = true,
   direction: NonNullable<MagicAction["rotationDirection"]> = "clockwise",
 ): void {
-  const order = PLAYER_SLOT_ORDER[playerId];
+  const order = ROTATION_SLOT_ORDER[playerId];
   const monsters = order.map((slotKey) => state.slots[slotKey].monster);
   for (let i = 0; i < order.length; i += 1) {
     const fromIndex = direction === "clockwise"

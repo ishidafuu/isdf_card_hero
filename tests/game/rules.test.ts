@@ -1893,7 +1893,7 @@ describe("battle prototype rules", () => {
     expect(game.slots.player_front_left.monster?.oneShotShield).toBe(false);
   });
 
-  it("rotates each player's monsters in their own four slots", () => {
+  it("rotates each player's monsters clockwise across front-left, front-right, back-right, and back-left", () => {
     let game = createGameWithPlayerHand([{ cardId: "card_093", instanceId: "rotation" }]);
     game.players.player.stones = magicCost("card_093");
     game.slots.player_front_left.monster = createActiveMonster("takokke", "player");
@@ -1910,17 +1910,17 @@ describe("battle prototype rules", () => {
       target: { kind: "master", playerId: "player" },
     });
 
-    expect(game.slots.player_front_left.monster?.cardId).toBe("morgan");
+    expect(game.slots.player_front_left.monster?.cardId).toBe("yanbaru");
     expect(game.slots.player_front_right.monster?.cardId).toBe("takokke");
-    expect(game.slots.player_back_left.monster?.cardId).toBe("sigma");
-    expect(game.slots.player_back_right.monster?.cardId).toBe("yanbaru");
-    expect(game.slots.cpu_front_left.monster?.cardId).toBe("card_007");
+    expect(game.slots.player_back_left.monster?.cardId).toBe("morgan");
+    expect(game.slots.player_back_right.monster?.cardId).toBe("sigma");
+    expect(game.slots.cpu_front_left.monster?.cardId).toBe("card_003");
     expect(game.slots.cpu_front_right.monster?.cardId).toBe("card_001");
-    expect(game.slots.cpu_back_left.monster?.cardId).toBe("card_002");
-    expect(game.slots.cpu_back_right.monster?.cardId).toBe("card_003");
+    expect(game.slots.cpu_back_left.monster?.cardId).toBe("card_007");
+    expect(game.slots.cpu_back_right.monster?.cardId).toBe("card_002");
   });
 
-  it("rotates each player's monsters in the opposite direction when selected", () => {
+  it("rotates each player's monsters counterclockwise across front-left, back-left, back-right, and front-right", () => {
     let game = createGameWithPlayerHand([{ cardId: "card_093", instanceId: "rotation" }]);
     game.players.player.stones = magicCost("card_093");
     game.slots.player_front_left.monster = createActiveMonster("takokke", "player");
@@ -1939,13 +1939,13 @@ describe("battle prototype rules", () => {
     });
 
     expect(game.slots.player_front_left.monster?.cardId).toBe("sigma");
-    expect(game.slots.player_front_right.monster?.cardId).toBe("yanbaru");
-    expect(game.slots.player_back_left.monster?.cardId).toBe("morgan");
-    expect(game.slots.player_back_right.monster?.cardId).toBe("takokke");
+    expect(game.slots.player_front_right.monster?.cardId).toBe("morgan");
+    expect(game.slots.player_back_left.monster?.cardId).toBe("takokke");
+    expect(game.slots.player_back_right.monster?.cardId).toBe("yanbaru");
     expect(game.slots.cpu_front_left.monster?.cardId).toBe("card_002");
-    expect(game.slots.cpu_front_right.monster?.cardId).toBe("card_003");
-    expect(game.slots.cpu_back_left.monster?.cardId).toBe("card_007");
-    expect(game.slots.cpu_back_right.monster?.cardId).toBe("card_001");
+    expect(game.slots.cpu_front_right.monster?.cardId).toBe("card_007");
+    expect(game.slots.cpu_back_left.monster?.cardId).toBe("card_001");
+    expect(game.slots.cpu_back_right.monster?.cardId).toBe("card_003");
   });
 
   it("warps the selected same-side secondary target instead of a fallback monster", () => {
