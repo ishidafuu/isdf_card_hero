@@ -110,22 +110,23 @@ const BOARD_SLOT_KEYS = BOARD_CELLS.flatMap((row) =>
   row.flatMap((cell) => (cell.kind === "slot" ? [cell.slotKey] : [])),
 );
 const PLAYER_IDS: PlayerId[] = ["player", "cpu"];
-const VISUAL_EFFECT_DURATION_MS = 900;
+const VISUAL_EFFECT_DURATION_MS = 1400;
+const CPU_READABLE_STEP_DELAY_MS = 1500;
 const AUTO_STEP_DELAY_MIN_MS = 100;
-const AUTO_STEP_DELAY_MAX_MS = 3000;
+const AUTO_STEP_DELAY_MAX_MS = 4000;
 const AUTO_STEP_DELAY_STEP_MS = 50;
-const AUTO_STEP_DELAY_DEFAULT_MS = 1000;
+const AUTO_STEP_DELAY_DEFAULT_MS = 1400;
 const AUTO_SPEED_PRESETS = [
-  { label: "Watch", delayMs: 1000 },
-  { label: "Normal", delayMs: 650 },
-  { label: "Fast", delayMs: 300 },
-  { label: "Skip", delayMs: 100 },
+  { label: "Watch", delayMs: 1800 },
+  { label: "Normal", delayMs: 1400 },
+  { label: "Fast", delayMs: 800 },
+  { label: "Skip", delayMs: 250 },
 ] as const;
 const MAX_VISIBLE_RESOURCE_ICONS = 10;
 const DEFAULT_BATTLE_SEED = 20260612;
 const DEFAULT_PLAYER_DECK_PRESET_ID = "submission-pro-no-rare8-white-1377" satisfies DeckPresetId;
 const DEFAULT_CPU_DECK_PRESET_ID = "balanced-normal" satisfies DeckPresetId;
-const AUTO_STEP_DELAY_STORAGE_KEY = "card-hero:auto-step-delay-ms:v1";
+const AUTO_STEP_DELAY_STORAGE_KEY = "card-hero:auto-step-delay-ms:v2";
 const BATTLE_HISTORY_STORAGE_KEY = "card-hero:battle-history:v1";
 const BATTLE_PRESETS_STORAGE_KEY = "card-hero:battle-presets:v1";
 const BATTLE_HISTORY_LIMIT = 20;
@@ -1150,6 +1151,10 @@ export function App() {
   );
   const selectedLogEntry = selectedLogIndex !== undefined ? game.log[selectedLogIndex] : undefined;
   const latestSpectatorAttention = useMemo(() => findLatestSpectatorAttention(game.log), [game.log]);
+  const effectiveAutoStepDelayMs =
+    game.currentPlayer === "cpu" && !cpuVsCpu
+      ? Math.max(autoStepDelayMs, CPU_READABLE_STEP_DELAY_MS)
+      : autoStepDelayMs;
   const actionPreviews = useMemo(
     () => getActionPreviews(game, selection, pendingDropAction),
     [game, pendingDropAction, selection],
@@ -1224,10 +1229,10 @@ export function App() {
         }
         return previous;
       });
-    }, autoStepDelayMs);
+    }, effectiveAutoStepDelayMs);
 
     return () => window.clearTimeout(timer);
-  }, [autoPlayEnabled, autoStepDelayMs, battleSettings.aiProfiles, cpuVsCpu, game, isAutoResolving]);
+  }, [autoPlayEnabled, battleSettings.aiProfiles, cpuVsCpu, effectiveAutoStepDelayMs, game, isAutoResolving]);
 
   useEffect(() => {
     if (!visualEffect) {

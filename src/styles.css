@@ -479,7 +479,7 @@ button:disabled {
 }
 
 .board-action-line {
-  animation: action-line-draw 880ms ease-out both;
+  animation: action-line-draw 1300ms ease-out both;
   marker-end: inherit;
   stroke: #d9480f;
   stroke-dasharray: 8 4;
@@ -523,7 +523,7 @@ button:disabled {
 }
 
 .board-action-ring {
-  animation: action-ring-pop 860ms ease-out both;
+  animation: action-ring-pop 1300ms ease-out both;
   border: 3px solid rgba(217, 72, 15, 0.88);
   border-radius: 10px;
   box-shadow:
@@ -564,7 +564,7 @@ button:disabled {
 }
 
 .board-action-label {
-  animation: action-label-pop 900ms ease-out both;
+  animation: action-label-pop 1300ms ease-out both;
   background: rgba(28, 33, 31, 0.92);
   border: 1px solid rgba(255, 255, 255, 0.28);
   border-radius: 8px;
@@ -603,7 +603,7 @@ button:disabled {
 }
 
 .resolution-feed-item {
-  animation: action-label-pop 900ms ease-out both;
+  animation: action-label-pop 1300ms ease-out both;
   background: rgba(248, 250, 244, 0.94);
   border: 1px solid rgba(29, 37, 39, 0.16);
   border-left: 4px solid #9ca3af;
@@ -886,14 +886,14 @@ button:disabled {
 
 .board-slot.effect-active,
 .master.effect-active {
-  animation: board-pulse 460ms ease-out;
+  animation: board-pulse 720ms ease-out;
 }
 
 .board-slot.effect-defeated,
 .master.effect-defeated {
   animation:
-    board-pulse 460ms ease-out,
-    defeat-shake 760ms ease-out;
+    board-pulse 720ms ease-out,
+    defeat-shake 900ms ease-out;
 }
 
 .effect-attack {
@@ -937,7 +937,7 @@ button:disabled {
 
 .damage-bubble {
   align-items: center;
-  animation: damage-pop 900ms ease-out both;
+  animation: damage-pop 1300ms ease-out both;
   background: #b91c1c;
   border: 2px solid #fff5f5;
   border-radius: 999px;
