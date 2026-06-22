@@ -976,11 +976,13 @@ export function App() {
   const [visualEffect, setVisualEffect] = useState<VisualEffect | undefined>();
   const [pointerDragging, setPointerDragging] = useState(false);
   const [dragPayload, setDragPayload] = useState<DragPayload | undefined>();
+  const [manualUndoStack, setManualUndoStack] = useState<GameState[]>([]);
   const [autoPlayEnabled, setAutoPlayEnabled] = useState(false);
   const [autoStepDelayMs, setAutoStepDelayMs] = useState(AUTO_STEP_DELAY_DEFAULT_MS);
   const [spectatorPauseOnAttention, setSpectatorPauseOnAttention] = useState(true);
   const [spectatorPaused, setSpectatorPaused] = useState(false);
   const [zoneView, setZoneView] = useState<ZoneView | undefined>();
+  const [infoToolsOpen, setInfoToolsOpen] = useState(false);
   const [logFilter, setLogFilter] = useState<LogFilter>("all");
   const [logOpen, setLogOpen] = useState(false);
   const [selectedLogIndex, setSelectedLogIndex] = useState<number | undefined>();
@@ -1027,6 +1029,13 @@ export function App() {
   const isAutoResolving =
     !game.winner && !spectatorAutoPaused && (cpuVsCpu || autoPlayEnabled || (game.currentPlayer === "cpu" && !game.pendingLevelUp));
   const controlsDisabled = cpuVsCpu || autoPlayEnabled || game.currentPlayer !== "player" || !!game.winner || !!game.pendingLevelUp;
+  const canUndoManualAction =
+    manualUndoStack.length > 0 &&
+    !cpuVsCpu &&
+    !autoPlayEnabled &&
+    !isAutoResolving &&
+    game.currentPlayer === "player" &&
+    !game.winner;
   const activeBattleSettings = activeBattleSettingsRef.current;
   const turnStatus = game.winner
     ? `${playerLabel(game.winner)} win`
@@ -1144,6 +1153,7 @@ export function App() {
     }
 
     const timer = window.setTimeout(() => {
+      setManualUndoStack([]);
       setGame((previous) => {
         if (previous.winner) {
           return previous;
@@ -1195,7 +1205,11 @@ export function App() {
 
   function applyChange(change: (state: GameState) => GameState, keepSelection = false) {
     try {
-      setGame(change(game));
+      const next = change(game);
+      if (next !== game) {
+        setManualUndoStack((previous) => [...previous, game].slice(-20));
+      }
+      setGame(next);
       setError("");
       setPendingDropAction(undefined);
       if (!keepSelection) {
@@ -1204,6 +1218,41 @@ export function App() {
     } catch (caught) {
       setError(caught instanceof Error ? caught.message : "操作に失敗しました");
     }
+  }
+
+  function handleUndoManualAction() {
+    if (!canUndoManualAction) {
+      return;
+    }
+    const previousGame = manualUndoStack.at(-1);
+    if (!previousGame) {
+      return;
+    }
+    clearPointerDrag();
+    setManualUndoStack((previous) => previous.slice(0, -1));
+    setGame(previousGame);
+    setSelection(undefined);
+    setPendingDropAction(undefined);
+    setError("");
+  }
+
+  function toggleInfoPanel() {
+    if (infoPanelOpen) {
+      setInfoToolsOpen(false);
+      setZoneView(undefined);
+      return;
+    }
+    setInfoToolsOpen(true);
+  }
+
+  function toggleInfoZoneView(view: ZoneView) {
+    setInfoToolsOpen(true);
+    setZoneView((current) => toggleZoneView(current, view));
+  }
+
+  function showInfoZoneView(view: ZoneView) {
+    setInfoToolsOpen(true);
+    setZoneView(view);
   }
 
   function resolveMagicPrimaryTarget(handInstanceId: string, target: Target) {
@@ -1526,6 +1575,7 @@ export function App() {
     const drafts = createDeckDrafts(settings, decks);
     const invalidPlayer = PLAYER_IDS.find((playerId) => decks.fixed[playerId] && !drafts[playerId].summary.valid);
     if (invalidPlayer) {
+      setInfoToolsOpen(true);
       setZoneView({ kind: "deckSetup" });
       setError(`${playerLabel(invalidPlayer)}の固定デッキを修正してください`);
       return;
@@ -1536,9 +1586,11 @@ export function App() {
     activeDeckSettingsRef.current = cloneDeckSettings(decks);
     previousGameRef.current = next;
     setGame(next);
+    setManualUndoStack([]);
     setSelection(undefined);
     setPendingDropAction(undefined);
     setZoneView(undefined);
+    setInfoToolsOpen(false);
     setError("");
     setVisualEffect(undefined);
     setAutoPlayEnabled(false);
@@ -2144,6 +2196,7 @@ export function App() {
   const selectedHand =
     selection?.kind === "hand" ? currentPlayer.hand.find((card) => card.instanceId === selection.instanceId) : undefined;
   const infoWorkspaceOpen = isInfoWorkspaceView(zoneView);
+  const infoPanelOpen = infoToolsOpen || Boolean(zoneView);
   const hasOperationContext = Boolean(selection || pendingDropAction || error);
   const endTurnWarning = getEndTurnWarning(game, controlsDisabled);
 
@@ -2169,7 +2222,7 @@ export function App() {
             <button type="button" onClick={handleRandomSeedNewGame} disabled={fixedDeckError}>
               <Icon icon="🎲" /> Seedを変えて再戦
             </button>
-            <button type="button" onClick={() => setZoneView({ kind: "deckSetup" })}>
+            <button type="button" onClick={() => showInfoZoneView({ kind: "deckSetup" })}>
               <Icon icon="🧩" /> デッキ設定
             </button>
           </div>
@@ -2256,6 +2309,17 @@ export function App() {
                 </button>
               )}
               {!cpuVsCpu && (
+                <button
+                  type="button"
+                  className="undo-button"
+                  onClick={handleUndoManualAction}
+                  disabled={!canUndoManualAction}
+                  title={canUndoManualAction ? "直前の手動操作を戻します" : "戻せる手動操作はありません"}
+                >
+                  <Icon icon="↩" /> 戻す
+                </button>
+              )}
+              {!cpuVsCpu && (
                 <button type="button" className={endTurnWarning ? "end-turn-risk" : ""} onClick={handleEndTurn} disabled={controlsDisabled} title={endTurnWarning}>
                   <Icon icon="⏭️" /> End Turn
                 </button>
@@ -2270,8 +2334,8 @@ export function App() {
             {cpuVsCpu && (
               <SpectatorReviewPanel
                 recent={recentSpectatorAttention}
-                onOpenCpuHistory={() => setZoneView({ kind: "cpuHistory" })}
-                onOpenEffects={() => setZoneView({ kind: "effects" })}
+                onOpenCpuHistory={() => showInfoZoneView({ kind: "cpuHistory" })}
+                onOpenEffects={() => showInfoZoneView({ kind: "effects" })}
               />
             )}
             {!hasOperationContext ? (
@@ -2384,7 +2448,7 @@ export function App() {
           <button
             type="button"
             className={zoneView?.kind === "deckSetup" ? "selected" : ""}
-            onClick={() => setZoneView(toggleZoneView(zoneView, { kind: "deckSetup" }))}
+            onClick={() => toggleInfoZoneView({ kind: "deckSetup" })}
           >
             <Icon icon="🧩" /> Decks
           </button>
@@ -2397,143 +2461,152 @@ export function App() {
       <section
         className={[
           "play-layout",
-          zoneView ? "info-open" : "",
+          infoPanelOpen ? "info-open" : "",
           zoneView?.kind === "catalog" ? "catalog-open" : "",
           infoWorkspaceOpen ? "info-workspace-open" : "",
         ].filter(Boolean).join(" ")}
       >
-        <aside className="info-panel">
+        <aside className={`info-panel ${infoPanelOpen ? "open" : "collapsed"}`}>
           <section className="info-switcher-panel">
             <div className="info-switcher-heading">
               <h2>Info</h2>
-              <StatusIconCount label="Cards" icon="🃏" amount={currentPlayer.hand.length} cap={MAX_VISIBLE_RESOURCE_ICONS} />
+              <div className="info-switcher-actions">
+                <StatusIconCount label="Cards" icon="🃏" amount={currentPlayer.hand.length} cap={MAX_VISIBLE_RESOURCE_ICONS} />
+                <button
+                  type="button"
+                  className="info-panel-toggle"
+                  onClick={toggleInfoPanel}
+                  aria-expanded={infoPanelOpen}
+                  title={infoPanelOpen ? "Infoを閉じる" : "Infoを開く"}
+                >
+                  <Icon icon={infoPanelOpen ? "▴" : "▾"} /> {infoPanelOpen ? "閉じる" : "開く"}
+                </button>
+              </div>
             </div>
-            <div className="info-tools" aria-label="info panels">
-              <button
-                type="button"
-                className={isZoneView(zoneView, "player", "deck") ? "selected" : ""}
-                onClick={() => setZoneView(toggleZoneView(zoneView, { kind: "playerZone", playerId: "player", zone: "deck" }))}
-              >
-                <Icon icon="🂠" /> Deck {game.players.player.deck.length}
-              </button>
-              <button
-                type="button"
-                className={isZoneView(zoneView, "player", "discard") ? "selected" : ""}
-                onClick={() => setZoneView(toggleZoneView(zoneView, { kind: "playerZone", playerId: "player", zone: "discard" }))}
-              >
-                <Icon icon="🗂️" /> Discard {game.players.player.discard.length}
-              </button>
-              <button
-                type="button"
-                className={isZoneView(zoneView, "player", "hand") ? "selected" : ""}
-                onClick={() => setZoneView(toggleZoneView(zoneView, { kind: "playerZone", playerId: "player", zone: "hand" }))}
-              >
-                <Icon icon="🃏" /> Hand {game.players.player.hand.length}
-              </button>
-              <button
-                type="button"
-                className={isZoneView(zoneView, "cpu", "discard") ? "selected" : ""}
-                onClick={() => setZoneView(toggleZoneView(zoneView, { kind: "playerZone", playerId: "cpu", zone: "discard" }))}
-              >
-                <Icon icon="🗂️" /> CPU {game.players.cpu.discard.length}
-              </button>
-              <button
-                type="button"
-                className={zoneView?.kind === "effects" ? "selected" : ""}
-                onClick={() => setZoneView(toggleZoneView(zoneView, { kind: "effects" }))}
-              >
-                <Icon icon="📜" /> Effects
-              </button>
-              <button
-                type="button"
-                className={zoneView?.kind === "cpuHistory" ? "selected" : ""}
-                onClick={() => setZoneView(toggleZoneView(zoneView, { kind: "cpuHistory" }))}
-              >
-                <Icon icon="🧠" /> CPU AI
-              </button>
-              <button
-                type="button"
-                className={zoneView?.kind === "aiLab" ? "selected" : ""}
-                onClick={() => setZoneView(toggleZoneView(zoneView, { kind: "aiLab" }))}
-              >
-                <Icon icon="📈" /> AI Lab
-              </button>
-              <button
-                type="button"
-                className={zoneView?.kind === "deckSetup" ? "selected" : ""}
-                onClick={() => setZoneView(toggleZoneView(zoneView, { kind: "deckSetup" }))}
-              >
-                <Icon icon="🧩" /> Decks
-              </button>
-              <button
-                type="button"
-                className={zoneView?.kind === "catalog" ? "selected" : ""}
-                onClick={() => setZoneView(toggleZoneView(zoneView, { kind: "catalog" }))}
-              >
-                <Icon icon="📚" /> Card Library
-              </button>
-            </div>
+            {infoPanelOpen && (
+              <div className="info-tools-stack" aria-label="info panels">
+                <div className="info-tools">
+                  <button
+                    type="button"
+                    className={isZoneView(zoneView, "player", "deck") ? "selected" : ""}
+                    onClick={() => toggleInfoZoneView({ kind: "playerZone", playerId: "player", zone: "deck" })}
+                  >
+                    <Icon icon="🂠" /> Deck {game.players.player.deck.length}
+                  </button>
+                  <button
+                    type="button"
+                    className={isZoneView(zoneView, "player", "discard") ? "selected" : ""}
+                    onClick={() => toggleInfoZoneView({ kind: "playerZone", playerId: "player", zone: "discard" })}
+                  >
+                    <Icon icon="🗂️" /> Discard {game.players.player.discard.length}
+                  </button>
+                  <button
+                    type="button"
+                    className={isZoneView(zoneView, "player", "hand") ? "selected" : ""}
+                    onClick={() => toggleInfoZoneView({ kind: "playerZone", playerId: "player", zone: "hand" })}
+                  >
+                    <Icon icon="🃏" /> Hand {game.players.player.hand.length}
+                  </button>
+                  <button
+                    type="button"
+                    className={isZoneView(zoneView, "cpu", "discard") ? "selected" : ""}
+                    onClick={() => toggleInfoZoneView({ kind: "playerZone", playerId: "cpu", zone: "discard" })}
+                  >
+                    <Icon icon="🗂️" /> CPU {game.players.cpu.discard.length}
+                  </button>
+                  <button
+                    type="button"
+                    className={zoneView?.kind === "effects" ? "selected" : ""}
+                    onClick={() => toggleInfoZoneView({ kind: "effects" })}
+                  >
+                    <Icon icon="📜" /> Effects
+                  </button>
+                  <button
+                    type="button"
+                    className={zoneView?.kind === "deckSetup" ? "selected" : ""}
+                    onClick={() => toggleInfoZoneView({ kind: "deckSetup" })}
+                  >
+                    <Icon icon="🧩" /> Decks
+                  </button>
+                </div>
+                <div className="info-tools info-tools-research">
+                  <button
+                    type="button"
+                    className={zoneView?.kind === "cpuHistory" ? "selected" : ""}
+                    onClick={() => toggleInfoZoneView({ kind: "cpuHistory" })}
+                  >
+                    <Icon icon="🧠" /> CPU AI
+                  </button>
+                  <button
+                    type="button"
+                    className={zoneView?.kind === "aiLab" ? "selected" : ""}
+                    onClick={() => toggleInfoZoneView({ kind: "aiLab" })}
+                  >
+                    <Icon icon="📈" /> AI Lab
+                  </button>
+                  <button
+                    type="button"
+                    className={zoneView?.kind === "catalog" ? "selected" : ""}
+                    onClick={() => toggleInfoZoneView({ kind: "catalog" })}
+                  >
+                    <Icon icon="📚" /> Card Library
+                  </button>
+                </div>
+              </div>
+            )}
           </section>
 
-          <div className="info-panel-body">
-            {zoneView?.kind === "deckSetup" ? (
-              <DeckSetupPanel
-                battleSettings={battleSettings}
-                deckSettings={deckSettings}
-                drafts={deckDrafts}
-                cardOptions={deckCardOptions}
-                pickerIds={deckPickerIds}
-                deckPresetPickerIds={deckPresetPickerIds}
-                deckPresetFilters={deckPresetFilters}
-                deckPresetSorts={deckPresetSorts}
-                activePlayerId={deckSetupTarget}
-                builtInMatchPresets={BUILT_IN_MATCH_PRESETS}
-                matchPresetId={matchPresetId}
-                savedBattlePresets={savedBattlePresets}
-                savedPresetId={savedPresetId}
-                battlePresetName={battlePresetName}
-                onClose={() => setZoneView(undefined)}
-                onBuiltInMatchPresetChange={handleApplyBuiltInMatchPreset}
-                onSavedPresetChange={handleLoadSavedBattlePreset}
-                onBattlePresetNameChange={setBattlePresetName}
-                onSaveBattlePreset={handleSaveBattlePreset}
-                onDeleteSavedBattlePreset={handleDeleteSavedBattlePreset}
-                onFixedChange={handleDeckFixedChange}
-                onAllowSpecialChange={handleDeckAllowSpecialChange}
-                onTextChange={handleDeckTextChange}
-                onUseGeneratedDeck={handleUseGeneratedDeckAsFixed}
-                onPickerChange={handleDeckPickerChange}
-                onAddCard={handleAddDeckCard}
-                onRemoveCard={handleRemoveDeckCard}
-                onActivePlayerChange={setDeckSetupTarget}
-                onDeckPresetPickerChange={handleDeckPresetPickerChange}
-                onDeckPresetFilterChange={handleDeckPresetFilterChange}
-                onDeckPresetSortChange={handleDeckPresetSortChange}
-              />
-            ) : zoneView?.kind === "aiLab" ? (
-              <AiLabPanel
-                suiteId={aiLabSuiteId}
-                onSuiteChange={setAiLabSuiteId}
-                onClose={() => setZoneView(undefined)}
-              />
-            ) : zoneView ? (
-              <CardZonePanel
-                game={game}
-                view={zoneView}
-                onClose={() => setZoneView(undefined)}
-              />
-            ) : (
-              <section className="zone-panel zone-empty-panel">
-                <div className="zone-panel-heading">
-                  <div>
-                    <h3><Icon icon="ℹ️" /> Info Panel</h3>
-                    <p>Deck、Effects、CPU、Card Libraryをここに表示します。</p>
-                  </div>
-                </div>
-                <p className="empty-zone"><Icon icon="☝️" /> 上のボタンから確認したい情報を選択してください。</p>
-              </section>
-            )}
-          </div>
+          {zoneView && (
+            <div className="info-panel-body">
+              {zoneView?.kind === "deckSetup" ? (
+                <DeckSetupPanel
+                  battleSettings={battleSettings}
+                  deckSettings={deckSettings}
+                  drafts={deckDrafts}
+                  cardOptions={deckCardOptions}
+                  pickerIds={deckPickerIds}
+                  deckPresetPickerIds={deckPresetPickerIds}
+                  deckPresetFilters={deckPresetFilters}
+                  deckPresetSorts={deckPresetSorts}
+                  activePlayerId={deckSetupTarget}
+                  builtInMatchPresets={BUILT_IN_MATCH_PRESETS}
+                  matchPresetId={matchPresetId}
+                  savedBattlePresets={savedBattlePresets}
+                  savedPresetId={savedPresetId}
+                  battlePresetName={battlePresetName}
+                  onClose={() => setZoneView(undefined)}
+                  onBuiltInMatchPresetChange={handleApplyBuiltInMatchPreset}
+                  onSavedPresetChange={handleLoadSavedBattlePreset}
+                  onBattlePresetNameChange={setBattlePresetName}
+                  onSaveBattlePreset={handleSaveBattlePreset}
+                  onDeleteSavedBattlePreset={handleDeleteSavedBattlePreset}
+                  onFixedChange={handleDeckFixedChange}
+                  onAllowSpecialChange={handleDeckAllowSpecialChange}
+                  onTextChange={handleDeckTextChange}
+                  onUseGeneratedDeck={handleUseGeneratedDeckAsFixed}
+                  onPickerChange={handleDeckPickerChange}
+                  onAddCard={handleAddDeckCard}
+                  onRemoveCard={handleRemoveDeckCard}
+                  onActivePlayerChange={setDeckSetupTarget}
+                  onDeckPresetPickerChange={handleDeckPresetPickerChange}
+                  onDeckPresetFilterChange={handleDeckPresetFilterChange}
+                  onDeckPresetSortChange={handleDeckPresetSortChange}
+                />
+              ) : zoneView?.kind === "aiLab" ? (
+                <AiLabPanel
+                  suiteId={aiLabSuiteId}
+                  onSuiteChange={setAiLabSuiteId}
+                  onClose={() => setZoneView(undefined)}
+                />
+              ) : zoneView ? (
+                <CardZonePanel
+                  game={game}
+                  view={zoneView}
+                  onClose={() => setZoneView(undefined)}
+                />
+              ) : null}
+            </div>
+          )}
         </aside>
 
         <div className="battle-area">
@@ -3359,7 +3432,7 @@ function findNextCardName(entry: string, start: number): { index: number; cardId
 }
 
 function tokenizeLogText(text: string): LogToken[] {
-  const pattern = /(Player|CPU|HP|Stone|ストーン|マスターアタック|ウェイクアップ|シールド|バーサクパワー|大地の怒り|ためた|召喚|登場|倒れた|山札切れ|判断:|ターン|引いた|使った|入れ替え|移動|レベルアップ|勝利)/g;
+  const pattern = /(Player|CPU|HP|Stone|ストーン|マスターアタック|ウェイクアップ|シールド|バーサクパワー|大地の怒り|ためた|召喚|登場|倒れた|撃破|山札切れ|判断:|ターン|引いた|使った|入れ替え|移動|レベルアップ|勝利|ダメージ|回復|コピー|ローテーション|リフレッシュ|手札|山札|Lv)/g;
   const tokens: LogToken[] = [];
   let cursor = 0;
   for (const match of text.matchAll(pattern)) {
@@ -3410,11 +3483,32 @@ function logKeywordToken(text: string): LogToken {
   if (text === "召喚" || text === "登場") {
     return { kind: "chip", icon: "🂠", text };
   }
-  if (text === "倒れた" || text === "山札切れ") {
+  if (text === "倒れた" || text === "撃破" || text === "山札切れ") {
     return { kind: "chip", icon: "💥", text };
   }
   if (text === "判断:") {
     return { kind: "chip", icon: "🧠", text };
+  }
+  if (text === "ダメージ") {
+    return { kind: "chip", icon: "💢", text };
+  }
+  if (text === "回復") {
+    return { kind: "chip", icon: "➕", text };
+  }
+  if (text === "コピー") {
+    return { kind: "chip", icon: "⧉", text };
+  }
+  if (text === "ローテーション" || text === "リフレッシュ") {
+    return { kind: "chip", icon: "🔁", text };
+  }
+  if (text === "手札") {
+    return { kind: "chip", icon: "🃏", text };
+  }
+  if (text === "山札") {
+    return { kind: "chip", icon: "🂠", text };
+  }
+  if (text === "Lv") {
+    return { kind: "chip", icon: "⬆", text };
   }
   if (text === "ターン") {
     return { kind: "chip", icon: "⏭️", text };

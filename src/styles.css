@@ -304,6 +304,11 @@ button:disabled {
   min-width: 0;
 }
 
+.info-panel.collapsed {
+  align-self: start;
+  grid-template-rows: auto;
+}
+
 .battle-area {
   align-items: start;
   display: grid;
@@ -835,6 +840,33 @@ button:disabled {
 .board-slot[draggable="true"],
 .hand-card[draggable="true"] {
   cursor: grab;
+}
+
+.board-slot[draggable="true"]::before,
+.hand-card[draggable="true"]::before {
+  background:
+    radial-gradient(circle, rgba(51, 67, 58, 0.62) 1px, transparent 1.5px) 0 0 / 5px 5px;
+  border-radius: 4px;
+  bottom: 6px;
+  content: "";
+  height: 10px;
+  left: 6px;
+  opacity: 0.52;
+  pointer-events: none;
+  position: absolute;
+  width: 16px;
+  z-index: 4;
+}
+
+.board-slot[draggable="true"]:hover::before,
+.hand-card[draggable="true"]:hover::before {
+  opacity: 0.9;
+}
+
+.board-slot[draggable="true"]:hover,
+.hand-card[draggable="true"]:hover {
+  outline: 1px solid rgba(47, 95, 145, 0.28);
+  outline-offset: -2px;
 }
 
 .board-slot[draggable="true"]:active,
@@ -1587,6 +1619,24 @@ button:disabled {
   justify-content: space-between;
 }
 
+.info-switcher-actions {
+  align-items: center;
+  display: inline-flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  justify-content: flex-end;
+}
+
+.info-panel-toggle {
+  min-height: 28px;
+  padding: 4px 7px;
+}
+
+.info-tools-stack {
+  display: grid;
+  gap: 6px;
+}
+
 .info-tools {
   display: grid;
   gap: 6px;
@@ -1608,6 +1658,23 @@ button:disabled {
 .info-tools button.selected {
   border-color: #2f5f91;
   box-shadow: inset 0 0 0 1px #2f5f91;
+}
+
+.info-tools-research {
+  border-top: 1px solid #d8dfd1;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  padding-top: 6px;
+}
+
+.info-tools-research button {
+  background: #f6f8f2;
+  border-color: #d5ddce;
+  color: #425147;
+}
+
+.info-panel.collapsed .info-switcher-panel {
+  gap: 0;
+  padding: 8px;
 }
 
 .info-panel-body {
@@ -4467,6 +4534,15 @@ button:disabled {
 
   .side-panel.action-priority {
     grid-template-rows: none;
+  }
+
+  .side-panel.action-priority .side-context-panel {
+    bottom: 8px;
+    max-height: min(48vh, 360px);
+    overflow-y: auto;
+    position: sticky;
+    top: auto;
+    z-index: 20;
   }
 
   .info-panel-body > .zone-panel {
