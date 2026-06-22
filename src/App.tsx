@@ -164,7 +164,7 @@ type DragPayload =
 type PendingDropAction =
   | { kind: "magic"; handInstanceId: string; target: Target }
   | { kind: "attackTarget"; attackerSlotKey: SlotKey; target: Target; commandIds: string[] }
-  | { kind: "masterTarget"; playerId: PlayerId; target: Target; masterActionIds: MasterActionId[]; magicHandInstanceIds: string[] }
+  | { kind: "masterTarget"; playerId: PlayerId; target: Target; masterActionIds: MasterActionId[] }
   | { kind: "move"; fromSlotKey: SlotKey; toSlotKey: SlotKey }
   | { kind: "focus"; slotKey: SlotKey };
 
@@ -2162,11 +2162,10 @@ export function App() {
         return undefined;
       }
       const masterActionIds = getMasterActionsTargetingTarget(game, target);
-      const magicHandInstanceIds = getMagicCardsTargetingTarget(game, target).map((card) => card.instanceId);
-      if (masterActionIds.length === 0 && magicHandInstanceIds.length === 0) {
+      if (masterActionIds.length === 0) {
         return undefined;
       }
-      return { kind: "masterTarget", playerId: payload.playerId, target, masterActionIds, magicHandInstanceIds };
+      return { kind: "masterTarget", playerId: payload.playerId, target, masterActionIds };
     }
 
     const source = game.slots[payload.slotKey];
@@ -2236,13 +2235,6 @@ export function App() {
       return;
     }
     applyChange((state) => useMasterAction(state, actionId, pendingDropAction.target));
-  }
-
-  function handlePendingMasterMagic(instanceId: string) {
-    if (!pendingDropAction || pendingDropAction.kind !== "masterTarget") {
-      return;
-    }
-    resolveMagicPrimaryTarget(instanceId, pendingDropAction.target);
   }
 
   function handleCancelInteraction() {
@@ -2528,7 +2520,6 @@ export function App() {
                   game={game}
                   onAttackCommand={handlePendingAttackCommand}
                   onMasterAction={handlePendingMasterAction}
-                  onMasterMagic={handlePendingMasterMagic}
                   onConfirm={handleConfirmPendingDropAction}
                   onCancel={handleCancelPendingDropAction}
                 />
@@ -3654,12 +3645,11 @@ function operationReasonFromPendingDrop(game: GameState, action: PendingDropActi
   }
   if (action.kind === "masterTarget") {
     const masterActionCount = getPendingMasterActions(game, action).length;
-    const magicCount = getPendingMasterMagicCards(game, action).length;
     return {
       icon: "🎮",
       label: "マスター操作",
-      text: `${targetLabel(game, action.target)}に対して、マスター特技${masterActionCount}件 / 手札マジック${magicCount}件から選べます。`,
-      tone: masterActionCount + magicCount > 0 ? "ok" : "warn",
+      text: `${targetLabel(game, action.target)}に対して、マスター特技${masterActionCount}件から選べます。`,
+      tone: masterActionCount > 0 ? "ok" : "warn",
     };
   }
   if (action.kind === "focus") {
@@ -3869,9 +3859,6 @@ function getPendingDropActionPreviews(game: GameState, action: PendingDropAction
           fallback: "マスター特技を解決します。",
           apply: () => useMasterAction(game, actionId, action.target),
         }),
-      ),
-      ...getPendingMasterMagicCards(game, action).map((card) =>
-        previewMagicAction(game, card.instanceId, action.target, `pending_master_magic_${card.instanceId}_${targetToKey(action.target)}`),
       ),
     ];
   }
@@ -4385,15 +4372,13 @@ interface PendingDropActionPanelProps {
   game: GameState;
   onAttackCommand: (commandId: string) => void;
   onMasterAction: (actionId: MasterActionId) => void;
-  onMasterMagic: (instanceId: string) => void;
   onConfirm: () => void;
   onCancel: () => void;
 }
 
-function PendingDropActionPanel({ action, game, onAttackCommand, onMasterAction, onMasterMagic, onConfirm, onCancel }: PendingDropActionPanelProps) {
+function PendingDropActionPanel({ action, game, onAttackCommand, onMasterAction, onConfirm, onCancel }: PendingDropActionPanelProps) {
   const attackCommands = action.kind === "attackTarget" ? getPendingAttackCommands(game, action) : [];
   const masterActions = action.kind === "masterTarget" ? getPendingMasterActions(game, action) : [];
-  const magicCards = action.kind === "masterTarget" ? getPendingMasterMagicCards(game, action) : [];
 
   return (
     <div className="pending-action">
@@ -4412,21 +4397,11 @@ function PendingDropActionPanel({ action, game, onAttackCommand, onMasterAction,
         </div>
       ) : action.kind === "masterTarget" ? (
         <div className="button-stack">
-          {masterActions.length > 0 && <span className="pending-action-section-label">Master</span>}
           {masterActions.map((actionId) => (
             <button type="button" key={actionId} onClick={() => onMasterAction(actionId)}>
               <Icon icon={masterActionIcon(actionId)} /> {masterActionLabel(actionId)} {getMasterActionCost(actionId)}
             </button>
           ))}
-          {magicCards.length > 0 && <span className="pending-action-section-label">Magic</span>}
-          {magicCards.map((card) => {
-            const def = getCardDef(card.cardId);
-            return (
-              <button type="button" key={card.instanceId} onClick={() => onMasterMagic(card.instanceId)}>
-                <CardIcon cardId={card.cardId} /> {getCardName(card.cardId)} {def.type === "magic" ? def.cost : ""}
-              </button>
-            );
-          })}
           <button type="button" onClick={onCancel}>
             <Icon icon="✕" /> キャンセル
           </button>
@@ -6904,8 +6879,7 @@ function pendingDropActionDescription(action: PendingDropAction, game: GameState
   }
   if (action.kind === "masterTarget") {
     const masterActionCount = getPendingMasterActions(game, action).length;
-    const magicCount = getPendingMasterMagicCards(game, action).length;
-    return `${targetLabel(game, action.target)}を対象に、マスター特技${masterActionCount}件・手札マジック${magicCount}件から選べます。`;
+    return `${targetLabel(game, action.target)}を対象に、マスター特技${masterActionCount}件から選べます。`;
   }
   if (action.kind === "move") {
     return `${slotMonsterLabel(game, action.fromSlotKey)} -> ${targetLabel(game, { kind: "monster", slotKey: action.toSlotKey })}`;
@@ -6926,27 +6900,12 @@ function getPendingMasterActions(game: GameState, action: Extract<PendingDropAct
     .filter((actionId) => action.masterActionIds.includes(actionId));
 }
 
-function getPendingMasterMagicCards(game: GameState, action: Extract<PendingDropAction, { kind: "masterTarget" }>): CardInstance[] {
-  const availableIds = new Set(action.magicHandInstanceIds);
-  return getMagicCardsTargetingTarget(game, action.target)
-    .filter((card) => availableIds.has(card.instanceId));
-}
-
 function getMasterActionsTargetingTarget(game: GameState, target: Target): MasterActionId[] {
   return getCurrentMasterActionIds(game)
     .filter((actionId) =>
       getMasterActionTargets(game, actionId)
         .some((candidateTarget) => targetToKey(candidateTarget) === targetToKey(target)),
     );
-}
-
-function getMagicCardsTargetingTarget(game: GameState, target: Target): CardInstance[] {
-  return game.players[game.currentPlayer].hand
-    .filter((card) => {
-      const def = getCardDef(card.cardId);
-      return def.type === "magic" && getMagicTargets(game, card.instanceId)
-        .some((candidateTarget) => targetToKey(candidateTarget) === targetToKey(target));
-    });
 }
 
 function getDragTargetKeys(game: GameState, payload: DragPayload, controlsDisabled: boolean): Set<string> {
@@ -6977,13 +6936,8 @@ function getDragTargetKeys(game: GameState, payload: DragPayload, controlsDisabl
     if (payload.playerId !== game.currentPlayer || game.players[payload.playerId].masterFrozen) {
       return new Set();
     }
-    const targets = [
-      ...getCurrentMasterActionIds(game).flatMap((actionId) => getMasterActionTargets(game, actionId)),
-      ...game.players[game.currentPlayer].hand.flatMap((card) => {
-        const def = getCardDef(card.cardId);
-        return def.type === "magic" ? getMagicTargets(game, card.instanceId) : [];
-      }),
-    ];
+    const targets = getCurrentMasterActionIds(game)
+      .flatMap((actionId) => getMasterActionTargets(game, actionId));
     return new Set(targets.map(targetToKey));
   }
 
