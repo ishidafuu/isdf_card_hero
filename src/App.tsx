@@ -129,15 +129,15 @@ const DEFAULT_CPU_DECK_PRESET_ID = "balanced-normal" satisfies DeckPresetId;
 const BATTLE_HISTORY_STORAGE_KEY = "card-hero:battle-history:v1";
 const BATTLE_PRESETS_STORAGE_KEY = "card-hero:battle-presets:v1";
 const BATTLE_HISTORY_LIMIT = 20;
-const CARD_BACK_IMAGE_URL = "https://www.cardhero-bu.com/static/images/icon/card.jpg";
+const CARD_BACK_IMAGE_URL = "/game-icons/card-back.jpg";
 const FIELD_BASE_IMAGE_URLS: Record<PlayerId, Record<Row, string>> = {
   cpu: {
-    front: "https://www.cardhero-bu.com/static/images/icon/ff1.jpg",
-    back: "https://www.cardhero-bu.com/static/images/icon/fb1.jpg",
+    front: "/game-icons/cpu-front.jpg",
+    back: "/game-icons/cpu-back.jpg",
   },
   player: {
-    front: "https://www.cardhero-bu.com/static/images/icon/ff2.jpg",
-    back: "https://www.cardhero-bu.com/static/images/icon/fb2.jpg",
+    front: "/game-icons/player-front.jpg",
+    back: "/game-icons/player-back.jpg",
   },
 };
 

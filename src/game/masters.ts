@@ -52,13 +52,13 @@ export const MASTER_DEFS: Record<MasterId, MasterDef> = {
     id: "white",
     name: "ホワイトマスター",
     actions: ["master_attack", "wake_up", "shield"],
-    iconUrl: "https://www.cardhero-bu.com/static/images/icon/m3.jpg",
+    iconUrl: "/game-icons/master-white.jpg",
   },
   black: {
     id: "black",
     name: "ブラックマスター",
     actions: ["master_attack", "berserk_power", "earth_anger"],
-    iconUrl: "https://www.cardhero-bu.com/static/images/icon/m2.jpg",
+    iconUrl: "/game-icons/master-black.jpg",
   },
 };
 
