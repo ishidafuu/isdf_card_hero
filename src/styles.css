@@ -1223,11 +1223,12 @@ button:disabled {
 }
 
 .side-panel {
-  align-self: start;
+  align-self: stretch;
   display: grid;
   gap: 12px;
   grid-area: side;
-  grid-template-rows: auto minmax(0, auto);
+  grid-template-rows: minmax(0, 1fr);
+  height: calc(100vh - 20px);
   max-height: calc(100vh - 20px);
   min-height: 0;
   min-width: 0;
@@ -1238,7 +1239,7 @@ button:disabled {
 }
 
 .side-panel.action-priority {
-  grid-template-rows: minmax(0, auto) auto minmax(0, auto);
+  grid-template-rows: minmax(0, auto) minmax(280px, 1fr);
 }
 
 .side-panel.action-priority .side-context-panel {
@@ -2149,10 +2150,13 @@ button:disabled {
 
 .log-panel.open {
   grid-template-rows: auto auto auto minmax(0, 1fr) auto;
-  height: 260px;
+  align-self: stretch;
+  height: auto;
+  min-height: 360px;
 }
 
 .log-panel.collapsed {
+  align-self: start;
   height: auto;
 }
 
@@ -4526,6 +4530,7 @@ button:disabled {
 
   .side-panel {
     grid-template-rows: none;
+    height: auto;
     max-height: none;
     order: 2;
     overflow-y: visible;
@@ -4534,6 +4539,10 @@ button:disabled {
 
   .side-panel.action-priority {
     grid-template-rows: none;
+  }
+
+  .log-panel.open {
+    min-height: 260px;
   }
 
   .side-panel.action-priority .side-context-panel {
