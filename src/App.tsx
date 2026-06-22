@@ -175,7 +175,7 @@ type ZoneView =
   | { kind: "aiLab" };
 type LogFilter = "all" | "battle" | "damage" | "support" | "turn" | "cpu";
 type BattleMode = "player-vs-cpu" | "cpu-vs-cpu";
-type TargetRole = "ally" | "enemy" | "move" | "summon" | "empty" | "master";
+type TargetRole = "ally" | "enemy" | "move" | "summon" | "empty" | "master" | "focus";
 type BoardAnchor =
   | { kind: "slot"; slotKey: SlotKey }
   | { kind: "master"; playerId: PlayerId };
@@ -373,6 +373,7 @@ const BOARD_ANCHOR_POINTS: Record<string, BoardPoint> = {
 interface DamageFlash {
   amount: number;
   defeated: boolean;
+  stoneDelta?: number;
 }
 
 interface SlotDamageFlash extends DamageFlash {
@@ -971,6 +972,7 @@ export function App() {
   const [error, setError] = useState<string>("");
   const [visualEffect, setVisualEffect] = useState<VisualEffect | undefined>();
   const [pointerDragging, setPointerDragging] = useState(false);
+  const [dragPayload, setDragPayload] = useState<DragPayload | undefined>();
   const [autoPlayEnabled, setAutoPlayEnabled] = useState(false);
   const [autoStepDelayMs, setAutoStepDelayMs] = useState(AUTO_STEP_DELAY_DEFAULT_MS);
   const [spectatorPauseOnAttention, setSpectatorPauseOnAttention] = useState(true);
@@ -1072,6 +1074,11 @@ export function App() {
     }
     return new Set<string>();
   }, [game, pendingDropAction, selection]);
+  const dragTargetKeys = useMemo(
+    () => (dragPayload ? getDragTargetKeys(game, dragPayload, controlsDisabled) : new Set<string>()),
+    [controlsDisabled, dragPayload, game],
+  );
+  const activeTargetKeys = dragPayload ? dragTargetKeys : targetKeys;
   const visibleLogEntries = useMemo(
     () =>
       game.log
@@ -1262,6 +1269,54 @@ export function App() {
     );
   }
 
+  function handleAdditionalHandChoice(instanceId: string): boolean {
+    const superOption = game.pendingLevelUp?.superOptions?.find((option) => option.handInstanceId === instanceId);
+    if (game.pendingLevelUp && superOption) {
+      applyChange((state) => resolveLevelUp(state, state.pendingLevelUp!.maxLevels, instanceId));
+      return true;
+    }
+
+    if (!selection) {
+      return false;
+    }
+
+    if (selection.kind === "magicHandChoice" && selection.choices.some((card) => card.instanceId === instanceId)) {
+      applyChange((state) =>
+        playMagic(state, {
+          handInstanceId: selection.handInstanceId,
+          target: selection.target,
+          secondaryHandInstanceId: instanceId,
+        }),
+      );
+      return true;
+    }
+
+    if (selection.kind === "commandHandChoice" && selection.choices.some((card) => card.instanceId === instanceId)) {
+      applyChange((state) =>
+        attackWithCommand(state, {
+          attackerSlotKey: selection.attackerSlotKey,
+          commandId: selection.commandId,
+          target: selection.target,
+          secondaryHandInstanceId: instanceId,
+        }),
+      );
+      return true;
+    }
+
+    if (selection.kind === "magicRefresh" && selection.choices.some((card) => card.instanceId === instanceId)) {
+      setSelection({
+        ...selection,
+        selectedIds: selection.selectedIds.includes(instanceId)
+          ? selection.selectedIds.filter((id) => id !== instanceId)
+          : [...selection.selectedIds, instanceId],
+      });
+      setError("");
+      return true;
+    }
+
+    return false;
+  }
+
   function handleSlotClick(slotKey: SlotKey) {
     if (consumeSuppressedClick()) {
       return;
@@ -1350,6 +1405,79 @@ export function App() {
     selectSlotForInfo(slotKey);
   }
 
+  function handleSlotDoubleClick(slotKey: SlotKey) {
+    if (controlsDisabled || game.currentPlayer !== "player" || game.winner || game.pendingLevelUp) {
+      return;
+    }
+    const monster = game.slots[slotKey].monster;
+    if (!monster || monster.owner !== game.currentPlayer || monster.status !== "active") {
+      return;
+    }
+    if (!canFocusMonster(game, slotKey)) {
+      return;
+    }
+    applyChange((state) => focusMonster(state, slotKey));
+  }
+
+  function handleTargetSelection(target: Target): boolean {
+    if (!selection) {
+      return false;
+    }
+    const key = targetToKey(target);
+
+    if (selection.kind === "hand") {
+      const handCard = getHandCard(game, selection.instanceId);
+      if (handCard && getCardDef(handCard.cardId).type === "monster" && target.kind === "monster" && canSummonTo(game, selection.instanceId, target.slotKey)) {
+        applyChange((state) => summonMonster(state, selection.instanceId, target.slotKey));
+        return true;
+      }
+      if (targetKeys.has(key)) {
+        resolveMagicPrimaryTarget(selection.instanceId, target);
+        return true;
+      }
+    }
+
+    if (selection.kind === "command" && targetKeys.has(key)) {
+      resolveCommandPrimaryTarget(selection.attackerSlotKey, selection.commandId, target);
+      return true;
+    }
+
+    if (selection.kind === "masterAction" && targetKeys.has(key)) {
+      applyChange((state) => useMasterAction(state, selection.actionId, target));
+      return true;
+    }
+
+    if (selection.kind === "move" && target.kind === "monster" && targetKeys.has(key)) {
+      applyChange((state) => moveMonster(state, selection.fromSlotKey, target.slotKey));
+      return true;
+    }
+
+    if (selection.kind === "magicSecondaryTarget" && targetKeys.has(key)) {
+      applyChange((state) =>
+        playMagic(state, {
+          handInstanceId: selection.handInstanceId,
+          target: selection.target,
+          secondaryTarget: target,
+        }),
+      );
+      return true;
+    }
+
+    if (selection.kind === "commandSecondaryTarget" && targetKeys.has(key)) {
+      applyChange((state) =>
+        attackWithCommand(state, {
+          attackerSlotKey: selection.attackerSlotKey,
+          commandId: selection.commandId,
+          target: selection.target,
+          secondaryTarget: target,
+        }),
+      );
+      return true;
+    }
+
+    return false;
+  }
+
   function selectSlotForInfo(slotKey: SlotKey) {
     setPendingDropAction(undefined);
     setSelection(game.slots[slotKey].monster ? { kind: "monster", slotKey } : undefined);
@@ -1364,6 +1492,9 @@ export function App() {
       return;
     }
     const target: Target = { kind: "master", playerId };
+    if (handleTargetSelection(target)) {
+      return;
+    }
     if (!game.winner && !game.pendingLevelUp) {
       if (selection?.kind === "masterAction" && targetKeys.has(targetToKey(target))) {
         applyChange((state) => useMasterAction(state, selection.actionId, target));
@@ -1682,6 +1813,11 @@ export function App() {
     }
     event.dataTransfer.effectAllowed = "move";
     event.dataTransfer.setData(DRAG_MIME, JSON.stringify(payload));
+    setDragPayload(payload);
+  }
+
+  function handleDragEnd() {
+    setDragPayload(undefined);
   }
 
   function handleHandPointerDown(event: ReactPointerEvent<HTMLButtonElement>, instanceId: string) {
@@ -1724,6 +1860,7 @@ export function App() {
       if (!current.dragging && distance >= 8) {
         current.dragging = true;
         setPointerDragging(true);
+        setDragPayload(current.payload);
       }
       if (current.dragging) {
         nativeEvent.preventDefault();
@@ -1767,6 +1904,7 @@ export function App() {
     pointerDragCleanupRef.current = undefined;
     pointerDragRef.current = undefined;
     setPointerDragging(false);
+    setDragPayload(undefined);
   }
 
   function suppressNextClick() {
@@ -1865,7 +2003,16 @@ export function App() {
   }
 
   function applyImmediateDropAction(payload: DragPayload, target: Target): boolean {
-    if (controlsDisabled || payload.kind !== "hand" || target.kind !== "monster") {
+    if (controlsDisabled) {
+      return false;
+    }
+
+    if (payload.kind === "monster" && target.kind === "monster" && payload.slotKey === target.slotKey && canFocusMonster(game, payload.slotKey)) {
+      applyChange((state) => focusMonster(state, payload.slotKey));
+      return true;
+    }
+
+    if (payload.kind !== "hand" || target.kind !== "monster") {
       return false;
     }
 
@@ -1875,12 +2022,12 @@ export function App() {
     }
 
     const def = getCardDef(handCard.cardId);
-    if (def.type !== "monster" || !canSummonTo(game, payload.instanceId, target.slotKey)) {
-      return false;
+    if (def.type === "monster" && canSummonTo(game, payload.instanceId, target.slotKey)) {
+      applyChange((state) => summonMonster(state, payload.instanceId, target.slotKey));
+      return true;
     }
 
-    applyChange((state) => summonMonster(state, payload.instanceId, target.slotKey));
-    return true;
+    return false;
   }
 
   function createPendingDropAction(payload: DragPayload, target: Target): PendingDropAction | undefined {
@@ -1901,7 +2048,7 @@ export function App() {
     }
 
     if (payload.kind === "master") {
-      if (payload.playerId !== game.currentPlayer || target.kind !== "monster") {
+      if (payload.playerId !== game.currentPlayer) {
         return undefined;
       }
       const masterActionIds = getMasterActionsTargetingTarget(game, target);
@@ -1937,14 +2084,7 @@ export function App() {
   }
 
   function canDragMonsterFromSlot(slotKey: SlotKey): boolean {
-    const monster = game.slots[slotKey].monster;
-    return (
-      !controlsDisabled &&
-      !!monster &&
-      monster.owner === game.currentPlayer &&
-      monster.status === "active" &&
-      monster.actionCount < monster.actionLimit
-    );
+    return !controlsDisabled && canDragMonsterFromGame(game, slotKey);
   }
 
   function handleConfirmPendingDropAction() {
@@ -2001,6 +2141,7 @@ export function App() {
     selection?.kind === "hand" ? currentPlayer.hand.find((card) => card.instanceId === selection.instanceId) : undefined;
   const infoWorkspaceOpen = isInfoWorkspaceView(zoneView);
   const hasOperationContext = Boolean(selection || pendingDropAction || error);
+  const endTurnWarning = getEndTurnWarning(game, controlsDisabled);
 
   function renderBattleControlPanel() {
     if (game.winner) {
@@ -2111,9 +2252,12 @@ export function App() {
                 </button>
               )}
               {!cpuVsCpu && (
-                <button type="button" onClick={handleEndTurn} disabled={controlsDisabled}>
+                <button type="button" className={endTurnWarning ? "end-turn-risk" : ""} onClick={handleEndTurn} disabled={controlsDisabled} title={endTurnWarning}>
                   <Icon icon="⏭️" /> End Turn
                 </button>
+              )}
+              {!cpuVsCpu && endTurnWarning && (
+                <span className="end-turn-warning"><Icon icon="⚠️" /> {endTurnWarning}</span>
               )}
             </div>
           </div>
@@ -2402,25 +2546,27 @@ export function App() {
                           key={cell.slotKey}
                           slotKey={cell.slotKey}
                           game={game}
-                          selected={isSelectedSourceSlot(selection, pendingDropAction, cell.slotKey)}
-                          targetable={targetKeys.has(`monster:${cell.slotKey}`)}
-                          targetRole={targetRoleForTarget(game, { kind: "monster", slotKey: cell.slotKey }, targetKeys, selection, pendingDropAction)}
+                          selected={isSelectedSourceSlot(selection, pendingDropAction, cell.slotKey) || dragPayload?.kind === "monster" && dragPayload.slotKey === cell.slotKey}
+                          targetable={activeTargetKeys.has(`monster:${cell.slotKey}`)}
+                          targetRole={targetRoleForTarget(game, { kind: "monster", slotKey: cell.slotKey }, activeTargetKeys, selection, pendingDropAction, dragPayload)}
                           preview={previewByTargetKey.get(`monster:${cell.slotKey}`)}
                           effectKind={visualEffect?.slots.includes(cell.slotKey) ? visualEffect.kind : undefined}
                           effectId={visualEffect?.id}
                           damageFlash={visualEffect?.slotDamageFlashes.find((flash) => flash.slotKey === cell.slotKey)}
                           draggable={canDragMonsterFromSlot(cell.slotKey)}
                           onDragStart={(event) => handleMonsterDragStart(event, cell.slotKey)}
+                          onDragEnd={handleDragEnd}
                           onPointerDown={(event) => handleMonsterPointerDown(event, cell.slotKey)}
                           onDragOver={handleDragOver}
                           onDrop={(event) => handleSlotDrop(event, cell.slotKey)}
                           onClick={() => handleSlotClick(cell.slotKey)}
+                          onDoubleClick={() => handleSlotDoubleClick(cell.slotKey)}
                         />
                       );
                     }
                     if (cell.kind === "master") {
                       const damageFlash = visualEffect?.masterDamageFlashes.find((flash) => flash.playerId === cell.playerId);
-                      const targetRole = targetRoleForTarget(game, { kind: "master", playerId: cell.playerId }, targetKeys, selection, pendingDropAction);
+                      const targetRole = targetRoleForTarget(game, { kind: "master", playerId: cell.playerId }, activeTargetKeys, selection, pendingDropAction, dragPayload);
                       const masterId = game.players[cell.playerId].masterId;
                       const masterLabel = `${cell.playerId === "cpu" ? "CPU" : "Player"} ${getMasterName(masterId)}`;
                       return (
@@ -2431,14 +2577,15 @@ export function App() {
                             "master",
                             cell.playerId === "cpu" ? "master-cpu" : "master-player",
                             `master-${masterId}`,
-                            isSelectedSourceMaster(selection, pendingDropAction, cell.playerId) ? "selected" : "",
-                            targetKeys.has(`master:${cell.playerId}`) ? "targetable" : "",
+                            isSelectedSourceMaster(selection, pendingDropAction, cell.playerId) || dragPayload?.kind === "master" && dragPayload.playerId === cell.playerId ? "selected" : "",
+                            activeTargetKeys.has(`master:${cell.playerId}`) ? "targetable" : "",
                             targetRole ? `target-${targetRole}` : "",
                             visualEffect?.masters.includes(cell.playerId) ? `effect-active effect-${visualEffect.kind}` : "",
                             damageFlash?.defeated ? "effect-defeated" : "",
                           ].join(" ")}
                           draggable={canDragMaster(cell.playerId)}
                           onDragStart={(event) => handleMasterDragStart(event, cell.playerId)}
+                          onDragEnd={handleDragEnd}
                           onPointerDown={(event) => handleMasterPointerDown(event, cell.playerId)}
                           onDragOver={handleDragOver}
                           onDrop={(event) => handleMasterDrop(event, cell.playerId)}
@@ -2483,33 +2630,46 @@ export function App() {
               </div>
             </div>
             <div className="hand-list">
-              {currentPlayer.hand.map((card) => (
-                <button
-                  type="button"
-                  key={card.instanceId}
-                  className={`hand-card ${isSelectedSourceHand(selection, pendingDropAction, card.instanceId) ? "selected" : ""}`}
-                  draggable={!controlsDisabled}
-                  onDragStart={(event) => handleHandDragStart(event, card.instanceId)}
-                  onPointerDown={(event) => handleHandPointerDown(event, card.instanceId)}
-                  onClick={() => {
-                    if (consumeSuppressedClick()) {
-                      return;
-                    }
-                    setPendingDropAction(undefined);
-                    setSelection({ kind: "hand", instanceId: card.instanceId });
-                    setError("");
-                  }}
-                  disabled={controlsDisabled}
-                >
-                  <HandCardContent cardId={card.cardId} />
-                </button>
-              ))}
+              {currentPlayer.hand.map((card) => {
+                const handChoiceState = handChoiceStateFor(game, selection, card.instanceId);
+                const selectableDuringInterrupt = handChoiceState === "level-up-super";
+                return (
+                  <button
+                    type="button"
+                    key={card.instanceId}
+                    className={[
+                      "hand-card",
+                      isSelectedSourceHand(selection, pendingDropAction, card.instanceId) ? "selected" : "",
+                      dragPayload?.kind === "hand" && dragPayload.instanceId === card.instanceId ? "selected" : "",
+                      handChoiceState ? `hand-${handChoiceState}` : "",
+                    ].join(" ")}
+                    draggable={!controlsDisabled}
+                    onDragStart={(event) => handleHandDragStart(event, card.instanceId)}
+                    onDragEnd={handleDragEnd}
+                    onPointerDown={(event) => handleHandPointerDown(event, card.instanceId)}
+                    onClick={() => {
+                      if (consumeSuppressedClick()) {
+                        return;
+                      }
+                      if (handleAdditionalHandChoice(card.instanceId)) {
+                        return;
+                      }
+                      setPendingDropAction(undefined);
+                      setSelection({ kind: "hand", instanceId: card.instanceId });
+                      setError("");
+                    }}
+                    disabled={controlsDisabled && !selectableDuringInterrupt}
+                  >
+                    <HandCardContent cardId={card.cardId} />
+                  </button>
+                );
+              })}
             </div>
             </section>
           </div>
         </div>
 
-        <aside className="side-panel">
+        <aside className={`side-panel ${hasOperationContext || game.pendingLevelUp ? "action-priority" : ""}`}>
           <section className="log-panel">
             <div className="log-heading">
               <h2>Log</h2>
@@ -2577,6 +2737,7 @@ export function App() {
                 pendingDropAction={pendingDropAction}
                 previews={actionPreviews}
                 error={error}
+                onTargetClick={handleTargetSelection}
               />
             </section>
           ) : isAdditionalChoiceSelection(selection) ? (
@@ -2677,6 +2838,7 @@ export function App() {
                 pendingDropAction={pendingDropAction}
                 previews={actionPreviews}
                 error={error}
+                onTargetClick={handleTargetSelection}
               />
             </section>
           ) : isTargetActionSelection(selection) ? (
@@ -2688,6 +2850,7 @@ export function App() {
                 previews={actionPreviews}
                 error={error}
                 onCancel={handleCancelPendingDropAction}
+                onTargetClick={handleTargetSelection}
               />
             </section>
           ) : selectedMasterPlayerId ? (
@@ -2709,6 +2872,7 @@ export function App() {
                 pendingDropAction={pendingDropAction}
                 previews={actionPreviews}
                 error={error}
+                onTargetClick={handleTargetSelection}
               />
             </section>
           ) : selectedMonster && selection?.kind === "monster" ? (
@@ -2735,6 +2899,7 @@ export function App() {
                 pendingDropAction={pendingDropAction}
                 previews={actionPreviews}
                 error={error}
+                onTargetClick={handleTargetSelection}
               />
             </section>
           ) : selectedHand ? (
@@ -2751,6 +2916,7 @@ export function App() {
                 pendingDropAction={pendingDropAction}
                 previews={actionPreviews}
                 error={error}
+                onTargetClick={handleTargetSelection}
               />
             </section>
           ) : error ? (
@@ -2762,6 +2928,7 @@ export function App() {
                 previews={actionPreviews}
                 error={error}
                 onCancel={handleCancelPendingDropAction}
+                onTargetClick={handleTargetSelection}
               />
             </section>
           ) : null}
@@ -2772,7 +2939,15 @@ export function App() {
   );
 }
 
-function TargetSelectionSummary({ selection, game }: { selection: Selection | undefined; game: GameState }) {
+function TargetSelectionSummary({
+  selection,
+  game,
+  onTargetClick,
+}: {
+  selection: Selection | undefined;
+  game: GameState;
+  onTargetClick?: (target: Target) => void;
+}) {
   if (selection?.kind === "hand") {
     const card = getHandCard(game, selection.instanceId);
     if (!card) {
@@ -2796,7 +2971,7 @@ function TargetSelectionSummary({ selection, game }: { selection: Selection | un
         <div className="target-summary">
           <strong><CardIcon cardId={card.cardId} /> {getCardName(card.cardId)}</strong>
           <span>召喚 / Cost 1</span>
-          <TargetChipList game={game} targets={targets} />
+          <TargetChipList game={game} targets={targets} onTargetClick={onTargetClick} />
         </div>
       );
     }
@@ -2805,7 +2980,7 @@ function TargetSelectionSummary({ selection, game }: { selection: Selection | un
       <div className="target-summary">
         <strong><CardIcon cardId={card.cardId} /> {getCardName(card.cardId)}</strong>
         <span>マジック / Cost {def.cost}</span>
-        <TargetChipList game={game} targets={targets} />
+        <TargetChipList game={game} targets={targets} onTargetClick={onTargetClick} />
       </div>
     );
   }
@@ -2821,7 +2996,7 @@ function TargetSelectionSummary({ selection, game }: { selection: Selection | un
         <strong><Icon icon={commandIcon(command)} /> {command.name} {command.power}P</strong>
         <span>{slotMonsterLabel(game, selection.attackerSlotKey)}</span>
         <span>{commandActionSummary(command)}</span>
-        <TargetChipList game={game} targets={selection.targets} />
+        <TargetChipList game={game} targets={selection.targets} onTargetClick={onTargetClick} />
       </div>
     );
   }
@@ -2832,7 +3007,7 @@ function TargetSelectionSummary({ selection, game }: { selection: Selection | un
         <strong><Icon icon="🧭" /> Move / Swap</strong>
         <span>{slotMonsterLabel(game, selection.fromSlotKey)}</span>
         <span>自陣内の空き枠または味方と入れ替え</span>
-        <TargetChipList game={game} targets={selection.targets.map((slotKey) => ({ kind: "monster", slotKey }))} />
+        <TargetChipList game={game} targets={selection.targets.map((slotKey) => ({ kind: "monster", slotKey }))} onTargetClick={onTargetClick} />
       </div>
     );
   }
@@ -2842,7 +3017,17 @@ function TargetSelectionSummary({ selection, game }: { selection: Selection | un
       <div className="target-summary">
         <strong><Icon icon={masterActionIcon(selection.actionId)} /> {masterActionLabel(selection.actionId)}</strong>
         <span>Cost {getMasterActionCost(selection.actionId)}</span>
-        <TargetChipList game={game} targets={selection.targets} />
+        <TargetChipList game={game} targets={selection.targets} onTargetClick={onTargetClick} />
+      </div>
+    );
+  }
+
+  if (selection?.kind === "magicSecondaryTarget" || selection?.kind === "commandSecondaryTarget") {
+    return (
+      <div className="target-summary">
+        <strong><Icon icon="🎯" /> 追加対象</strong>
+        <span>第一対象: {targetLabel(game, selection.target)}</span>
+        <TargetChipList game={game} targets={selection.targets} onTargetClick={onTargetClick} />
       </div>
     );
   }
@@ -2850,13 +3035,27 @@ function TargetSelectionSummary({ selection, game }: { selection: Selection | un
   return null;
 }
 
-function TargetChipList({ game, targets }: { game: GameState; targets: Target[] }) {
+function TargetChipList({
+  game,
+  targets,
+  onTargetClick,
+}: {
+  game: GameState;
+  targets: Target[];
+  onTargetClick?: (target: Target) => void;
+}) {
   const visibleTargets = targets.slice(0, 8);
   return (
     <span className="target-chip-list">
       <span className="target-count">候補 {targets.length}</span>
       {visibleTargets.map((target) => (
-        <span className="target-chip" key={targetToKey(target)}>{targetLabel(game, target)}</span>
+        onTargetClick ? (
+          <button type="button" className="target-chip target-chip-button" key={targetToKey(target)} onClick={() => onTargetClick(target)}>
+            {targetLabel(game, target)}
+          </button>
+        ) : (
+          <span className="target-chip" key={targetToKey(target)}>{targetLabel(game, target)}</span>
+        )
       ))}
       {targets.length > visibleTargets.length && <span className="target-chip">+{targets.length - visibleTargets.length}</span>}
     </span>
@@ -2876,9 +3075,10 @@ interface ActionDetailContextProps {
   previews: ActionPreview[];
   error: string;
   onCancel?: () => void;
+  onTargetClick?: (target: Target) => void;
 }
 
-function ActionDetailContext({ game, selection, pendingDropAction, previews, error, onCancel }: ActionDetailContextProps) {
+function ActionDetailContext({ game, selection, pendingDropAction, previews, error, onCancel, onTargetClick }: ActionDetailContextProps) {
   if (!selection && !pendingDropAction && !error && previews.length === 0) {
     return null;
   }
@@ -2886,7 +3086,7 @@ function ActionDetailContext({ game, selection, pendingDropAction, previews, err
 
   return (
     <div className="action-detail-context">
-      <TargetSelectionSummary selection={selection} game={game} />
+      <TargetSelectionSummary selection={selection} game={game} onTargetClick={onTargetClick} />
       <ActionPreviewPanel previews={previews} />
       {showReason && (
         <OperationReasonPanel
@@ -3634,7 +3834,7 @@ function getNextActionCues(game: GameState, controlsDisabled: boolean): NextActi
   const magic = countPlayableMagic(game);
   const monsterActions = countMonsterActions(game);
   const masterActions = countPlayableMasterActions(game);
-  const hpDraw = game.players.player.deck.length > 0 ? 1 : 0;
+  const hpDraw = getMasterHpDrawDisabledReason(game, "player", false) ? 0 : 1;
   const activeTotal = summon + magic + monsterActions.attack + monsterActions.move + monsterActions.focus + masterActions + hpDraw;
   return [
     { icon: "🂠", label: "Summon", value: String(summon), tone: summon > 0 ? "ok" : undefined },
@@ -3686,6 +3886,29 @@ function countPlayableMasterActions(game: GameState): number {
   return getCurrentMasterActionIds(game).filter((actionId) =>
     getMasterActionCost(actionId) <= game.players.player.stones && getMasterActionTargets(game, actionId).length > 0,
   ).length;
+}
+
+function getEndTurnWarning(game: GameState, controlsDisabled: boolean): string | undefined {
+  if (controlsDisabled || game.currentPlayer !== "player" || game.winner || game.pendingLevelUp) {
+    return undefined;
+  }
+  const summon = countPlayableSummons(game);
+  const magic = countPlayableMagic(game);
+  const monsterActions = countMonsterActions(game);
+  const masterActions = countPlayableMasterActions(game);
+  const hpDraw = getMasterHpDrawDisabledReason(game, "player", false) ? 0 : 1;
+  const parts = [
+    monsterActions.attack > 0 ? `攻撃${monsterActions.attack}` : "",
+    monsterActions.focus > 0 ? `ためる${monsterActions.focus}` : "",
+    monsterActions.move > 0 ? `移動${monsterActions.move}` : "",
+    summon > 0 ? `召喚${summon}` : "",
+    magic > 0 ? `魔法${magic}` : "",
+    masterActions + hpDraw > 0 ? `マスター${masterActions + hpDraw}` : "",
+  ].filter(Boolean);
+  if (parts.length === 0) {
+    return undefined;
+  }
+  return `未使用: ${parts.slice(0, 3).join(" / ")}${parts.length > 3 ? " ほか" : ""}`;
 }
 
 function BattleResultSummary({ game }: { game: GameState }) {
@@ -4083,7 +4306,7 @@ function AdditionalChoicePanel({
     return (
       <div className="selected-detail">
         <h3><Icon icon="🎯" /> 追加対象を選択</h3>
-        <p className="hint">候補マスをクリックして確定します。</p>
+        <p className="hint">候補マス、または下の対象チップをクリックして確定します。</p>
         <div className="card-meta-row">
           <span>第一対象: {targetLabel(game, selection.target)}</span>
           <span>候補 {selection.targets.length}</span>
@@ -4104,7 +4327,7 @@ function AdditionalChoicePanel({
     return (
       <div className="selected-detail">
         <h3><Icon icon="🃏" /> 入れ替える手札</h3>
-        <p className="hint">{targetLabel(game, selection.target)} と入れ替えるカードを選びます。</p>
+        <p className="hint">{targetLabel(game, selection.target)} と入れ替えるカードを選びます。手札カード本体からも選べます。</p>
         <div className="button-stack">
           {selection.choices.map((card) => (
             <button type="button" key={card.instanceId} onClick={() => onMagicHand(card.instanceId)}>
@@ -4121,7 +4344,7 @@ function AdditionalChoicePanel({
     return (
       <div className="selected-detail">
         <h3><Icon icon="🃏" /> ソウルスイッチ</h3>
-        <p className="hint">入れ替える手札のモンスターを選びます。</p>
+        <p className="hint">入れ替える手札のモンスターを選びます。手札カード本体からも選べます。</p>
         <div className="button-stack">
           {selection.choices.map((card) => (
             <button type="button" key={card.instanceId} onClick={() => onCommandHand(card.instanceId)}>
@@ -4138,7 +4361,7 @@ function AdditionalChoicePanel({
     return (
       <div className="selected-detail">
         <h3><Icon icon="🔁" /> リフレッシュ</h3>
-        <p className="hint">捨てるカードを選び、同じ枚数を引きます。</p>
+        <p className="hint">捨てるカードを選び、同じ枚数を引きます。手札カード本体でも選択を切り替えられます。</p>
         <div className="button-stack">
           {selection.choices.map((card) => (
             <button
@@ -5700,10 +5923,12 @@ interface BoardSlotProps {
   damageFlash?: DamageFlash;
   draggable: boolean;
   onDragStart: (event: DragEvent<HTMLButtonElement>) => void;
+  onDragEnd: () => void;
   onPointerDown: (event: ReactPointerEvent<HTMLButtonElement>) => void;
   onDragOver: (event: DragEvent<HTMLButtonElement>) => void;
   onDrop: (event: DragEvent<HTMLButtonElement>) => void;
   onClick: () => void;
+  onDoubleClick: () => void;
 }
 
 function BoardActionOverlay({ action, effectId }: { action: BoardActionEffect; effectId: number }) {
@@ -5783,10 +6008,12 @@ function BoardSlot({
   damageFlash,
   draggable,
   onDragStart,
+  onDragEnd,
   onPointerDown,
   onDragOver,
   onDrop,
   onClick,
+  onDoubleClick,
 }: BoardSlotProps) {
   const slot = game.slots[slotKey];
   const monster = slot.monster;
@@ -5797,6 +6024,8 @@ function BoardSlot({
   const visibleMonsterCardId = visibleMonster && !prepared ? visibleMonster.cardId : undefined;
   const showCardBack = Boolean(monster && prepared);
   const monsterStatusBadges = visibleMonster ? getBoardStatusBadges(visibleMonster) : [];
+  const visibleStatusBadges = monsterStatusBadges.slice(0, 4);
+  const hiddenStatusBadgeCount = monsterStatusBadges.length - visibleStatusBadges.length;
   const actionSpent =
     visibleMonster?.owner === "player" &&
     visibleMonster.status === "active" &&
@@ -5819,10 +6048,12 @@ function BoardSlot({
       data-slot-key={slotKey}
       draggable={draggable}
       onDragStart={onDragStart}
+      onDragEnd={onDragEnd}
       onPointerDown={onPointerDown}
       onDragOver={onDragOver}
       onDrop={onDrop}
       onClick={onClick}
+      onDoubleClick={onDoubleClick}
     >
       <FieldBaseArt slotKey={slotKey} cardId={visibleMonsterCardId} showCardBack={showCardBack} />
       <span className="slot-label">{label}</span>
@@ -5839,7 +6070,7 @@ function BoardSlot({
           </span>
           {monsterStatusBadges.length > 0 && (
             <span className="board-effect-row">
-              {monsterStatusBadges.map((badge) => (
+              {visibleStatusBadges.map((badge) => (
                 <span
                   className={["board-effect-chip", badge.className ?? ""].join(" ")}
                   title={badge.label}
@@ -5849,6 +6080,11 @@ function BoardSlot({
                   {badge.icon}
                 </span>
               ))}
+              {hiddenStatusBadgeCount > 0 && (
+                <span className="board-effect-chip board-effect-more" title={monsterStatusBadges.slice(4).map((badge) => badge.label).join(" / ")}>
+                  +{hiddenStatusBadgeCount}
+                </span>
+              )}
             </span>
           )}
         </span>
@@ -5864,10 +6100,14 @@ function BoardSlot({
 
 function getBoardStatusBadges(monster: MonsterState): Array<{ icon: string; label: string; className?: string }> {
   return [
-    monster.damageGuarded ? { icon: "仮", label: "仮死状態", className: "guarded" } : undefined,
+    monster.commandSealed ? { icon: "封", label: "特技封印" } : undefined,
+    monster.cannotActUntilDamaged ? { icon: "眠", label: "行動不可" } : undefined,
+    monster.cannotMove ? { icon: "⛔", label: "移動不可" } : undefined,
+    monster.provokeTargetSlotKey ? { icon: "囮", label: "挑発" } : undefined,
     monster.focused ? { icon: "💪", label: "気合い" } : undefined,
     monster.powerUp ? { icon: "⬆️", label: "パワー+1" } : undefined,
     monster.berserkPower ? { icon: "🔥", label: "バーサク" } : undefined,
+    monster.damageGuarded ? { icon: "仮", label: "仮死状態", className: "guarded" } : undefined,
     monster.shielded ? { icon: "🛡️", label: "盾" } : undefined,
     monster.halfShielded ? { icon: "🛡️", label: "半減盾" } : undefined,
     monster.oneShotShield ? { icon: "◇", label: "一回盾" } : undefined,
@@ -5875,16 +6115,12 @@ function getBoardStatusBadges(monster: MonsterState): Array<{ icon: string; labe
     monster.immune ? { icon: "◎", label: "無敵" } : undefined,
     monster.dodgeChance ? { icon: "💨", label: "回避" } : undefined,
     monster.levelFixed ? { icon: "🔒", label: "レベル固定" } : undefined,
-    monster.cannotMove ? { icon: "⛔", label: "移動不可" } : undefined,
-    monster.commandSealed ? { icon: "封", label: "特技封印" } : undefined,
-    monster.cannotActUntilDamaged ? { icon: "眠", label: "行動不可" } : undefined,
     monster.canAttackAnywhere ? { icon: "🎯", label: "どこでも攻撃" } : undefined,
     monster.reviveOnDefeat ? { icon: "↩", label: "復活" } : undefined,
     monster.scapegoat ? { icon: "身", label: "身代わり" } : undefined,
     monster.shadowCursed ? { icon: "影", label: "影呪い" } : undefined,
     monster.stoneCurse ? { icon: "石", label: "石呪い" } : undefined,
     monster.damageCurse ? { icon: "痛", label: "ダメージ呪い" } : undefined,
-    monster.provokeTargetSlotKey ? { icon: "囮", label: "挑発" } : undefined,
     monster.deathChainSlotKey ? { icon: "鎖", label: "道連れ" } : undefined,
     monster.darkHoleSlotKey ? { icon: "穴", label: "ブラックホール" } : undefined,
     monster.stoneCostMultiplier && monster.stoneCostMultiplier > 1 ? { icon: "🪨", label: `石コストx${monster.stoneCostMultiplier}` } : undefined,
@@ -5930,6 +6166,7 @@ function DamageBubble({ flash }: { flash?: DamageFlash }) {
   return (
     <span className={`damage-bubble ${flash.defeated ? "damage-bubble-ko" : ""}`} aria-hidden="true">
       <span className="damage-value">-{flash.amount}</span>
+      {flash.stoneDelta ? <span className="damage-stone-value">Stone +{flash.stoneDelta}</span> : null}
       {flash.defeated && <strong className="damage-ko-label">KO</strong>}
     </span>
   );
@@ -6382,6 +6619,26 @@ function isSelectedSourceHand(selection: Selection | undefined, action: PendingD
   return selection?.kind === "hand" && selection.instanceId === instanceId;
 }
 
+function handChoiceStateFor(
+  game: GameState,
+  selection: Selection | undefined,
+  instanceId: string,
+): "choice-target" | "choice-selected" | "level-up-super" | undefined {
+  if (game.pendingLevelUp?.superOptions?.some((option) => option.handInstanceId === instanceId)) {
+    return "level-up-super";
+  }
+  if (selection?.kind === "magicRefresh" && selection.choices.some((card) => card.instanceId === instanceId)) {
+    return selection.selectedIds.includes(instanceId) ? "choice-selected" : "choice-target";
+  }
+  if (
+    (selection?.kind === "magicHandChoice" || selection?.kind === "commandHandChoice") &&
+    selection.choices.some((card) => card.instanceId === instanceId)
+  ) {
+    return "choice-target";
+  }
+  return undefined;
+}
+
 function isSelectedSourceMaster(selection: Selection | undefined, action: PendingDropAction | undefined, playerId: PlayerId): boolean {
   if (action?.kind === "masterTarget") {
     return action.playerId === playerId;
@@ -6407,7 +6664,7 @@ function pendingDropActionTitle(action: PendingDropAction): string {
     return "マジック";
   }
   if (action.kind === "masterTarget") {
-    return "Master / Magic";
+    return "この対象にできる行動";
   }
   if (action.kind === "move") {
     return "Move / Swap";
@@ -6422,7 +6679,7 @@ function pendingDropActionDescription(action: PendingDropAction, game: GameState
   if (action.kind === "masterTarget") {
     const masterActionCount = getPendingMasterActions(game, action).length;
     const magicCount = getPendingMasterMagicCards(game, action).length;
-    return `${playerLabel(action.playerId)}マスター -> ${targetLabel(game, action.target)} / Master ${masterActionCount}・Magic ${magicCount}`;
+    return `${targetLabel(game, action.target)}を対象に、マスター特技${masterActionCount}件・手札マジック${magicCount}件から選べます。`;
   }
   if (action.kind === "move") {
     return `${slotMonsterLabel(game, action.fromSlotKey)} -> ${targetLabel(game, { kind: "monster", slotKey: action.toSlotKey })}`;
@@ -6463,6 +6720,56 @@ function getMagicCardsTargetingTarget(game: GameState, target: Target): CardInst
     });
 }
 
+function getDragTargetKeys(game: GameState, payload: DragPayload, controlsDisabled: boolean): Set<string> {
+  if (controlsDisabled) {
+    return new Set();
+  }
+
+  if (payload.kind === "hand") {
+    const handCard = getHandCard(game, payload.instanceId);
+    if (!handCard) {
+      return new Set();
+    }
+    const def = getCardDef(handCard.cardId);
+    if (def.type === "monster") {
+      if (getCardPool(def) === "special") {
+        return new Set();
+      }
+      return new Set(
+        BOARD_SLOT_KEYS
+          .filter((slotKey) => canSummonTo(game, payload.instanceId, slotKey))
+          .map((slotKey) => `monster:${slotKey}`),
+      );
+    }
+    return new Set(getMagicTargets(game, payload.instanceId).map(targetToKey));
+  }
+
+  if (payload.kind === "master") {
+    if (payload.playerId !== game.currentPlayer || game.players[payload.playerId].masterFrozen) {
+      return new Set();
+    }
+    const targets = [
+      ...getCurrentMasterActionIds(game).flatMap((actionId) => getMasterActionTargets(game, actionId)),
+      ...game.players[game.currentPlayer].hand.flatMap((card) => {
+        const def = getCardDef(card.cardId);
+        return def.type === "magic" ? getMagicTargets(game, card.instanceId) : [];
+      }),
+    ];
+    return new Set(targets.map(targetToKey));
+  }
+
+  if (!canDragMonsterFromGame(game, payload.slotKey)) {
+    return new Set();
+  }
+  const targets: Target[] = [
+    ...(canFocusMonster(game, payload.slotKey) ? [{ kind: "monster", slotKey: payload.slotKey } as Target] : []),
+    ...getMovableTargets(game, payload.slotKey).map<Target>((slotKey) => ({ kind: "monster", slotKey })),
+    ...getMonsterCommands(game.slots[payload.slotKey].monster!)
+      .flatMap((command) => getCommandTargets(game, payload.slotKey, command.id)),
+  ];
+  return new Set(targets.map(targetToKey));
+}
+
 function getCommandsTargetingTarget(game: GameState, attackerSlotKey: SlotKey, target: Target): CommandDef[] {
   const monster = game.slots[attackerSlotKey].monster;
   if (!monster) {
@@ -6473,6 +6780,16 @@ function getCommandsTargetingTarget(game: GameState, attackerSlotKey: SlotKey, t
       getCommandTargets(game, attackerSlotKey, command.id)
         .some((candidateTarget) => targetToKey(candidateTarget) === targetToKey(target)),
     );
+}
+
+function canDragMonsterFromGame(game: GameState, slotKey: SlotKey): boolean {
+  const monster = game.slots[slotKey].monster;
+  return (
+    !!monster &&
+    monster.owner === game.currentPlayer &&
+    monster.status === "active" &&
+    monster.actionCount < monster.actionLimit
+  );
 }
 
 function handCardLabel(game: GameState, instanceId: string): string {
@@ -6498,9 +6815,13 @@ function targetRoleForTarget(
   targetKeys: Set<string>,
   selection: Selection | undefined,
   action: PendingDropAction | undefined,
+  dragPayload?: DragPayload,
 ): TargetRole | undefined {
   if (!targetKeys.has(targetToKey(target))) {
     return undefined;
+  }
+  if (dragPayload) {
+    return targetRoleForDragTarget(game, target, dragPayload);
   }
   if (selection?.kind === "move" || action?.kind === "move") {
     return "move";
@@ -6509,6 +6830,31 @@ function targetRoleForTarget(
     const handCard = getHandCard(game, selection.instanceId);
     if (handCard && getCardDef(handCard.cardId).type === "monster") {
       return "summon";
+    }
+  }
+  if (target.kind === "master") {
+    return "master";
+  }
+  const slot = game.slots[target.slotKey];
+  if (!slot.monster) {
+    return "empty";
+  }
+  return slot.monster.owner === game.currentPlayer ? "ally" : "enemy";
+}
+
+function targetRoleForDragTarget(game: GameState, target: Target, payload: DragPayload): TargetRole {
+  if (payload.kind === "hand") {
+    const handCard = getHandCard(game, payload.instanceId);
+    if (handCard && getCardDef(handCard.cardId).type === "monster") {
+      return "summon";
+    }
+  }
+  if (payload.kind === "monster" && target.kind === "monster") {
+    if (target.slotKey === payload.slotKey && canFocusMonster(game, payload.slotKey)) {
+      return "focus";
+    }
+    if (getMovableTargets(game, payload.slotKey).includes(target.slotKey)) {
+      return "move";
     }
   }
   if (target.kind === "master") {
@@ -6536,6 +6882,9 @@ function targetRoleLabel(role: TargetRole): string {
   }
   if (role === "master") {
     return "マスター";
+  }
+  if (role === "focus") {
+    return "ためる";
   }
   return "空き枠";
 }
@@ -7066,7 +7415,13 @@ function createSlotDamageFlashes(
 function createMasterDamageFlashes(previous: GameState, next: GameState): MasterDamageFlash[] {
   return PLAYER_IDS.flatMap((playerId) => {
     const amount = previous.players[playerId].masterHp - next.players[playerId].masterHp;
-    const flash: MasterDamageFlash = { playerId, amount, defeated: next.players[playerId].masterHp <= 0 };
+    const stoneDelta = next.players[playerId].stones - previous.players[playerId].stones;
+    const flash: MasterDamageFlash = {
+      playerId,
+      amount,
+      defeated: next.players[playerId].masterHp <= 0,
+      stoneDelta: stoneDelta > 0 ? stoneDelta : undefined,
+    };
     return amount > 0 ? [flash] : [];
   });
 }
