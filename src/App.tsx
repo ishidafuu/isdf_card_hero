@@ -165,7 +165,8 @@ type PendingDropAction =
   | { kind: "magic"; handInstanceId: string; target: Target }
   | { kind: "attackTarget"; attackerSlotKey: SlotKey; target: Target; commandIds: string[] }
   | { kind: "masterTarget"; playerId: PlayerId; target: Target; masterActionIds: MasterActionId[]; magicHandInstanceIds: string[] }
-  | { kind: "move"; fromSlotKey: SlotKey; toSlotKey: SlotKey };
+  | { kind: "move"; fromSlotKey: SlotKey; toSlotKey: SlotKey }
+  | { kind: "focus"; slotKey: SlotKey };
 
 type ZoneView =
   | { kind: "playerZone"; playerId: PlayerId; zone: "deck" | "discard" | "hand" }
@@ -2121,11 +2122,6 @@ export function App() {
       return false;
     }
 
-    if (payload.kind === "monster" && target.kind === "monster" && payload.slotKey === target.slotKey && canFocusMonster(game, payload.slotKey)) {
-      applyChange((state) => focusMonster(state, payload.slotKey));
-      return true;
-    }
-
     if (payload.kind !== "hand" || target.kind !== "monster") {
       return false;
     }
@@ -2180,6 +2176,9 @@ export function App() {
     }
 
     if (target.kind === "monster") {
+      if (payload.slotKey === target.slotKey && canFocusMonster(game, payload.slotKey)) {
+        return { kind: "focus", slotKey: payload.slotKey };
+      }
       const targetSlot = game.slots[target.slotKey];
       if (targetSlot.owner === game.currentPlayer && getMovableTargets(game, payload.slotKey).includes(target.slotKey)) {
         return { kind: "move", fromSlotKey: payload.slotKey, toSlotKey: target.slotKey };
@@ -2217,6 +2216,10 @@ export function App() {
     }
     if (pendingDropAction.kind === "move") {
       applyChange((state) => moveMonster(state, pendingDropAction.fromSlotKey, pendingDropAction.toSlotKey));
+      return;
+    }
+    if (pendingDropAction.kind === "focus") {
+      applyChange((state) => focusMonster(state, pendingDropAction.slotKey));
       return;
     }
   }
@@ -3659,6 +3662,14 @@ function operationReasonFromPendingDrop(game: GameState, action: PendingDropActi
       tone: masterActionCount + magicCount > 0 ? "ok" : "warn",
     };
   }
+  if (action.kind === "focus") {
+    return {
+      icon: "🔥",
+      label: "ドラッグためる",
+      text: `${slotMonsterLabel(game, action.slotKey)}がためます。確定すると発動します。`,
+      tone: "ok",
+    };
+  }
   return {
     icon: "🧭",
     label: "ドラッグ移動",
@@ -3830,6 +3841,19 @@ function getPendingDropActionPreviews(game: GameState, action: PendingDropAction
         label: `${slotMonsterLabel(game, action.fromSlotKey)} -> ${slotLabel(action.toSlotKey)}`,
         fallback: "ドラッグ移動を確定します。",
         apply: () => moveMonster(game, action.fromSlotKey, action.toSlotKey),
+      }),
+    ];
+  }
+  if (action.kind === "focus") {
+    return [
+      previewStateChange({
+        game,
+        key: `pending_focus_${action.slotKey}`,
+        target: { kind: "monster", slotKey: action.slotKey },
+        icon: "🔥",
+        label: `${slotMonsterLabel(game, action.slotKey)}: ためる`,
+        fallback: "ドラッグためるを確定します。",
+        apply: () => focusMonster(game, action.slotKey),
       }),
     ];
   }
@@ -6751,6 +6775,9 @@ function pendingDropActionTargetKey(action: PendingDropAction): string {
   if (action.kind === "move") {
     return `monster:${action.toSlotKey}`;
   }
+  if (action.kind === "focus") {
+    return `monster:${action.slotKey}`;
+  }
   return targetToKey(action.target);
 }
 
@@ -6764,10 +6791,16 @@ function selectionFromPendingDropAction(action: PendingDropAction): Selection {
   if (action.kind === "move") {
     return { kind: "monster", slotKey: action.fromSlotKey };
   }
+  if (action.kind === "focus") {
+    return { kind: "monster", slotKey: action.slotKey };
+  }
   return { kind: "monster", slotKey: action.attackerSlotKey };
 }
 
 function isSelectedSourceSlot(selection: Selection | undefined, action: PendingDropAction | undefined, slotKey: SlotKey): boolean {
+  if (action?.kind === "focus") {
+    return action.slotKey === slotKey;
+  }
   if (action?.kind === "move") {
     return action.fromSlotKey === slotKey;
   }
@@ -6843,6 +6876,9 @@ function pendingDropActionIcon(action: PendingDropAction): string {
   if (action.kind === "move") {
     return "🧭";
   }
+  if (action.kind === "focus") {
+    return "🔥";
+  }
   return "⚔️";
 }
 
@@ -6855,6 +6891,9 @@ function pendingDropActionTitle(action: PendingDropAction): string {
   }
   if (action.kind === "move") {
     return "Move / Swap";
+  }
+  if (action.kind === "focus") {
+    return "ためる";
   }
   return "技を選択";
 }
@@ -6870,6 +6909,9 @@ function pendingDropActionDescription(action: PendingDropAction, game: GameState
   }
   if (action.kind === "move") {
     return `${slotMonsterLabel(game, action.fromSlotKey)} -> ${targetLabel(game, { kind: "monster", slotKey: action.toSlotKey })}`;
+  }
+  if (action.kind === "focus") {
+    return `${slotMonsterLabel(game, action.slotKey)}がためます。`;
   }
   return `${slotMonsterLabel(game, action.attackerSlotKey)} -> ${targetLabel(game, action.target)}`;
 }
@@ -7012,6 +7054,9 @@ function targetRoleForTarget(
   }
   if (selection?.kind === "move" || action?.kind === "move") {
     return "move";
+  }
+  if (action?.kind === "focus") {
+    return "focus";
   }
   if (selection?.kind === "hand") {
     const handCard = getHandCard(game, selection.instanceId);
