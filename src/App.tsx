@@ -2119,8 +2119,6 @@ export function App() {
           </div>
           <div className="battle-control-status">
             <NextActionCuePanel cues={nextActionCues} />
-            <TargetSelectionSummary selection={selection} game={game} />
-            <ActionPreviewPanel previews={actionPreviews} />
             {cpuVsCpu && (
               <SpectatorReviewPanel
                 recent={recentSpectatorAttention}
@@ -2128,9 +2126,7 @@ export function App() {
                 onOpenEffects={() => setZoneView({ kind: "effects" })}
               />
             )}
-            {hasOperationContext && (error || actionPreviews.length === 0) ? (
-              <OperationReasonPanel game={game} selection={selection} pendingDropAction={pendingDropAction} error={error} />
-            ) : !hasOperationContext ? (
+            {!hasOperationContext ? (
               <p className="hint battle-control-empty-hint">
                 {cpuVsCpu ? (
                   <>
@@ -2147,15 +2143,6 @@ export function App() {
                 )}
               </p>
             ) : null}
-            {selection?.kind === "command" && (
-              <p className="hint">攻撃対象を選択してください。</p>
-            )}
-            {selection?.kind === "move" && (
-              <p className="hint">移動先または入れ替え先を選択してください。</p>
-            )}
-            {selection?.kind === "masterAction" && (
-              <p className="hint">マスター特技の対象を選択してください。</p>
-            )}
           </div>
         </div>
       </section>
@@ -2584,6 +2571,13 @@ export function App() {
                 onConfirm={handleConfirmPendingDropAction}
                 onCancel={handleCancelPendingDropAction}
               />
+              <ActionDetailContext
+                game={game}
+                selection={selection}
+                pendingDropAction={pendingDropAction}
+                previews={actionPreviews}
+                error={error}
+              />
             </section>
           ) : isAdditionalChoiceSelection(selection) ? (
             <section className="side-context-panel card-info-panel">
@@ -2677,6 +2671,24 @@ export function App() {
                   );
                 }}
               />
+              <ActionDetailContext
+                game={game}
+                selection={selection}
+                pendingDropAction={pendingDropAction}
+                previews={actionPreviews}
+                error={error}
+              />
+            </section>
+          ) : isTargetActionSelection(selection) ? (
+            <section className="side-context-panel card-info-panel">
+              <ActionDetailContext
+                game={game}
+                selection={selection}
+                pendingDropAction={pendingDropAction}
+                previews={actionPreviews}
+                error={error}
+                onCancel={handleCancelPendingDropAction}
+              />
             </section>
           ) : selectedMasterPlayerId ? (
             <section className="side-context-panel card-info-panel">
@@ -2690,6 +2702,13 @@ export function App() {
                   setError("");
                 }}
                 onHpDraw={() => applyChange(useMasterHpDraw)}
+              />
+              <ActionDetailContext
+                game={game}
+                selection={selection}
+                pendingDropAction={pendingDropAction}
+                previews={actionPreviews}
+                error={error}
               />
             </section>
           ) : selectedMonster && selection?.kind === "monster" ? (
@@ -2710,6 +2729,13 @@ export function App() {
                 onPendingAttackCommand={handlePendingAttackCommand}
                 onPendingMoveConfirm={handleConfirmPendingDropAction}
               />
+              <ActionDetailContext
+                game={game}
+                selection={selection}
+                pendingDropAction={pendingDropAction}
+                previews={actionPreviews}
+                error={error}
+              />
             </section>
           ) : selectedHand ? (
             <section className="side-context-panel card-info-panel">
@@ -2718,6 +2744,24 @@ export function App() {
                 game={game}
                 disabled={controlsDisabled}
                 onDiscard={() => applyChange((state) => discardHandCard(state, selectedHand.instanceId))}
+              />
+              <ActionDetailContext
+                game={game}
+                selection={selection}
+                pendingDropAction={pendingDropAction}
+                previews={actionPreviews}
+                error={error}
+              />
+            </section>
+          ) : error ? (
+            <section className="side-context-panel card-info-panel">
+              <ActionDetailContext
+                game={game}
+                selection={selection}
+                pendingDropAction={pendingDropAction}
+                previews={actionPreviews}
+                error={error}
+                onCancel={handleCancelPendingDropAction}
               />
             </section>
           ) : null}
@@ -2729,6 +2773,43 @@ export function App() {
 }
 
 function TargetSelectionSummary({ selection, game }: { selection: Selection | undefined; game: GameState }) {
+  if (selection?.kind === "hand") {
+    const card = getHandCard(game, selection.instanceId);
+    if (!card) {
+      return null;
+    }
+    const def = getCardDef(card.cardId);
+    if (def.type === "monster") {
+      if (getCardPool(def) === "special") {
+        return (
+          <div className="target-summary">
+            <strong><CardIcon cardId={card.cardId} /> {getCardName(card.cardId)}</strong>
+            <span>スーパー / レベルアップ時に使用</span>
+            <span>通常召喚不可</span>
+          </div>
+        );
+      }
+      const targets = BOARD_SLOT_KEYS
+        .filter((slotKey) => canSummonTo(game, selection.instanceId, slotKey))
+        .map<Target>((slotKey) => ({ kind: "monster", slotKey }));
+      return (
+        <div className="target-summary">
+          <strong><CardIcon cardId={card.cardId} /> {getCardName(card.cardId)}</strong>
+          <span>召喚 / Cost 1</span>
+          <TargetChipList game={game} targets={targets} />
+        </div>
+      );
+    }
+    const targets = getMagicTargets(game, selection.instanceId);
+    return (
+      <div className="target-summary">
+        <strong><CardIcon cardId={card.cardId} /> {getCardName(card.cardId)}</strong>
+        <span>マジック / Cost {def.cost}</span>
+        <TargetChipList game={game} targets={targets} />
+      </div>
+    );
+  }
+
   if (selection?.kind === "command") {
     const monster = game.slots[selection.attackerSlotKey].monster;
     const command = monster ? getMonsterCommands(monster).find((candidate) => candidate.id === selection.commandId) : undefined;
@@ -2779,6 +2860,50 @@ function TargetChipList({ game, targets }: { game: GameState; targets: Target[] 
       ))}
       {targets.length > visibleTargets.length && <span className="target-chip">+{targets.length - visibleTargets.length}</span>}
     </span>
+  );
+}
+
+type TargetActionSelection = Extract<Selection, { kind: "command" } | { kind: "masterAction" } | { kind: "move" }>;
+
+function isTargetActionSelection(selection: Selection | undefined): selection is TargetActionSelection {
+  return selection?.kind === "command" || selection?.kind === "masterAction" || selection?.kind === "move";
+}
+
+interface ActionDetailContextProps {
+  game: GameState;
+  selection: Selection | undefined;
+  pendingDropAction: PendingDropAction | undefined;
+  previews: ActionPreview[];
+  error: string;
+  onCancel?: () => void;
+}
+
+function ActionDetailContext({ game, selection, pendingDropAction, previews, error, onCancel }: ActionDetailContextProps) {
+  if (!selection && !pendingDropAction && !error && previews.length === 0) {
+    return null;
+  }
+  const showReason = !!error || previews.length === 0;
+
+  return (
+    <div className="action-detail-context">
+      <TargetSelectionSummary selection={selection} game={game} />
+      <ActionPreviewPanel previews={previews} />
+      {showReason && (
+        <OperationReasonPanel
+          game={game}
+          selection={selection}
+          pendingDropAction={pendingDropAction}
+          error={error}
+        />
+      )}
+      {onCancel && (
+        <div className="button-row action-detail-actions">
+          <button type="button" onClick={onCancel}>
+            <Icon icon="✕" /> キャンセル
+          </button>
+        </div>
+      )}
+    </div>
   );
 }
 
