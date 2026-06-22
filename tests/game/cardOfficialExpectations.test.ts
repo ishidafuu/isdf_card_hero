@@ -726,7 +726,7 @@ describe("official card effect expectations", () => {
     });
   });
 
-  it("card_061 誘惑 always removes the opposite-side bait and randomly removes the tempted monster", () => {
+  it("card_061 誘惑 always removes the caster-side monster and randomly removes the opponent-side monster", () => {
     let game = createGameWithPlayerHand([{ cardId: "card_061", instanceId: "tempt_success" }]);
     game.randomSeed = 7;
     game.players.player.stones = magicCost("card_061");
@@ -759,21 +759,22 @@ describe("official card effect expectations", () => {
     expect(game.slots.cpu_front_left.monster?.cardId).toBe("takokke");
     expect(game.log.some((entry) => entry.includes("ランダム結果: 誘惑"))).toBe(true);
 
-    game = createGameWithPlayerHand([{ cardId: "card_061", instanceId: "tempt_ally" }]);
-    game.randomSeed = 7;
+    game = createGameWithPlayerHand([{ cardId: "card_061", instanceId: "tempt_ally_fail" }]);
+    game.randomSeed = 1;
     game.players.player.stones = magicCost("card_061");
     game.slots.player_front_left.monster = createActiveMonster("takokke", "player");
     game.slots.cpu_front_left.monster = createActiveMonster("takokke", "cpu");
 
-    expect(getMagicTargets(game, "tempt_ally")).toContainEqual({ kind: "monster", slotKey: "player_front_left" });
+    expect(getMagicTargets(game, "tempt_ally_fail")).toContainEqual({ kind: "monster", slotKey: "player_front_left" });
     game = playMagic(game, {
-      handInstanceId: "tempt_ally",
+      handInstanceId: "tempt_ally_fail",
       target: { kind: "monster", slotKey: "player_front_left" },
       secondaryTarget: { kind: "monster", slotKey: "cpu_front_left" },
     });
 
-    expect(game.slots.cpu_front_left.monster).toBeUndefined();
     expect(game.slots.player_front_left.monster).toBeUndefined();
+    expect(game.slots.cpu_front_left.monster?.cardId).toBe("takokke");
+    expect(game.log.some((entry) => entry.includes("ランダム結果: 誘惑"))).toBe(true);
   });
 
   it("card_064 黄昏の風 removes all monster effects including shield and power effects", () => {

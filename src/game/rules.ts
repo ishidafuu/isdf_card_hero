@@ -872,13 +872,20 @@ function applyMagicEffect(state: GameState, cardId: string, action: MagicAction)
     if (state.slots[otherSlotKey].owner !== requiredOtherOwner) {
       throw new Error("誘惑の相手側対象が不正です");
     }
-    removeMonsterFromField(state, otherSlotKey, "誘惑");
+    const ownSlotKey = primaryOwner === state.currentPlayer ? target.slotKey : otherSlotKey;
+    const opponentSlotKey = ownSlotKey === target.slotKey ? otherSlotKey : target.slotKey;
+    if (state.slots[ownSlotKey].owner !== state.currentPlayer || state.slots[opponentSlotKey].owner !== opponentOf(state.currentPlayer)) {
+      throw new Error("誘惑の対象陣営が不正です");
+    }
+    const opponentMonsterName = monsterName(requireTargetMonster(state, opponentSlotKey));
+
+    removeMonsterFromField(state, ownSlotKey, "誘惑");
     const tempted = randomChance(state, 0.5);
-    appendRandomResultLog(state, "誘惑", tempted ? `${monsterName(requireTargetMonster(state, target.slotKey))}が消える` : `${monsterName(requireTargetMonster(state, target.slotKey))}が耐える`);
+    appendRandomResultLog(state, "誘惑", tempted ? `${opponentMonsterName}が消える` : `${opponentMonsterName}が耐える`);
     if (tempted) {
-      removeMonsterFromField(state, target.slotKey, "誘惑");
+      removeMonsterFromField(state, opponentSlotKey, "誘惑");
     } else {
-      appendLog(state, `${monsterName(requireTargetMonster(state, target.slotKey))}は誘惑に耐えた`);
+      appendLog(state, `${opponentMonsterName}は誘惑に耐えた`);
     }
     return;
   }
