@@ -2341,7 +2341,7 @@ export function App() {
                 onOpenEffects={() => showInfoZoneView({ kind: "effects" })}
               />
             )}
-            {!hasOperationContext ? (
+            {!hasOperationContext && (cpuVsCpu || game.currentPlayer === "cpu") ? (
               <p className="hint battle-control-empty-hint">
                 {cpuVsCpu ? (
                   <>
@@ -2351,11 +2351,7 @@ export function App() {
                   <>
                     <Icon icon="🧠" /> CPU解決中。ログまたはCPU履歴で判断理由を確認
                   </>
-                ) : (
-                  <>
-                    <Icon icon="☝️" /> 手札、味方モンスター、またはマスターを選択
-                  </>
-                )}
+                ) : null}
               </p>
             ) : null}
           </div>
@@ -3508,13 +3504,13 @@ function getOperationReasonItems(
     return items;
   }
   if (!selection) {
-    items.push({
-      icon: "☝️",
-      label: "未選択",
-      text: game.currentPlayer === "player"
-        ? "手札、味方モンスター、またはマスターを選ぶと右の行動窓に操作が表示されます。"
-        : "CPUターン中です。ログのCPUフィルタかCPU履歴で判断理由を確認できます。",
-    });
+    if (game.currentPlayer !== "player") {
+      items.push({
+        icon: "🧠",
+        label: "CPUターン",
+        text: "ログのCPUフィルタかCPU履歴で判断理由を確認できます。",
+      });
+    }
     return items;
   }
   if (selection.kind === "hand") {
