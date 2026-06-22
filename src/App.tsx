@@ -2327,6 +2327,20 @@ export function App() {
     );
   }
 
+  function renderUndoControl() {
+    return (
+      <button
+        type="button"
+        className="undo-button"
+        onClick={handleUndoManualAction}
+        disabled={!canUndoManualAction}
+        title={canUndoManualAction ? "直前の手動操作を戻します" : "戻せる手動操作はありません"}
+      >
+        <Icon icon="↩" /> 戻す
+      </button>
+    );
+  }
+
   function renderAdditionalChoicePanel() {
     if (!isAdditionalChoiceSelection(selection)) {
       return null;
@@ -2481,15 +2495,6 @@ export function App() {
           {showBattleActionControls && (
             <div className="battle-control-actions">
               <div className="battle-playback-row">
-                <button
-                  type="button"
-                  className="undo-button"
-                  onClick={handleUndoManualAction}
-                  disabled={!canUndoManualAction}
-                  title={canUndoManualAction ? "直前の手動操作を戻します" : "戻せる手動操作はありません"}
-                >
-                  <Icon icon="↩" /> 戻す
-                </button>
                 <button
                   type="button"
                   onClick={handleCancelInteraction}
@@ -2650,6 +2655,7 @@ export function App() {
           <button type="button" onClick={handleNewGame} disabled={fixedDeckError}>
             <Icon icon="🔄" /> New Game
           </button>
+          {renderUndoControl()}
           {renderAutoPlaybackControls()}
         </div>
       </header>
