@@ -171,6 +171,7 @@ type ZoneView =
   | { kind: "catalog" }
   | { kind: "effects" }
   | { kind: "cpuHistory" }
+  | { kind: "battleHistory" }
   | { kind: "deckSetup" }
   | { kind: "aiLab" };
 type LogFilter = "all" | "battle" | "damage" | "support" | "turn" | "cpu";
@@ -2539,6 +2540,14 @@ export function App() {
                   </button>
                   <button
                     type="button"
+                    aria-label="Battle History"
+                    className={zoneView?.kind === "battleHistory" ? "selected" : ""}
+                    onClick={() => toggleInfoZoneView({ kind: "battleHistory" })}
+                  >
+                    <Icon icon="🧾" /> History
+                  </button>
+                  <button
+                    type="button"
                     className={zoneView?.kind === "aiLab" ? "selected" : ""}
                     onClick={() => toggleInfoZoneView({ kind: "aiLab" })}
                   >
@@ -2598,6 +2607,8 @@ export function App() {
                   onSuiteChange={setAiLabSuiteId}
                   onClose={() => setZoneView(undefined)}
                 />
+              ) : zoneView?.kind === "battleHistory" ? (
+                <BattleHistoryPanel history={battleHistory} onReplay={handleReplayHistory} onClear={handleClearBattleHistory} />
               ) : zoneView ? (
                 <CardZonePanel
                   game={game}
@@ -3036,7 +3047,6 @@ export function App() {
               />
             </section>
           ) : null}
-          <BattleHistoryPanel history={battleHistory} onReplay={handleReplayHistory} onClear={handleClearBattleHistory} />
         </aside>
       </section>
     </main>
@@ -4785,7 +4795,7 @@ function HandCardPanel({ card, game, disabled, onDiscard }: HandCardPanelProps) 
 
 interface CardZonePanelProps {
   game: GameState;
-  view: Exclude<ZoneView, { kind: "deckSetup" } | { kind: "aiLab" }>;
+  view: Exclude<ZoneView, { kind: "deckSetup" } | { kind: "aiLab" } | { kind: "battleHistory" }>;
   onClose: () => void;
 }
 
@@ -7181,6 +7191,9 @@ function toggleZoneView(current: ZoneView | undefined, next: ZoneView): ZoneView
   }
   if (next.kind === "cpuHistory") {
     return current?.kind === "cpuHistory" ? undefined : next;
+  }
+  if (next.kind === "battleHistory") {
+    return current?.kind === "battleHistory" ? undefined : next;
   }
   if (next.kind === "aiLab") {
     return current?.kind === "aiLab" ? undefined : next;
