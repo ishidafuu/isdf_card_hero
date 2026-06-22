@@ -2206,7 +2206,6 @@ export function App() {
     selection?.kind === "hand" ? currentPlayer.hand.find((card) => card.instanceId === selection.instanceId) : undefined;
   const infoWorkspaceOpen = isInfoWorkspaceView(zoneView);
   const infoPanelOpen = infoToolsOpen || Boolean(zoneView);
-  const endTurnWarning = getEndTurnWarning(game, controlsDisabled);
   const showBattleActionControls = !cpuVsCpu;
 
   function renderAutoPlaybackControls() {
@@ -2330,12 +2329,9 @@ export function App() {
                 >
                   <Icon icon="↩" /> 戻す
                 </button>
-                <button type="button" className={endTurnWarning ? "end-turn-risk" : ""} onClick={handleEndTurn} disabled={controlsDisabled} title={endTurnWarning}>
+                <button type="button" onClick={handleEndTurn} disabled={controlsDisabled}>
                   <Icon icon="⏭️" /> End Turn
                 </button>
-                {endTurnWarning && (
-                  <span className="end-turn-warning"><Icon icon="⚠️" /> {endTurnWarning}</span>
-                )}
               </div>
             </div>
           )}
@@ -4037,70 +4033,6 @@ function previewBadgeForTarget(previous: GameState, next: GameState, target: Tar
     }
   }
   return undefined;
-}
-
-function countPlayableSummons(game: GameState): number {
-  return game.players.player.hand.filter((card) => {
-    const def = getCardDef(card.cardId);
-    return def.type === "monster" && BOARD_SLOT_KEYS.some((slotKey) => canSummonTo(game, card.instanceId, slotKey));
-  }).length;
-}
-
-function countPlayableMagic(game: GameState): number {
-  return game.players.player.hand.filter((card) => {
-    const def = getCardDef(card.cardId);
-    return def.type === "magic" && def.cost <= game.players.player.stones && getMagicTargets(game, card.instanceId).length > 0;
-  }).length;
-}
-
-function countMonsterActions(game: GameState): { attack: number; move: number; focus: number } {
-  return BOARD_SLOT_KEYS.reduce((total, slotKey) => {
-    const monster = game.slots[slotKey].monster;
-    if (!monster || monster.owner !== "player") {
-      return total;
-    }
-    const actionReason = getMonsterActionDisabledReason(game, slotKey);
-    if (actionReason) {
-      return total;
-    }
-    const attack = getMonsterCommands(monster).some((command) => getCommandTargets(game, slotKey, command.id).length > 0) ? 1 : 0;
-    const move = getMovableTargets(game, slotKey).length > 0 ? 1 : 0;
-    const focus = canFocusMonster(game, slotKey) && !monster.focused ? 1 : 0;
-    return {
-      attack: total.attack + attack,
-      move: total.move + move,
-      focus: total.focus + focus,
-    };
-  }, { attack: 0, move: 0, focus: 0 });
-}
-
-function countPlayableMasterActions(game: GameState): number {
-  return getCurrentMasterActionIds(game).filter((actionId) =>
-    getMasterActionCost(actionId) <= game.players.player.stones && getMasterActionTargets(game, actionId).length > 0,
-  ).length;
-}
-
-function getEndTurnWarning(game: GameState, controlsDisabled: boolean): string | undefined {
-  if (controlsDisabled || game.currentPlayer !== "player" || game.winner || game.pendingLevelUp) {
-    return undefined;
-  }
-  const summon = countPlayableSummons(game);
-  const magic = countPlayableMagic(game);
-  const monsterActions = countMonsterActions(game);
-  const masterActions = countPlayableMasterActions(game);
-  const hpDraw = getMasterHpDrawDisabledReason(game, "player", false) ? 0 : 1;
-  const parts = [
-    monsterActions.attack > 0 ? `攻撃${monsterActions.attack}` : "",
-    monsterActions.focus > 0 ? `ためる${monsterActions.focus}` : "",
-    monsterActions.move > 0 ? `移動${monsterActions.move}` : "",
-    summon > 0 ? `召喚${summon}` : "",
-    magic > 0 ? `魔法${magic}` : "",
-    masterActions + hpDraw > 0 ? `マスター${masterActions + hpDraw}` : "",
-  ].filter(Boolean);
-  if (parts.length === 0) {
-    return undefined;
-  }
-  return `未使用: ${parts.slice(0, 3).join(" / ")}${parts.length > 3 ? " ほか" : ""}`;
 }
 
 function BattleResultSummary({ game }: { game: GameState }) {
