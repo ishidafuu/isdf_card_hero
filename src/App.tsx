@@ -310,6 +310,9 @@ const DECK_PRESET_CARD_FILTER_OPTIONS = getAllCardDefs()
 const DRAG_MIME = "application/x-card-hero-drag";
 
 const LOG_FILTERS: LogFilter[] = ["all", "battle", "damage", "support", "turn", "cpu"];
+const LOG_CARD_NAME_MATCHERS = getAllCardDefs()
+  .map((def) => ({ id: def.id, name: def.name }))
+  .sort((a, b) => b.name.length - a.name.length || a.name.localeCompare(b.name, "ja"));
 
 type EffectKind = "attack" | "damage" | "summon" | "focus" | "move" | "heal" | "turn" | "random" | "default";
 
@@ -979,6 +982,7 @@ export function App() {
   const [spectatorPaused, setSpectatorPaused] = useState(false);
   const [zoneView, setZoneView] = useState<ZoneView | undefined>();
   const [logFilter, setLogFilter] = useState<LogFilter>("all");
+  const [logOpen, setLogOpen] = useState(false);
   const [selectedLogIndex, setSelectedLogIndex] = useState<number | undefined>();
   const [battleHistory, setBattleHistory] = useState<BattleHistoryEntry[]>(() => loadBattleHistory());
   const [savedBattlePresets, setSavedBattlePresets] = useState<SavedBattlePreset[]>(() => loadSavedBattlePresets());
@@ -2670,45 +2674,72 @@ export function App() {
         </div>
 
         <aside className={`side-panel ${hasOperationContext || game.pendingLevelUp ? "action-priority" : ""}`}>
-          <section className="log-panel">
+          <section className={`log-panel ${logOpen ? "open" : "collapsed"}`}>
             <div className="log-heading">
-              <h2>Log</h2>
-              <span>{visibleLogEntries.length}/{game.log.length}</span>
+              <div>
+                <h2><Icon icon="📜" /> Battle Log</h2>
+                <span>{logOpen ? `${visibleLogEntries.length}/${game.log.length}` : `${game.log.length} events`}</span>
+              </div>
+              <button
+                type="button"
+                className="log-toggle-button"
+                onClick={() => {
+                  setLogOpen((open) => {
+                    if (open) {
+                      setSelectedLogIndex(undefined);
+                    }
+                    return !open;
+                  });
+                }}
+                aria-expanded={logOpen}
+              >
+                <Icon icon={logOpen ? "▴" : "▾"} /> {logOpen ? "閉じる" : "開く"}
+              </button>
             </div>
-            <div className="log-filter-row" aria-label="log filters">
-              {LOG_FILTERS.map((filter) => (
-                <button
-                  type="button"
-                  key={filter}
-                  className={filter === logFilter ? "selected" : ""}
-                  onClick={() => setLogFilter(filter)}
-                >
-                  <Icon icon={logFilterIcon(filter)} /> {logFilterLabel(filter)}
-                </button>
-              ))}
-            </div>
-            <ol>
-              {visibleLogEntries.map(({ entry, index }) => (
-                <li className={`log-entry ${logTone(entry)}`} key={`${entry}_${index}`}>
-                  <button
-                    type="button"
-                    className={`log-entry-button ${selectedLogIndex === index ? "selected" : ""}`}
-                    onClick={() => setSelectedLogIndex(selectedLogIndex === index ? undefined : index)}
-                  >
-                    <Icon icon={logIcon(entry)} />
-                    <span className="log-entry-index">#{index + 1}</span>
-                    <span className="log-entry-text">{entry}</span>
-                  </button>
-                </li>
-              ))}
-            </ol>
-            {selectedLogEntry && (
-              <div className={`log-detail ${logTone(selectedLogEntry)}`}>
+            <LatestEventSummary log={game.log} />
+            {logOpen && (
+              <>
+                <div className="log-filter-row" aria-label="log filters">
+                  {LOG_FILTERS.map((filter) => (
+                    <button
+                      type="button"
+                      key={filter}
+                      className={filter === logFilter ? "selected" : ""}
+                      onClick={() => setLogFilter(filter)}
+                    >
+                      <Icon icon={logFilterIcon(filter)} /> {logFilterLabel(filter)}
+                    </button>
+                  ))}
+                </div>
+                <ol>
+                  {visibleLogEntries.map(({ entry, index }) => (
+                    <li className={`log-entry ${logTone(entry)}`} key={`${entry}_${index}`}>
+                      <button
+                        type="button"
+                        className={`log-entry-button ${selectedLogIndex === index ? "selected" : ""}`}
+                        onClick={() => setSelectedLogIndex(selectedLogIndex === index ? undefined : index)}
+                      >
+                        <span className="log-entry-kind"><Icon icon={logIcon(entry)} /></span>
+                        <span className="log-entry-index">#{index + 1}</span>
+                        <LogEventContent entry={entry} />
+                      </button>
+                    </li>
+                  ))}
+                </ol>
+                {selectedLogEntry && (
+                  <div className={`log-detail ${logTone(selectedLogEntry)}`}>
+                    <strong><Icon icon={logIcon(selectedLogEntry)} /> #{selectedLogIndex! + 1} {logCategoryLabel(selectedLogEntry)}</strong>
+                    <LogEventContent entry={selectedLogEntry} />
+                  </div>
+                )}
+              </>
+            )}
+            {!logOpen && selectedLogEntry && (
+              <div className={`log-detail compact ${logTone(selectedLogEntry)}`}>
                 <strong><Icon icon={logIcon(selectedLogEntry)} /> #{selectedLogIndex! + 1} {logCategoryLabel(selectedLogEntry)}</strong>
-                <p>{selectedLogEntry}</p>
+                <LogEventContent entry={selectedLogEntry} />
               </div>
             )}
-            <LatestEventSummary log={game.log} />
           </section>
 
           {game.pendingLevelUp ? (
@@ -3251,9 +3282,159 @@ function LatestEventSummary({ log }: { log: string[] }) {
   return (
     <div className={`latest-event ${logTone(latest)}`}>
       <strong><Icon icon={logIcon(latest)} /> Latest: {logCategoryLabel(latest)}</strong>
-      <p>{latest}</p>
+      <LogEventContent entry={latest} />
     </div>
   );
+}
+
+type LogToken =
+  | { kind: "card"; cardId: string; text: string }
+  | { kind: "chip"; icon: string; text: string }
+  | { kind: "text"; text: string };
+
+function LogEventContent({ entry }: { entry: string }) {
+  return (
+    <span className="log-event-content" title={entry}>
+      {tokenizeLogEntry(entry).map((token, index) => {
+        if (token.kind === "card") {
+          return (
+            <span className="log-token log-token-card" key={`${token.kind}_${token.text}_${index}`}>
+              <CardIcon cardId={token.cardId} /> {token.text}
+            </span>
+          );
+        }
+        if (token.kind === "chip") {
+          return (
+            <span className="log-token log-token-chip" key={`${token.kind}_${token.text}_${index}`}>
+              <Icon icon={token.icon} /> {token.text}
+            </span>
+          );
+        }
+        return <span className="log-token-text" key={`${token.kind}_${index}`}>{token.text}</span>;
+      })}
+    </span>
+  );
+}
+
+function tokenizeLogEntry(entry: string): LogToken[] {
+  const cardTokens = tokenizeCardsInLog(entry);
+  return cardTokens.flatMap((token) => {
+    if (token.kind === "card") {
+      return [token];
+    }
+    return tokenizeLogText(token.text);
+  });
+}
+
+function tokenizeCardsInLog(entry: string): LogToken[] {
+  const tokens: LogToken[] = [];
+  let cursor = 0;
+  while (cursor < entry.length) {
+    const match = findNextCardName(entry, cursor);
+    if (!match) {
+      tokens.push({ kind: "text", text: entry.slice(cursor) });
+      break;
+    }
+    if (match.index > cursor) {
+      tokens.push({ kind: "text", text: entry.slice(cursor, match.index) });
+    }
+    tokens.push({ kind: "card", cardId: match.cardId, text: match.name });
+    cursor = match.index + match.name.length;
+  }
+  return tokens.filter((token) => token.kind !== "text" || token.text.length > 0);
+}
+
+function findNextCardName(entry: string, start: number): { index: number; cardId: string; name: string } | undefined {
+  let best: { index: number; cardId: string; name: string } | undefined;
+  for (const card of LOG_CARD_NAME_MATCHERS) {
+    const index = entry.indexOf(card.name, start);
+    if (index < 0) {
+      continue;
+    }
+    if (!best || index < best.index || (index === best.index && card.name.length > best.name.length)) {
+      best = { index, cardId: card.id, name: card.name };
+    }
+  }
+  return best;
+}
+
+function tokenizeLogText(text: string): LogToken[] {
+  const pattern = /(Player|CPU|HP|Stone|ストーン|マスターアタック|ウェイクアップ|シールド|バーサクパワー|大地の怒り|ためた|召喚|登場|倒れた|山札切れ|判断:|ターン|引いた|使った|入れ替え|移動|レベルアップ|勝利)/g;
+  const tokens: LogToken[] = [];
+  let cursor = 0;
+  for (const match of text.matchAll(pattern)) {
+    const index = match.index ?? 0;
+    if (index > cursor) {
+      tokens.push({ kind: "text", text: text.slice(cursor, index) });
+    }
+    tokens.push(logKeywordToken(match[0]));
+    cursor = index + match[0].length;
+  }
+  if (cursor < text.length) {
+    tokens.push({ kind: "text", text: text.slice(cursor) });
+  }
+  return tokens.filter((token) => token.kind !== "text" || token.text.length > 0);
+}
+
+function logKeywordToken(text: string): LogToken {
+  if (text === "Player") {
+    return { kind: "chip", icon: "🙂", text };
+  }
+  if (text === "CPU") {
+    return { kind: "chip", icon: "🧠", text };
+  }
+  if (text === "HP") {
+    return { kind: "chip", icon: "❤️", text };
+  }
+  if (text === "Stone" || text === "ストーン") {
+    return { kind: "chip", icon: "🪨", text };
+  }
+  if (text === "マスターアタック") {
+    return { kind: "chip", icon: "⚔️", text };
+  }
+  if (text === "ウェイクアップ") {
+    return { kind: "chip", icon: "⏰", text };
+  }
+  if (text === "シールド") {
+    return { kind: "chip", icon: "🛡️", text };
+  }
+  if (text === "バーサクパワー") {
+    return { kind: "chip", icon: "🔥", text };
+  }
+  if (text === "大地の怒り") {
+    return { kind: "chip", icon: "🌋", text };
+  }
+  if (text === "ためた") {
+    return { kind: "chip", icon: "💪", text };
+  }
+  if (text === "召喚" || text === "登場") {
+    return { kind: "chip", icon: "🂠", text };
+  }
+  if (text === "倒れた" || text === "山札切れ") {
+    return { kind: "chip", icon: "💥", text };
+  }
+  if (text === "判断:") {
+    return { kind: "chip", icon: "🧠", text };
+  }
+  if (text === "ターン") {
+    return { kind: "chip", icon: "⏭️", text };
+  }
+  if (text === "引いた") {
+    return { kind: "chip", icon: "✋", text };
+  }
+  if (text === "使った") {
+    return { kind: "chip", icon: "✨", text };
+  }
+  if (text === "入れ替え" || text === "移動") {
+    return { kind: "chip", icon: "🧭", text };
+  }
+  if (text === "レベルアップ") {
+    return { kind: "chip", icon: "✨", text };
+  }
+  if (text === "勝利") {
+    return { kind: "chip", icon: "🏆", text };
+  }
+  return { kind: "chip", icon: "•", text };
 }
 
 interface OperationReasonPanelProps {
