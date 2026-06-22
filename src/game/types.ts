@@ -222,6 +222,7 @@ export interface MagicAction {
   selectedHandInstanceIds?: string[];
   deckTopOrderInstanceIds?: string[];
   searchCategory?: "front" | "back" | "magic" | "special";
+  rotationDirection?: "clockwise" | "counterclockwise";
 }
 
 export type MasterActionId = "master_attack" | "wake_up" | "shield" | "berserk_power" | "earth_anger";

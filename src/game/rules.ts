@@ -957,7 +957,7 @@ function applyMagicEffect(state: GameState, cardId: string, action: MagicAction)
   }
 
   if (cardId === "card_093") {
-    rotateFieldMonsters(state);
+    rotateFieldMonsters(state, action.rotationDirection ?? "clockwise");
     return;
   }
 
@@ -1299,18 +1299,25 @@ function surroundingCoord(slot: SlotState): { x: number; y: number } {
   return { x, y: slot.row === "front" ? 2 : 3 };
 }
 
-function rotateFieldMonsters(state: GameState): void {
+function rotateFieldMonsters(state: GameState, direction: NonNullable<MagicAction["rotationDirection"]> = "clockwise"): void {
   for (const playerId of PLAYER_ORDER) {
-    rotatePlayerMonsters(state, playerId, false);
+    rotatePlayerMonsters(state, playerId, false, direction);
   }
-  appendLog(state, "フィールドのモンスターをローテーションした");
+  appendLog(state, `フィールドのモンスターを${rotationDirectionLabel(direction)}にローテーションした`);
 }
 
-function rotatePlayerMonsters(state: GameState, playerId: PlayerId, withLog = true): void {
+function rotatePlayerMonsters(
+  state: GameState,
+  playerId: PlayerId,
+  withLog = true,
+  direction: NonNullable<MagicAction["rotationDirection"]> = "clockwise",
+): void {
   const order = PLAYER_SLOT_ORDER[playerId];
   const monsters = order.map((slotKey) => state.slots[slotKey].monster);
   for (let i = 0; i < order.length; i += 1) {
-    const fromIndex = (i - 1 + order.length) % order.length;
+    const fromIndex = direction === "clockwise"
+      ? (i - 1 + order.length) % order.length
+      : (i + 1) % order.length;
     const nextMonster = monsters[fromIndex];
     if (nextMonster) {
       state.slots[order[i]].monster = nextMonster;
@@ -1319,8 +1326,12 @@ function rotatePlayerMonsters(state: GameState, playerId: PlayerId, withLog = tr
     }
   }
   if (withLog) {
-    appendLog(state, `${playerLabel(playerId)}フィールドのモンスターをローテーションした`);
+    appendLog(state, `${playerLabel(playerId)}フィールドのモンスターを${rotationDirectionLabel(direction)}にローテーションした`);
   }
+}
+
+function rotationDirectionLabel(direction: NonNullable<MagicAction["rotationDirection"]>): string {
+  return direction === "clockwise" ? "右回り" : "左回り";
 }
 
 function reshuffleHand(state: GameState, playerId: PlayerId): void {

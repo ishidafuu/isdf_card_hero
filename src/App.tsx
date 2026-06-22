@@ -110,7 +110,6 @@ const BOARD_SLOT_KEYS = BOARD_CELLS.flatMap((row) =>
   row.flatMap((cell) => (cell.kind === "slot" ? [cell.slotKey] : [])),
 );
 const PLAYER_IDS: PlayerId[] = ["player", "cpu"];
-const CPU_STEP_DELAY_MS = 520;
 const VISUAL_EFFECT_DURATION_MS = 900;
 const AUTO_STEP_DELAY_MIN_MS = 100;
 const AUTO_STEP_DELAY_MAX_MS = 3000;
@@ -154,6 +153,7 @@ type Selection =
   | { kind: "magicHandChoice"; handInstanceId: string; target: Target; choices: CardInstance[] }
   | { kind: "magicRefresh"; handInstanceId: string; target: Target; choices: CardInstance[]; selectedIds: string[] }
   | { kind: "magicSearch"; handInstanceId: string; target: Target; categories: Array<NonNullable<MagicAction["searchCategory"]>> }
+  | { kind: "magicRotationDirection"; handInstanceId: string; target: Target }
   | { kind: "move"; fromSlotKey: SlotKey; targets: SlotKey[] };
 
 type DragPayload =
@@ -1073,8 +1073,9 @@ export function App() {
     !game.winner && !spectatorAutoPaused && (cpuVsCpu || autoPlayEnabled || (game.currentPlayer === "cpu" && !game.pendingLevelUp));
   const controlsDisabled = cpuVsCpu || autoPlayEnabled || game.currentPlayer !== "player" || !!game.winner || !!game.pendingLevelUp;
   const hasOperationContext = Boolean(selection || pendingDropAction || error);
-  const hasSideContext = hasOperationContext || Boolean(game.pendingLevelUp);
+  const hasSideContext = Boolean(!pendingDropAction && !game.pendingLevelUp && !isAdditionalChoiceSelection(selection) && (selection || error));
   const showBattleLog = !hasSideContext;
+  const canCancelInteraction = Boolean(selection || pendingDropAction || error || dragPayload) && !game.pendingLevelUp;
   const canUndoManualAction =
     manualUndoStack.length > 0 &&
     !cpuVsCpu &&
@@ -1222,7 +1223,7 @@ export function App() {
         }
         return previous;
       });
-    }, cpuVsCpu || autoPlayEnabled ? autoStepDelayMs : CPU_STEP_DELAY_MS);
+    }, autoStepDelayMs);
 
     return () => window.clearTimeout(timer);
   }, [autoPlayEnabled, autoStepDelayMs, battleSettings.aiProfiles, cpuVsCpu, game, isAutoResolving]);
@@ -1345,6 +1346,13 @@ export function App() {
     if (categories.length > 0) {
       setPendingDropAction(undefined);
       setSelection({ kind: "magicSearch", handInstanceId, target, categories });
+      setError("");
+      return;
+    }
+
+    if (handCard?.cardId === "card_093") {
+      setPendingDropAction(undefined);
+      setSelection({ kind: "magicRotationDirection", handInstanceId, target });
       setError("");
       return;
     }
@@ -2234,10 +2242,15 @@ export function App() {
     resolveMagicPrimaryTarget(instanceId, pendingDropAction.target);
   }
 
-  function handleCancelPendingDropAction() {
+  function handleCancelInteraction() {
+    clearPointerDrag();
     setPendingDropAction(undefined);
     setSelection(undefined);
     setError("");
+  }
+
+  function handleCancelPendingDropAction() {
+    handleCancelInteraction();
   }
 
   const selectedMonster =
@@ -2311,6 +2324,113 @@ export function App() {
     );
   }
 
+  function renderAdditionalChoicePanel() {
+    if (!isAdditionalChoiceSelection(selection)) {
+      return null;
+    }
+    return (
+      <AdditionalChoicePanel
+        selection={selection}
+        game={game}
+        onCancel={handleCancelInteraction}
+        onSecondaryTarget={(target) => {
+          if (selection.kind === "magicSecondaryTarget") {
+            applyChange((state) =>
+              playMagic(state, {
+                handInstanceId: selection.handInstanceId,
+                target: selection.target,
+                secondaryTarget: target,
+              }),
+            );
+            return;
+          }
+          if (selection.kind === "commandSecondaryTarget") {
+            applyChange((state) =>
+              attackWithCommand(state, {
+                attackerSlotKey: selection.attackerSlotKey,
+                commandId: selection.commandId,
+                target: selection.target,
+                secondaryTarget: target,
+              }),
+            );
+          }
+        }}
+        onMagicHand={(instanceId) => {
+          if (selection.kind !== "magicHandChoice") {
+            return;
+          }
+          applyChange((state) =>
+            playMagic(state, {
+              handInstanceId: selection.handInstanceId,
+              target: selection.target,
+              secondaryHandInstanceId: instanceId,
+            }),
+          );
+        }}
+        onCommandHand={(instanceId) => {
+          if (selection.kind !== "commandHandChoice") {
+            return;
+          }
+          applyChange((state) =>
+            attackWithCommand(state, {
+              attackerSlotKey: selection.attackerSlotKey,
+              commandId: selection.commandId,
+              target: selection.target,
+              secondaryHandInstanceId: instanceId,
+            }),
+          );
+        }}
+        onRefreshToggle={(instanceId) => {
+          if (selection.kind !== "magicRefresh") {
+            return;
+          }
+          setSelection({
+            ...selection,
+            selectedIds: selection.selectedIds.includes(instanceId)
+              ? selection.selectedIds.filter((id) => id !== instanceId)
+              : [...selection.selectedIds, instanceId],
+          });
+        }}
+        onRefreshConfirm={() => {
+          if (selection.kind !== "magicRefresh") {
+            return;
+          }
+          applyChange((state) =>
+            playMagic(state, {
+              handInstanceId: selection.handInstanceId,
+              target: selection.target,
+              selectedHandInstanceIds: selection.selectedIds,
+            }),
+          );
+        }}
+        onSearch={(category) => {
+          if (selection.kind !== "magicSearch") {
+            return;
+          }
+          applyChange((state) =>
+            playMagic(state, {
+              handInstanceId: selection.handInstanceId,
+              target: selection.target,
+              searchCategory: category,
+            }),
+          );
+        }}
+        onRotationDirection={(rotationDirection) => {
+          if (selection.kind !== "magicRotationDirection") {
+            return;
+          }
+          applyChange((state) =>
+            playMagic(state, {
+              handInstanceId: selection.handInstanceId,
+              target: selection.target,
+              rotationDirection,
+            }),
+          );
+        }}
+      />
+    );
+  }
+
   function renderBattleControlPanel() {
     if (game.winner) {
       return (
@@ -2367,6 +2487,14 @@ export function App() {
                 >
                   <Icon icon="↩" /> 戻す
                 </button>
+                <button
+                  type="button"
+                  onClick={handleCancelInteraction}
+                  disabled={!canCancelInteraction}
+                  title={canCancelInteraction ? "選択中の操作を解除します" : "解除する選択はありません"}
+                >
+                  <Icon icon="✕" /> キャンセル
+                </button>
                 <button type="button" onClick={handleEndTurn} disabled={controlsDisabled}>
                   <Icon icon="⏭️" /> End Turn
                 </button>
@@ -2381,7 +2509,33 @@ export function App() {
                 onOpenEffects={() => showInfoZoneView({ kind: "effects" })}
               />
             )}
-            {!hasOperationContext && (cpuVsCpu || game.currentPlayer === "cpu") ? (
+            {game.pendingLevelUp ? (
+              <div className="turn-flow-choice level-up-decision-panel">
+                <LevelUpDecisionPanel
+                  game={game}
+                  onAccept={() => applyChange((state) => resolveLevelUp(state, 1))}
+                  onDecline={() => applyChange((state) => resolveLevelUp(state, 0))}
+                  onSuper={(handInstanceId) => applyChange((state) => resolveLevelUp(state, game.pendingLevelUp!.maxLevels, handInstanceId))}
+                />
+              </div>
+            ) : pendingDropAction ? (
+              <div className="turn-flow-choice">
+                <PendingDropActionPanel
+                  action={pendingDropAction}
+                  game={game}
+                  onAttackCommand={handlePendingAttackCommand}
+                  onMasterAction={handlePendingMasterAction}
+                  onMasterMagic={handlePendingMasterMagic}
+                  onConfirm={handleConfirmPendingDropAction}
+                  onCancel={handleCancelPendingDropAction}
+                />
+              </div>
+            ) : isAdditionalChoiceSelection(selection) ? (
+              <div className="turn-flow-choice">
+                {renderAdditionalChoicePanel()}
+              </div>
+            ) : null}
+            {!game.pendingLevelUp && !hasOperationContext && (cpuVsCpu || game.currentPlayer === "cpu") ? (
               <p className="hint battle-control-empty-hint">
                 {cpuVsCpu ? (
                   <>
@@ -2844,137 +2998,7 @@ export function App() {
             </section>
           )}
 
-          {game.pendingLevelUp ? (
-            <section className="side-context-panel card-info-panel level-up-decision-panel">
-              <LevelUpDecisionPanel
-                game={game}
-                onAccept={() => applyChange((state) => resolveLevelUp(state, 1))}
-                onDecline={() => applyChange((state) => resolveLevelUp(state, 0))}
-                onSuper={(handInstanceId) => applyChange((state) => resolveLevelUp(state, game.pendingLevelUp!.maxLevels, handInstanceId))}
-              />
-            </section>
-          ) : pendingDropAction ? (
-            <section className="side-context-panel card-info-panel">
-              <PendingDropActionPanel
-                action={pendingDropAction}
-                game={game}
-                onAttackCommand={handlePendingAttackCommand}
-                onMasterAction={handlePendingMasterAction}
-                onMasterMagic={handlePendingMasterMagic}
-                onConfirm={handleConfirmPendingDropAction}
-                onCancel={handleCancelPendingDropAction}
-              />
-              <ActionDetailContext
-                game={game}
-                selection={selection}
-                pendingDropAction={pendingDropAction}
-                previews={actionPreviews}
-                error={error}
-                onTargetClick={handleTargetSelection}
-              />
-            </section>
-          ) : isAdditionalChoiceSelection(selection) ? (
-            <section className="side-context-panel card-info-panel">
-              <AdditionalChoicePanel
-                selection={selection}
-                game={game}
-                onCancel={() => {
-                  setSelection(undefined);
-                  setError("");
-                }}
-                onSecondaryTarget={(target) => {
-                  if (selection.kind === "magicSecondaryTarget") {
-                    applyChange((state) =>
-                      playMagic(state, {
-                        handInstanceId: selection.handInstanceId,
-                        target: selection.target,
-                        secondaryTarget: target,
-                      }),
-                    );
-                    return;
-                  }
-                  if (selection.kind === "commandSecondaryTarget") {
-                    applyChange((state) =>
-                      attackWithCommand(state, {
-                        attackerSlotKey: selection.attackerSlotKey,
-                        commandId: selection.commandId,
-                        target: selection.target,
-                        secondaryTarget: target,
-                      }),
-                    );
-                  }
-                }}
-                onMagicHand={(instanceId) => {
-                  if (selection.kind !== "magicHandChoice") {
-                    return;
-                  }
-                  applyChange((state) =>
-                    playMagic(state, {
-                      handInstanceId: selection.handInstanceId,
-                      target: selection.target,
-                      secondaryHandInstanceId: instanceId,
-                    }),
-                  );
-                }}
-                onCommandHand={(instanceId) => {
-                  if (selection.kind !== "commandHandChoice") {
-                    return;
-                  }
-                  applyChange((state) =>
-                    attackWithCommand(state, {
-                      attackerSlotKey: selection.attackerSlotKey,
-                      commandId: selection.commandId,
-                      target: selection.target,
-                      secondaryHandInstanceId: instanceId,
-                    }),
-                  );
-                }}
-                onRefreshToggle={(instanceId) => {
-                  if (selection.kind !== "magicRefresh") {
-                    return;
-                  }
-                  setSelection({
-                    ...selection,
-                    selectedIds: selection.selectedIds.includes(instanceId)
-                      ? selection.selectedIds.filter((id) => id !== instanceId)
-                      : [...selection.selectedIds, instanceId],
-                  });
-                }}
-                onRefreshConfirm={() => {
-                  if (selection.kind !== "magicRefresh") {
-                    return;
-                  }
-                  applyChange((state) =>
-                    playMagic(state, {
-                      handInstanceId: selection.handInstanceId,
-                      target: selection.target,
-                      selectedHandInstanceIds: selection.selectedIds,
-                    }),
-                  );
-                }}
-                onSearch={(category) => {
-                  if (selection.kind !== "magicSearch") {
-                    return;
-                  }
-                  applyChange((state) =>
-                    playMagic(state, {
-                      handInstanceId: selection.handInstanceId,
-                      target: selection.target,
-                      searchCategory: category,
-                    }),
-                  );
-                }}
-              />
-              <ActionDetailContext
-                game={game}
-                selection={selection}
-                pendingDropAction={pendingDropAction}
-                previews={actionPreviews}
-                error={error}
-                onTargetClick={handleTargetSelection}
-              />
-            </section>
-          ) : isTargetActionSelection(selection) ? (
+          {!pendingDropAction && !isAdditionalChoiceSelection(selection) && isTargetActionSelection(selection) ? (
             <section className="side-context-panel card-info-panel">
               <ActionDetailContext
                 game={game}
@@ -2986,7 +3010,7 @@ export function App() {
                 onTargetClick={handleTargetSelection}
               />
             </section>
-          ) : selectedMasterPlayerId ? (
+          ) : !pendingDropAction && selectedMasterPlayerId ? (
             <section className="side-context-panel card-info-panel">
               <MasterCommands
                 game={game}
@@ -3008,7 +3032,7 @@ export function App() {
                 onTargetClick={handleTargetSelection}
               />
             </section>
-          ) : selectedMonster && selection?.kind === "monster" ? (
+          ) : !pendingDropAction && selectedMonster && selection?.kind === "monster" ? (
             <section className="side-context-panel card-info-panel">
               <MonsterCommands
                 game={game}
@@ -3035,7 +3059,7 @@ export function App() {
                 onTargetClick={handleTargetSelection}
               />
             </section>
-          ) : selectedHand ? (
+          ) : !pendingDropAction && selectedHand ? (
             <section className="side-context-panel card-info-panel">
               <HandCardPanel
                 card={selectedHand}
@@ -3857,6 +3881,7 @@ function getHandActionPreviews(game: GameState, instanceId: string): ActionPrevi
 }
 
 function previewMagicAction(game: GameState, handInstanceId: string, target: Target, key: string): ActionPreview {
+  const handCard = getHandCard(game, handInstanceId);
   const secondaryTargets = getMagicSecondaryTargets(game, { handInstanceId, target });
   if (secondaryTargets.length > 0) {
     return choicePreview(game, key, target, "✨", `${handCardLabel(game, handInstanceId)} -> ${targetLabel(game, target)}`, `追加対象 ${secondaryTargets.length}件を選ぶと解決します。`);
@@ -3868,6 +3893,9 @@ function previewMagicAction(game: GameState, handInstanceId: string, target: Tar
   const categories = getMagicSearchCategories(game, handInstanceId);
   if (categories.length > 0) {
     return choicePreview(game, key, target, "🔎", `${handCardLabel(game, handInstanceId)} -> ${targetLabel(game, target)}`, "山札から探すカテゴリを選ぶと解決します。");
+  }
+  if (handCard?.cardId === "card_093") {
+    return choicePreview(game, key, target, "🔁", `${handCardLabel(game, handInstanceId)} -> ${targetLabel(game, target)}`, "右回り/左回りを選ぶと解決します。");
   }
   return previewStateChange({
     game,
@@ -4401,6 +4429,7 @@ type AdditionalChoiceSelection = Extract<
   | { kind: "magicHandChoice" }
   | { kind: "magicRefresh" }
   | { kind: "magicSearch" }
+  | { kind: "magicRotationDirection" }
 >;
 
 function isAdditionalChoiceSelection(selection: Selection | undefined): selection is AdditionalChoiceSelection {
@@ -4410,7 +4439,8 @@ function isAdditionalChoiceSelection(selection: Selection | undefined): selectio
     selection?.kind === "magicSecondaryTarget" ||
     selection?.kind === "magicHandChoice" ||
     selection?.kind === "magicRefresh" ||
-    selection?.kind === "magicSearch"
+    selection?.kind === "magicSearch" ||
+    selection?.kind === "magicRotationDirection"
   );
 }
 
@@ -4424,6 +4454,7 @@ interface AdditionalChoicePanelProps {
   onRefreshToggle: (instanceId: string) => void;
   onRefreshConfirm: () => void;
   onSearch: (category: NonNullable<MagicAction["searchCategory"]>) => void;
+  onRotationDirection: (direction: NonNullable<MagicAction["rotationDirection"]>) => void;
 }
 
 function AdditionalChoicePanel({
@@ -4436,6 +4467,7 @@ function AdditionalChoicePanel({
   onRefreshToggle,
   onRefreshConfirm,
   onSearch,
+  onRotationDirection,
 }: AdditionalChoicePanelProps) {
   if (selection.kind === "magicSecondaryTarget" || selection.kind === "commandSecondaryTarget") {
     return (
@@ -4510,6 +4542,24 @@ function AdditionalChoicePanel({
             </button>
           ))}
           <button type="button" onClick={onRefreshConfirm}><Icon icon="✅" /> 確定</button>
+          <button type="button" onClick={onCancel}><Icon icon="✕" /> キャンセル</button>
+        </div>
+      </div>
+    );
+  }
+
+  if (selection.kind === "magicRotationDirection") {
+    return (
+      <div className="selected-detail">
+        <h3><Icon icon="🔁" /> ローテーション</h3>
+        <p className="hint">フィールド上のモンスターを回す方向を選びます。</p>
+        <div className="button-row">
+          <button type="button" onClick={() => onRotationDirection("clockwise")}>
+            <Icon icon="↻" /> 右回り
+          </button>
+          <button type="button" onClick={() => onRotationDirection("counterclockwise")}>
+            <Icon icon="↺" /> 左回り
+          </button>
           <button type="button" onClick={onCancel}><Icon icon="✕" /> キャンセル</button>
         </div>
       </div>
@@ -6499,12 +6549,17 @@ function MonsterCommands({
   onPendingAttackCommand,
   onPendingMoveConfirm,
 }: MonsterCommandsProps) {
-  const slot = game.slots[slotKey];
   const monster = game.slots[slotKey].monster;
   if (!monster) {
     return null;
   }
   const hidePreparedInfo = monster.status === "prepared" && monster.owner !== "player";
+  const detailStatusBadges = hidePreparedInfo
+    ? []
+    : [
+        ...(monster.status === "prepared" ? [{ icon: "🂠", label: "裏向き" }] : []),
+        ...getBoardStatusBadges(monster),
+      ];
   const pendingAttackAction =
     pendingDropAction?.kind === "attackTarget" && pendingDropAction.attackerSlotKey === slotKey
       ? pendingDropAction
@@ -6588,11 +6643,16 @@ function MonsterCommands({
           {hidePreparedInfo ? "裏向きカード" : `${getMonsterDisplayName(monster)} Lv${monster.level}`}
         </h3>
         <div className="card-meta-row">
-          <span>{playerLabel(slot.owner)}</span>
-          <span>{slotLabel(slotKey)}</span>
-          <span><Icon icon={monster.status === "prepared" ? "🂠" : "⚡"} /> {monster.status === "prepared" ? "裏向き" : `${monster.actionCount}/${monster.actionLimit}行動`}</span>
           {!hidePreparedInfo && <span><Icon icon="❤️" /> HP {monster.hp}</span>}
-          {!hidePreparedInfo && <span><Icon icon="🪨" /> 投資 {monster.investedStones}</span>}
+          {hidePreparedInfo ? (
+            <span><Icon icon="🂠" /> 裏向き</span>
+          ) : (
+            detailStatusBadges.map((badge) => (
+              <span className={badge.className ? `status-chip-${badge.className}` : undefined} key={badge.label}>
+                <Icon icon={badge.icon} /> {badge.label}
+              </span>
+            ))
+          )}
         </div>
         {!hidePreparedInfo && (
           <div className="board-card-detail">
@@ -6737,7 +6797,8 @@ function isSelectedSourceHand(selection: Selection | undefined, action: PendingD
     (selection?.kind === "magicSecondaryTarget" ||
       selection?.kind === "magicHandChoice" ||
       selection?.kind === "magicRefresh" ||
-      selection?.kind === "magicSearch") &&
+      selection?.kind === "magicSearch" ||
+      selection?.kind === "magicRotationDirection") &&
     selection.handInstanceId === instanceId
   ) {
     return true;

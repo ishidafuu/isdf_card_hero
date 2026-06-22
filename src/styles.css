@@ -1388,6 +1388,19 @@ button:disabled {
   margin-top: 0;
 }
 
+.turn-flow-choice {
+  display: grid;
+  gap: 8px;
+  min-width: 0;
+}
+
+.battle-control-status .level-up-decision,
+.battle-control-status .selected-detail {
+  border-top: 0;
+  margin-top: 0;
+  padding-top: 0;
+}
+
 .battle-control-status .target-summary {
   margin-top: 0;
 }
