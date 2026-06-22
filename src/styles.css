@@ -1316,34 +1316,6 @@ button:disabled {
   line-height: 1.35;
 }
 
-.turn-phase-strip {
-  display: grid;
-  gap: 5px;
-  grid-template-columns: repeat(5, minmax(0, 1fr));
-}
-
-.turn-phase-strip > span {
-  align-items: center;
-  background: #eef1ea;
-  border: 1px solid #d5ddce;
-  border-radius: 999px;
-  color: #5a6761;
-  display: inline-flex;
-  font-size: 11px;
-  font-weight: 800;
-  justify-content: center;
-  line-height: 1;
-  min-width: 0;
-  padding: 5px 6px;
-  white-space: nowrap;
-}
-
-.turn-phase-strip > span.active {
-  background: #e7f0ff;
-  border-color: #8fb5e3;
-  color: #224a75;
-}
-
 .battle-control-body {
   align-items: start;
   display: grid;
@@ -1452,7 +1424,6 @@ button:disabled {
   margin-top: 0;
 }
 
-.next-action-panel,
 .action-preview-panel,
 .spectator-review-panel {
   background: #fdfef9;
@@ -1463,50 +1434,10 @@ button:disabled {
   padding: 8px;
 }
 
-.next-action-panel > strong,
 .action-preview-panel > strong,
 .spectator-review-heading strong {
   color: #26302e;
   font-size: 12px;
-}
-
-.next-action-chip-list {
-  display: flex;
-  flex-wrap: nowrap;
-  gap: 5px;
-  min-width: 0;
-  overflow-x: auto;
-  padding-bottom: 2px;
-}
-
-.next-action-chip {
-  align-items: center;
-  background: #eef1ea;
-  border: 1px solid #d6ddd0;
-  border-radius: 999px;
-  color: #4b5652;
-  display: inline-flex;
-  font-size: 11px;
-  font-weight: 800;
-  gap: 3px;
-  line-height: 1;
-  padding: 4px 6px;
-}
-
-.next-action-chip b {
-  color: #1d2527;
-}
-
-.next-action-ok {
-  background: #eaf6ee;
-  border-color: #9bc8aa;
-  color: #245a37;
-}
-
-.next-action-warn {
-  background: #fff7e6;
-  border-color: #d8b35c;
-  color: #7a510f;
 }
 
 .action-preview-panel ol,
@@ -4656,20 +4587,6 @@ button:disabled {
   .battle-playback-row button {
     font-size: 12px;
     min-height: 30px;
-    padding: 4px 5px;
-  }
-
-  .turn-phase-strip {
-    gap: 3px;
-  }
-
-  .turn-phase-strip > span {
-    font-size: 10px;
-    padding: 4px 3px;
-  }
-
-  .next-action-chip {
-    font-size: 10px;
     padding: 4px 5px;
   }
 

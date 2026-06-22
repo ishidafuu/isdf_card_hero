@@ -349,13 +349,6 @@ interface ActionPreview {
   logs: string[];
 }
 
-interface NextActionCue {
-  icon: string;
-  label: string;
-  value: string;
-  tone?: "ok" | "warn" | "danger";
-}
-
 interface BoardPoint {
   x: number;
   y: number;
@@ -1111,7 +1104,6 @@ export function App() {
     const entries = actionPreviews.flatMap((preview) => preview.targetKey ? [[preview.targetKey, preview] as const] : []);
     return new Map(entries);
   }, [actionPreviews]);
-  const nextActionCues = useMemo(() => getNextActionCues(game, controlsDisabled), [controlsDisabled, game]);
   const recentSpectatorAttention = useMemo(() => findRecentSpectatorAttention(game.log, 4), [game.log]);
 
   useEffect(() => {
@@ -2247,14 +2239,6 @@ export function App() {
             </span>
           )}
         </div>
-        <TurnPhaseStrip
-          game={game}
-          selection={selection}
-          pendingDropAction={pendingDropAction}
-          cpuVsCpu={cpuVsCpu}
-          autoPlayEnabled={autoPlayEnabled}
-          spectatorPaused={spectatorPaused}
-        />
         <div className="battle-control-body">
           <div className="battle-control-actions">
             <div className="battle-playback-row">
@@ -2331,7 +2315,6 @@ export function App() {
             </div>
           </div>
           <div className="battle-control-status">
-            <NextActionCuePanel cues={nextActionCues} />
             {cpuVsCpu && (
               <SpectatorReviewPanel
                 recent={recentSpectatorAttention}
@@ -3221,79 +3204,6 @@ function ActionDetailContext({ game, selection, pendingDropAction, previews, err
   );
 }
 
-function TurnPhaseStrip({
-  game,
-  selection,
-  pendingDropAction,
-  cpuVsCpu,
-  autoPlayEnabled,
-  spectatorPaused,
-}: {
-  game: GameState;
-  selection: Selection | undefined;
-  pendingDropAction: PendingDropAction | undefined;
-  cpuVsCpu: boolean;
-  autoPlayEnabled: boolean;
-  spectatorPaused: boolean;
-}) {
-  const active = getActivePhaseId(game, selection, pendingDropAction, cpuVsCpu, autoPlayEnabled, spectatorPaused);
-  const steps = [
-    { id: "start", icon: "⏭️", label: "Turn" },
-    { id: "main", icon: "🃏", label: "Act" },
-    { id: "target", icon: "🎯", label: "Target" },
-    { id: "resolve", icon: "💥", label: "Resolve" },
-    { id: "end", icon: "✅", label: "End" },
-  ] as const;
-
-  return (
-    <div className="turn-phase-strip" aria-label="turn phase">
-      {steps.map((step) => (
-        <span className={step.id === active ? "active" : ""} key={step.id}>
-          <Icon icon={step.icon} /> {step.label}
-        </span>
-      ))}
-    </div>
-  );
-}
-
-function getActivePhaseId(
-  game: GameState,
-  selection: Selection | undefined,
-  pendingDropAction: PendingDropAction | undefined,
-  cpuVsCpu: boolean,
-  autoPlayEnabled: boolean,
-  spectatorPaused: boolean,
-): "start" | "main" | "target" | "resolve" | "end" {
-  if (game.winner) {
-    return "end";
-  }
-  if (game.pendingLevelUp || (cpuVsCpu && !spectatorPaused) || autoPlayEnabled || game.currentPlayer === "cpu") {
-    return "resolve";
-  }
-  if (selection || pendingDropAction) {
-    return "target";
-  }
-  return game.turnNumber <= 1 ? "start" : "main";
-}
-
-function NextActionCuePanel({ cues }: { cues: NextActionCue[] }) {
-  if (cues.length === 0) {
-    return null;
-  }
-  return (
-    <div className="next-action-panel">
-      <strong><Icon icon="🧭" /> Next</strong>
-      <span className="next-action-chip-list">
-        {cues.map((cue) => (
-          <span className={cue.tone ? `next-action-chip next-action-${cue.tone}` : "next-action-chip"} key={cue.label}>
-            <Icon icon={cue.icon} /> {cue.label} <b>{cue.value}</b>
-          </span>
-        ))}
-      </span>
-    </div>
-  );
-}
-
 function ActionPreviewPanel({ previews }: { previews: ActionPreview[] }) {
   if (previews.length === 0) {
     return null;
@@ -4099,37 +4009,6 @@ function previewBadgeForTarget(previous: GameState, next: GameState, target: Tar
     }
   }
   return undefined;
-}
-
-function getNextActionCues(game: GameState, controlsDisabled: boolean): NextActionCue[] {
-  if (game.winner) {
-    return [{ icon: "🏆", label: "Result", value: `${playerLabel(game.winner)}勝利`, tone: "ok" }];
-  }
-  if (game.pendingLevelUp) {
-    return [{ icon: "✨", label: "Level Up", value: `0-${game.pendingLevelUp.maxLevels}`, tone: "warn" }];
-  }
-  if (game.currentPlayer !== "player") {
-    return [{ icon: "🧠", label: "CPU", value: playerLabel(game.currentPlayer), tone: "warn" }];
-  }
-  if (controlsDisabled) {
-    return [{ icon: "⏳", label: "Wait", value: "解決中", tone: "warn" }];
-  }
-
-  const summon = countPlayableSummons(game);
-  const magic = countPlayableMagic(game);
-  const monsterActions = countMonsterActions(game);
-  const masterActions = countPlayableMasterActions(game);
-  const hpDraw = getMasterHpDrawDisabledReason(game, "player", false) ? 0 : 1;
-  const activeTotal = summon + magic + monsterActions.attack + monsterActions.move + monsterActions.focus + masterActions + hpDraw;
-  return [
-    { icon: "🂠", label: "Summon", value: String(summon), tone: summon > 0 ? "ok" : undefined },
-    { icon: "✨", label: "Magic", value: String(magic), tone: magic > 0 ? "ok" : undefined },
-    { icon: "⚔️", label: "Attack", value: String(monsterActions.attack), tone: monsterActions.attack > 0 ? "ok" : undefined },
-    { icon: "🧭", label: "Move", value: String(monsterActions.move), tone: monsterActions.move > 0 ? "ok" : undefined },
-    { icon: "🔥", label: "Focus", value: String(monsterActions.focus), tone: monsterActions.focus > 0 ? "ok" : undefined },
-    { icon: "🎮", label: "Master", value: String(masterActions + hpDraw), tone: masterActions + hpDraw > 0 ? "ok" : undefined },
-    { icon: "⏭️", label: "End", value: activeTotal === 0 ? "推奨" : "可", tone: activeTotal === 0 ? "warn" : undefined },
-  ];
 }
 
 function countPlayableSummons(game: GameState): number {
