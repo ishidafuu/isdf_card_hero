@@ -1766,7 +1766,7 @@ function clearExpiredStartTurnEffects(state: GameState, playerId: PlayerId): voi
 function focusIdleMonsters(state: GameState, playerId: PlayerId): void {
   for (const slotKey of PLAYER_SLOT_ORDER[playerId]) {
     const monster = state.slots[slotKey].monster;
-    if (monster?.status === "active" && monster.actionCount === 0) {
+    if (monster?.status === "active" && monster.actionCount < monster.actionLimit && !monster.focused) {
       monster.focused = true;
       appendLog(state, `${monsterName(monster)}は気合いだめした`);
     }

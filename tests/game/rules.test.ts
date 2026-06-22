@@ -415,6 +415,27 @@ describe("battle prototype rules", () => {
     });
   });
 
+  it("focuses a moved two-action monster if it still has an action at turn end", () => {
+    let game = createInitialGame(126);
+    game.slots.player_front_left.monster = createActiveMonster("polyspinner", "player");
+
+    game = moveMonster(game, "player_front_left", "player_back_left");
+    expect(game.slots.player_back_left.monster).toMatchObject({
+      cardId: "polyspinner",
+      actionCount: 1,
+      actionLimit: 2,
+      focused: false,
+    });
+
+    const next = endTurn(game);
+
+    expect(next.slots.player_back_left.monster).toMatchObject({
+      cardId: "polyspinner",
+      focused: true,
+    });
+    expect(next.log.some((entry) => entry.includes("ポリスピナー") && entry.includes("気合いだめした"))).toBe(true);
+  });
+
   it("creates a player choice when a monster can level up after defeating a monster", () => {
     const game = createInitialGame(105);
     game.players.player.stones = 1;
