@@ -115,7 +115,7 @@ const VISUAL_EFFECT_DURATION_MS = 900;
 const AUTO_STEP_DELAY_MIN_MS = 100;
 const AUTO_STEP_DELAY_MAX_MS = 3000;
 const AUTO_STEP_DELAY_STEP_MS = 50;
-const AUTO_STEP_DELAY_DEFAULT_MS = 650;
+const AUTO_STEP_DELAY_DEFAULT_MS = 1000;
 const AUTO_SPEED_PRESETS = [
   { label: "Watch", delayMs: 1000 },
   { label: "Normal", delayMs: 650 },
@@ -126,6 +126,7 @@ const MAX_VISIBLE_RESOURCE_ICONS = 10;
 const DEFAULT_BATTLE_SEED = 20260612;
 const DEFAULT_PLAYER_DECK_PRESET_ID = "submission-pro-no-rare8-white-1377" satisfies DeckPresetId;
 const DEFAULT_CPU_DECK_PRESET_ID = "balanced-normal" satisfies DeckPresetId;
+const AUTO_STEP_DELAY_STORAGE_KEY = "card-hero:auto-step-delay-ms:v1";
 const BATTLE_HISTORY_STORAGE_KEY = "card-hero:battle-history:v1";
 const BATTLE_PRESETS_STORAGE_KEY = "card-hero:battle-presets:v1";
 const BATTLE_HISTORY_LIMIT = 20;
@@ -507,10 +508,13 @@ const BUILT_IN_MATCH_PRESETS: BuiltInMatchPreset[] = [
     id: "standard-random",
     name: "白#1377デフォルト",
     description: "Playerは投稿Pro白8なし #1377。CPUは通常カードランダム、ホワイト同士、stable AI。",
-    create: () => ({
-      settings: createBattleSettings(DEFAULT_BATTLE_SEED),
-      deckSettings: createDefaultDeckSettings(DEFAULT_BATTLE_SEED),
-    }),
+    create: () => {
+      const seed = createRandomBattleSeed();
+      return {
+        settings: createBattleSettings(seed),
+        deckSettings: createDefaultDeckSettings(seed),
+      };
+    },
     deckPresetIds: { player: DEFAULT_PLAYER_DECK_PRESET_ID, cpu: DEFAULT_CPU_DECK_PRESET_ID },
   },
   {
@@ -957,12 +961,57 @@ function normalizeSeedInput(value: string, fallback: number): number {
   return Math.max(0, Math.floor(parsed)) >>> 0;
 }
 
+function createRandomBattleSeed(): number {
+  return Math.floor(Math.random() * 1_000_000_000);
+}
+
+function withRandomBattleSeed(settings: BattleSettings): BattleSettings {
+  const seed = createRandomBattleSeed();
+  return { ...settings, seed, seedInput: String(seed) };
+}
+
+function normalizeAutoStepDelayMs(value: unknown): number {
+  const numeric = typeof value === "number" ? value : Number(value);
+  if (!Number.isFinite(numeric)) {
+    return AUTO_STEP_DELAY_DEFAULT_MS;
+  }
+  return clampNumber(
+    Math.round(numeric / AUTO_STEP_DELAY_STEP_MS) * AUTO_STEP_DELAY_STEP_MS,
+    AUTO_STEP_DELAY_MIN_MS,
+    AUTO_STEP_DELAY_MAX_MS,
+  );
+}
+
+function loadAutoStepDelayMs(): number {
+  if (typeof window === "undefined") {
+    return AUTO_STEP_DELAY_DEFAULT_MS;
+  }
+  try {
+    const raw = window.localStorage.getItem(AUTO_STEP_DELAY_STORAGE_KEY);
+    return raw ? normalizeAutoStepDelayMs(JSON.parse(raw)) : AUTO_STEP_DELAY_DEFAULT_MS;
+  } catch {
+    return AUTO_STEP_DELAY_DEFAULT_MS;
+  }
+}
+
+function saveAutoStepDelayMs(value: number): void {
+  if (typeof window === "undefined") {
+    return;
+  }
+  try {
+    window.localStorage.setItem(AUTO_STEP_DELAY_STORAGE_KEY, JSON.stringify(normalizeAutoStepDelayMs(value)));
+  } catch {
+    // localStorage is a convenience cache; gameplay must continue even when it is unavailable.
+  }
+}
+
 export function App() {
-  const [battleSettings, setBattleSettings] = useState<BattleSettings>(() => createBattleSettings(DEFAULT_BATTLE_SEED));
-  const [deckSettings, setDeckSettings] = useState<DeckSettings>(() => createDefaultDeckSettings(DEFAULT_BATTLE_SEED));
+  const [initialBattleSeed] = useState(() => createRandomBattleSeed());
+  const [battleSettings, setBattleSettings] = useState<BattleSettings>(() => createBattleSettings(initialBattleSeed));
+  const [deckSettings, setDeckSettings] = useState<DeckSettings>(() => createDefaultDeckSettings(initialBattleSeed));
   const [deckPickerIds, setDeckPickerIds] = useState<Record<PlayerId, string>>(() => createDeckPickerIds());
   const [game, setGame] = useState<GameState>(() =>
-    createGameFromSettings(createBattleSettings(DEFAULT_BATTLE_SEED), createDefaultDeckSettings(DEFAULT_BATTLE_SEED)),
+    createGameFromSettings(createBattleSettings(initialBattleSeed), createDefaultDeckSettings(initialBattleSeed)),
   );
   const [selection, setSelection] = useState<Selection | undefined>();
   const [pendingDropAction, setPendingDropAction] = useState<PendingDropAction | undefined>();
@@ -972,7 +1021,7 @@ export function App() {
   const [dragPayload, setDragPayload] = useState<DragPayload | undefined>();
   const [manualUndoStack, setManualUndoStack] = useState<GameState[]>([]);
   const [autoPlayEnabled, setAutoPlayEnabled] = useState(false);
-  const [autoStepDelayMs, setAutoStepDelayMs] = useState(AUTO_STEP_DELAY_DEFAULT_MS);
+  const [autoStepDelayMs, setAutoStepDelayMs] = useState(() => loadAutoStepDelayMs());
   const [spectatorPauseOnAttention, setSpectatorPauseOnAttention] = useState(true);
   const [spectatorPaused, setSpectatorPaused] = useState(false);
   const [zoneView, setZoneView] = useState<ZoneView | undefined>();
@@ -1606,12 +1655,7 @@ export function App() {
   }
 
   function handleNewGame() {
-    startNewGame(battleSettings, deckSettings);
-  }
-
-  function handleRandomSeedNewGame() {
-    const seed = Math.floor(Math.random() * 1_000_000_000);
-    const nextSettings = { ...battleSettings, seed, seedInput: String(seed) };
+    const nextSettings = withRandomBattleSeed(battleSettings);
     setBattleSettings(nextSettings);
     startNewGame(nextSettings, deckSettings);
   }
@@ -1752,12 +1796,13 @@ export function App() {
   }
 
   function handleRandomSeed() {
-    const seed = Math.floor(Math.random() * 1_000_000_000);
-    setBattleSettings({ ...battleSettings, seed, seedInput: String(seed) });
+    setBattleSettings(withRandomBattleSeed(battleSettings));
   }
 
   function handleAutoSpeedPreset(delayMs: number) {
-    setAutoStepDelayMs(delayMs);
+    const nextDelayMs = normalizeAutoStepDelayMs(delayMs);
+    setAutoStepDelayMs(nextDelayMs);
+    saveAutoStepDelayMs(nextDelayMs);
     if (cpuVsCpu) {
       setSpectatorPaused(false);
     }
@@ -1842,11 +1887,9 @@ export function App() {
     if (!Number.isFinite(parsed)) {
       return;
     }
-    setAutoStepDelayMs(clampNumber(
-      Math.round(parsed / AUTO_STEP_DELAY_STEP_MS) * AUTO_STEP_DELAY_STEP_MS,
-      AUTO_STEP_DELAY_MIN_MS,
-      AUTO_STEP_DELAY_MAX_MS,
-    ));
+    const nextDelayMs = normalizeAutoStepDelayMs(parsed);
+    setAutoStepDelayMs(nextDelayMs);
+    saveAutoStepDelayMs(nextDelayMs);
   }
 
   function handleHandDragStart(event: DragEvent<HTMLButtonElement>, instanceId: string) {
@@ -2285,10 +2328,7 @@ export function App() {
           </div>
           <div className="battle-action-grid compact">
             <button type="button" onClick={handleNewGame} disabled={fixedDeckError}>
-              <Icon icon="🔄" /> 同じ条件で再戦
-            </button>
-            <button type="button" onClick={handleRandomSeedNewGame} disabled={fixedDeckError}>
-              <Icon icon="🎲" /> Seedを変えて再戦
+              <Icon icon="🔄" /> 新しいSeedで再戦
             </button>
             <button type="button" onClick={() => showInfoZoneView({ kind: "deckSetup" })}>
               <Icon icon="🧩" /> デッキ設定
