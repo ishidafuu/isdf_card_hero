@@ -1963,11 +1963,9 @@ function damageMonster(
     monster.oneShotShield = false;
     monster.halfShielded = false;
   }
-  if (!ignoresDamageReduction && monster.focused) {
+  if (!ignoresDamageReduction && monster.focused && damagePreview.focusedReduction > 0) {
     monster.focused = false;
-    if (damagePreview.focusedReduction > 0) {
-      appendLog(state, `${monsterName(monster)}は気合いで1ダメージ軽減した`);
-    }
+    appendLog(state, `${monsterName(monster)}は気合いで1ダメージ軽減した`);
   }
 
   monster.hp -= damage;

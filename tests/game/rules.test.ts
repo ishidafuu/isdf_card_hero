@@ -816,6 +816,26 @@ describe("battle prototype rules", () => {
     expect(attacked.log.some((entry) => entry.includes("気合いで1ダメージ軽減した"))).toBe(true);
   });
 
+  it("keeps focus when shield alone prevents all incoming damage", () => {
+    let game = createInitialGame(118);
+    game.slots.player_front_left.monster = createActiveMonster("card_051", "player");
+    game.slots.cpu_back_left.monster = createActiveMonster("takokke", "cpu", {
+      focused: true,
+      shielded: true,
+    });
+
+    game = attackWithCommand(game, {
+      attackerSlotKey: "player_front_left",
+      commandId: "スパイクボール",
+      target: { kind: "monster", slotKey: "cpu_back_left" },
+    });
+
+    expect(game.slots.cpu_back_left.monster?.hp).toBe(getMonsterDef("takokke").levels[0].maxHp);
+    expect(game.slots.cpu_back_left.monster?.shielded).toBe(true);
+    expect(game.slots.cpu_back_left.monster?.focused).toBe(true);
+    expect(game.log.some((entry) => entry.includes("気合いで1ダメージ軽減した"))).toBe(false);
+  });
+
   it("lets range-2 attacks target the diagonally forward skipped lane", () => {
     const game = createInitialGame(112);
     game.slots.player_back_left.monster = createActiveMonster("yanbaru", "player");
