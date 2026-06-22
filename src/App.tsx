@@ -9,7 +9,6 @@ import {
   getAllCardDefs,
   getCardDef,
   getCardIconPath,
-  getCardMemberRating,
   getCardMemberRatingAverage,
   getCardName,
   getCardPool,
@@ -75,7 +74,7 @@ import {
   type DeckBattleScoreSnapshot,
   type DeckBattleScoreSnapshotSuiteId,
 } from "./game/deckBattleScoreSnapshots";
-import { evaluateBoardUnit, evaluateCard, type UnitEvaluation } from "./game/unitEvaluation";
+import { evaluateCard } from "./game/unitEvaluation";
 import type { CardInstance, CardPool, CommandDef, GameState, MagicAction, MagicCardDef, MagicTargetKind, MasterActionId, MasterId, MonsterState, PlayerId, Row, SlotKey, Target } from "./game/types";
 import type { DeckValidationSummary } from "./game/cards";
 
@@ -979,7 +978,6 @@ export function App() {
   const [zoneView, setZoneView] = useState<ZoneView | undefined>();
   const [infoToolsOpen, setInfoToolsOpen] = useState(false);
   const [logFilter, setLogFilter] = useState<LogFilter>("all");
-  const [logOpen, setLogOpen] = useState(false);
   const [selectedLogIndex, setSelectedLogIndex] = useState<number | undefined>();
   const [battleHistory, setBattleHistory] = useState<BattleHistoryEntry[]>(() => loadBattleHistory());
   const [savedBattlePresets, setSavedBattlePresets] = useState<SavedBattlePreset[]>(() => loadSavedBattlePresets());
@@ -1122,7 +1120,7 @@ export function App() {
   }, [game.log, logFilter, selectedLogIndex]);
 
   useEffect(() => {
-    if (!logOpen || !showBattleLog) {
+    if (!showBattleLog) {
       return;
     }
     const list = logListRef.current;
@@ -1130,7 +1128,7 @@ export function App() {
       return;
     }
     list.scrollTop = list.scrollHeight;
-  }, [logFilter, logOpen, showBattleLog, visibleLogEntries]);
+  }, [logFilter, showBattleLog, visibleLogEntries]);
 
   useEffect(() => {
     if (!cpuVsCpu || !spectatorPauseOnAttention) {
@@ -2752,6 +2750,8 @@ export function App() {
                       setError("");
                     }}
                     disabled={controlsDisabled && !selectableDuringInterrupt}
+                    aria-label={getCardName(card.cardId)}
+                    title={getCardName(card.cardId)}
                   >
                     <HandCardContent cardId={card.cardId} />
                   </button>
@@ -2764,68 +2764,43 @@ export function App() {
 
         <aside className={`side-panel ${hasSideContext ? "context-only" : ""}`}>
           {showBattleLog && (
-            <section className={`log-panel ${logOpen ? "open" : "collapsed"}`}>
+            <section className="log-panel open">
               <div className="log-heading">
                 <div>
                   <h2><Icon icon="📜" /> Battle Log</h2>
-                  <span>{logOpen ? `${visibleLogEntries.length}/${game.log.length}` : `${game.log.length} events`}</span>
+                  <span>{`${visibleLogEntries.length}/${game.log.length}`}</span>
                 </div>
-                <button
-                  type="button"
-                  className="log-toggle-button"
-                  onClick={() => {
-                    setLogOpen((open) => {
-                      if (open) {
-                        setSelectedLogIndex(undefined);
-                      }
-                      return !open;
-                    });
-                  }}
-                  aria-expanded={logOpen}
-                >
-                  <Icon icon={logOpen ? "▴" : "▾"} /> {logOpen ? "閉じる" : "開く"}
-                </button>
               </div>
               <LatestEventSummary log={game.log} />
-              {logOpen && (
-                <>
-                  <div className="log-filter-row" aria-label="log filters">
-                    {LOG_FILTERS.map((filter) => (
-                      <button
-                        type="button"
-                        key={filter}
-                        className={filter === logFilter ? "selected" : ""}
-                        onClick={() => setLogFilter(filter)}
-                      >
-                        <Icon icon={logFilterIcon(filter)} /> {logFilterLabel(filter)}
-                      </button>
-                    ))}
-                  </div>
-                  <ol ref={logListRef}>
-                    {visibleLogEntries.map(({ entry, index }) => (
-                      <li className={`log-entry ${logTone(entry)}`} key={`${entry}_${index}`}>
-                        <button
-                          type="button"
-                          className={`log-entry-button ${selectedLogIndex === index ? "selected" : ""}`}
-                          onClick={() => setSelectedLogIndex(selectedLogIndex === index ? undefined : index)}
-                        >
-                          <span className="log-entry-kind"><Icon icon={logIcon(entry)} /></span>
-                          <span className="log-entry-index">#{index + 1}</span>
-                          <LogEventContent entry={entry} />
-                        </button>
-                      </li>
-                    ))}
-                  </ol>
-                  {selectedLogEntry && (
-                    <div className={`log-detail ${logTone(selectedLogEntry)}`}>
-                      <strong><Icon icon={logIcon(selectedLogEntry)} /> #{selectedLogIndex! + 1} {logCategoryLabel(selectedLogEntry)}</strong>
-                      <LogEventContent entry={selectedLogEntry} />
-                    </div>
-                  )}
-                </>
-              )}
-              {!logOpen && selectedLogEntry && (
-                <div className={`log-detail compact ${logTone(selectedLogEntry)}`}>
+              <div className="log-filter-row" aria-label="log filters">
+                {LOG_FILTERS.map((filter) => (
+                  <button
+                    type="button"
+                    key={filter}
+                    className={filter === logFilter ? "selected" : ""}
+                    onClick={() => setLogFilter(filter)}
+                  >
+                    <Icon icon={logFilterIcon(filter)} /> {logFilterLabel(filter)}
+                  </button>
+                ))}
+              </div>
+              <ol ref={logListRef}>
+                {visibleLogEntries.map(({ entry, index }) => (
+                  <li className={`log-entry ${logTone(entry)}`} key={`${entry}_${index}`}>
+                    <button
+                      type="button"
+                      className={`log-entry-button ${selectedLogIndex === index ? "selected" : ""}`}
+                      onClick={() => setSelectedLogIndex(selectedLogIndex === index ? undefined : index)}
+                    >
+                      <span className="log-entry-kind"><Icon icon={logIcon(entry)} /></span>
+                      <span className="log-entry-index">#{index + 1}</span>
+                      <LogEventContent entry={entry} />
+                    </button>
+                  </li>
+                ))}
+              </ol>
+              {selectedLogEntry && (
+                <div className={`log-detail ${logTone(selectedLogEntry)}`}>
                   <strong><Icon icon={logIcon(selectedLogEntry)} /> #{selectedLogIndex! + 1} {logCategoryLabel(selectedLogEntry)}</strong>
                   <LogEventContent entry={selectedLogEntry} />
                 </div>
@@ -6380,7 +6355,6 @@ function MasterCommands({ game, playerId, disabled, onMasterAction, onHpDraw }: 
       onClick: onHpDraw,
     },
   ];
-  const readyActions = masterActionItems.filter((action) => !action.disabledReason);
   const renderActionButton = (action: UnitActionItem) => (
     <button
       className={`command-button ${action.disabledReason ? "is-unavailable" : "is-ready"}`}
@@ -6403,15 +6377,6 @@ function MasterCommands({ game, playerId, disabled, onMasterAction, onHpDraw }: 
 
   return (
     <div className="selected-detail">
-      <section className="available-actions-panel">
-        <div className="available-actions-heading">
-          <span className="pending-action-section-label">今できること</span>
-          <strong>{readyActions.length > 0 ? `${readyActions.length}件実行できます` : "今できる行動はありません"}</strong>
-        </div>
-        <div className="available-action-list">
-          {masterActionItems.map(renderActionButton)}
-        </div>
-      </section>
       <section className="selected-unit-info selected-master-info">
         <MasterResourceDisplay
           masterId={player.masterId}
@@ -6422,6 +6387,11 @@ function MasterCommands({ game, playerId, disabled, onMasterAction, onHpDraw }: 
           deck={player.deck.length}
           hand={player.hand.length}
         />
+      </section>
+      <section className="available-actions-panel">
+        <div className="available-action-list">
+          {masterActionItems.map(renderActionButton)}
+        </div>
       </section>
     </div>
   );
@@ -6553,7 +6523,6 @@ function MonsterCommands({
           onClick: onFocus,
         },
       ];
-  const readyActions = unitActions.filter((action) => !action.disabledReason);
   const renderActionButton = (action: UnitActionItem) => (
     <button
       className={`command-button ${action.disabledReason ? "is-unavailable" : "is-ready"}${action.selected ? " is-selected" : ""}`}
@@ -6577,29 +6546,6 @@ function MonsterCommands({
 
   return (
     <div className="selected-detail">
-      {hidePreparedInfo ? (
-        <section className="available-actions-panel">
-          <div className="available-actions-heading">
-            <span className="pending-action-section-label">今できること</span>
-            <strong>情報非公開</strong>
-          </div>
-          <p className="available-actions-empty"><Icon icon="🔒" /> CPUの裏向きカードの情報は非公開です。</p>
-        </section>
-      ) : (
-        <section className="available-actions-panel">
-          <div className="available-actions-heading">
-            <span className="pending-action-section-label">今できること</span>
-            <strong>{readyActions.length > 0 ? `${readyActions.length}件実行できます` : "今できる行動はありません"}</strong>
-          </div>
-          {unitActions.length > 0 ? (
-            <div className="available-action-list">
-              {unitActions.map(renderActionButton)}
-            </div>
-          ) : (
-            <p className="available-actions-empty"><Icon icon="⏸️" /> 行動条件を満たしていません。</p>
-          )}
-        </section>
-      )}
       <section className="selected-unit-info">
         <h3>
           {hidePreparedInfo ? <CardBackArt /> : <CardIcon cardId={monster.cardId} />}
@@ -6618,6 +6564,19 @@ function MonsterCommands({
           </div>
         )}
       </section>
+      {hidePreparedInfo ? (
+        <section className="available-actions-panel">
+          <p className="available-actions-empty"><Icon icon="🔒" /> CPUの裏向きカードの情報は非公開です。</p>
+        </section>
+      ) : (
+        unitActions.length > 0 && (
+          <section className="available-actions-panel">
+            <div className="available-action-list">
+              {unitActions.map(renderActionButton)}
+            </div>
+          </section>
+        )
+      )}
     </div>
   );
 }
@@ -7767,19 +7726,17 @@ function HandCardContent({ cardId }: HandCardContentProps) {
 
   if (def.type === "magic") {
     return (
-      <>
-        <span className="hand-card-title">
-          <strong><CardIcon cardId={def.id} /> {def.name}</strong>
-        </span>
-      </>
+      <span className="hand-card-visual">
+        <CardIcon cardId={def.id} />
+      </span>
     );
   }
 
   const hpText = `HP ${def.levels[0].maxHp}`;
   return (
     <>
-      <span className="hand-card-title">
-        <strong><CardIcon cardId={def.id} /> {def.name}</strong>
+      <span className="hand-card-visual">
+        <CardIcon cardId={def.id} />
       </span>
       <span className="hand-card-hp"><Icon icon="❤️" /> {hpText}</span>
     </>
@@ -7793,22 +7750,12 @@ interface CardDetailProps {
   showTitle?: boolean;
 }
 
-function CardDetail({ cardId, game, slotKey, showTitle = true }: CardDetailProps) {
+function CardDetail({ cardId, showTitle = true }: CardDetailProps) {
   const def = getCardDef(cardId);
-  const cardEvaluation = evaluateCard(cardId);
-  const boardEvaluation = game && slotKey ? evaluateBoardUnit(game, slotKey) : undefined;
-  const evaluation = boardEvaluation ?? cardEvaluation;
   if (def.type === "magic") {
     return (
       <>
         {showTitle && <h3><CardIcon cardId={def.id} /> {def.name}</h3>}
-        <div className="card-meta-row">
-          <CardPoolChip cardId={def.id} />
-          <span className="card-chip magic">✨ 魔法</span>
-          <span><Icon icon="🪨" /> Cost {def.cost}</span>
-          <span>{targetKindsLabel(def.targetKinds)}</span>
-          <MemberRatingChips cardId={def.id} />
-        </div>
         <EffectBreakdown
           items={[
             { label: "条件", text: `手札から使用 / Stone ${def.cost}` },
@@ -7818,7 +7765,6 @@ function CardDetail({ cardId, game, slotKey, showTitle = true }: CardDetailProps
         />
         <p>{def.description}</p>
         <CardNotes card={def} />
-        <UnitEvaluationPanel evaluation={evaluation} title="カード評価" />
       </>
     );
   }
@@ -7826,16 +7772,6 @@ function CardDetail({ cardId, game, slotKey, showTitle = true }: CardDetailProps
   return (
     <>
       {showTitle && <h3><CardIcon cardId={def.id} /> {def.name}</h3>}
-      <div className="card-meta-row">
-        <CardPoolChip cardId={def.id} />
-        <span className="card-chip"><Icon icon={getCardPool(def) === "special" ? "★" : roleIcon(def.role)} /> {getCardPool(def) === "special" ? "スーパー" : def.role === "front" ? "前衛" : "後衛"}</span>
-        <span>{getCardPool(def) === "special" ? <><Icon icon="✨" /> {superEvolutionText(def)}</> : <><Icon icon="🪨" /> 召喚 1</>}</span>
-        <span><Icon icon="✨" /> MaxLv {def.maxLevel}</span>
-        {def.actionLimit && <span><Icon icon="⚡" /> {def.actionLimit}回行動</span>}
-        <MemberRatingChips cardId={def.id} />
-      </div>
-      <CardNotes card={def} />
-      <UnitEvaluationPanel evaluation={evaluation} title={boardEvaluation ? "盤面評価" : "カード評価"} />
       <div className="level-detail-list">
         {def.levels.map((level, index) => (
           <div className="level-detail" key={`${def.id}_${level.level}_${index}`}>
@@ -7860,59 +7796,6 @@ function CardDetail({ cardId, game, slotKey, showTitle = true }: CardDetailProps
       </div>
     </>
   );
-}
-
-function MemberRatingChips({ cardId }: { cardId: string }) {
-  const ratings = [
-    ["PRO黒", getCardMemberRating(cardId, "black")],
-    ["PRO白", getCardMemberRating(cardId, "white")],
-  ] as const;
-  return (
-    <>
-      {ratings.map(([label, rating]) =>
-        rating ? (
-          <span className="card-chip" title={`部員評価 ${label} / ${rating.votes}票`} key={label}>
-            {label} {rating.average.toFixed(1)}
-          </span>
-        ) : null,
-      )}
-    </>
-  );
-}
-
-function UnitEvaluationPanel({ evaluation, title }: { evaluation: UnitEvaluation; title: string }) {
-  return (
-    <div className="unit-evaluation-panel">
-      <div className="unit-evaluation-heading">
-        <strong><Icon icon="📈" /> {title}</strong>
-        <span className="unit-evaluation-total">
-          {evaluation.grade} {evaluation.total}
-        </span>
-      </div>
-      <div className="unit-evaluation-grid">
-        {evaluation.breakdown.map((item) => (
-          <span className={`unit-evaluation-chip ${item.tone}`} title={item.reason} key={item.key}>
-            <span>{item.label}</span>
-            <strong>{formatEvaluationValue(item.value)}</strong>
-          </span>
-        ))}
-      </div>
-      {evaluation.reasons.length > 0 && (
-        <ul className="unit-evaluation-reasons">
-          {evaluation.reasons.slice(0, 4).map((reason) => (
-            <li key={reason}>{reason}</li>
-          ))}
-        </ul>
-      )}
-    </div>
-  );
-}
-
-function formatEvaluationValue(value: number): string {
-  if (value > 0) {
-    return `+${value}`;
-  }
-  return String(value);
 }
 
 function EffectBreakdown({
@@ -8165,10 +8048,6 @@ function cardIcon(cardId: string): string {
 
 function clampNumber(value: number, min: number, max: number): number {
   return Math.min(max, Math.max(min, value));
-}
-
-function roleIcon(role: string): string {
-  return role === "front" ? "🛡️" : "🏹";
 }
 
 function commandIcon(command: CommandDef): string {

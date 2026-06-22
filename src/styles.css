@@ -1723,19 +1723,6 @@ button:disabled {
   padding: 10px;
 }
 
-.available-actions-heading {
-  align-items: center;
-  display: flex;
-  gap: 8px;
-  justify-content: space-between;
-}
-
-.available-actions-heading strong {
-  color: #24452d;
-  font-size: 14px;
-  line-height: 1.2;
-}
-
 .available-action-list {
   display: grid;
   gap: 6px;
@@ -1754,6 +1741,12 @@ button:disabled {
   gap: 0;
   margin-top: 12px;
   padding-top: 12px;
+}
+
+.selected-detail > .selected-unit-info:first-child {
+  border-top: 0;
+  margin-top: 0;
+  padding-top: 0;
 }
 
 .level-up-decision-panel {
@@ -2071,11 +2064,6 @@ button:disabled {
   min-height: 360px;
 }
 
-.log-panel.collapsed {
-  align-self: start;
-  height: auto;
-}
-
 .log-heading {
   align-items: center;
   display: flex;
@@ -2093,12 +2081,6 @@ button:disabled {
   color: #65716c;
   font-size: 12px;
   font-weight: 800;
-}
-
-.log-toggle-button {
-  flex: 0 0 auto;
-  min-height: 28px;
-  padding: 4px 7px;
 }
 
 .log-filter-row {
@@ -2362,15 +2344,16 @@ button:disabled {
   align-items: start;
   align-content: start;
   display: grid;
-  flex: 0 0 138px;
+  flex: 0 0 82px;
   gap: 6px;
-  max-width: 160px;
+  justify-items: center;
+  max-width: 96px;
   min-height: 68px;
-  min-width: 138px;
+  min-width: 82px;
   padding: 8px;
   position: relative;
   scroll-snap-align: start;
-  text-align: left;
+  text-align: center;
 }
 
 .hand-card.selected {
@@ -2423,22 +2406,16 @@ button:disabled {
   font-size: 12px;
 }
 
-.hand-card-title {
-  align-items: flex-start;
-  display: flex;
-  gap: 5px;
-  min-width: 0;
+.hand-card-visual {
+  align-items: center;
+  display: inline-flex;
+  justify-content: center;
 }
 
-.hand-card-title strong {
-  align-items: flex-start;
-  color: #1d2527;
-  display: inline-flex;
-  font-size: 13px;
-  gap: 5px;
-  line-height: 1.2;
-  min-width: 0;
-  overflow-wrap: anywhere;
+.hand-card-visual .card-image-icon {
+  height: 32px;
+  margin-right: 0;
+  width: 32px;
 }
 
 .hand-card-hp {
@@ -4566,7 +4543,7 @@ button:disabled {
   }
 
   .hand-card {
-    flex-basis: 138px;
+    flex-basis: 82px;
   }
 
   .monster-card strong {
