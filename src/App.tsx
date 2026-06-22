@@ -2207,6 +2207,69 @@ export function App() {
   const infoWorkspaceOpen = isInfoWorkspaceView(zoneView);
   const infoPanelOpen = infoToolsOpen || Boolean(zoneView);
   const endTurnWarning = getEndTurnWarning(game, controlsDisabled);
+  const showBattleActionControls = !cpuVsCpu;
+
+  function renderAutoPlaybackControls() {
+    return (
+      <div className="topbar-playback-controls" aria-label="Auto playback controls">
+        {!cpuVsCpu && (
+          <button
+            type="button"
+            className={autoPlayEnabled ? "selected" : ""}
+            onClick={() => setAutoPlayEnabled((enabled) => !enabled)}
+          >
+            <Icon icon={autoPlayEnabled ? "⏸️" : "▶️"} /> {autoPlayEnabled ? "Auto Stop" : "Auto Play"}
+          </button>
+        )}
+        {cpuVsCpu && spectatorPaused && (
+          <button type="button" onClick={() => setSpectatorPaused(false)}>
+            <Icon icon="▶️" /> Resume
+          </button>
+        )}
+        <label className="auto-delay-control">
+          Wait
+          <input
+            type="number"
+            min={AUTO_STEP_DELAY_MIN_MS}
+            max={AUTO_STEP_DELAY_MAX_MS}
+            step={AUTO_STEP_DELAY_STEP_MS}
+            value={autoStepDelayMs}
+            onChange={(event) => handleAutoDelayChange(event.target.value)}
+          />
+          ms
+        </label>
+        {cpuVsCpu && (
+          <div className="auto-speed-presets" aria-label="CPU vs CPU speed presets">
+            {AUTO_SPEED_PRESETS.map((preset) => (
+              <button
+                type="button"
+                className={autoStepDelayMs === preset.delayMs ? "selected" : ""}
+                onClick={() => handleAutoSpeedPreset(preset.delayMs)}
+                key={preset.label}
+              >
+                {preset.label}
+              </button>
+            ))}
+          </div>
+        )}
+        {cpuVsCpu && (
+          <label className="spectator-toggle">
+            <input
+              type="checkbox"
+              checked={spectatorPauseOnAttention}
+              onChange={(event) => {
+                setSpectatorPauseOnAttention(event.target.checked);
+                if (!event.target.checked) {
+                  setSpectatorPaused(false);
+                }
+              }}
+            />
+            注目停止
+          </label>
+        )}
+      </div>
+    );
+  }
 
   function renderBattleControlPanel() {
     if (game.winner) {
@@ -2254,61 +2317,10 @@ export function App() {
             </span>
           )}
         </div>
-        <div className="battle-control-body">
-          <div className="battle-control-actions">
-            <div className="battle-playback-row">
-              {!cpuVsCpu && (
-                <button type="button" onClick={() => setAutoPlayEnabled((enabled) => !enabled)}>
-                  <Icon icon={autoPlayEnabled ? "⏸️" : "▶️"} /> {autoPlayEnabled ? "Auto Stop" : "Auto Play"}
-                </button>
-              )}
-              <label className="auto-delay-control">
-                Wait
-                <input
-                  type="number"
-                  min={AUTO_STEP_DELAY_MIN_MS}
-                  max={AUTO_STEP_DELAY_MAX_MS}
-                  step={AUTO_STEP_DELAY_STEP_MS}
-                  value={autoStepDelayMs}
-                  onChange={(event) => handleAutoDelayChange(event.target.value)}
-                />
-                ms
-              </label>
-              {cpuVsCpu && (
-                <div className="auto-speed-presets" aria-label="CPU vs CPU speed presets">
-                  {AUTO_SPEED_PRESETS.map((preset) => (
-                    <button
-                      type="button"
-                      className={autoStepDelayMs === preset.delayMs ? "selected" : ""}
-                      onClick={() => handleAutoSpeedPreset(preset.delayMs)}
-                      key={preset.label}
-                    >
-                      {preset.label}
-                    </button>
-                  ))}
-                </div>
-              )}
-              {cpuVsCpu && (
-                <label className="spectator-toggle">
-                  <input
-                    type="checkbox"
-                    checked={spectatorPauseOnAttention}
-                    onChange={(event) => {
-                      setSpectatorPauseOnAttention(event.target.checked);
-                      if (!event.target.checked) {
-                        setSpectatorPaused(false);
-                      }
-                    }}
-                  />
-                  注目停止
-                </label>
-              )}
-              {cpuVsCpu && spectatorPaused && (
-                <button type="button" onClick={() => setSpectatorPaused(false)}>
-                  <Icon icon="▶️" /> Resume
-                </button>
-              )}
-              {!cpuVsCpu && (
+        <div className={`battle-control-body ${showBattleActionControls ? "" : "status-only"}`}>
+          {showBattleActionControls && (
+            <div className="battle-control-actions">
+              <div className="battle-playback-row">
                 <button
                   type="button"
                   className="undo-button"
@@ -2318,17 +2330,15 @@ export function App() {
                 >
                   <Icon icon="↩" /> 戻す
                 </button>
-              )}
-              {!cpuVsCpu && (
                 <button type="button" className={endTurnWarning ? "end-turn-risk" : ""} onClick={handleEndTurn} disabled={controlsDisabled} title={endTurnWarning}>
                   <Icon icon="⏭️" /> End Turn
                 </button>
-              )}
-              {!cpuVsCpu && endTurnWarning && (
-                <span className="end-turn-warning"><Icon icon="⚠️" /> {endTurnWarning}</span>
-              )}
+                {endTurnWarning && (
+                  <span className="end-turn-warning"><Icon icon="⚠️" /> {endTurnWarning}</span>
+                )}
+              </div>
             </div>
-          </div>
+          )}
           <div className="battle-control-status">
             {cpuVsCpu && (
               <SpectatorReviewPanel
@@ -2454,6 +2464,7 @@ export function App() {
           <button type="button" onClick={handleNewGame} disabled={fixedDeckError}>
             <Icon icon="🔄" /> New Game
           </button>
+          {renderAutoPlaybackControls()}
         </div>
       </header>
 
