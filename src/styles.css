@@ -2372,6 +2372,13 @@ button:disabled {
   text-align: center;
 }
 
+.hand-card.hidden-hand-card {
+  background: #f8faf4;
+  border: 1px solid #a8b3a5;
+  border-radius: 6px;
+  cursor: default;
+}
+
 .hand-card.selected {
   border-color: #2f5f91;
   box-shadow: inset 0 0 0 2px #2f5f91;
@@ -2431,6 +2438,11 @@ button:disabled {
 .hand-card-visual .card-image-icon {
   height: 64px;
   margin-right: 0;
+  width: 64px;
+}
+
+.hidden-hand-card .card-back-art {
+  height: 64px;
   width: 64px;
 }
 
@@ -3576,6 +3588,22 @@ button:disabled {
 
 .zone-card-row[open] summary {
   border-bottom: 1px solid #d8ded2;
+}
+
+.hidden-zone-card {
+  align-items: center;
+  display: grid;
+  gap: 6px;
+  grid-template-columns: 28px 40px minmax(0, 1fr);
+  min-height: 46px;
+  padding: 6px;
+}
+
+.hidden-zone-card .card-back-art {
+  border-radius: 4px;
+  box-shadow: none;
+  height: 32px;
+  width: 32px;
 }
 
 .zone-card-index {

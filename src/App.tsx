@@ -1902,6 +1902,10 @@ export function App() {
   }
 
   function handleHandDragStart(event: DragEvent<HTMLButtonElement>, instanceId: string) {
+    if (!canRevealHand(game.currentPlayer)) {
+      event.preventDefault();
+      return;
+    }
     startDrag(event, { kind: "hand", instanceId });
   }
 
@@ -1936,6 +1940,9 @@ export function App() {
   }
 
   function handleHandPointerDown(event: ReactPointerEvent<HTMLButtonElement>, instanceId: string) {
+    if (!canRevealHand(game.currentPlayer)) {
+      return;
+    }
     startPointerDrag(event, { kind: "hand", instanceId });
   }
 
@@ -2251,8 +2258,9 @@ export function App() {
   const selectedMonster =
     selection?.kind === "monster" ? game.slots[selection.slotKey].monster : undefined;
   const selectedMasterPlayerId = selection?.kind === "master" ? selection.playerId : undefined;
+  const canRevealCurrentHand = canRevealHand(game.currentPlayer);
   const selectedHand =
-    selection?.kind === "hand" ? currentPlayer.hand.find((card) => card.instanceId === selection.instanceId) : undefined;
+    selection?.kind === "hand" && canRevealCurrentHand ? currentPlayer.hand.find((card) => card.instanceId === selection.instanceId) : undefined;
   const infoWorkspaceOpen = isInfoWorkspaceView(zoneView);
   const infoPanelOpen = infoToolsOpen || Boolean(zoneView);
   const showBattleActionControls = !cpuVsCpu;
@@ -2905,7 +2913,18 @@ export function App() {
               </div>
             </div>
             <div className="hand-list">
-              {currentPlayer.hand.map((card) => {
+              {currentPlayer.hand.map((card, index) => {
+                if (!canRevealCurrentHand) {
+                  return (
+                    <div
+                      className="hand-card hidden-hand-card"
+                      key={card.instanceId}
+                      aria-label={`非公開手札 ${index + 1}`}
+                    >
+                      <HiddenHandCardContent />
+                    </div>
+                  );
+                }
                 const handChoiceState = handChoiceStateFor(game, selection, card.instanceId);
                 const selectableDuringInterrupt = handChoiceState === "level-up-super";
                 return (
@@ -5674,7 +5693,8 @@ function CardZonePanel({ game, view, onClose }: CardZonePanelProps) {
 
   const cards = game.players[view.playerId][view.zone];
   const title = `${playerLabel(view.playerId)} ${zoneLabel(view.zone)}`;
-  const helpText = zoneHelpText(view.zone);
+  const hideCardFaces = view.zone === "hand" && !canRevealHand(view.playerId);
+  const helpText = hideCardFaces ? "相手の手札は非公開です。" : zoneHelpText(view.zone);
 
   return (
     <section className="zone-panel">
@@ -5689,6 +5709,16 @@ function CardZonePanel({ game, view, onClose }: CardZonePanelProps) {
       </div>
       {cards.length === 0 ? (
         <p className="empty-zone"><Icon icon="□" /> Empty</p>
+      ) : hideCardFaces ? (
+        <div className="zone-card-list">
+          {cards.map((card, index) => (
+            <div className="zone-card-row hidden-zone-card" key={`${card.instanceId}_${index}`}>
+              <span className="zone-card-index">{index + 1}</span>
+              <CardBackArt />
+              <span className="zone-card-name">非公開</span>
+            </div>
+          ))}
+        </div>
       ) : (
         <div className="zone-card-list">
           {cards.map((card, index) => (
@@ -7079,6 +7109,10 @@ function isZoneView(view: ZoneView | undefined, playerId: PlayerId, zone: Extrac
   return view?.kind === "playerZone" && view.playerId === playerId && view.zone === zone;
 }
 
+function canRevealHand(playerId: PlayerId): boolean {
+  return playerId === "player";
+}
+
 function isInfoWorkspaceView(view: ZoneView | undefined): boolean {
   return view?.kind === "deckSetup" || view?.kind === "aiLab" || view?.kind === "catalog";
 }
@@ -7836,6 +7870,14 @@ function HandCardContent({ cardId }: HandCardContentProps) {
       </span>
       <span className="hand-card-hp"><Icon icon="❤️" /> {hpText}</span>
     </>
+  );
+}
+
+function HiddenHandCardContent() {
+  return (
+    <span className="hand-card-visual">
+      <CardBackArt />
+    </span>
   );
 }
 
