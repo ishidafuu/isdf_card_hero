@@ -221,10 +221,10 @@ describe("official card effect expectations", () => {
       target: { kind: "monster", slotKey: "cpu_front_left" },
     });
 
-    expect(game.slots.cpu_front_left.monster?.cardId).toBe("sigma");
+    expect(game.slots.cpu_front_left.monster?.cardId).toBe("yanbaru");
     expect(game.slots.cpu_front_right.monster?.cardId).toBe("takokke");
-    expect(game.slots.cpu_back_left.monster?.cardId).toBe("bomuzo");
-    expect(game.slots.cpu_back_right.monster?.cardId).toBe("yanbaru");
+    expect(game.slots.cpu_back_left.monster?.cardId).toBe("sigma");
+    expect(game.slots.cpu_back_right.monster?.cardId).toBe("bomuzo");
 
     game = createGameWithPlayerHand([]);
     game.slots.player_front_left.monster = createActiveMonster("card_131", "player");

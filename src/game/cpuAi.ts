@@ -2494,7 +2494,7 @@ function shouldPruneCloseoutMove(
 }
 
 function moveReason(state: GameState, after: GameState, fromSlotKey: SlotKey, toSlotKey: SlotKey): string {
-  if (bestAttackOpportunityScore(after) > bestAttackOpportunityScore(state) + 40) {
+  if (moveCreatesStrongerAttackLane(state, after, fromSlotKey, toSlotKey)) {
     return "移動後に強い攻撃筋を作れるため移動";
   }
   const mover = state.slots[fromSlotKey].monster;
@@ -2506,6 +2506,61 @@ function moveReason(state: GameState, after: GameState, fromSlotKey: SlotKey, to
     return "後衛カードを後列へ戻して射程を活かすため移動";
   }
   return "配置評価を改善できるため移動";
+}
+
+function moveCreatesStrongerAttackLane(
+  state: GameState,
+  after: GameState,
+  fromSlotKey: SlotKey,
+  toSlotKey: SlotKey,
+): boolean {
+  if (bestAttackOpportunityScore(after) > bestAttackOpportunityScore(state) + 40) {
+    return true;
+  }
+  if (swapImprovesRoleAttackSetup(state, fromSlotKey, toSlotKey)) {
+    return true;
+  }
+
+  return [
+    { monster: state.slots[fromSlotKey].monster, beforeSlotKey: fromSlotKey },
+    { monster: state.slots[toSlotKey].monster, beforeSlotKey: toSlotKey },
+  ].some(({ monster, beforeSlotKey }) => {
+    if (!monster) {
+      return false;
+    }
+    const afterSlotKey = findMonsterSlot(after, monster.instanceId);
+    if (!afterSlotKey) {
+      return false;
+    }
+    return bestAttackOpportunityScore(after, afterSlotKey) > bestAttackOpportunityScore(state, beforeSlotKey);
+  });
+}
+
+function swapImprovesRoleAttackSetup(state: GameState, fromSlotKey: SlotKey, toSlotKey: SlotKey): boolean {
+  const mover = state.slots[fromSlotKey].monster;
+  const swapped = state.slots[toSlotKey].monster;
+  if (!mover || !swapped) {
+    return false;
+  }
+
+  const beforeMatches =
+    roleSlotMatchScore(mover.cardId, state.slots[fromSlotKey]) +
+    roleSlotMatchScore(swapped.cardId, state.slots[toSlotKey]);
+  const afterMatches =
+    roleSlotMatchScore(mover.cardId, state.slots[toSlotKey]) +
+    roleSlotMatchScore(swapped.cardId, state.slots[fromSlotKey]);
+  return afterMatches > beforeMatches && afterMatches >= 2;
+}
+
+function roleSlotMatchScore(cardId: string, slot: SlotState): number {
+  const role = getMonsterAiTrait(cardId).role;
+  if (role === "front" && slot.row === "front") {
+    return 1;
+  }
+  if (role === "back" && slot.row === "back") {
+    return 1;
+  }
+  return 0;
 }
 
 function listFocusDecisions(state: GameState): CpuDecision[] {
