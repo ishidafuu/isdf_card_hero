@@ -3472,7 +3472,7 @@ function logKeywordToken(text: string): LogToken {
     return { kind: "chip", icon: "🛡️", text };
   }
   if (text === "バーサクパワー") {
-    return { kind: "chip", icon: "🔥", text };
+    return { kind: "chip", icon: "狂", text };
   }
   if (text === "大地の怒り") {
     return { kind: "chip", icon: "🌋", text };
@@ -6381,7 +6381,7 @@ function getBoardStatusBadges(monster: MonsterState): Array<{ icon: string; labe
     monster.provokeTargetSlotKey ? { icon: "囮", label: "挑発" } : undefined,
     monster.focused ? { icon: "🔥", label: "気合い" } : undefined,
     monster.powerUp ? { icon: "⬆️", label: "パワー+1" } : undefined,
-    monster.berserkPower ? { icon: "🔥", label: "バーサク" } : undefined,
+    monster.berserkPower ? { icon: "狂", label: "バーサク" } : undefined,
     monster.damageGuarded ? { icon: "仮", label: "仮死状態", className: "guarded" } : undefined,
     monster.shielded ? { icon: "🛡️", label: "盾" } : undefined,
     monster.halfShielded ? { icon: "🛡️", label: "半減盾" } : undefined,
@@ -8356,7 +8356,7 @@ function masterActionIcon(actionId: MasterActionId): string {
     return "🛡️";
   }
   if (actionId === "berserk_power") {
-    return "🔥";
+    return "狂";
   }
   return "🌋";
 }
@@ -8385,7 +8385,7 @@ function logIcon(entry: string): string {
     return "🔥";
   }
   if (entry.includes("バーサク")) {
-    return "🔥";
+    return "狂";
   }
   if (entry.includes("シールド") || entry.includes("ウェイクアップ") || entry.includes("回復")) {
     return "🛡️";
