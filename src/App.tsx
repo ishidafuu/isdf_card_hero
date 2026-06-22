@@ -997,6 +997,7 @@ export function App() {
   const lastSpectatorAttentionIndexRef = useRef<number | undefined>(undefined);
   const visualEffectIdRef = useRef(0);
   const recordedResultKeyRef = useRef<string | undefined>(undefined);
+  const logListRef = useRef<HTMLOListElement | null>(null);
   const activeBattleSettingsRef = useRef<BattleSettings>(cloneBattleSettings(battleSettings));
   const activeDeckSettingsRef = useRef<DeckSettings>(cloneDeckSettings(deckSettings));
   const pointerDragRef = useRef<{
@@ -1023,6 +1024,9 @@ export function App() {
   const isAutoResolving =
     !game.winner && !spectatorAutoPaused && (cpuVsCpu || autoPlayEnabled || (game.currentPlayer === "cpu" && !game.pendingLevelUp));
   const controlsDisabled = cpuVsCpu || autoPlayEnabled || game.currentPlayer !== "player" || !!game.winner || !!game.pendingLevelUp;
+  const hasOperationContext = Boolean(selection || pendingDropAction || error);
+  const hasSideContext = hasOperationContext || Boolean(game.pendingLevelUp);
+  const showBattleLog = !hasSideContext;
   const canUndoManualAction =
     manualUndoStack.length > 0 &&
     !cpuVsCpu &&
@@ -1115,6 +1119,17 @@ export function App() {
       setSelectedLogIndex(undefined);
     }
   }, [game.log, logFilter, selectedLogIndex]);
+
+  useEffect(() => {
+    if (!logOpen || !showBattleLog) {
+      return;
+    }
+    const list = logListRef.current;
+    if (!list) {
+      return;
+    }
+    list.scrollTop = list.scrollHeight;
+  }, [logFilter, logOpen, showBattleLog, visibleLogEntries]);
 
   useEffect(() => {
     if (!cpuVsCpu || !spectatorPauseOnAttention) {
@@ -2190,7 +2205,6 @@ export function App() {
     selection?.kind === "hand" ? currentPlayer.hand.find((card) => card.instanceId === selection.instanceId) : undefined;
   const infoWorkspaceOpen = isInfoWorkspaceView(zoneView);
   const infoPanelOpen = infoToolsOpen || Boolean(zoneView);
-  const hasOperationContext = Boolean(selection || pendingDropAction || error);
   const endTurnWarning = getEndTurnWarning(game, controlsDisabled);
 
   function renderBattleControlPanel() {
@@ -2740,74 +2754,76 @@ export function App() {
           </div>
         </div>
 
-        <aside className={`side-panel ${hasOperationContext || game.pendingLevelUp ? "action-priority" : ""}`}>
-          <section className={`log-panel ${logOpen ? "open" : "collapsed"}`}>
-            <div className="log-heading">
-              <div>
-                <h2><Icon icon="📜" /> Battle Log</h2>
-                <span>{logOpen ? `${visibleLogEntries.length}/${game.log.length}` : `${game.log.length} events`}</span>
-              </div>
-              <button
-                type="button"
-                className="log-toggle-button"
-                onClick={() => {
-                  setLogOpen((open) => {
-                    if (open) {
-                      setSelectedLogIndex(undefined);
-                    }
-                    return !open;
-                  });
-                }}
-                aria-expanded={logOpen}
-              >
-                <Icon icon={logOpen ? "▴" : "▾"} /> {logOpen ? "閉じる" : "開く"}
-              </button>
-            </div>
-            <LatestEventSummary log={game.log} />
-            {logOpen && (
-              <>
-                <div className="log-filter-row" aria-label="log filters">
-                  {LOG_FILTERS.map((filter) => (
-                    <button
-                      type="button"
-                      key={filter}
-                      className={filter === logFilter ? "selected" : ""}
-                      onClick={() => setLogFilter(filter)}
-                    >
-                      <Icon icon={logFilterIcon(filter)} /> {logFilterLabel(filter)}
-                    </button>
-                  ))}
+        <aside className={`side-panel ${hasSideContext ? "context-only" : ""}`}>
+          {showBattleLog && (
+            <section className={`log-panel ${logOpen ? "open" : "collapsed"}`}>
+              <div className="log-heading">
+                <div>
+                  <h2><Icon icon="📜" /> Battle Log</h2>
+                  <span>{logOpen ? `${visibleLogEntries.length}/${game.log.length}` : `${game.log.length} events`}</span>
                 </div>
-                <ol>
-                  {visibleLogEntries.map(({ entry, index }) => (
-                    <li className={`log-entry ${logTone(entry)}`} key={`${entry}_${index}`}>
+                <button
+                  type="button"
+                  className="log-toggle-button"
+                  onClick={() => {
+                    setLogOpen((open) => {
+                      if (open) {
+                        setSelectedLogIndex(undefined);
+                      }
+                      return !open;
+                    });
+                  }}
+                  aria-expanded={logOpen}
+                >
+                  <Icon icon={logOpen ? "▴" : "▾"} /> {logOpen ? "閉じる" : "開く"}
+                </button>
+              </div>
+              <LatestEventSummary log={game.log} />
+              {logOpen && (
+                <>
+                  <div className="log-filter-row" aria-label="log filters">
+                    {LOG_FILTERS.map((filter) => (
                       <button
                         type="button"
-                        className={`log-entry-button ${selectedLogIndex === index ? "selected" : ""}`}
-                        onClick={() => setSelectedLogIndex(selectedLogIndex === index ? undefined : index)}
+                        key={filter}
+                        className={filter === logFilter ? "selected" : ""}
+                        onClick={() => setLogFilter(filter)}
                       >
-                        <span className="log-entry-kind"><Icon icon={logIcon(entry)} /></span>
-                        <span className="log-entry-index">#{index + 1}</span>
-                        <LogEventContent entry={entry} />
+                        <Icon icon={logFilterIcon(filter)} /> {logFilterLabel(filter)}
                       </button>
-                    </li>
-                  ))}
-                </ol>
-                {selectedLogEntry && (
-                  <div className={`log-detail ${logTone(selectedLogEntry)}`}>
-                    <strong><Icon icon={logIcon(selectedLogEntry)} /> #{selectedLogIndex! + 1} {logCategoryLabel(selectedLogEntry)}</strong>
-                    <LogEventContent entry={selectedLogEntry} />
+                    ))}
                   </div>
-                )}
-              </>
-            )}
-            {!logOpen && selectedLogEntry && (
-              <div className={`log-detail compact ${logTone(selectedLogEntry)}`}>
-                <strong><Icon icon={logIcon(selectedLogEntry)} /> #{selectedLogIndex! + 1} {logCategoryLabel(selectedLogEntry)}</strong>
-                <LogEventContent entry={selectedLogEntry} />
-              </div>
-            )}
-          </section>
+                  <ol ref={logListRef}>
+                    {visibleLogEntries.map(({ entry, index }) => (
+                      <li className={`log-entry ${logTone(entry)}`} key={`${entry}_${index}`}>
+                        <button
+                          type="button"
+                          className={`log-entry-button ${selectedLogIndex === index ? "selected" : ""}`}
+                          onClick={() => setSelectedLogIndex(selectedLogIndex === index ? undefined : index)}
+                        >
+                          <span className="log-entry-kind"><Icon icon={logIcon(entry)} /></span>
+                          <span className="log-entry-index">#{index + 1}</span>
+                          <LogEventContent entry={entry} />
+                        </button>
+                      </li>
+                    ))}
+                  </ol>
+                  {selectedLogEntry && (
+                    <div className={`log-detail ${logTone(selectedLogEntry)}`}>
+                      <strong><Icon icon={logIcon(selectedLogEntry)} /> #{selectedLogIndex! + 1} {logCategoryLabel(selectedLogEntry)}</strong>
+                      <LogEventContent entry={selectedLogEntry} />
+                    </div>
+                  )}
+                </>
+              )}
+              {!logOpen && selectedLogEntry && (
+                <div className={`log-detail compact ${logTone(selectedLogEntry)}`}>
+                  <strong><Icon icon={logIcon(selectedLogEntry)} /> #{selectedLogIndex! + 1} {logCategoryLabel(selectedLogEntry)}</strong>
+                  <LogEventContent entry={selectedLogEntry} />
+                </div>
+              )}
+            </section>
+          )}
 
           {game.pendingLevelUp ? (
             <section className="side-context-panel card-info-panel level-up-decision-panel">

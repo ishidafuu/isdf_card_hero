@@ -1228,28 +1228,21 @@ button:disabled {
   gap: 12px;
   grid-area: side;
   grid-template-rows: minmax(0, 1fr);
-  height: calc(100vh - 20px);
-  max-height: calc(100vh - 20px);
+  height: clamp(360px, calc(100vh - 136px), 720px);
+  max-height: clamp(360px, calc(100vh - 136px), 720px);
   min-height: 0;
   min-width: 0;
-  overflow-y: auto;
+  overflow-y: hidden;
   overscroll-behavior: contain;
   position: sticky;
   top: 10px;
 }
 
-.side-panel.action-priority {
-  grid-template-rows: minmax(0, auto) minmax(280px, 1fr);
-}
-
-.side-panel.action-priority .side-context-panel {
+.side-panel.context-only .side-context-panel {
   border-color: #9bbd8b;
   box-shadow: 0 8px 18px rgba(29, 37, 39, 0.1);
-  order: -1;
-}
-
-.side-panel.action-priority .log-panel {
-  order: 0;
+  max-height: 100%;
+  overflow-y: auto;
 }
 
 .actions,
@@ -4468,7 +4461,7 @@ button:disabled {
     position: static;
   }
 
-  .side-panel.action-priority {
+  .side-panel.context-only {
     grid-template-rows: none;
   }
 
@@ -4476,7 +4469,7 @@ button:disabled {
     min-height: 260px;
   }
 
-  .side-panel.action-priority .side-context-panel {
+  .side-panel.context-only .side-context-panel {
     bottom: 8px;
     max-height: min(48vh, 360px);
     overflow-y: auto;
