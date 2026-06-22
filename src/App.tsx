@@ -3478,7 +3478,7 @@ function logKeywordToken(text: string): LogToken {
     return { kind: "chip", icon: "🌋", text };
   }
   if (text === "ためた") {
-    return { kind: "chip", icon: "💪", text };
+    return { kind: "chip", icon: "🔥", text };
   }
   if (text === "召喚" || text === "登場") {
     return { kind: "chip", icon: "🂠", text };
@@ -4116,7 +4116,7 @@ function getNextActionCues(game: GameState, controlsDisabled: boolean): NextActi
     { icon: "✨", label: "Magic", value: String(magic), tone: magic > 0 ? "ok" : undefined },
     { icon: "⚔️", label: "Attack", value: String(monsterActions.attack), tone: monsterActions.attack > 0 ? "ok" : undefined },
     { icon: "🧭", label: "Move", value: String(monsterActions.move), tone: monsterActions.move > 0 ? "ok" : undefined },
-    { icon: "💪", label: "Focus", value: String(monsterActions.focus), tone: monsterActions.focus > 0 ? "ok" : undefined },
+    { icon: "🔥", label: "Focus", value: String(monsterActions.focus), tone: monsterActions.focus > 0 ? "ok" : undefined },
     { icon: "🎮", label: "Master", value: String(masterActions + hpDraw), tone: masterActions + hpDraw > 0 ? "ok" : undefined },
     { icon: "⏭️", label: "End", value: activeTotal === 0 ? "推奨" : "可", tone: activeTotal === 0 ? "warn" : undefined },
   ];
@@ -6379,7 +6379,7 @@ function getBoardStatusBadges(monster: MonsterState): Array<{ icon: string; labe
     monster.cannotActUntilDamaged ? { icon: "眠", label: "行動不可" } : undefined,
     monster.cannotMove ? { icon: "⛔", label: "移動不可" } : undefined,
     monster.provokeTargetSlotKey ? { icon: "囮", label: "挑発" } : undefined,
-    monster.focused ? { icon: "💪", label: "気合い" } : undefined,
+    monster.focused ? { icon: "🔥", label: "気合い" } : undefined,
     monster.powerUp ? { icon: "⬆️", label: "パワー+1" } : undefined,
     monster.berserkPower ? { icon: "🔥", label: "バーサク" } : undefined,
     monster.damageGuarded ? { icon: "仮", label: "仮死状態", className: "guarded" } : undefined,
@@ -6689,7 +6689,7 @@ function MonsterCommands({
         },
         {
           key: "focus",
-          icon: "💪",
+          icon: "🔥",
           title: "ためる",
           meta: "上の技+1P / 被ダメージ-1 / 行動後に解除",
           disabledReason: focusDisabledReason,
@@ -8382,7 +8382,7 @@ function logIcon(entry: string): string {
     return "🂠";
   }
   if (entry.includes("ため") || entry.includes("気合い")) {
-    return "💪";
+    return "🔥";
   }
   if (entry.includes("バーサク")) {
     return "🔥";
