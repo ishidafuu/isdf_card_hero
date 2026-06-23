@@ -48,6 +48,25 @@ button {
   width: 32px;
 }
 
+.action-card-icon {
+  align-items: center;
+  display: inline-flex;
+  line-height: 1;
+  margin-right: 5px;
+  vertical-align: middle;
+}
+
+.action-card-icon .card-image-icon {
+  height: 24px;
+  margin-right: 0;
+  vertical-align: 0;
+  width: 24px;
+}
+
+.command-button-main .action-card-icon {
+  margin-right: 0;
+}
+
 button:hover:not(:disabled) {
   border-color: #397367;
 }

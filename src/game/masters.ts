@@ -5,6 +5,7 @@ export interface MasterActionDef {
   name: string;
   cost: number;
   summary: string;
+  magicCardId?: string;
 }
 
 export interface MasterDef {
@@ -26,24 +27,28 @@ export const MASTER_ACTION_DEFS: Record<MasterActionId, MasterActionDef> = {
     name: "Wake Up",
     cost: 2,
     summary: "準備中モンスター1体を登場させる",
+    magicCardId: "card_117",
   },
   shield: {
     id: "shield",
     name: "Shield",
     cost: 2,
     summary: "味方モンスター1体の被ダメージを1減らす",
+    magicCardId: "card_025",
   },
   berserk_power: {
     id: "berserk_power",
     name: "Berserk Power",
     cost: 3,
     summary: "モンスター1体の次の攻撃+1P、攻撃後に1ダメージ",
+    magicCardId: "card_094",
   },
   earth_anger: {
     id: "earth_anger",
     name: "Earth Anger",
     cost: 6,
     summary: "フィールド全体の登場済みモンスターに3P",
+    magicCardId: "card_126",
   },
 };
 
@@ -78,6 +83,10 @@ export function getMasterIconUrl(masterId: MasterId): string {
 
 export function getMasterActionDef(actionId: MasterActionId): MasterActionDef {
   return MASTER_ACTION_DEFS[actionId];
+}
+
+export function getMasterActionMagicCardId(actionId: MasterActionId): string | undefined {
+  return getMasterActionDef(actionId).magicCardId;
 }
 
 export function getMasterActionIds(masterId: MasterId): MasterActionId[] {

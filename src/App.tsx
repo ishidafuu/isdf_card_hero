@@ -52,7 +52,7 @@ import {
   useMasterHpDraw,
 } from "./game/rules";
 import { HAND_LIMIT } from "./game/ruleEngine/constants";
-import { getMasterActionDef, getMasterIconUrl, getMasterName, MASTER_IDS } from "./game/masters";
+import { getMasterActionDef, getMasterActionMagicCardId, getMasterIconUrl, getMasterName, MASTER_IDS } from "./game/masters";
 import { CPU_AI_PROFILES, type CpuAiProfile, type CpuAiProfiles } from "./game/cpuAi";
 import {
   buildDeckPresetCardIds,
@@ -124,6 +124,7 @@ const AUTO_SPEED_PRESETS = [
   { label: "Skip", delayMs: 250 },
 ] as const;
 const MAX_VISIBLE_RESOURCE_ICONS = 10;
+const STONE_ICON = "💎";
 const DEFAULT_BATTLE_SEED = 20260612;
 const DEFAULT_PLAYER_DECK_PRESET_ID = "submission-pro-no-rare8-white-1377" satisfies DeckPresetId;
 const DEFAULT_CPU_DECK_PRESET_ID: DeckPresetId = DEFAULT_PLAYER_DECK_PRESET_ID;
@@ -347,6 +348,7 @@ interface ActionPreview {
   key: string;
   targetKey?: string;
   icon: string;
+  iconCardId?: string;
   label: string;
   summary: string;
   detail?: string;
@@ -3323,7 +3325,7 @@ function TargetSelectionSummary({
   if (selection?.kind === "masterAction") {
     return (
       <div className="target-summary">
-        <strong><Icon icon={masterActionIcon(selection.actionId)} /> {masterActionLabel(selection.actionId)}</strong>
+        <strong><MasterActionVisual actionId={selection.actionId} /> {masterActionLabel(selection.actionId)}</strong>
         <span>Cost {getMasterActionCost(selection.actionId)}</span>
         <TargetChipList game={game} targets={selection.targets} onTargetClick={onTargetClick} />
       </div>
@@ -3427,7 +3429,7 @@ function ActionPreviewPanel({ previews }: { previews: ActionPreview[] }) {
         {visible.map((preview) => (
           <li className={preview.tone ? `action-preview-${preview.tone}` : ""} key={preview.key} title={preview.detail}>
             <span>
-              <Icon icon={preview.icon} /> {preview.label}
+              <ActionIcon icon={preview.icon} cardId={preview.iconCardId} /> {preview.label}
               {preview.badge && <b>{preview.badge}</b>}
             </span>
             <p>{preview.summary}</p>
@@ -3591,7 +3593,7 @@ function logKeywordToken(text: string): LogToken {
     return { kind: "chip", icon: "❤️", text };
   }
   if (text === "Stone" || text === "ストーン") {
-    return { kind: "chip", icon: "🪨", text };
+    return { kind: "chip", icon: STONE_ICON, text };
   }
   if (text === "マスターアタック") {
     return { kind: "chip", icon: "⚔️", text };
@@ -3671,6 +3673,7 @@ interface OperationReasonPanelProps {
 
 interface OperationReasonItem {
   icon: string;
+  iconCardId?: string;
   label: string;
   text: string;
   tone?: "ok" | "warn" | "danger";
@@ -3688,7 +3691,7 @@ function OperationReasonPanel({ game, selection, pendingDropAction, error }: Ope
       <ul>
         {items.map((item, index) => (
           <li className={item.tone ? `operation-reason-${item.tone}` : ""} key={`${item.label}_${index}`}>
-            <span><Icon icon={item.icon} /> {item.label}</span>
+            <span><ActionIcon icon={item.icon} cardId={item.iconCardId} /> {item.label}</span>
             <p>{item.text}</p>
           </li>
         ))}
@@ -3769,6 +3772,7 @@ function getOperationReasonItems(
   if (selection.kind === "masterAction") {
     items.push({
       icon: masterActionIcon(selection.actionId),
+      iconCardId: getMasterActionMagicCardId(selection.actionId),
       label: "マスター特技",
       text: `${masterActionLabel(selection.actionId)}はStone ${getMasterActionCost(selection.actionId)}を消費します。候補${selection.targets.length}件から対象を選んでください。`,
       tone: selection.targets.length > 0 ? "ok" : "warn",
@@ -3921,6 +3925,7 @@ function getActionPreviews(
         key: `master_${selection.actionId}_${targetToKey(target)}`,
         target,
         icon: masterActionIcon(selection.actionId),
+        iconCardId: getMasterActionMagicCardId(selection.actionId),
         label: `${masterActionLabel(selection.actionId)} -> ${targetLabel(game, target)}`,
         fallback: "マスター特技を解決します。",
         apply: () => useMasterAction(game, selection.actionId, target),
@@ -4013,6 +4018,7 @@ function getPendingDropActionPreviews(game: GameState, action: PendingDropAction
           key: `pending_master_${actionId}_${targetToKey(action.target)}`,
           target: action.target,
           icon: masterActionIcon(actionId),
+          iconCardId: getMasterActionMagicCardId(actionId),
           label: `${masterActionLabel(actionId)} -> ${targetLabel(game, action.target)}`,
           fallback: "マスター特技を解決します。",
           apply: () => useMasterAction(game, actionId, action.target),
@@ -4132,6 +4138,7 @@ function previewStateChange({
   key,
   target,
   icon,
+  iconCardId,
   label,
   fallback,
   apply,
@@ -4140,6 +4147,7 @@ function previewStateChange({
   key: string;
   target?: Target;
   icon: string;
+  iconCardId?: string;
   label: string;
   fallback: string;
   apply: () => GameState;
@@ -4152,6 +4160,7 @@ function previewStateChange({
       key,
       targetKey: target ? targetToKey(target) : undefined,
       icon,
+      iconCardId,
       label,
       summary,
       detail: logs.length > 0 ? logs.join(" / ") : undefined,
@@ -4502,7 +4511,7 @@ function MasterResourceDisplay({ masterId, label, active, hp, stones, deck, hand
       <span className="master-resource-main">
         <strong className="master-name">{active ? <Icon icon="▶️" /> : null}{label}</strong>
         <ResourceNumberRow label="HP" icon="❤️" amount={hp} />
-        <ResourceNumberRow label="Stone" icon="🪨" amount={stones} />
+        <ResourceNumberRow label="Stone" icon={STONE_ICON} amount={stones} />
         <ResourceNumberRow label="Deck" icon="🂠" amount={deck} />
         <ResourceNumberRow label="Hand" icon="🃏" amount={hand} />
       </span>
@@ -4557,7 +4566,7 @@ function PendingDropActionPanel({ action, game, onAttackCommand, onMasterAction,
         <div className="button-stack">
           {masterActions.map((actionId) => (
             <button type="button" key={actionId} onClick={() => onMasterAction(actionId)}>
-              <Icon icon={masterActionIcon(actionId)} /> {masterActionLabel(actionId)} {getMasterActionCost(actionId)}
+              <MasterActionVisual actionId={actionId} /> {masterActionLabel(actionId)} {getMasterActionCost(actionId)}
             </button>
           ))}
           <button type="button" onClick={onCancel}>
@@ -6483,7 +6492,7 @@ function getBoardStatusBadges(monster: MonsterState): Array<{ icon: string; labe
     monster.damageCurse ? { icon: "痛", label: "ダメージ呪い" } : undefined,
     monster.deathChainSlotKey ? { icon: "鎖", label: "道連れ" } : undefined,
     monster.darkHoleSlotKey ? { icon: "穴", label: "ブラックホール" } : undefined,
-    monster.stoneCostMultiplier && monster.stoneCostMultiplier > 1 ? { icon: "🪨", label: `石コストx${monster.stoneCostMultiplier}` } : undefined,
+    monster.stoneCostMultiplier && monster.stoneCostMultiplier > 1 ? { icon: STONE_ICON, label: `石コストx${monster.stoneCostMultiplier}` } : undefined,
   ].filter((badge): badge is { icon: string; label: string; className?: string } => Boolean(badge));
 }
 
@@ -6526,7 +6535,7 @@ function DamageBubble({ flash }: { flash?: DamageFlash }) {
   return (
     <span className={`damage-bubble ${flash.defeated ? "damage-bubble-ko" : ""}`} aria-hidden="true">
       <span className="damage-value">-{flash.amount}</span>
-      {flash.stoneDelta ? <span className="damage-stone-value">Stone +{flash.stoneDelta}</span> : null}
+      {flash.stoneDelta ? <span className="damage-stone-value"><Icon icon={STONE_ICON} />Stone +{flash.stoneDelta}</span> : null}
       {flash.defeated && <strong className="damage-ko-label">KO</strong>}
     </span>
   );
@@ -6561,6 +6570,7 @@ interface MonsterCommandsProps {
 interface UnitActionItem {
   key: string;
   icon: string;
+  iconCardId?: string;
   title: string;
   meta: string;
   disabledReason?: string;
@@ -6589,6 +6599,7 @@ function MasterCommands({ game, playerId, disabled, onMasterAction, onHpDraw }: 
     return {
       key: actionId,
       icon: masterActionIcon(actionId),
+      iconCardId: getMasterActionMagicCardId(actionId),
       title: `${action.name} ${getMasterActionCost(actionId)}`,
       meta: action.summary,
       disabledReason,
@@ -6619,7 +6630,7 @@ function MasterCommands({ game, playerId, disabled, onMasterAction, onHpDraw }: 
       title={action.disabledReason ?? action.readyLabel}
     >
       <span className="command-button-main">
-        <Icon icon={action.icon} />
+        <ActionIcon icon={action.icon} cardId={action.iconCardId} />
         <strong>{action.title}</strong>
       </span>
       <span className="command-button-meta">{action.meta}</span>
@@ -8312,6 +8323,26 @@ function Icon({ icon }: IconProps) {
   return <span className="ui-icon" aria-hidden="true">{icon}</span>;
 }
 
+interface ActionIconProps {
+  icon: string;
+  cardId?: string;
+}
+
+function ActionIcon({ icon, cardId }: ActionIconProps) {
+  if (cardId) {
+    return (
+      <span className="action-card-icon">
+        <CardIcon cardId={cardId} />
+      </span>
+    );
+  }
+  return <Icon icon={icon} />;
+}
+
+function MasterActionVisual({ actionId }: { actionId: MasterActionId }) {
+  return <ActionIcon icon={masterActionIcon(actionId)} cardId={getMasterActionMagicCardId(actionId)} />;
+}
+
 interface CardIconProps {
   cardId: string;
 }
@@ -8424,7 +8455,7 @@ function logIcon(entry: string): string {
     return "✋";
   }
   if (entry.includes("ストーン")) {
-    return "🪨";
+    return STONE_ICON;
   }
   if (entry.includes("ターン")) {
     return "⏭️";
