@@ -436,6 +436,22 @@ describe("battle prototype rules", () => {
     expect(next.log.some((entry) => entry.includes("ポリスピナー") && entry.includes("気合いだめした"))).toBe(true);
   });
 
+  it("keeps focus when an active back-row monster auto-advances to an empty front row", () => {
+    const game = createInitialGame(127);
+    game.slots.player_back_left.monster = createActiveMonster("polyspinner", "player", {
+      focused: true,
+    });
+
+    const next = startTurn(game, "player");
+
+    expect(next.slots.player_back_left.monster).toBeUndefined();
+    expect(next.slots.player_front_left.monster).toMatchObject({
+      cardId: "polyspinner",
+      focused: true,
+    });
+    expect(next.log.some((entry) => entry.includes("ポリスピナー") && entry.includes("前衛へ自動移動した"))).toBe(true);
+  });
+
   it("creates a player choice when a monster can level up after defeating a monster", () => {
     const game = createInitialGame(105);
     game.players.player.stones = 1;

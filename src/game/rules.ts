@@ -1712,7 +1712,6 @@ function autoAdvanceBackRow(state: GameState, playerId: PlayerId): void {
     const front = state.slots[frontKey];
     if (back.monster?.status === "active" && !front.monster) {
       const monster = back.monster;
-      monster.focused = false;
       front.monster = monster;
       delete back.monster;
       appendLog(state, `${monsterName(monster)}が前衛へ自動移動した`);
