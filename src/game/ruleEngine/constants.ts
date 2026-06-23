@@ -1,7 +1,7 @@
 import type { Lane, PlayerId, Row, SlotKey } from "../types";
 
 export const MASTER_HP = 10;
-export const HAND_LIMIT = 6;
+export const HAND_LIMIT = 5;
 export const DRAW_FIVE_HAND_SIZE = 5;
 export const MASTER_ATTACK_COST = 3;
 export const MASTER_ATTACK_POWER = 2;
