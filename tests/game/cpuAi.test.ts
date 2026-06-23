@@ -638,6 +638,82 @@ describe("cpu ai", () => {
     expect(tuned?.totalScore).toBeCloseTo(baseline?.totalScore ?? 0);
   });
 
+  it("bonuses safe retreat for a threatened white back-role monster in the front row", () => {
+    const game = createCpuGame();
+    game.players.cpu.masterId = "white";
+    game.players.cpu.hand = [];
+    game.players.cpu.stones = 4;
+    game.players.player.stones = 3;
+    game.slots.cpu_front_left.monster = createActiveMonster("card_051", "cpu", { hp: 2 });
+    game.slots.player_front_left.monster = createActiveMonster("takokke", "player");
+
+    const findRetreat = (options = {}) =>
+      inspectCpuDecisionEvaluations(game, options)
+        .filter(
+          (evaluation) =>
+            evaluation.decision.type === "move" &&
+            evaluation.decision.fromSlotKey === "cpu_front_left" &&
+            game.slots[evaluation.decision.toSlotKey].row === "back",
+        )
+        .sort((a, b) => b.totalScore - a.totalScore)[0];
+    const baseline = findRetreat();
+    const tuned = findRetreat({ tunings: { cpu: { situationalBias: { whiteSafeRetreatOverShieldBonus: 11 } } } });
+
+    expect(baseline).toBeDefined();
+    expect(tuned).toBeDefined();
+    expect(tuned?.totalScore).toBeCloseTo((baseline?.totalScore ?? 0) + 11);
+  });
+
+  it("penalizes shielding before a safe back-role retreat", () => {
+    const game = createCpuGame();
+    game.players.cpu.masterId = "white";
+    game.players.cpu.hand = [];
+    game.players.cpu.stones = 4;
+    game.players.player.stones = 3;
+    game.slots.cpu_front_left.monster = createActiveMonster("card_051", "cpu", { hp: 2 });
+    game.slots.player_front_left.monster = createActiveMonster("takokke", "player");
+
+    const findShield = (options = {}) =>
+      inspectCpuDecisionEvaluations(game, options).find(
+        (evaluation) =>
+          evaluation.decision.type === "master_action" &&
+          evaluation.decision.actionId === "shield" &&
+          evaluation.decision.target.kind === "monster" &&
+          evaluation.decision.target.slotKey === "cpu_front_left",
+      );
+    const baseline = findShield();
+    const tuned = findShield({ tunings: { cpu: { situationalBias: { whiteRetreatBeforeShieldPenalty: 9 } } } });
+
+    expect(baseline).toBeDefined();
+    expect(tuned).toBeDefined();
+    expect(tuned?.totalScore).toBeCloseTo((baseline?.totalScore ?? 0) - 9);
+  });
+
+  it("does not penalize white front-role shields just because a move exists", () => {
+    const game = createCpuGame();
+    game.players.cpu.masterId = "white";
+    game.players.cpu.hand = [];
+    game.players.cpu.stones = 4;
+    game.players.player.stones = 3;
+    game.slots.cpu_front_left.monster = createActiveMonster("takokke", "cpu", { hp: 2 });
+    game.slots.player_front_left.monster = createActiveMonster("takokke", "player");
+
+    const findShield = (options = {}) =>
+      inspectCpuDecisionEvaluations(game, options).find(
+        (evaluation) =>
+          evaluation.decision.type === "master_action" &&
+          evaluation.decision.actionId === "shield" &&
+          evaluation.decision.target.kind === "monster" &&
+          evaluation.decision.target.slotKey === "cpu_front_left",
+      );
+    const baseline = findShield();
+    const tuned = findShield({ tunings: { cpu: { situationalBias: { whiteRetreatBeforeShieldPenalty: 9 } } } });
+
+    expect(baseline).toBeDefined();
+    expect(tuned).toBeDefined();
+    expect(tuned?.totalScore).toBeCloseTo(baseline?.totalScore ?? 0);
+  });
+
   it("penalizes low-stone white shield, wake, and summon setup by decision type", () => {
     const shieldGame = createCpuGame();
     shieldGame.players.cpu.masterId = "white";

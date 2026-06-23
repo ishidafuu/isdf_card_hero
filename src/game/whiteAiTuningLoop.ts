@@ -273,6 +273,21 @@ export const DEFAULT_WHITE_AI_TUNING_VARIANTS = [
   hybridVariant("pressure_white_shield_quality_breakthrough_v1", "本実装候補: 白盾品質+突破抑制", "pressure-normal", {
     situationalBias: { whiteShieldThreatConversionBonus: 8, whiteSecondShieldLowStonePenalty: 8, whiteShieldBreakthroughPenalty: 12 },
   }, "質の高い盾は押し、2枚目低石と突破される盾を抑える複合候補。"),
+  hybridVariant("pressure_white_safe_retreat_order_light_v1", "行動順候補: 安全後退優先軽量", "pressure-normal", {
+    situationalBias: { whiteSafeRetreatOverShieldBonus: 24, whiteRetreatBeforeShieldPenalty: 12 },
+  }, "白マスター限定で、後衛ロールが前列で脅威を受けており、後列へ下がれば脅威が下がる局面だけ後退を押す。"),
+  hybridVariant("pressure_white_safe_retreat_order_v1", "行動順候補: 安全後退優先", "pressure-normal", {
+    situationalBias: { whiteSafeRetreatOverShieldBonus: 56, whiteRetreatBeforeShieldPenalty: 24 },
+  }, "shield->retreat を直接減らすため、後衛ロールの安全後退を強めに押し、同対象への先貼りシールドを抑える。"),
+  hybridVariant("pressure_white_shield_quality_retreat_order_v1", "行動順候補: 盾品質+安全後退", "pressure-normal", {
+    situationalBias: {
+      whiteShieldThreatConversionBonus: 8,
+      whiteSecondShieldLowStonePenalty: 8,
+      whiteShieldBreakthroughPenalty: 12,
+      whiteSafeRetreatOverShieldBonus: 40,
+      whiteRetreatBeforeShieldPenalty: 16,
+    },
+  }, "直近の盾品質候補を土台に、後衛ロールの安全後退だけを追加で優先する。"),
   hybridVariant("pressure_white_wake_immediate_work_v1", "本実装候補: 白起動即仕事+8", "pressure-normal", {
     situationalBias: { whiteWakeImmediateWorkBonus: 8 },
   }, "白マスター限定で、起こした味方が即攻撃またはレベルアップ筋へつながるウェイクアップを加点する。"),

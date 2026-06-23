@@ -139,6 +139,8 @@ export interface CpuAiTuning {
     whiteSetupAfterThreatReductionBonus?: number;
     whiteRedirectMarkedAttackPenalty?: number;
     whiteThreatLeftLowStoneSetupPenalty?: number;
+    whiteSafeRetreatOverShieldBonus?: number;
+    whiteRetreatBeforeShieldPenalty?: number;
   };
 }
 
@@ -656,6 +658,12 @@ function decisionSituationalBonus(
       bias.whiteThreatLeftLowStoneSetupPenalty,
     );
   }
+  if (bias.whiteSafeRetreatOverShieldBonus) {
+    bonus += whiteSafeRetreatOverShieldDecisionBonus(before, after, decision, perspective, bias.whiteSafeRetreatOverShieldBonus);
+  }
+  if (bias.whiteRetreatBeforeShieldPenalty) {
+    bonus -= whiteRetreatBeforeShieldDecisionPenalty(before, after, decision, perspective, bias.whiteRetreatBeforeShieldPenalty);
+  }
   return bonus;
 }
 
@@ -947,6 +955,106 @@ function whiteThreatLeftLowStoneSetupDecisionPenalty(
     return 0;
   }
   return isHighQualityThreatFacingSetup(before, after, decision, perspective) ? 0 : value;
+}
+
+function whiteSafeRetreatOverShieldDecisionBonus(
+  before: GameState,
+  after: GameState,
+  decision: CpuDecision,
+  perspective: PlayerId,
+  value: number,
+): number {
+  if (
+    value <= 0 ||
+    before.players[perspective].masterId !== "white" ||
+    decision.type !== "move" ||
+    before.slots[decision.fromSlotKey].owner !== perspective ||
+    before.slots[decision.fromSlotKey].row !== "front" ||
+    before.slots[decision.toSlotKey].row !== "back"
+  ) {
+    return 0;
+  }
+  return isSafeBackRoleRetreat(before, after, decision.fromSlotKey, perspective) ? value : 0;
+}
+
+function whiteRetreatBeforeShieldDecisionPenalty(
+  before: GameState,
+  _after: GameState,
+  decision: CpuDecision,
+  perspective: PlayerId,
+  value: number,
+): number {
+  if (
+    value <= 0 ||
+    before.players[perspective].masterId !== "white" ||
+    decision.type !== "master_action" ||
+    decision.actionId !== "shield" ||
+    decision.target.kind !== "monster"
+  ) {
+    return 0;
+  }
+  const targetSlotKey = decision.target.slotKey;
+  const target = before.slots[targetSlotKey].monster;
+  if (!target || target.owner !== perspective || before.slots[targetSlotKey].row !== "front") {
+    return 0;
+  }
+  return findSafeBackRoleRetreat(before, targetSlotKey, perspective) ? value : 0;
+}
+
+function findSafeBackRoleRetreat(state: GameState, fromSlotKey: SlotKey, perspective: PlayerId): GameState | undefined {
+  const mover = state.slots[fromSlotKey].monster;
+  if (
+    !mover ||
+    mover.owner !== perspective ||
+    mover.status !== "active" ||
+    mover.actionCount >= mover.actionLimit ||
+    state.slots[fromSlotKey].row !== "front" ||
+    getMonsterAiTrait(mover.cardId).role !== "back"
+  ) {
+    return undefined;
+  }
+  const beforeThreat = incomingThreat(state, fromSlotKey);
+  if (!beforeThreat.threatened && !isLethalIncomingThreat(beforeThreat)) {
+    return undefined;
+  }
+
+  for (const toSlotKey of getMovableTargets(state, fromSlotKey)) {
+    if (state.slots[toSlotKey].row !== "back") {
+      continue;
+    }
+    let after: GameState;
+    try {
+      after = moveMonster(state, fromSlotKey, toSlotKey);
+    } catch {
+      continue;
+    }
+    if (isSafeBackRoleRetreat(state, after, fromSlotKey, perspective)) {
+      return after;
+    }
+  }
+  return undefined;
+}
+
+function isSafeBackRoleRetreat(
+  before: GameState,
+  after: GameState,
+  fromSlotKey: SlotKey,
+  perspective: PlayerId,
+): boolean {
+  const beforeMover = before.slots[fromSlotKey].monster;
+  if (!beforeMover || beforeMover.owner !== perspective || getMonsterAiTrait(beforeMover.cardId).role !== "back") {
+    return false;
+  }
+  const beforeThreat = incomingThreat(before, fromSlotKey);
+  if (!beforeThreat.threatened && !isLethalIncomingThreat(beforeThreat)) {
+    return false;
+  }
+  const afterSlotKey = findMonsterSlot(after, beforeMover.instanceId);
+  if (!afterSlotKey || after.slots[afterSlotKey].row !== "back") {
+    return false;
+  }
+  const afterThreat = incomingThreat(after, afterSlotKey);
+  return !isLethalIncomingThreat(afterThreat) && maxIncomingThreatDamage(afterThreat) < maxIncomingThreatDamage(beforeThreat);
 }
 
 function isHighQualityThreatFacingSetup(
