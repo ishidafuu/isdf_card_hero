@@ -63,7 +63,14 @@ const SUMMON_SLOT_ORDER_BY_PLAYER: Record<PlayerId, SlotKey[]> = {
 const ALL_FIELD_ORDER: SlotKey[] = [...FIELD_ORDER_BY_PLAYER.cpu, ...FIELD_ORDER_BY_PLAYER.player];
 
 type EvaluatedDecision = { decision: CpuDecision; totalScore: number; index: number; after: GameState };
-type IncomingThreat = { threatened: boolean; lethal: boolean; maxDamage: number };
+type IncomingThreat = {
+  threatened: boolean;
+  lethal: boolean;
+  maxDamage: number;
+  masterActionDamage: number;
+  maxDamageWithMasterAction: number;
+  lethalWithMasterAction: boolean;
+};
 type ThreatModel = {
   masterDamage: Record<PlayerId, number>;
   monsterThreats: Partial<Record<SlotKey, IncomingThreat>>;
@@ -78,7 +85,14 @@ type CpuAiProfileConfig = {
   tuning?: CpuAiTuning;
 };
 
-const NO_THREAT: IncomingThreat = { threatened: false, lethal: false, maxDamage: 0 };
+const NO_THREAT: IncomingThreat = {
+  threatened: false,
+  lethal: false,
+  maxDamage: 0,
+  masterActionDamage: 0,
+  maxDamageWithMasterAction: 0,
+  lethalWithMasterAction: false,
+};
 
 export const CPU_AI_PROFILES = ["stable", "strong", "pressure", "defensive", "white"] as const;
 export type CpuAiProfile = (typeof CPU_AI_PROFILES)[number];
@@ -113,6 +127,8 @@ export interface CpuAiTuning {
     whiteLowStoneSummonPenalty?: number;
     whiteLowStoneFocusPenalty?: number;
     whiteShieldThreatConversionBonus?: number;
+    whiteShieldBreakthroughPenalty?: number;
+    whiteShieldNoPressurePenalty?: number;
     whiteWakeImmediateWorkBonus?: number;
     whiteCloseoutAfterShieldBonus?: number;
     whiteSecondShieldLowStonePenalty?: number;
@@ -586,6 +602,12 @@ function decisionSituationalBonus(
   if (bias.whiteShieldThreatConversionBonus) {
     bonus += whiteShieldThreatConversionDecisionBonus(before, after, decision, perspective, bias.whiteShieldThreatConversionBonus);
   }
+  if (bias.whiteShieldBreakthroughPenalty) {
+    bonus -= whiteShieldBreakthroughDecisionPenalty(before, after, decision, perspective, bias.whiteShieldBreakthroughPenalty);
+  }
+  if (bias.whiteShieldNoPressurePenalty) {
+    bonus -= whiteShieldNoPressureDecisionPenalty(before, after, decision, perspective, bias.whiteShieldNoPressurePenalty);
+  }
   if (bias.whiteWakeImmediateWorkBonus) {
     bonus += whiteWakeImmediateWorkDecisionBonus(before, after, decision, perspective, bias.whiteWakeImmediateWorkBonus);
   }
@@ -941,7 +963,7 @@ function isHighQualityThreatFacingSetup(
   }
   if (decision.type === "focus") {
     const threat = incomingThreat(after, decision.slotKey);
-    return !threat.lethal && nextTurnWorkPotential(after, decision.slotKey, perspective) > 0;
+    return !isLethalIncomingThreat(threat) && nextTurnWorkPotential(after, decision.slotKey, perspective) > 0;
   }
   return false;
 }
@@ -985,7 +1007,7 @@ function isUrgentShieldDecision(
 
   const threat = incomingThreat(before, decision.target.slotKey);
   const threatAfterShield = incomingThreat(after, decision.target.slotKey);
-  return threat.lethal || (threat.threatened && threatAfterShield.maxDamage < threat.maxDamage);
+  return isLethalIncomingThreat(threat) || (threat.threatened && maxIncomingThreatDamage(threatAfterShield) < maxIncomingThreatDamage(threat));
 }
 
 function whiteLowStoneSetupDecisionPenalty(
@@ -1032,6 +1054,62 @@ function whiteShieldThreatConversionDecisionBonus(
   const urgent = isUrgentShieldDecision(before, after, decision, perspective);
   const convertible = isConvertibleShieldDecision(after, decision, perspective);
   return urgent || convertible ? value : 0;
+}
+
+function whiteShieldBreakthroughDecisionPenalty(
+  before: GameState,
+  after: GameState,
+  decision: CpuDecision,
+  perspective: PlayerId,
+  value: number,
+): number {
+  if (
+    value <= 0 ||
+    before.players[perspective].masterId !== "white" ||
+    decision.type !== "master_action" ||
+    decision.actionId !== "shield" ||
+    decision.target.kind !== "monster"
+  ) {
+    return 0;
+  }
+  const target = before.slots[decision.target.slotKey].monster;
+  const targetAfter = after.slots[decision.target.slotKey].monster;
+  if (!target || target.owner !== perspective || !targetAfter || targetAfter.owner !== perspective) {
+    return 0;
+  }
+  const threat = incomingThreat(before, decision.target.slotKey);
+  const threatAfterShield = incomingThreat(after, decision.target.slotKey);
+  if (!isLethalIncomingThreat(threat) || !isLethalIncomingThreat(threatAfterShield)) {
+    return 0;
+  }
+  return value;
+}
+
+function whiteShieldNoPressureDecisionPenalty(
+  before: GameState,
+  after: GameState,
+  decision: CpuDecision,
+  perspective: PlayerId,
+  value: number,
+): number {
+  if (
+    value <= 0 ||
+    before.players[perspective].masterId !== "white" ||
+    decision.type !== "master_action" ||
+    decision.actionId !== "shield" ||
+    decision.target.kind !== "monster"
+  ) {
+    return 0;
+  }
+  const target = before.slots[decision.target.slotKey].monster;
+  const targetAfter = after.slots[decision.target.slotKey].monster;
+  if (!target || target.owner !== perspective || !targetAfter || targetAfter.owner !== perspective) {
+    return 0;
+  }
+  if (isConvertibleShieldDecision(after, decision, perspective)) {
+    return 0;
+  }
+  return maxIncomingThreatDamage(incomingThreat(before, decision.target.slotKey)) <= 0 ? value : 0;
 }
 
 function whiteWakeImmediateWorkDecisionBonus(
@@ -1138,7 +1216,7 @@ function whiteWakeSafeWorkDecisionBonus(
     return 0;
   }
   const threat = incomingThreat(after, targetSlotKey);
-  if (threat.lethal) {
+  if (isLethalIncomingThreat(threat)) {
     return 0;
   }
   return bestAttackOpportunityScore(after, targetSlotKey) > 0 || nextTurnWorkPotential(after, targetSlotKey, perspective) > 0
@@ -2065,8 +2143,10 @@ function createShieldDecision(state: GameState, target: Target): CpuDecision | u
   const threat = incomingThreat(state, target.slotKey);
   const shielded = useMasterAction(state, "shield", target);
   const threatAfterShield = incomingThreat(shielded, target.slotKey);
-  const preventsLethal = threat.lethal && !threatAfterShield.lethal;
-  const reducesDamage = threatAfterShield.maxDamage < threat.maxDamage;
+  const lethalThreat = isLethalIncomingThreat(threat);
+  const lethalAfterShield = isLethalIncomingThreat(threatAfterShield);
+  const preventsLethal = lethalThreat && !lethalAfterShield;
+  const reducesDamage = maxIncomingThreatDamage(threatAfterShield) < maxIncomingThreatDamage(threat);
   const important = monster.level >= 2 || getMonsterAiTrait(monster.cardId).role === "back" || monster.hp <= 2;
   const levelUpPotential = nextTurnLevelUpPotential(state, target.slotKey);
   const closeout = shouldPruneCloseoutNonProgressActions(state, state.currentPlayer);
@@ -2076,10 +2156,10 @@ function createShieldDecision(state: GameState, target: Target): CpuDecision | u
   if (!threat.threatened && !important) {
     return undefined;
   }
-  if (closeout && !preventsLethal && !threat.lethal && levelUpPotential <= 0) {
+  if (closeout && !preventsLethal && !lethalThreat && levelUpPotential <= 0) {
     return undefined;
   }
-  if (isWhiteMirrorCloseout(state) && !preventsLethal && !threat.lethal && levelUpPotential <= 0) {
+  if (isWhiteMirrorCloseout(state) && !preventsLethal && !lethalThreat && levelUpPotential <= 0) {
     return undefined;
   }
   if (!shouldProtectInDeckOutRace(state, target.slotKey, threat, preventsLethal, levelUpPotential)) {
@@ -2092,7 +2172,7 @@ function createShieldDecision(state: GameState, target: Target): CpuDecision | u
     14 +
     monsterValue(state, target.slotKey) * 0.18 +
     levelUpPotential * 0.24 +
-    (preventsLethal ? 96 : threat.lethal ? 48 : reducesDamage ? 30 : threat.threatened ? 20 : 0) -
+    (preventsLethal ? 96 : lethalThreat ? 48 : reducesDamage ? 30 : threat.threatened ? 20 : 0) -
     14;
   if (score < 28) {
     return undefined;
@@ -2103,7 +2183,7 @@ function createShieldDecision(state: GameState, target: Target): CpuDecision | u
     target,
     reason: preventsLethal
       ? "致死圏の味方を守れるためシールド"
-      : threat.lethal
+      : lethalThreat
         ? "倒されそうな高価値味方を守るためシールド"
         : levelUpPotential > 0
           ? "次ターンのレベルアップ筋を残すためシールド"
@@ -2121,7 +2201,7 @@ function shouldHoldShieldForMasterRace(
   if (state.players[state.currentPlayer].masterId !== "white") {
     return false;
   }
-  if (preventsLethal || threat.lethal || levelUpPotential > 0) {
+  if (preventsLethal || isLethalIncomingThreat(threat) || levelUpPotential > 0) {
     return false;
   }
 
@@ -2906,7 +2986,7 @@ function scoreHealingMagicDecision(
     weights.healPerPoint * healed +
     monsterValue(state, action.target.slotKey) * 0.22 +
     nextTurnLevelUpPotential(state, action.target.slotKey) * 0.16 +
-    (threat.lethal ? 95 : threat.threatened ? 36 : 0) -
+    (isLethalIncomingThreat(threat) ? 95 : threat.threatened ? 36 : 0) -
     cost * 6
   );
 }
@@ -2942,7 +3022,7 @@ function scoreShieldMagicDecision(state: GameState, after: GameState, action: Ma
     protectedTargets = protectedTargets.filter((target) => {
       const threat = incomingThreat(state, target.slotKey);
       const threatAfterShield = incomingThreat(after, target.slotKey);
-      const preventsLethal = threat.lethal && !threatAfterShield.lethal;
+      const preventsLethal = isLethalIncomingThreat(threat) && !isLethalIncomingThreat(threatAfterShield);
       return shouldProtectInDeckOutRace(state, target.slotKey, threat, preventsLethal, nextTurnLevelUpPotential(state, target.slotKey));
     });
   }
@@ -2950,8 +3030,8 @@ function scoreShieldMagicDecision(state: GameState, after: GameState, action: Ma
     protectedTargets = protectedTargets.filter((target) => {
       const threat = incomingThreat(state, target.slotKey);
       const threatAfterShield = incomingThreat(after, target.slotKey);
-      const preventsLethal = threat.lethal && !threatAfterShield.lethal;
-      return preventsLethal || threat.lethal || nextTurnLevelUpPotential(state, target.slotKey) > 0;
+      const preventsLethal = isLethalIncomingThreat(threat) && !isLethalIncomingThreat(threatAfterShield);
+      return preventsLethal || isLethalIncomingThreat(threat) || nextTurnLevelUpPotential(state, target.slotKey) > 0;
     });
   }
 
@@ -2961,7 +3041,7 @@ function scoreShieldMagicDecision(state: GameState, after: GameState, action: Ma
 
   const protectionValue = protectedTargets.reduce((total, target) => {
     const threat = incomingThreat(state, target.slotKey);
-    return total + monsterValue(state, target.slotKey) * 0.18 + (threat.lethal ? 80 : threat.threatened ? 32 : 10);
+    return total + monsterValue(state, target.slotKey) * 0.18 + (isLethalIncomingThreat(threat) ? 80 : threat.threatened ? 32 : 10);
   }, 0);
 
   return 16 + protectionValue - cost * 5;
@@ -3195,7 +3275,34 @@ function buildThreatModel(state: GameState, attackerId: PlayerId): ThreatModel {
     remainingStones -= magic.cost;
   }
 
+  addMasterActionMonsterThreats(readyState, attackerId, monsterThreats);
+
   return { masterDamage, monsterThreats };
+}
+
+function addMasterActionMonsterThreats(
+  state: GameState,
+  attackerId: PlayerId,
+  threats: Partial<Record<SlotKey, IncomingThreat>>,
+): void {
+  if (!getCurrentMasterActionIds(state).includes("master_attack")) {
+    return;
+  }
+  for (const target of getMasterActionTargets(state, "master_attack")) {
+    if (target.kind !== "monster" || state.slots[target.slotKey].owner === attackerId) {
+      continue;
+    }
+    const targetMonster = state.slots[target.slotKey].monster;
+    if (!targetMonster) {
+      continue;
+    }
+    updateMonsterMasterActionThreat(
+      threats,
+      target.slotKey,
+      estimateMasterActionMonsterDamageBySimulation(state, target),
+      targetMonster.hp,
+    );
+  }
 }
 
 function updateMonsterThreat(
@@ -3208,11 +3315,55 @@ function updateMonsterThreat(
     return;
   }
   const current = threats[slotKey] ?? NO_THREAT;
+  const maxDamage = Math.max(current.maxDamage, damage);
+  const maxDamageWithMasterAction = maxDamage + current.masterActionDamage;
   threats[slotKey] = {
     threatened: true,
     lethal: current.lethal || damage >= targetHp,
-    maxDamage: Math.max(current.maxDamage, damage),
+    maxDamage,
+    masterActionDamage: current.masterActionDamage,
+    maxDamageWithMasterAction,
+    lethalWithMasterAction: current.lethalWithMasterAction || maxDamageWithMasterAction >= targetHp,
   };
+}
+
+function updateMonsterMasterActionThreat(
+  threats: Partial<Record<SlotKey, IncomingThreat>>,
+  slotKey: SlotKey,
+  damage: number,
+  targetHp: number,
+): void {
+  if (damage <= 0) {
+    return;
+  }
+  const current = threats[slotKey] ?? NO_THREAT;
+  const masterActionDamage = Math.max(current.masterActionDamage, damage);
+  const maxDamageWithMasterAction = current.maxDamage + masterActionDamage;
+  threats[slotKey] = {
+    threatened: true,
+    lethal: current.lethal,
+    maxDamage: current.maxDamage,
+    masterActionDamage,
+    maxDamageWithMasterAction,
+    lethalWithMasterAction: current.lethalWithMasterAction || maxDamageWithMasterAction >= targetHp || damage >= targetHp,
+  };
+}
+
+function estimateMasterActionMonsterDamageBySimulation(
+  state: GameState,
+  target: Extract<Target, { kind: "monster" }>,
+): number {
+  const before = state.slots[target.slotKey].monster;
+  if (!before) {
+    return 0;
+  }
+  try {
+    const after = useMasterAction(state, "master_attack", target);
+    const current = after.slots[target.slotKey].monster;
+    return Math.max(0, before.hp - (current?.hp ?? 0));
+  } catch {
+    return 0;
+  }
 }
 
 function estimateMagicMasterDamageBySimulation(
@@ -3258,7 +3409,7 @@ function threatenedMonsterValueForPlayer(state: GameState, playerId: PlayerId, t
       return total;
     }
     const value = monsterValue(state, slotKey);
-    return total + (threat.lethal ? value * 0.85 + 70 : Math.min(monster.hp, threat.maxDamage) * 18 + value * 0.18);
+    return total + (isLethalIncomingThreat(threat) ? value * 0.85 + 70 : Math.min(monster.hp, maxIncomingThreatDamage(threat)) * 18 + value * 0.18);
   }, 0);
 }
 
@@ -3288,7 +3439,7 @@ function shouldProtectInDeckOutRace(
   if (!isDeckOutRace(state)) {
     return true;
   }
-  if (!preventsLethal && !threat.lethal) {
+  if (!preventsLethal && !isLethalIncomingThreat(threat)) {
     return false;
   }
   if (directMasterDamageFromSlot(state, slotKey, state.currentPlayer) > 0) {
@@ -3358,6 +3509,14 @@ function incomingThreat(state: GameState, targetSlotKey: SlotKey): IncomingThrea
   }
   const opponent = opponentOf(target.owner);
   return buildThreatModel(state, opponent).monsterThreats[targetSlotKey] ?? NO_THREAT;
+}
+
+function isLethalIncomingThreat(threat: IncomingThreat): boolean {
+  return threat.lethal || threat.lethalWithMasterAction;
+}
+
+function maxIncomingThreatDamage(threat: IncomingThreat): number {
+  return Math.max(threat.maxDamage, threat.maxDamageWithMasterAction);
 }
 
 function estimateAttackScore(state: GameState, attackerSlotKey: SlotKey, command: ReturnType<typeof getMonsterCommands>[number], target: Target): number {

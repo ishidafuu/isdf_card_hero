@@ -588,6 +588,56 @@ describe("cpu ai", () => {
     expect(urgentTuned?.totalScore).toBeCloseTo(urgentBaseline?.totalScore ?? 0);
   });
 
+  it("penalizes white shields that remain lethal after master attack pressure", () => {
+    const game = createCpuGame();
+    game.players.cpu.masterId = "white";
+    game.players.cpu.hand = [];
+    game.players.cpu.stones = 4;
+    game.players.player.stones = 3;
+    game.slots.cpu_front_left.monster = createActiveMonster("beyond", "cpu", { hp: 2 });
+    game.slots.player_front_left.monster = createActiveMonster("takokke", "player");
+
+    const findShield = (options = {}) =>
+      inspectCpuDecisionEvaluations(game, options).find(
+        (evaluation) =>
+          evaluation.decision.type === "master_action" &&
+          evaluation.decision.actionId === "shield" &&
+          evaluation.decision.target.kind === "monster" &&
+          evaluation.decision.target.slotKey === "cpu_front_left",
+      );
+    const baseline = findShield();
+    const tuned = findShield({ tunings: { cpu: { situationalBias: { whiteShieldBreakthroughPenalty: 9 } } } });
+
+    expect(baseline).toBeDefined();
+    expect(tuned).toBeDefined();
+    expect(tuned?.totalScore).toBeCloseTo((baseline?.totalScore ?? 0) - 9);
+  });
+
+  it("does not penalize white shields that remove master attack lethal pressure", () => {
+    const game = createCpuGame();
+    game.players.cpu.masterId = "white";
+    game.players.cpu.hand = [];
+    game.players.cpu.stones = 4;
+    game.players.player.stones = 3;
+    game.slots.cpu_front_left.monster = createActiveMonster("takokke", "cpu", { hp: 3 });
+    game.slots.player_front_left.monster = createActiveMonster("takokke", "player");
+
+    const findShield = (options = {}) =>
+      inspectCpuDecisionEvaluations(game, options).find(
+        (evaluation) =>
+          evaluation.decision.type === "master_action" &&
+          evaluation.decision.actionId === "shield" &&
+          evaluation.decision.target.kind === "monster" &&
+          evaluation.decision.target.slotKey === "cpu_front_left",
+      );
+    const baseline = findShield();
+    const tuned = findShield({ tunings: { cpu: { situationalBias: { whiteShieldBreakthroughPenalty: 9 } } } });
+
+    expect(baseline).toBeDefined();
+    expect(tuned).toBeDefined();
+    expect(tuned?.totalScore).toBeCloseTo(baseline?.totalScore ?? 0);
+  });
+
   it("penalizes low-stone white shield, wake, and summon setup by decision type", () => {
     const shieldGame = createCpuGame();
     shieldGame.players.cpu.masterId = "white";
@@ -1385,6 +1435,7 @@ describe("cpu ai", () => {
   it("shields a threatened valuable ally", () => {
     const game = createCpuGame([]);
     game.players.cpu.stones = 5;
+    game.players.player.stones = 0;
     game.slots.cpu_front_left.monster = createActiveMonster("beyond", "cpu", { hp: 2 });
     game.slots.player_front_left.monster = createActiveMonster("takokke", "player");
 
@@ -1401,6 +1452,7 @@ describe("cpu ai", () => {
   it("treats an enemy that acted last turn as a next-turn shield threat", () => {
     const game = createCpuGame([]);
     game.players.cpu.stones = 5;
+    game.players.player.stones = 0;
     game.slots.cpu_front_left.monster = createActiveMonster("beyond", "cpu", { hp: 2 });
     game.slots.player_front_left.monster = createActiveMonster("takokke", "player", { actionCount: 1 });
 
@@ -1410,6 +1462,22 @@ describe("cpu ai", () => {
     if (decision.type === "master_action") {
       expect(decision.actionId).toBe("shield");
       expect(decision.target).toEqual({ kind: "monster", slotKey: "cpu_front_left" });
+    }
+  });
+
+  it("moves a front back-role ally instead of shielding when master attack still breaks through", () => {
+    const game = createCpuGame([]);
+    game.players.cpu.stones = 5;
+    game.players.player.stones = 3;
+    game.slots.cpu_front_left.monster = createActiveMonster("beyond", "cpu", { hp: 2 });
+    game.slots.player_front_left.monster = createActiveMonster("takokke", "player");
+
+    const decision = chooseCpuDecision(game);
+
+    expect(decision.type).toBe("move");
+    if (decision.type === "move") {
+      expect(decision.fromSlotKey).toBe("cpu_front_left");
+      expect(decision.toSlotKey).toBe("cpu_back_left");
     }
   });
 

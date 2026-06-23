@@ -147,6 +147,9 @@ const DEFAULT_VARIANT_IDS = [
   "pressure_white_low_stone_shield_wake_v1",
   "pressure_white_shield_threat_conversion_v1",
   "pressure_white_shield_quality_second_guard_v1",
+  "pressure_white_shield_breakthrough_guard_v1",
+  "pressure_white_shield_pressure_breakthrough_v1",
+  "pressure_white_shield_quality_breakthrough_v1",
 ] as const;
 
 const DEFAULT_OPPONENT_IDS = [

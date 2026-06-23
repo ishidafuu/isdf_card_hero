@@ -261,6 +261,18 @@ export const DEFAULT_WHITE_AI_TUNING_VARIANTS = [
   hybridVariant("pressure_white_shield_threat_conversion_plus12_v1", "本実装候補: 白盾脅威/成果化+12", "pressure-normal", {
     situationalBias: { whiteShieldThreatConversionBonus: 12 },
   }, "成果化シールド加点を強め、2枚守りより質の高い1枚守りへ寄るか確認する。"),
+  hybridVariant("pressure_white_shield_breakthrough_guard_v1", "本実装候補: 白突破盾抑制-12", "pressure-normal", {
+    situationalBias: { whiteShieldBreakthroughPenalty: 12 },
+  }, "白マスター限定で、シールド後もマスターアタック込み致死が残る守りきれない盾を抑える。"),
+  hybridVariant("pressure_white_shield_breakthrough_guard_plus20_v1", "本実装候補: 白突破盾抑制-20", "pressure-normal", {
+    situationalBias: { whiteShieldBreakthroughPenalty: 20 },
+  }, "突破される盾への抑制を強め、1接触除去がどこまで減るか見る。"),
+  hybridVariant("pressure_white_shield_pressure_breakthrough_v1", "本実装候補: 白盾圧力/突破精査", "pressure-normal", {
+    situationalBias: { whiteShieldBreakthroughPenalty: 16, whiteShieldNoPressurePenalty: 8 },
+  }, "守りきれない盾と、成果化しないノープレッシャー盾を同時に薄く抑える。"),
+  hybridVariant("pressure_white_shield_quality_breakthrough_v1", "本実装候補: 白盾品質+突破抑制", "pressure-normal", {
+    situationalBias: { whiteShieldThreatConversionBonus: 8, whiteSecondShieldLowStonePenalty: 8, whiteShieldBreakthroughPenalty: 12 },
+  }, "質の高い盾は押し、2枚目低石と突破される盾を抑える複合候補。"),
   hybridVariant("pressure_white_wake_immediate_work_v1", "本実装候補: 白起動即仕事+8", "pressure-normal", {
     situationalBias: { whiteWakeImmediateWorkBonus: 8 },
   }, "白マスター限定で、起こした味方が即攻撃またはレベルアップ筋へつながるウェイクアップを加点する。"),
