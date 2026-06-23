@@ -1815,6 +1815,7 @@ describe("battle prototype rules", () => {
       "old_7",
     ]);
     expect(next.players.player.discard.map((card) => card.instanceId)).toEqual(["old_1"]);
+    expect(next.log.some((entry) => entry.includes("カード溢れ"))).toBe(true);
   });
 
   it("lets the current player explicitly discard a hand card only above the hand limit", () => {

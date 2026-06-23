@@ -174,11 +174,11 @@ export function endTurn(state: GameState): GameState {
   ensureActionAllowed(next);
 
   const playerId = next.currentPlayer;
-  discardToHandLimit(next, playerId);
   resolveEndTurnFieldEffects(next, playerId);
   focusIdleMonsters(next, playerId);
   clearExpiredEndTurnEffects(next, playerId);
   clearEndOfTurnMarkers(next);
+  discardToHandLimit(next, playerId);
 
   if (next.winner) {
     return next;
@@ -1874,6 +1874,10 @@ function recordMasterActionHistory(state: GameState, actionId: MasterActionId, t
 
 function discardToHandLimit(state: GameState, playerId: PlayerId): void {
   const player = state.players[playerId];
+  if (player.hand.length <= HAND_LIMIT) {
+    return;
+  }
+  appendLog(state, `${playerLabel(playerId)}のカード溢れ: 手札を${HAND_LIMIT}枚まで捨てる`);
   while (player.hand.length > HAND_LIMIT) {
     const discarded = player.hand.shift();
     if (!discarded) {
