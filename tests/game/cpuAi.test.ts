@@ -939,6 +939,75 @@ describe("cpu ai", () => {
     expect(tuned?.totalScore ?? 0).toBeLessThanOrEqual((baseline?.totalScore ?? 0) - 7);
   });
 
+  it("penalizes a second same-turn white shield commitment even when stones remain", () => {
+    const game = createCpuGame();
+    game.players.cpu.masterId = "white";
+    game.players.cpu.hand = [];
+    game.players.cpu.stones = 5;
+    game.slots.cpu_front_left.monster = createActiveMonster("beyond", "cpu", { hp: 2 });
+    game.slots.cpu_back_left.monster = createActiveMonster("takokke", "cpu", { shielded: true });
+    game.slots.player_front_left.monster = createActiveMonster("takokke", "player");
+    game.turnMasterActionHistory = [
+      {
+        playerId: "cpu",
+        actionId: "shield",
+        target: { kind: "monster", slotKey: "cpu_back_left" },
+        turnNumber: game.turnNumber,
+      },
+    ];
+
+    const findShield = (options = {}) =>
+      inspectCpuDecisionEvaluations(game, options).find(
+        (evaluation) =>
+          evaluation.decision.type === "master_action" &&
+          evaluation.decision.actionId === "shield" &&
+          evaluation.decision.target.kind === "monster" &&
+          evaluation.decision.target.slotKey === "cpu_front_left",
+      );
+    const baseline = findShield();
+    const tuned = findShield({ tunings: { cpu: { situationalBias: { whiteSecondShieldCommitmentPenalty: 13 } } } });
+
+    expect(baseline).toBeDefined();
+    expect(tuned).toBeDefined();
+    expect(tuned?.totalScore).toBeCloseTo((baseline?.totalScore ?? 0) - 13);
+  });
+
+  it("does not penalize a high-value second white shield target", () => {
+    const game = createCpuGame();
+    game.players.cpu.masterId = "white";
+    game.players.cpu.hand = [];
+    game.players.cpu.stones = 5;
+    game.slots.cpu_front_left.monster = createActiveMonster("morgan", "cpu", {
+      level: 2,
+      hp: 2,
+    });
+    game.slots.cpu_back_left.monster = createActiveMonster("takokke", "cpu", { shielded: true });
+    game.slots.player_front_left.monster = createActiveMonster("takokke", "player");
+    game.turnMasterActionHistory = [
+      {
+        playerId: "cpu",
+        actionId: "shield",
+        target: { kind: "monster", slotKey: "cpu_back_left" },
+        turnNumber: game.turnNumber,
+      },
+    ];
+
+    const findShield = (options = {}) =>
+      inspectCpuDecisionEvaluations(game, options).find(
+        (evaluation) =>
+          evaluation.decision.type === "master_action" &&
+          evaluation.decision.actionId === "shield" &&
+          evaluation.decision.target.kind === "monster" &&
+          evaluation.decision.target.slotKey === "cpu_front_left",
+      );
+    const baseline = findShield();
+    const tuned = findShield({ tunings: { cpu: { situationalBias: { whiteSecondShieldCommitmentPenalty: 13 } } } });
+
+    expect(baseline).toBeDefined();
+    expect(tuned).toBeDefined();
+    expect(tuned?.totalScore).toBeCloseTo(baseline?.totalScore ?? 0);
+  });
+
   it("does not penalize a first current-turn shield just because a previous shield remains", () => {
     const game = createCpuGame();
     game.players.cpu.masterId = "white";
@@ -997,7 +1066,43 @@ describe("cpu ai", () => {
 
     expect(defaultWhite).toBeDefined();
     expect(withoutGuard).toBeDefined();
-    expect(defaultWhite?.totalScore).toBeCloseTo((withoutGuard?.totalScore ?? 0) - 12);
+    expect(defaultWhite?.totalScore).toBeCloseTo((withoutGuard?.totalScore ?? 0) - 120);
+  });
+
+  it("uses the same-turn second shield commitment guard in the default white profile", () => {
+    const game = createCpuGame();
+    game.players.cpu.masterId = "white";
+    game.players.cpu.hand = [];
+    game.players.cpu.stones = 5;
+    game.slots.cpu_front_left.monster = createActiveMonster("beyond", "cpu", { hp: 2 });
+    game.slots.cpu_back_left.monster = createActiveMonster("takokke", "cpu", { shielded: true });
+    game.slots.player_front_left.monster = createActiveMonster("takokke", "player");
+    game.turnMasterActionHistory = [
+      {
+        playerId: "cpu",
+        actionId: "shield",
+        target: { kind: "monster", slotKey: "cpu_back_left" },
+        turnNumber: game.turnNumber,
+      },
+    ];
+
+    const findShield = (options = {}) =>
+      inspectCpuDecisionEvaluations(game, options).find(
+        (evaluation) =>
+          evaluation.decision.type === "master_action" &&
+          evaluation.decision.actionId === "shield" &&
+          evaluation.decision.target.kind === "monster" &&
+          evaluation.decision.target.slotKey === "cpu_front_left",
+      );
+    const defaultWhite = findShield({ profile: "white" });
+    const withoutGuard = findShield({
+      profile: "white",
+      tuning: { situationalBias: { whiteSecondShieldCommitmentPenalty: 0 } },
+    });
+
+    expect(defaultWhite).toBeDefined();
+    expect(withoutGuard).toBeDefined();
+    expect(defaultWhite?.totalScore ?? 0).toBeLessThanOrEqual((withoutGuard?.totalScore ?? 0) - 180);
   });
 
   it("bonuses low-stone white focus only when it converts into next-turn work", () => {

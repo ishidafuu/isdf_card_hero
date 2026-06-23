@@ -309,6 +309,12 @@ export const DEFAULT_WHITE_AI_TUNING_VARIANTS = [
   hybridVariant("pressure_white_second_shield_guard_plus12_v1", "本実装候補: 白2枚目低石盾抑制+12", "pressure-normal", {
     situationalBias: { whiteSecondShieldLowStonePenalty: 12 },
   }, "同ターン2枚目以降の低石シールド抑制を強め、過剰コミットの減少幅を見る。"),
+  hybridVariant("pressure_white_second_shield_old_guard_v1", "比較用: 旧2枚目低石盾抑制", "pressure-normal", {
+    situationalBias: { whiteSecondShieldLowStonePenalty: 12, whiteSecondShieldCommitmentPenalty: 0 },
+  }, "2枚目シールド強抑制前に近い設定。勝率副作用の切り分けに使う。"),
+  hybridVariant("pressure_white_second_shield_medium_guard_v1", "比較用: 2枚目盾抑制中間", "pressure-normal", {
+    situationalBias: { whiteSecondShieldLowStonePenalty: 120, whiteSecondShieldCommitmentPenalty: 180 },
+  }, "低石2枚目と通常2枚目を抑えるが、現行baselineより一段軽くして勝率副作用を見る。"),
   hybridVariant("pressure_white_shield_quality_second_guard_v1", "本実装候補: 白盾品質+2枚目抑制", "pressure-normal", {
     situationalBias: { whiteShieldThreatConversionBonus: 8, whiteSecondShieldLowStonePenalty: 8 },
   }, "質の高い盾を押しつつ、2枚目低石シールドの全力投入を抑える。"),

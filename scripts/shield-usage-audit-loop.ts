@@ -341,6 +341,11 @@ function buildShieldUsageAuditReport(loopReport: ReturnType<typeof runWhiteAiTun
 
   function sampleKinds(audit: ShieldEventAudit): string[] {
     const kinds: string[] = [];
+    if (audit.outcomeAudit.lowStoneSecondShield) {
+      kinds.push("low_stone_second_shield");
+    } else if (audit.outcomeAudit.secondShieldSameTurn) {
+      kinds.push("second_shield_same_turn");
+    }
     if (audit.estimate.noShieldDamage <= 0) {
       kinds.push("predicted_no_pressure");
     }

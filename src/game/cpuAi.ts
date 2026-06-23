@@ -132,6 +132,7 @@ export interface CpuAiTuning {
     whiteWakeImmediateWorkBonus?: number;
     whiteCloseoutAfterShieldBonus?: number;
     whiteSecondShieldLowStonePenalty?: number;
+    whiteSecondShieldCommitmentPenalty?: number;
     whiteLowStoneFocusConversionBonus?: number;
     whiteWakeSafeWorkBonus?: number;
     whiteLowStoneFocusMissedAttackPenalty?: number;
@@ -193,7 +194,8 @@ const CPU_AI_PROFILE_CONFIG: Record<CpuAiProfile, CpuAiProfileConfig> = {
     weights: AI_EVALUATION_WEIGHTS.white,
     tuning: {
       situationalBias: {
-        whiteSecondShieldLowStonePenalty: 12,
+        whiteSecondShieldLowStonePenalty: 120,
+        whiteSecondShieldCommitmentPenalty: 180,
         whiteBlackFrontThreatBonus: 8,
       },
     },
@@ -618,6 +620,9 @@ function decisionSituationalBonus(
   }
   if (bias.whiteSecondShieldLowStonePenalty) {
     bonus -= whiteSecondShieldLowStoneDecisionPenalty(before, after, decision, perspective, bias.whiteSecondShieldLowStonePenalty);
+  }
+  if (bias.whiteSecondShieldCommitmentPenalty) {
+    bonus -= whiteSecondShieldCommitmentDecisionPenalty(before, after, decision, perspective, bias.whiteSecondShieldCommitmentPenalty);
   }
   if (bias.whiteLowStoneFocusConversionBonus) {
     bonus += whiteLowStoneFocusConversionDecisionBonus(before, after, decision, perspective, bias.whiteLowStoneFocusConversionBonus);
@@ -1281,6 +1286,56 @@ function whiteSecondShieldLowStoneDecisionPenalty(
     return 0;
   }
   return currentTurnMasterActionCount(before, perspective, "shield") > 0 ? value : 0;
+}
+
+function whiteSecondShieldCommitmentDecisionPenalty(
+  before: GameState,
+  after: GameState,
+  decision: CpuDecision,
+  perspective: PlayerId,
+  value: number,
+): number {
+  if (
+    value <= 0 ||
+    before.players[perspective].masterId !== "white" ||
+    decision.type !== "master_action" ||
+    decision.actionId !== "shield" ||
+    decision.target.kind !== "monster" ||
+    currentTurnMasterActionCount(before, perspective, "shield") <= 0
+  ) {
+    return 0;
+  }
+  const targetSlotKey = decision.target.slotKey;
+  const target = before.slots[targetSlotKey].monster;
+  const targetAfter = after.slots[targetSlotKey].monster;
+  if (!target || target.owner !== perspective || !targetAfter || targetAfter.owner !== perspective) {
+    return 0;
+  }
+  return isSecondShieldException(before, after, targetSlotKey, perspective) ? 0 : value;
+}
+
+function isSecondShieldException(before: GameState, after: GameState, slotKey: SlotKey, perspective: PlayerId): boolean {
+  const threat = incomingThreat(before, slotKey);
+  if (!threat.threatened || maxIncomingThreatDamage(threat) <= 0) {
+    return false;
+  }
+  return isHighValueSecondShieldTarget(after, slotKey, perspective);
+}
+
+function isHighValueSecondShieldTarget(state: GameState, slotKey: SlotKey, perspective: PlayerId): boolean {
+  const monster = state.slots[slotKey].monster;
+  if (!monster || monster.owner !== perspective) {
+    return false;
+  }
+  if (monster.level >= 2 || nextTurnLevelUpPotential(state, slotKey) > 0) {
+    return true;
+  }
+  const opponent = opponentOf(perspective);
+  const directDamage = directMasterDamageFromSlot(state, slotKey, perspective);
+  if (directDamage >= state.players[opponent].masterHp) {
+    return true;
+  }
+  return false;
 }
 
 function whiteLowStoneFocusConversionDecisionBonus(
