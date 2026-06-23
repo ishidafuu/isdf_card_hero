@@ -2007,8 +2007,14 @@ function defeatMonster(
   }
 
   if (shouldReincarnateInPlace(monster)) {
+    const defeated: DefeatedMonster = {
+      owner: monster.owner,
+      cardId: monster.cardId,
+      level: monster.level,
+      investedStones: monster.investedStones,
+    };
     reincarnateMonsterInPlace(state, slotKey);
-    return undefined;
+    return defeated;
   }
 
   clearDeathChain(state, slotKey);

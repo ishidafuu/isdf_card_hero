@@ -1453,6 +1453,39 @@ describe("official card effect expectations", () => {
     expect(game.log.some((entry) => entry.includes("ランダム結果: 爆雷撃 -> 4P"))).toBe(true);
   });
 
+  it("card_067 ゾンビ grants a level-up right on its first defeat even when it revives", () => {
+    let game = createGameWithPlayerHand([]);
+    game.players.player.stones = 1;
+    game.slots.player_front_left.monster = createActiveMonster("takokke", "player");
+    game.slots.cpu_front_left.monster = createActiveMonster("card_067", "cpu", { hp: 1 });
+
+    game = attackWithCommand(game, {
+      attackerSlotKey: "player_front_left",
+      commandId: "attack",
+      target: { kind: "monster", slotKey: "cpu_front_left" },
+    });
+
+    expect(game.slots.cpu_front_left.monster).toMatchObject({
+      cardId: "card_067",
+      revivedOnce: true,
+      hp: 4,
+    });
+    expect(game.pendingLevelUp).toMatchObject({
+      playerId: "player",
+      attackerSlotKey: "player_front_left",
+      maxLevels: 1,
+    });
+
+    game = resolveLevelUp(game, 1);
+
+    expect(game.pendingLevelUp).toBeUndefined();
+    expect(game.slots.player_front_left.monster).toMatchObject({
+      level: 2,
+      hp: getMonsterDef("takokke").levels[1].maxHp,
+    });
+    expect(game.slots.cpu_front_left.monster?.cardId).toBe("card_067");
+  });
+
   it("card_069 フール applies 挑発 from its command", () => {
     let game = createGameWithPlayerHand([]);
     game.players.player.stones = 2;

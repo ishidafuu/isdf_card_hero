@@ -1679,7 +1679,7 @@ describe("battle prototype rules", () => {
 
     expect(game.slots.cpu_front_left.monster?.cardId).toBe("card_035");
     expect(game.slots.cpu_front_left.monster?.revivedOnce).toBe(true);
-    expect(game.pendingLevelUp).toBeUndefined();
+    expect(game.pendingLevelUp?.maxLevels).toBe(1);
 
     game = createInitialGame(231);
     game.slots.player_front_left.monster = createActiveMonster("takokke", "player");
@@ -1693,6 +1693,7 @@ describe("battle prototype rules", () => {
 
     expect(game.slots.cpu_front_left.monster?.cardId).toBe("card_067");
     expect(game.slots.cpu_front_left.monster?.revivedOnce).toBe(true);
+    expect(game.pendingLevelUp?.maxLevels).toBe(1);
 
     game = createInitialGame(232);
     game.slots.player_front_left.monster = createActiveMonster("takokke", "player");
