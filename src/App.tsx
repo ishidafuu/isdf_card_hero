@@ -77,6 +77,7 @@ import {
 import { evaluateCard } from "./game/unitEvaluation";
 import type { CardInstance, CardPool, CommandDef, GameState, MagicAction, MagicCardDef, MagicTargetKind, MasterActionId, MasterId, MonsterState, PlayerId, Row, SlotKey, Target } from "./game/types";
 import type { DeckValidationSummary } from "./game/cards";
+import { SE_SOURCES, type SeId } from "./audio";
 
 type BoardCell =
   | { kind: "slot"; slotKey: SlotKey }
@@ -312,6 +313,8 @@ const DECK_PRESET_CARD_FILTER_OPTIONS = getAllCardDefs()
   .sort((a, b) => a.sortValue - b.sortValue || a.name.localeCompare(b.name, "ja") || a.id.localeCompare(b.id));
 
 const DRAG_MIME = "application/x-card-hero-drag";
+const SE_ENABLED_STORAGE_KEY = "cardHeroSeEnabled";
+const SE_VOLUME_STORAGE_KEY = "cardHeroSeVolume";
 
 const LOG_FILTERS: LogFilter[] = ["all", "battle", "damage", "support", "turn", "cpu"];
 const LOG_CARD_NAME_MATCHERS = getAllCardDefs()
@@ -927,6 +930,31 @@ function loadJsonArray<T>(key: string): T[] {
   }
 }
 
+function loadBooleanSetting(key: string, fallback: boolean): boolean {
+  if (typeof window === "undefined") {
+    return fallback;
+  }
+  try {
+    const raw = window.localStorage.getItem(key);
+    return raw === null ? fallback : raw === "true";
+  } catch {
+    return fallback;
+  }
+}
+
+function loadNumberSetting(key: string, fallback: number, min: number, max: number): number {
+  if (typeof window === "undefined") {
+    return fallback;
+  }
+  try {
+    const raw = window.localStorage.getItem(key);
+    const parsed = raw === null ? fallback : Number(raw);
+    return Number.isFinite(parsed) ? clampNumber(parsed, min, max) : fallback;
+  } catch {
+    return fallback;
+  }
+}
+
 function generatedDeckCardIds(playerId: PlayerId, seed: number, masterId: MasterId): string[] {
   return buildDeckCardIds(seed + (playerId === "player" ? 101 : 202), { masterId });
 }
@@ -1030,6 +1058,8 @@ export function App() {
   const [infoToolsOpen, setInfoToolsOpen] = useState(false);
   const [logFilter, setLogFilter] = useState<LogFilter>("all");
   const [selectedLogIndex, setSelectedLogIndex] = useState<number | undefined>();
+  const [seEnabled, setSeEnabled] = useState(() => loadBooleanSetting(SE_ENABLED_STORAGE_KEY, true));
+  const [seVolume, setSeVolume] = useState(() => loadNumberSetting(SE_VOLUME_STORAGE_KEY, 0.55, 0, 1));
   const [battleHistory, setBattleHistory] = useState<BattleHistoryEntry[]>(() => loadBattleHistory());
   const [savedBattlePresets, setSavedBattlePresets] = useState<SavedBattlePreset[]>(() => loadSavedBattlePresets());
   const [matchPresetId, setMatchPresetId] = useState<string>(BUILT_IN_MATCH_PRESETS[0]?.id ?? "");
@@ -1058,6 +1088,10 @@ export function App() {
   } | undefined>(undefined);
   const pointerDragCleanupRef = useRef<(() => void) | undefined>(undefined);
   const suppressNextClickRef = useRef(false);
+  const seUnlockedRef = useRef(false);
+  const seEnabledRef = useRef(seEnabled);
+  const seVolumeRef = useRef(seVolume);
+  const playedSeEffectIdRef = useRef<number | undefined>(undefined);
 
   const deckDrafts = useMemo(() => createDeckDrafts(battleSettings, deckSettings), [battleSettings, deckSettings]);
   const deckCardOptions = useMemo(
@@ -1176,6 +1210,40 @@ export function App() {
   }, [game.log, logFilter, selectedLogIndex]);
 
   useEffect(() => {
+    seEnabledRef.current = seEnabled;
+    if (typeof window !== "undefined") {
+      window.localStorage.setItem(SE_ENABLED_STORAGE_KEY, String(seEnabled));
+    }
+  }, [seEnabled]);
+
+  useEffect(() => {
+    seVolumeRef.current = seVolume;
+    if (typeof window !== "undefined") {
+      window.localStorage.setItem(SE_VOLUME_STORAGE_KEY, String(seVolume));
+    }
+  }, [seVolume]);
+
+  useEffect(() => {
+    if (!visualEffect) {
+      return;
+    }
+    if (playedSeEffectIdRef.current === visualEffect.id) {
+      return;
+    }
+    playedSeEffectIdRef.current = visualEffect.id;
+    const seId = seForVisualEffect(visualEffect, game);
+    if (seId) {
+      playSe(seId);
+    }
+  }, [game, visualEffect]);
+
+  useEffect(() => {
+    if (error) {
+      playSe("invalid");
+    }
+  }, [error]);
+
+  useEffect(() => {
     if (!showBattleLog) {
       return;
     }
@@ -1265,6 +1333,40 @@ export function App() {
   }, [savedBattlePresets]);
 
   useEffect(() => () => clearPointerDrag(), []);
+
+  function unlockSePlayback() {
+    if (seUnlockedRef.current || typeof Audio === "undefined") {
+      return;
+    }
+    seUnlockedRef.current = true;
+    const audio = new Audio(SE_SOURCES.select);
+    audio.volume = 0;
+    void audio.play()
+      .then(() => {
+        audio.pause();
+        audio.currentTime = 0;
+      })
+      .catch(() => {
+        // Browsers may still block the first silent play; later user-triggered SE can retry normally.
+      });
+  }
+
+  function playSe(id: SeId) {
+    if (!seEnabledRef.current || !seUnlockedRef.current || typeof Audio === "undefined") {
+      return;
+    }
+    const source = SE_SOURCES[id];
+    const audio = new Audio(source);
+    audio.volume = seVolumeRef.current;
+    void audio.play().catch(() => {
+      // SE is a non-critical enhancement; blocked playback should never interrupt gameplay.
+    });
+  }
+
+  function handleSeVolumeChange(value: string) {
+    const next = clampNumber(Number(value) / 100, 0, 1);
+    setSeVolume(next);
+  }
 
   function applyChange(change: (state: GameState) => GameState, keepSelection = false) {
     try {
@@ -1455,6 +1557,7 @@ export function App() {
         setPendingDropAction(undefined);
         setSelection({ kind: "monster", slotKey });
         setError("");
+        playSe("select");
         return;
       }
       setPendingDropAction(undefined);
@@ -1605,6 +1708,9 @@ export function App() {
     setPendingDropAction(undefined);
     setSelection(game.slots[slotKey].monster ? { kind: "monster", slotKey } : undefined);
     setError("");
+    if (game.slots[slotKey].monster) {
+      playSe("select");
+    }
   }
 
   function handleMasterClick(playerId: "player" | "cpu") {
@@ -1635,6 +1741,7 @@ export function App() {
     setPendingDropAction(undefined);
     setSelection({ kind: "master", playerId });
     setError("");
+    playSe("select");
   }
 
   function handleEndTurn() {
@@ -2127,6 +2234,7 @@ export function App() {
     setPendingDropAction(action);
     setSelection(selectionFromPendingDropAction(action));
     setError("");
+    playSe("confirm");
   }
 
   function applyImmediateDropAction(payload: DragPayload, target: Target): boolean {
@@ -2567,7 +2675,7 @@ export function App() {
   }
 
   return (
-    <main className={`app-shell ${pointerDragging ? "dragging" : ""}`}>
+    <main className={`app-shell ${pointerDragging ? "dragging" : ""}`} onPointerDownCapture={unlockSePlayback}>
       <header className="topbar">
         <div>
           <h1>Card Hero Prototype</h1>
@@ -2660,6 +2768,25 @@ export function App() {
           <button type="button" onClick={handleNewGame} disabled={fixedDeckError}>
             <Icon icon="🔄" /> New Game
           </button>
+          <button
+            type="button"
+            className={seEnabled ? "selected" : ""}
+            onClick={() => setSeEnabled((enabled) => !enabled)}
+            title={seEnabled ? "SEをオフ" : "SEをオン"}
+          >
+            <Icon icon={seEnabled ? "🔊" : "🔇"} /> SE
+          </button>
+          <label className="battle-setting-control se-volume-control">
+            SE Vol
+            <input
+              type="range"
+              min={0}
+              max={100}
+              step={5}
+              value={Math.round(seVolume * 100)}
+              onChange={(event) => handleSeVolumeChange(event.target.value)}
+            />
+          </label>
           {renderUndoControl()}
           {renderAutoPlaybackControls()}
         </div>
@@ -2962,6 +3089,7 @@ export function App() {
                       setPendingDropAction(undefined);
                       setSelection({ kind: "hand", instanceId: card.instanceId });
                       setError("");
+                      playSe("select");
                     }}
                     disabled={controlsDisabled && !selectableDuringInterrupt}
                     aria-label={getCardName(card.cardId)}
@@ -7276,6 +7404,41 @@ function createVisualEffect(previous: GameState, next: GameState, id: number): V
     action: createBoardActionEffect(previous, next, appendedLogs, kind, slotDamageFlashes, masterDamageFlashes),
     logs: actionFeedLogs(appendedLogs),
   };
+}
+
+function seForVisualEffect(effect: VisualEffect, game: GameState): SeId | undefined {
+  const logs = effect.logs.join(" ");
+  if (game.winner) {
+    return "win";
+  }
+  if (logs.includes("シールド")) {
+    return "shield";
+  }
+  if (logs.includes("ウェイクアップ") || logs.includes("バーサク") || logs.includes("大地の怒り") || logs.includes("使った")) {
+    return "magic";
+  }
+  if (effect.kind === "summon" || effect.action?.kind === "summon") {
+    return "summon";
+  }
+  if (effect.kind === "focus" || effect.action?.kind === "focus") {
+    return "focus";
+  }
+  if (effect.kind === "attack" || effect.action?.kind === "attack") {
+    return "attack";
+  }
+  if (effect.kind === "damage" || effect.slotDamageFlashes.length > 0 || effect.masterDamageFlashes.length > 0) {
+    return "damage";
+  }
+  if (effect.kind === "heal") {
+    return "shield";
+  }
+  if (effect.kind === "turn") {
+    return "turn";
+  }
+  if (effect.kind === "move") {
+    return "select";
+  }
+  return undefined;
 }
 
 function actionFeedLogs(logs: string[]): string[] {
