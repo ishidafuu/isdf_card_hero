@@ -2423,9 +2423,26 @@ button:disabled {
     0 0 0 3px rgba(57, 115, 103, 0.16);
 }
 
+.hand-card.hand-limit-discard-target {
+  border-color: #a94f4f;
+  box-shadow:
+    inset 0 0 0 2px #a94f4f,
+    0 0 0 3px rgba(169, 79, 79, 0.14);
+}
+
+.hand-card.hand-limit-discard-selected {
+  background: #fff4f1;
+  border-color: #8f1d1d;
+  box-shadow:
+    inset 0 0 0 2px #8f1d1d,
+    0 0 0 3px rgba(143, 29, 29, 0.18);
+}
+
 .hand-card.hand-choice-target::after,
 .hand-card.hand-choice-selected::after,
-.hand-card.hand-level-up-super::after {
+.hand-card.hand-level-up-super::after,
+.hand-card.hand-limit-discard-target::after,
+.hand-card.hand-limit-discard-selected::after {
   background: rgba(248, 250, 244, 0.94);
   border: 1px solid rgba(29, 37, 39, 0.14);
   border-radius: 999px;
@@ -2446,6 +2463,14 @@ button:disabled {
 
 .hand-card.hand-level-up-super::after {
   content: "スーパー";
+}
+
+.hand-card.hand-limit-discard-target::after {
+  content: "捨てる";
+}
+
+.hand-card.hand-limit-discard-selected::after {
+  content: "選択中";
 }
 
 .hand-card span {

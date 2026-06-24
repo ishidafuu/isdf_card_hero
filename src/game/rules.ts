@@ -179,11 +179,22 @@ export function endTurn(state: GameState): GameState {
   ensureActionAllowed(next);
 
   const playerId = next.currentPlayer;
-  resolveEndTurnFieldEffects(next, playerId);
-  focusIdleMonsters(next, playerId);
-  clearExpiredEndTurnEffects(next, playerId);
-  clearEndOfTurnMarkers(next);
+  resolveEndTurnCleanup(next, playerId);
   discardToHandLimit(next, playerId);
+
+  if (next.winner) {
+    return next;
+  }
+  return startTurn(next, opponentOf(playerId));
+}
+
+export function endTurnWithHandLimitDiscards(state: GameState, handInstanceIds: string[]): GameState {
+  const next = cloneState(state);
+  ensureActionAllowed(next);
+
+  const playerId = next.currentPlayer;
+  resolveEndTurnCleanup(next, playerId);
+  discardSelectedHandCardsForLimit(next, playerId, handInstanceIds);
 
   if (next.winner) {
     return next;
@@ -1799,6 +1810,13 @@ function clearEndOfTurnMarkers(state: GameState): void {
   state.turnMasterActionHistory = [];
 }
 
+function resolveEndTurnCleanup(state: GameState, playerId: PlayerId): void {
+  resolveEndTurnFieldEffects(state, playerId);
+  focusIdleMonsters(state, playerId);
+  clearExpiredEndTurnEffects(state, playerId);
+  clearEndOfTurnMarkers(state);
+}
+
 function setMasterActionExchange(state: GameState, expiresOnStartOf: PlayerId): void {
   state.players.player.masterActionsExchanged = true;
   state.players.cpu.masterActionsExchanged = true;
@@ -1857,6 +1875,30 @@ function discardToHandLimit(state: GameState, playerId: PlayerId): void {
     if (!discarded) {
       return;
     }
+    player.discard.push(discarded);
+    appendLog(state, `${playerLabel(playerId)}は手札上限で${getCardName(discarded.cardId)}を捨てた`);
+  }
+}
+
+function discardSelectedHandCardsForLimit(state: GameState, playerId: PlayerId, handInstanceIds: string[]): void {
+  const player = state.players[playerId];
+  const discardCount = player.hand.length - HAND_LIMIT;
+  if (discardCount <= 0) {
+    return;
+  }
+
+  const uniqueIds = [...new Set(handInstanceIds)];
+  if (uniqueIds.length !== discardCount) {
+    throw new Error(`手札を${HAND_LIMIT}枚にするカードを${discardCount}枚選んでください`);
+  }
+
+  appendLog(state, `${playerLabel(playerId)}のカード溢れ: 手札を${HAND_LIMIT}枚まで捨てる`);
+  for (const handInstanceId of uniqueIds) {
+    const handIndex = player.hand.findIndex((card) => card.instanceId === handInstanceId);
+    if (handIndex < 0) {
+      throw new Error("選択したカードが手札にありません");
+    }
+    const [discarded] = player.hand.splice(handIndex, 1);
     player.discard.push(discarded);
     appendLog(state, `${playerLabel(playerId)}は手札上限で${getCardName(discarded.cardId)}を捨てた`);
   }

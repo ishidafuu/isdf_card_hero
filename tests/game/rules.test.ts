@@ -22,6 +22,7 @@ import {
   createInitialGame,
   discardHandCard,
   endTurn,
+  endTurnWithHandLimitDiscards,
   focusMonster,
   getCommandTargets,
   getCommandHandChoices,
@@ -1894,6 +1895,45 @@ describe("battle prototype rules", () => {
     expect(next.log.at(-1)).toContain("手札から捨てた");
 
     expect(() => discardHandCard(next, "keep")).toThrow("手札上限を超えている時だけ捨てられます");
+  });
+
+  it("ends the turn with the selected hand-limit discard cards", () => {
+    const game = createGameWithPlayerHand([
+      { cardId: "takokke", instanceId: "keep_oldest" },
+      { cardId: "bomuzo", instanceId: "discard_selected_1" },
+      { cardId: "polyspinner", instanceId: "keep_2" },
+      { cardId: "sigma", instanceId: "keep_3" },
+      { cardId: "beyond", instanceId: "discard_selected_2" },
+      { cardId: "yanbaru", instanceId: "keep_4" },
+      { cardId: "morgan", instanceId: "keep_5" },
+    ]);
+
+    const next = endTurnWithHandLimitDiscards(game, ["discard_selected_1", "discard_selected_2"]);
+
+    expect(next.currentPlayer).toBe("cpu");
+    expect(next.players.player.hand.map((card) => card.instanceId)).toEqual([
+      "keep_oldest",
+      "keep_2",
+      "keep_3",
+      "keep_4",
+      "keep_5",
+    ]);
+    expect(next.players.player.discard.map((card) => card.instanceId)).toEqual(["discard_selected_1", "discard_selected_2"]);
+    expect(next.log.some((entry) => entry.includes("カード溢れ"))).toBe(true);
+  });
+
+  it("requires exactly enough selected cards for hand-limit discard at turn end", () => {
+    const game = createGameWithPlayerHand([
+      { cardId: "takokke", instanceId: "keep" },
+      { cardId: "bomuzo", instanceId: "discard" },
+      { cardId: "polyspinner", instanceId: "keep_2" },
+      { cardId: "sigma", instanceId: "keep_3" },
+      { cardId: "beyond", instanceId: "keep_4" },
+      { cardId: "yanbaru", instanceId: "keep_5" },
+    ]);
+
+    expect(() => endTurnWithHandLimitDiscards(game, [])).toThrow("カードを1枚選んでください");
+    expect(() => endTurnWithHandLimitDiscards(game, ["discard", "keep"])).toThrow("カードを1枚選んでください");
   });
 
   it("copies a selected enemy card identity with illusion mirror while keeping current HP", () => {

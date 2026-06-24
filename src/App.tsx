@@ -23,6 +23,7 @@ import {
   createInitialGame,
   discardHandCard,
   endTurn,
+  endTurnWithHandLimitDiscards,
   focusMonster,
   getCommandTargets,
   getCommandHandChoices,
@@ -1054,6 +1055,8 @@ export function App() {
   );
   const [selection, setSelection] = useState<Selection | undefined>();
   const [pendingDropAction, setPendingDropAction] = useState<PendingDropAction | undefined>();
+  const [handLimitDiscardMode, setHandLimitDiscardMode] = useState(false);
+  const [handLimitDiscardSelection, setHandLimitDiscardSelection] = useState<string[]>([]);
   const [error, setError] = useState<string>("");
   const [visualEffect, setVisualEffect] = useState<VisualEffect | undefined>();
   const [pointerDragging, setPointerDragging] = useState(false);
@@ -1114,14 +1117,28 @@ export function App() {
   const activeBattleSettings = activeBattleSettingsRef.current;
   const currentPlayer = game.players[game.currentPlayer];
   const cpuVsCpu = activeBattleSettings.mode === "cpu-vs-cpu";
+  const handLimitDiscardNeeded = Math.max(0, currentPlayer.hand.length - HAND_LIMIT);
+  const handLimitDiscardableIds = useMemo(
+    () => new Set(currentPlayer.hand.map((card) => card.instanceId)),
+    [currentPlayer.hand],
+  );
+  const selectedHandLimitDiscardIds = handLimitDiscardSelection.filter((instanceId) => handLimitDiscardableIds.has(instanceId));
+  const isHandLimitDiscarding =
+    handLimitDiscardMode &&
+    game.currentPlayer === "player" &&
+    !cpuVsCpu &&
+    !autoPlayEnabled &&
+    !game.winner &&
+    !game.pendingLevelUp &&
+    handLimitDiscardNeeded > 0;
   const spectatorAutoPaused = cpuVsCpu && spectatorPaused;
   const isAutoResolving =
     !game.winner && !spectatorAutoPaused && (cpuVsCpu || autoPlayEnabled || (game.currentPlayer === "cpu" && !game.pendingLevelUp));
-  const controlsDisabled = cpuVsCpu || autoPlayEnabled || game.currentPlayer !== "player" || !!game.winner || !!game.pendingLevelUp;
-  const hasOperationContext = Boolean(selection || pendingDropAction || error);
+  const controlsDisabled = cpuVsCpu || autoPlayEnabled || game.currentPlayer !== "player" || !!game.winner || !!game.pendingLevelUp || isHandLimitDiscarding;
+  const hasOperationContext = Boolean(selection || pendingDropAction || error || isHandLimitDiscarding);
   const hasSideContext = Boolean(!pendingDropAction && !game.pendingLevelUp && !isAdditionalChoiceSelection(selection) && (selection || error));
   const showBattleLog = !hasSideContext;
-  const canCancelInteraction = Boolean(selection || pendingDropAction || error || dragPayload) && !game.pendingLevelUp;
+  const canCancelInteraction = Boolean(selection || pendingDropAction || error || dragPayload || isHandLimitDiscarding) && !game.pendingLevelUp;
   const canUndoManualAction =
     manualUndoStack.length > 0 &&
     !cpuVsCpu &&
@@ -1279,6 +1296,23 @@ export function App() {
   }, [cpuVsCpu, latestSpectatorAttention, spectatorPauseOnAttention]);
 
   useEffect(() => {
+    if (!handLimitDiscardMode) {
+      return;
+    }
+    if (
+      game.currentPlayer !== "player" ||
+      cpuVsCpu ||
+      autoPlayEnabled ||
+      game.winner ||
+      game.pendingLevelUp ||
+      game.players[game.currentPlayer].hand.length <= HAND_LIMIT
+    ) {
+      setHandLimitDiscardMode(false);
+      setHandLimitDiscardSelection([]);
+    }
+  }, [autoPlayEnabled, cpuVsCpu, game, handLimitDiscardMode]);
+
+  useEffect(() => {
     const previous = previousGameRef.current;
     if (previous !== game) {
       visualEffectIdRef.current += 1;
@@ -1377,7 +1411,7 @@ export function App() {
     setSeVolume(next);
   }
 
-  function applyChange(change: (state: GameState) => GameState, keepSelection = false) {
+  function applyChange(change: (state: GameState) => GameState, keepSelection = false): GameState | undefined {
     try {
       const next = change(game);
       if (next !== game) {
@@ -1389,8 +1423,49 @@ export function App() {
       if (!keepSelection) {
         setSelection(undefined);
       }
+      return next;
     } catch (caught) {
       setError(caught instanceof Error ? caught.message : "操作に失敗しました");
+      return undefined;
+    }
+  }
+
+  function clearHandLimitDiscardMode() {
+    setHandLimitDiscardMode(false);
+    setHandLimitDiscardSelection([]);
+  }
+
+  function toggleHandLimitDiscardSelection(instanceId: string) {
+    if (!isHandLimitDiscarding || !handLimitDiscardableIds.has(instanceId)) {
+      return;
+    }
+    setPendingDropAction(undefined);
+    setSelection(undefined);
+    setError("");
+    setHandLimitDiscardSelection((previous) => {
+      if (previous.includes(instanceId)) {
+        return previous.filter((id) => id !== instanceId);
+      }
+      const validPrevious = previous.filter((id) => handLimitDiscardableIds.has(id));
+      if (validPrevious.length >= handLimitDiscardNeeded) {
+        return validPrevious;
+      }
+      return [...validPrevious, instanceId];
+    });
+    playSe("select");
+  }
+
+  function confirmHandLimitDiscard() {
+    if (!isHandLimitDiscarding) {
+      return;
+    }
+    if (selectedHandLimitDiscardIds.length !== handLimitDiscardNeeded) {
+      setError(`捨てるカードを${handLimitDiscardNeeded}枚選んでください`);
+      return;
+    }
+    const next = applyChange((state) => endTurnWithHandLimitDiscards(state, selectedHandLimitDiscardIds));
+    if (next) {
+      clearHandLimitDiscardMode();
     }
   }
 
@@ -1407,6 +1482,7 @@ export function App() {
     setGame(previousGame);
     setSelection(undefined);
     setPendingDropAction(undefined);
+    clearHandLimitDiscardMode();
     setError("");
   }
 
@@ -1553,6 +1629,9 @@ export function App() {
 
   function handleSlotClick(slotKey: SlotKey) {
     if (consumeSuppressedClick()) {
+      return;
+    }
+    if (isHandLimitDiscarding) {
       return;
     }
     if (game.currentPlayer !== "player" || game.winner || game.pendingLevelUp) {
@@ -1726,6 +1805,9 @@ export function App() {
     if (consumeSuppressedClick()) {
       return;
     }
+    if (isHandLimitDiscarding) {
+      return;
+    }
     if (pendingDropAction) {
       return;
     }
@@ -1754,6 +1836,17 @@ export function App() {
   }
 
   function handleEndTurn() {
+    if (controlsDisabled) {
+      return;
+    }
+    if (game.currentPlayer === "player" && handLimitDiscardNeeded > 0) {
+      setHandLimitDiscardMode(true);
+      setHandLimitDiscardSelection([]);
+      setPendingDropAction(undefined);
+      setSelection(undefined);
+      setError("");
+      return;
+    }
     applyChange(endTurn);
   }
 
@@ -1775,6 +1868,7 @@ export function App() {
     setManualUndoStack([]);
     setSelection(undefined);
     setPendingDropAction(undefined);
+    clearHandLimitDiscardMode();
     setZoneView(undefined);
     setInfoToolsOpen(false);
     setError("");
@@ -2372,6 +2466,7 @@ export function App() {
     clearPointerDrag();
     setPendingDropAction(undefined);
     setSelection(undefined);
+    clearHandLimitDiscardMode();
     setError("");
   }
 
@@ -2648,6 +2743,17 @@ export function App() {
                   onAccept={() => applyChange((state) => resolveLevelUp(state, 1))}
                   onDecline={() => applyChange((state) => resolveLevelUp(state, 0))}
                   onSuper={(handInstanceId) => applyChange((state) => resolveLevelUp(state, game.pendingLevelUp!.maxLevels, handInstanceId))}
+                />
+              </div>
+            ) : isHandLimitDiscarding ? (
+              <div className="turn-flow-choice">
+                <HandLimitDiscardPanel
+                  game={game}
+                  needed={handLimitDiscardNeeded}
+                  selectedIds={selectedHandLimitDiscardIds}
+                  onToggle={toggleHandLimitDiscardSelection}
+                  onConfirm={confirmHandLimitDiscard}
+                  onCancel={handleCancelInteraction}
                 />
               </div>
             ) : pendingDropAction ? (
@@ -3075,7 +3181,8 @@ export function App() {
                   );
                 }
                 const handChoiceState = handChoiceStateFor(game, selection, card.instanceId);
-                const selectableDuringInterrupt = handChoiceState === "level-up-super";
+                const isSelectedForHandLimitDiscard = isHandLimitDiscarding && selectedHandLimitDiscardIds.includes(card.instanceId);
+                const selectableDuringInterrupt = handChoiceState === "level-up-super" || isHandLimitDiscarding;
                 return (
                   <button
                     type="button"
@@ -3085,13 +3192,19 @@ export function App() {
                       isSelectedSourceHand(selection, pendingDropAction, card.instanceId) ? "selected" : "",
                       dragPayload?.kind === "hand" && dragPayload.instanceId === card.instanceId ? "selected" : "",
                       handChoiceState ? `hand-${handChoiceState}` : "",
+                      isHandLimitDiscarding ? "hand-limit-discard-target" : "",
+                      isSelectedForHandLimitDiscard ? "hand-limit-discard-selected" : "",
                     ].join(" ")}
-                    draggable={!controlsDisabled}
+                    draggable={!controlsDisabled && !isHandLimitDiscarding}
                     onDragStart={(event) => handleHandDragStart(event, card.instanceId)}
                     onDragEnd={handleDragEnd}
                     onPointerDown={(event) => handleHandPointerDown(event, card.instanceId)}
                     onClick={() => {
                       if (consumeSuppressedClick()) {
+                        return;
+                      }
+                      if (isHandLimitDiscarding) {
+                        toggleHandLimitDiscardSelection(card.instanceId);
                         return;
                       }
                       if (handleAdditionalHandChoice(card.instanceId)) {
@@ -4836,6 +4949,56 @@ function LevelUpDecisionPanel({ game, onAccept, onDecline, onSuper }: LevelUpDec
           </div>
         </div>
       )}
+    </div>
+  );
+}
+
+interface HandLimitDiscardPanelProps {
+  game: GameState;
+  needed: number;
+  selectedIds: string[];
+  onToggle: (instanceId: string) => void;
+  onConfirm: () => void;
+  onCancel: () => void;
+}
+
+function HandLimitDiscardPanel({ game, needed, selectedIds, onToggle, onConfirm, onCancel }: HandLimitDiscardPanelProps) {
+  const player = game.players[game.currentPlayer];
+  const remaining = Math.max(0, needed - selectedIds.length);
+  const canConfirm = needed > 0 && remaining === 0;
+
+  return (
+    <div className="selected-detail hand-limit-discard-panel">
+      <h3><Icon icon="🗑️" /> 手札上限</h3>
+      <p className="hint">ターン終了前に手札を{HAND_LIMIT}枚にします。</p>
+      <div className="card-meta-row">
+        <span>必要 {needed}</span>
+        <span>選択 {selectedIds.length}</span>
+        <span>残り {remaining}</span>
+      </div>
+      <div className="button-stack">
+        {player.hand.map((card) => {
+          const selected = selectedIds.includes(card.instanceId);
+          return (
+            <button
+              type="button"
+              key={card.instanceId}
+              className={selected ? "selected danger-button" : ""}
+              onClick={() => onToggle(card.instanceId)}
+              disabled={!selected && selectedIds.length >= needed}
+            >
+              <span>{selected ? "☑" : "☐"}</span>
+              <CardIcon cardId={card.cardId} /> {getCardName(card.cardId)}
+            </button>
+          );
+        })}
+        <button type="button" className="primary-button" onClick={onConfirm} disabled={!canConfirm}>
+          <Icon icon="✅" /> 捨ててターン終了
+        </button>
+        <button type="button" onClick={onCancel}>
+          <Icon icon="✕" /> キャンセル
+        </button>
+      </div>
     </div>
   );
 }
