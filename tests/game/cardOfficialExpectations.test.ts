@@ -1112,6 +1112,37 @@ describe("official card effect expectations", () => {
     expect(game.slots.cpu_front_left.monster?.hp).toBe(2);
   });
 
+  it("card_128 スケープゴート grants level-up when redirected master damage defeats an enemy monster", () => {
+    let game = createGameWithPlayerHand([{ cardId: "card_128", instanceId: "scapegoat" }]);
+    game.players.player.stones = magicCost("card_128") + 1;
+    game.slots.player_front_left.monster = createActiveMonster("takokke", "player");
+    game.slots.cpu_front_left.monster = createActiveMonster("takokke", "cpu", { hp: 2 });
+
+    game = playMagic(game, {
+      handInstanceId: "scapegoat",
+      target: { kind: "monster", slotKey: "cpu_front_left" },
+    });
+    game = attackWithCommand(game, {
+      attackerSlotKey: "player_front_left",
+      commandId: "attack",
+      target: { kind: "master", playerId: "cpu" },
+    });
+
+    expect(game.players.cpu.masterHp).toBe(10);
+    expect(game.slots.cpu_front_left.monster).toBeUndefined();
+    expect(game.pendingLevelUp).toMatchObject({
+      playerId: "player",
+      attackerSlotKey: "player_front_left",
+      maxLevels: 1,
+    });
+
+    game = resolveLevelUp(game, 1);
+
+    expect(game.pendingLevelUp).toBeUndefined();
+    expect(game.slots.player_front_left.monster).toMatchObject({ level: 2, hp: 6, investedStones: 2 });
+    expect(game.players.player.stones).toBe(0);
+  });
+
   it("card_129 ソウルチャージ applies focus and boosts only the upper command once", () => {
     let game = createGameWithPlayerHand([{ cardId: "card_129", instanceId: "charge" }]);
     game.players.player.stones = magicCost("card_129");

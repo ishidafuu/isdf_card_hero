@@ -413,13 +413,17 @@ export function attackWithCommand(state: GameState, action: CommandAction): Game
 
   if (action.target.kind === "master") {
     const beforeHp = next.players[action.target.playerId].masterHp;
-    damageMasterByPower(next, action.target.playerId, power, {
+    const defeatedByScapegoat = damageMasterByPower(next, action.target.playerId, power, {
       source: command.name,
       kind: "command",
       attackerSlotKey: resolvedAttackerSlotKey,
     });
     if (command.name === "ライフドレイン" && next.slots[resolvedAttackerSlotKey].monster) {
       healMonster(next, resolvedAttackerSlotKey, Math.max(0, beforeHp - next.players[action.target.playerId].masterHp));
+    }
+    if (defeatedByScapegoat) {
+      resolveCommandDefeat(next, resolvedAttackerSlotKey, attacker.owner, command, basePower, power, hadBerserkPower, hadDamageCurse, defeatedByScapegoat);
+      return next;
     }
     finishCommandSideEffects(next, resolvedAttackerSlotKey, command, hadBerserkPower, hadDamageCurse);
     const recoilDamage = getCommandRecoilDamage(command, basePower, power);
@@ -449,55 +453,7 @@ export function attackWithCommand(state: GameState, action: CommandAction): Game
     return next;
   }
 
-  if (defeated.owner === attacker.owner) {
-    decreaseMasterHp(next, attacker.owner, 1, "味方撃破ペナルティ");
-    finishCommandSideEffects(next, resolvedAttackerSlotKey, command, hadBerserkPower, hadDamageCurse);
-    const recoilDamage = getCommandRecoilDamage(command, basePower, power);
-    if (!next.winner && recoilDamage) {
-      applyRecoil(next, resolvedAttackerSlotKey, recoilDamage);
-    }
-    return next;
-  }
-
-  const levelUpSlotKey = getLevelUpRecipientSlotKey(next, resolvedAttackerSlotKey, defeated.level);
-  const maxLevels = getLevelUpCapacity(next, levelUpSlotKey, defeated.level);
-  if (maxLevels > 0 && next.currentPlayer === "player") {
-    finishCommandSideEffects(next, resolvedAttackerSlotKey, command, hadBerserkPower, hadDamageCurse);
-    const recoilDamage = getCommandRecoilDamage(command, basePower, power);
-    if (!next.winner && recoilDamage) {
-      applyRecoil(next, resolvedAttackerSlotKey, recoilDamage);
-    }
-    const updatedMaxLevels = next.winner ? 0 : getLevelUpCapacity(next, levelUpSlotKey, defeated.level);
-    const levelUpMonster = next.slots[levelUpSlotKey].monster;
-    if (!levelUpMonster || updatedMaxLevels <= 0) {
-      return next;
-    }
-    const superOptions = getSuperLevelUpOptions(next, levelUpSlotKey, updatedMaxLevels);
-    next.pendingLevelUp = {
-      playerId: "player",
-      attackerSlotKey: levelUpSlotKey,
-      maxLevels: updatedMaxLevels,
-      superOptions: superOptions.length > 0 ? superOptions : undefined,
-    };
-    appendLog(next, `${monsterName(levelUpMonster)}は${updatedMaxLevels}レベルまで上げられる`);
-    return next;
-  }
-
-  finishCommandSideEffects(next, resolvedAttackerSlotKey, command, hadBerserkPower, hadDamageCurse);
-  const recoilDamage = getCommandRecoilDamage(command, basePower, power);
-  if (recoilDamage) {
-    applyRecoil(next, resolvedAttackerSlotKey, recoilDamage);
-  }
-
-  const updatedMaxLevels = next.winner ? 0 : getLevelUpCapacity(next, levelUpSlotKey, defeated.level);
-  if (updatedMaxLevels > 0) {
-    const superOption = chooseSuperLevelUpOption(next, { superOptions: getSuperLevelUpOptions(next, levelUpSlotKey, updatedMaxLevels) });
-    if (superOption) {
-      performSuperLevelUp(next, levelUpSlotKey, superOption.handInstanceId);
-    } else {
-      performLevelUp(next, levelUpSlotKey, updatedMaxLevels);
-    }
-  }
+  resolveCommandDefeat(next, resolvedAttackerSlotKey, attacker.owner, command, basePower, power, hadBerserkPower, hadDamageCurse, defeated);
   return next;
 }
 
@@ -1911,25 +1867,25 @@ function damageMasterByPower(
   targetPlayerId: PlayerId,
   power: number,
   sourceOrContext: string | DamageContext,
-): void {
+): DefeatedMonster | undefined {
   const context = damageContext(sourceOrContext);
   const scapegoatSlotKey = findScapegoatSlot(state, targetPlayerId);
   if (scapegoatSlotKey) {
     appendLog(state, `${monsterName(requireTargetMonster(state, scapegoatSlotKey))}がマスターの身代わりになった`);
-    damageMonster(state, scapegoatSlotKey, power, {
+    return damageMonster(state, scapegoatSlotKey, power, {
       ...context,
       source: `${context.source}（身代わり）`,
       ignoreDeathChain: true,
     });
-    return;
   }
 
   const damage = masterDamageByPower(power);
   if (damage === 0) {
     appendLog(state, `${context.source}はマスターシールドで防がれた`);
-    return;
+    return undefined;
   }
   decreaseMasterHp(state, targetPlayerId, damage, context.source);
+  return undefined;
 }
 
 function decreaseMasterHp(state: GameState, playerId: PlayerId, amount: number, source: string): void {
@@ -2498,6 +2454,68 @@ function getCommandRecoilDamage(command: CommandDef, basePower: number, resolved
     return basePower;
   }
   return command.recoilDamage ?? 0;
+}
+
+function resolveCommandDefeat(
+  state: GameState,
+  attackerSlotKey: SlotKey,
+  attackerOwner: PlayerId,
+  command: CommandDef,
+  basePower: number,
+  power: number,
+  hadBerserkPower: boolean,
+  hadDamageCurse: boolean,
+  defeated: DefeatedMonster,
+): void {
+  if (defeated.owner === attackerOwner) {
+    decreaseMasterHp(state, attackerOwner, 1, "味方撃破ペナルティ");
+    finishCommandSideEffects(state, attackerSlotKey, command, hadBerserkPower, hadDamageCurse);
+    const recoilDamage = getCommandRecoilDamage(command, basePower, power);
+    if (!state.winner && recoilDamage) {
+      applyRecoil(state, attackerSlotKey, recoilDamage);
+    }
+    return;
+  }
+
+  const levelUpSlotKey = getLevelUpRecipientSlotKey(state, attackerSlotKey, defeated.level);
+  const maxLevels = getLevelUpCapacity(state, levelUpSlotKey, defeated.level);
+  if (maxLevels > 0 && state.currentPlayer === "player") {
+    finishCommandSideEffects(state, attackerSlotKey, command, hadBerserkPower, hadDamageCurse);
+    const recoilDamage = getCommandRecoilDamage(command, basePower, power);
+    if (!state.winner && recoilDamage) {
+      applyRecoil(state, attackerSlotKey, recoilDamage);
+    }
+    const updatedMaxLevels = state.winner ? 0 : getLevelUpCapacity(state, levelUpSlotKey, defeated.level);
+    const levelUpMonster = state.slots[levelUpSlotKey].monster;
+    if (!levelUpMonster || updatedMaxLevels <= 0) {
+      return;
+    }
+    const superOptions = getSuperLevelUpOptions(state, levelUpSlotKey, updatedMaxLevels);
+    state.pendingLevelUp = {
+      playerId: "player",
+      attackerSlotKey: levelUpSlotKey,
+      maxLevels: updatedMaxLevels,
+      superOptions: superOptions.length > 0 ? superOptions : undefined,
+    };
+    appendLog(state, `${monsterName(levelUpMonster)}は${updatedMaxLevels}レベルまで上げられる`);
+    return;
+  }
+
+  finishCommandSideEffects(state, attackerSlotKey, command, hadBerserkPower, hadDamageCurse);
+  const recoilDamage = getCommandRecoilDamage(command, basePower, power);
+  if (recoilDamage) {
+    applyRecoil(state, attackerSlotKey, recoilDamage);
+  }
+
+  const updatedMaxLevels = state.winner ? 0 : getLevelUpCapacity(state, levelUpSlotKey, defeated.level);
+  if (updatedMaxLevels > 0) {
+    const superOption = chooseSuperLevelUpOption(state, { superOptions: getSuperLevelUpOptions(state, levelUpSlotKey, updatedMaxLevels) });
+    if (superOption) {
+      performSuperLevelUp(state, levelUpSlotKey, superOption.handInstanceId);
+    } else {
+      performLevelUp(state, levelUpSlotKey, updatedMaxLevels);
+    }
+  }
 }
 
 function finishCommandSideEffects(
