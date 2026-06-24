@@ -611,6 +611,7 @@ function formatMarkdown(report: TerminalPlanAuditReport): string {
     `デッキ: \`${report.deckA}\` vs \`${report.deckB}\``,
     `seedStart: ${report.seedStart}, maxSeeds: ${report.maxSeeds}`,
     `search: depth ${report.search.sameTurnSearchDepth}, width ${report.search.sameTurnSearchWidth}, detailed ${report.search.detailedWidth}`,
+    `terminalPlan: depth ${report.search.sameTurnTerminalPlanDepth}, width ${report.search.sameTurnTerminalPlanWidth}, weight ${report.search.sameTurnTerminalPlanWeight}`,
     `beamWidth: ${report.beamWidth}, maxActions: ${report.maxActions}`,
     "",
     "## Summary",
@@ -688,7 +689,14 @@ function parseArgs(args: string[]): CliOptions {
     beamWidth: 3,
     maxActions: 8,
     topLines: 5,
-    search: { sameTurnSearchDepth: 4, sameTurnSearchWidth: 4, detailedWidth: 4 },
+    search: {
+      sameTurnSearchDepth: 4,
+      sameTurnSearchWidth: 4,
+      detailedWidth: 4,
+      sameTurnTerminalPlanDepth: 6,
+      sameTurnTerminalPlanWidth: 2,
+      sameTurnTerminalPlanWeight: 2,
+    },
     markdownPath: DEFAULT_MARKDOWN_PATH,
     jsonPath: DEFAULT_JSON_PATH,
   };
@@ -754,15 +762,24 @@ function parseArgs(args: string[]): CliOptions {
 
 function readSearchOptions(name: string, value: string | undefined): CpuAiSearchOptions {
   const raw = readString(name, value);
-  const [depth, width, detailedWidth = width] = raw.split(":").map(Number);
+  const [depth, width, detailedWidth = width, terminalDepth, terminalWidth, terminalWeight] = raw.split(":").map(Number);
   if (!Number.isInteger(depth) || !Number.isInteger(width) || !Number.isInteger(detailedWidth)) {
-    throw new Error(`${name} must be formatted as depth:width[:detailedWidth]`);
+    throw new Error(`${name} must be formatted as depth:width[:detailedWidth[:terminalDepth:terminalWidth:terminalWeight]]`);
   }
-  return {
+  const search: CpuAiSearchOptions = {
     sameTurnSearchDepth: depth,
     sameTurnSearchWidth: width,
     detailedWidth,
   };
+  if (terminalDepth !== undefined || terminalWidth !== undefined || terminalWeight !== undefined) {
+    if (!Number.isInteger(terminalDepth) || !Number.isInteger(terminalWidth) || !Number.isFinite(terminalWeight)) {
+      throw new Error(`${name} terminal plan options must be formatted as terminalDepth:terminalWidth:terminalWeight`);
+    }
+    search.sameTurnTerminalPlanDepth = terminalDepth;
+    search.sameTurnTerminalPlanWidth = terminalWidth;
+    search.sameTurnTerminalPlanWeight = terminalWeight;
+  }
+  return search;
 }
 
 function readDeckPresetId(name: string, value: string | undefined): DeckPresetId {
@@ -819,7 +836,8 @@ Options:
   --beam-width <n>              Candidate branch width. Default: 3
   --max-actions <n>             Maximum own-turn actions before forced end turn. Default: 8
   --top-lines <n>               Top terminal plans per scenario. Default: 5
-  --search <d:w[:dw]>           AI search options for guide scores. Default: 4:4:4
+  --search <d:w[:dw[:td:tw:twgt]]>
+                                AI search options for guide scores. Default: 4:4:4:6:2:2
   --markdown <path>             Markdown output path.
   --json <path>                 JSON output path.
 `);

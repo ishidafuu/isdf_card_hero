@@ -161,7 +161,8 @@ function formatReport(games: readonly SearchBenchmarkGame[], configs: readonly S
   for (const config of configs) {
     const scoped = games.filter((game) => game.configId === config.id);
     lines.push(
-      `${config.id}: depth ${config.search.sameTurnSearchDepth}, width ${config.search.sameTurnSearchWidth}, detailed ${config.search.detailedWidth}`,
+      `${config.id}: depth ${config.search.sameTurnSearchDepth}, width ${config.search.sameTurnSearchWidth}, detailed ${config.search.detailedWidth}` +
+      `, terminal ${formatTerminalPlan(config.search)}`,
     );
     lines.push(`Games: ${scoped.length}, issues: ${scoped.filter((game) => game.issue).length}`);
     for (const record of summarizeDecks(scoped)) {
@@ -341,17 +342,23 @@ function parseArgs(args: string[]): CliOptions {
 
 function readConfig(name: string, value: string | undefined): SearchBenchmarkConfig {
   const raw = readString(name, value);
-  const [id, depth, width, detailedWidth = width] = raw.split(":");
+  const [id, depth, width, detailedWidth = width, terminalDepth, terminalWidth, terminalWeight] = raw.split(":");
   if (!id || depth === undefined || width === undefined) {
-    throw new Error(`${name} must be formatted as id:depth:width[:detailedWidth]`);
+    throw new Error(`${name} must be formatted as id:depth:width[:detailedWidth[:terminalDepth:terminalWidth:terminalWeight]]`);
+  }
+  const search: CpuAiSearchOptions = {
+    sameTurnSearchDepth: Number(depth),
+    sameTurnSearchWidth: Number(width),
+    detailedWidth: Number(detailedWidth),
+  };
+  if (terminalDepth !== undefined || terminalWidth !== undefined || terminalWeight !== undefined) {
+    search.sameTurnTerminalPlanDepth = Number(terminalDepth);
+    search.sameTurnTerminalPlanWidth = Number(terminalWidth);
+    search.sameTurnTerminalPlanWeight = Number(terminalWeight);
   }
   return {
     id,
-    search: {
-      sameTurnSearchDepth: Number(depth),
-      sameTurnSearchWidth: Number(width),
-      detailedWidth: Number(detailedWidth),
-    },
+    search,
   };
 }
 
@@ -378,6 +385,13 @@ function readString(name: string, value: string | undefined): string {
 
 function formatPercent(value: number): string {
   return `${round(value * 100, 1)}%`;
+}
+
+function formatTerminalPlan(search: CpuAiSearchOptions): string {
+  if (search.sameTurnTerminalPlanWeight === undefined) {
+    return "profile-default";
+  }
+  return `${search.sameTurnTerminalPlanDepth ?? 0}/${search.sameTurnTerminalPlanWidth ?? 0}/${search.sameTurnTerminalPlanWeight}`;
 }
 
 function currentTurnKey(game: GameState): string {
@@ -410,7 +424,9 @@ Options:
   --deck-b <id>                 Second white deck. Default: submission-pro-no-rare8-white-1377
   --games-per-direction <n>     Games per directed matchup. Default: 5
   --seed-start <n>              First seed. Default: 47000
-  --only-config <id:d:w[:dw]>   Run one search config.
-  --config <id:d:w[:dw]>        Add a search config after defaults.
+  --only-config <id:d:w[:dw[:td:tw:twgt]]>
+                                Run one search config.
+  --config <id:d:w[:dw[:td:tw:twgt]]>
+                                Add a search config after defaults.
 `);
 }

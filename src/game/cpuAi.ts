@@ -87,6 +87,9 @@ type CpuAiProfileConfig = {
   sameTurnSearchDepth: number;
   sameTurnSearchWidth: number;
   sameTurnSearchDiscount: number;
+  sameTurnTerminalPlanDepth: number;
+  sameTurnTerminalPlanWidth: number;
+  sameTurnTerminalPlanWeight: number;
   beamScoreThreshold: number;
   weights: AiEvaluationWeights;
   tuning?: CpuAiTuning;
@@ -97,6 +100,9 @@ export interface CpuAiSearchOptions {
   detailedWidth?: number;
   sameTurnSearchDepth?: number;
   sameTurnSearchWidth?: number;
+  sameTurnTerminalPlanDepth?: number;
+  sameTurnTerminalPlanWidth?: number;
+  sameTurnTerminalPlanWeight?: number;
   beamScoreThreshold?: number;
 }
 
@@ -182,6 +188,9 @@ const CPU_AI_PROFILE_CONFIG: Record<CpuAiProfile, CpuAiProfileConfig> = {
     sameTurnSearchDepth: 1,
     sameTurnSearchWidth: 2,
     sameTurnSearchDiscount: 0.55,
+    sameTurnTerminalPlanDepth: 0,
+    sameTurnTerminalPlanWidth: 0,
+    sameTurnTerminalPlanWeight: 0,
     beamScoreThreshold: 0,
     weights: AI_EVALUATION_WEIGHTS.stable,
   },
@@ -190,6 +199,9 @@ const CPU_AI_PROFILE_CONFIG: Record<CpuAiProfile, CpuAiProfileConfig> = {
     sameTurnSearchDepth: 3,
     sameTurnSearchWidth: 4,
     sameTurnSearchDiscount: 0.5,
+    sameTurnTerminalPlanDepth: 0,
+    sameTurnTerminalPlanWidth: 0,
+    sameTurnTerminalPlanWeight: 0,
     beamScoreThreshold: 8,
     weights: AI_EVALUATION_WEIGHTS.strong,
   },
@@ -198,6 +210,9 @@ const CPU_AI_PROFILE_CONFIG: Record<CpuAiProfile, CpuAiProfileConfig> = {
     sameTurnSearchDepth: 3,
     sameTurnSearchWidth: 4,
     sameTurnSearchDiscount: 0.48,
+    sameTurnTerminalPlanDepth: 0,
+    sameTurnTerminalPlanWidth: 0,
+    sameTurnTerminalPlanWeight: 0,
     beamScoreThreshold: 6,
     weights: AI_EVALUATION_WEIGHTS.pressure,
   },
@@ -206,6 +221,9 @@ const CPU_AI_PROFILE_CONFIG: Record<CpuAiProfile, CpuAiProfileConfig> = {
     sameTurnSearchDepth: 2,
     sameTurnSearchWidth: 3,
     sameTurnSearchDiscount: 0.52,
+    sameTurnTerminalPlanDepth: 0,
+    sameTurnTerminalPlanWidth: 0,
+    sameTurnTerminalPlanWeight: 0,
     beamScoreThreshold: 10,
     weights: AI_EVALUATION_WEIGHTS.defensive,
   },
@@ -214,6 +232,9 @@ const CPU_AI_PROFILE_CONFIG: Record<CpuAiProfile, CpuAiProfileConfig> = {
     sameTurnSearchDepth: 3,
     sameTurnSearchWidth: 4,
     sameTurnSearchDiscount: 0.54,
+    sameTurnTerminalPlanDepth: 6,
+    sameTurnTerminalPlanWidth: 2,
+    sameTurnTerminalPlanWeight: 2,
     beamScoreThreshold: 8,
     weights: AI_EVALUATION_WEIGHTS.white,
     tuning: WHITE_AI_BASE_TUNING,
@@ -223,6 +244,9 @@ const CPU_AI_PROFILE_CONFIG: Record<CpuAiProfile, CpuAiProfileConfig> = {
     sameTurnSearchDepth: 3,
     sameTurnSearchWidth: 5,
     sameTurnSearchDiscount: 0.52,
+    sameTurnTerminalPlanDepth: 0,
+    sameTurnTerminalPlanWidth: 0,
+    sameTurnTerminalPlanWeight: 0,
     beamScoreThreshold: 4,
     weights: AI_EVALUATION_WEIGHTS.omniscient,
     omniscient: {
@@ -365,6 +389,9 @@ function applyCpuAiSearchOptions(
     detailedWidth: normalizedSearchInteger(search.detailedWidth, base.detailedWidth),
     sameTurnSearchDepth: normalizedSearchInteger(search.sameTurnSearchDepth, base.sameTurnSearchDepth),
     sameTurnSearchWidth: normalizedSearchInteger(search.sameTurnSearchWidth, base.sameTurnSearchWidth),
+    sameTurnTerminalPlanDepth: normalizedSearchInteger(search.sameTurnTerminalPlanDepth, base.sameTurnTerminalPlanDepth),
+    sameTurnTerminalPlanWidth: normalizedSearchInteger(search.sameTurnTerminalPlanWidth, base.sameTurnTerminalPlanWidth),
+    sameTurnTerminalPlanWeight: normalizedSearchNumber(search.sameTurnTerminalPlanWeight, base.sameTurnTerminalPlanWeight),
     beamScoreThreshold: normalizedSearchInteger(search.beamScoreThreshold, base.beamScoreThreshold),
   };
 }
@@ -374,6 +401,13 @@ function normalizedSearchInteger(value: number | undefined, fallback: number): n
     return fallback;
   }
   return Math.max(0, Math.trunc(value));
+}
+
+function normalizedSearchNumber(value: number | undefined, fallback: number): number {
+  if (value === undefined || !Number.isFinite(value)) {
+    return fallback;
+  }
+  return Math.max(0, value);
 }
 
 function resolveCpuAiMatchupTuning(state: GameState, profile: CpuAiProfile): CpuAiTuning | undefined {
@@ -430,17 +464,28 @@ function evaluateCpuDecisions(
   const hasDirectMasterPressure = evaluated.some((candidate) =>
     masterDamageFromTransition(state, candidate.after, perspective) > 0,
   );
+  const terminalPlanEnabled = shouldUseTerminalPlanEvaluation(state, perspective, config);
+  const lookaheadCandidates = evaluated
+    .filter((candidate) => candidate.decision.type !== "end_turn")
+    .sort(
+      (a, b) =>
+        b.totalScore - a.totalScore || compareTieBreak(a.decision, b.decision, a.index, b.index),
+    )
+    .slice(0, config.detailedWidth);
+  if (terminalPlanEnabled) {
+    const endTurnCandidate = evaluated.find((candidate) => candidate.decision.type === "end_turn");
+    if (endTurnCandidate && !lookaheadCandidates.some((candidate) => candidate.index === endTurnCandidate.index)) {
+      lookaheadCandidates.push(endTurnCandidate);
+    }
+  }
   const lookaheadIndexes = new Set(
-    evaluated
-      .filter((candidate) => candidate.decision.type !== "end_turn")
-      .sort(
-        (a, b) =>
-          b.totalScore - a.totalScore || compareTieBreak(a.decision, b.decision, a.index, b.index),
-      )
-      .slice(0, config.detailedWidth)
-      .map((candidate) => candidate.index),
+    lookaheadCandidates.map((candidate) => candidate.index),
   );
   const beforeDetailedFutureScore = evaluateConfiguredFutureTacticalValue(state, perspective, true, config);
+  const terminalPlanDeltas = terminalPlanEnabled
+    ? evaluateTerminalPlanDeltas(perspective, config, beforeScore, lookaheadCandidates)
+    : new Map<number, number>();
+  const bestTerminalPlanDelta = Math.max(0, ...terminalPlanDeltas.values());
 
   return evaluated.map((candidate) => {
     const directMasterDetourPenalty = directMasterDamageDetourPenalty(
@@ -475,11 +520,73 @@ function evaluateCpuDecisions(
     )
       ? lookaheadBonus * 0.25
       : lookaheadBonus;
+    const terminalPlanPenalty = terminalPlanComparisonPenalty(
+      candidate,
+      terminalPlanDeltas,
+      bestTerminalPlanDelta,
+      config,
+    );
     return {
       ...candidate,
-      totalScore: detailedScore + adjustedLookaheadBonus - directMasterDetourPenalty - opponentResponsePenalty,
+      totalScore:
+        detailedScore +
+        adjustedLookaheadBonus -
+        terminalPlanPenalty -
+        directMasterDetourPenalty -
+        opponentResponsePenalty,
     };
   });
+}
+
+function shouldUseTerminalPlanEvaluation(
+  state: GameState,
+  perspective: PlayerId,
+  config: CpuAiProfileConfig,
+): boolean {
+  return (
+    state.players[perspective].masterId === "white" &&
+    config.sameTurnTerminalPlanWeight > 0 &&
+    config.sameTurnTerminalPlanDepth > 0 &&
+    config.sameTurnTerminalPlanWidth > 0
+  );
+}
+
+function evaluateTerminalPlanDeltas(
+  perspective: PlayerId,
+  config: CpuAiProfileConfig,
+  baselineScore: number,
+  candidates: readonly EvaluatedDecision[],
+): Map<number, number> {
+  const deltas = new Map<number, number>();
+  for (const candidate of candidates) {
+    deltas.set(
+      candidate.index,
+      evaluateSameTurnTerminalPlanDelta(
+        candidate.after,
+        perspective,
+        config.sameTurnTerminalPlanDepth - 1,
+        config,
+        baselineScore,
+      ),
+    );
+  }
+  return deltas;
+}
+
+function terminalPlanComparisonPenalty(
+  candidate: EvaluatedDecision,
+  terminalPlanDeltas: ReadonlyMap<number, number>,
+  bestTerminalPlanDelta: number,
+  config: CpuAiProfileConfig,
+): number {
+  if (config.sameTurnTerminalPlanWeight <= 0) {
+    return 0;
+  }
+  const delta = terminalPlanDeltas.get(candidate.index);
+  if (delta === undefined) {
+    return 0;
+  }
+  return Math.max(0, bestTerminalPlanDelta - delta) * config.sameTurnTerminalPlanWeight;
 }
 
 function shouldDampenLookaheadForMasterRace(
@@ -1754,6 +1861,71 @@ function evaluateSameTurnBeamContinuation(
     best = Math.max(best, continuation);
   }
   return best;
+}
+
+function evaluateSameTurnTerminalPlanDelta(
+  state: GameState,
+  perspective: PlayerId,
+  depth: number,
+  config: CpuAiProfileConfig,
+  baselineScore: number,
+): number {
+  if (state.winner || state.pendingLevelUp || state.currentPlayer !== perspective) {
+    return evaluateState(state, perspective, config.weights) - baselineScore;
+  }
+  if (depth <= 0) {
+    return evaluateTerminalHandoffDelta(state, perspective, config, baselineScore);
+  }
+
+  const candidates = terminalPlanCandidates(state, perspective, config);
+  let best = evaluateTerminalHandoffDelta(state, perspective, config, baselineScore);
+  for (const candidate of candidates) {
+    best = Math.max(
+      best,
+      evaluateSameTurnTerminalPlanDelta(candidate.after, perspective, depth - 1, config, baselineScore),
+    );
+  }
+  return best;
+}
+
+function evaluateTerminalHandoffDelta(
+  state: GameState,
+  perspective: PlayerId,
+  config: CpuAiProfileConfig,
+  baselineScore: number,
+): number {
+  const handoffState = terminalHandoffState(state, perspective, config);
+  return evaluateState(handoffState, perspective, config.weights) - baselineScore;
+}
+
+function terminalHandoffState(state: GameState, perspective: PlayerId, config: CpuAiProfileConfig): GameState {
+  if (state.winner || state.pendingLevelUp || state.currentPlayer !== perspective) {
+    return state;
+  }
+  const endTurn = evaluateImmediateCpuDecisions(state, perspective, config).find(
+    (candidate) => candidate.decision.type === "end_turn",
+  );
+  return endTurn?.after ?? state;
+}
+
+function terminalPlanCandidates(
+  state: GameState,
+  perspective: PlayerId,
+  config: CpuAiProfileConfig,
+): EvaluatedDecision[] {
+  const evaluated = evaluateImmediateCpuDecisions(state, perspective, config);
+  const candidates = evaluated
+    .filter((candidate) => candidate.decision.type !== "end_turn" && candidate.totalScore > config.beamScoreThreshold)
+    .sort(
+      (a, b) =>
+        b.totalScore - a.totalScore || compareTieBreak(a.decision, b.decision, a.index, b.index),
+    )
+    .slice(0, config.sameTurnTerminalPlanWidth);
+  const endTurn = evaluated.find((candidate) => candidate.decision.type === "end_turn");
+  if (endTurn && !candidates.some((candidate) => candidate.index === endTurn.index)) {
+    candidates.push(endTurn);
+  }
+  return candidates;
 }
 
 function evaluateImmediateCpuDecisions(state: GameState, perspective: PlayerId, config: CpuAiProfileConfig): EvaluatedDecision[] {
