@@ -489,10 +489,14 @@ Lv2以上の自軍モンスターが倒されそう: -160
 
 ## AIプロファイル
 
-2026-06-12時点では、CPU AIを次の2プロファイルに分ける。
+CPU AIは、用途別に複数プロファイルへ分ける。
 
 - `stable`: 既定。通常プレイ、100戦単位の検証、warning seedレビューで使う。全候補を軽量評価し、上位候補だけ詳細脅威評価と同一ターン追撃評価を行う。
 - `strong`: 強化用。`stable` の評価に加えて、上位候補から同一ターン内のビーム探索を行う。検証速度より強さ確認を優先するため、通常の100戦検証の既定にはしない。
+- `pressure`: マスター打点とテンポを重めに見る攻撃寄りプロファイル。
+- `defensive`: HP、回復、盤面維持を重めに見る守備寄りプロファイル。
+- `white`: ホワイトマスター向け。レベルアップ、回復、シールド品質、脅威管理を厚めに見る。
+- `omniscient`: 対人ハンデ用。相手の手札、準備中カード、次ドローを既知情報として扱い、ターン終了時は相手の最善応手を浅く読む。
 
 `strong` の初期値:
 
@@ -503,11 +507,31 @@ sameTurnSearchWidth: 4
 sameTurnSearchDiscount: 0.5
 ```
 
+`omniscient` の初期値:
+
+```text
+detailedWidth: 6
+sameTurnSearchDepth: 3
+sameTurnSearchWidth: 5
+sameTurnSearchDiscount: 0.52
+opponentResponseDepth: 2
+opponentResponseWidth: 5
+opponentResponseDiscount: 0.58
+```
+
+`omniscient` は公平な公開情報AIではなく、対人でCPUをちょうどよく強くするためのハンデAIとして扱う。
+通常の `GameState` には両者の `hand` / `deck` / 準備中モンスターの `cardId` が含まれるため、AI評価は次の情報を利用できる。
+
+- 相手の実手札にある攻撃魔法、回復、防御、展開札
+- 相手の準備中モンスターの正体と、次ターンに起きた場合の射程
+- 相手の山札先頭カードと、それを引いた後に増える脅威
+- 自分がターン終了した後に、相手が実行できる最善応手
+
 プロファイルは `chooseCpuDecision(state, { profile })`、`runCpuStep(state, { profile })`、`runAutoStep(state, { profile })` で両陣営に同じ値を渡せる。
 比較検証では `chooseCpuDecision(state, { profiles: { player, cpu } })` のように、現在手番の陣営ごとに `stable` / `strong` を切り替えられる。
 
-画面では `P AI` / `C AI` セレクトから `Stable` / `Strong` を切り替える。
-オートプレイ検証では `--ai-profile stable|strong` で両陣営をまとめて指定し、`--player-ai stable|strong` / `--cpu-ai stable|strong` で片側だけ上書きする。
+画面では `P AI` / `C AI` セレクトからプロファイルを切り替える。
+オートプレイ検証では `--ai-profile stable|strong|pressure|defensive|white|omniscient` で両陣営をまとめて指定し、`--player-ai` / `--cpu-ai` で片側だけ上書きする。
 AI比較ベンチでは `npm run benchmark:ai -- --baseline-ai stable --challenger-ai strong` を使い、challengerをplayer側/cpu側の両向きに置いて、勝率、平均turn、悪化seedを集計する。
 AI判断差分レビューでは `npm run diff:ai -- --seed 430 --direction challenger-as-cpu` を使い、同じ盤面で `stable` と `strong` の選択が分かれた局面を確認する。
 

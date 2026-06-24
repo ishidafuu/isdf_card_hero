@@ -1,4 +1,4 @@
-export type AiEvaluationProfile = "stable" | "strong" | "pressure" | "defensive" | "white";
+export type AiEvaluationProfile = "stable" | "strong" | "pressure" | "defensive" | "white" | "omniscient";
 
 export interface AiEvaluationWeights {
   masterHp: number;
@@ -81,6 +81,19 @@ export const AI_EVALUATION_WEIGHTS = {
     futureOpponentLevelUp: 0.22,
     futureOwnThreatenedMonster: 0.28,
     futureOpponentThreatenedMonster: 0.17,
+  },
+  omniscient: {
+    ...BASE_WEIGHTS,
+    masterHp: 90,
+    stone: 5,
+    masterDamageBase: 102,
+    monsterKillBase: 300,
+    monsterDamagePerPoint: 26,
+    healPerPoint: 32,
+    futureOwnLevelUp: 0.2,
+    futureOpponentLevelUp: 0.28,
+    futureOwnThreatenedMonster: 0.32,
+    futureOpponentThreatenedMonster: 0.22,
   },
 } satisfies Record<AiEvaluationProfile, AiEvaluationWeights>;
 

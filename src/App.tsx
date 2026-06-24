@@ -414,7 +414,10 @@ function aiProfileLabel(profile: CpuAiProfile): string {
   if (profile === "defensive") {
     return "Defensive";
   }
-  return "White";
+  if (profile === "white") {
+    return "White";
+  }
+  return "Omniscient";
 }
 
 function historyDeckSummary(settings: DeckSettings | undefined): string {

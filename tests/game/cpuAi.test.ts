@@ -480,6 +480,30 @@ describe("cpu ai", () => {
     expect(defaultWhite?.totalScore).toBeCloseTo((disabled?.totalScore ?? 0) + 8);
   });
 
+  it("penalizes omniscient end turns that allow a known opponent response", () => {
+    const game = createCpuGame();
+    game.players.cpu.masterId = "white";
+    game.players.cpu.hand = [];
+    game.players.cpu.stones = 0;
+    game.players.player.hand = [{ cardId: "card_026", instanceId: "player_known_spark" }];
+    game.players.player.stones = 1;
+    game.players.player.deck = [];
+    game.slots.cpu_front_left.monster = createActiveMonster("morgan", "cpu", {
+      hp: 1,
+      level: 2,
+      investedStones: 2,
+    });
+
+    const findEndTurn = (profile: "strong" | "omniscient") =>
+      inspectCpuDecisionEvaluations(game, { profile }).find((evaluation) => evaluation.decision.type === "end_turn");
+    const strong = findEndTurn("strong");
+    const omniscient = findEndTurn("omniscient");
+
+    expect(strong).toBeDefined();
+    expect(omniscient).toBeDefined();
+    expect(omniscient?.totalScore).toBeLessThan((strong?.totalScore ?? 0) - 20);
+  });
+
   it("applies monster pressure handling to the default white profile only against black", () => {
     const game = createCpuGame();
     game.players.cpu.masterId = "white";

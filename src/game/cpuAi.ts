@@ -75,6 +75,12 @@ type ThreatModel = {
   masterDamage: Record<PlayerId, number>;
   monsterThreats: Partial<Record<SlotKey, IncomingThreat>>;
 };
+type OmniscientAiConfig = {
+  hiddenInfoWeight: number;
+  opponentResponseDepth: number;
+  opponentResponseWidth: number;
+  opponentResponseDiscount: number;
+};
 type CpuAiProfileConfig = {
   detailedWidth: number;
   sameTurnSearchDepth: number;
@@ -83,6 +89,7 @@ type CpuAiProfileConfig = {
   beamScoreThreshold: number;
   weights: AiEvaluationWeights;
   tuning?: CpuAiTuning;
+  omniscient?: OmniscientAiConfig;
 };
 
 const NO_THREAT: IncomingThreat = {
@@ -94,7 +101,7 @@ const NO_THREAT: IncomingThreat = {
   lethalWithMasterAction: false,
 };
 
-export const CPU_AI_PROFILES = ["stable", "strong", "pressure", "defensive", "white"] as const;
+export const CPU_AI_PROFILES = ["stable", "strong", "pressure", "defensive", "white", "omniscient"] as const;
 export type CpuAiProfile = (typeof CPU_AI_PROFILES)[number];
 export type CpuAiProfiles = Record<PlayerId, CpuAiProfile>;
 export type CpuAiDecisionBiasId =
@@ -152,6 +159,14 @@ export interface CpuAiOptions {
   tunings?: Partial<Record<PlayerId, CpuAiTuning>>;
 }
 
+const WHITE_AI_BASE_TUNING = {
+  situationalBias: {
+    whiteSecondShieldLowStonePenalty: 120,
+    whiteSecondShieldCommitmentPenalty: 180,
+    whiteBlackFrontThreatBonus: 8,
+  },
+} satisfies CpuAiTuning;
+
 const CPU_AI_PROFILE_CONFIG: Record<CpuAiProfile, CpuAiProfileConfig> = {
   stable: {
     detailedWidth: 2,
@@ -192,12 +207,20 @@ const CPU_AI_PROFILE_CONFIG: Record<CpuAiProfile, CpuAiProfileConfig> = {
     sameTurnSearchDiscount: 0.54,
     beamScoreThreshold: 8,
     weights: AI_EVALUATION_WEIGHTS.white,
-    tuning: {
-      situationalBias: {
-        whiteSecondShieldLowStonePenalty: 120,
-        whiteSecondShieldCommitmentPenalty: 180,
-        whiteBlackFrontThreatBonus: 8,
-      },
+    tuning: WHITE_AI_BASE_TUNING,
+  },
+  omniscient: {
+    detailedWidth: 6,
+    sameTurnSearchDepth: 3,
+    sameTurnSearchWidth: 5,
+    sameTurnSearchDiscount: 0.52,
+    beamScoreThreshold: 4,
+    weights: AI_EVALUATION_WEIGHTS.omniscient,
+    omniscient: {
+      hiddenInfoWeight: 1,
+      opponentResponseDepth: 2,
+      opponentResponseWidth: 5,
+      opponentResponseDiscount: 0.58,
     },
   },
 };
@@ -324,7 +347,7 @@ function resolveCpuAiMatchupTuning(state: GameState, profile: CpuAiProfile): Cpu
   const perspective = state.currentPlayer;
   const opponent = opponentOf(perspective);
   if (
-    profile === "white" &&
+    (profile === "white" || profile === "omniscient") &&
     state.players[perspective].masterId === "white" &&
     state.players[opponent].masterId === "black"
   ) {
@@ -355,7 +378,7 @@ function evaluateCpuDecisions(
   config: CpuAiProfileConfig,
 ): EvaluatedDecision[] {
   const beforeScore = evaluateState(state, perspective, config.weights);
-  const beforeFutureScore = evaluateFutureTacticalValue(state, perspective, false, config.weights);
+  const beforeFutureScore = evaluateConfiguredFutureTacticalValue(state, perspective, false, config);
   const beforeFollowUpScore = bestAttackOpportunityScore(state);
   const decisions = listCpuDecisions(state, config.weights);
 
@@ -384,7 +407,7 @@ function evaluateCpuDecisions(
       .slice(0, config.detailedWidth)
       .map((candidate) => candidate.index),
   );
-  const beforeDetailedFutureScore = evaluateFutureTacticalValue(state, perspective, true, config.weights);
+  const beforeDetailedFutureScore = evaluateConfiguredFutureTacticalValue(state, perspective, true, config);
 
   return evaluated.map((candidate) => {
     const directMasterDetourPenalty = directMasterDamageDetourPenalty(
@@ -393,8 +416,9 @@ function evaluateCpuDecisions(
       perspective,
       hasDirectMasterPressure,
     );
+    const opponentResponsePenalty = evaluateOpponentResponsePenalty(candidate.after, perspective, config);
     if (!lookaheadIndexes.has(candidate.index)) {
-      return { ...candidate, totalScore: candidate.totalScore - directMasterDetourPenalty };
+      return { ...candidate, totalScore: candidate.totalScore - directMasterDetourPenalty - opponentResponsePenalty };
     }
     const detailedScore =
       candidate.decision.score +
@@ -402,7 +426,7 @@ function evaluateCpuDecisions(
       decisionSituationalBonus(state, candidate.after, candidate.decision, perspective, config) +
       evaluateState(candidate.after, perspective, config.weights) -
       beforeScore +
-      evaluateFutureTacticalValue(candidate.after, perspective, true, config.weights) -
+      evaluateConfiguredFutureTacticalValue(candidate.after, perspective, true, config) -
       beforeDetailedFutureScore;
     const continuation =
       config.sameTurnSearchDepth > 1
@@ -417,7 +441,10 @@ function evaluateCpuDecisions(
     )
       ? lookaheadBonus * 0.25
       : lookaheadBonus;
-    return { ...candidate, totalScore: detailedScore + adjustedLookaheadBonus - directMasterDetourPenalty };
+    return {
+      ...candidate,
+      totalScore: detailedScore + adjustedLookaheadBonus - directMasterDetourPenalty - opponentResponsePenalty,
+    };
   });
 }
 
@@ -529,7 +556,7 @@ function evaluateDecisionTransition(
       decisionSituationalBonus(state, after, decision, perspective, config) +
       evaluateState(after, perspective, config.weights) -
       beforeScore +
-      evaluateFutureTacticalValue(after, perspective, detailedFuture, config.weights) -
+      evaluateConfiguredFutureTacticalValue(after, perspective, detailedFuture, config) -
       beforeFutureScore,
   };
 }
@@ -1580,7 +1607,7 @@ function evaluateSameTurnBeamContinuation(
 
 function evaluateImmediateCpuDecisions(state: GameState, perspective: PlayerId, config: CpuAiProfileConfig): EvaluatedDecision[] {
   const beforeScore = evaluateState(state, perspective, config.weights);
-  const beforeFutureScore = evaluateFutureTacticalValue(state, perspective, false, config.weights);
+  const beforeFutureScore = evaluateConfiguredFutureTacticalValue(state, perspective, false, config);
   return listCpuDecisions(state, config.weights).flatMap((decision, index) => {
     const transition = evaluateDecisionTransition(state, decision, perspective, beforeScore, beforeFutureScore, false, config);
     return transition ? [{ decision, totalScore: transition.totalScore, index, after: transition.after }] : [];
@@ -1665,6 +1692,150 @@ export function evaluateState(
   }
 
   return score;
+}
+
+function evaluateConfiguredFutureTacticalValue(
+  state: GameState,
+  perspective: PlayerId,
+  detailed: boolean,
+  config: CpuAiProfileConfig,
+): number {
+  const base = evaluateFutureTacticalValue(state, perspective, detailed, config.weights);
+  if (!config.omniscient) {
+    return base;
+  }
+  return base + evaluateOmniscientHiddenInfoValue(state, perspective, detailed, config) * config.omniscient.hiddenInfoWeight;
+}
+
+function evaluateOmniscientHiddenInfoValue(
+  state: GameState,
+  perspective: PlayerId,
+  detailed: boolean,
+  config: CpuAiProfileConfig,
+): number {
+  if (state.winner) {
+    return 0;
+  }
+
+  const opponent = opponentOf(perspective);
+  const ownNextDraw = nextDrawCardValue(state, perspective) * (detailed ? 0.12 : 0.06);
+  const ownNextDrawThreat = nextDrawThreatValue(state, perspective, opponent, config.weights) * (detailed ? 0.18 : 0.08);
+  const opponentNextDrawThreat = nextDrawThreatValue(state, opponent, perspective, config.weights) * (detailed ? 0.34 : 0.18);
+
+  return ownNextDraw + ownNextDrawThreat - opponentNextDrawThreat;
+}
+
+function nextDrawCardValue(state: GameState, playerId: PlayerId): number {
+  const topCard = state.players[playerId].deck[0];
+  return topCard ? handCardKeepValue(state, topCard) : 0;
+}
+
+function nextDrawThreatValue(
+  state: GameState,
+  attackerId: PlayerId,
+  defenderId: PlayerId,
+  weights: AiEvaluationWeights,
+): number {
+  const topCard = state.players[attackerId].deck[0];
+  if (!topCard) {
+    return 0;
+  }
+
+  const beforeThreatModel = buildThreatModel(state, attackerId);
+  const beforeMasterDamage = beforeThreatModel.masterDamage[defenderId];
+  const beforeMonsterThreat = threatenedMonsterValueForPlayer(state, defenderId, beforeThreatModel);
+  const withDraw = previewStateWithKnownNextDraw(state, attackerId);
+  const afterThreatModel = buildThreatModel(withDraw, attackerId);
+  const masterDamageGain = Math.max(0, afterThreatModel.masterDamage[defenderId] - beforeMasterDamage);
+  const monsterThreatGain = Math.max(
+    0,
+    threatenedMonsterValueForPlayer(withDraw, defenderId, afterThreatModel) - beforeMonsterThreat,
+  );
+
+  return masterDamageGain * weights.masterDamageBase * 0.58 + monsterThreatGain * 0.3 + handCardKeepValue(withDraw, topCard) * 0.16;
+}
+
+function previewStateWithKnownNextDraw(state: GameState, playerId: PlayerId): GameState {
+  const next = structuredClone(state) as GameState;
+  const player = next.players[playerId];
+  const [topCard, ...restDeck] = player.deck;
+  if (!topCard) {
+    return next;
+  }
+
+  player.deck = restDeck;
+  player.hand = [...player.hand, topCard];
+  next.currentPlayer = playerId;
+  return next;
+}
+
+function evaluateOpponentResponsePenalty(
+  state: GameState,
+  perspective: PlayerId,
+  config: CpuAiProfileConfig,
+): number {
+  const omniscient = config.omniscient;
+  const opponent = opponentOf(perspective);
+  if (
+    !omniscient ||
+    omniscient.opponentResponseDepth <= 0 ||
+    state.winner ||
+    state.pendingLevelUp ||
+    state.currentPlayer !== opponent
+  ) {
+    return 0;
+  }
+
+  return omniscient.opponentResponseDiscount * evaluateOpponentResponseBeam(state, perspective, config, omniscient.opponentResponseDepth);
+}
+
+function evaluateOpponentResponseBeam(
+  state: GameState,
+  perspective: PlayerId,
+  config: CpuAiProfileConfig,
+  depth: number,
+): number {
+  const omniscient = config.omniscient;
+  const opponent = opponentOf(perspective);
+  if (
+    !omniscient ||
+    depth <= 0 ||
+    state.winner ||
+    state.pendingLevelUp ||
+    state.currentPlayer !== opponent
+  ) {
+    return 0;
+  }
+
+  const beforeScore = evaluatePerspectiveLookaheadScore(state, perspective, config);
+  const responses = listCpuDecisions(state, config.weights)
+    .flatMap((decision, index) => {
+      let after: GameState;
+      try {
+        after = applyCpuDecision(state, decision);
+      } catch {
+        return [];
+      }
+
+      const immediateLoss = beforeScore - evaluatePerspectiveLookaheadScore(after, perspective, config);
+      const continuation =
+        after.currentPlayer === opponent && !after.pendingLevelUp && !after.winner
+          ? omniscient.opponentResponseDiscount * evaluateOpponentResponseBeam(after, perspective, config, depth - 1)
+          : 0;
+      return [{ loss: immediateLoss + continuation, index }];
+    })
+    .sort((a, b) => b.loss - a.loss || a.index - b.index)
+    .slice(0, omniscient.opponentResponseWidth);
+
+  return Math.max(0, ...responses.map((response) => response.loss));
+}
+
+function evaluatePerspectiveLookaheadScore(
+  state: GameState,
+  perspective: PlayerId,
+  config: CpuAiProfileConfig,
+): number {
+  return evaluateState(state, perspective, config.weights) + evaluateConfiguredFutureTacticalValue(state, perspective, true, config);
 }
 
 function evaluateFutureTacticalValue(

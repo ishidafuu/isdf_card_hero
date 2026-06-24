@@ -1,4 +1,4 @@
-import { chooseCpuDecision, type CpuAiProfile, type CpuAiProfiles, type CpuDecision } from "../src/game/cpuAi";
+import { chooseCpuDecision, CPU_AI_PROFILES, type CpuAiProfile, type CpuAiProfiles, type CpuDecision } from "../src/game/cpuAi";
 import { getCardName } from "../src/game/cards";
 import { buildDeckPresetCardIds, deckPresetAllowsSpecial, DECK_PRESET_IDS, getDeckPreset, type DeckPresetId } from "../src/game/deckPresets";
 import { MASTER_IDS } from "../src/game/masters";
@@ -339,10 +339,10 @@ function challengerPlayerForDirection(direction: Direction): PlayerId {
 }
 
 function readProfile(name: string, value: string | undefined): CpuAiProfile {
-  if (value === "stable" || value === "strong") {
-    return value;
+  if (value && (CPU_AI_PROFILES as readonly string[]).includes(value)) {
+    return value as CpuAiProfile;
   }
-  throw new Error(`${name} must be one of: stable, strong`);
+  throw new Error(`${name} must be one of: ${CPU_AI_PROFILES.join(", ")}`);
 }
 
 function readDirection(value: string | undefined): Direction {
@@ -393,8 +393,8 @@ Usage:
 
 Options:
   --seed <n>              Seed to replay. Default: 430
-  --baseline-ai <id>      Baseline profile. Default: stable.
-  --challenger-ai <id>    Challenger profile. Default: strong.
+  --baseline-ai <id>      Baseline profile. Default: stable. Values: ${CPU_AI_PROFILES.join(", ")}
+  --challenger-ai <id>    Challenger profile. Default: strong. Values: ${CPU_AI_PROFILES.join(", ")}
   --direction <id>        challenger-as-cpu or challenger-as-player. Default: challenger-as-cpu.
   --deck-preset <id>      Deck preset. Default: random. Values: random, ${DECK_PRESET_IDS.join(", ")}
   --player-master <id>    Override player master. Template decks default to their source master.
