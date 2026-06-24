@@ -568,6 +568,7 @@ function createGameFromSettings(settings: BattleSettings, deckSettings: DeckSett
     playerDeckCardIds: deckSettings.fixed.player ? playerDeck.cardIds : undefined,
     cpuDeckCardIds: deckSettings.fixed.cpu ? cpuDeck.cardIds : undefined,
     allowSpecialDecks: deckSettings.allowSpecial,
+    trackEventLog: true,
   });
 }
 
@@ -640,10 +641,11 @@ function createBattleHistoryEntry(
   if (!game.winner) {
     return undefined;
   }
-  const deckout = game.log.some((entry) => entry.includes("山札切れ"));
+  const replayLog = game.eventLog ?? game.log;
+  const deckout = !!game.deckoutOccurred || replayLog.some((entry) => entry.includes("山札切れ"));
   const createdAt = new Date().toISOString();
   return {
-    id: `history_${createdAt}_${settings.seed}_${game.turnNumber}_${game.winner}_${game.log.length}`,
+    id: `history_${createdAt}_${settings.seed}_${game.turnNumber}_${game.winner}_${replayLog.length}`,
     createdAt,
     seed: settings.seed,
     firstPlayer: settings.firstPlayer,
@@ -659,7 +661,7 @@ function createBattleHistoryEntry(
     cpuDeck: game.players.cpu.deck.length,
     deckout,
     longGame: game.turnNumber >= 25,
-    replay: createBattleReplaySummary(game.log),
+    replay: createBattleReplaySummary(replayLog),
   };
 }
 
@@ -850,6 +852,7 @@ function isSpectatorAttentionLog(entry: string): boolean {
 }
 
 function createBattleResultKey(game: GameState, settings: BattleSettings): string {
+  const replayLog = game.eventLog ?? game.log;
   return [
     settings.seed,
     settings.firstPlayer,
@@ -860,8 +863,8 @@ function createBattleResultKey(game: GameState, settings: BattleSettings): strin
     settings.aiProfiles.cpu,
     game.turnNumber,
     game.winner,
-    game.log.length,
-    game.log.at(-1) ?? "",
+    replayLog.length,
+    replayLog.at(-1) ?? "",
   ].join("|");
 }
 
@@ -1107,8 +1110,9 @@ export function App() {
     [deckSettings.allowSpecial.cpu, deckSettings.allowSpecial.player],
   );
   const fixedDeckError = PLAYER_IDS.some((playerId) => deckSettings.fixed[playerId] && !deckDrafts[playerId].summary.valid);
+  const activeBattleSettings = activeBattleSettingsRef.current;
   const currentPlayer = game.players[game.currentPlayer];
-  const cpuVsCpu = battleSettings.mode === "cpu-vs-cpu";
+  const cpuVsCpu = activeBattleSettings.mode === "cpu-vs-cpu";
   const spectatorAutoPaused = cpuVsCpu && spectatorPaused;
   const isAutoResolving =
     !game.winner && !spectatorAutoPaused && (cpuVsCpu || autoPlayEnabled || (game.currentPlayer === "cpu" && !game.pendingLevelUp));
@@ -1124,7 +1128,6 @@ export function App() {
     !isAutoResolving &&
     game.currentPlayer === "player" &&
     !game.winner;
-  const activeBattleSettings = activeBattleSettingsRef.current;
   const turnStatus = game.winner
     ? `${playerLabel(game.winner)} win`
     : cpuVsCpu
@@ -1295,17 +1298,17 @@ export function App() {
           return previous;
         }
         if (cpuVsCpu || autoPlayEnabled) {
-          return runAutoStep(previous, { profiles: battleSettings.aiProfiles });
+          return runAutoStep(previous, { profiles: activeBattleSettingsRef.current.aiProfiles });
         }
         if (previous.currentPlayer === "cpu" && !previous.pendingLevelUp) {
-          return runCpuStep(previous, { profiles: battleSettings.aiProfiles });
+          return runCpuStep(previous, { profiles: activeBattleSettingsRef.current.aiProfiles });
         }
         return previous;
       });
     }, effectiveAutoStepDelayMs);
 
     return () => window.clearTimeout(timer);
-  }, [autoPlayEnabled, battleSettings.aiProfiles, cpuVsCpu, effectiveAutoStepDelayMs, game, isAutoResolving]);
+  }, [autoPlayEnabled, cpuVsCpu, effectiveAutoStepDelayMs, game, isAutoResolving]);
 
   useEffect(() => {
     if (!visualEffect) {
@@ -1781,6 +1784,10 @@ export function App() {
   }
 
   function handleNewGame() {
+    startNewGame(battleSettings, deckSettings);
+  }
+
+  function handleNewRandomSeedGame() {
     const nextSettings = withRandomBattleSeed(battleSettings);
     setBattleSettings(nextSettings);
     startNewGame(nextSettings, deckSettings);
@@ -1897,8 +1904,6 @@ export function App() {
       return;
     }
     setBattleSettings({ ...battleSettings, mode: value });
-    setAutoPlayEnabled(false);
-    setSpectatorPaused(false);
   }
 
   function handleBattleAiProfileChange(playerId: PlayerId, value: string) {
@@ -2582,7 +2587,7 @@ export function App() {
             <BattleResultSummary game={game} />
           </div>
           <div className="battle-action-grid compact">
-            <button type="button" onClick={handleNewGame} disabled={fixedDeckError}>
+            <button type="button" onClick={handleNewRandomSeedGame} disabled={fixedDeckError}>
               <Icon icon="🔄" /> 新しいSeedで再戦
             </button>
             <button type="button" onClick={() => showInfoZoneView({ kind: "deckSetup" })}>
@@ -5767,7 +5772,6 @@ function DeckSummaryView({ summary }: { summary: DeckValidationSummary }) {
       {(["front", "back", "magic"] as const).map((category) => (
         <span
           key={category}
-          className={deckCategoryValid(summary, category) ? "ok" : "ng"}
         >
           {deckCategoryIcon(category)} {deckCategoryLabel(category)} {summary.categories[category]}
         </span>
@@ -7353,10 +7357,6 @@ function cardPoolFilterLabel(pool: CardPool | "all"): string {
 function superEvolutionText(def: ReturnType<typeof getMonsterDef>): string {
   const seeds = def.evolvesFrom?.map((cardId) => getCardName(cardId)).join(" / ");
   return seeds ? `${seeds}から変身` : "レベルアップで変身";
-}
-
-function deckCategoryValid(summary: DeckValidationSummary, category: "front" | "back" | "magic"): boolean {
-  return summary.categories[category] >= 0;
 }
 
 function deckCategoryIcon(category: "front" | "back" | "magic" | "special"): string {

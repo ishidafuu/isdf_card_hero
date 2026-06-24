@@ -84,6 +84,7 @@ export interface CreateInitialGameOptions {
   playerDeckCardIds?: string[];
   cpuDeckCardIds?: string[];
   allowSpecialDecks?: Partial<Record<PlayerId, boolean>>;
+  trackEventLog?: boolean;
 }
 
 export function createInitialGame(seed = Date.now(), options: CreateInitialGameOptions = {}): GameState {
@@ -109,6 +110,7 @@ export function createInitialGame(seed = Date.now(), options: CreateInitialGameO
     seed + 2,
   );
   const firstPlayer = options.firstPlayer ?? "player";
+  const initialLog = ["バトル開始"];
   const state: GameState = {
     players: {
       player: createPlayer("player", playerDeck, playerMasterId),
@@ -119,8 +121,11 @@ export function createInitialGame(seed = Date.now(), options: CreateInitialGameO
     firstPlayer,
     turnNumber: 0,
     randomSeed: seed >>> 0,
-    log: ["バトル開始"],
+    log: initialLog,
   };
+  if (options.trackEventLog) {
+    state.eventLog = [...initialLog];
+  }
 
   drawOpeningHand(state.players.player);
   drawOpeningHand(state.players.cpu);
@@ -1423,8 +1428,9 @@ function searchCardToHand(
   const selected = matchingDeckIndexes[randomInt(state, 0, matchingDeckIndexes.length - 1)];
   const [card] = player.deck.splice(selected.deckIndex, 1);
   player.hand.push(card);
-  appendRandomResultLog(state, "カードサーチ", `${categoryLabel(category)}から${getCardName(card.cardId)}`);
-  appendLog(state, `${playerLabel(playerId)}は${categoryLabel(category)}から${getCardName(card.cardId)}を手札に入れた`);
+  const cardLabel = cardNameForPrivateHandLog(playerId, card.cardId);
+  appendRandomResultLog(state, "カードサーチ", `${categoryLabel(category)}から${cardLabel}`);
+  appendLog(state, `${playerLabel(playerId)}は${categoryLabel(category)}から${cardLabel}を手札に入れた`);
 }
 
 function sortTopDeckCards(state: GameState, playerId: PlayerId, deckTopOrderInstanceIds?: string[]): void {
@@ -1684,12 +1690,17 @@ function drawOne(player: PlayerState): CardInstance {
 function forceDraw(state: GameState, playerId: PlayerId, reason: string): void {
   const player = state.players[playerId];
   if (player.deck.length === 0) {
+    state.deckoutOccurred = true;
     appendLog(state, `${playerLabel(playerId)}は${reason}で引けず、山札切れペナルティ`);
     decreaseMasterHp(state, playerId, 1, "山札切れ");
     return;
   }
   const card = drawOne(player);
-  appendLog(state, `${playerLabel(playerId)}は${getCardName(card.cardId)}を引いた`);
+  appendLog(state, `${playerLabel(playerId)}は${cardNameForPrivateHandLog(playerId, card.cardId)}を引いた`);
+}
+
+function cardNameForPrivateHandLog(playerId: PlayerId, cardId: string): string {
+  return playerId === "player" ? getCardName(cardId) : "カード";
 }
 
 function readyPreparedMonsters(state: GameState, playerId: PlayerId): void {
@@ -2011,12 +2022,19 @@ function defeatMonster(
   }
 
   if (shouldReincarnateInPlace(monster)) {
+    const wasShadowCursed = !!monster.shadowCursed;
     const defeated: DefeatedMonster = {
       owner: monster.owner,
       cardId: monster.cardId,
       level: monster.level,
       investedStones: monster.investedStones,
     };
+    clearDeathChain(state, slotKey);
+    appendLog(state, `${monsterName(monster)}は倒れたが復活する`);
+    if (wasShadowCursed) {
+      decreaseMasterHp(state, monster.owner, 1, "かげ呪い");
+    }
+    applyDefeatCurses(state, monster, context.attackerSlotKey);
     reincarnateMonsterInPlace(state, slotKey);
     return defeated;
   }
@@ -2640,12 +2658,34 @@ function reincarnateMonsterInPlace(state: GameState, slotKey: SlotKey): void {
   monster.revivedOnce = true;
   monster.hp = getMonsterMaxHp(monster);
   monster.focused = false;
+  monster.cannotMove = false;
+  monster.levelFixed = false;
+  monster.immune = false;
+  monster.shadowCursed = false;
+  monster.scapegoat = false;
+  monster.canAttackAnywhere = false;
+  monster.stoneCostMultiplier = undefined;
+  monster.commandSealed = false;
+  monster.cannotActUntilDamaged = false;
+  monster.dodgeChance = false;
+  monster.provokeTargetSlotKey = undefined;
+  monster.deathChainSlotKey = undefined;
+  monster.darkHoleSlotKey = undefined;
+  if (!monster.hollow) {
+    monster.stoneCurse = false;
+  }
+  monster.damageCurse = false;
   monster.powerUp = false;
   monster.powerModifier = 0;
   monster.powerOverride = undefined;
   monster.shielded = false;
   monster.halfShielded = false;
   monster.oneShotShield = false;
+  monster.berserkPower = false;
+  monster.dragonShield = false;
+  monster.damageGuarded = false;
+  monster.masterAttackBlockedUntilTurnEnd = undefined;
+  monster.usedCommandIds = undefined;
   monster.actionCount = monster.actionLimit;
   appendLog(state, `${monsterName(monster)}は復活した`);
 }

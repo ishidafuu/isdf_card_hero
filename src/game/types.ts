@@ -195,6 +195,8 @@ export interface GameState {
   turnNumber: number;
   randomSeed: number;
   log: string[];
+  eventLog?: string[];
+  deckoutOccurred?: boolean;
   winner?: PlayerId;
   pendingLevelUp?: PendingLevelUp;
   turnMoveHistory?: MoveHistoryEntry[];

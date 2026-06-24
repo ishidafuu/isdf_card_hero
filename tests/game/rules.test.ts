@@ -42,6 +42,7 @@ import {
   useMasterAction,
   useMasterHpDraw,
 } from "../../src/game/rules";
+import { appendLog } from "../../src/game/ruleEngine/log";
 import type { CardInstance, GameState, MonsterState, PlayerId, SlotKey } from "../../src/game/types";
 
 describe("battle prototype rules", () => {
@@ -272,6 +273,7 @@ describe("battle prototype rules", () => {
 
     expect(next.players.player.masterHp).toBe(9);
     expect(next.players.player.stones).toBe(4);
+    expect(next.deckoutOccurred).toBe(true);
     expect(next.winner).toBeUndefined();
   });
 
@@ -300,6 +302,35 @@ describe("battle prototype rules", () => {
     expect(next.slots.cpu_back_left.monster?.cardId).toBe("takokke");
     expect(next.log.at(-1)).toBe("CPUはカードを準備中で召喚した");
     expect(next.log.at(-1)).not.toContain("タコッケー");
+  });
+
+  it("hides CPU drawn card names in display and event logs", () => {
+    const game = createInitialGame(117, { trackEventLog: true });
+    game.players.cpu.deck = [{ cardId: "takokke", instanceId: "cpu_secret_draw" }];
+
+    const next = startTurn(game, "cpu");
+    const eventLog = next.eventLog ?? [];
+
+    expect(next.players.cpu.hand.map((card) => card.instanceId)).toContain("cpu_secret_draw");
+    expect(next.log).toContain("CPUはカードを引いた");
+    expect(eventLog).toContain("CPUはカードを引いた");
+    expect(next.log.join("\n")).not.toContain("タコッケー");
+    expect(eventLog.join("\n")).not.toContain("タコッケー");
+  });
+
+  it("keeps extended event history while capping the display log", () => {
+    const game = createInitialGame(118, { trackEventLog: true });
+    const initialEventLogLength = game.eventLog?.length ?? 0;
+
+    for (let index = 0; index < 130; index += 1) {
+      appendLog(game, `event ${index}`);
+    }
+
+    expect(game.log).toHaveLength(120);
+    expect(game.log[0]).toBe("event 10");
+    expect(game.eventLog).toHaveLength(initialEventLogLength + 130);
+    expect(game.eventLog?.[0]).toBe("バトル開始");
+    expect(game.eventLog?.at(-1)).toBe("event 129");
   });
 
   it("lets any_target attacks damage the opponent master through the 2P shield", () => {

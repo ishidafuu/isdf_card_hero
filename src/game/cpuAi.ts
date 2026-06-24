@@ -37,6 +37,7 @@ import {
   DEFAULT_AI_EVALUATION_WEIGHTS,
   type AiEvaluationWeights,
 } from "./aiWeights";
+import { appendLog } from "./ruleEngine/log";
 import type {
   CommandAction,
   GameState,
@@ -1656,10 +1657,7 @@ export function applyCpuDecision(state: GameState, decision: CpuDecision): GameS
 function appendDecisionReasonLog(state: GameState, decision: CpuDecision): GameState {
   const next = structuredClone(state) as GameState;
   const actor = next.currentPlayer === "cpu" ? "CPU" : "プレイヤーAI";
-  next.log.push(`${actor}判断: ${decision.reason}`);
-  if (next.log.length > 120) {
-    next.log = next.log.slice(-120);
-  }
+  appendLog(next, `${actor}判断: ${decision.reason}`);
   return next;
 }
 

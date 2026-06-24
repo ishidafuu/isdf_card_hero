@@ -1006,6 +1006,27 @@ describe("official card effect expectations", () => {
     expect(game.log.some((entry) => entry.includes("ランダム結果: カードサーチ"))).toBe(true);
   });
 
+  it("card_123 カードサーチ hides CPU search results in logs", () => {
+    let game = createInitialGame(905, { trackEventLog: true });
+    game.currentPlayer = "cpu";
+    game.players.cpu.stones = magicCost("card_123");
+    game.players.cpu.hand = [{ cardId: "card_123", instanceId: "cpu_search" }];
+    game.players.cpu.deck = [
+      { cardId: "takokke", instanceId: "cpu_front_card" },
+      { cardId: "healing", instanceId: "cpu_magic_card" },
+    ];
+
+    game = playMagic(game, {
+      handInstanceId: "cpu_search",
+      target: { kind: "master", playerId: "cpu" },
+      searchCategory: "front",
+    });
+
+    expect(game.players.cpu.hand.map((card) => card.instanceId)).toContain("cpu_front_card");
+    expect(game.log.join("\n")).toContain("CPUは前衛からカードを手札に入れた");
+    expect((game.eventLog ?? []).join("\n")).not.toContain("タコッケー");
+  });
+
   it("card_124 エクスチェンジ lasts until the caster's next turn starts", () => {
     let game = createGameWithPlayerHand([{ cardId: "card_124", instanceId: "exchange" }]);
     game.players.player.stones = magicCost("card_124");
@@ -1484,6 +1505,47 @@ describe("official card effect expectations", () => {
       hp: getMonsterDef("takokke").levels[1].maxHp,
     });
     expect(game.slots.cpu_front_left.monster?.cardId).toBe("card_067");
+  });
+
+  it("card_067 ゾンビ resolves defeat side effects before reviving", () => {
+    let game = createGameWithPlayerHand([
+      { cardId: "card_098", instanceId: "chain" },
+      { cardId: "card_125", instanceId: "shadow" },
+    ]);
+    game.players.player.stones = magicCost("card_098") + magicCost("card_125") + 1;
+    game.slots.player_front_left.monster = createActiveMonster("takokke", "player");
+    game.slots.cpu_front_left.monster = createActiveMonster("card_067", "cpu", { hp: 1 });
+
+    game = playMagic(game, {
+      handInstanceId: "chain",
+      target: { kind: "monster", slotKey: "cpu_front_left" },
+      secondaryTarget: { kind: "monster", slotKey: "player_front_left" },
+    });
+    game = playMagic(game, {
+      handInstanceId: "shadow",
+      target: { kind: "monster", slotKey: "cpu_front_left" },
+    });
+
+    game = attackWithCommand(game, {
+      attackerSlotKey: "player_front_left",
+      commandId: "attack",
+      target: { kind: "monster", slotKey: "cpu_front_left" },
+    });
+
+    expect(game.slots.cpu_front_left.monster).toMatchObject({
+      cardId: "card_067",
+      revivedOnce: true,
+      hp: 4,
+      deathChainSlotKey: undefined,
+      shadowCursed: false,
+    });
+    expect(game.slots.player_front_left.monster?.deathChainSlotKey).toBeUndefined();
+    expect(game.players.cpu.masterHp).toBe(9);
+    expect(game.pendingLevelUp).toMatchObject({
+      playerId: "player",
+      attackerSlotKey: "player_front_left",
+      maxLevels: 1,
+    });
   });
 
   it("card_069 フール applies 挑発 from its command", () => {
