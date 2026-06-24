@@ -55,6 +55,21 @@ interface PlanLine {
   finalState: string;
   finalBoard: string;
   finalMetrics: PlanMetrics;
+  opponentResponse?: OpponentResponseLine;
+  truncated: boolean;
+}
+
+interface InternalPlanLine extends PlanLine {
+  finalGameState: GameState;
+}
+
+interface OpponentResponseLine {
+  actions: PlanAction[];
+  terminalScore: number;
+  terminalScoreDelta: number;
+  finalState: string;
+  finalBoard: string;
+  finalMetrics: PlanMetrics;
   truncated: boolean;
 }
 
@@ -215,6 +230,10 @@ function auditScenario(
     .sort((a, b) => b.terminalScore - a.terminalScore || a.sequenceKey.localeCompare(b.sequenceKey));
   const selectedRank = rankedPlans.findIndex((plan) => plan.sequenceKey === selectedPlan.sequenceKey) + 1;
   const topPlan = rankedPlans[0] ?? selectedPlan;
+  const selectedWithResponse = withOpponentResponse(selectedPlan, perspective, options, aiOptions);
+  const topTerminalPlans = rankedPlans
+    .slice(0, options.topLines)
+    .map((plan) => withOpponentResponse(plan, perspective, options, aiOptions));
 
   return {
     seed,
@@ -224,10 +243,10 @@ function auditScenario(
     state: stateLine(game, perspective),
     board: boardLine(game),
     initialScore,
-    selectedPlan,
+    selectedPlan: selectedWithResponse,
     selectedTerminalRank: selectedRank || rankedPlans.length,
     terminalGapToBest: round(topPlan.terminalScore - selectedPlan.terminalScore, 1),
-    topTerminalPlans: rankedPlans.slice(0, options.topLines),
+    topTerminalPlans,
   };
 }
 
@@ -236,7 +255,7 @@ function buildSelectedPlan(
   perspective: PlayerId,
   options: CliOptions,
   aiOptions: CpuAiOptions,
-): PlanLine {
+): InternalPlanLine {
   let current = initial;
   const actions: PlanAction[] = [];
   let guideScoreTotal = 0;
@@ -271,8 +290,8 @@ function buildCandidatePlans(
   perspective: PlayerId,
   options: CliOptions,
   aiOptions: CpuAiOptions,
-): PlanLine[] {
-  const plans: PlanLine[] = [];
+): InternalPlanLine[] {
+  const plans: InternalPlanLine[] = [];
 
   const visit = (
     current: GameState,
@@ -377,7 +396,7 @@ function createPlanLine(
   actions: PlanAction[],
   guideScoreTotal: number,
   truncated: boolean,
-): PlanLine {
+): InternalPlanLine {
   const terminalScore = evaluateTerminalScore(finalState, perspective);
   const sequenceKey = actions.map((action) => action.key).join(" > ") || "none";
   return {
@@ -389,12 +408,13 @@ function createPlanLine(
     finalState: stateLine(finalState, perspective),
     finalBoard: boardLine(finalState),
     finalMetrics: metricsLine(finalState, perspective),
+    finalGameState: finalState,
     truncated,
   };
 }
 
-function mergePlans(plans: readonly PlanLine[]): PlanLine[] {
-  const merged = new Map<string, PlanLine>();
+function mergePlans(plans: readonly InternalPlanLine[]): InternalPlanLine[] {
+  const merged = new Map<string, InternalPlanLine>();
   for (const plan of plans) {
     const existing = merged.get(plan.sequenceKey);
     if (!existing || plan.terminalScore > existing.terminalScore) {
@@ -402,6 +422,76 @@ function mergePlans(plans: readonly PlanLine[]): PlanLine[] {
     }
   }
   return [...merged.values()];
+}
+
+function withOpponentResponse(
+  plan: InternalPlanLine,
+  perspective: PlayerId,
+  options: CliOptions,
+  aiOptions: CpuAiOptions,
+): PlanLine {
+  const { finalGameState, ...publicPlan } = plan;
+  return {
+    ...publicPlan,
+    opponentResponse: buildOpponentResponse(finalGameState, perspective, options, aiOptions),
+  };
+}
+
+function buildOpponentResponse(
+  handoffState: GameState,
+  perspective: PlayerId,
+  options: CliOptions,
+  aiOptions: CpuAiOptions,
+): OpponentResponseLine {
+  const opponent = opponentOf(perspective);
+  const handoffScore = evaluateTerminalScore(handoffState, perspective);
+  let current = handoffState;
+  const actions: PlanAction[] = [];
+  let truncated = false;
+
+  for (let actionIndex = 0; actionIndex < options.maxActions; actionIndex += 1) {
+    if (current.winner || current.pendingLevelUp || current.currentPlayer !== opponent) {
+      return createOpponentResponseLine(handoffState, current, perspective, actions, truncated);
+    }
+    const decision = chooseCpuDecision(current, aiOptions);
+    const evaluation = findMatchingEvaluation(current, aiOptions, decision);
+    actions.push(describeDecision(current, decision, evaluation?.totalScore ?? decision.score));
+    current = applyAndResolvePending(current, decision, aiOptions);
+    if (decision.type === "end_turn" || current.currentPlayer !== opponent || current.winner || current.pendingLevelUp) {
+      return createOpponentResponseLine(handoffState, current, perspective, actions, truncated);
+    }
+  }
+
+  truncated = true;
+  const forcedEnd = forceEndTurn(current, aiOptions);
+  if (forcedEnd) {
+    actions.push(describeDecision(current, forcedEnd.decision, forcedEnd.totalScore));
+    current = forcedEnd.after;
+  }
+  const response = createOpponentResponseLine(handoffState, current, perspective, actions, truncated);
+  return {
+    ...response,
+    terminalScoreDelta: round(response.terminalScore - handoffScore, 1),
+  };
+}
+
+function createOpponentResponseLine(
+  handoffState: GameState,
+  finalState: GameState,
+  perspective: PlayerId,
+  actions: PlanAction[],
+  truncated: boolean,
+): OpponentResponseLine {
+  const terminalScore = evaluateTerminalScore(finalState, perspective);
+  return {
+    actions,
+    terminalScore: round(terminalScore, 1),
+    terminalScoreDelta: round(terminalScore - evaluateTerminalScore(handoffState, perspective), 1),
+    finalState: stateLine(finalState, perspective),
+    finalBoard: boardLine(finalState),
+    finalMetrics: metricsLine(finalState, perspective),
+    truncated,
+  };
 }
 
 function mergeEvaluations(evaluations: readonly CpuDecisionEvaluation[]): CpuDecisionEvaluation[] {
@@ -612,6 +702,7 @@ function formatMarkdown(report: TerminalPlanAuditReport): string {
     `seedStart: ${report.seedStart}, maxSeeds: ${report.maxSeeds}`,
     `search: depth ${report.search.sameTurnSearchDepth}, width ${report.search.sameTurnSearchWidth}, detailed ${report.search.detailedWidth}`,
     `terminalPlan: depth ${report.search.sameTurnTerminalPlanDepth}, width ${report.search.sameTurnTerminalPlanWidth}, weight ${report.search.sameTurnTerminalPlanWeight}`,
+    `opponentTerminalPlan: depth ${report.search.sameTurnOpponentTerminalPlanDepth}, width ${report.search.sameTurnOpponentTerminalPlanWidth}, weight ${report.search.sameTurnOpponentTerminalPlanWeight}`,
     `beamWidth: ${report.beamWidth}, maxActions: ${report.maxActions}`,
     "",
     "## Summary",
@@ -625,7 +716,8 @@ function formatMarkdown(report: TerminalPlanAuditReport): string {
     "",
     "- 実戦途中の白同士局面から、現行AI評価の上位候補を幅 `beamWidth` で拾い、各手順をエンドターンまで進めた。",
     "- `terminal` は、相手ターン開始後の盤面を白AI重みの `evaluateState` で評価した値。`guide` は現行AIの局所評価合計で、terminalとは別物。",
-    "- この監査は勝率ではなく、現行AIの選択手順と「相手へ渡す最終盤面」のズレを見るためのもの。",
+    "- `opponent response` は、渡した盤面から相手AIが同じ軽量設定でエンドターンまで進めた後の盤面評価。勝率ではなく「渡した盤面が相手にどう返されるか」を見るための補助線。",
+    "- この監査は勝率ではなく、現行AIの選択手順と「相手へ渡す最終盤面」「相手から返る最終盤面」のズレを見るためのもの。",
     "",
     "## Conclusion",
     "",
@@ -671,6 +763,16 @@ function formatPlanLines(plans: readonly PlanLine[]): string[] {
       `   - metrics: HP ${plan.finalMetrics.ownHp}/${plan.finalMetrics.enemyHp}, stones ${plan.finalMetrics.ownStones}/${plan.finalMetrics.enemyStones}, boardValue ${plan.finalMetrics.ownBoardValue}/${plan.finalMetrics.enemyBoardValue}, ready ${plan.finalMetrics.ownReadyActions}/${plan.finalMetrics.enemyReadyActions}, shield ${plan.finalMetrics.ownShielded}/${plan.finalMetrics.enemyShielded}, Lv2+ ${plan.finalMetrics.ownLevel2Plus}/${plan.finalMetrics.enemyLevel2Plus}`,
       `   - board: ${plan.finalBoard}`,
     );
+    if (plan.opponentResponse) {
+      const responseActions = plan.opponentResponse.actions.map((action) => `${action.label} [${action.score}]`).join(" -> ") || "none";
+      lines.push(
+        `   - opponent response: terminal ${plan.opponentResponse.terminalScore} (${plan.opponentResponse.terminalScoreDelta >= 0 ? "+" : ""}${plan.opponentResponse.terminalScoreDelta})${plan.opponentResponse.truncated ? " / truncated" : ""}`,
+        `     - actions: ${responseActions}`,
+        `     - final: ${plan.opponentResponse.finalState}`,
+        `     - metrics: HP ${plan.opponentResponse.finalMetrics.ownHp}/${plan.opponentResponse.finalMetrics.enemyHp}, stones ${plan.opponentResponse.finalMetrics.ownStones}/${plan.opponentResponse.finalMetrics.enemyStones}, boardValue ${plan.opponentResponse.finalMetrics.ownBoardValue}/${plan.opponentResponse.finalMetrics.enemyBoardValue}, ready ${plan.opponentResponse.finalMetrics.ownReadyActions}/${plan.opponentResponse.finalMetrics.enemyReadyActions}, shield ${plan.opponentResponse.finalMetrics.ownShielded}/${plan.opponentResponse.finalMetrics.enemyShielded}, Lv2+ ${plan.opponentResponse.finalMetrics.ownLevel2Plus}/${plan.opponentResponse.finalMetrics.enemyLevel2Plus}`,
+        `     - board: ${plan.opponentResponse.finalBoard}`,
+      );
+    }
   });
   return lines;
 }
@@ -680,15 +782,15 @@ function parseArgs(args: string[]): CliOptions {
     deckA: "submission-pro-with-rare8-white-1339",
     deckB: "submission-pro-no-rare8-white-1377",
     seedStart: 56000,
-    maxSeeds: 40,
-    scenarios: 6,
+    maxSeeds: 20,
+    scenarios: 3,
     maxSteps: 700,
     maxTurns: 160,
     minTurn: 5,
     minOccupiedSlots: 4,
-    beamWidth: 3,
+    beamWidth: 2,
     maxActions: 8,
-    topLines: 5,
+    topLines: 3,
     search: {
       sameTurnSearchDepth: 4,
       sameTurnSearchWidth: 4,
@@ -696,6 +798,9 @@ function parseArgs(args: string[]): CliOptions {
       sameTurnTerminalPlanDepth: 6,
       sameTurnTerminalPlanWidth: 2,
       sameTurnTerminalPlanWeight: 2,
+      sameTurnOpponentTerminalPlanDepth: 1,
+      sameTurnOpponentTerminalPlanWidth: 1,
+      sameTurnOpponentTerminalPlanWeight: 0.35,
     },
     markdownPath: DEFAULT_MARKDOWN_PATH,
     jsonPath: DEFAULT_JSON_PATH,
@@ -762,7 +867,17 @@ function parseArgs(args: string[]): CliOptions {
 
 function readSearchOptions(name: string, value: string | undefined): CpuAiSearchOptions {
   const raw = readString(name, value);
-  const [depth, width, detailedWidth = width, terminalDepth, terminalWidth, terminalWeight] = raw.split(":").map(Number);
+  const [
+    depth,
+    width,
+    detailedWidth = width,
+    terminalDepth,
+    terminalWidth,
+    terminalWeight,
+    opponentDepth,
+    opponentWidth,
+    opponentWeight,
+  ] = raw.split(":").map(Number);
   if (!Number.isInteger(depth) || !Number.isInteger(width) || !Number.isInteger(detailedWidth)) {
     throw new Error(`${name} must be formatted as depth:width[:detailedWidth[:terminalDepth:terminalWidth:terminalWeight]]`);
   }
@@ -778,6 +893,14 @@ function readSearchOptions(name: string, value: string | undefined): CpuAiSearch
     search.sameTurnTerminalPlanDepth = terminalDepth;
     search.sameTurnTerminalPlanWidth = terminalWidth;
     search.sameTurnTerminalPlanWeight = terminalWeight;
+  }
+  if (opponentDepth !== undefined || opponentWidth !== undefined || opponentWeight !== undefined) {
+    if (!Number.isInteger(opponentDepth) || !Number.isInteger(opponentWidth) || !Number.isFinite(opponentWeight)) {
+      throw new Error(`${name} opponent terminal plan options must be formatted as opponentDepth:opponentWidth:opponentWeight`);
+    }
+    search.sameTurnOpponentTerminalPlanDepth = opponentDepth;
+    search.sameTurnOpponentTerminalPlanWidth = opponentWidth;
+    search.sameTurnOpponentTerminalPlanWeight = opponentWeight;
   }
   return search;
 }
@@ -829,15 +952,15 @@ Options:
   --deck-a <id>                 First white deck. Default: submission-pro-with-rare8-white-1339
   --deck-b <id>                 Second white deck. Default: submission-pro-no-rare8-white-1377
   --seed-start <n>              First seed. Default: 56000
-  --max-seeds <n>               Maximum seeds to scan. Default: 40
-  --scenarios <n>               Audited scenarios. Default: 6
+  --max-seeds <n>               Maximum seeds to scan. Default: 20
+  --scenarios <n>               Audited scenarios. Default: 3
   --min-turn <n>                First turn number to audit. Default: 5
   --min-occupied-slots <n>      Minimum occupied slots. Default: 4
-  --beam-width <n>              Candidate branch width. Default: 3
+  --beam-width <n>              Candidate branch width. Default: 2
   --max-actions <n>             Maximum own-turn actions before forced end turn. Default: 8
-  --top-lines <n>               Top terminal plans per scenario. Default: 5
-  --search <d:w[:dw[:td:tw:twgt]]>
-                                AI search options for guide scores. Default: 4:4:4:6:2:2
+  --top-lines <n>               Top terminal plans per scenario. Default: 3
+  --search <d:w[:dw[:td:tw:twgt[:od:ow:owgt]]]>
+                                AI search options for guide scores. Default: 4:4:4:6:2:2:1:1:0.35
   --markdown <path>             Markdown output path.
   --json <path>                 JSON output path.
 `);

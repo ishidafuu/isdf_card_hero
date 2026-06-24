@@ -162,7 +162,7 @@ function formatReport(games: readonly SearchBenchmarkGame[], configs: readonly S
     const scoped = games.filter((game) => game.configId === config.id);
     lines.push(
       `${config.id}: depth ${config.search.sameTurnSearchDepth}, width ${config.search.sameTurnSearchWidth}, detailed ${config.search.detailedWidth}` +
-      `, terminal ${formatTerminalPlan(config.search)}`,
+      `, terminal ${formatTerminalPlan(config.search)}, opponent ${formatOpponentTerminalPlan(config.search)}`,
     );
     lines.push(`Games: ${scoped.length}, issues: ${scoped.filter((game) => game.issue).length}`);
     for (const record of summarizeDecks(scoped)) {
@@ -342,7 +342,18 @@ function parseArgs(args: string[]): CliOptions {
 
 function readConfig(name: string, value: string | undefined): SearchBenchmarkConfig {
   const raw = readString(name, value);
-  const [id, depth, width, detailedWidth = width, terminalDepth, terminalWidth, terminalWeight] = raw.split(":");
+  const [
+    id,
+    depth,
+    width,
+    detailedWidth = width,
+    terminalDepth,
+    terminalWidth,
+    terminalWeight,
+    opponentDepth,
+    opponentWidth,
+    opponentWeight,
+  ] = raw.split(":");
   if (!id || depth === undefined || width === undefined) {
     throw new Error(`${name} must be formatted as id:depth:width[:detailedWidth[:terminalDepth:terminalWidth:terminalWeight]]`);
   }
@@ -355,6 +366,11 @@ function readConfig(name: string, value: string | undefined): SearchBenchmarkCon
     search.sameTurnTerminalPlanDepth = Number(terminalDepth);
     search.sameTurnTerminalPlanWidth = Number(terminalWidth);
     search.sameTurnTerminalPlanWeight = Number(terminalWeight);
+  }
+  if (opponentDepth !== undefined || opponentWidth !== undefined || opponentWeight !== undefined) {
+    search.sameTurnOpponentTerminalPlanDepth = Number(opponentDepth);
+    search.sameTurnOpponentTerminalPlanWidth = Number(opponentWidth);
+    search.sameTurnOpponentTerminalPlanWeight = Number(opponentWeight);
   }
   return {
     id,
@@ -394,6 +410,13 @@ function formatTerminalPlan(search: CpuAiSearchOptions): string {
   return `${search.sameTurnTerminalPlanDepth ?? 0}/${search.sameTurnTerminalPlanWidth ?? 0}/${search.sameTurnTerminalPlanWeight}`;
 }
 
+function formatOpponentTerminalPlan(search: CpuAiSearchOptions): string {
+  if (search.sameTurnOpponentTerminalPlanWeight === undefined) {
+    return "profile-default";
+  }
+  return `${search.sameTurnOpponentTerminalPlanDepth ?? 0}/${search.sameTurnOpponentTerminalPlanWidth ?? 0}/${search.sameTurnOpponentTerminalPlanWeight}`;
+}
+
 function currentTurnKey(game: GameState): string {
   return `${game.turnNumber}:${game.currentPlayer}`;
 }
@@ -424,9 +447,9 @@ Options:
   --deck-b <id>                 Second white deck. Default: submission-pro-no-rare8-white-1377
   --games-per-direction <n>     Games per directed matchup. Default: 5
   --seed-start <n>              First seed. Default: 47000
-  --only-config <id:d:w[:dw[:td:tw:twgt]]>
+  --only-config <id:d:w[:dw[:td:tw:twgt[:od:ow:owgt]]]>
                                 Run one search config.
-  --config <id:d:w[:dw[:td:tw:twgt]]>
+  --config <id:d:w[:dw[:td:tw:twgt[:od:ow:owgt]]]>
                                 Add a search config after defaults.
 `);
 }
