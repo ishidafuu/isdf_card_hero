@@ -1,4 +1,6 @@
+import { mkdir, writeFile } from "node:fs/promises";
 import { performance } from "node:perf_hooks";
+import { dirname } from "node:path";
 import { buildDeckPresetCardIds, deckPresetAllowsSpecial, getDeckPreset, type DeckPresetId } from "../src/game/deckPresets";
 import type { CpuAiSearchOptions } from "../src/game/cpuAi";
 import { createInitialGame, runAutoStep } from "../src/game/rules";
@@ -12,6 +14,7 @@ interface CliOptions {
   maxSteps: number;
   maxTurns: number;
   configs: SearchBenchmarkConfig[];
+  markdownPath?: string;
 }
 
 interface SearchBenchmarkConfig {
@@ -57,7 +60,11 @@ const DEFAULT_CONFIGS = [
 
 const options = parseArgs(process.argv.slice(2));
 const games = runBenchmark(options);
-console.log(formatReport(games, options.configs));
+const report = formatReport(games, options.configs);
+if (options.markdownPath) {
+  await writeReport(options.markdownPath, report);
+}
+console.log(report);
 
 function runBenchmark(options: CliOptions): SearchBenchmarkGame[] {
   const games: SearchBenchmarkGame[] = [];
@@ -330,6 +337,9 @@ function parseArgs(args: string[]): CliOptions {
     } else if (arg === "--only-config") {
       parsed.configs = [readConfig(arg, next)];
       i += 1;
+    } else if (arg === "--markdown") {
+      parsed.markdownPath = readString(arg, next);
+      i += 1;
     } else if (arg === "--help" || arg === "-h") {
       printHelp();
       process.exit(0);
@@ -399,6 +409,11 @@ function readString(name: string, value: string | undefined): string {
   return value;
 }
 
+async function writeReport(path: string, content: string): Promise<void> {
+  await mkdir(dirname(path), { recursive: true });
+  await writeFile(path, `${content.trimEnd()}\n`, "utf8");
+}
+
 function formatPercent(value: number): string {
   return `${round(value * 100, 1)}%`;
 }
@@ -451,5 +466,6 @@ Options:
                                 Run one search config.
   --config <id:d:w[:dw[:td:tw:twgt[:od:ow:owgt]]]>
                                 Add a search config after defaults.
+  --markdown <path>             Markdown output path.
 `);
 }

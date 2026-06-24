@@ -1,12 +1,12 @@
 # White AI Terminal Plan Audit
 
-生成: 2026-06-24T09:08:14.124Z
+生成: 2026-06-24T09:45:43.155Z
 デッキ: `submission-pro-with-rare8-white-1339` vs `submission-pro-no-rare8-white-1377`
 seedStart: 56000, maxSeeds: 20
 search: depth 4, width 4, detailed 4
 terminalPlan: depth 6, width 2, weight 2
 opponentTerminalPlan: depth 2, width 1, weight 0.35
-beamWidth: 2, maxActions: 8
+beamWidth: 2, maxActions: 8, responseRankLimit: 12
 
 ## Summary
 
@@ -14,19 +14,25 @@ beamWidth: 2, maxActions: 8
 - selected average rank: 5
 - average gap to best: 9.3
 - max gap to best: 16
+- selected response top1: 0/3
+- selected average response rank: 9.33
+- average response gap to best: 54
+- max response gap to best: 134
 
 ## Method
 
 - 実戦途中の白同士局面から、現行AI評価の上位候補を幅 `beamWidth` で拾い、各手順をエンドターンまで進めた。
 - `terminal` は、相手ターン開始後の盤面を白AI重みの `evaluateState` で評価した値。`guide` は現行AIの局所評価合計で、terminalとは別物。
 - `opponent response` は、渡した盤面から相手AIが同じ軽量設定でエンドターンまで進めた後の盤面評価。勝率ではなく「渡した盤面が相手にどう返されるか」を見るための補助線。
+- `response rank` は、終端評価上位 `responseRankLimit` 本と実選択手順を対象に、相手応答後の盤面評価で並べた順位。
 - この監査は勝率ではなく、現行AIの選択手順と「相手へ渡す最終盤面」「相手から返る最終盤面」のズレを見るためのもの。
 
 ## Conclusion
 
 - 現行AIの選択手順が終端盤面1位だった局面は 1/3。
 - 平均ギャップは 9.3 点。80点以上のズレは 0/3。
-- 現行選択はシールド 1/3、フォーカス 1/3 を含む。一方、終端1位はシールド 0/3、フォーカス 0/3。
+- 相手応答後1位だった局面は 0/3。応答後平均ギャップは 54 点。80点以上のズレは 1/3。
+- 現行選択はシールド 1/3、フォーカス 1/3 を含む。終端1位はシールド 0/3、フォーカス 0/3。応答後1位はシールド 0/3、フォーカス 1/3。
 - このサンプルでは現行AIの手順選択と終端盤面評価のズレは限定的。次はサンプル局面を増やすか、対黒局面でも同じ監査を行う。
 
 ## Scenarios
@@ -37,12 +43,14 @@ beamWidth: 2, maxActions: 8
 - state: turn 5 / current player / HP player/cpu 7/7 / stones player/cpu 5/0 / hand player/cpu 5/5
 - initialScore: -539
 - selectedTerminalRank: 7
+- selectedResponseRank: 9
 - terminalGapToBest: 16
+- responseGapToBest: 16
 - board: cpu_back_left:CB:ヤンバル Lv2 HP3 act1/1 shield | cpu_back_right:CB:ドノマンティス Lv1 HP5 act0/1 focus | cpu_front_left:CF:真勇者ダイン Lv2 HP4 act1/1 | cpu_front_right:CF:ヤミー Lv1 HP5 act1/1
 
 #### Selected plan
 
-1. terminal -469 (+70) / guide 1.3
+1. terminal -469 (+70) / response -595 (-126) / guide 1.3
    - actions: summon ヤミー -> player_front_left [275.2] -> master wake_up -> ヤミー@player_front_left [74.6] -> ヤミー attack -> 真勇者ダイン [-20.8] -> master shield -> ヤミー@player_front_left [-110.2] -> end turn [-217.5]
    - final: turn 5 / current cpu / HP player/cpu 7/7 / stones player/cpu 0/3 / hand player/cpu 4/6
    - metrics: HP 7/7, stones 0/3, boardValue 170/750, ready 0/4, shield 1/0, Lv2+ 0/2
@@ -55,7 +63,7 @@ beamWidth: 2, maxActions: 8
 
 #### Top terminal plans
 
-1. terminal -453 (+86) / guide 238.5
+1. terminal -453 (+86) / response -579 (-126) / guide 238.5
    - actions: summon ヤミー -> player_front_left [275.2] -> master wake_up -> ヤミー@player_front_left [74.6] -> end turn [-111.3]
    - final: turn 5 / current cpu / HP player/cpu 7/7 / stones player/cpu 2/3 / hand player/cpu 4/6
    - metrics: HP 7/7, stones 2/3, boardValue 150/770, ready 1/4, shield 0/0, Lv2+ 0/2
@@ -65,7 +73,7 @@ beamWidth: 2, maxActions: 8
      - final: turn 6 / current player / HP player/cpu 5/7 / stones player/cpu 7/1 / hand player/cpu 5/5
      - metrics: HP 5/7, stones 7/1, boardValue 150/790, ready 1/1, shield 0/1, Lv2+ 0/2
      - board: cpu_back_left:CB:ヤンバル Lv2 HP3 act1/1 | cpu_back_right:CB:ドノマンティス Lv1 HP5 act0/1 focus | cpu_front_left:CF:真勇者ダイン Lv2 HP4 act1/1 shield | cpu_front_right:CF:ヤミー Lv1 HP5 act1/1 focus | player_front_left:PF:ヤミー Lv1 HP5 act0/1 focus
-2. terminal -453 (+86) / guide 220
+2. terminal -453 (+86) / response -585 (-132) / guide 220
    - actions: summon ヤミー -> player_front_right [252.2] -> master wake_up -> ヤミー@player_front_right [79.2] -> end turn [-111.3]
    - final: turn 5 / current cpu / HP player/cpu 7/7 / stones player/cpu 2/3 / hand player/cpu 4/6
    - metrics: HP 7/7, stones 2/3, boardValue 150/770, ready 1/4, shield 0/0, Lv2+ 0/2
@@ -75,7 +83,7 @@ beamWidth: 2, maxActions: 8
      - final: turn 6 / current player / HP player/cpu 5/7 / stones player/cpu 7/1 / hand player/cpu 5/5
      - metrics: HP 5/7, stones 7/1, boardValue 140/790, ready 1/1, shield 0/1, Lv2+ 0/2
      - board: cpu_back_left:CB:ヤンバル Lv2 HP3 act1/1 | cpu_back_right:CB:ドノマンティス Lv1 HP5 act0/1 focus | cpu_front_left:CF:真勇者ダイン Lv2 HP4 act1/1 | cpu_front_right:CF:ヤミー Lv1 HP5 act1/1 shield | player_front_right:PF:ヤミー Lv1 HP4 act0/1
-3. terminal -463 (+76) / guide -9.7
+3. terminal -463 (+76) / response -589 (-126) / guide -9.7
    - actions: summon ヤミー -> player_front_left [275.2] -> master wake_up -> ヤミー@player_front_left [74.6] -> focus ヤミー [-31.8] -> master shield -> ヤミー@player_front_left [-112.8] -> end turn [-214.8]
    - final: turn 5 / current cpu / HP player/cpu 7/7 / stones player/cpu 0/3 / hand player/cpu 4/6
    - metrics: HP 7/7, stones 0/3, boardValue 170/770, ready 0/4, shield 1/0, Lv2+ 0/2
@@ -86,18 +94,53 @@ beamWidth: 2, maxActions: 8
      - metrics: HP 5/7, stones 5/1, boardValue 150/790, ready 1/1, shield 0/1, Lv2+ 0/2
      - board: cpu_back_left:CB:ヤンバル Lv2 HP3 act1/1 | cpu_back_right:CB:ドノマンティス Lv1 HP5 act0/1 focus | cpu_front_left:CF:真勇者ダイン Lv2 HP4 act1/1 shield | cpu_front_right:CF:ヤミー Lv1 HP5 act1/1 focus | player_front_left:PF:ヤミー Lv1 HP5 act0/1 focus
 
+#### Top response-adjusted plans
+
+1. terminal -453 (+86) / response -579 (-126) / guide 238.5
+   - actions: summon ヤミー -> player_front_left [275.2] -> master wake_up -> ヤミー@player_front_left [74.6] -> end turn [-111.3]
+   - final: turn 5 / current cpu / HP player/cpu 7/7 / stones player/cpu 2/3 / hand player/cpu 4/6
+   - metrics: HP 7/7, stones 2/3, boardValue 150/770, ready 1/4, shield 0/0, Lv2+ 0/2
+   - board: cpu_back_left:CB:ヤンバル Lv2 HP3 act0/1 | cpu_back_right:CB:ドノマンティス Lv1 HP5 act0/1 focus | cpu_front_left:CF:真勇者ダイン Lv2 HP4 act0/1 | cpu_front_right:CF:ヤミー Lv1 HP5 act0/1 | player_front_left:PF:ヤミー Lv1 HP5 act0/1 focus
+   - opponent response: terminal -579 (-126)
+     - actions: 真勇者ダイン ダイン斬り -> player master [161.5] -> ヤンバル wild_claw -> player master [220.8] -> focus ヤミー [81] -> master shield -> 真勇者ダイン@cpu_front_left [63.1] -> end turn [-107.6]
+     - final: turn 6 / current player / HP player/cpu 5/7 / stones player/cpu 7/1 / hand player/cpu 5/5
+     - metrics: HP 5/7, stones 7/1, boardValue 150/790, ready 1/1, shield 0/1, Lv2+ 0/2
+     - board: cpu_back_left:CB:ヤンバル Lv2 HP3 act1/1 | cpu_back_right:CB:ドノマンティス Lv1 HP5 act0/1 focus | cpu_front_left:CF:真勇者ダイン Lv2 HP4 act1/1 shield | cpu_front_right:CF:ヤミー Lv1 HP5 act1/1 focus | player_front_left:PF:ヤミー Lv1 HP5 act0/1 focus
+2. terminal -465 (+74) / response -579 (-114) / guide 106.5
+   - actions: summon ヤミー -> player_front_left [275.2] -> master wake_up -> ヤミー@player_front_left [74.6] -> focus ヤミー [-31.8] -> end turn [-211.5]
+   - final: turn 5 / current cpu / HP player/cpu 7/7 / stones player/cpu 2/3 / hand player/cpu 4/6
+   - metrics: HP 7/7, stones 2/3, boardValue 150/770, ready 0/4, shield 0/0, Lv2+ 0/2
+   - board: cpu_back_left:CB:ヤンバル Lv2 HP3 act0/1 | cpu_back_right:CB:ドノマンティス Lv1 HP5 act0/1 focus | cpu_front_left:CF:真勇者ダイン Lv2 HP4 act0/1 | cpu_front_right:CF:ヤミー Lv1 HP5 act0/1 | player_front_left:PF:ヤミー Lv1 HP5 act1/1 focus
+   - opponent response: terminal -579 (-114)
+     - actions: 真勇者ダイン ダイン斬り -> player master [162.9] -> ヤンバル wild_claw -> player master [220.8] -> focus ヤミー [57] -> master shield -> 真勇者ダイン@cpu_front_left [39.1] -> end turn [-143.2]
+     - final: turn 6 / current player / HP player/cpu 5/7 / stones player/cpu 7/1 / hand player/cpu 5/5
+     - metrics: HP 5/7, stones 7/1, boardValue 150/790, ready 1/1, shield 0/1, Lv2+ 0/2
+     - board: cpu_back_left:CB:ヤンバル Lv2 HP3 act1/1 | cpu_back_right:CB:ドノマンティス Lv1 HP5 act0/1 focus | cpu_front_left:CF:真勇者ダイン Lv2 HP4 act1/1 shield | cpu_front_right:CF:ヤミー Lv1 HP5 act1/1 focus | player_front_left:PF:ヤミー Lv1 HP5 act0/1 focus
+3. terminal -453 (+86) / response -585 (-132) / guide 220
+   - actions: summon ヤミー -> player_front_right [252.2] -> master wake_up -> ヤミー@player_front_right [79.2] -> end turn [-111.3]
+   - final: turn 5 / current cpu / HP player/cpu 7/7 / stones player/cpu 2/3 / hand player/cpu 4/6
+   - metrics: HP 7/7, stones 2/3, boardValue 150/770, ready 1/4, shield 0/0, Lv2+ 0/2
+   - board: cpu_back_left:CB:ヤンバル Lv2 HP3 act0/1 | cpu_back_right:CB:ドノマンティス Lv1 HP5 act0/1 focus | cpu_front_left:CF:真勇者ダイン Lv2 HP4 act0/1 | cpu_front_right:CF:ヤミー Lv1 HP5 act0/1 | player_front_right:PF:ヤミー Lv1 HP5 act0/1 focus
+   - opponent response: terminal -585 (-132)
+     - actions: 真勇者ダイン ダイン斬り -> player master [221.1] -> ヤンバル wild_claw -> player master [157.1] -> ヤミー attack -> ヤミー [72] -> master shield -> ヤミー@cpu_front_right [-60.5] -> end turn [-126.2]
+     - final: turn 6 / current player / HP player/cpu 5/7 / stones player/cpu 7/1 / hand player/cpu 5/5
+     - metrics: HP 5/7, stones 7/1, boardValue 140/790, ready 1/1, shield 0/1, Lv2+ 0/2
+     - board: cpu_back_left:CB:ヤンバル Lv2 HP3 act1/1 | cpu_back_right:CB:ドノマンティス Lv1 HP5 act0/1 focus | cpu_front_left:CF:真勇者ダイン Lv2 HP4 act1/1 | cpu_front_right:CF:ヤミー Lv1 HP5 act1/1 shield | player_front_right:PF:ヤミー Lv1 HP4 act0/1
+
 ### 2. seed 56001 turn 5 player
 
 - step: 51
 - state: turn 5 / current player / HP player/cpu 9/10 / stones player/cpu 4/0 / hand player/cpu 3/3
 - initialScore: 104
 - selectedTerminalRank: 1
+- selectedResponseRank: 12
 - terminalGapToBest: 0
+- responseGapToBest: 12
 - board: cpu_back_left:CB:ピグミィ Lv1 HP3 act2/2 | cpu_front_right:CF:ヤミー Lv1 HP5 act1/1 | player_front_left:PF:デスシープ Lv2 HP6 act0/1 | player_front_right:PF:ピグミィ Lv1 HP3 act0/2 | player_back_left:PB:デスシープ Lv1 HP6 act0/1
 
 #### Selected plan
 
-1. terminal 355 (+251) / guide 916.3
+1. terminal 355 (+251) / response 233 (-122) / guide 916.3
    - actions: デスシープ attack -> cpu master [288.2] -> move ピグミィ player_front_right->player_back_right [212.2] -> summon 鉄拳シグマ -> player_front_right [234.5] -> master wake_up -> 鉄拳シグマ@player_front_right [139] -> end turn [42.4]
    - final: turn 5 / current cpu / HP player/cpu 9/9 / stones player/cpu 1/4 / hand player/cpu 2/4
    - metrics: HP 9/9, stones 1/4, boardValue 710/280, ready 3/2, shield 0/0, Lv2+ 1/0
@@ -110,7 +153,7 @@ beamWidth: 2, maxActions: 8
 
 #### Top terminal plans
 
-1. terminal 355 (+251) / guide 916.3
+1. terminal 355 (+251) / response 233 (-122) / guide 916.3
    - actions: デスシープ attack -> cpu master [288.2] -> move ピグミィ player_front_right->player_back_right [212.2] -> summon 鉄拳シグマ -> player_front_right [234.5] -> master wake_up -> 鉄拳シグマ@player_front_right [139] -> end turn [42.4]
    - final: turn 5 / current cpu / HP player/cpu 9/9 / stones player/cpu 1/4 / hand player/cpu 2/4
    - metrics: HP 9/9, stones 1/4, boardValue 710/280, ready 3/2, shield 0/0, Lv2+ 1/0
@@ -120,7 +163,7 @@ beamWidth: 2, maxActions: 8
      - final: turn 6 / current player / HP player/cpu 9/9 / stones player/cpu 4/1 / hand player/cpu 3/3
      - metrics: HP 9/9, stones 4/1, boardValue 700/410, ready 4/0, shield 0/0, Lv2+ 1/0
      - board: cpu_back_left:CB:ヤンバル Lv1 HP3 act1/1 | cpu_back_right:CB:ピグミィ Lv1 HP3 act2/2 focus | cpu_front_right:CF:ヤミー Lv1 HP5 act1/1 focus | player_front_left:PF:デスシープ Lv2 HP6 act0/1 | player_front_right:PF:鉄拳シグマ Lv1 HP5 act0/1 | player_back_left:PB:デスシープ Lv1 HP6 act0/1 focus | player_back_right:PB:ピグミィ Lv1 HP3 act0/2 focus
-2. terminal 343 (+239) / guide 1003.2
+2. terminal 343 (+239) / response 245 (-98) / guide 1003.2
    - actions: デスシープ attack -> cpu master [288.2] -> move ピグミィ player_front_right->player_back_right [212.2] -> focus デスシープ [150.4] -> summon 鉄拳シグマ -> player_front_right [229.5] -> master wake_up -> 鉄拳シグマ@player_front_right [126.2] -> end turn [-3.2]
    - final: turn 5 / current cpu / HP player/cpu 9/9 / stones player/cpu 1/4 / hand player/cpu 2/4
    - metrics: HP 9/9, stones 1/4, boardValue 710/280, ready 2/2, shield 0/0, Lv2+ 1/0
@@ -130,7 +173,7 @@ beamWidth: 2, maxActions: 8
      - final: turn 6 / current player / HP player/cpu 9/9 / stones player/cpu 4/1 / hand player/cpu 3/3
      - metrics: HP 9/9, stones 4/1, boardValue 690/410, ready 4/0, shield 0/0, Lv2+ 1/0
      - board: cpu_back_left:CB:ヤンバル Lv1 HP3 act1/1 | cpu_back_right:CB:ピグミィ Lv1 HP3 act2/2 | cpu_front_right:CF:ヤミー Lv1 HP5 act1/1 focus | player_front_left:PF:デスシープ Lv2 HP5 act0/1 | player_front_right:PF:鉄拳シグマ Lv1 HP5 act0/1 | player_back_left:PB:デスシープ Lv1 HP6 act0/1 focus | player_back_right:PB:ピグミィ Lv1 HP3 act0/2 focus
-3. terminal 343 (+239) / guide 968.9
+3. terminal 343 (+239) / response 245 (-98) / guide 968.9
    - actions: デスシープ attack -> cpu master [288.2] -> move ピグミィ player_front_right->player_back_right [212.2] -> summon 鉄拳シグマ -> player_front_right [234.5] -> focus デスシープ [111.1] -> master wake_up -> 鉄拳シグマ@player_front_right [126.2] -> end turn [-3.2]
    - final: turn 5 / current cpu / HP player/cpu 9/9 / stones player/cpu 1/4 / hand player/cpu 2/4
    - metrics: HP 9/9, stones 1/4, boardValue 710/280, ready 2/2, shield 0/0, Lv2+ 1/0
@@ -141,18 +184,53 @@ beamWidth: 2, maxActions: 8
      - metrics: HP 9/9, stones 4/1, boardValue 690/410, ready 4/0, shield 0/0, Lv2+ 1/0
      - board: cpu_back_left:CB:ヤンバル Lv1 HP3 act1/1 | cpu_back_right:CB:ピグミィ Lv1 HP3 act2/2 | cpu_front_right:CF:ヤミー Lv1 HP5 act1/1 focus | player_front_left:PF:デスシープ Lv2 HP5 act0/1 | player_front_right:PF:鉄拳シグマ Lv1 HP5 act0/1 | player_back_left:PB:デスシープ Lv1 HP6 act0/1 focus | player_back_right:PB:ピグミィ Lv1 HP3 act0/2 focus
 
+#### Top response-adjusted plans
+
+1. terminal 343 (+239) / response 245 (-98) / guide 1003.2
+   - actions: デスシープ attack -> cpu master [288.2] -> move ピグミィ player_front_right->player_back_right [212.2] -> focus デスシープ [150.4] -> summon 鉄拳シグマ -> player_front_right [229.5] -> master wake_up -> 鉄拳シグマ@player_front_right [126.2] -> end turn [-3.2]
+   - final: turn 5 / current cpu / HP player/cpu 9/9 / stones player/cpu 1/4 / hand player/cpu 2/4
+   - metrics: HP 9/9, stones 1/4, boardValue 710/280, ready 2/2, shield 0/0, Lv2+ 1/0
+   - board: cpu_front_left:CF:ピグミィ Lv1 HP3 act0/2 | cpu_front_right:CF:ヤミー Lv1 HP5 act0/1 | player_front_left:PF:デスシープ Lv2 HP6 act1/1 | player_front_right:PF:鉄拳シグマ Lv1 HP6 act0/1 focus | player_back_left:PB:デスシープ Lv1 HP6 act1/1 focus | player_back_right:PB:ピグミィ Lv1 HP3 act1/2 focus
+   - opponent response: terminal 245 (-98)
+     - actions: move ピグミィ cpu_front_left->cpu_back_right [321] -> summon ヤンバル -> cpu_back_left [179.3] -> focus ヤミー [170.8] -> master wake_up -> ヤンバル@cpu_back_left [150.3] -> ピグミィ スパイクボール -> デスシープ [19] -> ヤンバル wild_claw -> 鉄拳シグマ [-41.9] -> end turn [-169.4]
+     - final: turn 6 / current player / HP player/cpu 9/9 / stones player/cpu 4/1 / hand player/cpu 3/3
+     - metrics: HP 9/9, stones 4/1, boardValue 690/410, ready 4/0, shield 0/0, Lv2+ 1/0
+     - board: cpu_back_left:CB:ヤンバル Lv1 HP3 act1/1 | cpu_back_right:CB:ピグミィ Lv1 HP3 act2/2 | cpu_front_right:CF:ヤミー Lv1 HP5 act1/1 focus | player_front_left:PF:デスシープ Lv2 HP5 act0/1 | player_front_right:PF:鉄拳シグマ Lv1 HP5 act0/1 | player_back_left:PB:デスシープ Lv1 HP6 act0/1 focus | player_back_right:PB:ピグミィ Lv1 HP3 act0/2 focus
+2. terminal 343 (+239) / response 245 (-98) / guide 968.9
+   - actions: デスシープ attack -> cpu master [288.2] -> move ピグミィ player_front_right->player_back_right [212.2] -> summon 鉄拳シグマ -> player_front_right [234.5] -> focus デスシープ [111.1] -> master wake_up -> 鉄拳シグマ@player_front_right [126.2] -> end turn [-3.2]
+   - final: turn 5 / current cpu / HP player/cpu 9/9 / stones player/cpu 1/4 / hand player/cpu 2/4
+   - metrics: HP 9/9, stones 1/4, boardValue 710/280, ready 2/2, shield 0/0, Lv2+ 1/0
+   - board: cpu_front_left:CF:ピグミィ Lv1 HP3 act0/2 | cpu_front_right:CF:ヤミー Lv1 HP5 act0/1 | player_front_left:PF:デスシープ Lv2 HP6 act1/1 | player_front_right:PF:鉄拳シグマ Lv1 HP6 act0/1 focus | player_back_left:PB:デスシープ Lv1 HP6 act1/1 focus | player_back_right:PB:ピグミィ Lv1 HP3 act1/2 focus
+   - opponent response: terminal 245 (-98)
+     - actions: move ピグミィ cpu_front_left->cpu_back_right [321] -> summon ヤンバル -> cpu_back_left [179.3] -> focus ヤミー [170.8] -> master wake_up -> ヤンバル@cpu_back_left [150.3] -> ピグミィ スパイクボール -> デスシープ [19] -> ヤンバル wild_claw -> 鉄拳シグマ [-41.9] -> end turn [-169.4]
+     - final: turn 6 / current player / HP player/cpu 9/9 / stones player/cpu 4/1 / hand player/cpu 3/3
+     - metrics: HP 9/9, stones 4/1, boardValue 690/410, ready 4/0, shield 0/0, Lv2+ 1/0
+     - board: cpu_back_left:CB:ヤンバル Lv1 HP3 act1/1 | cpu_back_right:CB:ピグミィ Lv1 HP3 act2/2 | cpu_front_right:CF:ヤミー Lv1 HP5 act1/1 focus | player_front_left:PF:デスシープ Lv2 HP5 act0/1 | player_front_right:PF:鉄拳シグマ Lv1 HP5 act0/1 | player_back_left:PB:デスシープ Lv1 HP6 act0/1 focus | player_back_right:PB:ピグミィ Lv1 HP3 act0/2 focus
+3. terminal 343 (+239) / response 245 (-98) / guide 875
+   - actions: デスシープ attack -> cpu master [288.2] -> move ピグミィ player_front_right->player_back_right [212.2] -> summon 鉄拳シグマ -> player_front_right [234.5] -> master wake_up -> 鉄拳シグマ@player_front_right [139] -> focus 鉄拳シグマ [15.5] -> end turn [-14.4]
+   - final: turn 5 / current cpu / HP player/cpu 9/9 / stones player/cpu 1/4 / hand player/cpu 2/4
+   - metrics: HP 9/9, stones 1/4, boardValue 710/280, ready 2/2, shield 0/0, Lv2+ 1/0
+   - board: cpu_front_left:CF:ピグミィ Lv1 HP3 act0/2 | cpu_front_right:CF:ヤミー Lv1 HP5 act0/1 | player_front_left:PF:デスシープ Lv2 HP6 act1/1 | player_front_right:PF:鉄拳シグマ Lv1 HP6 act1/1 focus | player_back_left:PB:デスシープ Lv1 HP6 act0/1 focus | player_back_right:PB:ピグミィ Lv1 HP3 act1/2 focus
+   - opponent response: terminal 245 (-98)
+     - actions: move ピグミィ cpu_front_left->cpu_back_right [321] -> summon ヤンバル -> cpu_back_left [179.3] -> focus ヤミー [170.8] -> master wake_up -> ヤンバル@cpu_back_left [150.3] -> ピグミィ スパイクボール -> デスシープ [19] -> ヤンバル wild_claw -> 鉄拳シグマ [-41.9] -> end turn [-169]
+     - final: turn 6 / current player / HP player/cpu 9/9 / stones player/cpu 4/1 / hand player/cpu 3/3
+     - metrics: HP 9/9, stones 4/1, boardValue 690/410, ready 4/0, shield 0/0, Lv2+ 1/0
+     - board: cpu_back_left:CB:ヤンバル Lv1 HP3 act1/1 | cpu_back_right:CB:ピグミィ Lv1 HP3 act2/2 | cpu_front_right:CF:ヤミー Lv1 HP5 act1/1 focus | player_front_left:PF:デスシープ Lv2 HP5 act0/1 | player_front_right:PF:鉄拳シグマ Lv1 HP5 act0/1 | player_back_left:PB:デスシープ Lv1 HP6 act0/1 focus | player_back_right:PB:ピグミィ Lv1 HP3 act0/2 focus
+
 ### 3. seed 56002 turn 5 player
 
 - step: 38
 - state: turn 5 / current player / HP player/cpu 10/8 / stones player/cpu 5/1 / hand player/cpu 4/5
 - initialScore: -68
 - selectedTerminalRank: 7
+- selectedResponseRank: 7
 - terminalGapToBest: 12
+- responseGapToBest: 134
 - board: cpu_back_left:CB:ドノマンティス Lv1 HP5 act0/1 focus | cpu_back_right:CB:ボムゾウ Lv1 HP5 act1/1 | cpu_front_left:CF:ボムゾウ Lv2 HP5 act1/1 | cpu_front_right:CF:ドノマンティス Lv1 HP4 act1/1 | player_front_left:PF:モーガン Lv1 HP4 act0/1 | player_front_right:PF:鉄拳シグマ Lv1 HP6 act0/1
 
 #### Selected plan
 
-1. terminal 106 (+174) / guide 1339.4
+1. terminal 106 (+174) / response -140 (-246) / guide 1339.4
    - actions: モーガン arc_drive -> ドノマンティス [339.6] -> summon ヤンバル -> player_back_left [440.1] -> master wake_up -> ヤンバル@player_back_left [508.1] -> ヤンバル wild_claw -> ドノマンティス [453.6] -> focus 鉄拳シグマ [-141] -> end turn [-260.8]
    - final: turn 5 / current cpu / HP player/cpu 10/8 / stones player/cpu 1/5 / hand player/cpu 3/6
    - metrics: HP 10/8, stones 1/5, boardValue 530/550, ready 0/3, shield 0/0, Lv2+ 1/1
@@ -165,7 +243,7 @@ beamWidth: 2, maxActions: 8
 
 #### Top terminal plans
 
-1. terminal 118 (+186) / guide 1530.2
+1. terminal 118 (+186) / response -140 (-258) / guide 1530.2
    - actions: モーガン arc_drive -> ドノマンティス [339.6] -> summon ヤンバル -> player_back_left [440.1] -> master wake_up -> ヤンバル@player_back_left [508.1] -> ヤンバル wild_claw -> ドノマンティス [453.6] -> end turn [-211.1]
    - final: turn 5 / current cpu / HP player/cpu 10/8 / stones player/cpu 1/5 / hand player/cpu 3/6
    - metrics: HP 10/8, stones 1/5, boardValue 530/550, ready 1/3, shield 0/0, Lv2+ 1/1
@@ -175,7 +253,7 @@ beamWidth: 2, maxActions: 8
      - final: turn 6 / current player / HP player/cpu 10/8 / stones player/cpu 6/1 / hand player/cpu 4/5
      - metrics: HP 10/8, stones 6/1, boardValue 290/780, ready 2/1, shield 0/0, Lv2+ 0/2
      - board: cpu_back_left:CB:ドノマンティス Lv1 HP5 act0/1 focus | cpu_back_right:CB:ピグミィ Lv1 HP3 act2/2 focus | cpu_front_left:CF:ボムゾウ Lv2 HP5 act1/1 | cpu_front_right:CF:ボムゾウ Lv2 HP5 act1/1 | player_front_left:PF:モーガン Lv1 HP3 act0/1 | player_front_right:PF:鉄拳シグマ Lv1 HP6 act0/1 focus
-2. terminal 118 (+186) / guide 1530.2
+2. terminal 118 (+186) / response -140 (-258) / guide 1530.2
    - actions: モーガン arc_drive -> ドノマンティス [339.6] -> summon ヤンバル -> player_back_right [440.1] -> master wake_up -> ヤンバル@player_back_right [508.1] -> ヤンバル wild_claw -> ドノマンティス [453.6] -> end turn [-211.1]
    - final: turn 5 / current cpu / HP player/cpu 10/8 / stones player/cpu 1/5 / hand player/cpu 3/6
    - metrics: HP 10/8, stones 1/5, boardValue 530/550, ready 1/3, shield 0/0, Lv2+ 1/1
@@ -185,11 +263,44 @@ beamWidth: 2, maxActions: 8
      - final: turn 6 / current player / HP player/cpu 10/8 / stones player/cpu 6/1 / hand player/cpu 4/5
      - metrics: HP 10/8, stones 6/1, boardValue 290/780, ready 2/1, shield 0/0, Lv2+ 0/2
      - board: cpu_back_left:CB:ドノマンティス Lv1 HP5 act0/1 focus | cpu_back_right:CB:ピグミィ Lv1 HP3 act2/2 focus | cpu_front_left:CF:ボムゾウ Lv2 HP5 act1/1 | cpu_front_right:CF:ボムゾウ Lv2 HP5 act1/1 | player_front_left:PF:モーガン Lv1 HP3 act0/1 | player_front_right:PF:鉄拳シグマ Lv1 HP6 act0/1 focus
-3. terminal 118 (+186) / guide 1481.4
+3. terminal 118 (+186) / response -140 (-258) / guide 1481.4
    - actions: summon ヤンバル -> player_back_left [335.5] -> モーガン arc_drive -> ドノマンティス [395.4] -> master wake_up -> ヤンバル@player_back_left [508.1] -> ヤンバル wild_claw -> ドノマンティス [453.6] -> end turn [-211.1]
    - final: turn 5 / current cpu / HP player/cpu 10/8 / stones player/cpu 1/5 / hand player/cpu 3/6
    - metrics: HP 10/8, stones 1/5, boardValue 530/550, ready 1/3, shield 0/0, Lv2+ 1/1
    - board: cpu_back_left:CB:ドノマンティス Lv1 HP5 act0/1 focus | cpu_front_left:CF:ボムゾウ Lv2 HP5 act0/1 | cpu_front_right:CF:ボムゾウ Lv1 HP5 act0/1 | player_front_left:PF:モーガン Lv1 HP4 act1/1 | player_front_right:PF:鉄拳シグマ Lv1 HP6 act0/1 focus | player_back_left:PB:ヤンバル Lv2 HP3 act1/1
+   - opponent response: terminal -140 (-258)
+     - actions: summon ピグミィ -> cpu_back_right [199.6] -> master wake_up -> ピグミィ@cpu_back_right [314.8] -> ボムゾウ storm_bomb -> ヤンバル [14.9] -> ボムゾウ storm_bomb -> ヤンバル [773.2] -> ピグミィ スパイクボール -> モーガン [-4.9] -> focus ピグミィ [-75.1] -> end turn [-150.1]
+     - final: turn 6 / current player / HP player/cpu 10/8 / stones player/cpu 6/1 / hand player/cpu 4/5
+     - metrics: HP 10/8, stones 6/1, boardValue 290/780, ready 2/1, shield 0/0, Lv2+ 0/2
+     - board: cpu_back_left:CB:ドノマンティス Lv1 HP5 act0/1 focus | cpu_back_right:CB:ピグミィ Lv1 HP3 act2/2 focus | cpu_front_left:CF:ボムゾウ Lv2 HP5 act1/1 | cpu_front_right:CF:ボムゾウ Lv2 HP5 act1/1 | player_front_left:PF:モーガン Lv1 HP3 act0/1 | player_front_right:PF:鉄拳シグマ Lv1 HP6 act0/1 focus
+
+#### Top response-adjusted plans
+
+1. terminal 118 (+186) / response -6 (-124) / guide 1177.8
+   - actions: summon ヤンバル -> player_back_left [335.5] -> master wake_up -> ヤンバル@player_back_left [275.7] -> ヤンバル wild_claw -> ドノマンティス [335.4] -> モーガン arc_drive -> ドノマンティス [453.6] -> end turn [-222.2]
+   - final: turn 5 / current cpu / HP player/cpu 10/8 / stones player/cpu 1/5 / hand player/cpu 3/6
+   - metrics: HP 10/8, stones 1/5, boardValue 530/550, ready 1/3, shield 0/0, Lv2+ 1/1
+   - board: cpu_back_left:CB:ドノマンティス Lv1 HP5 act0/1 focus | cpu_front_left:CF:ボムゾウ Lv2 HP5 act0/1 | cpu_front_right:CF:ボムゾウ Lv1 HP5 act0/1 | player_front_left:PF:モーガン Lv2 HP4 act1/1 | player_front_right:PF:鉄拳シグマ Lv1 HP6 act0/1 focus | player_back_left:PB:ヤンバル Lv1 HP3 act1/1
+   - opponent response: terminal -6 (-124)
+     - actions: summon ピグミィ -> cpu_back_right [193.4] -> master wake_up -> ピグミィ@cpu_back_right [204] -> end turn [34.3]
+     - final: turn 6 / current player / HP player/cpu 10/8 / stones player/cpu 4/2 / hand player/cpu 4/5
+     - metrics: HP 10/8, stones 4/2, boardValue 530/680, ready 3/4, shield 0/0, Lv2+ 1/1
+     - board: cpu_back_left:CB:ドノマンティス Lv1 HP5 act0/1 focus | cpu_back_right:CB:ピグミィ Lv1 HP3 act0/2 focus | cpu_front_left:CF:ボムゾウ Lv2 HP5 act0/1 focus | cpu_front_right:CF:ボムゾウ Lv1 HP5 act0/1 focus | player_front_left:PF:モーガン Lv2 HP4 act0/1 | player_front_right:PF:鉄拳シグマ Lv1 HP6 act0/1 focus | player_back_left:PB:ヤンバル Lv1 HP3 act0/1
+2. terminal 118 (+186) / response -140 (-258) / guide 1530.2
+   - actions: モーガン arc_drive -> ドノマンティス [339.6] -> summon ヤンバル -> player_back_left [440.1] -> master wake_up -> ヤンバル@player_back_left [508.1] -> ヤンバル wild_claw -> ドノマンティス [453.6] -> end turn [-211.1]
+   - final: turn 5 / current cpu / HP player/cpu 10/8 / stones player/cpu 1/5 / hand player/cpu 3/6
+   - metrics: HP 10/8, stones 1/5, boardValue 530/550, ready 1/3, shield 0/0, Lv2+ 1/1
+   - board: cpu_back_left:CB:ドノマンティス Lv1 HP5 act0/1 focus | cpu_front_left:CF:ボムゾウ Lv2 HP5 act0/1 | cpu_front_right:CF:ボムゾウ Lv1 HP5 act0/1 | player_front_left:PF:モーガン Lv1 HP4 act1/1 | player_front_right:PF:鉄拳シグマ Lv1 HP6 act0/1 focus | player_back_left:PB:ヤンバル Lv2 HP3 act1/1
+   - opponent response: terminal -140 (-258)
+     - actions: summon ピグミィ -> cpu_back_right [199.6] -> master wake_up -> ピグミィ@cpu_back_right [314.8] -> ボムゾウ storm_bomb -> ヤンバル [14.9] -> ボムゾウ storm_bomb -> ヤンバル [773.2] -> ピグミィ スパイクボール -> モーガン [-4.9] -> focus ピグミィ [-75.1] -> end turn [-150.1]
+     - final: turn 6 / current player / HP player/cpu 10/8 / stones player/cpu 6/1 / hand player/cpu 4/5
+     - metrics: HP 10/8, stones 6/1, boardValue 290/780, ready 2/1, shield 0/0, Lv2+ 0/2
+     - board: cpu_back_left:CB:ドノマンティス Lv1 HP5 act0/1 focus | cpu_back_right:CB:ピグミィ Lv1 HP3 act2/2 focus | cpu_front_left:CF:ボムゾウ Lv2 HP5 act1/1 | cpu_front_right:CF:ボムゾウ Lv2 HP5 act1/1 | player_front_left:PF:モーガン Lv1 HP3 act0/1 | player_front_right:PF:鉄拳シグマ Lv1 HP6 act0/1 focus
+3. terminal 118 (+186) / response -140 (-258) / guide 1530.2
+   - actions: モーガン arc_drive -> ドノマンティス [339.6] -> summon ヤンバル -> player_back_right [440.1] -> master wake_up -> ヤンバル@player_back_right [508.1] -> ヤンバル wild_claw -> ドノマンティス [453.6] -> end turn [-211.1]
+   - final: turn 5 / current cpu / HP player/cpu 10/8 / stones player/cpu 1/5 / hand player/cpu 3/6
+   - metrics: HP 10/8, stones 1/5, boardValue 530/550, ready 1/3, shield 0/0, Lv2+ 1/1
+   - board: cpu_back_left:CB:ドノマンティス Lv1 HP5 act0/1 focus | cpu_front_left:CF:ボムゾウ Lv2 HP5 act0/1 | cpu_front_right:CF:ボムゾウ Lv1 HP5 act0/1 | player_front_left:PF:モーガン Lv1 HP4 act1/1 | player_front_right:PF:鉄拳シグマ Lv1 HP6 act0/1 focus | player_back_right:PB:ヤンバル Lv2 HP3 act1/1
    - opponent response: terminal -140 (-258)
      - actions: summon ピグミィ -> cpu_back_right [199.6] -> master wake_up -> ピグミィ@cpu_back_right [314.8] -> ボムゾウ storm_bomb -> ヤンバル [14.9] -> ボムゾウ storm_bomb -> ヤンバル [773.2] -> ピグミィ スパイクボール -> モーガン [-4.9] -> focus ピグミィ [-75.1] -> end turn [-150.1]
      - final: turn 6 / current player / HP player/cpu 10/8 / stones player/cpu 6/1 / hand player/cpu 4/5

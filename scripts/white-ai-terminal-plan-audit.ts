@@ -34,6 +34,7 @@ interface CliOptions {
   beamWidth: number;
   maxActions: number;
   topLines: number;
+  responseRankLimit: number;
   search: CpuAiSearchOptions;
   markdownPath: string;
   jsonPath: string;
@@ -52,6 +53,8 @@ interface PlanLine {
   guideScoreTotal: number;
   terminalScore: number;
   terminalScoreDelta: number;
+  responseAdjustedScore?: number;
+  responseAdjustedScoreDelta?: number;
   finalState: string;
   finalBoard: string;
   finalMetrics: PlanMetrics;
@@ -98,8 +101,11 @@ interface PlanScenario {
   initialScore: number;
   selectedPlan: PlanLine;
   selectedTerminalRank: number;
+  selectedResponseRank: number;
   terminalGapToBest: number;
+  responseGapToBest: number;
   topTerminalPlans: PlanLine[];
+  topResponsePlans: PlanLine[];
 }
 
 interface TerminalPlanAuditReport {
@@ -111,12 +117,17 @@ interface TerminalPlanAuditReport {
   search: CpuAiSearchOptions;
   beamWidth: number;
   maxActions: number;
+  responseRankLimit: number;
   scenarios: PlanScenario[];
   summary: {
     selectedTop1: number;
     selectedAverageRank: number;
     averageGapToBest: number;
     maxGapToBest: number;
+    selectedResponseTop1: number;
+    selectedAverageResponseRank: number;
+    averageResponseGapToBest: number;
+    maxResponseGapToBest: number;
   };
   conclusion: string[];
 }
@@ -162,6 +173,10 @@ function runAudit(options: CliOptions): TerminalPlanAuditReport {
   const selectedAverageRank = average(scenarios.map((scenario) => scenario.selectedTerminalRank));
   const averageGapToBest = average(scenarios.map((scenario) => scenario.terminalGapToBest));
   const maxGapToBest = Math.max(0, ...scenarios.map((scenario) => scenario.terminalGapToBest));
+  const selectedResponseTop1 = scenarios.filter((scenario) => scenario.selectedResponseRank === 1).length;
+  const selectedAverageResponseRank = average(scenarios.map((scenario) => scenario.selectedResponseRank));
+  const averageResponseGapToBest = average(scenarios.map((scenario) => scenario.responseGapToBest));
+  const maxResponseGapToBest = Math.max(0, ...scenarios.map((scenario) => scenario.responseGapToBest));
 
   return {
     generatedAt: new Date().toISOString(),
@@ -172,12 +187,17 @@ function runAudit(options: CliOptions): TerminalPlanAuditReport {
     search: options.search,
     beamWidth: options.beamWidth,
     maxActions: options.maxActions,
+    responseRankLimit: options.responseRankLimit,
     scenarios,
     summary: {
       selectedTop1,
       selectedAverageRank: round(selectedAverageRank, 2),
       averageGapToBest: round(averageGapToBest, 1),
       maxGapToBest: round(maxGapToBest, 1),
+      selectedResponseTop1,
+      selectedAverageResponseRank: round(selectedAverageResponseRank, 2),
+      averageResponseGapToBest: round(averageResponseGapToBest, 1),
+      maxResponseGapToBest: round(maxResponseGapToBest, 1),
     },
     conclusion: buildConclusion(scenarios),
   };
@@ -230,10 +250,22 @@ function auditScenario(
     .sort((a, b) => b.terminalScore - a.terminalScore || a.sequenceKey.localeCompare(b.sequenceKey));
   const selectedRank = rankedPlans.findIndex((plan) => plan.sequenceKey === selectedPlan.sequenceKey) + 1;
   const topPlan = rankedPlans[0] ?? selectedPlan;
-  const selectedWithResponse = withOpponentResponse(selectedPlan, perspective, options, aiOptions);
+  const responseCandidates = buildResponseRankCandidates(rankedPlans, selectedPlan, perspective, options, aiOptions);
+  const responseRankedPlans = [...responseCandidates].sort(
+    (a, b) =>
+      (b.responseAdjustedScore ?? b.terminalScore) - (a.responseAdjustedScore ?? a.terminalScore) ||
+      b.terminalScore - a.terminalScore ||
+      a.sequenceKey.localeCompare(b.sequenceKey),
+  );
+  const selectedWithResponse =
+    responseRankedPlans.find((plan) => plan.sequenceKey === selectedPlan.sequenceKey) ??
+    withOpponentResponse(selectedPlan, perspective, options, aiOptions);
+  const selectedResponseRank = responseRankedPlans.findIndex((plan) => plan.sequenceKey === selectedPlan.sequenceKey) + 1;
+  const topResponsePlan = responseRankedPlans[0] ?? selectedWithResponse;
   const topTerminalPlans = rankedPlans
     .slice(0, options.topLines)
-    .map((plan) => withOpponentResponse(plan, perspective, options, aiOptions));
+    .map((plan) => responseRankedPlans.find((ranked) => ranked.sequenceKey === plan.sequenceKey) ?? withOpponentResponse(plan, perspective, options, aiOptions));
+  const topResponsePlans = responseRankedPlans.slice(0, options.topLines);
 
   return {
     seed,
@@ -245,8 +277,15 @@ function auditScenario(
     initialScore,
     selectedPlan: selectedWithResponse,
     selectedTerminalRank: selectedRank || rankedPlans.length,
+    selectedResponseRank: selectedResponseRank || responseRankedPlans.length,
     terminalGapToBest: round(topPlan.terminalScore - selectedPlan.terminalScore, 1),
+    responseGapToBest: round(
+      (topResponsePlan.responseAdjustedScore ?? topResponsePlan.terminalScore) -
+        (selectedWithResponse.responseAdjustedScore ?? selectedWithResponse.terminalScore),
+      1,
+    ),
     topTerminalPlans,
+    topResponsePlans,
   };
 }
 
@@ -424,6 +463,21 @@ function mergePlans(plans: readonly InternalPlanLine[]): InternalPlanLine[] {
   return [...merged.values()];
 }
 
+function buildResponseRankCandidates(
+  rankedPlans: readonly InternalPlanLine[],
+  selectedPlan: InternalPlanLine,
+  perspective: PlayerId,
+  options: CliOptions,
+  aiOptions: CpuAiOptions,
+): PlanLine[] {
+  const candidates = new Map<string, InternalPlanLine>();
+  candidates.set(selectedPlan.sequenceKey, selectedPlan);
+  rankedPlans.slice(0, options.responseRankLimit).forEach((plan) => {
+    candidates.set(plan.sequenceKey, plan);
+  });
+  return [...candidates.values()].map((plan) => withOpponentResponse(plan, perspective, options, aiOptions));
+}
+
 function withOpponentResponse(
   plan: InternalPlanLine,
   perspective: PlayerId,
@@ -431,9 +485,12 @@ function withOpponentResponse(
   aiOptions: CpuAiOptions,
 ): PlanLine {
   const { finalGameState, ...publicPlan } = plan;
+  const opponentResponse = buildOpponentResponse(finalGameState, perspective, options, aiOptions);
   return {
     ...publicPlan,
-    opponentResponse: buildOpponentResponse(finalGameState, perspective, options, aiOptions),
+    responseAdjustedScore: opponentResponse.terminalScore,
+    responseAdjustedScoreDelta: round(opponentResponse.terminalScore - evaluateTerminalScore(finalGameState, perspective), 1),
+    opponentResponse,
   };
 }
 
@@ -671,15 +728,21 @@ function buildConclusion(scenarios: readonly PlanScenario[]): string[] {
   }
   const top1 = scenarios.filter((scenario) => scenario.selectedTerminalRank === 1).length;
   const averageGap = average(scenarios.map((scenario) => scenario.terminalGapToBest));
+  const responseTop1 = scenarios.filter((scenario) => scenario.selectedResponseRank === 1).length;
+  const averageResponseGap = average(scenarios.map((scenario) => scenario.responseGapToBest));
   const largeGaps = scenarios.filter((scenario) => scenario.terminalGapToBest >= 80);
+  const largeResponseGaps = scenarios.filter((scenario) => scenario.responseGapToBest >= 80);
   const selectedShield = scenarios.filter((scenario) => hasAction(scenario.selectedPlan, "master:shield")).length;
   const topShield = scenarios.filter((scenario) => hasAction(scenario.topTerminalPlans[0], "master:shield")).length;
+  const topResponseShield = scenarios.filter((scenario) => hasAction(scenario.topResponsePlans[0], "master:shield")).length;
   const selectedFocus = scenarios.filter((scenario) => hasAction(scenario.selectedPlan, "focus:")).length;
   const topFocus = scenarios.filter((scenario) => hasAction(scenario.topTerminalPlans[0], "focus:")).length;
+  const topResponseFocus = scenarios.filter((scenario) => hasAction(scenario.topResponsePlans[0], "focus:")).length;
   const lines = [
     `現行AIの選択手順が終端盤面1位だった局面は ${top1}/${scenarios.length}。`,
     `平均ギャップは ${round(averageGap, 1)} 点。80点以上のズレは ${largeGaps.length}/${scenarios.length}。`,
-    `現行選択はシールド ${selectedShield}/${scenarios.length}、フォーカス ${selectedFocus}/${scenarios.length} を含む。一方、終端1位はシールド ${topShield}/${scenarios.length}、フォーカス ${topFocus}/${scenarios.length}。`,
+    `相手応答後1位だった局面は ${responseTop1}/${scenarios.length}。応答後平均ギャップは ${round(averageResponseGap, 1)} 点。80点以上のズレは ${largeResponseGaps.length}/${scenarios.length}。`,
+    `現行選択はシールド ${selectedShield}/${scenarios.length}、フォーカス ${selectedFocus}/${scenarios.length} を含む。終端1位はシールド ${topShield}/${scenarios.length}、フォーカス ${topFocus}/${scenarios.length}。応答後1位はシールド ${topResponseShield}/${scenarios.length}、フォーカス ${topResponseFocus}/${scenarios.length}。`,
   ];
   if (largeGaps.length > 0) {
     lines.push("勝率ベンチを増やす前に、ズレが大きい局面の手順評価を読み、追加行動の局所加点より終端盤面の石・行動済み・レベルアップ成果を優先する候補を作る。");
@@ -703,7 +766,7 @@ function formatMarkdown(report: TerminalPlanAuditReport): string {
     `search: depth ${report.search.sameTurnSearchDepth}, width ${report.search.sameTurnSearchWidth}, detailed ${report.search.detailedWidth}`,
     `terminalPlan: depth ${report.search.sameTurnTerminalPlanDepth}, width ${report.search.sameTurnTerminalPlanWidth}, weight ${report.search.sameTurnTerminalPlanWeight}`,
     `opponentTerminalPlan: depth ${report.search.sameTurnOpponentTerminalPlanDepth}, width ${report.search.sameTurnOpponentTerminalPlanWidth}, weight ${report.search.sameTurnOpponentTerminalPlanWeight}`,
-    `beamWidth: ${report.beamWidth}, maxActions: ${report.maxActions}`,
+    `beamWidth: ${report.beamWidth}, maxActions: ${report.maxActions}, responseRankLimit: ${report.responseRankLimit}`,
     "",
     "## Summary",
     "",
@@ -711,12 +774,17 @@ function formatMarkdown(report: TerminalPlanAuditReport): string {
     `- selected average rank: ${report.summary.selectedAverageRank}`,
     `- average gap to best: ${report.summary.averageGapToBest}`,
     `- max gap to best: ${report.summary.maxGapToBest}`,
+    `- selected response top1: ${report.summary.selectedResponseTop1}/${report.scenarios.length}`,
+    `- selected average response rank: ${report.summary.selectedAverageResponseRank}`,
+    `- average response gap to best: ${report.summary.averageResponseGapToBest}`,
+    `- max response gap to best: ${report.summary.maxResponseGapToBest}`,
     "",
     "## Method",
     "",
     "- 実戦途中の白同士局面から、現行AI評価の上位候補を幅 `beamWidth` で拾い、各手順をエンドターンまで進めた。",
     "- `terminal` は、相手ターン開始後の盤面を白AI重みの `evaluateState` で評価した値。`guide` は現行AIの局所評価合計で、terminalとは別物。",
     "- `opponent response` は、渡した盤面から相手AIが同じ軽量設定でエンドターンまで進めた後の盤面評価。勝率ではなく「渡した盤面が相手にどう返されるか」を見るための補助線。",
+    "- `response rank` は、終端評価上位 `responseRankLimit` 本と実選択手順を対象に、相手応答後の盤面評価で並べた順位。",
     "- この監査は勝率ではなく、現行AIの選択手順と「相手へ渡す最終盤面」「相手から返る最終盤面」のズレを見るためのもの。",
     "",
     "## Conclusion",
@@ -735,7 +803,9 @@ function formatMarkdown(report: TerminalPlanAuditReport): string {
       `- state: ${scenario.state}`,
       `- initialScore: ${round(scenario.initialScore, 1)}`,
       `- selectedTerminalRank: ${scenario.selectedTerminalRank}`,
+      `- selectedResponseRank: ${scenario.selectedResponseRank}`,
       `- terminalGapToBest: ${scenario.terminalGapToBest}`,
+      `- responseGapToBest: ${scenario.responseGapToBest}`,
       `- board: ${scenario.board}`,
       "",
       "#### Selected plan",
@@ -745,6 +815,10 @@ function formatMarkdown(report: TerminalPlanAuditReport): string {
       "#### Top terminal plans",
       "",
       ...formatPlanLines(scenario.topTerminalPlans),
+      "",
+      "#### Top response-adjusted plans",
+      "",
+      ...formatPlanLines(scenario.topResponsePlans),
       "",
     );
   });
@@ -757,7 +831,9 @@ function formatPlanLines(plans: readonly PlanLine[]): string[] {
   plans.forEach((plan, index) => {
     const actions = plan.actions.map((action) => `${action.label} [${action.score}]`).join(" -> ") || "none";
     lines.push(
-      `${index + 1}. terminal ${plan.terminalScore} (${plan.terminalScoreDelta >= 0 ? "+" : ""}${plan.terminalScoreDelta}) / guide ${plan.guideScoreTotal}${plan.truncated ? " / truncated" : ""}`,
+      `${index + 1}. terminal ${plan.terminalScore} (${plan.terminalScoreDelta >= 0 ? "+" : ""}${plan.terminalScoreDelta})` +
+        `${plan.responseAdjustedScore !== undefined ? ` / response ${plan.responseAdjustedScore} (${(plan.responseAdjustedScoreDelta ?? 0) >= 0 ? "+" : ""}${plan.responseAdjustedScoreDelta ?? 0})` : ""}` +
+        ` / guide ${plan.guideScoreTotal}${plan.truncated ? " / truncated" : ""}`,
       `   - actions: ${actions}`,
       `   - final: ${plan.finalState}`,
       `   - metrics: HP ${plan.finalMetrics.ownHp}/${plan.finalMetrics.enemyHp}, stones ${plan.finalMetrics.ownStones}/${plan.finalMetrics.enemyStones}, boardValue ${plan.finalMetrics.ownBoardValue}/${plan.finalMetrics.enemyBoardValue}, ready ${plan.finalMetrics.ownReadyActions}/${plan.finalMetrics.enemyReadyActions}, shield ${plan.finalMetrics.ownShielded}/${plan.finalMetrics.enemyShielded}, Lv2+ ${plan.finalMetrics.ownLevel2Plus}/${plan.finalMetrics.enemyLevel2Plus}`,
@@ -791,6 +867,7 @@ function parseArgs(args: string[]): CliOptions {
     beamWidth: 2,
     maxActions: 8,
     topLines: 3,
+    responseRankLimit: 12,
     search: {
       sameTurnSearchDepth: 4,
       sameTurnSearchWidth: 4,
@@ -844,6 +921,9 @@ function parseArgs(args: string[]): CliOptions {
       i += 1;
     } else if (arg === "--top-lines") {
       parsed.topLines = readInteger(arg, next);
+      i += 1;
+    } else if (arg === "--response-rank-limit") {
+      parsed.responseRankLimit = readInteger(arg, next);
       i += 1;
     } else if (arg === "--search") {
       parsed.search = readSearchOptions(arg, next);
@@ -959,6 +1039,7 @@ Options:
   --beam-width <n>              Candidate branch width. Default: 2
   --max-actions <n>             Maximum own-turn actions before forced end turn. Default: 8
   --top-lines <n>               Top terminal plans per scenario. Default: 3
+  --response-rank-limit <n>     Terminal-ranked plans to response-rank. Default: 12
   --search <d:w[:dw[:td:tw:twgt[:od:ow:owgt]]]>
                                 AI search options for guide scores. Default: 4:4:4:6:2:2:2:1:0.35
   --markdown <path>             Markdown output path.
