@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { getMonsterDef } from "../../src/game/cards";
 import { applyCpuDecision, chooseCpuDecision, inspectCpuDecisionEvaluations, listCpuDecisions } from "../../src/game/cpuAi";
+import { buildDeckPresetCardIds, deckPresetAllowsSpecial } from "../../src/game/deckPresets";
 import { attackWithCommand, createInitialGame, endTurn, runAutoStep, runCpuStep } from "../../src/game/rules";
 import type { CardInstance, GameState, MonsterState, PlayerId } from "../../src/game/types";
 
@@ -502,6 +503,28 @@ describe("cpu ai", () => {
     expect(strong).toBeDefined();
     expect(omniscient).toBeDefined();
     expect(omniscient?.totalScore).toBeLessThan((strong?.totalScore ?? 0) - 20);
+  });
+
+  it("uses omniscient berserk tempo when it creates immediate master pressure", () => {
+    const preset = "submission-pro-with-rare8-black-999";
+    const cardIds = buildDeckPresetCardIds(preset);
+    const allowSpecial = deckPresetAllowsSpecial(preset);
+    let game = createInitialGame(430, {
+      masterIds: { player: "black", cpu: "black" },
+      playerDeckCardIds: cardIds,
+      cpuDeckCardIds: cardIds,
+      allowSpecialDecks: { player: allowSpecial, cpu: allowSpecial },
+    });
+    const profiles = { player: "strong", cpu: "omniscient" } as const;
+    for (let step = 0; step < 11; step += 1) {
+      game = runAutoStep(game, { profiles });
+    }
+
+    const decision = chooseCpuDecision(game, { profile: "omniscient" });
+    expect(decision.type).toBe("master_action");
+    if (decision.type === "master_action") {
+      expect(decision.actionId).toBe("berserk_power");
+    }
   });
 
   it("applies monster pressure handling to the default white profile only against black", () => {

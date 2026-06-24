@@ -425,6 +425,7 @@ function evaluateCpuDecisions(
       candidate.decision.score +
       decisionTuningBonus(candidate.decision, config) +
       decisionSituationalBonus(state, candidate.after, candidate.decision, perspective, config) +
+      decisionProfileBonus(state, candidate.after, candidate.decision, perspective, config) +
       evaluateState(candidate.after, perspective, config.weights) -
       beforeScore +
       evaluateConfiguredFutureTacticalValue(candidate.after, perspective, true, config) -
@@ -555,6 +556,7 @@ function evaluateDecisionTransition(
       decision.score +
       decisionTuningBonus(decision, config) +
       decisionSituationalBonus(state, after, decision, perspective, config) +
+      decisionProfileBonus(state, after, decision, perspective, config) +
       evaluateState(after, perspective, config.weights) -
       beforeScore +
       evaluateConfiguredFutureTacticalValue(after, perspective, detailedFuture, config) -
@@ -698,6 +700,57 @@ function decisionSituationalBonus(
     bonus -= whiteRetreatBeforeShieldDecisionPenalty(before, after, decision, perspective, bias.whiteRetreatBeforeShieldPenalty);
   }
   return bonus;
+}
+
+function decisionProfileBonus(
+  before: GameState,
+  after: GameState,
+  decision: CpuDecision,
+  perspective: PlayerId,
+  config: CpuAiProfileConfig,
+): number {
+  if (!config.omniscient) {
+    return 0;
+  }
+
+  return omniscientBerserkTempoBonus(before, after, decision, perspective);
+}
+
+function omniscientBerserkTempoBonus(
+  before: GameState,
+  after: GameState,
+  decision: CpuDecision,
+  perspective: PlayerId,
+): number {
+  if (
+    decision.type !== "master_action" ||
+    decision.actionId !== "berserk_power" ||
+    decision.target.kind !== "monster" ||
+    before.players[perspective].masterId !== "black"
+  ) {
+    return 0;
+  }
+
+  const slotKey = decision.target.slotKey;
+  const monster = before.slots[slotKey].monster;
+  if (!monster || monster.owner !== perspective || monster.status !== "active") {
+    return 0;
+  }
+
+  const beforeBest = bestAttackOpportunityScore(before, slotKey);
+  const afterBest = bestAttackOpportunityScore(after, slotKey);
+  const improvement = Math.max(0, afterBest - beforeBest);
+  const masterDamageGain = Math.max(
+    0,
+    directMasterDamageFromSlotWithPowerBonus(before, slotKey, perspective, 1) -
+      directMasterDamageFromSlot(before, slotKey, perspective),
+  );
+  if (masterDamageGain <= 0) {
+    return 0;
+  }
+
+  const multiActionBonus = monster.actionLimit > 1 && afterBest >= 95 ? 14 : 0;
+  return Math.min(64, masterDamageGain * 22 + improvement * 0.28 + multiActionBonus);
 }
 
 function isSetupDecision(
