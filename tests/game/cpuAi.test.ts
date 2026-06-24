@@ -235,7 +235,7 @@ describe("cpu ai", () => {
     const game = createCpuGame();
     game.players.cpu.hand = [];
     game.slots.cpu_front_left.monster = createActiveMonster("beyond", "cpu");
-    game.slots.player_front_left.monster = createActiveMonster("takokke", "player");
+    game.slots.player_front_left.monster = createActiveMonster("takokke", "player", { shielded: true });
 
     const decision = chooseCpuDecision(game);
 
@@ -617,8 +617,8 @@ describe("cpu ai", () => {
     game.players.cpu.masterId = "white";
     game.players.cpu.hand = [];
     game.players.cpu.stones = 4;
-    game.slots.cpu_front_left.monster = createActiveMonster("beyond", "cpu", { hp: 2 });
-    game.slots.player_front_left.monster = createActiveMonster("takokke", "player");
+    game.slots.cpu_front_left.monster = createActiveMonster("beyond", "cpu", { hp: 2, actionCount: 1 });
+    game.slots.player_front_left.monster = createActiveMonster("takokke", "player", { shielded: true });
     const findUrgentShield = (options = {}) =>
       inspectCpuDecisionEvaluations(game, options).find(
         (evaluation) =>
@@ -641,8 +641,8 @@ describe("cpu ai", () => {
     game.players.cpu.hand = [];
     game.players.cpu.stones = 4;
     game.players.player.stones = 3;
-    game.slots.cpu_front_left.monster = createActiveMonster("beyond", "cpu", { hp: 2 });
-    game.slots.player_front_left.monster = createActiveMonster("takokke", "player");
+    game.slots.cpu_front_left.monster = createActiveMonster("beyond", "cpu", { hp: 2, actionCount: 1 });
+    game.slots.player_front_left.monster = createActiveMonster("takokke", "player", { shielded: true });
 
     const findShield = (options = {}) =>
       inspectCpuDecisionEvaluations(game, options).find(
@@ -666,8 +666,8 @@ describe("cpu ai", () => {
     game.players.cpu.hand = [];
     game.players.cpu.stones = 4;
     game.players.player.stones = 3;
-    game.slots.cpu_front_left.monster = createActiveMonster("takokke", "cpu", { hp: 3 });
-    game.slots.player_front_left.monster = createActiveMonster("takokke", "player");
+    game.slots.cpu_front_left.monster = createActiveMonster("takokke", "cpu", { hp: 3, actionCount: 1 });
+    game.slots.player_front_left.monster = createActiveMonster("takokke", "player", { shielded: true });
 
     const findShield = (options = {}) =>
       inspectCpuDecisionEvaluations(game, options).find(
@@ -692,7 +692,7 @@ describe("cpu ai", () => {
     game.players.cpu.stones = 4;
     game.players.player.stones = 3;
     game.slots.cpu_front_left.monster = createActiveMonster("card_051", "cpu", { hp: 2 });
-    game.slots.player_front_left.monster = createActiveMonster("takokke", "player");
+    game.slots.player_front_left.monster = createActiveMonster("takokke", "player", { shielded: true });
 
     const findRetreat = (options = {}) =>
       inspectCpuDecisionEvaluations(game, options)
@@ -711,54 +711,54 @@ describe("cpu ai", () => {
     expect(tuned?.totalScore).toBeCloseTo((baseline?.totalScore ?? 0) + 11);
   });
 
-  it("penalizes shielding before a safe back-role retreat", () => {
+  it("does not list shielding before a safe back-role retreat", () => {
     const game = createCpuGame();
     game.players.cpu.masterId = "white";
     game.players.cpu.hand = [];
     game.players.cpu.stones = 4;
     game.players.player.stones = 3;
     game.slots.cpu_front_left.monster = createActiveMonster("card_051", "cpu", { hp: 2 });
-    game.slots.player_front_left.monster = createActiveMonster("takokke", "player");
+    game.slots.player_front_left.monster = createActiveMonster("takokke", "player", { shielded: true });
 
-    const findShield = (options = {}) =>
-      inspectCpuDecisionEvaluations(game, options).find(
-        (evaluation) =>
-          evaluation.decision.type === "master_action" &&
-          evaluation.decision.actionId === "shield" &&
-          evaluation.decision.target.kind === "monster" &&
-          evaluation.decision.target.slotKey === "cpu_front_left",
-      );
-    const baseline = findShield();
-    const tuned = findShield({ tunings: { cpu: { situationalBias: { whiteRetreatBeforeShieldPenalty: 9 } } } });
+    const decisions = listCpuDecisions(game);
 
-    expect(baseline).toBeDefined();
-    expect(tuned).toBeDefined();
-    expect(tuned?.totalScore).toBeCloseTo((baseline?.totalScore ?? 0) - 9);
+    expect(
+      decisions.some(
+        (decision) =>
+          decision.type === "master_action" &&
+          decision.actionId === "shield" &&
+          decision.target.kind === "monster" &&
+          decision.target.slotKey === "cpu_front_left",
+      ),
+    ).toBe(false);
+    expect(
+      decisions.some(
+        (decision) =>
+          decision.type === "move" &&
+          decision.fromSlotKey === "cpu_front_left" &&
+          game.slots[decision.toSlotKey].row === "back",
+      ),
+    ).toBe(true);
   });
 
-  it("does not penalize white front-role shields just because a move exists", () => {
+  it("lists a front-role shield after current-turn work is spent", () => {
     const game = createCpuGame();
     game.players.cpu.masterId = "white";
     game.players.cpu.hand = [];
     game.players.cpu.stones = 4;
     game.players.player.stones = 3;
-    game.slots.cpu_front_left.monster = createActiveMonster("takokke", "cpu", { hp: 2 });
-    game.slots.player_front_left.monster = createActiveMonster("takokke", "player");
+    game.slots.cpu_front_left.monster = createActiveMonster("takokke", "cpu", { hp: 2, actionCount: 1 });
+    game.slots.player_front_left.monster = createActiveMonster("takokke", "player", { shielded: true });
 
-    const findShield = (options = {}) =>
-      inspectCpuDecisionEvaluations(game, options).find(
-        (evaluation) =>
-          evaluation.decision.type === "master_action" &&
-          evaluation.decision.actionId === "shield" &&
-          evaluation.decision.target.kind === "monster" &&
-          evaluation.decision.target.slotKey === "cpu_front_left",
-      );
-    const baseline = findShield();
-    const tuned = findShield({ tunings: { cpu: { situationalBias: { whiteRetreatBeforeShieldPenalty: 9 } } } });
+    const shield = listCpuDecisions(game).find(
+      (decision) =>
+        decision.type === "master_action" &&
+        decision.actionId === "shield" &&
+        decision.target.kind === "monster" &&
+        decision.target.slotKey === "cpu_front_left",
+    );
 
-    expect(baseline).toBeDefined();
-    expect(tuned).toBeDefined();
-    expect(tuned?.totalScore).toBeCloseTo(baseline?.totalScore ?? 0);
+    expect(shield).toBeDefined();
   });
 
   it("penalizes low-stone white shield, wake, and summon setup by decision type", () => {
@@ -766,7 +766,7 @@ describe("cpu ai", () => {
     shieldGame.players.cpu.masterId = "white";
     shieldGame.players.cpu.hand = [];
     shieldGame.players.cpu.stones = 3;
-    shieldGame.slots.cpu_front_left.monster = createActiveMonster("beyond", "cpu", { hp: 2 });
+    shieldGame.slots.cpu_front_left.monster = createActiveMonster("beyond", "cpu", { hp: 2, actionCount: 1 });
     shieldGame.slots.player_front_left.monster = createActiveMonster("takokke", "player");
     const findShield = (options = {}) =>
       inspectCpuDecisionEvaluations(shieldGame, options).find(
@@ -839,7 +839,7 @@ describe("cpu ai", () => {
       delete slot.monster;
     }
     game.slots.cpu_front_left.monster = createActiveMonster("beyond", "cpu", { hp: 3 });
-    game.slots.player_front_left.monster = createActiveMonster("takokke", "player");
+    game.slots.player_front_left.monster = createActiveMonster("takokke", "player", { shielded: true });
 
     const findSummon = (options = {}) =>
       inspectCpuDecisionEvaluations(game, options).find(
@@ -861,8 +861,8 @@ describe("cpu ai", () => {
     for (const slot of Object.values(game.slots)) {
       delete slot.monster;
     }
-    game.slots.cpu_front_left.monster = createActiveMonster("beyond", "cpu", { hp: 2 });
-    game.slots.player_front_left.monster = createActiveMonster("takokke", "player");
+    game.slots.cpu_front_left.monster = createActiveMonster("beyond", "cpu", { hp: 2, actionCount: 1 });
+    game.slots.player_front_left.monster = createActiveMonster("takokke", "player", { shielded: true });
 
     const findShield = (options = {}) =>
       inspectCpuDecisionEvaluations(game, options).find(
@@ -885,7 +885,7 @@ describe("cpu ai", () => {
     shieldGame.players.cpu.masterId = "white";
     shieldGame.players.cpu.hand = [];
     shieldGame.players.cpu.stones = 4;
-    shieldGame.slots.cpu_front_left.monster = createActiveMonster("beyond", "cpu", { hp: 2 });
+    shieldGame.slots.cpu_front_left.monster = createActiveMonster("beyond", "cpu", { hp: 2, actionCount: 1 });
     shieldGame.slots.player_front_left.monster = createActiveMonster("takokke", "player");
     const findShield = (options = {}) =>
       inspectCpuDecisionEvaluations(shieldGame, options).find(
@@ -958,9 +958,9 @@ describe("cpu ai", () => {
     game.players.cpu.masterId = "white";
     game.players.cpu.hand = [];
     game.players.cpu.stones = 3;
-    game.slots.cpu_front_left.monster = createActiveMonster("beyond", "cpu", { hp: 2 });
-    game.slots.cpu_back_left.monster = createActiveMonster("takokke", "cpu", { shielded: true });
-    game.slots.player_front_left.monster = createActiveMonster("takokke", "player");
+    game.slots.cpu_front_left.monster = createActiveMonster("beyond", "cpu", { hp: 2, actionCount: 1 });
+    game.slots.cpu_back_left.monster = createActiveMonster("takokke", "cpu", { shielded: true, actionCount: 1 });
+    game.slots.player_front_left.monster = createActiveMonster("takokke", "player", { shielded: true });
     game.turnMasterActionHistory = [
       {
         playerId: "cpu",
@@ -991,9 +991,9 @@ describe("cpu ai", () => {
     game.players.cpu.masterId = "white";
     game.players.cpu.hand = [];
     game.players.cpu.stones = 5;
-    game.slots.cpu_front_left.monster = createActiveMonster("beyond", "cpu", { hp: 2 });
-    game.slots.cpu_back_left.monster = createActiveMonster("takokke", "cpu", { shielded: true });
-    game.slots.player_front_left.monster = createActiveMonster("takokke", "player");
+    game.slots.cpu_front_left.monster = createActiveMonster("beyond", "cpu", { hp: 2, actionCount: 1 });
+    game.slots.cpu_back_left.monster = createActiveMonster("takokke", "cpu", { shielded: true, actionCount: 1 });
+    game.slots.player_front_left.monster = createActiveMonster("takokke", "player", { shielded: true });
     game.turnMasterActionHistory = [
       {
         playerId: "cpu",
@@ -1027,9 +1027,10 @@ describe("cpu ai", () => {
     game.slots.cpu_front_left.monster = createActiveMonster("morgan", "cpu", {
       level: 2,
       hp: 2,
+      actionCount: 1,
     });
-    game.slots.cpu_back_left.monster = createActiveMonster("takokke", "cpu", { shielded: true });
-    game.slots.player_front_left.monster = createActiveMonster("takokke", "player");
+    game.slots.cpu_back_left.monster = createActiveMonster("takokke", "cpu", { shielded: true, actionCount: 1 });
+    game.slots.player_front_left.monster = createActiveMonster("takokke", "player", { shielded: true });
     game.turnMasterActionHistory = [
       {
         playerId: "cpu",
@@ -1060,8 +1061,8 @@ describe("cpu ai", () => {
     game.players.cpu.masterId = "white";
     game.players.cpu.hand = [];
     game.players.cpu.stones = 3;
-    game.slots.cpu_front_left.monster = createActiveMonster("beyond", "cpu", { hp: 2 });
-    game.slots.cpu_back_left.monster = createActiveMonster("takokke", "cpu", { shielded: true });
+    game.slots.cpu_front_left.monster = createActiveMonster("beyond", "cpu", { hp: 2, actionCount: 1 });
+    game.slots.cpu_back_left.monster = createActiveMonster("takokke", "cpu", { shielded: true, actionCount: 1 });
     game.slots.player_front_left.monster = createActiveMonster("takokke", "player");
 
     const findShield = (options = {}) =>
@@ -1085,8 +1086,8 @@ describe("cpu ai", () => {
     game.players.cpu.masterId = "white";
     game.players.cpu.hand = [];
     game.players.cpu.stones = 3;
-    game.slots.cpu_front_left.monster = createActiveMonster("beyond", "cpu", { hp: 2 });
-    game.slots.cpu_back_left.monster = createActiveMonster("takokke", "cpu", { shielded: true });
+    game.slots.cpu_front_left.monster = createActiveMonster("beyond", "cpu", { hp: 2, actionCount: 1 });
+    game.slots.cpu_back_left.monster = createActiveMonster("takokke", "cpu", { shielded: true, actionCount: 1 });
     game.slots.player_front_left.monster = createActiveMonster("takokke", "player");
     game.turnMasterActionHistory = [
       {
@@ -1121,9 +1122,9 @@ describe("cpu ai", () => {
     game.players.cpu.masterId = "white";
     game.players.cpu.hand = [];
     game.players.cpu.stones = 5;
-    game.slots.cpu_front_left.monster = createActiveMonster("beyond", "cpu", { hp: 2 });
-    game.slots.cpu_back_left.monster = createActiveMonster("takokke", "cpu", { shielded: true });
-    game.slots.player_front_left.monster = createActiveMonster("takokke", "player");
+    game.slots.cpu_front_left.monster = createActiveMonster("beyond", "cpu", { hp: 2, actionCount: 1 });
+    game.slots.cpu_back_left.monster = createActiveMonster("takokke", "cpu", { shielded: true, actionCount: 1 });
+    game.slots.player_front_left.monster = createActiveMonster("takokke", "player", { shielded: true });
     game.turnMasterActionHistory = [
       {
         playerId: "cpu",
@@ -1664,8 +1665,8 @@ describe("cpu ai", () => {
     const game = createCpuGame([]);
     game.players.cpu.stones = 5;
     game.players.player.stones = 0;
-    game.slots.cpu_front_left.monster = createActiveMonster("beyond", "cpu", { hp: 2 });
-    game.slots.player_front_left.monster = createActiveMonster("takokke", "player");
+    game.slots.cpu_front_left.monster = createActiveMonster("beyond", "cpu", { hp: 2, actionCount: 1 });
+    game.slots.player_front_left.monster = createActiveMonster("takokke", "player", { shielded: true });
 
     const decision = chooseCpuDecision(game);
 
@@ -1681,8 +1682,8 @@ describe("cpu ai", () => {
     const game = createCpuGame([]);
     game.players.cpu.stones = 5;
     game.players.player.stones = 0;
-    game.slots.cpu_front_left.monster = createActiveMonster("beyond", "cpu", { hp: 2 });
-    game.slots.player_front_left.monster = createActiveMonster("takokke", "player", { actionCount: 1 });
+    game.slots.cpu_front_left.monster = createActiveMonster("beyond", "cpu", { hp: 2, actionCount: 1 });
+    game.slots.player_front_left.monster = createActiveMonster("takokke", "player", { actionCount: 1, shielded: true });
 
     const decision = chooseCpuDecision(game);
 
@@ -1691,6 +1692,57 @@ describe("cpu ai", () => {
       expect(decision.actionId).toBe("shield");
       expect(decision.target).toEqual({ kind: "monster", slotKey: "cpu_front_left" });
     }
+  });
+
+  it("defers white shield while current-turn monster work remains", () => {
+    const game = createCpuGame([]);
+    game.players.cpu.masterId = "white";
+    game.players.cpu.stones = 5;
+    game.players.player.stones = 0;
+    game.slots.cpu_front_left.monster = createActiveMonster("takokke", "cpu", { hp: 2 });
+    game.slots.player_front_left.monster = createActiveMonster("takokke", "player");
+
+    const decisions = listCpuDecisions(game);
+
+    expect(
+      decisions.some(
+        (decision) =>
+          decision.type === "attack" &&
+          decision.action.attackerSlotKey === "cpu_front_left" &&
+          decision.action.target.kind === "monster" &&
+          decision.action.target.slotKey === "player_front_left",
+      ),
+    ).toBe(true);
+    expect(
+      decisions.some(
+        (decision) =>
+          decision.type === "master_action" &&
+          decision.actionId === "shield" &&
+          decision.target.kind === "monster" &&
+          decision.target.slotKey === "cpu_front_left",
+      ),
+    ).toBe(false);
+  });
+
+  it("keeps white shield before attacking into immediate counter damage", () => {
+    const game = createCpuGame([]);
+    game.players.cpu.masterId = "white";
+    game.players.cpu.stones = 5;
+    game.players.player.stones = 0;
+    game.slots.cpu_front_left.monster = createActiveMonster("takokke", "cpu", { hp: 2 });
+    game.slots.player_front_left.monster = createActiveMonster("takokke", "player", { dragonShield: true });
+
+    const decisions = listCpuDecisions(game);
+
+    expect(
+      decisions.some(
+        (decision) =>
+          decision.type === "master_action" &&
+          decision.actionId === "shield" &&
+          decision.target.kind === "monster" &&
+          decision.target.slotKey === "cpu_front_left",
+      ),
+    ).toBe(true);
   });
 
   it("moves a front back-role ally instead of shielding when master attack still breaks through", () => {
@@ -1811,8 +1863,8 @@ describe("cpu ai", () => {
   it("evaluates secondary targets for double shield magic", () => {
     const game = createCpuGame([{ cardId: "card_030", instanceId: "cpu_double_shield_test" }]);
     game.players.cpu.stones = 5;
-    game.slots.cpu_front_left.monster = createActiveMonster("takokke", "cpu", { hp: 2 });
-    game.slots.cpu_front_right.monster = createActiveMonster("beyond", "cpu", { hp: 2 });
+    game.slots.cpu_front_left.monster = createActiveMonster("takokke", "cpu", { hp: 2, actionCount: 1 });
+    game.slots.cpu_front_right.monster = createActiveMonster("beyond", "cpu", { hp: 2, actionCount: 1 });
 
     const decisions = listCpuDecisions(game).filter(
       (decision) => decision.type === "magic" && decision.action.handInstanceId === "cpu_double_shield_test",

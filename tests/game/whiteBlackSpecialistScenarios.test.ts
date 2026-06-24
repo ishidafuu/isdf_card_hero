@@ -13,15 +13,16 @@ describe("white black specialist scenarios", () => {
     const firstDisabledDecision = chooseCpuDecision(firstPressureState, withoutBlackMonsterPressure());
 
     expect(firstPressureState.currentPlayer).toBe("cpu");
-    expect(firstPressureState.players.cpu.stones).toBe(1);
+    expect(firstPressureState.players.cpu.stones).toBe(2);
     expect(firstDecision.type).toBe("attack");
     if (firstDecision.type === "attack") {
       expect(firstDecision.action.attackerSlotKey).toBe("cpu_front_right");
       expect(firstDecision.action.target).toEqual({ kind: "monster", slotKey: "player_front_right" });
     }
-    expect(firstDisabledDecision.type).toBe("focus");
-    if (firstDisabledDecision.type === "focus") {
-      expect(firstDisabledDecision.slotKey).toBe("cpu_front_right");
+    expect(firstDisabledDecision.type).toBe("attack");
+    if (firstDisabledDecision.type === "attack") {
+      expect(firstDisabledDecision.action.attackerSlotKey).toBe("cpu_front_right");
+      expect(firstDisabledDecision.action.target).toEqual({ kind: "monster", slotKey: "player_front_right" });
     }
 
     const followUpPressureState = replayWhiteCpuVsBlackStrongToStep(WHITE_VS_BLACK_RAON_PRESSURE_SEED, 25);
@@ -29,7 +30,7 @@ describe("white black specialist scenarios", () => {
     const followUpDisabledDecision = chooseCpuDecision(followUpPressureState, withoutBlackMonsterPressure());
 
     expect(followUpPressureState.currentPlayer).toBe("cpu");
-    expect(followUpPressureState.players.cpu.stones).toBe(0);
+    expect(followUpPressureState.players.cpu.stones).toBe(1);
     expect(followUpDecision.type).toBe("attack");
     if (followUpDecision.type === "attack") {
       expect(followUpDecision.action.attackerSlotKey).toBe("cpu_front_right");

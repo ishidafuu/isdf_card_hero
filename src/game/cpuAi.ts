@@ -149,7 +149,6 @@ export interface CpuAiTuning {
     whiteRedirectMarkedAttackPenalty?: number;
     whiteThreatLeftLowStoneSetupPenalty?: number;
     whiteSafeRetreatOverShieldBonus?: number;
-    whiteRetreatBeforeShieldPenalty?: number;
   };
 }
 
@@ -696,9 +695,6 @@ function decisionSituationalBonus(
   if (bias.whiteSafeRetreatOverShieldBonus) {
     bonus += whiteSafeRetreatOverShieldDecisionBonus(before, after, decision, perspective, bias.whiteSafeRetreatOverShieldBonus);
   }
-  if (bias.whiteRetreatBeforeShieldPenalty) {
-    bonus -= whiteRetreatBeforeShieldDecisionPenalty(before, after, decision, perspective, bias.whiteRetreatBeforeShieldPenalty);
-  }
   return bonus;
 }
 
@@ -1063,30 +1059,6 @@ function whiteSafeRetreatOverShieldDecisionBonus(
   return isSafeBackRoleRetreat(before, after, decision.fromSlotKey, perspective) ? value : 0;
 }
 
-function whiteRetreatBeforeShieldDecisionPenalty(
-  before: GameState,
-  _after: GameState,
-  decision: CpuDecision,
-  perspective: PlayerId,
-  value: number,
-): number {
-  if (
-    value <= 0 ||
-    before.players[perspective].masterId !== "white" ||
-    decision.type !== "master_action" ||
-    decision.actionId !== "shield" ||
-    decision.target.kind !== "monster"
-  ) {
-    return 0;
-  }
-  const targetSlotKey = decision.target.slotKey;
-  const target = before.slots[targetSlotKey].monster;
-  if (!target || target.owner !== perspective || before.slots[targetSlotKey].row !== "front") {
-    return 0;
-  }
-  return findSafeBackRoleRetreat(before, targetSlotKey, perspective) ? value : 0;
-}
-
 function findSafeBackRoleRetreat(state: GameState, fromSlotKey: SlotKey, perspective: PlayerId): GameState | undefined {
   const mover = state.slots[fromSlotKey].monster;
   if (
@@ -1141,6 +1113,98 @@ function isSafeBackRoleRetreat(
   }
   const afterThreat = incomingThreat(after, afterSlotKey);
   return !isLethalIncomingThreat(afterThreat) && maxIncomingThreatDamage(afterThreat) < maxIncomingThreatDamage(beforeThreat);
+}
+
+function shouldDeferShieldUntilAfterCurrentTurnWork(
+  state: GameState,
+  shieldTargetSlotKey: SlotKey,
+  reserveCost: number,
+  weights: AiEvaluationWeights,
+): boolean {
+  const monster = state.slots[shieldTargetSlotKey].monster;
+  if (!monster || monster.owner !== state.currentPlayer) {
+    return false;
+  }
+  if (hasImmediateCounterWorkRequiringPreShield(state, shieldTargetSlotKey, weights)) {
+    return false;
+  }
+  return listPreShieldCurrentTurnWorkDecisions(state, weights).some((decision) =>
+    canTakeDecisionBeforeShield(state, decision, shieldTargetSlotKey, reserveCost),
+  );
+}
+
+function listPreShieldCurrentTurnWorkDecisions(state: GameState, weights: AiEvaluationWeights): CpuDecision[] {
+  return [
+    ...listAttackDecisions(state, weights),
+    ...listMasterAttackDecisions(state),
+    ...listWakeUpDecisions(state),
+    ...listSummonDecisions(state),
+    ...listMoveDecisions(state),
+    ...listFocusDecisions(state),
+  ];
+}
+
+function canTakeDecisionBeforeShield(
+  state: GameState,
+  decision: CpuDecision,
+  shieldTargetSlotKey: SlotKey,
+  reserveCost: number,
+): boolean {
+  if (decision.type === "attack" && decision.action.attackerSlotKey === shieldTargetSlotKey) {
+    if (attackCanReceiveImmediateCounterDamage(state, decision.action)) {
+      return false;
+    }
+  }
+
+  let after: GameState;
+  try {
+    after = applyCpuDecision(state, decision);
+  } catch {
+    return false;
+  }
+  if (after.winner === state.currentPlayer) {
+    return true;
+  }
+  return after.currentPlayer === state.currentPlayer && after.players[state.currentPlayer].stones >= reserveCost;
+}
+
+function hasImmediateCounterWorkRequiringPreShield(
+  state: GameState,
+  shieldTargetSlotKey: SlotKey,
+  weights: AiEvaluationWeights,
+): boolean {
+  const attacker = state.slots[shieldTargetSlotKey].monster;
+  if (!attacker || attacker.status !== "active" || attacker.actionCount >= attacker.actionLimit) {
+    return false;
+  }
+  return listAttackDecisions(state, weights).some(
+    (decision) =>
+      decision.type === "attack" &&
+      decision.action.attackerSlotKey === shieldTargetSlotKey &&
+      attackCanReceiveImmediateCounterDamage(state, decision.action),
+  );
+}
+
+function attackCanReceiveImmediateCounterDamage(state: GameState, action: CommandAction): boolean {
+  if (action.target.kind !== "monster") {
+    return false;
+  }
+  const attacker = state.slots[action.attackerSlotKey].monster;
+  const target = state.slots[action.target.slotKey].monster;
+  if (!attacker || !target || target.owner === attacker.owner) {
+    return false;
+  }
+  return target.dragonShield || isMonsterCounterTraitActive(target);
+}
+
+function isMonsterCounterTraitActive(monster: MonsterState): boolean {
+  if (monster.cardId === "card_102") {
+    return monster.level >= 2;
+  }
+  if (monster.cardId === "card_103") {
+    return monster.level >= 3;
+  }
+  return false;
 }
 
 function isHighQualityThreatFacingSetup(
@@ -2404,7 +2468,7 @@ function listMasterActionDecisions(state: GameState, weights: AiEvaluationWeight
       return listWakeUpDecisions(state);
     }
     if (actionId === "shield") {
-      return listShieldDecisions(state);
+      return listShieldDecisions(state, weights);
     }
     if (actionId === "berserk_power") {
       return listBerserkPowerDecisions(state);
@@ -2510,14 +2574,14 @@ function createWakeUpDecision(state: GameState, target: Target): CpuDecision | u
   };
 }
 
-function listShieldDecisions(state: GameState): CpuDecision[] {
+function listShieldDecisions(state: GameState, weights: AiEvaluationWeights): CpuDecision[] {
   return getMasterActionTargets(state, "shield")
     .filter((target) => target.kind === "monster" && state.slots[target.slotKey].owner === state.currentPlayer)
-    .map((target) => createShieldDecision(state, target))
+    .map((target) => createShieldDecision(state, target, weights))
     .filter((decision): decision is CpuDecision => !!decision);
 }
 
-function createShieldDecision(state: GameState, target: Target): CpuDecision | undefined {
+function createShieldDecision(state: GameState, target: Target, weights: AiEvaluationWeights): CpuDecision | undefined {
   if (target.kind !== "monster") {
     return undefined;
   }
@@ -2551,6 +2615,9 @@ function createShieldDecision(state: GameState, target: Target): CpuDecision | u
     return undefined;
   }
   if (shouldHoldShieldForMasterRace(state, threat, preventsLethal, levelUpPotential)) {
+    return undefined;
+  }
+  if (shouldDeferShieldUntilAfterCurrentTurnWork(state, target.slotKey, getMasterActionCost("shield"), weights)) {
     return undefined;
   }
   const score =
@@ -3236,7 +3303,7 @@ function scoreMagicDecision(
     return scoreShiftChangeMagicDecision(state, after, action, beforeScore, def.cost, weights);
   }
   if (trait?.valueModel === "shield_delta") {
-    return scoreShieldMagicDecision(state, after, action, def.cost);
+    return scoreShieldMagicDecision(state, after, action, def.cost, weights);
   }
   if (trait?.valueModel === "search_choice") {
     return scoreSearchMagicDecision(state, action, def.cost);
@@ -3394,7 +3461,13 @@ function scorePowerMagicDecision(state: GameState, after: GameState, action: Mag
   return 22 + afterBest * 0.35 + improvement * 0.8 - cost * 6;
 }
 
-function scoreShieldMagicDecision(state: GameState, after: GameState, action: MagicAction, cost: number): number {
+function scoreShieldMagicDecision(
+  state: GameState,
+  after: GameState,
+  action: MagicAction,
+  cost: number,
+  weights: AiEvaluationWeights,
+): number {
   let protectedTargets = [action.target, action.secondaryTarget]
     .filter((target): target is Extract<Target, { kind: "monster" }> => target?.kind === "monster")
     .filter((target) => {
@@ -3419,6 +3492,9 @@ function scoreShieldMagicDecision(state: GameState, after: GameState, action: Ma
       return preventsLethal || isLethalIncomingThreat(threat) || nextTurnLevelUpPotential(state, target.slotKey) > 0;
     });
   }
+  protectedTargets = protectedTargets.filter(
+    (target) => !shouldDeferShieldUntilAfterCurrentTurnWork(state, target.slotKey, cost, weights),
+  );
 
   if (protectedTargets.length === 0) {
     return -100;
