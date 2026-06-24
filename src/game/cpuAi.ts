@@ -20,6 +20,7 @@ import {
   moveMonster,
   opponentOf,
   playMagic,
+  resolveLevelUp,
   summonMonster,
   useMasterAction,
 } from "./rules";
@@ -133,6 +134,19 @@ const NO_THREAT: IncomingThreat = {
 
 const OPPONENT_TERMINAL_RESPONSE_ROOT_MARGIN = 80;
 const OPPONENT_TERMINAL_RESPONSE_MIN_ROOT_CANDIDATES = 2;
+const WHITE_MIRROR_OPPONENT_RESPONSE_ROOT_MARGIN = 160;
+const WHITE_MIRROR_OPPONENT_RESPONSE_MIN_ROOT_CANDIDATES = 4;
+const WHITE_MIRROR_TERMINAL_RESPONSE_TIE_MARGIN = 16;
+const WHITE_MIRROR_RESPONSE_COLLAPSE_THRESHOLD = 120;
+const WHITE_MIRROR_RESPONSE_COLLAPSE_PENALTY_WEIGHT = 0.25;
+const WHITE_MIRROR_LOW_STONE_RESPONSE_COLLAPSE_THRESHOLD = 80;
+const WHITE_MIRROR_LOW_STONE_RESPONSE_COLLAPSE_PENALTY_WEIGHT = 0.25;
+const WHITE_MIRROR_ZERO_STONE_RESPONSE_COLLAPSE_THRESHOLD = 80;
+const WHITE_MIRROR_ZERO_STONE_RESPONSE_COLLAPSE_PENALTY_WEIGHT = 0.2;
+const WHITE_MIRROR_EXPOSED_BACK_LEVEL_UP_PENALTY = 150;
+const WHITE_MIRROR_EXPOSED_FRONT_LEVEL_UP_PENALTY = 70;
+const WHITE_MIRROR_EXPOSED_BACK_LEVEL_HANDOFF_PENALTY = 120;
+const WHITE_MIRROR_FRONT_LEVEL_UP_SETUP_ATTACK_BONUS = 80;
 
 export const CPU_AI_PROFILES = ["stable", "strong", "pressure", "defensive", "white", "omniscient"] as const;
 export type CpuAiProfile = (typeof CPU_AI_PROFILES)[number];
@@ -170,6 +184,7 @@ export interface CpuAiTuning {
     whiteShieldBreakthroughPenalty?: number;
     whiteShieldNoPressurePenalty?: number;
     whiteWakeImmediateWorkBonus?: number;
+    whiteWakeLevelUpSetupBonus?: number;
     whiteCloseoutAfterShieldBonus?: number;
     whiteSecondShieldLowStonePenalty?: number;
     whiteSecondShieldCommitmentPenalty?: number;
@@ -198,6 +213,7 @@ const WHITE_AI_BASE_TUNING = {
     whiteSecondShieldLowStonePenalty: 120,
     whiteSecondShieldCommitmentPenalty: 180,
     whiteBlackFrontThreatBonus: 8,
+    whiteWakeLevelUpSetupBonus: 130,
   },
 } satisfies CpuAiTuning;
 
@@ -619,7 +635,12 @@ function evaluateTerminalPlanDeltas(
     ),
   }));
   const bestOwnTerminalDelta = Math.max(0, ...outcomes.map(({ outcome }) => outcome.delta));
-  const opponentResponseIndexes = selectOpponentResponseRootCandidates(outcomes, bestOwnTerminalDelta, config);
+  const opponentResponseIndexes = selectOpponentResponseRootCandidates(
+    outcomes,
+    bestOwnTerminalDelta,
+    perspective,
+    config,
+  );
 
   for (const { candidate, outcome } of outcomes) {
     const delta = opponentResponseIndexes.has(candidate.index)
@@ -651,6 +672,7 @@ function createTerminalPlanEvaluationContext(baselineScore: number): TerminalPla
 function selectOpponentResponseRootCandidates(
   outcomes: readonly TerminalPlanRootOutcome[],
   bestOwnTerminalDelta: number,
+  perspective: PlayerId,
   config: CpuAiProfileConfig,
 ): Set<number> {
   const selected = new Set<number>();
@@ -662,16 +684,23 @@ function selectOpponentResponseRootCandidates(
     return selected;
   }
 
+  const isWhiteMirror = outcomes.some(({ outcome }) => isWhiteMirrorState(outcome.handoffState, perspective));
+  const minRootCandidates = isWhiteMirror
+    ? Math.max(OPPONENT_TERMINAL_RESPONSE_MIN_ROOT_CANDIDATES, WHITE_MIRROR_OPPONENT_RESPONSE_MIN_ROOT_CANDIDATES)
+    : OPPONENT_TERMINAL_RESPONSE_MIN_ROOT_CANDIDATES;
+  const rootMargin = isWhiteMirror
+    ? Math.max(OPPONENT_TERMINAL_RESPONSE_ROOT_MARGIN, WHITE_MIRROR_OPPONENT_RESPONSE_ROOT_MARGIN)
+    : OPPONENT_TERMINAL_RESPONSE_ROOT_MARGIN;
   const ranked = [...outcomes].sort(
     (a, b) =>
       b.outcome.delta - a.outcome.delta ||
       compareTieBreak(a.candidate.decision, b.candidate.decision, a.candidate.index, b.candidate.index),
   );
-  ranked.slice(0, OPPONENT_TERMINAL_RESPONSE_MIN_ROOT_CANDIDATES).forEach(({ candidate }) => {
+  ranked.slice(0, minRootCandidates).forEach(({ candidate }) => {
     selected.add(candidate.index);
   });
   ranked.forEach(({ candidate, outcome }) => {
-    if (bestOwnTerminalDelta - outcome.delta <= OPPONENT_TERMINAL_RESPONSE_ROOT_MARGIN) {
+    if (bestOwnTerminalDelta - outcome.delta <= rootMargin) {
       selected.add(candidate.index);
     }
   });
@@ -888,6 +917,9 @@ function decisionSituationalBonus(
   }
   if (bias.whiteWakeImmediateWorkBonus) {
     bonus += whiteWakeImmediateWorkDecisionBonus(before, after, decision, perspective, bias.whiteWakeImmediateWorkBonus);
+  }
+  if (bias.whiteWakeLevelUpSetupBonus) {
+    bonus += whiteWakeLevelUpSetupDecisionBonus(before, after, decision, perspective, bias.whiteWakeLevelUpSetupBonus);
   }
   if (bias.whiteCloseoutAfterShieldBonus) {
     bonus += whiteCloseoutAfterShieldDecisionBonus(before, after, decision, perspective, bias.whiteCloseoutAfterShieldBonus);
@@ -1641,6 +1673,117 @@ function whiteWakeImmediateWorkDecisionBonus(
     : 0;
 }
 
+function whiteWakeLevelUpSetupDecisionBonus(
+  before: GameState,
+  after: GameState,
+  decision: CpuDecision,
+  perspective: PlayerId,
+  value: number,
+): number {
+  if (
+    value <= 0 ||
+    !isWhiteMirrorState(before, perspective) ||
+    decision.type !== "master_action" ||
+    decision.actionId !== "wake_up" ||
+    decision.target.kind !== "monster"
+  ) {
+    return 0;
+  }
+  return wakeCreatesFrontLevelUpSetup(after, decision.target.slotKey, perspective) ? value : 0;
+}
+
+function wakeCreatesFrontLevelUpSetup(state: GameState, setupSlotKey: SlotKey, perspective: PlayerId): boolean {
+  const setupMonster = state.slots[setupSlotKey].monster;
+  if (!setupMonster || setupMonster.owner !== perspective || setupMonster.status !== "active") {
+    return false;
+  }
+
+  for (const setupCommand of getMonsterCommands(setupMonster)) {
+    for (const target of getCommandTargets(state, setupSlotKey, setupCommand.id)) {
+      if (target.kind !== "monster" || state.slots[target.slotKey].owner === perspective) {
+        continue;
+      }
+      const targetMonster = state.slots[target.slotKey].monster;
+      if (!targetMonster) {
+        continue;
+      }
+      const setupDamage = estimateMonsterDamage(state, targetMonster, setupSlotKey, setupCommand);
+      if (setupDamage <= 0 || setupDamage >= targetMonster.hp) {
+        continue;
+      }
+      if (frontFinisherCanLevelAfterSetup(state, target.slotKey, targetMonster.hp - setupDamage, perspective, setupSlotKey)) {
+        return true;
+      }
+    }
+  }
+  return false;
+}
+
+function frontFinisherCanLevelAfterSetup(
+  state: GameState,
+  targetSlotKey: SlotKey,
+  remainingHp: number,
+  perspective: PlayerId,
+  setupSlotKey: SlotKey,
+): boolean {
+  if (remainingHp <= 0) {
+    return false;
+  }
+  const targetMonster = state.slots[targetSlotKey].monster;
+  if (!targetMonster) {
+    return false;
+  }
+
+  return FIELD_ORDER_BY_PLAYER[perspective].some((finisherSlotKey) => {
+    if (finisherSlotKey === setupSlotKey || state.slots[finisherSlotKey].row !== "front") {
+      return false;
+    }
+    const finisher = state.slots[finisherSlotKey].monster;
+    if (
+      !finisher ||
+      finisher.owner !== perspective ||
+      finisher.status !== "active" ||
+      finisher.actionCount >= finisher.actionLimit ||
+      finisher.levelFixed ||
+      getMonsterDef(finisher.cardId).maxLevel <= finisher.level ||
+      state.players[perspective].stones <= 0
+    ) {
+      return false;
+    }
+    return getMonsterCommands(finisher).some((command) => {
+      const canTarget = getCommandTargets(state, finisherSlotKey, command.id).some(
+        (target) => target.kind === "monster" && target.slotKey === targetSlotKey,
+      );
+      return canTarget && estimateMonsterDamage(state, targetMonster, finisherSlotKey, command) >= remainingHp;
+    });
+  });
+}
+
+function whiteMirrorFrontLevelUpSetupAttackBonus(
+  state: GameState,
+  action: CommandAction,
+  targetAfter: MonsterState,
+): number {
+  const perspective = state.currentPlayer;
+  if (
+    !isWhiteMirrorState(state, perspective) ||
+    action.target.kind !== "monster" ||
+    targetAfter.owner === perspective ||
+    state.slots[action.attackerSlotKey].row === "front"
+  ) {
+    return 0;
+  }
+  return frontFinisherCanLevelAfterSetup(
+    state,
+    action.target.slotKey,
+    targetAfter.hp,
+    perspective,
+    action.attackerSlotKey,
+  )
+    ? WHITE_MIRROR_FRONT_LEVEL_UP_SETUP_ATTACK_BONUS
+    : 0;
+}
+
 function whiteCloseoutAfterShieldDecisionBonus(
   before: GameState,
   after: GameState,
@@ -1990,7 +2133,7 @@ function evaluateSameTurnTerminalPlanOutcome(
     let best = evaluateTerminalHandoffOutcome(state, perspective, config, context);
     for (const candidate of candidates) {
       const candidateOutcome = evaluateSameTurnTerminalPlanOutcome(candidate.after, perspective, depth - 1, config, context);
-      if (candidateOutcome.delta > best.delta) {
+      if (isBetterSameTurnTerminalPlanOutcome(candidateOutcome, best, perspective, config, context)) {
         best = candidateOutcome;
       }
     }
@@ -1998,6 +2141,28 @@ function evaluateSameTurnTerminalPlanOutcome(
   }
   context.ownOutcomeCache.set(cacheKey, outcome);
   return outcome;
+}
+
+function isBetterSameTurnTerminalPlanOutcome(
+  candidate: TerminalPlanOutcome,
+  currentBest: TerminalPlanOutcome,
+  perspective: PlayerId,
+  config: CpuAiProfileConfig,
+  context: TerminalPlanEvaluationContext,
+): boolean {
+  if (candidate.delta > currentBest.delta) {
+    return true;
+  }
+  if (!isWhiteMirrorState(candidate.handoffState, perspective)) {
+    return false;
+  }
+  if (currentBest.delta - candidate.delta > WHITE_MIRROR_TERMINAL_RESPONSE_TIE_MARGIN) {
+    return false;
+  }
+  return (
+    evaluateTerminalPlanOutcomeWithOpponentResponse(candidate, perspective, config, context) >
+    evaluateTerminalPlanOutcomeWithOpponentResponse(currentBest, perspective, config, context)
+  );
 }
 
 function evaluateTerminalHandoffOutcome(
@@ -2033,7 +2198,57 @@ function evaluateTerminalPlanOutcomeWithOpponentResponse(
     config,
     context,
   );
-  return outcome.delta + (opponentResponseDelta - outcome.delta) * config.sameTurnOpponentTerminalPlanWeight;
+  const blendedDelta = outcome.delta + (opponentResponseDelta - outcome.delta) * config.sameTurnOpponentTerminalPlanWeight;
+  return blendedDelta - whiteMirrorResponseCollapsePenalty(outcome, opponentResponseDelta, perspective);
+}
+
+function whiteMirrorResponseCollapsePenalty(
+  outcome: TerminalPlanOutcome,
+  opponentResponseDelta: number,
+  perspective: PlayerId,
+): number {
+  const state = outcome.handoffState;
+  if (!isWhiteMirrorState(state, perspective)) {
+    return 0;
+  }
+  const collapse = outcome.delta - opponentResponseDelta;
+  if (collapse <= 0) {
+    return 0;
+  }
+
+  let penalty =
+    Math.max(0, collapse - WHITE_MIRROR_RESPONSE_COLLAPSE_THRESHOLD) *
+    WHITE_MIRROR_RESPONSE_COLLAPSE_PENALTY_WEIGHT;
+  if (state.players[perspective].stones <= 1) {
+    penalty +=
+      Math.max(0, collapse - WHITE_MIRROR_LOW_STONE_RESPONSE_COLLAPSE_THRESHOLD) *
+      WHITE_MIRROR_LOW_STONE_RESPONSE_COLLAPSE_PENALTY_WEIGHT;
+  }
+  if (state.players[perspective].stones <= 0) {
+    penalty +=
+      Math.max(0, collapse - WHITE_MIRROR_ZERO_STONE_RESPONSE_COLLAPSE_THRESHOLD) *
+      WHITE_MIRROR_ZERO_STONE_RESPONSE_COLLAPSE_PENALTY_WEIGHT;
+  }
+  return penalty + whiteMirrorExposedBackLevelHandoffPenalty(state, perspective);
+}
+
+function isWhiteMirrorState(state: GameState, perspective: PlayerId): boolean {
+  const opponent = opponentOf(perspective);
+  return state.players[perspective].masterId === "white" && state.players[opponent].masterId === "white";
+}
+
+function whiteMirrorExposedBackLevelHandoffPenalty(state: GameState, perspective: PlayerId): number {
+  return FIELD_ORDER_BY_PLAYER[perspective].reduce((total, slotKey) => {
+    const monster = state.slots[slotKey].monster;
+    if (!monster || monster.level < 2 || state.slots[slotKey].row !== "back") {
+      return total;
+    }
+    const incomingDamage = availableOpponentMonsterDamageToSlot(state, slotKey);
+    if (incomingDamage < monster.hp) {
+      return total;
+    }
+    return total + WHITE_MIRROR_EXPOSED_BACK_LEVEL_HANDOFF_PENALTY + Math.max(0, incomingDamage - monster.hp) * 18;
+  }, 0);
 }
 
 function terminalHandoffState(
@@ -2621,13 +2836,15 @@ function scoreAttackDecision(state: GameState, after: GameState, action: Command
   }
 
   if (!targetAfter) {
-    const levelGain = attackerLevelGain(state, after, action.attackerSlotKey);
+    const afterLevelUp = resolvePendingLevelUpForAttackScore(after, action.attackerSlotKey);
+    const levelGain = attackerLevelGain(state, afterLevelUp, action.attackerSlotKey);
     return (
       weights.monsterKillBase +
       monsterValue(state, action.target.slotKey) +
       80 * levelGain +
-      levelUpHpTimingBonus(state, after, action.attackerSlotKey) +
-      recoilPenalty
+      levelUpHpTimingBonus(state, afterLevelUp, action.attackerSlotKey) +
+      recoilPenalty -
+      whiteMirrorExposedLevelUpPenalty(state, afterLevelUp, action.attackerSlotKey, levelGain)
     );
   }
 
@@ -2647,9 +2864,18 @@ function scoreAttackDecision(state: GameState, after: GameState, action: Command
       34 +
       directMasterDamage * 22 +
       (state.players[playerId].masterHp <= state.players[opponent].masterHp ? 18 : 0);
-    return weights.monsterDamagePerPoint * damage + recoilPenalty - racePenalty;
+    return (
+      weights.monsterDamagePerPoint * damage +
+      recoilPenalty +
+      whiteMirrorFrontLevelUpSetupAttackBonus(state, action, targetAfter) -
+      racePenalty
+    );
   }
-  return weights.monsterDamagePerPoint * damage + recoilPenalty;
+  return (
+    weights.monsterDamagePerPoint * damage +
+    recoilPenalty +
+    whiteMirrorFrontLevelUpSetupAttackBonus(state, action, targetAfter)
+  );
 }
 
 function scoreZeroDamageMonsterAttack(
@@ -2789,6 +3015,58 @@ function levelUpHpTimingBonus(state: GameState, after: GameState, attackerSlotKe
   }
 
   return -26 * (current.level - before.level);
+}
+
+function whiteMirrorExposedLevelUpPenalty(
+  state: GameState,
+  after: GameState,
+  attackerSlotKey: SlotKey,
+  levelGain: number,
+): number {
+  if (levelGain <= 0 || !isWhiteMirrorState(after, state.currentPlayer)) {
+    return 0;
+  }
+  const monster = after.slots[attackerSlotKey].monster;
+  if (!monster || monster.owner !== state.currentPlayer) {
+    return 0;
+  }
+  const incomingMonsterDamage = availableOpponentMonsterDamageToSlot(after, attackerSlotKey);
+  if (incomingMonsterDamage < monster.hp) {
+    return 0;
+  }
+  const rowPenalty =
+    after.slots[attackerSlotKey].row === "back"
+      ? WHITE_MIRROR_EXPOSED_BACK_LEVEL_UP_PENALTY
+      : WHITE_MIRROR_EXPOSED_FRONT_LEVEL_UP_PENALTY;
+  return rowPenalty + Math.max(0, incomingMonsterDamage - monster.hp) * 18;
+}
+
+function availableOpponentMonsterDamageToSlot(state: GameState, targetSlotKey: SlotKey): number {
+  const targetMonster = state.slots[targetSlotKey].monster;
+  if (!targetMonster) {
+    return 0;
+  }
+  const attackerId = opponentOf(targetMonster.owner);
+  const readyState = readyPlayerForTacticalEvaluation(state, attackerId);
+  const readyTarget = readyState.slots[targetSlotKey].monster;
+  if (!readyTarget) {
+    return 0;
+  }
+
+  return FIELD_ORDER_BY_PLAYER[attackerId].reduce((total, attackerSlotKey) => {
+    const attacker = readyState.slots[attackerSlotKey].monster;
+    if (!attacker?.status || attacker.status !== "active" || attacker.actionCount >= attacker.actionLimit) {
+      return total;
+    }
+    const bestDamage = getMonsterCommands(attacker).reduce((best, command) => {
+      const canTarget = getCommandTargets(readyState, attackerSlotKey, command.id).some(
+        (target) => target.kind === "monster" && target.slotKey === targetSlotKey,
+      );
+      return canTarget ? Math.max(best, estimateMonsterDamage(readyState, readyTarget, attackerSlotKey, command)) : best;
+    }, 0);
+    const remainingActions = Math.max(1, attacker.actionLimit - attacker.actionCount);
+    return total + bestDamage * remainingActions;
+  }, 0);
 }
 
 function opponentLevelFeedValue(state: GameState, slotKey: SlotKey): number {
@@ -3763,6 +4041,13 @@ function attackerLevelGain(state: GameState, after: GameState, attackerSlotKey: 
     return 0;
   }
   return Math.max(0, current.level - before.level);
+}
+
+function resolvePendingLevelUpForAttackScore(state: GameState, attackerSlotKey: SlotKey): GameState {
+  if (!state.pendingLevelUp || state.pendingLevelUp.attackerSlotKey !== attackerSlotKey) {
+    return state;
+  }
+  return resolveLevelUp(state, state.pendingLevelUp.maxLevels);
 }
 
 function scoreMagicDecision(
