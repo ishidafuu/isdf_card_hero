@@ -66,6 +66,7 @@ import {
   type DeckPresetMasterFilter,
   type DeckPresetRare8Filter,
 } from "./game/deckPresets";
+import { DEFAULT_CPU_DECK_PRESET_ID, DEFAULT_PLAYER_DECK_PRESET_ID } from "./game/defaultDeckPresets";
 import {
   DECK_BATTLE_SCORE_SNAPSHOT_SUITES,
   DEFAULT_DECK_BATTLE_SCORE_SNAPSHOT_SUITE_ID,
@@ -126,8 +127,6 @@ const AUTO_SPEED_PRESETS = [
 const MAX_VISIBLE_RESOURCE_ICONS = 10;
 const STONE_ICON = "💎";
 const DEFAULT_BATTLE_SEED = 20260612;
-const DEFAULT_PLAYER_DECK_PRESET_ID = "submission-pro-no-rare8-white-1377" satisfies DeckPresetId;
-const DEFAULT_CPU_DECK_PRESET_ID: DeckPresetId = DEFAULT_PLAYER_DECK_PRESET_ID;
 const AUTO_STEP_DELAY_STORAGE_KEY = "card-hero:auto-step-delay-ms:v2";
 const BATTLE_HISTORY_STORAGE_KEY = "card-hero:battle-history:v1";
 const BATTLE_PRESETS_STORAGE_KEY = "card-hero:battle-presets:v1";
@@ -487,14 +486,16 @@ function createDefaultDeckSettings(seed: number): DeckSettings {
   const settings = createDeckSettings(seed);
   return {
     ...settings,
-    fixed: { ...settings.fixed, player: true },
+    fixed: { ...settings.fixed, player: true, cpu: true },
     allowSpecial: {
       ...settings.allowSpecial,
       player: deckPresetAllowsSpecial(DEFAULT_PLAYER_DECK_PRESET_ID),
+      cpu: deckPresetAllowsSpecial(DEFAULT_CPU_DECK_PRESET_ID),
     },
     text: {
       ...settings.text,
       player: deckTextFromCardIds(buildDeckPresetCardIds(DEFAULT_PLAYER_DECK_PRESET_ID)),
+      cpu: deckTextFromCardIds(buildDeckPresetCardIds(DEFAULT_CPU_DECK_PRESET_ID)),
     },
   };
 }
@@ -516,8 +517,8 @@ function createDeckSettingsFromPreset(playerPresetId: DeckPresetId, cpuPresetId 
 const BUILT_IN_MATCH_PRESETS: BuiltInMatchPreset[] = [
   {
     id: "standard-random",
-    name: "白#1377デフォルト",
-    description: "Playerは投稿Pro白8なし #1377。CPUは通常カードランダム、ホワイト同士、stable AI。",
+    name: "白デフォルト戦",
+    description: "Playerは投稿Pro白8なし #1377。CPUは白vs白選出の投稿Pro白8あり #1339。ホワイト同士、stable AI。",
     create: () => {
       const seed = createRandomBattleSeed();
       return {

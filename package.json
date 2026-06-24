@@ -31,6 +31,7 @@
     "lab:masters:white-ai-diff": "vite-node scripts/white-ai-decision-diff-loop.ts",
     "lab:masters:white-ai-action-order": "vite-node scripts/white-ai-action-order-audit.ts",
     "lab:masters:shield-audit": "vite-node scripts/shield-usage-audit-loop.ts",
+    "select:white-deck": "vite-node scripts/white-vs-white-deck-selection.ts",
     "lab:masters:select": "vite-node scripts/master-lab-selection-loop.ts",
     "audit:deck-submissions": "vite-node scripts/deck-submission-audit.ts",
     "import:deck-submissions": "node scripts/import-cardhero-bu-decks.mjs",
