@@ -422,7 +422,7 @@ export function attackWithCommand(state: GameState, action: CommandAction): Game
       healMonster(next, resolvedAttackerSlotKey, Math.max(0, beforeHp - next.players[action.target.playerId].masterHp));
     }
     finishCommandSideEffects(next, resolvedAttackerSlotKey, command, hadBerserkPower, hadDamageCurse);
-    const recoilDamage = getCommandRecoilDamage(command, power);
+    const recoilDamage = getCommandRecoilDamage(command, basePower, power);
     if (!next.winner && recoilDamage) {
       applyRecoil(next, resolvedAttackerSlotKey, recoilDamage);
     }
@@ -442,7 +442,7 @@ export function attackWithCommand(state: GameState, action: CommandAction): Game
   applyPostDamageCommandEffect(next, resolvedAttackerSlotKey, command, action.target, power, !!defeated);
   if (!defeated) {
     finishCommandSideEffects(next, resolvedAttackerSlotKey, command, hadBerserkPower, hadDamageCurse);
-    const recoilDamage = getCommandRecoilDamage(command, power);
+    const recoilDamage = getCommandRecoilDamage(command, basePower, power);
     if (recoilDamage) {
       applyRecoil(next, resolvedAttackerSlotKey, recoilDamage);
     }
@@ -452,7 +452,7 @@ export function attackWithCommand(state: GameState, action: CommandAction): Game
   if (defeated.owner === attacker.owner) {
     decreaseMasterHp(next, attacker.owner, 1, "味方撃破ペナルティ");
     finishCommandSideEffects(next, resolvedAttackerSlotKey, command, hadBerserkPower, hadDamageCurse);
-    const recoilDamage = getCommandRecoilDamage(command, power);
+    const recoilDamage = getCommandRecoilDamage(command, basePower, power);
     if (!next.winner && recoilDamage) {
       applyRecoil(next, resolvedAttackerSlotKey, recoilDamage);
     }
@@ -463,7 +463,7 @@ export function attackWithCommand(state: GameState, action: CommandAction): Game
   const maxLevels = getLevelUpCapacity(next, levelUpSlotKey, defeated.level);
   if (maxLevels > 0 && next.currentPlayer === "player") {
     finishCommandSideEffects(next, resolvedAttackerSlotKey, command, hadBerserkPower, hadDamageCurse);
-    const recoilDamage = getCommandRecoilDamage(command, power);
+    const recoilDamage = getCommandRecoilDamage(command, basePower, power);
     if (!next.winner && recoilDamage) {
       applyRecoil(next, resolvedAttackerSlotKey, recoilDamage);
     }
@@ -484,7 +484,7 @@ export function attackWithCommand(state: GameState, action: CommandAction): Game
   }
 
   finishCommandSideEffects(next, resolvedAttackerSlotKey, command, hadBerserkPower, hadDamageCurse);
-  const recoilDamage = getCommandRecoilDamage(command, power);
+  const recoilDamage = getCommandRecoilDamage(command, basePower, power);
   if (recoilDamage) {
     applyRecoil(next, resolvedAttackerSlotKey, recoilDamage);
   }
@@ -2490,9 +2490,12 @@ function applyPostDamageCommandEffect(
   }
 }
 
-function getCommandRecoilDamage(command: CommandDef, power: number): number {
-  if (command.name === "爆雷撃" || command.recoilDamage === "power") {
-    return power;
+function getCommandRecoilDamage(command: CommandDef, basePower: number, resolvedPower: number): number {
+  if (command.name === "爆雷撃") {
+    return resolvedPower;
+  }
+  if (command.recoilDamage === "power") {
+    return basePower;
   }
   return command.recoilDamage ?? 0;
 }

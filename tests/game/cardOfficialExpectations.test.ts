@@ -1262,6 +1262,35 @@ describe("official card effect expectations", () => {
     expect(game.slots.player_front_left.monster?.shielded).toBe(true);
   });
 
+  it.each([
+    ["きあいため", { focused: true }, 7, 4],
+    ["パワーアップ", { powerUp: true }, 7, 4],
+    ["パワーダウン", { powerModifier: -1 }, 9, 4],
+    ["バーサクパワー", { berserkPower: true }, 7, 3],
+  ] as Array<[string, Partial<MonsterState>, number, number]>)(
+    "bomuzo ボムゾウ keeps 自爆 recoil at base power when %s changes attack power",
+    (_label, overrides, expectedTargetHp, expectedSelfHp) => {
+      let game = createGameWithPlayerHand([]);
+      game.slots.player_front_left.monster = createActiveMonster("bomuzo", "player", overrides);
+      game.slots.cpu_front_left.monster = createActiveMonster("takokke", "cpu", { hp: 10 });
+
+      game = attackWithCommand(game, {
+        attackerSlotKey: "player_front_left",
+        commandId: "self_bomb",
+        target: { kind: "monster", slotKey: "cpu_front_left" },
+      });
+
+      expect(game.slots.cpu_front_left.monster?.hp).toBe(expectedTargetHp);
+      expect(game.slots.player_front_left.monster?.hp).toBe(expectedSelfHp);
+      expect(game.slots.player_front_left.monster).toMatchObject({
+        focused: false,
+        powerUp: false,
+        powerModifier: 0,
+      });
+      expect(game.slots.player_front_left.monster?.berserkPower).not.toBe(true);
+    },
+  );
+
   it("bomuzo ボムゾウ applies 自爆 recoil before level-up healing", () => {
     let game = createGameWithPlayerHand([]);
     game.players.player.stones = 1;
