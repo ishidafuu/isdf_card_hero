@@ -45,6 +45,7 @@ import type {
   MasterActionId,
   MonsterState,
   PlayerId,
+  PlayerState,
   SlotKey,
   SlotState,
   Target,
@@ -65,6 +66,14 @@ const ALL_FIELD_ORDER: SlotKey[] = [...FIELD_ORDER_BY_PLAYER.cpu, ...FIELD_ORDER
 
 type EvaluatedDecision = { decision: CpuDecision; totalScore: number; index: number; after: GameState };
 type TerminalPlanOutcome = { delta: number; handoffState: GameState };
+type TerminalPlanEvaluationContext = {
+  baselineScore: number;
+  ownOutcomeCache: Map<string, TerminalPlanOutcome>;
+  opponentDeltaCache: Map<string, number>;
+  handoffOutcomeCache: Map<string, TerminalPlanOutcome>;
+  immediateDecisionCache: Map<string, EvaluatedDecision[]>;
+};
+type TerminalPlanRootOutcome = { candidate: EvaluatedDecision; outcome: TerminalPlanOutcome };
 type IncomingThreat = {
   threatened: boolean;
   lethal: boolean;
@@ -121,6 +130,9 @@ const NO_THREAT: IncomingThreat = {
   maxDamageWithMasterAction: 0,
   lethalWithMasterAction: false,
 };
+
+const OPPONENT_TERMINAL_RESPONSE_ROOT_MARGIN = 80;
+const OPPONENT_TERMINAL_RESPONSE_MIN_ROOT_CANDIDATES = 2;
 
 export const CPU_AI_PROFILES = ["stable", "strong", "pressure", "defensive", "white", "omniscient"] as const;
 export type CpuAiProfile = (typeof CPU_AI_PROFILES)[number];
@@ -254,7 +266,7 @@ const CPU_AI_PROFILE_CONFIG: Record<CpuAiProfile, CpuAiProfileConfig> = {
     sameTurnTerminalPlanDepth: 6,
     sameTurnTerminalPlanWidth: 2,
     sameTurnTerminalPlanWeight: 2,
-    sameTurnOpponentTerminalPlanDepth: 1,
+    sameTurnOpponentTerminalPlanDepth: 2,
     sameTurnOpponentTerminalPlanWidth: 1,
     sameTurnOpponentTerminalPlanWeight: 0.35,
     beamScoreThreshold: 8,
@@ -595,24 +607,75 @@ function evaluateTerminalPlanDeltas(
   candidates: readonly EvaluatedDecision[],
 ): Map<number, number> {
   const deltas = new Map<number, number>();
-  for (const candidate of candidates) {
+  const context = createTerminalPlanEvaluationContext(baselineScore);
+  const outcomes: TerminalPlanRootOutcome[] = candidates.map((candidate) => ({
+    candidate,
+    outcome: evaluateSameTurnTerminalPlanOutcome(
+      candidate.after,
+      perspective,
+      config.sameTurnTerminalPlanDepth - 1,
+      config,
+      context,
+    ),
+  }));
+  const bestOwnTerminalDelta = Math.max(0, ...outcomes.map(({ outcome }) => outcome.delta));
+  const opponentResponseIndexes = selectOpponentResponseRootCandidates(outcomes, bestOwnTerminalDelta, config);
+
+  for (const { candidate, outcome } of outcomes) {
+    const delta = opponentResponseIndexes.has(candidate.index)
+      ? evaluateTerminalPlanOutcomeWithOpponentResponse(
+          outcome,
+          perspective,
+          config,
+          context,
+        )
+      : outcome.delta;
     deltas.set(
       candidate.index,
-      evaluateTerminalPlanOutcomeWithOpponentResponse(
-        evaluateSameTurnTerminalPlanOutcome(
-          candidate.after,
-          perspective,
-          config.sameTurnTerminalPlanDepth - 1,
-          config,
-          baselineScore,
-        ),
-        perspective,
-        config,
-        baselineScore,
-      ),
+      delta,
     );
   }
   return deltas;
+}
+
+function createTerminalPlanEvaluationContext(baselineScore: number): TerminalPlanEvaluationContext {
+  return {
+    baselineScore,
+    ownOutcomeCache: new Map(),
+    opponentDeltaCache: new Map(),
+    handoffOutcomeCache: new Map(),
+    immediateDecisionCache: new Map(),
+  };
+}
+
+function selectOpponentResponseRootCandidates(
+  outcomes: readonly TerminalPlanRootOutcome[],
+  bestOwnTerminalDelta: number,
+  config: CpuAiProfileConfig,
+): Set<number> {
+  const selected = new Set<number>();
+  if (
+    config.sameTurnOpponentTerminalPlanWeight <= 0 ||
+    config.sameTurnOpponentTerminalPlanDepth <= 0 ||
+    config.sameTurnOpponentTerminalPlanWidth <= 0
+  ) {
+    return selected;
+  }
+
+  const ranked = [...outcomes].sort(
+    (a, b) =>
+      b.outcome.delta - a.outcome.delta ||
+      compareTieBreak(a.candidate.decision, b.candidate.decision, a.candidate.index, b.candidate.index),
+  );
+  ranked.slice(0, OPPONENT_TERMINAL_RESPONSE_MIN_ROOT_CANDIDATES).forEach(({ candidate }) => {
+    selected.add(candidate.index);
+  });
+  ranked.forEach(({ candidate, outcome }) => {
+    if (bestOwnTerminalDelta - outcome.delta <= OPPONENT_TERMINAL_RESPONSE_ROOT_MARGIN) {
+      selected.add(candidate.index);
+    }
+  });
+  return selected;
 }
 
 function terminalPlanComparisonPenalty(
@@ -1910,41 +1973,55 @@ function evaluateSameTurnTerminalPlanOutcome(
   perspective: PlayerId,
   depth: number,
   config: CpuAiProfileConfig,
-  baselineScore: number,
+  context: TerminalPlanEvaluationContext,
 ): TerminalPlanOutcome {
+  const cacheKey = terminalPlanCacheKey("own", state, perspective, depth);
+  const cached = context.ownOutcomeCache.get(cacheKey);
+  if (cached) {
+    return cached;
+  }
+  let outcome: TerminalPlanOutcome;
   if (state.winner || state.pendingLevelUp || state.currentPlayer !== perspective) {
-    return { delta: evaluateState(state, perspective, config.weights) - baselineScore, handoffState: state };
-  }
-  if (depth <= 0) {
-    return evaluateTerminalHandoffOutcome(state, perspective, config, baselineScore);
-  }
-
-  const candidates = terminalPlanCandidates(state, perspective, config);
-  let best = evaluateTerminalHandoffOutcome(state, perspective, config, baselineScore);
-  for (const candidate of candidates) {
-    const outcome = evaluateSameTurnTerminalPlanOutcome(candidate.after, perspective, depth - 1, config, baselineScore);
-    if (outcome.delta > best.delta) {
-      best = outcome;
+    outcome = { delta: evaluateState(state, perspective, config.weights) - context.baselineScore, handoffState: state };
+  } else if (depth <= 0) {
+    outcome = evaluateTerminalHandoffOutcome(state, perspective, config, context);
+  } else {
+    const candidates = terminalPlanCandidates(state, perspective, config, context);
+    let best = evaluateTerminalHandoffOutcome(state, perspective, config, context);
+    for (const candidate of candidates) {
+      const candidateOutcome = evaluateSameTurnTerminalPlanOutcome(candidate.after, perspective, depth - 1, config, context);
+      if (candidateOutcome.delta > best.delta) {
+        best = candidateOutcome;
+      }
     }
+    outcome = best;
   }
-  return best;
+  context.ownOutcomeCache.set(cacheKey, outcome);
+  return outcome;
 }
 
 function evaluateTerminalHandoffOutcome(
   state: GameState,
   perspective: PlayerId,
   config: CpuAiProfileConfig,
-  baselineScore: number,
+  context: TerminalPlanEvaluationContext,
 ): TerminalPlanOutcome {
-  const handoffState = terminalHandoffState(state, perspective, config);
-  return { delta: evaluateState(handoffState, perspective, config.weights) - baselineScore, handoffState };
+  const cacheKey = terminalPlanCacheKey("handoff", state, perspective, 0);
+  const cached = context.handoffOutcomeCache.get(cacheKey);
+  if (cached) {
+    return cached;
+  }
+  const handoffState = terminalHandoffState(state, perspective, config, context);
+  const outcome = { delta: evaluateState(handoffState, perspective, config.weights) - context.baselineScore, handoffState };
+  context.handoffOutcomeCache.set(cacheKey, outcome);
+  return outcome;
 }
 
 function evaluateTerminalPlanOutcomeWithOpponentResponse(
   outcome: TerminalPlanOutcome,
   perspective: PlayerId,
   config: CpuAiProfileConfig,
-  baselineScore: number,
+  context: TerminalPlanEvaluationContext,
 ): number {
   if (!shouldUseOpponentTerminalPlanEvaluation(outcome.handoffState, perspective, config)) {
     return outcome.delta;
@@ -1954,16 +2031,21 @@ function evaluateTerminalPlanOutcomeWithOpponentResponse(
     perspective,
     config.sameTurnOpponentTerminalPlanDepth,
     config,
-    baselineScore,
+    context,
   );
   return outcome.delta + (opponentResponseDelta - outcome.delta) * config.sameTurnOpponentTerminalPlanWeight;
 }
 
-function terminalHandoffState(state: GameState, perspective: PlayerId, config: CpuAiProfileConfig): GameState {
+function terminalHandoffState(
+  state: GameState,
+  perspective: PlayerId,
+  config: CpuAiProfileConfig,
+  context?: TerminalPlanEvaluationContext,
+): GameState {
   if (state.winner || state.pendingLevelUp || state.currentPlayer !== perspective) {
     return state;
   }
-  const endTurn = evaluateImmediateCpuDecisions(state, perspective, config).find(
+  const endTurn = evaluateImmediateCpuDecisionsCached(state, perspective, config, context).find(
     (candidate) => candidate.decision.type === "end_turn",
   );
   return endTurn?.after ?? state;
@@ -1991,44 +2073,52 @@ function evaluateOpponentTerminalPlanDelta(
   perspective: PlayerId,
   depth: number,
   config: CpuAiProfileConfig,
-  baselineScore: number,
+  context: TerminalPlanEvaluationContext,
 ): number {
+  const cacheKey = terminalPlanCacheKey("opponent", state, perspective, depth);
+  const cached = context.opponentDeltaCache.get(cacheKey);
+  if (cached !== undefined) {
+    return cached;
+  }
   const opponent = opponentOf(perspective);
+  let delta: number;
   if (state.winner || state.pendingLevelUp || state.currentPlayer !== opponent) {
-    return evaluateState(state, perspective, config.weights) - baselineScore;
+    delta = evaluateState(state, perspective, config.weights) - context.baselineScore;
+  } else if (depth <= 0) {
+    delta = evaluateOpponentHandoffDelta(state, perspective, config, context);
+  } else {
+    let worst = evaluateOpponentHandoffDelta(state, perspective, config, context);
+    for (const candidate of opponentTerminalPlanCandidates(state, perspective, config, context)) {
+      worst = Math.min(
+        worst,
+        evaluateOpponentTerminalPlanDelta(candidate.after, perspective, depth - 1, config, context),
+      );
+    }
+    delta = worst;
   }
-  if (depth <= 0) {
-    return evaluateOpponentHandoffDelta(state, perspective, config, baselineScore);
-  }
-
-  let worst = evaluateOpponentHandoffDelta(state, perspective, config, baselineScore);
-  for (const candidate of opponentTerminalPlanCandidates(state, perspective, config)) {
-    worst = Math.min(
-      worst,
-      evaluateOpponentTerminalPlanDelta(candidate.after, perspective, depth - 1, config, baselineScore),
-    );
-  }
-  return worst;
+  context.opponentDeltaCache.set(cacheKey, delta);
+  return delta;
 }
 
 function evaluateOpponentHandoffDelta(
   state: GameState,
   perspective: PlayerId,
   config: CpuAiProfileConfig,
-  baselineScore: number,
+  context: TerminalPlanEvaluationContext,
 ): number {
-  const handoffState = terminalHandoffState(state, opponentOf(perspective), config);
-  return evaluateState(handoffState, perspective, config.weights) - baselineScore;
+  const handoffState = terminalHandoffState(state, opponentOf(perspective), config, context);
+  return evaluateState(handoffState, perspective, config.weights) - context.baselineScore;
 }
 
 function opponentTerminalPlanCandidates(
   state: GameState,
   perspective: PlayerId,
   config: CpuAiProfileConfig,
+  context: TerminalPlanEvaluationContext,
 ): EvaluatedDecision[] {
   const opponent = opponentOf(perspective);
   const beforeScore = evaluateState(state, perspective, config.weights);
-  const evaluated = evaluateImmediateCpuDecisions(state, opponent, config);
+  const evaluated = evaluateImmediateCpuDecisionsCached(state, opponent, config, context);
   const candidates = evaluated
     .filter((candidate) => candidate.decision.type !== "end_turn")
     .map((candidate) => ({
@@ -2053,8 +2143,9 @@ function terminalPlanCandidates(
   state: GameState,
   perspective: PlayerId,
   config: CpuAiProfileConfig,
+  context?: TerminalPlanEvaluationContext,
 ): EvaluatedDecision[] {
-  const evaluated = evaluateImmediateCpuDecisions(state, perspective, config);
+  const evaluated = evaluateImmediateCpuDecisionsCached(state, perspective, config, context);
   const candidates = evaluated
     .filter((candidate) => candidate.decision.type !== "end_turn" && candidate.totalScore > config.beamScoreThreshold)
     .sort(
@@ -2067,6 +2158,65 @@ function terminalPlanCandidates(
     candidates.push(endTurn);
   }
   return candidates;
+}
+
+function evaluateImmediateCpuDecisionsCached(
+  state: GameState,
+  perspective: PlayerId,
+  config: CpuAiProfileConfig,
+  context?: TerminalPlanEvaluationContext,
+): EvaluatedDecision[] {
+  if (!context) {
+    return evaluateImmediateCpuDecisions(state, perspective, config);
+  }
+  const cacheKey = terminalPlanCacheKey("immediate", state, perspective, 0);
+  const cached = context.immediateDecisionCache.get(cacheKey);
+  if (cached) {
+    return cached;
+  }
+  const evaluated = evaluateImmediateCpuDecisions(state, perspective, config);
+  context.immediateDecisionCache.set(cacheKey, evaluated);
+  return evaluated;
+}
+
+function terminalPlanCacheKey(kind: string, state: GameState, perspective: PlayerId, depth: number): string {
+  return `${kind}:${perspective}:${depth}:${terminalPlanStateKey(state)}`;
+}
+
+function terminalPlanStateKey(state: GameState): string {
+  return JSON.stringify({
+    currentPlayer: state.currentPlayer,
+    firstPlayer: state.firstPlayer,
+    turnNumber: state.turnNumber,
+    randomSeed: state.randomSeed,
+    deckoutOccurred: state.deckoutOccurred ?? false,
+    winner: state.winner ?? "",
+    pendingLevelUp: state.pendingLevelUp ?? null,
+    turnMoveHistory: state.turnMoveHistory ?? [],
+    turnMasterActionHistory: state.turnMasterActionHistory ?? [],
+    masterActionsExchangeExpiresOnStartOf: state.masterActionsExchangeExpiresOnStartOf ?? "",
+    players: {
+      player: terminalPlanPlayerStateKey(state.players.player),
+      cpu: terminalPlanPlayerStateKey(state.players.cpu),
+    },
+    slots: ALL_FIELD_ORDER.map((slotKey) => [slotKey, state.slots[slotKey].monster ?? null]),
+  });
+}
+
+function terminalPlanPlayerStateKey(player: PlayerState): object {
+  return {
+    id: player.id,
+    masterId: player.masterId,
+    masterHp: player.masterHp,
+    stones: player.stones,
+    masterPowerBonus: player.masterPowerBonus ?? 0,
+    masterFrozen: player.masterFrozen ?? false,
+    hand: player.hand,
+    deck: player.deck,
+    discard: player.discard,
+    turnsStarted: player.turnsStarted,
+    masterActionsExchanged: player.masterActionsExchanged ?? false,
+  };
 }
 
 function evaluateImmediateCpuDecisions(state: GameState, perspective: PlayerId, config: CpuAiProfileConfig): EvaluatedDecision[] {

@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-06-24T08:54:13.047Z",
+  "generatedAt": "2026-06-24T09:08:14.124Z",
   "deckA": "submission-pro-with-rare8-white-1339",
   "deckB": "submission-pro-no-rare8-white-1377",
   "seedStart": 56000,
@@ -11,7 +11,7 @@
     "sameTurnTerminalPlanDepth": 6,
     "sameTurnTerminalPlanWidth": 2,
     "sameTurnTerminalPlanWeight": 2,
-    "sameTurnOpponentTerminalPlanDepth": 1,
+    "sameTurnOpponentTerminalPlanDepth": 2,
     "sameTurnOpponentTerminalPlanWidth": 1,
     "sameTurnOpponentTerminalPlanWeight": 0.35
   },
@@ -38,29 +38,29 @@
           {
             "key": "master:wake_up->monster:player_front_left",
             "label": "master wake_up -> ヤミー@player_front_left",
-            "score": 110.3,
+            "score": 74.6,
             "reason": "準備中の味方を起こすと追加行動できるためウェイクアップ / 見送り: マスター特技は203点差で見送り、マスター特技は256点差で見送り"
           },
           {
             "key": "attack:player_front_left:attack->monster:cpu_front_left",
             "label": "ヤミー attack -> 真勇者ダイン",
-            "score": 14.9,
+            "score": -20.8,
             "reason": "真勇者ダインを削れるため攻撃 / 見送り: ためるは11点差で見送り"
           },
           {
             "key": "master:shield->monster:player_front_left",
             "label": "master shield -> ヤミー@player_front_left",
-            "score": -74.5,
+            "score": -110.2,
             "reason": "次ターンのレベルアップ筋を残すためシールド"
           },
           {
             "key": "end_turn",
             "label": "end turn",
-            "score": -181.8,
+            "score": -217.5,
             "reason": "有効な行動がないためターン終了"
           }
         ],
-        "guideScoreTotal": 144.1,
+        "guideScoreTotal": 1.3,
         "terminalScore": -469,
         "terminalScoreDelta": 70,
         "finalState": "turn 5 / current cpu / HP player/cpu 7/7 / stones player/cpu 0/3 / hand player/cpu 4/6",
@@ -86,30 +86,30 @@
               "key": "attack:cpu_front_left:ダイン斬り->master:player",
               "label": "真勇者ダイン ダイン斬り -> player master",
               "score": 266,
-              "reason": "相手マスターへ実ダメージを与えられるため攻撃 / 見送り: 攻撃は5点差で見送り、移動は284点差で見送り"
+              "reason": "相手マスターへ実ダメージを与えられるため攻撃 / 見送り: 攻撃は5点差で見送り、ためるは312点差で見送り"
             },
             {
               "key": "attack:cpu_back_left:wild_claw->master:player",
               "label": "ヤンバル wild_claw -> player master",
-              "score": 183.5,
-              "reason": "相手マスターへ実ダメージを与えられるため攻撃 / 見送り: ためるは136点差で見送り、ためるは231点差で見送り"
+              "score": 225.2,
+              "reason": "相手マスターへ実ダメージを与えられるため攻撃 / 見送り: ためるは177点差で見送り、ためるは272点差で見送り"
             },
             {
               "key": "focus:cpu_front_right",
               "label": "focus ヤミー",
-              "score": 109.9,
+              "score": 68.2,
               "reason": "有効攻撃がないためためる / 見送り: 移動は188点差で見送り"
             },
             {
               "key": "master:shield->monster:cpu_front_left",
               "label": "master shield -> 真勇者ダイン@cpu_front_left",
-              "score": 179.8,
-              "reason": "致死圏の味方を守れるためシールド / 見送り: マスター特技は286点差で見送り"
+              "score": 138.1,
+              "reason": "致死圏の味方を守れるためシールド / 見送り: マスター特技は244点差で見送り"
             },
             {
               "key": "end_turn",
               "label": "end turn",
-              "score": -136.2,
+              "score": -178,
               "reason": "有効な行動がないためターン終了"
             }
           ],
@@ -149,17 +149,17 @@
             {
               "key": "master:wake_up->monster:player_front_left",
               "label": "master wake_up -> ヤミー@player_front_left",
-              "score": 110.3,
+              "score": 74.6,
               "reason": "準備中の味方を起こすと追加行動できるためウェイクアップ"
             },
             {
               "key": "end_turn",
               "label": "end turn",
-              "score": -75.6,
+              "score": -111.3,
               "reason": "有効な行動がないためターン終了"
             }
           ],
-          "guideScoreTotal": 309.9,
+          "guideScoreTotal": 238.5,
           "terminalScore": -453,
           "terminalScoreDelta": 86,
           "finalState": "turn 5 / current cpu / HP player/cpu 7/7 / stones player/cpu 2/3 / hand player/cpu 4/6",
@@ -184,7 +184,7 @@
               {
                 "key": "attack:cpu_front_left:ダイン斬り->master:player",
                 "label": "真勇者ダイン ダイン斬り -> player master",
-                "score": 161.6,
+                "score": 161.5,
                 "reason": "相手マスターへ実ダメージを与えられるため攻撃 / 見送り: 攻撃は3点差で見送り、攻撃は86点差で見送り"
               },
               {
@@ -196,19 +196,19 @@
               {
                 "key": "focus:cpu_front_right",
                 "label": "focus ヤミー",
-                "score": 116.7,
+                "score": 81,
                 "reason": "有効攻撃がないためためる / 見送り: 移動は192点差で見送り"
               },
               {
                 "key": "master:shield->monster:cpu_front_left",
                 "label": "master shield -> 真勇者ダイン@cpu_front_left",
-                "score": 98.8,
+                "score": 63.1,
                 "reason": "致死圏の味方を守れるためシールド / 見送り: マスター特技は90点差で見送り、マスター特技は127点差で見送り"
               },
               {
                 "key": "end_turn",
                 "label": "end turn",
-                "score": -71.9,
+                "score": -107.6,
                 "reason": "有効な行動がないためターン終了"
               }
             ],
@@ -245,17 +245,17 @@
             {
               "key": "master:wake_up->monster:player_front_right",
               "label": "master wake_up -> ヤミー@player_front_right",
-              "score": 114.9,
+              "score": 79.2,
               "reason": "準備中の味方を起こすと追加行動できるためウェイクアップ"
             },
             {
               "key": "end_turn",
               "label": "end turn",
-              "score": -75.6,
+              "score": -111.3,
               "reason": "有効な行動がないためターン終了"
             }
           ],
-          "guideScoreTotal": 291.4,
+          "guideScoreTotal": 220,
           "terminalScore": -453,
           "terminalScoreDelta": 86,
           "finalState": "turn 5 / current cpu / HP player/cpu 7/7 / stones player/cpu 2/3 / hand player/cpu 4/6",
@@ -286,25 +286,25 @@
               {
                 "key": "attack:cpu_back_left:wild_claw->master:player",
                 "label": "ヤンバル wild_claw -> player master",
-                "score": 157.2,
+                "score": 157.1,
                 "reason": "相手マスターへ実ダメージを与えられるため攻撃 / 見送り: 攻撃は122点差で見送り、攻撃は177点差で見送り"
               },
               {
                 "key": "attack:cpu_front_right:attack->monster:player_front_right",
                 "label": "ヤミー attack -> ヤミー",
-                "score": 113.7,
-                "reason": "ヤミーを削れるため攻撃 / 見送り: ためるは9点差で見送り、移動は190点差で見送り"
+                "score": 72,
+                "reason": "ヤミーを削れるため攻撃 / 見送り: ためるは3点差で見送り、移動は184点差で見送り"
               },
               {
                 "key": "master:shield->monster:cpu_front_right",
                 "label": "master shield -> ヤミー@cpu_front_right",
-                "score": -18.8,
+                "score": -60.5,
                 "reason": "高価値の味方を守るためシールド / 見送り: マスター特技は2点差で見送り、マスター特技は28点差で見送り"
               },
               {
                 "key": "end_turn",
                 "label": "end turn",
-                "score": -84.5,
+                "score": -126.2,
                 "reason": "有効な行動がないためターン終了"
               }
             ],
@@ -341,29 +341,29 @@
             {
               "key": "master:wake_up->monster:player_front_left",
               "label": "master wake_up -> ヤミー@player_front_left",
-              "score": 110.3,
+              "score": 74.6,
               "reason": "準備中の味方を起こすと追加行動できるためウェイクアップ"
             },
             {
               "key": "focus:player_front_left",
               "label": "focus ヤミー",
-              "score": 3.9,
+              "score": -31.8,
               "reason": "有効攻撃がないためためる"
             },
             {
               "key": "master:shield->monster:player_front_left",
               "label": "master shield -> ヤミー@player_front_left",
-              "score": -77.1,
+              "score": -112.8,
               "reason": "高価値の味方を守るためシールド"
             },
             {
               "key": "end_turn",
               "label": "end turn",
-              "score": -179.1,
+              "score": -214.8,
               "reason": "有効な行動がないためターン終了"
             }
           ],
-          "guideScoreTotal": 133.1,
+          "guideScoreTotal": -9.7,
           "terminalScore": -463,
           "terminalScoreDelta": 76,
           "finalState": "turn 5 / current cpu / HP player/cpu 7/7 / stones player/cpu 0/3 / hand player/cpu 4/6",
@@ -400,19 +400,19 @@
               {
                 "key": "focus:cpu_front_right",
                 "label": "focus ヤミー",
-                "score": 76.4,
+                "score": 40.7,
                 "reason": "有効攻撃がないためためる / 見送り: 移動は188点差で見送り"
               },
               {
                 "key": "master:shield->monster:cpu_front_left",
                 "label": "master shield -> 真勇者ダイン@cpu_front_left",
-                "score": 7.9,
+                "score": -27.8,
                 "reason": "高価値の味方を守るためシールド / 見送り: マスター特技は33点差で見送り"
               },
               {
                 "key": "end_turn",
                 "label": "end turn",
-                "score": -85.6,
+                "score": -121.3,
                 "reason": "有効な行動がないためターン終了"
               }
             ],
@@ -477,11 +477,11 @@
           {
             "key": "end_turn",
             "label": "end turn",
-            "score": 79.6,
-            "reason": "有効な行動がないためターン終了 / 見送り: ためるは27点差で見送り、ためるは28点差で見送り"
+            "score": 42.4,
+            "reason": "有効な行動がないためターン終了 / 見送り: 攻撃は23点差で見送り、ためるは27点差で見送り"
           }
         ],
-        "guideScoreTotal": 953.5,
+        "guideScoreTotal": 916.3,
         "terminalScore": 355,
         "terminalScoreDelta": 251,
         "finalState": "turn 5 / current cpu / HP player/cpu 9/9 / stones player/cpu 1/4 / hand player/cpu 2/4",
@@ -519,7 +519,7 @@
               "key": "focus:cpu_front_right",
               "label": "focus ヤミー",
               "score": 170.8,
-              "reason": "有効攻撃がないためためる / 見送り: マスター特技は11点差で見送り、攻撃は49点差で見送り"
+              "reason": "有効攻撃がないためためる / 見送り: マスター特技は11点差で見送り、攻撃は36点差で見送り"
             },
             {
               "key": "master:wake_up->monster:cpu_back_left",
@@ -531,7 +531,7 @@
               "key": "attack:cpu_back_left:wild_claw->monster:player_front_right",
               "label": "ヤンバル wild_claw -> 鉄拳シグマ",
               "score": 25.9,
-              "reason": "鉄拳シグマを削れるため攻撃 / 見送り: 攻撃は7点差で見送り、ためるは10点差で見送り"
+              "reason": "鉄拳シグマを削れるため攻撃 / 見送り: 攻撃は7点差で見送り、ためるは22点差で見送り"
             },
             {
               "key": "focus:cpu_back_right",
@@ -600,11 +600,11 @@
             {
               "key": "end_turn",
               "label": "end turn",
-              "score": 79.6,
-              "reason": "有効な行動がないためターン終了 / 見送り: ためるは27点差で見送り、ためるは28点差で見送り"
+              "score": 42.4,
+              "reason": "有効な行動がないためターン終了 / 見送り: 攻撃は23点差で見送り、ためるは27点差で見送り"
             }
           ],
-          "guideScoreTotal": 953.5,
+          "guideScoreTotal": 916.3,
           "terminalScore": 355,
           "terminalScoreDelta": 251,
           "finalState": "turn 5 / current cpu / HP player/cpu 9/9 / stones player/cpu 1/4 / hand player/cpu 2/4",
@@ -642,7 +642,7 @@
                 "key": "focus:cpu_front_right",
                 "label": "focus ヤミー",
                 "score": 170.8,
-                "reason": "有効攻撃がないためためる / 見送り: マスター特技は11点差で見送り、攻撃は49点差で見送り"
+                "reason": "有効攻撃がないためためる / 見送り: マスター特技は11点差で見送り、攻撃は36点差で見送り"
               },
               {
                 "key": "master:wake_up->monster:cpu_back_left",
@@ -654,7 +654,7 @@
                 "key": "attack:cpu_back_left:wild_claw->monster:player_front_right",
                 "label": "ヤンバル wild_claw -> 鉄拳シグマ",
                 "score": 25.9,
-                "reason": "鉄拳シグマを削れるため攻撃 / 見送り: 攻撃は7点差で見送り、ためるは10点差で見送り"
+                "reason": "鉄拳シグマを削れるため攻撃 / 見送り: 攻撃は7点差で見送り、ためるは22点差で見送り"
               },
               {
                 "key": "focus:cpu_back_right",
@@ -726,11 +726,11 @@
             {
               "key": "end_turn",
               "label": "end turn",
-              "score": 38.5,
+              "score": -3.2,
               "reason": "有効な行動がないためターン終了"
             }
           ],
-          "guideScoreTotal": 1044.9,
+          "guideScoreTotal": 1003.2,
           "terminalScore": 343,
           "terminalScoreDelta": 239,
           "finalState": "turn 5 / current cpu / HP player/cpu 9/9 / stones player/cpu 1/4 / hand player/cpu 2/4",
@@ -768,7 +768,7 @@
                 "key": "focus:cpu_front_right",
                 "label": "focus ヤミー",
                 "score": 170.8,
-                "reason": "有効攻撃がないためためる / 見送り: マスター特技は11点差で見送り、攻撃は49点差で見送り"
+                "reason": "有効攻撃がないためためる / 見送り: マスター特技は11点差で見送り、攻撃は36点差で見送り"
               },
               {
                 "key": "master:wake_up->monster:cpu_back_left",
@@ -780,13 +780,13 @@
                 "key": "attack:cpu_back_right:スパイクボール->monster:player_front_left",
                 "label": "ピグミィ スパイクボール -> デスシープ",
                 "score": 19,
-                "reason": "デスシープを削れるため攻撃 / 見送り: 攻撃は17点差で見送り、ためるは27点差で見送り"
+                "reason": "デスシープを削れるため攻撃 / 見送り: 攻撃は17点差で見送り、ためるは40点差で見送り"
               },
               {
                 "key": "attack:cpu_back_left:wild_claw->monster:player_front_right",
                 "label": "ヤンバル wild_claw -> 鉄拳シグマ",
                 "score": -41.9,
-                "reason": "鉄拳シグマを削れるため攻撃 / 見送り: 攻撃は13点差で見送り、ためるは18点差で見送り"
+                "reason": "鉄拳シグマを削れるため攻撃 / 見送り: 攻撃は25点差で見送り、ためるは31点差で見送り"
               },
               {
                 "key": "end_turn",
@@ -852,11 +852,11 @@
             {
               "key": "end_turn",
               "label": "end turn",
-              "score": 38.5,
+              "score": -3.2,
               "reason": "有効な行動がないためターン終了"
             }
           ],
-          "guideScoreTotal": 1010.6,
+          "guideScoreTotal": 968.9,
           "terminalScore": 343,
           "terminalScoreDelta": 239,
           "finalState": "turn 5 / current cpu / HP player/cpu 9/9 / stones player/cpu 1/4 / hand player/cpu 2/4",
@@ -894,7 +894,7 @@
                 "key": "focus:cpu_front_right",
                 "label": "focus ヤミー",
                 "score": 170.8,
-                "reason": "有効攻撃がないためためる / 見送り: マスター特技は11点差で見送り、攻撃は49点差で見送り"
+                "reason": "有効攻撃がないためためる / 見送り: マスター特技は11点差で見送り、攻撃は36点差で見送り"
               },
               {
                 "key": "master:wake_up->monster:cpu_back_left",
@@ -906,13 +906,13 @@
                 "key": "attack:cpu_back_right:スパイクボール->monster:player_front_left",
                 "label": "ピグミィ スパイクボール -> デスシープ",
                 "score": 19,
-                "reason": "デスシープを削れるため攻撃 / 見送り: 攻撃は17点差で見送り、ためるは27点差で見送り"
+                "reason": "デスシープを削れるため攻撃 / 見送り: 攻撃は17点差で見送り、ためるは40点差で見送り"
               },
               {
                 "key": "attack:cpu_back_left:wild_claw->monster:player_front_right",
                 "label": "ヤンバル wild_claw -> 鉄拳シグマ",
                 "score": -41.9,
-                "reason": "鉄拳シグマを削れるため攻撃 / 見送り: 攻撃は13点差で見送り、ためるは18点差で見送り"
+                "reason": "鉄拳シグマを削れるため攻撃 / 見送り: 攻撃は25点差で見送り、ためるは31点差で見送り"
               },
               {
                 "key": "end_turn",
@@ -946,467 +946,497 @@
     },
     {
       "seed": 56002,
-      "step": 41,
+      "step": 38,
       "turnNumber": 5,
       "player": "player",
-      "state": "turn 5 / current player / HP player/cpu 9/9 / stones player/cpu 5/1 / hand player/cpu 5/4",
-      "board": "cpu_back_left:CB:ドノマンティス Lv1 HP5 act0/1 focus | cpu_back_right:CB:ピグミィ Lv1 HP3 act2/2 | cpu_front_left:CF:ボムゾウ Lv2 HP5 act1/1 | cpu_front_right:CF:ドノマンティス Lv1 HP5 act1/1 | player_front_left:PF:モーガン Lv1 HP4 act0/1 | player_front_right:PF:鉄拳シグマ Lv2 HP6 act0/1",
-      "initialScore": -219,
+      "state": "turn 5 / current player / HP player/cpu 10/8 / stones player/cpu 5/1 / hand player/cpu 4/5",
+      "board": "cpu_back_left:CB:ドノマンティス Lv1 HP5 act0/1 focus | cpu_back_right:CB:ボムゾウ Lv1 HP5 act1/1 | cpu_front_left:CF:ボムゾウ Lv2 HP5 act1/1 | cpu_front_right:CF:ドノマンティス Lv1 HP4 act1/1 | player_front_left:PF:モーガン Lv1 HP4 act0/1 | player_front_right:PF:鉄拳シグマ Lv1 HP6 act0/1",
+      "initialScore": -68,
       "selectedPlan": {
-        "sequenceKey": "magic:player_power_up_3->monster:player_front_left > attack:player_front_right:attack->master:cpu > attack:player_front_left:arc_drive->monster:cpu_back_right > summon:player_yanbaru_1->player_back_left > end_turn",
+        "sequenceKey": "attack:player_front_left:arc_drive->monster:cpu_front_right > summon:player_yanbaru_1->player_back_left > master:wake_up->monster:player_back_left > attack:player_back_left:wild_claw->monster:cpu_front_right > focus:player_front_right > end_turn",
         "actions": [
           {
-            "key": "magic:player_power_up_3->monster:player_front_left",
-            "label": "magic パワーアップ -> モーガン@player_front_left",
-            "score": 776.9,
-            "reason": "パワーアップから攻撃につなげられるため使用 / 見送り: 攻撃は220点差で見送り、召喚は243点差で見送り"
-          },
-          {
-            "key": "attack:player_front_right:attack->master:cpu",
-            "label": "鉄拳シグマ attack -> cpu master",
-            "score": 401.8,
-            "reason": "相手マスターへ実ダメージを与えられるため攻撃 / 見送り: 召喚は24点差で見送り、召喚は24点差で見送り"
-          },
-          {
-            "key": "attack:player_front_left:arc_drive->monster:cpu_back_right",
-            "label": "モーガン arc_drive -> ピグミィ",
-            "score": 247.3,
-            "reason": "敵モンスターを撃破できるため攻撃 / 見送り: 召喚は50点差で見送り、召喚は50点差で見送り"
+            "key": "attack:player_front_left:arc_drive->monster:cpu_front_right",
+            "label": "モーガン arc_drive -> ドノマンティス",
+            "score": 339.6,
+            "reason": "ドノマンティスを削れるため攻撃 / 見送り: 召喚は4点差で見送り、召喚は4点差で見送り"
           },
           {
             "key": "summon:player_yanbaru_1->player_back_left",
             "label": "summon ヤンバル -> player_back_left",
-            "score": 137.4,
-            "reason": "後衛カードを後列左へ召喚 / 見送り: 召喚は1点差で見送り"
+            "score": 440.1,
+            "reason": "後衛カードを後列左へ召喚 / 見送り: 召喚は1点差で見送り、ためるは160点差で見送り"
+          },
+          {
+            "key": "master:wake_up->monster:player_back_left",
+            "label": "master wake_up -> ヤンバル@player_back_left",
+            "score": 508.1,
+            "reason": "準備中の味方を起こすと追加行動できるためウェイクアップ / 見送り: ためるは164点差で見送り、攻撃は216点差で見送り"
+          },
+          {
+            "key": "attack:player_back_left:wild_claw->monster:cpu_front_right",
+            "label": "ヤンバル wild_claw -> ドノマンティス",
+            "score": 453.6,
+            "reason": "敵モンスターを撃破できるため攻撃 / 見送り: ためるは197点差で見送り、攻撃は250点差で見送り"
+          },
+          {
+            "key": "focus:player_front_right",
+            "label": "focus 鉄拳シグマ",
+            "score": -141,
+            "reason": "有効攻撃がないためためる"
           },
           {
             "key": "end_turn",
             "label": "end turn",
-            "score": -119,
+            "score": -260.8,
             "reason": "有効な行動がないためターン終了"
           }
         ],
-        "guideScoreTotal": 1444.5,
-        "terminalScore": -1.6,
-        "terminalScoreDelta": 217.4,
-        "finalState": "turn 5 / current cpu / HP player/cpu 9/8 / stones player/cpu 0/6 / hand player/cpu 3/5",
-        "finalBoard": "cpu_back_left:CB:ドノマンティス Lv1 HP5 act0/1 focus | cpu_front_left:CF:ボムゾウ Lv2 HP5 act0/1 | cpu_front_right:CF:ドノマンティス Lv1 HP5 act0/1 | player_front_left:PF:モーガン Lv2 HP4 act1/1 | player_front_right:PF:鉄拳シグマ Lv2 HP6 act1/1 | player_back_left:PB:ヤンバル Lv1 HP3 prep",
+        "guideScoreTotal": 1339.4,
+        "terminalScore": 106,
+        "terminalScoreDelta": 174,
+        "finalState": "turn 5 / current cpu / HP player/cpu 10/8 / stones player/cpu 1/5 / hand player/cpu 3/6",
+        "finalBoard": "cpu_back_left:CB:ドノマンティス Lv1 HP5 act0/1 focus | cpu_front_left:CF:ボムゾウ Lv2 HP5 act0/1 | cpu_front_right:CF:ボムゾウ Lv1 HP5 act0/1 | player_front_left:PF:モーガン Lv1 HP4 act1/1 | player_front_right:PF:鉄拳シグマ Lv1 HP6 act1/1 focus | player_back_left:PB:ヤンバル Lv2 HP3 act1/1",
         "finalMetrics": {
-          "ownHp": 9,
+          "ownHp": 10,
           "enemyHp": 8,
-          "ownStones": 0,
-          "enemyStones": 6,
-          "ownBoardValue": 630,
+          "ownStones": 1,
+          "enemyStones": 5,
+          "ownBoardValue": 530,
           "enemyBoardValue": 550,
           "ownReadyActions": 0,
           "enemyReadyActions": 3,
           "ownShielded": 0,
           "enemyShielded": 0,
-          "ownLevel2Plus": 2,
+          "ownLevel2Plus": 1,
           "enemyLevel2Plus": 1
         },
         "truncated": false,
         "opponentResponse": {
           "actions": [
             {
-              "key": "master:master_attack->monster:player_front_left",
-              "label": "master master_attack -> モーガン@player_front_left",
-              "score": 312.4,
-              "reason": "ストーンに余裕があり敵を削れるためマスターアタック / 見送り: 召喚は185点差で見送り、召喚は185点差で見送り"
+              "key": "summon:cpu_card_051_1->cpu_back_right",
+              "label": "summon ピグミィ -> cpu_back_right",
+              "score": 199.6,
+              "reason": "後衛カードを後列右へ召喚 / 見送り: 召喚は113点差で見送り、召喚は113点差で見送り"
             },
             {
-              "key": "attack:cpu_front_left:self_bomb->monster:player_front_left",
-              "label": "ボムゾウ self_bomb -> モーガン",
-              "score": 495.8,
-              "reason": "敵モンスターを撃破できるため攻撃 / 見送り: マスター特技は40点差で見送り、攻撃は251点差で見送り"
+              "key": "master:wake_up->monster:cpu_back_right",
+              "label": "master wake_up -> ピグミィ@cpu_back_right",
+              "score": 314.8,
+              "reason": "準備中の味方を起こすと追加行動できるためウェイクアップ / 見送り: マスター特技は275点差で見送り、攻撃は292点差で見送り"
             },
             {
-              "key": "focus:cpu_front_right",
-              "label": "focus ドノマンティス",
-              "score": 163.4,
-              "reason": "有効攻撃がないためためる / 見送り: 召喚は22点差で見送り、召喚は22点差で見送り"
+              "key": "attack:cpu_front_left:storm_bomb->monster:player_back_left",
+              "label": "ボムゾウ storm_bomb -> ヤンバル",
+              "score": 14.9,
+              "reason": "ヤンバルを削れるため攻撃 / 見送り: 移動は35点差で見送り、攻撃は60点差で見送り"
             },
             {
-              "key": "summon:cpu_card_105_3->cpu_back_right",
-              "label": "summon ヤミー -> cpu_back_right",
-              "score": 147.6,
-              "reason": "カードを後列右へ召喚 / 見送り: 召喚は1点差で見送り、マスター特技は375点差で見送り"
+              "key": "attack:cpu_front_right:storm_bomb->monster:player_back_left",
+              "label": "ボムゾウ storm_bomb -> ヤンバル",
+              "score": 773.2,
+              "reason": "敵モンスターを撃破できるため攻撃 / 見送り: 攻撃は348点差で見送り、ためるは363点差で見送り"
             },
             {
-              "key": "master:shield->monster:cpu_front_left",
-              "label": "master shield -> ボムゾウ@cpu_front_left",
-              "score": 88.3,
-              "reason": "致死圏の味方を守れるためシールド / 見送り: マスター特技は79点差で見送り、マスター特技は185点差で見送り"
+              "key": "attack:cpu_back_right:スパイクボール->monster:player_front_left",
+              "label": "ピグミィ スパイクボール -> モーガン",
+              "score": -28.9,
+              "reason": "モーガンを削れるため攻撃 / 見送り: ためるは43点差で見送り"
+            },
+            {
+              "key": "focus:cpu_back_right",
+              "label": "focus ピグミィ",
+              "score": -99.1,
+              "reason": "有効攻撃がないためためる / 見送り: 攻撃は42点差で見送り"
             },
             {
               "key": "end_turn",
               "label": "end turn",
-              "score": -159.1,
+              "score": -185.7,
               "reason": "有効な行動がないためターン終了"
             }
           ],
-          "terminalScore": -96.2,
-          "terminalScoreDelta": -94.6,
-          "finalState": "turn 6 / current player / HP player/cpu 9/8 / stones player/cpu 5/0 / hand player/cpu 4/4",
-          "finalBoard": "cpu_back_left:CB:ドノマンティス Lv1 HP5 act0/1 focus | cpu_back_right:CB:ヤミー Lv1 HP5 prep | cpu_front_left:CF:ボムゾウ Lv2 HP2 act1/1 shield | cpu_front_right:CF:ドノマンティス Lv1 HP5 act1/1 focus | player_front_left:PF:ヤンバル Lv1 HP3 act0/1 | player_front_right:PF:鉄拳シグマ Lv2 HP6 act0/1",
+          "terminalScore": -140,
+          "terminalScoreDelta": -246,
+          "finalState": "turn 6 / current player / HP player/cpu 10/8 / stones player/cpu 6/1 / hand player/cpu 4/5",
+          "finalBoard": "cpu_back_left:CB:ドノマンティス Lv1 HP5 act0/1 focus | cpu_back_right:CB:ピグミィ Lv1 HP3 act2/2 focus | cpu_front_left:CF:ボムゾウ Lv2 HP5 act1/1 | cpu_front_right:CF:ボムゾウ Lv2 HP5 act1/1 | player_front_left:PF:モーガン Lv1 HP3 act0/1 | player_front_right:PF:鉄拳シグマ Lv1 HP6 act0/1 focus",
           "finalMetrics": {
-            "ownHp": 9,
+            "ownHp": 10,
             "enemyHp": 8,
-            "ownStones": 5,
-            "enemyStones": 0,
-            "ownBoardValue": 390,
-            "enemyBoardValue": 690,
+            "ownStones": 6,
+            "enemyStones": 1,
+            "ownBoardValue": 290,
+            "enemyBoardValue": 780,
             "ownReadyActions": 2,
             "enemyReadyActions": 1,
             "ownShielded": 0,
-            "enemyShielded": 1,
-            "ownLevel2Plus": 1,
-            "enemyLevel2Plus": 1
+            "enemyShielded": 0,
+            "ownLevel2Plus": 0,
+            "enemyLevel2Plus": 2
           },
           "truncated": false
         }
       },
-      "selectedTerminalRank": 5,
-      "terminalGapToBest": 0,
+      "selectedTerminalRank": 7,
+      "terminalGapToBest": 12,
       "topTerminalPlans": [
         {
-          "sequenceKey": "attack:player_front_right:attack->master:cpu > magic:player_power_up_3->monster:player_front_left > attack:player_front_left:arc_drive->monster:cpu_back_right > summon:player_yanbaru_1->player_back_left > end_turn",
+          "sequenceKey": "attack:player_front_left:arc_drive->monster:cpu_front_right > summon:player_yanbaru_1->player_back_left > master:wake_up->monster:player_back_left > attack:player_back_left:wild_claw->monster:cpu_front_right > end_turn",
           "actions": [
             {
-              "key": "attack:player_front_right:attack->master:cpu",
-              "label": "鉄拳シグマ attack -> cpu master",
-              "score": 557.1,
-              "reason": "相手マスターへ実ダメージを与えられるため攻撃"
-            },
-            {
-              "key": "magic:player_power_up_3->monster:player_front_left",
-              "label": "magic パワーアップ -> モーガン@player_front_left",
-              "score": 776.9,
-              "reason": "パワーアップから攻撃につなげられるため使用"
-            },
-            {
-              "key": "attack:player_front_left:arc_drive->monster:cpu_back_right",
-              "label": "モーガン arc_drive -> ピグミィ",
-              "score": 247.3,
-              "reason": "敵モンスターを撃破できるため攻撃"
+              "key": "attack:player_front_left:arc_drive->monster:cpu_front_right",
+              "label": "モーガン arc_drive -> ドノマンティス",
+              "score": 339.6,
+              "reason": "ドノマンティスを削れるため攻撃"
             },
             {
               "key": "summon:player_yanbaru_1->player_back_left",
               "label": "summon ヤンバル -> player_back_left",
-              "score": 137.4,
+              "score": 440.1,
               "reason": "後衛カードを後列左へ召喚"
+            },
+            {
+              "key": "master:wake_up->monster:player_back_left",
+              "label": "master wake_up -> ヤンバル@player_back_left",
+              "score": 508.1,
+              "reason": "準備中の味方を起こすと追加行動できるためウェイクアップ"
+            },
+            {
+              "key": "attack:player_back_left:wild_claw->monster:cpu_front_right",
+              "label": "ヤンバル wild_claw -> ドノマンティス",
+              "score": 453.6,
+              "reason": "敵モンスターを撃破できるため攻撃"
             },
             {
               "key": "end_turn",
               "label": "end turn",
-              "score": -119,
+              "score": -211.1,
               "reason": "有効な行動がないためターン終了"
             }
           ],
-          "guideScoreTotal": 1599.8,
-          "terminalScore": -1.6,
-          "terminalScoreDelta": 217.4,
-          "finalState": "turn 5 / current cpu / HP player/cpu 9/8 / stones player/cpu 0/6 / hand player/cpu 3/5",
-          "finalBoard": "cpu_back_left:CB:ドノマンティス Lv1 HP5 act0/1 focus | cpu_front_left:CF:ボムゾウ Lv2 HP5 act0/1 | cpu_front_right:CF:ドノマンティス Lv1 HP5 act0/1 | player_front_left:PF:モーガン Lv2 HP4 act1/1 | player_front_right:PF:鉄拳シグマ Lv2 HP6 act1/1 | player_back_left:PB:ヤンバル Lv1 HP3 prep",
+          "guideScoreTotal": 1530.2,
+          "terminalScore": 118,
+          "terminalScoreDelta": 186,
+          "finalState": "turn 5 / current cpu / HP player/cpu 10/8 / stones player/cpu 1/5 / hand player/cpu 3/6",
+          "finalBoard": "cpu_back_left:CB:ドノマンティス Lv1 HP5 act0/1 focus | cpu_front_left:CF:ボムゾウ Lv2 HP5 act0/1 | cpu_front_right:CF:ボムゾウ Lv1 HP5 act0/1 | player_front_left:PF:モーガン Lv1 HP4 act1/1 | player_front_right:PF:鉄拳シグマ Lv1 HP6 act0/1 focus | player_back_left:PB:ヤンバル Lv2 HP3 act1/1",
           "finalMetrics": {
-            "ownHp": 9,
+            "ownHp": 10,
             "enemyHp": 8,
-            "ownStones": 0,
-            "enemyStones": 6,
-            "ownBoardValue": 630,
+            "ownStones": 1,
+            "enemyStones": 5,
+            "ownBoardValue": 530,
             "enemyBoardValue": 550,
-            "ownReadyActions": 0,
+            "ownReadyActions": 1,
             "enemyReadyActions": 3,
             "ownShielded": 0,
             "enemyShielded": 0,
-            "ownLevel2Plus": 2,
+            "ownLevel2Plus": 1,
             "enemyLevel2Plus": 1
           },
           "truncated": false,
           "opponentResponse": {
             "actions": [
               {
-                "key": "master:master_attack->monster:player_front_left",
-                "label": "master master_attack -> モーガン@player_front_left",
-                "score": 312.4,
-                "reason": "ストーンに余裕があり敵を削れるためマスターアタック / 見送り: 召喚は185点差で見送り、召喚は185点差で見送り"
+                "key": "summon:cpu_card_051_1->cpu_back_right",
+                "label": "summon ピグミィ -> cpu_back_right",
+                "score": 199.6,
+                "reason": "後衛カードを後列右へ召喚 / 見送り: 召喚は113点差で見送り、召喚は113点差で見送り"
               },
               {
-                "key": "attack:cpu_front_left:self_bomb->monster:player_front_left",
-                "label": "ボムゾウ self_bomb -> モーガン",
-                "score": 495.8,
-                "reason": "敵モンスターを撃破できるため攻撃 / 見送り: マスター特技は40点差で見送り、攻撃は251点差で見送り"
+                "key": "master:wake_up->monster:cpu_back_right",
+                "label": "master wake_up -> ピグミィ@cpu_back_right",
+                "score": 314.8,
+                "reason": "準備中の味方を起こすと追加行動できるためウェイクアップ / 見送り: マスター特技は274点差で見送り、攻撃は292点差で見送り"
               },
               {
-                "key": "focus:cpu_front_right",
-                "label": "focus ドノマンティス",
-                "score": 163.4,
-                "reason": "有効攻撃がないためためる / 見送り: 召喚は22点差で見送り、召喚は22点差で見送り"
+                "key": "attack:cpu_front_left:storm_bomb->monster:player_back_left",
+                "label": "ボムゾウ storm_bomb -> ヤンバル",
+                "score": 14.9,
+                "reason": "ヤンバルを削れるため攻撃 / 見送り: 移動は35点差で見送り、ためるは57点差で見送り"
               },
               {
-                "key": "summon:cpu_card_105_3->cpu_back_right",
-                "label": "summon ヤミー -> cpu_back_right",
-                "score": 147.6,
-                "reason": "カードを後列右へ召喚 / 見送り: 召喚は1点差で見送り、マスター特技は375点差で見送り"
+                "key": "attack:cpu_front_right:storm_bomb->monster:player_back_left",
+                "label": "ボムゾウ storm_bomb -> ヤンバル",
+                "score": 773.2,
+                "reason": "敵モンスターを撃破できるため攻撃 / 見送り: 攻撃は348点差で見送り、ためるは363点差で見送り"
               },
               {
-                "key": "master:shield->monster:cpu_front_left",
-                "label": "master shield -> ボムゾウ@cpu_front_left",
-                "score": 88.3,
-                "reason": "致死圏の味方を守れるためシールド / 見送り: マスター特技は79点差で見送り、マスター特技は185点差で見送り"
+                "key": "attack:cpu_back_right:スパイクボール->monster:player_front_left",
+                "label": "ピグミィ スパイクボール -> モーガン",
+                "score": -4.9,
+                "reason": "モーガンを削れるため攻撃 / 見送り: ためるは43点差で見送り"
+              },
+              {
+                "key": "focus:cpu_back_right",
+                "label": "focus ピグミィ",
+                "score": -75.1,
+                "reason": "有効攻撃がないためためる / 見送り: 攻撃は42点差で見送り"
               },
               {
                 "key": "end_turn",
                 "label": "end turn",
-                "score": -159.1,
+                "score": -150.1,
                 "reason": "有効な行動がないためターン終了"
               }
             ],
-            "terminalScore": -96.2,
-            "terminalScoreDelta": -94.6,
-            "finalState": "turn 6 / current player / HP player/cpu 9/8 / stones player/cpu 5/0 / hand player/cpu 4/4",
-            "finalBoard": "cpu_back_left:CB:ドノマンティス Lv1 HP5 act0/1 focus | cpu_back_right:CB:ヤミー Lv1 HP5 prep | cpu_front_left:CF:ボムゾウ Lv2 HP2 act1/1 shield | cpu_front_right:CF:ドノマンティス Lv1 HP5 act1/1 focus | player_front_left:PF:ヤンバル Lv1 HP3 act0/1 | player_front_right:PF:鉄拳シグマ Lv2 HP6 act0/1",
+            "terminalScore": -140,
+            "terminalScoreDelta": -258,
+            "finalState": "turn 6 / current player / HP player/cpu 10/8 / stones player/cpu 6/1 / hand player/cpu 4/5",
+            "finalBoard": "cpu_back_left:CB:ドノマンティス Lv1 HP5 act0/1 focus | cpu_back_right:CB:ピグミィ Lv1 HP3 act2/2 focus | cpu_front_left:CF:ボムゾウ Lv2 HP5 act1/1 | cpu_front_right:CF:ボムゾウ Lv2 HP5 act1/1 | player_front_left:PF:モーガン Lv1 HP3 act0/1 | player_front_right:PF:鉄拳シグマ Lv1 HP6 act0/1 focus",
             "finalMetrics": {
-              "ownHp": 9,
+              "ownHp": 10,
               "enemyHp": 8,
-              "ownStones": 5,
-              "enemyStones": 0,
-              "ownBoardValue": 390,
-              "enemyBoardValue": 690,
+              "ownStones": 6,
+              "enemyStones": 1,
+              "ownBoardValue": 290,
+              "enemyBoardValue": 780,
               "ownReadyActions": 2,
               "enemyReadyActions": 1,
               "ownShielded": 0,
-              "enemyShielded": 1,
-              "ownLevel2Plus": 1,
-              "enemyLevel2Plus": 1
+              "enemyShielded": 0,
+              "ownLevel2Plus": 0,
+              "enemyLevel2Plus": 2
             },
             "truncated": false
           }
         },
         {
-          "sequenceKey": "attack:player_front_right:attack->master:cpu > magic:player_power_up_3->monster:player_front_left > attack:player_front_left:arc_drive->monster:cpu_back_right > summon:player_yanbaru_1->player_back_right > end_turn",
+          "sequenceKey": "attack:player_front_left:arc_drive->monster:cpu_front_right > summon:player_yanbaru_1->player_back_right > master:wake_up->monster:player_back_right > attack:player_back_right:wild_claw->monster:cpu_front_right > end_turn",
           "actions": [
             {
-              "key": "attack:player_front_right:attack->master:cpu",
-              "label": "鉄拳シグマ attack -> cpu master",
-              "score": 557.1,
-              "reason": "相手マスターへ実ダメージを与えられるため攻撃"
-            },
-            {
-              "key": "magic:player_power_up_3->monster:player_front_left",
-              "label": "magic パワーアップ -> モーガン@player_front_left",
-              "score": 776.9,
-              "reason": "パワーアップから攻撃につなげられるため使用"
-            },
-            {
-              "key": "attack:player_front_left:arc_drive->monster:cpu_back_right",
-              "label": "モーガン arc_drive -> ピグミィ",
-              "score": 247.3,
-              "reason": "敵モンスターを撃破できるため攻撃"
+              "key": "attack:player_front_left:arc_drive->monster:cpu_front_right",
+              "label": "モーガン arc_drive -> ドノマンティス",
+              "score": 339.6,
+              "reason": "ドノマンティスを削れるため攻撃"
             },
             {
               "key": "summon:player_yanbaru_1->player_back_right",
               "label": "summon ヤンバル -> player_back_right",
-              "score": 137.4,
+              "score": 440.1,
               "reason": "後衛カードを後列右へ召喚"
             },
             {
-              "key": "end_turn",
-              "label": "end turn",
-              "score": -119,
-              "reason": "有効な行動がないためターン終了"
-            }
-          ],
-          "guideScoreTotal": 1599.8,
-          "terminalScore": -1.6,
-          "terminalScoreDelta": 217.4,
-          "finalState": "turn 5 / current cpu / HP player/cpu 9/8 / stones player/cpu 0/6 / hand player/cpu 3/5",
-          "finalBoard": "cpu_back_left:CB:ドノマンティス Lv1 HP5 act0/1 focus | cpu_front_left:CF:ボムゾウ Lv2 HP5 act0/1 | cpu_front_right:CF:ドノマンティス Lv1 HP5 act0/1 | player_front_left:PF:モーガン Lv2 HP4 act1/1 | player_front_right:PF:鉄拳シグマ Lv2 HP6 act1/1 | player_back_right:PB:ヤンバル Lv1 HP3 prep",
-          "finalMetrics": {
-            "ownHp": 9,
-            "enemyHp": 8,
-            "ownStones": 0,
-            "enemyStones": 6,
-            "ownBoardValue": 630,
-            "enemyBoardValue": 550,
-            "ownReadyActions": 0,
-            "enemyReadyActions": 3,
-            "ownShielded": 0,
-            "enemyShielded": 0,
-            "ownLevel2Plus": 2,
-            "enemyLevel2Plus": 1
-          },
-          "truncated": false,
-          "opponentResponse": {
-            "actions": [
-              {
-                "key": "master:master_attack->monster:player_front_left",
-                "label": "master master_attack -> モーガン@player_front_left",
-                "score": 305.3,
-                "reason": "ストーンに余裕があり敵を削れるためマスターアタック / 見送り: 召喚は179点差で見送り、召喚は179点差で見送り"
-              },
-              {
-                "key": "attack:cpu_front_left:self_bomb->monster:player_front_left",
-                "label": "ボムゾウ self_bomb -> モーガン",
-                "score": 482.6,
-                "reason": "敵モンスターを撃破できるため攻撃 / 見送り: マスター特技は40点差で見送り、攻撃は237点差で見送り"
-              },
-              {
-                "key": "focus:cpu_front_right",
-                "label": "focus ドノマンティス",
-                "score": 155,
-                "reason": "有効攻撃がないためためる / 見送り: 召喚は13点差で見送り、召喚は13点差で見送り"
-              },
-              {
-                "key": "summon:cpu_card_105_3->cpu_back_right",
-                "label": "summon ヤミー -> cpu_back_right",
-                "score": 117.8,
-                "reason": "カードを後列右へ召喚 / 見送り: 召喚は1点差で見送り、マスター特技は375点差で見送り"
-              },
-              {
-                "key": "master:shield->monster:cpu_front_left",
-                "label": "master shield -> ボムゾウ@cpu_front_left",
-                "score": 51.6,
-                "reason": "致死圏の味方を守れるためシールド / 見送り: マスター特技は103点差で見送り、マスター特技は231点差で見送り"
-              },
-              {
-                "key": "end_turn",
-                "label": "end turn",
-                "score": -290.1,
-                "reason": "有効な行動がないためターン終了"
-              }
-            ],
-            "terminalScore": -58.2,
-            "terminalScoreDelta": -56.6,
-            "finalState": "turn 6 / current player / HP player/cpu 9/8 / stones player/cpu 5/0 / hand player/cpu 4/4",
-            "finalBoard": "cpu_back_left:CB:ドノマンティス Lv1 HP5 act0/1 focus | cpu_back_right:CB:ヤミー Lv1 HP5 prep | cpu_front_left:CF:ボムゾウ Lv2 HP2 act1/1 shield | cpu_front_right:CF:ドノマンティス Lv1 HP5 act1/1 focus | player_front_right:PF:鉄拳シグマ Lv2 HP6 act0/1 | player_back_right:PB:ヤンバル Lv1 HP3 act0/1",
-            "finalMetrics": {
-              "ownHp": 9,
-              "enemyHp": 8,
-              "ownStones": 5,
-              "enemyStones": 0,
-              "ownBoardValue": 390,
-              "enemyBoardValue": 690,
-              "ownReadyActions": 2,
-              "enemyReadyActions": 1,
-              "ownShielded": 0,
-              "enemyShielded": 1,
-              "ownLevel2Plus": 1,
-              "enemyLevel2Plus": 1
-            },
-            "truncated": false
-          }
-        },
-        {
-          "sequenceKey": "attack:player_front_right:attack->master:cpu > magic:player_power_up_3->monster:player_front_left > summon:player_yanbaru_1->player_back_left > attack:player_front_left:arc_drive->monster:cpu_back_right > end_turn",
-          "actions": [
-            {
-              "key": "attack:player_front_right:attack->master:cpu",
-              "label": "鉄拳シグマ attack -> cpu master",
-              "score": 557.1,
-              "reason": "相手マスターへ実ダメージを与えられるため攻撃"
+              "key": "master:wake_up->monster:player_back_right",
+              "label": "master wake_up -> ヤンバル@player_back_right",
+              "score": 508.1,
+              "reason": "準備中の味方を起こすと追加行動できるためウェイクアップ"
             },
             {
-              "key": "magic:player_power_up_3->monster:player_front_left",
-              "label": "magic パワーアップ -> モーガン@player_front_left",
-              "score": 776.9,
-              "reason": "パワーアップから攻撃につなげられるため使用"
-            },
-            {
-              "key": "summon:player_yanbaru_1->player_back_left",
-              "label": "summon ヤンバル -> player_back_left",
-              "score": 197.6,
-              "reason": "後衛カードを後列左へ召喚"
-            },
-            {
-              "key": "attack:player_front_left:arc_drive->monster:cpu_back_right",
-              "label": "モーガン arc_drive -> ピグミィ",
-              "score": 386.1,
+              "key": "attack:player_back_right:wild_claw->monster:cpu_front_right",
+              "label": "ヤンバル wild_claw -> ドノマンティス",
+              "score": 453.6,
               "reason": "敵モンスターを撃破できるため攻撃"
             },
             {
               "key": "end_turn",
               "label": "end turn",
-              "score": -119,
+              "score": -211.1,
               "reason": "有効な行動がないためターン終了"
             }
           ],
-          "guideScoreTotal": 1798.8,
-          "terminalScore": -1.6,
-          "terminalScoreDelta": 217.4,
-          "finalState": "turn 5 / current cpu / HP player/cpu 9/8 / stones player/cpu 0/6 / hand player/cpu 3/5",
-          "finalBoard": "cpu_back_left:CB:ドノマンティス Lv1 HP5 act0/1 focus | cpu_front_left:CF:ボムゾウ Lv2 HP5 act0/1 | cpu_front_right:CF:ドノマンティス Lv1 HP5 act0/1 | player_front_left:PF:モーガン Lv2 HP4 act1/1 | player_front_right:PF:鉄拳シグマ Lv2 HP6 act1/1 | player_back_left:PB:ヤンバル Lv1 HP3 prep",
+          "guideScoreTotal": 1530.2,
+          "terminalScore": 118,
+          "terminalScoreDelta": 186,
+          "finalState": "turn 5 / current cpu / HP player/cpu 10/8 / stones player/cpu 1/5 / hand player/cpu 3/6",
+          "finalBoard": "cpu_back_left:CB:ドノマンティス Lv1 HP5 act0/1 focus | cpu_front_left:CF:ボムゾウ Lv2 HP5 act0/1 | cpu_front_right:CF:ボムゾウ Lv1 HP5 act0/1 | player_front_left:PF:モーガン Lv1 HP4 act1/1 | player_front_right:PF:鉄拳シグマ Lv1 HP6 act0/1 focus | player_back_right:PB:ヤンバル Lv2 HP3 act1/1",
           "finalMetrics": {
-            "ownHp": 9,
+            "ownHp": 10,
             "enemyHp": 8,
-            "ownStones": 0,
-            "enemyStones": 6,
-            "ownBoardValue": 630,
+            "ownStones": 1,
+            "enemyStones": 5,
+            "ownBoardValue": 530,
             "enemyBoardValue": 550,
-            "ownReadyActions": 0,
+            "ownReadyActions": 1,
             "enemyReadyActions": 3,
             "ownShielded": 0,
             "enemyShielded": 0,
-            "ownLevel2Plus": 2,
+            "ownLevel2Plus": 1,
             "enemyLevel2Plus": 1
           },
           "truncated": false,
           "opponentResponse": {
             "actions": [
               {
-                "key": "master:master_attack->monster:player_front_left",
-                "label": "master master_attack -> モーガン@player_front_left",
-                "score": 312.4,
-                "reason": "ストーンに余裕があり敵を削れるためマスターアタック / 見送り: 召喚は185点差で見送り、召喚は185点差で見送り"
+                "key": "summon:cpu_card_051_1->cpu_back_right",
+                "label": "summon ピグミィ -> cpu_back_right",
+                "score": 199.6,
+                "reason": "後衛カードを後列右へ召喚 / 見送り: 召喚は113点差で見送り、召喚は113点差で見送り"
               },
               {
-                "key": "attack:cpu_front_left:self_bomb->monster:player_front_left",
-                "label": "ボムゾウ self_bomb -> モーガン",
-                "score": 495.8,
-                "reason": "敵モンスターを撃破できるため攻撃 / 見送り: マスター特技は40点差で見送り、攻撃は251点差で見送り"
+                "key": "master:wake_up->monster:cpu_back_right",
+                "label": "master wake_up -> ピグミィ@cpu_back_right",
+                "score": 314.8,
+                "reason": "準備中の味方を起こすと追加行動できるためウェイクアップ / 見送り: 攻撃は292点差で見送り、攻撃は308点差で見送り"
               },
               {
-                "key": "focus:cpu_front_right",
-                "label": "focus ドノマンティス",
-                "score": 163.4,
-                "reason": "有効攻撃がないためためる / 見送り: 召喚は22点差で見送り、召喚は22点差で見送り"
+                "key": "attack:cpu_front_left:storm_bomb->monster:player_back_right",
+                "label": "ボムゾウ storm_bomb -> ヤンバル",
+                "score": 14.9,
+                "reason": "ヤンバルを削れるため攻撃 / 見送り: 移動は35点差で見送り、ためるは57点差で見送り"
               },
               {
-                "key": "summon:cpu_card_105_3->cpu_back_right",
-                "label": "summon ヤミー -> cpu_back_right",
-                "score": 147.6,
-                "reason": "カードを後列右へ召喚 / 見送り: 召喚は1点差で見送り、マスター特技は375点差で見送り"
+                "key": "attack:cpu_front_right:storm_bomb->monster:player_back_right",
+                "label": "ボムゾウ storm_bomb -> ヤンバル",
+                "score": 773.2,
+                "reason": "敵モンスターを撃破できるため攻撃 / 見送り: 攻撃は348点差で見送り、ためるは363点差で見送り"
               },
               {
-                "key": "master:shield->monster:cpu_front_left",
-                "label": "master shield -> ボムゾウ@cpu_front_left",
-                "score": 88.3,
-                "reason": "致死圏の味方を守れるためシールド / 見送り: マスター特技は79点差で見送り、マスター特技は185点差で見送り"
+                "key": "attack:cpu_back_right:スパイクボール->monster:player_front_left",
+                "label": "ピグミィ スパイクボール -> モーガン",
+                "score": -4.9,
+                "reason": "モーガンを削れるため攻撃 / 見送り: ためるは43点差で見送り"
+              },
+              {
+                "key": "focus:cpu_back_right",
+                "label": "focus ピグミィ",
+                "score": -75.1,
+                "reason": "有効攻撃がないためためる / 見送り: 攻撃は42点差で見送り"
               },
               {
                 "key": "end_turn",
                 "label": "end turn",
-                "score": -159.1,
+                "score": -150.1,
                 "reason": "有効な行動がないためターン終了"
               }
             ],
-            "terminalScore": -96.2,
-            "terminalScoreDelta": -94.6,
-            "finalState": "turn 6 / current player / HP player/cpu 9/8 / stones player/cpu 5/0 / hand player/cpu 4/4",
-            "finalBoard": "cpu_back_left:CB:ドノマンティス Lv1 HP5 act0/1 focus | cpu_back_right:CB:ヤミー Lv1 HP5 prep | cpu_front_left:CF:ボムゾウ Lv2 HP2 act1/1 shield | cpu_front_right:CF:ドノマンティス Lv1 HP5 act1/1 focus | player_front_left:PF:ヤンバル Lv1 HP3 act0/1 | player_front_right:PF:鉄拳シグマ Lv2 HP6 act0/1",
+            "terminalScore": -140,
+            "terminalScoreDelta": -258,
+            "finalState": "turn 6 / current player / HP player/cpu 10/8 / stones player/cpu 6/1 / hand player/cpu 4/5",
+            "finalBoard": "cpu_back_left:CB:ドノマンティス Lv1 HP5 act0/1 focus | cpu_back_right:CB:ピグミィ Lv1 HP3 act2/2 focus | cpu_front_left:CF:ボムゾウ Lv2 HP5 act1/1 | cpu_front_right:CF:ボムゾウ Lv2 HP5 act1/1 | player_front_left:PF:モーガン Lv1 HP3 act0/1 | player_front_right:PF:鉄拳シグマ Lv1 HP6 act0/1 focus",
             "finalMetrics": {
-              "ownHp": 9,
+              "ownHp": 10,
               "enemyHp": 8,
-              "ownStones": 5,
-              "enemyStones": 0,
-              "ownBoardValue": 390,
-              "enemyBoardValue": 690,
+              "ownStones": 6,
+              "enemyStones": 1,
+              "ownBoardValue": 290,
+              "enemyBoardValue": 780,
               "ownReadyActions": 2,
               "enemyReadyActions": 1,
               "ownShielded": 0,
-              "enemyShielded": 1,
-              "ownLevel2Plus": 1,
-              "enemyLevel2Plus": 1
+              "enemyShielded": 0,
+              "ownLevel2Plus": 0,
+              "enemyLevel2Plus": 2
+            },
+            "truncated": false
+          }
+        },
+        {
+          "sequenceKey": "summon:player_yanbaru_1->player_back_left > attack:player_front_left:arc_drive->monster:cpu_front_right > master:wake_up->monster:player_back_left > attack:player_back_left:wild_claw->monster:cpu_front_right > end_turn",
+          "actions": [
+            {
+              "key": "summon:player_yanbaru_1->player_back_left",
+              "label": "summon ヤンバル -> player_back_left",
+              "score": 335.5,
+              "reason": "後衛カードを後列左へ召喚"
+            },
+            {
+              "key": "attack:player_front_left:arc_drive->monster:cpu_front_right",
+              "label": "モーガン arc_drive -> ドノマンティス",
+              "score": 395.4,
+              "reason": "ドノマンティスを削れるため攻撃"
+            },
+            {
+              "key": "master:wake_up->monster:player_back_left",
+              "label": "master wake_up -> ヤンバル@player_back_left",
+              "score": 508.1,
+              "reason": "準備中の味方を起こすと追加行動できるためウェイクアップ"
+            },
+            {
+              "key": "attack:player_back_left:wild_claw->monster:cpu_front_right",
+              "label": "ヤンバル wild_claw -> ドノマンティス",
+              "score": 453.6,
+              "reason": "敵モンスターを撃破できるため攻撃"
+            },
+            {
+              "key": "end_turn",
+              "label": "end turn",
+              "score": -211.1,
+              "reason": "有効な行動がないためターン終了"
+            }
+          ],
+          "guideScoreTotal": 1481.4,
+          "terminalScore": 118,
+          "terminalScoreDelta": 186,
+          "finalState": "turn 5 / current cpu / HP player/cpu 10/8 / stones player/cpu 1/5 / hand player/cpu 3/6",
+          "finalBoard": "cpu_back_left:CB:ドノマンティス Lv1 HP5 act0/1 focus | cpu_front_left:CF:ボムゾウ Lv2 HP5 act0/1 | cpu_front_right:CF:ボムゾウ Lv1 HP5 act0/1 | player_front_left:PF:モーガン Lv1 HP4 act1/1 | player_front_right:PF:鉄拳シグマ Lv1 HP6 act0/1 focus | player_back_left:PB:ヤンバル Lv2 HP3 act1/1",
+          "finalMetrics": {
+            "ownHp": 10,
+            "enemyHp": 8,
+            "ownStones": 1,
+            "enemyStones": 5,
+            "ownBoardValue": 530,
+            "enemyBoardValue": 550,
+            "ownReadyActions": 1,
+            "enemyReadyActions": 3,
+            "ownShielded": 0,
+            "enemyShielded": 0,
+            "ownLevel2Plus": 1,
+            "enemyLevel2Plus": 1
+          },
+          "truncated": false,
+          "opponentResponse": {
+            "actions": [
+              {
+                "key": "summon:cpu_card_051_1->cpu_back_right",
+                "label": "summon ピグミィ -> cpu_back_right",
+                "score": 199.6,
+                "reason": "後衛カードを後列右へ召喚 / 見送り: 召喚は113点差で見送り、召喚は113点差で見送り"
+              },
+              {
+                "key": "master:wake_up->monster:cpu_back_right",
+                "label": "master wake_up -> ピグミィ@cpu_back_right",
+                "score": 314.8,
+                "reason": "準備中の味方を起こすと追加行動できるためウェイクアップ / 見送り: マスター特技は274点差で見送り、攻撃は292点差で見送り"
+              },
+              {
+                "key": "attack:cpu_front_left:storm_bomb->monster:player_back_left",
+                "label": "ボムゾウ storm_bomb -> ヤンバル",
+                "score": 14.9,
+                "reason": "ヤンバルを削れるため攻撃 / 見送り: 移動は35点差で見送り、ためるは57点差で見送り"
+              },
+              {
+                "key": "attack:cpu_front_right:storm_bomb->monster:player_back_left",
+                "label": "ボムゾウ storm_bomb -> ヤンバル",
+                "score": 773.2,
+                "reason": "敵モンスターを撃破できるため攻撃 / 見送り: 攻撃は348点差で見送り、ためるは363点差で見送り"
+              },
+              {
+                "key": "attack:cpu_back_right:スパイクボール->monster:player_front_left",
+                "label": "ピグミィ スパイクボール -> モーガン",
+                "score": -4.9,
+                "reason": "モーガンを削れるため攻撃 / 見送り: ためるは43点差で見送り"
+              },
+              {
+                "key": "focus:cpu_back_right",
+                "label": "focus ピグミィ",
+                "score": -75.1,
+                "reason": "有効攻撃がないためためる / 見送り: 攻撃は42点差で見送り"
+              },
+              {
+                "key": "end_turn",
+                "label": "end turn",
+                "score": -150.1,
+                "reason": "有効な行動がないためターン終了"
+              }
+            ],
+            "terminalScore": -140,
+            "terminalScoreDelta": -258,
+            "finalState": "turn 6 / current player / HP player/cpu 10/8 / stones player/cpu 6/1 / hand player/cpu 4/5",
+            "finalBoard": "cpu_back_left:CB:ドノマンティス Lv1 HP5 act0/1 focus | cpu_back_right:CB:ピグミィ Lv1 HP3 act2/2 focus | cpu_front_left:CF:ボムゾウ Lv2 HP5 act1/1 | cpu_front_right:CF:ボムゾウ Lv2 HP5 act1/1 | player_front_left:PF:モーガン Lv1 HP3 act0/1 | player_front_right:PF:鉄拳シグマ Lv1 HP6 act0/1 focus",
+            "finalMetrics": {
+              "ownHp": 10,
+              "enemyHp": 8,
+              "ownStones": 6,
+              "enemyStones": 1,
+              "ownBoardValue": 290,
+              "enemyBoardValue": 780,
+              "ownReadyActions": 2,
+              "enemyReadyActions": 1,
+              "ownShielded": 0,
+              "enemyShielded": 0,
+              "ownLevel2Plus": 0,
+              "enemyLevel2Plus": 2
             },
             "truncated": false
           }
@@ -1416,14 +1446,14 @@
   ],
   "summary": {
     "selectedTop1": 1,
-    "selectedAverageRank": 4.33,
-    "averageGapToBest": 5.3,
+    "selectedAverageRank": 5,
+    "averageGapToBest": 9.3,
     "maxGapToBest": 16
   },
   "conclusion": [
     "現行AIの選択手順が終端盤面1位だった局面は 1/3。",
-    "平均ギャップは 5.3 点。80点以上のズレは 0/3。",
-    "現行選択はシールド 1/3、フォーカス 0/3 を含む。一方、終端1位はシールド 0/3、フォーカス 0/3。",
+    "平均ギャップは 9.3 点。80点以上のズレは 0/3。",
+    "現行選択はシールド 1/3、フォーカス 1/3 を含む。一方、終端1位はシールド 0/3、フォーカス 0/3。",
     "このサンプルでは現行AIの手順選択と終端盤面評価のズレは限定的。次はサンプル局面を増やすか、対黒局面でも同じ監査を行う。"
   ]
 }

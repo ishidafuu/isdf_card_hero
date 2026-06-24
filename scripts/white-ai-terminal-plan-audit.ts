@@ -798,7 +798,7 @@ function parseArgs(args: string[]): CliOptions {
       sameTurnTerminalPlanDepth: 6,
       sameTurnTerminalPlanWidth: 2,
       sameTurnTerminalPlanWeight: 2,
-      sameTurnOpponentTerminalPlanDepth: 1,
+      sameTurnOpponentTerminalPlanDepth: 2,
       sameTurnOpponentTerminalPlanWidth: 1,
       sameTurnOpponentTerminalPlanWeight: 0.35,
     },
@@ -960,7 +960,7 @@ Options:
   --max-actions <n>             Maximum own-turn actions before forced end turn. Default: 8
   --top-lines <n>               Top terminal plans per scenario. Default: 3
   --search <d:w[:dw[:td:tw:twgt[:od:ow:owgt]]]>
-                                AI search options for guide scores. Default: 4:4:4:6:2:2:1:1:0.35
+                                AI search options for guide scores. Default: 4:4:4:6:2:2:2:1:0.35
   --markdown <path>             Markdown output path.
   --json <path>                 JSON output path.
 `);
