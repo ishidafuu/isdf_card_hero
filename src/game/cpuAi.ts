@@ -93,6 +93,13 @@ type CpuAiProfileConfig = {
   omniscient?: OmniscientAiConfig;
 };
 
+export interface CpuAiSearchOptions {
+  detailedWidth?: number;
+  sameTurnSearchDepth?: number;
+  sameTurnSearchWidth?: number;
+  beamScoreThreshold?: number;
+}
+
 const NO_THREAT: IncomingThreat = {
   threatened: false,
   lethal: false,
@@ -155,6 +162,8 @@ export interface CpuAiTuning {
 export interface CpuAiOptions {
   profile?: CpuAiProfile;
   profiles?: Partial<CpuAiProfiles>;
+  search?: CpuAiSearchOptions;
+  searches?: Partial<Record<PlayerId, CpuAiSearchOptions>>;
   tuning?: CpuAiTuning;
   tunings?: Partial<Record<PlayerId, CpuAiTuning>>;
 }
@@ -328,19 +337,43 @@ function resolveCpuAiProfile(state: GameState, options: CpuAiOptions): CpuAiProf
 function resolveCpuAiConfig(state: GameState, options: CpuAiOptions): CpuAiProfileConfig {
   const profile = resolveCpuAiProfile(state, options);
   const base = CPU_AI_PROFILE_CONFIG[profile];
+  const baseWithSearch = applyCpuAiSearchOptions(base, options.searches?.[state.currentPlayer] ?? options.search);
   const matchupTuning = resolveCpuAiMatchupTuning(state, profile);
   const tuning = mergeCpuAiTuning(
-    mergeCpuAiTuning(base.tuning, matchupTuning),
+    mergeCpuAiTuning(baseWithSearch.tuning, matchupTuning),
     options.tunings?.[state.currentPlayer] ?? options.tuning,
   );
   if (!tuning) {
+    return baseWithSearch;
+  }
+  return {
+    ...baseWithSearch,
+    weights: tuning.weights ? { ...baseWithSearch.weights, ...tuning.weights } : baseWithSearch.weights,
+    tuning,
+  };
+}
+
+function applyCpuAiSearchOptions(
+  base: CpuAiProfileConfig,
+  search: CpuAiSearchOptions | undefined,
+): CpuAiProfileConfig {
+  if (!search) {
     return base;
   }
   return {
     ...base,
-    weights: tuning.weights ? { ...base.weights, ...tuning.weights } : base.weights,
-    tuning,
+    detailedWidth: normalizedSearchInteger(search.detailedWidth, base.detailedWidth),
+    sameTurnSearchDepth: normalizedSearchInteger(search.sameTurnSearchDepth, base.sameTurnSearchDepth),
+    sameTurnSearchWidth: normalizedSearchInteger(search.sameTurnSearchWidth, base.sameTurnSearchWidth),
+    beamScoreThreshold: normalizedSearchInteger(search.beamScoreThreshold, base.beamScoreThreshold),
   };
+}
+
+function normalizedSearchInteger(value: number | undefined, fallback: number): number {
+  if (value === undefined || !Number.isFinite(value)) {
+    return fallback;
+  }
+  return Math.max(0, Math.trunc(value));
 }
 
 function resolveCpuAiMatchupTuning(state: GameState, profile: CpuAiProfile): CpuAiTuning | undefined {
