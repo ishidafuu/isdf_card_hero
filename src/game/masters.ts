@@ -20,7 +20,7 @@ export const MASTER_ACTION_DEFS: Record<MasterActionId, MasterActionDef> = {
     id: "master_attack",
     name: "Master Attack",
     cost: 3,
-    summary: "相手前衛モンスター1体に2P",
+    summary: "相手前衛モンスター1体または相手マスターに2P",
   },
   wake_up: {
     id: "wake_up",

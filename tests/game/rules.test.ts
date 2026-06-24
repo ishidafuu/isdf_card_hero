@@ -681,6 +681,7 @@ describe("battle prototype rules", () => {
 
     expect(getMasterActionTargets(game, "master_attack")).toEqual([
       { kind: "monster", slotKey: "cpu_front_left" },
+      { kind: "master", playerId: "cpu" },
     ]);
 
     const next = useMasterAction(game, "master_attack", { kind: "monster", slotKey: "cpu_front_left" });
@@ -688,6 +689,34 @@ describe("battle prototype rules", () => {
     expect(next.players.player.stones).toBe(0);
     expect(next.slots.cpu_front_left.monster).toBeUndefined();
     expect(next.pendingLevelUp).toBeUndefined();
+  });
+
+  it("lets the master attack target the opponent master through the master shield", () => {
+    let game = createInitialGame(125);
+    game.players.player.stones = 3;
+
+    expect(getMasterActionTargets(game, "master_attack")).toContainEqual({ kind: "master", playerId: "cpu" });
+
+    game = useMasterAction(game, "master_attack", { kind: "master", playerId: "cpu" });
+
+    expect(game.players.player.stones).toBe(0);
+    expect(game.players.cpu.masterHp).toBe(10);
+    expect(game.players.cpu.stones).toBe(0);
+    expect(game.log).toContain("マスターアタックはマスターシールドで防がれた");
+  });
+
+  it("lets a powered master attack damage the opponent master", () => {
+    let game = createInitialGame(126);
+    game.players.player.stones = 3;
+    game.players.player.masterPowerBonus = 1;
+
+    game = useMasterAction(game, "master_attack", { kind: "master", playerId: "cpu" });
+
+    expect(game.players.player.stones).toBe(0);
+    expect(game.players.player.masterPowerBonus).toBe(0);
+    expect(game.players.cpu.masterHp).toBe(9);
+    expect(game.players.cpu.stones).toBe(1);
+    expect(game.log).toContain("CPUのマスターHPが1減った（マスターアタック）。ストーン+1");
   });
 
   it("wakes up any prepared monster with white master magic", () => {

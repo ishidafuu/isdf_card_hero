@@ -631,12 +631,19 @@ export function useMasterAction(
   recordMasterActionHistory(next, actionId, target);
 
   if (actionId === "master_attack") {
-    if (target.kind !== "monster") {
-      throw new Error("マスターアタックはモンスターだけを対象にできます");
-    }
     appendLog(next, `${playerLabel(next.currentPlayer)}のマスターアタック`);
     const power = MASTER_ATTACK_POWER + (player.masterPowerBonus ?? 0);
     player.masterPowerBonus = 0;
+    if (target.kind === "master") {
+      damageMasterByPower(next, target.playerId, power, {
+        source: "マスターアタック",
+        kind: "master",
+      });
+      return next;
+    }
+    if (target.kind !== "monster") {
+      throw new Error("マスターアタックの対象が不正です");
+    }
     damageMonster(next, target.slotKey, power, {
       source: "マスターアタック",
       kind: "master",

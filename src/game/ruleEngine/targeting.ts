@@ -211,12 +211,14 @@ export function getMasterActionTargets(state: GameState, actionId: MasterActionI
   }
 
   if (actionId === "master_attack") {
-    return PLAYER_SLOT_ORDER[opponentOf(state.currentPlayer)]
+    const opponent = opponentOf(state.currentPlayer);
+    const monsterTargets = PLAYER_SLOT_ORDER[opponent]
       .filter((slotKey) => {
         const slot = state.slots[slotKey];
         return slot.row === "front" && slot.monster?.status === "active";
       })
       .map<Target>((slotKey) => ({ kind: "monster", slotKey }));
+    return [...monsterTargets, { kind: "master", playerId: opponent }];
   }
 
   if (actionId === "wake_up") {
