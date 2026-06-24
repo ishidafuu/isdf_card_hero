@@ -31,6 +31,8 @@ interface SearchBenchmarkGame {
   playerHp: number;
   cpuHp: number;
   elapsedMs: number;
+  averageTurnElapsedMs: number;
+  maxTurnElapsedMs: number;
   issue?: string;
 }
 
@@ -42,6 +44,8 @@ interface DeckBenchmarkRecord {
   draws: number;
   hpMarginTotal: number;
   elapsedMsTotal: number;
+  averageTurnElapsedMsTotal: number;
+  maxTurnElapsedMs: number;
   stepsTotal: number;
   turnsTotal: number;
 }
@@ -89,6 +93,7 @@ function runGame(
   let elapsedMs = 0;
   let issue: string | undefined;
   let steps = 0;
+  const turnElapsed = new Map<string, number>();
   const aiOptions = {
     profiles: { player: "white", cpu: "white" } as const,
     searches: { player: config.search, cpu: config.search },
@@ -99,13 +104,18 @@ function runGame(
       issue = `turn ${game.turnNumber} exceeded limit ${options.maxTurns}`;
       break;
     }
+    const turnKey = currentTurnKey(game);
     const startedAt = performance.now();
     game = runAutoStep(game, aiOptions);
-    elapsedMs += performance.now() - startedAt;
+    const stepElapsedMs = performance.now() - startedAt;
+    elapsedMs += stepElapsedMs;
+    addTurnElapsed(turnElapsed, turnKey, stepElapsedMs);
     if (game.pendingLevelUp) {
       const levelUpStartedAt = performance.now();
       game = runAutoStep(game, aiOptions);
-      elapsedMs += performance.now() - levelUpStartedAt;
+      const levelUpElapsedMs = performance.now() - levelUpStartedAt;
+      elapsedMs += levelUpElapsedMs;
+      addTurnElapsed(turnElapsed, turnKey, levelUpElapsedMs);
     }
   }
 
@@ -113,7 +123,7 @@ function runGame(
     issue = `winner was not decided within ${options.maxSteps} auto steps`;
   }
 
-  return summarizeGame(config.id, seed, playerDeckPreset, cpuDeckPreset, game, steps, elapsedMs, issue);
+  return summarizeGame(config.id, seed, playerDeckPreset, cpuDeckPreset, game, steps, elapsedMs, turnElapsed, issue);
 }
 
 function summarizeGame(
@@ -124,8 +134,10 @@ function summarizeGame(
   game: GameState,
   steps: number,
   elapsedMs: number,
+  turnElapsed: Map<string, number>,
   issue?: string,
 ): SearchBenchmarkGame {
+  const turnElapsedValues = [...turnElapsed.values()];
   return {
     configId,
     seed,
@@ -138,6 +150,8 @@ function summarizeGame(
     playerHp: game.players.player.masterHp,
     cpuHp: game.players.cpu.masterHp,
     elapsedMs,
+    averageTurnElapsedMs: average(turnElapsedValues),
+    maxTurnElapsedMs: Math.max(0, ...turnElapsedValues),
     issue,
   };
 }
@@ -156,6 +170,8 @@ function formatReport(games: readonly SearchBenchmarkGame[], configs: readonly S
         `WPR ${formatPercent((record.wins + record.draws * 0.5) / record.games)} ` +
         `avgHPDiff ${round(record.hpMarginTotal / record.games, 2)} ` +
         `avgGameMs ${round(record.elapsedMsTotal / record.games, 1)} ` +
+        `avgTurnMs ${round(record.averageTurnElapsedMsTotal / record.games, 1)} ` +
+        `maxTurnMs ${round(record.maxTurnElapsedMs, 1)} ` +
         `avgStepMs ${round(record.elapsedMsTotal / Math.max(1, record.stepsTotal), 2)} ` +
         `avgTurns ${round(record.turnsTotal / record.games, 1)}`,
       );
@@ -164,7 +180,10 @@ function formatReport(games: readonly SearchBenchmarkGame[], configs: readonly S
       lines.push(
         `  ${run.playerDeckPreset} vs ${run.cpuDeckPreset}: ` +
         `P ${run.playerWins} / C ${run.cpuWins} / D ${run.draws}, ` +
-        `avgGameMs ${round(run.elapsedMs / run.games, 1)}, avgStepMs ${round(run.elapsedMs / Math.max(1, run.steps), 2)}`,
+        `avgGameMs ${round(run.elapsedMs / run.games, 1)}, ` +
+        `avgTurnMs ${round(run.averageTurnElapsedMs / run.games, 1)}, ` +
+        `maxTurnMs ${round(run.maxTurnElapsedMs, 1)}, ` +
+        `avgStepMs ${round(run.elapsedMs / Math.max(1, run.steps), 2)}`,
       );
     }
     lines.push("");
@@ -195,11 +214,15 @@ function applyDeckRecord(
     draws: 0,
     hpMarginTotal: 0,
     elapsedMsTotal: 0,
+    averageTurnElapsedMsTotal: 0,
+    maxTurnElapsedMs: 0,
     stepsTotal: 0,
     turnsTotal: 0,
   };
   record.games += 1;
   record.elapsedMsTotal += game.elapsedMs;
+  record.averageTurnElapsedMsTotal += game.averageTurnElapsedMs;
+  record.maxTurnElapsedMs = Math.max(record.maxTurnElapsedMs, game.maxTurnElapsedMs);
   record.stepsTotal += game.steps;
   record.turnsTotal += game.turns;
   record.hpMarginTotal += side === "player" ? game.playerHp - game.cpuHp : game.cpuHp - game.playerHp;
@@ -221,6 +244,8 @@ function summarizeRuns(games: readonly SearchBenchmarkGame[]): Array<{
   cpuWins: number;
   draws: number;
   elapsedMs: number;
+  averageTurnElapsedMs: number;
+  maxTurnElapsedMs: number;
   steps: number;
 }> {
   const records = new Map<string, {
@@ -231,6 +256,8 @@ function summarizeRuns(games: readonly SearchBenchmarkGame[]): Array<{
     cpuWins: number;
     draws: number;
     elapsedMs: number;
+    averageTurnElapsedMs: number;
+    maxTurnElapsedMs: number;
     steps: number;
   }>();
   for (const game of games) {
@@ -243,10 +270,14 @@ function summarizeRuns(games: readonly SearchBenchmarkGame[]): Array<{
       cpuWins: 0,
       draws: 0,
       elapsedMs: 0,
+      averageTurnElapsedMs: 0,
+      maxTurnElapsedMs: 0,
       steps: 0,
     };
     record.games += 1;
     record.elapsedMs += game.elapsedMs;
+    record.averageTurnElapsedMs += game.averageTurnElapsedMs;
+    record.maxTurnElapsedMs = Math.max(record.maxTurnElapsedMs, game.maxTurnElapsedMs);
     record.steps += game.steps;
     if (game.winner === "player") {
       record.playerWins += 1;
@@ -347,6 +378,21 @@ function readString(name: string, value: string | undefined): string {
 
 function formatPercent(value: number): string {
   return `${round(value * 100, 1)}%`;
+}
+
+function currentTurnKey(game: GameState): string {
+  return `${game.turnNumber}:${game.currentPlayer}`;
+}
+
+function addTurnElapsed(turnElapsed: Map<string, number>, turnKey: string, elapsedMs: number): void {
+  turnElapsed.set(turnKey, (turnElapsed.get(turnKey) ?? 0) + elapsedMs);
+}
+
+function average(values: readonly number[]): number {
+  if (values.length === 0) {
+    return 0;
+  }
+  return values.reduce((total, value) => total + value, 0) / values.length;
 }
 
 function round(value: number, precision: number): number {
