@@ -24,3 +24,10 @@ export const SE_SOURCES: Record<SeId, string> = {
   invalid: "/audio/se/invalid.mp3",
   win: "/audio/se/win.mp3",
 };
+
+export type BgmId = "playerTurn" | "enemyTurn";
+
+export const BGM_SOURCES: Record<BgmId, string> = {
+  playerTurn: "/audio/bgm/player-turn.mp3",
+  enemyTurn: "/audio/bgm/enemy-turn.mp3",
+};

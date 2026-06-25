@@ -223,7 +223,8 @@ button:disabled {
   width: 104px;
 }
 
-.se-volume-control input[type="range"] {
+.se-volume-control input[type="range"],
+.bgm-volume-control input[type="range"] {
   padding-inline: 0;
   width: 92px;
 }

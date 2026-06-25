@@ -79,7 +79,7 @@ import {
 import { evaluateCard } from "./game/unitEvaluation";
 import type { CardInstance, CardPool, CommandDef, GameState, MagicAction, MagicCardDef, MagicTargetKind, MasterActionId, MasterId, MonsterState, PlayerId, Row, SlotKey, Target } from "./game/types";
 import type { DeckValidationSummary } from "./game/cards";
-import { SE_SOURCES, type SeId } from "./audio";
+import { BGM_SOURCES, SE_SOURCES, type BgmId, type SeId } from "./audio";
 
 type BoardCell =
   | { kind: "slot"; slotKey: SlotKey }
@@ -316,6 +316,8 @@ const DECK_PRESET_CARD_FILTER_OPTIONS = getAllCardDefs()
 const DRAG_MIME = "application/x-card-hero-drag";
 const SE_ENABLED_STORAGE_KEY = "cardHeroSeEnabled";
 const SE_VOLUME_STORAGE_KEY = "cardHeroSeVolume";
+const BGM_ENABLED_STORAGE_KEY = "cardHeroBgmEnabled";
+const BGM_VOLUME_STORAGE_KEY = "cardHeroBgmVolume";
 
 const LOG_FILTERS: LogFilter[] = ["all", "battle", "damage", "support", "turn", "cpu"];
 const LOG_CARD_NAME_MATCHERS = getAllCardDefs()
@@ -965,6 +967,10 @@ function loadNumberSetting(key: string, fallback: number, min: number, max: numb
   }
 }
 
+function bgmForTurn(playerId: PlayerId): BgmId {
+  return playerId === "player" ? "playerTurn" : "enemyTurn";
+}
+
 function generatedDeckCardIds(playerId: PlayerId, seed: number, masterId: MasterId): string[] {
   return buildDeckCardIds(seed + (playerId === "player" ? 101 : 202), { masterId });
 }
@@ -1072,6 +1078,8 @@ export function App() {
   const [selectedLogIndex, setSelectedLogIndex] = useState<number | undefined>();
   const [seEnabled, setSeEnabled] = useState(() => loadBooleanSetting(SE_ENABLED_STORAGE_KEY, true));
   const [seVolume, setSeVolume] = useState(() => loadNumberSetting(SE_VOLUME_STORAGE_KEY, 0.55, 0, 1));
+  const [bgmEnabled, setBgmEnabled] = useState(() => loadBooleanSetting(BGM_ENABLED_STORAGE_KEY, true));
+  const [bgmVolume, setBgmVolume] = useState(() => loadNumberSetting(BGM_VOLUME_STORAGE_KEY, 0.28, 0, 1));
   const [battleHistory, setBattleHistory] = useState<BattleHistoryEntry[]>(() => loadBattleHistory());
   const [savedBattlePresets, setSavedBattlePresets] = useState<SavedBattlePreset[]>(() => loadSavedBattlePresets());
   const [matchPresetId, setMatchPresetId] = useState<string>(BUILT_IN_MATCH_PRESETS[0]?.id ?? "");
@@ -1104,6 +1112,11 @@ export function App() {
   const seEnabledRef = useRef(seEnabled);
   const seVolumeRef = useRef(seVolume);
   const playedSeEffectIdRef = useRef<number | undefined>(undefined);
+  const bgmUnlockedRef = useRef(false);
+  const bgmEnabledRef = useRef(bgmEnabled);
+  const bgmVolumeRef = useRef(bgmVolume);
+  const bgmAudioRef = useRef<HTMLAudioElement | undefined>(undefined);
+  const bgmTrackRef = useRef<BgmId | undefined>(undefined);
 
   const deckDrafts = useMemo(() => createDeckDrafts(battleSettings, deckSettings), [battleSettings, deckSettings]);
   const deckCardOptions = useMemo(
@@ -1224,6 +1237,7 @@ export function App() {
     return new Map(entries);
   }, [actionPreviews]);
   const recentSpectatorAttention = useMemo(() => findRecentSpectatorAttention(game.log, 4), [game.log]);
+  const activeBgmId = game.winner ? undefined : bgmForTurn(game.currentPlayer);
 
   useEffect(() => {
     if (selectedLogIndex === undefined) {
@@ -1248,6 +1262,30 @@ export function App() {
       window.localStorage.setItem(SE_VOLUME_STORAGE_KEY, String(seVolume));
     }
   }, [seVolume]);
+
+  useEffect(() => {
+    bgmEnabledRef.current = bgmEnabled;
+    if (typeof window !== "undefined") {
+      window.localStorage.setItem(BGM_ENABLED_STORAGE_KEY, String(bgmEnabled));
+    }
+    if (!bgmEnabled) {
+      pauseBgm();
+    }
+  }, [bgmEnabled]);
+
+  useEffect(() => {
+    bgmVolumeRef.current = bgmVolume;
+    if (bgmAudioRef.current) {
+      bgmAudioRef.current.volume = bgmVolume;
+    }
+    if (typeof window !== "undefined") {
+      window.localStorage.setItem(BGM_VOLUME_STORAGE_KEY, String(bgmVolume));
+    }
+  }, [bgmVolume]);
+
+  useEffect(() => {
+    syncBgmPlayback(activeBgmId);
+  }, [activeBgmId, bgmEnabled]);
 
   useEffect(() => {
     if (!visualEffect) {
@@ -1376,22 +1414,29 @@ export function App() {
   }, [savedBattlePresets]);
 
   useEffect(() => () => clearPointerDrag(), []);
+  useEffect(() => () => pauseBgm(true), []);
 
-  function unlockSePlayback() {
-    if (seUnlockedRef.current || typeof Audio === "undefined") {
+  function unlockAudioPlayback() {
+    if (typeof Audio === "undefined") {
       return;
     }
-    seUnlockedRef.current = true;
-    const audio = new Audio(SE_SOURCES.select);
-    audio.volume = 0;
-    void audio.play()
-      .then(() => {
-        audio.pause();
-        audio.currentTime = 0;
-      })
-      .catch(() => {
-        // Browsers may still block the first silent play; later user-triggered SE can retry normally.
-      });
+    if (!seUnlockedRef.current) {
+      seUnlockedRef.current = true;
+      const audio = new Audio(SE_SOURCES.select);
+      audio.volume = 0;
+      void audio.play()
+        .then(() => {
+          audio.pause();
+          audio.currentTime = 0;
+        })
+        .catch(() => {
+          // Browsers may still block the first silent play; later user-triggered SE can retry normally.
+        });
+    }
+    if (!bgmUnlockedRef.current) {
+      bgmUnlockedRef.current = true;
+      syncBgmPlayback(activeBgmId);
+    }
   }
 
   function playSe(id: SeId) {
@@ -1406,9 +1451,66 @@ export function App() {
     });
   }
 
+  function syncBgmPlayback(id: BgmId | undefined) {
+    if (!id) {
+      pauseBgm(true);
+      return;
+    }
+    if (!bgmEnabledRef.current || !bgmUnlockedRef.current || typeof Audio === "undefined") {
+      if (!bgmEnabledRef.current) {
+        pauseBgm();
+      }
+      return;
+    }
+    if (bgmTrackRef.current !== id) {
+      pauseBgm(true);
+      bgmAudioRef.current = new Audio(BGM_SOURCES[id]);
+      bgmAudioRef.current.loop = true;
+      bgmTrackRef.current = id;
+    }
+    const audio = bgmAudioRef.current;
+    if (!audio) {
+      return;
+    }
+    audio.loop = true;
+    audio.volume = bgmVolumeRef.current;
+    void audio.play().catch(() => {
+      // BGM is optional; blocked playback should not interrupt gameplay.
+    });
+  }
+
+  function pauseBgm(reset = false) {
+    const audio = bgmAudioRef.current;
+    if (!audio) {
+      return;
+    }
+    audio.pause();
+    if (reset) {
+      audio.currentTime = 0;
+      bgmAudioRef.current = undefined;
+      bgmTrackRef.current = undefined;
+    }
+  }
+
   function handleSeVolumeChange(value: string) {
     const next = clampNumber(Number(value) / 100, 0, 1);
     setSeVolume(next);
+  }
+
+  function handleBgmVolumeChange(value: string) {
+    const next = clampNumber(Number(value) / 100, 0, 1);
+    setBgmVolume(next);
+  }
+
+  function handleBgmEnabledToggle() {
+    const next = !bgmEnabled;
+    setBgmEnabled(next);
+    bgmEnabledRef.current = next;
+    if (next) {
+      syncBgmPlayback(activeBgmId);
+    } else {
+      pauseBgm();
+    }
   }
 
   function applyChange(change: (state: GameState) => GameState, keepSelection = false): GameState | undefined {
@@ -2792,7 +2894,7 @@ export function App() {
   }
 
   return (
-    <main className={`app-shell ${pointerDragging ? "dragging" : ""}`} onPointerDownCapture={unlockSePlayback}>
+    <main className={`app-shell ${pointerDragging ? "dragging" : ""}`} onPointerDownCapture={unlockAudioPlayback}>
       <header className="topbar">
         <div>
           <h1>Card Hero Prototype</h1>
@@ -2902,6 +3004,25 @@ export function App() {
               step={5}
               value={Math.round(seVolume * 100)}
               onChange={(event) => handleSeVolumeChange(event.target.value)}
+            />
+          </label>
+          <button
+            type="button"
+            className={bgmEnabled ? "selected" : ""}
+            onClick={handleBgmEnabledToggle}
+            title={bgmEnabled ? "BGMをオフ" : "BGMをオン"}
+          >
+            <Icon icon={bgmEnabled ? "🎵" : "🔇"} /> BGM
+          </button>
+          <label className="battle-setting-control bgm-volume-control">
+            BGM Vol
+            <input
+              type="range"
+              min={0}
+              max={100}
+              step={5}
+              value={Math.round(bgmVolume * 100)}
+              onChange={(event) => handleBgmVolumeChange(event.target.value)}
             />
           </label>
           {renderUndoControl()}
