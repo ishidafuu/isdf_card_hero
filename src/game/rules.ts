@@ -888,7 +888,7 @@ function applyMagicEffect(state: GameState, cardId: string, action: MagicAction)
   if (cardId === "card_064") {
     for (const slotKey of FIELD_ORDER) {
       if (state.slots[slotKey].monster) {
-        clearMonsterEffects(state, slotKey, true);
+        clearMonsterEffects(state, slotKey, true, { preserveFocus: true });
       }
     }
     return;
@@ -909,7 +909,7 @@ function applyMagicEffect(state: GameState, cardId: string, action: MagicAction)
   if (cardId === "card_087" && target.kind === "master") {
     for (const slotKey of PLAYER_SLOT_ORDER[target.playerId]) {
       if (state.slots[slotKey].monster) {
-        clearMonsterEffects(state, slotKey, false);
+        clearMonsterEffects(state, slotKey, false, { preserveFocus: true });
       }
     }
     return;
@@ -2393,7 +2393,7 @@ function applyUtilityCommandEffect(
   }
 
   if (command.name === "ウォッシュ" && target.kind === "monster") {
-    clearMonsterEffects(state, target.slotKey, true);
+    clearMonsterEffects(state, target.slotKey, true, { preserveFocus: true });
     return true;
   }
 
@@ -2466,7 +2466,7 @@ function applyPostDamageCommandEffect(
     appendLog(state, `${monsterName(targetMonster)}のパワーが1上がった`);
   }
   if (attacker.cardId === "card_052") {
-    clearMonsterEffects(state, target.slotKey, true);
+    clearMonsterEffects(state, target.slotKey, true, { preserveFocus: true });
   }
   if (command.name === "爆裂キノコ") {
     for (const slotKey of adjacentSlotKeys(state.slots[target.slotKey])) {
@@ -3001,12 +3001,19 @@ function healMaster(state: GameState, playerId: PlayerId, amount: number): void 
   appendLog(state, `${playerLabel(playerId)}のマスターHPを${player.masterHp - before}回復した`);
 }
 
-function clearMonsterEffects(state: GameState, slotKey: SlotKey, includePowerAndShield: boolean): void {
+function clearMonsterEffects(
+  state: GameState,
+  slotKey: SlotKey,
+  includePowerAndShield: boolean,
+  options: { preserveFocus?: boolean } = {},
+): void {
   const monster = state.slots[slotKey].monster;
   if (!monster) {
     throw new Error("効果解除対象がいません");
   }
-  monster.focused = false;
+  if (!options.preserveFocus) {
+    monster.focused = false;
+  }
   monster.cannotMove = false;
   monster.levelFixed = false;
   monster.immune = false;

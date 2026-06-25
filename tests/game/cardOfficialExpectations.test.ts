@@ -781,6 +781,7 @@ describe("official card effect expectations", () => {
     let game = createGameWithPlayerHand([{ cardId: "card_064", instanceId: "twilight" }]);
     game.players.player.stones = magicCost("card_064");
     game.slots.player_front_left.monster = createActiveMonster("takokke", "player", {
+      focused: true,
       shielded: true,
       powerModifier: 1,
       cannotMove: true,
@@ -788,6 +789,7 @@ describe("official card effect expectations", () => {
       scapegoat: true,
     });
     game.slots.cpu_front_left.monster = createActiveMonster("takokke", "cpu", {
+      focused: true,
       shielded: true,
       powerModifier: -1,
       cannotMove: true,
@@ -801,6 +803,7 @@ describe("official card effect expectations", () => {
 
     for (const slotKey of ["player_front_left", "cpu_front_left"] as const) {
       const monster = game.slots[slotKey].monster;
+      expect(monster?.focused).toBe(true);
       expect(monster?.shielded).toBe(false);
       expect(monster?.powerModifier).toBe(0);
       expect(monster?.cannotMove).toBe(false);
@@ -814,6 +817,7 @@ describe("official card effect expectations", () => {
     let game = createGameWithPlayerHand([{ cardId: "card_087", instanceId: "cleanse" }]);
     game.players.player.stones = magicCost("card_087");
     game.slots.player_front_left.monster = createActiveMonster("takokke", "player", {
+      focused: true,
       shielded: true,
       powerModifier: 1,
       cannotMove: true,
@@ -835,6 +839,7 @@ describe("official card effect expectations", () => {
       target: { kind: "master", playerId: "player" },
     });
 
+    expect(game.slots.player_front_left.monster?.focused).toBe(true);
     expect(game.slots.player_front_left.monster?.shielded).toBe(true);
     expect(game.slots.player_front_left.monster?.powerModifier).toBe(1);
     expect(game.slots.player_front_left.monster?.cannotMove).toBe(false);
@@ -1481,6 +1486,7 @@ describe("official card effect expectations", () => {
       investedStones: 2,
     });
     game.slots.cpu_front_left.monster = createActiveMonster("takokke", "cpu", {
+      focused: true,
       shielded: true,
       powerModifier: 1,
       cannotMove: true,
@@ -1495,6 +1501,7 @@ describe("official card effect expectations", () => {
     expect(game.slots.cpu_front_left.monster?.shielded).toBe(false);
     expect(game.slots.cpu_front_left.monster?.powerModifier).toBe(0);
     expect(game.slots.cpu_front_left.monster?.cannotMove).toBe(false);
+    expect(game.slots.cpu_front_left.monster?.focused).toBe(true);
   });
 
   it("card_053 ラティーヌ heals masters with Lv2 癒しの光", () => {
