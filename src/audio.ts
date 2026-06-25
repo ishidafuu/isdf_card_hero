@@ -7,6 +7,7 @@ export type SeId =
   | "magic"
   | "shield"
   | "focus"
+  | "levelUp"
   | "turn"
   | "invalid"
   | "win";
@@ -20,6 +21,7 @@ export const SE_SOURCES: Record<SeId, string> = {
   magic: "/audio/se/magic.mp3",
   shield: "/audio/se/shield.mp3",
   focus: "/audio/se/focus.mp3",
+  levelUp: "/audio/se/level-up.mp3",
   turn: "/audio/se/turn.mp3",
   invalid: "/audio/se/invalid.mp3",
   win: "/audio/se/win.mp3",

@@ -7710,6 +7710,9 @@ function seForVisualEffect(effect: VisualEffect, game: GameState): SeId | undefi
   if (game.winner) {
     return "win";
   }
+  if (effect.logs.some(isLevelUpResolvedLog)) {
+    return "levelUp";
+  }
   if (logs.includes("シールド")) {
     return "shield";
   }
@@ -7743,8 +7746,12 @@ function seForVisualEffect(effect: VisualEffect, game: GameState): SeId | undefi
 function actionFeedLogs(logs: string[]): string[] {
   return logs
     .filter((entry) => !entry.includes("判断:"))
-    .filter((entry) => logCategoryLabel(entry) !== "その他")
+    .filter((entry) => logCategoryLabel(entry) !== "その他" || isLevelUpResolvedLog(entry))
     .slice(-3);
+}
+
+function isLevelUpResolvedLog(entry: string): boolean {
+  return /はLv\d+になり/.test(entry) || entry.includes("スーパー化した");
 }
 
 function createBoardActionEffect(
