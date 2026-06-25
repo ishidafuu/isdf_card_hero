@@ -724,7 +724,7 @@ function applyMagicEffect(state: GameState, cardId: string, action: MagicAction)
       throw new Error("同じ対象にパワーアップは重ねられません");
     }
     monster.powerUp = true;
-    appendLog(state, `${monsterName(monster)}の次の攻撃パワーを1上げた`);
+    appendLog(state, `${monsterName(monster)}のこのターン中の攻撃パワーを1上げた`);
     return;
   }
 
@@ -2884,7 +2884,6 @@ function consumeAttackPowerBonuses(monster: MonsterState, command: CommandDef, b
   }
   if (monster.powerUp) {
     power += 1;
-    monster.powerUp = false;
   }
   if (monster.berserkPower) {
     power += 1;

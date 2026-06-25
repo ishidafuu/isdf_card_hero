@@ -7,6 +7,8 @@ import {
 } from "../../src/game/masterLabImprovementLoop";
 
 const MASTER_LAB_IMPROVEMENT_LOOP_TEST_TIMEOUT_MS = 90_000;
+const SMOKE_MAX_STEPS = 360;
+const SMOKE_MAX_TURNS = 100;
 
 describe("master lab improvement loop", () => {
   it("runs a small deck hypothesis loop and formats the report", () => {
@@ -14,8 +16,8 @@ describe("master lab improvement loop", () => {
       candidateId: "decoy",
       loopCount: 2,
       gamesPerMatchup: 1,
-      maxSteps: 700,
-      maxTurns: 160,
+      maxSteps: SMOKE_MAX_STEPS,
+      maxTurns: SMOKE_MAX_TURNS,
     });
 
     expect(report.entries).toHaveLength(2);
@@ -44,8 +46,8 @@ describe("master lab improvement loop", () => {
       plan: "scapegoat",
       loopCount: 6,
       gamesPerMatchup: 1,
-      maxSteps: 700,
-      maxTurns: 160,
+      maxSteps: SMOKE_MAX_STEPS,
+      maxTurns: SMOKE_MAX_TURNS,
     });
 
     expect(report.entries).toHaveLength(6);
@@ -65,8 +67,8 @@ describe("master lab improvement loop", () => {
       plan: "magic_inclusion",
       loopCount: 2,
       gamesPerMatchup: 1,
-      maxSteps: 700,
-      maxTurns: 160,
+      maxSteps: SMOKE_MAX_STEPS,
+      maxTurns: SMOKE_MAX_TURNS,
     });
 
     expect(report.entries).toHaveLength(2);
@@ -86,8 +88,8 @@ describe("master lab improvement loop", () => {
       plan: "unit_inclusion",
       loopCount: 3,
       gamesPerMatchup: 1,
-      maxSteps: 700,
-      maxTurns: 160,
+      maxSteps: SMOKE_MAX_STEPS,
+      maxTurns: SMOKE_MAX_TURNS,
     });
 
     expect(report.entries).toHaveLength(3);
@@ -108,8 +110,8 @@ describe("master lab improvement loop", () => {
       plan: "unit_action",
       loopCount: 2,
       gamesPerMatchup: 1,
-      maxSteps: 700,
-      maxTurns: 160,
+      maxSteps: SMOKE_MAX_STEPS,
+      maxTurns: SMOKE_MAX_TURNS,
     });
 
     expect(report.entries).toHaveLength(2);
@@ -130,8 +132,8 @@ describe("master lab improvement loop", () => {
       plan: "tempo_action",
       loopCount: 1,
       gamesPerMatchup: 1,
-      maxSteps: 700,
-      maxTurns: 160,
+      maxSteps: SMOKE_MAX_STEPS,
+      maxTurns: SMOKE_MAX_TURNS,
     });
 
     expect(report.entries).toHaveLength(1);

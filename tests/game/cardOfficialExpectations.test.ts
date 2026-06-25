@@ -1320,9 +1320,9 @@ describe("official card effect expectations", () => {
       expect(game.slots.player_front_left.monster?.hp).toBe(expectedSelfHp);
       expect(game.slots.player_front_left.monster).toMatchObject({
         focused: false,
-        powerUp: false,
         powerModifier: 0,
       });
+      expect(game.slots.player_front_left.monster?.powerUp).toBe(!!overrides.powerUp);
       expect(game.slots.player_front_left.monster?.berserkPower).not.toBe(true);
     },
   );
@@ -1373,6 +1373,36 @@ describe("official card effect expectations", () => {
 
     expect(game.slots.player_front_left.monster?.actionCount).toBe(2);
     expect(getCommandTargets(game, "player_front_left", "attack")).toEqual([]);
+  });
+
+  it("polyspinner ポリスピナー keeps パワーアップ for both actions this turn", () => {
+    let game = createGameWithPlayerHand([{ cardId: "power_up", instanceId: "power" }]);
+    game.players.player.stones = magicCost("power_up");
+    game.players.cpu.masterHp = 2;
+    game.slots.player_front_left.monster = createActiveMonster("polyspinner", "player");
+
+    game = playMagic(game, {
+      handInstanceId: "power",
+      target: { kind: "monster", slotKey: "player_front_left" },
+    });
+    game = attackWithCommand(game, {
+      attackerSlotKey: "player_front_left",
+      commandId: "attack",
+      target: { kind: "master", playerId: "cpu" },
+    });
+
+    expect(game.players.cpu.masterHp).toBe(1);
+    expect(game.slots.player_front_left.monster).toMatchObject({ actionCount: 1, powerUp: true });
+
+    game = attackWithCommand(game, {
+      attackerSlotKey: "player_front_left",
+      commandId: "attack",
+      target: { kind: "master", playerId: "cpu" },
+    });
+
+    expect(game.winner).toBe("player");
+    expect(game.players.cpu.masterHp).toBe(0);
+    expect(game.slots.player_front_left.monster?.powerUp).toBe(true);
   });
 
   it("card_044 ヒートロン gains power when healed by magic", () => {

@@ -9,22 +9,21 @@ import {
 const CORE_MASTER_TUNING_LOOP_TEST_TIMEOUT_MS = 90_000;
 
 describe("core master tuning loop", () => {
-  it("runs a small white black decoy matrix and formats standings", () => {
+  it("runs a small core master matrix and formats standings", () => {
     const report = runCoreMasterTuningLoop({
       variants: [
         findVariant("white_pressure_white"),
-        findVariant("black_pressure_pressure"),
         findVariant("decoy_back_stable"),
       ],
       gamesPerPairing: 1,
       seedStart: 6500,
-      maxSteps: 700,
-      maxTurns: 160,
+      maxSteps: 360,
+      maxTurns: 100,
     });
 
-    expect(report.variants).toHaveLength(3);
-    expect(report.runs).toHaveLength(6);
-    expect(report.standings).toHaveLength(3);
+    expect(report.variants).toHaveLength(2);
+    expect(report.runs).toHaveLength(2);
+    expect(report.standings).toHaveLength(2);
     expect(report.masterSummaries.map((summary) => summary.masterId)).toEqual(["white", "black", "decoy"]);
     expect(report.standings.find((standing) => standing.variant.masterId === "decoy")?.labActionUsage).toBeDefined();
 

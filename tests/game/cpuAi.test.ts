@@ -1410,6 +1410,38 @@ describe("cpu ai", () => {
     }
   });
 
+  it("keeps a lone opening front-role monster in the back row when wake-up has no work", () => {
+    const game = createCpuGame([{ instanceId: "cpu_takokke_hand", cardId: "takokke" }]);
+    game.players.cpu.masterId = "white";
+    game.players.cpu.stones = 5;
+    for (const slot of Object.values(game.slots)) {
+      delete slot.monster;
+    }
+
+    const decision = chooseCpuDecision(game, { profile: "white" });
+
+    expect(decision.type).toBe("summon");
+    if (decision.type === "summon") {
+      expect(decision.handInstanceId).toBe("cpu_takokke_hand");
+      expect(decision.slotKey).toContain("_back_");
+    }
+  });
+
+  it("does not wake a lone front monster when it cannot act before passing the turn", () => {
+    const game = createCpuGame();
+    game.players.cpu.masterId = "white";
+    game.players.cpu.hand = [];
+    game.players.cpu.stones = 4;
+    for (const slot of Object.values(game.slots)) {
+      delete slot.monster;
+    }
+    game.slots.cpu_front_left.monster = createActiveMonster("takokke", "cpu", { status: "prepared" });
+
+    const decision = chooseCpuDecision(game, { profile: "white" });
+
+    expect(decision.type).toBe("end_turn");
+  });
+
   it("uses black master berserk power when it creates a monster kill", () => {
     const game = createCpuGame();
     game.players.cpu.masterId = "black";
@@ -1848,6 +1880,40 @@ describe("cpu ai", () => {
       expect(decision.action.target).toEqual({ kind: "monster", slotKey: "cpu_front_left" });
       expect(decision.reason).toContain("攻撃につなげられる");
     }
+  });
+
+  it("uses power up so Polyspinner can close out a 2 HP master with two actions", () => {
+    let game = createCpuGame([{ cardId: "power_up", instanceId: "cpu_power_up_polyspinner" }]);
+    game.players.cpu.stones = 3;
+    game.players.player.masterHp = 2;
+    game.slots.cpu_front_left.monster = createActiveMonster("polyspinner", "cpu");
+
+    const powerUp = chooseCpuDecision(game);
+    expect(powerUp.type).toBe("magic");
+    if (powerUp.type === "magic") {
+      expect(powerUp.action.handInstanceId).toBe("cpu_power_up_polyspinner");
+      expect(powerUp.action.target).toEqual({ kind: "monster", slotKey: "cpu_front_left" });
+    }
+
+    game = applyCpuDecision(game, powerUp);
+    const firstAttack = chooseCpuDecision(game);
+    expect(firstAttack.type).toBe("attack");
+    if (firstAttack.type === "attack") {
+      expect(firstAttack.action.target).toEqual({ kind: "master", playerId: "player" });
+    }
+
+    game = applyCpuDecision(game, firstAttack);
+    expect(game.players.player.masterHp).toBe(1);
+    expect(game.slots.cpu_front_left.monster).toMatchObject({ actionCount: 1, powerUp: true });
+
+    const secondAttack = chooseCpuDecision(game);
+    expect(secondAttack.type).toBe("attack");
+    if (secondAttack.type === "attack") {
+      expect(secondAttack.action.target).toEqual({ kind: "master", playerId: "player" });
+    }
+
+    game = applyCpuDecision(game, secondAttack);
+    expect(game.winner).toBe("cpu");
   });
 
   it("does not use damage magic to defeat its own monster", () => {

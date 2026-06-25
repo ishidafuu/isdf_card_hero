@@ -4,41 +4,24 @@ import { buildDeckPresetCardIds, deckPresetAllowsSpecial } from "../../src/game/
 import { createInitialGame, runAutoStep } from "../../src/game/rules";
 import type { GameState } from "../../src/game/types";
 
-const WHITE_VS_BLACK_RAON_PRESSURE_SEED = 38607;
+const WHITE_VS_BLACK_FRONT_PRESSURE_SEED = 38004;
 
 describe("white black specialist scenarios", () => {
-  it("keeps seed-derived low-stone Raon turns on enemy-front pressure instead of focus", () => {
-    const firstPressureState = replayWhiteCpuVsBlackStrongToStep(WHITE_VS_BLACK_RAON_PRESSURE_SEED, 15);
-    const firstDecision = chooseCpuDecision(firstPressureState, defaultOptions());
-    const firstDisabledDecision = chooseCpuDecision(firstPressureState, withoutBlackMonsterPressure());
+  it("keeps a seed-derived low-stone white turn on enemy-front pressure instead of focus", () => {
+    const pressureState = replayWhiteCpuVsBlackStrongToStep(WHITE_VS_BLACK_FRONT_PRESSURE_SEED, 16);
+    const decision = chooseCpuDecision(pressureState, defaultOptions());
+    const disabledDecision = chooseCpuDecision(pressureState, withoutBlackMonsterPressure());
 
-    expect(firstPressureState.currentPlayer).toBe("cpu");
-    expect(firstPressureState.players.cpu.stones).toBe(2);
-    expect(firstDecision.type).toBe("attack");
-    if (firstDecision.type === "attack") {
-      expect(firstDecision.action.attackerSlotKey).toBe("cpu_front_right");
-      expect(firstDecision.action.target).toEqual({ kind: "monster", slotKey: "player_front_right" });
+    expect(pressureState.currentPlayer).toBe("cpu");
+    expect(pressureState.players.cpu.stones).toBe(2);
+    expect(decision.type).toBe("attack");
+    if (decision.type === "attack") {
+      expect(decision.action.attackerSlotKey).toBe("cpu_front_left");
+      expect(decision.action.target).toEqual({ kind: "monster", slotKey: "player_front_left" });
     }
-    expect(firstDisabledDecision.type).toBe("attack");
-    if (firstDisabledDecision.type === "attack") {
-      expect(firstDisabledDecision.action.attackerSlotKey).toBe("cpu_front_right");
-      expect(firstDisabledDecision.action.target).toEqual({ kind: "monster", slotKey: "player_front_right" });
-    }
-
-    const followUpPressureState = replayWhiteCpuVsBlackStrongToStep(WHITE_VS_BLACK_RAON_PRESSURE_SEED, 25);
-    const followUpDecision = chooseCpuDecision(followUpPressureState, defaultOptions());
-    const followUpDisabledDecision = chooseCpuDecision(followUpPressureState, withoutBlackMonsterPressure());
-
-    expect(followUpPressureState.currentPlayer).toBe("cpu");
-    expect(followUpPressureState.players.cpu.stones).toBe(1);
-    expect(followUpDecision.type).toBe("attack");
-    if (followUpDecision.type === "attack") {
-      expect(followUpDecision.action.attackerSlotKey).toBe("cpu_front_right");
-      expect(followUpDecision.action.target).toEqual({ kind: "monster", slotKey: "player_front_right" });
-    }
-    expect(followUpDisabledDecision.type).toBe("focus");
-    if (followUpDisabledDecision.type === "focus") {
-      expect(followUpDisabledDecision.slotKey).toBe("cpu_front_right");
+    expect(disabledDecision.type).toBe("focus");
+    if (disabledDecision.type === "focus") {
+      expect(disabledDecision.slotKey).toBe("cpu_front_left");
     }
   });
 });

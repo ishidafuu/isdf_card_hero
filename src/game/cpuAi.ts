@@ -41,6 +41,7 @@ import {
 import { appendLog } from "./ruleEngine/log";
 import type {
   CommandAction,
+  CardInstance,
   GameState,
   MagicAction,
   MasterActionId,
@@ -147,6 +148,7 @@ const WHITE_MIRROR_EXPOSED_BACK_LEVEL_UP_PENALTY = 150;
 const WHITE_MIRROR_EXPOSED_FRONT_LEVEL_UP_PENALTY = 70;
 const WHITE_MIRROR_EXPOSED_BACK_LEVEL_HANDOFF_PENALTY = 120;
 const WHITE_MIRROR_FRONT_LEVEL_UP_SETUP_ATTACK_BONUS = 80;
+const LONE_FRONT_OPENING_SUMMON_EXPOSURE_PENALTY = 55;
 
 export const CPU_AI_PROFILES = ["stable", "strong", "pressure", "defensive", "white", "omniscient"] as const;
 export type CpuAiProfile = (typeof CPU_AI_PROFILES)[number];
@@ -3327,6 +3329,9 @@ function createWakeUpDecision(state: GameState, target: Target): CpuDecision | u
 
   const bestFollowUpAttack = bestAttackOpportunityScore(after, target.slotKey);
   const canActNow = bestFollowUpAttack > 0;
+  if (!canActNow && isLoneOwnFrontWakeExposure(state, target.slotKey, state.currentPlayer)) {
+    return undefined;
+  }
   if (!canActNow && isDeckOutRace(state)) {
     return undefined;
   }
@@ -3346,6 +3351,19 @@ function createWakeUpDecision(state: GameState, target: Target): CpuDecision | u
       : "高価値の準備中味方を早く登場させるためウェイクアップ",
     score,
   };
+}
+
+function isLoneOwnFrontWakeExposure(state: GameState, slotKey: SlotKey, playerId: PlayerId): boolean {
+  const slot = state.slots[slotKey];
+  const monster = slot.monster;
+  if (slot.owner !== playerId || slot.row !== "front" || monster?.owner !== playerId || monster.status !== "prepared") {
+    return false;
+  }
+  return ownMonsterCount(state, playerId) === 1;
+}
+
+function ownMonsterCount(state: GameState, playerId: PlayerId): number {
+  return FIELD_ORDER_BY_PLAYER[playerId].filter((slotKey) => state.slots[slotKey].monster?.owner === playerId).length;
 }
 
 function listShieldDecisions(state: GameState, weights: AiEvaluationWeights): CpuDecision[] {
@@ -3609,7 +3627,7 @@ function listSummonDecisions(state: GameState): CpuDecision[] {
       if (!canSummonTo(state, card.instanceId, slotKey)) {
         continue;
       }
-      const score = scoreSummon(state, card.cardId, slotKey);
+      const score = scoreSummon(state, card, slotKey);
       if (shouldPruneCloseoutNonProgressActions(state, playerId) && score <= 20) {
         continue;
       }
@@ -3625,8 +3643,8 @@ function listSummonDecisions(state: GameState): CpuDecision[] {
   return decisions;
 }
 
-function scoreSummon(state: GameState, cardId: string, slotKey: SlotKey): number {
-  const def = getMonsterDef(cardId);
+function scoreSummon(state: GameState, card: CardInstance, slotKey: SlotKey): number {
+  const def = getMonsterDef(card.cardId);
   const trait = inferMonsterAiTrait(def);
   const slot = state.slots[slotKey];
   const frontFilled = slot.row === "back" && !!state.slots[frontSlotFor(slot)].monster;
@@ -3649,7 +3667,43 @@ function scoreSummon(state: GameState, cardId: string, slotKey: SlotKey): number
     score -= 60;
   }
 
-  return score + memberRatingValueBonus(cardId, state.players[state.currentPlayer].masterId);
+  if (boardEmpty && slot.row === "front" && !summonWakeCreatesImmediateWork(state, card.instanceId, slotKey)) {
+    score -= LONE_FRONT_OPENING_SUMMON_EXPOSURE_PENALTY;
+  }
+
+  return score + memberRatingValueBonus(card.cardId, state.players[state.currentPlayer].masterId);
+}
+
+function summonWakeCreatesImmediateWork(state: GameState, handInstanceId: string, slotKey: SlotKey): boolean {
+  const wakeCost = getMasterActionCost("wake_up");
+  if (!getCurrentMasterActionIds(state).includes("wake_up") || state.players[state.currentPlayer].stones < 1 + wakeCost) {
+    return false;
+  }
+
+  try {
+    const summoned = summonMonster(state, handInstanceId, slotKey);
+    const target: Target = { kind: "monster", slotKey };
+    if (!getMasterActionTargets(summoned, "wake_up").some((candidate) => isSameTargetForAi(candidate, target))) {
+      return false;
+    }
+    const woken = useMasterAction(summoned, "wake_up", target);
+    return bestAttackOpportunityScore(woken, slotKey) > 0;
+  } catch {
+    return false;
+  }
+}
+
+function isSameTargetForAi(a: Target, b: Target): boolean {
+  if (a.kind !== b.kind) {
+    return false;
+  }
+  if (a.kind === "monster" && b.kind === "monster") {
+    return a.slotKey === b.slotKey;
+  }
+  if (a.kind === "master" && b.kind === "master") {
+    return a.playerId === b.playerId;
+  }
+  return false;
 }
 
 function summonReason(playerId: PlayerId, cardId: string, slotKey: SlotKey): string {
