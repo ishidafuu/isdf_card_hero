@@ -76,6 +76,12 @@ type TerminalPlanEvaluationContext = {
   immediateDecisionCache: Map<string, EvaluatedDecision[]>;
 };
 type TerminalPlanRootOutcome = { candidate: EvaluatedDecision; outcome: TerminalPlanOutcome };
+type MasterDamagePlan = {
+  damage: number;
+  firstDecision?: CpuDecision;
+  lethal: boolean;
+  steps: number;
+};
 type IncomingThreat = {
   threatened: boolean;
   lethal: boolean;
@@ -149,6 +155,9 @@ const WHITE_MIRROR_EXPOSED_FRONT_LEVEL_UP_PENALTY = 70;
 const WHITE_MIRROR_EXPOSED_BACK_LEVEL_HANDOFF_PENALTY = 120;
 const WHITE_MIRROR_FRONT_LEVEL_UP_SETUP_ATTACK_BONUS = 80;
 const LONE_FRONT_OPENING_SUMMON_EXPOSURE_PENALTY = 55;
+const MASTER_DAMAGE_PLAN_MAX_DEPTH = 8;
+const MASTER_DAMAGE_PLAN_MAX_BRANCHES = 10;
+const MASTER_DAMAGE_PLAN_CLOSEOUT_HP = 6;
 
 export const CPU_AI_PROFILES = ["stable", "strong", "pressure", "defensive", "white", "omniscient"] as const;
 export type CpuAiProfile = (typeof CPU_AI_PROFILES)[number];
@@ -385,6 +394,10 @@ export function runCpuDecisionStep(state: GameState, options: CpuAiOptions = {})
 export function chooseCpuDecision(state: GameState, options: CpuAiOptions = {}): CpuDecision {
   const perspective = state.currentPlayer;
   const config = resolveCpuAiConfig(state, options);
+  const masterDamagePlan = findMasterDamagePlan(state, perspective, config.weights);
+  if (shouldForceMasterDamagePlan(state, perspective, masterDamagePlan)) {
+    return withMasterDamagePlanReason(masterDamagePlan.firstDecision, masterDamagePlan);
+  }
   let best: EvaluatedDecision | undefined;
   const evaluated = evaluateCpuDecisions(state, perspective, config);
 
@@ -413,6 +426,154 @@ export function inspectCpuDecisionEvaluations(
     totalScore,
     index,
   }));
+}
+
+function findMasterDamagePlan(
+  state: GameState,
+  perspective: PlayerId,
+  weights: AiEvaluationWeights,
+): MasterDamagePlan {
+  const opponent = opponentOf(perspective);
+  const startingOpponentHp = state.players[opponent].masterHp;
+  if (state.winner || state.pendingLevelUp || state.currentPlayer !== perspective || startingOpponentHp <= 0) {
+    return createEmptyMasterDamagePlan();
+  }
+
+  const cache = new Map<string, MasterDamagePlan>();
+  const search = (current: GameState, depth: number): MasterDamagePlan => {
+    const damage = Math.max(0, startingOpponentHp - current.players[opponent].masterHp);
+    const baseline: MasterDamagePlan = {
+      damage,
+      lethal: current.winner === perspective || damage >= startingOpponentHp,
+      steps: 0,
+    };
+    if (
+      depth <= 0 ||
+      baseline.lethal ||
+      current.winner ||
+      current.pendingLevelUp ||
+      current.currentPlayer !== perspective
+    ) {
+      return baseline;
+    }
+
+    const cacheKey = `${depth}:${masterDamagePlanStateKey(current, perspective)}`;
+    const cached = cache.get(cacheKey);
+    if (cached) {
+      return cached;
+    }
+
+    let best = baseline;
+    const decisions = listMasterDamagePlanDecisions(current, weights).slice(0, MASTER_DAMAGE_PLAN_MAX_BRANCHES);
+    for (const decision of decisions) {
+      let after: GameState;
+      try {
+        after = applyCpuDecisionForPlanning(current, decision);
+      } catch {
+        continue;
+      }
+      const followUp = search(after, depth - 1);
+      const candidate: MasterDamagePlan = {
+        damage: followUp.damage,
+        firstDecision: decision,
+        lethal: followUp.lethal,
+        steps: followUp.steps + 1,
+      };
+      if (isBetterMasterDamagePlan(candidate, best)) {
+        best = candidate;
+      }
+    }
+
+    cache.set(cacheKey, best);
+    return best;
+  };
+
+  return search(state, MASTER_DAMAGE_PLAN_MAX_DEPTH);
+}
+
+function createEmptyMasterDamagePlan(): MasterDamagePlan {
+  return { damage: 0, lethal: false, steps: 0 };
+}
+
+function isBetterMasterDamagePlan(candidate: MasterDamagePlan, current: MasterDamagePlan): boolean {
+  if (candidate.lethal !== current.lethal) {
+    return candidate.lethal;
+  }
+  if (candidate.damage !== current.damage) {
+    return candidate.damage > current.damage;
+  }
+  if (candidate.steps !== current.steps) {
+    return candidate.steps < current.steps || current.steps === 0;
+  }
+  return (
+    candidate.firstDecision !== undefined &&
+    current.firstDecision !== undefined &&
+    masterDamagePlanDecisionPriority(candidate.firstDecision) > masterDamagePlanDecisionPriority(current.firstDecision)
+  );
+}
+
+function shouldForceMasterDamagePlan(
+  state: GameState,
+  perspective: PlayerId,
+  plan: MasterDamagePlan,
+): plan is MasterDamagePlan & { firstDecision: CpuDecision } {
+  if (!plan.firstDecision || plan.damage <= 0) {
+    return false;
+  }
+  if (plan.lethal) {
+    return true;
+  }
+  if (state.players[perspective].masterId !== "white") {
+    return false;
+  }
+
+  const opponent = opponentOf(perspective);
+  const opponentHp = state.players[opponent].masterHp;
+  const remainingHp = opponentHp - plan.damage;
+  if (opponentHp > MASTER_DAMAGE_PLAN_CLOSEOUT_HP || remainingHp > 2 || plan.damage < 2) {
+    return false;
+  }
+
+  const opponentMasterDamage = buildThreatModel(state, opponent).masterDamage[perspective];
+  return opponentMasterDamage < state.players[perspective].masterHp;
+}
+
+function withMasterDamagePlanReason(
+  decision: CpuDecision | undefined,
+  plan: MasterDamagePlan,
+): CpuDecision {
+  if (!decision) {
+    return createEndTurnDecision();
+  }
+  const prefix = plan.lethal
+    ? "ターン開始時の最大打点で相手マスターを倒せるため"
+    : `ターン開始時の最大打点${plan.damage}点で詰めろを作れるため`;
+  return {
+    ...decision,
+    reason: `${prefix}${masterDamagePlanDecisionReasonSuffix(decision)}`,
+  } as CpuDecision;
+}
+
+function masterDamagePlanDecisionReasonSuffix(decision: CpuDecision): string {
+  if (decision.type === "attack") {
+    return "攻撃";
+  }
+  if (decision.type === "master_action" && decision.actionId === "wake_up") {
+    return "ウェイクアップ";
+  }
+  if (decision.type === "master_action" && decision.actionId === "master_attack") {
+    return "マスターアタック";
+  }
+  if (decision.type === "master_action") {
+    return "マスター特技";
+  }
+  if (decision.type === "magic") {
+    return "マジックを使用";
+  }
+  if (decision.type === "summon") {
+    return "召喚";
+  }
+  return "行動";
 }
 
 function resolveCpuAiProfile(state: GameState, options: CpuAiOptions): CpuAiProfile {
@@ -2654,6 +2815,260 @@ export function listCpuDecisions(state: GameState, weights: AiEvaluationWeights 
   ];
 }
 
+function listMasterDamagePlanDecisions(state: GameState, weights: AiEvaluationWeights): CpuDecision[] {
+  const decisions = [
+    ...listMasterDamageAttackDecisions(state, weights),
+    ...listMasterDamageMasterActionDecisions(state, weights),
+    ...listMasterDamageMagicDecisions(state, weights),
+    ...listMasterDamageSummonDecisions(state),
+  ];
+  const seen = new Set<string>();
+  return decisions
+    .filter((decision) => {
+      const key = cpuDecisionKey(decision);
+      if (seen.has(key)) {
+        return false;
+      }
+      seen.add(key);
+      return true;
+    })
+    .sort((a, b) => masterDamagePlanDecisionPriority(b) - masterDamagePlanDecisionPriority(a));
+}
+
+function listMasterDamageAttackDecisions(state: GameState, weights: AiEvaluationWeights): CpuDecision[] {
+  const decisions: CpuDecision[] = [];
+  const playerId = state.currentPlayer;
+  const opponent = opponentOf(state.currentPlayer);
+
+  for (const slotKey of FIELD_ORDER_BY_PLAYER[playerId]) {
+    const monster = state.slots[slotKey].monster;
+    if (!monster?.status || monster.status !== "active" || monster.actionCount >= monster.actionLimit) {
+      continue;
+    }
+
+    for (const command of getMonsterCommands(monster)) {
+      for (const target of getCommandTargets(state, slotKey, command.id)) {
+        if (target.kind !== "master" || target.playerId !== opponent) {
+          continue;
+        }
+        for (const action of expandCommandActions(state, {
+          attackerSlotKey: slotKey,
+          commandId: command.id,
+          target,
+        })) {
+          const decision = createAttackDecision(state, action, weights);
+          if (decision) {
+            decisions.push(decision);
+          }
+        }
+      }
+    }
+  }
+
+  return decisions;
+}
+
+function listMasterDamageMasterActionDecisions(state: GameState, weights: AiEvaluationWeights): CpuDecision[] {
+  const decisions: CpuDecision[] = [];
+  const playerId = state.currentPlayer;
+  const opponent = opponentOf(playerId);
+  const actionIds = getCurrentMasterActionIds(state);
+
+  if (actionIds.includes("master_attack")) {
+    const target: Target = { kind: "master", playerId: opponent };
+    if (getMasterActionTargets(state, "master_attack").some((candidate) => isSameTargetForAi(candidate, target))) {
+      const decision = createMasterAttackDecision(state, target);
+      if (decision) {
+        decisions.push(decision);
+      }
+    }
+  }
+
+  if (actionIds.includes("wake_up")) {
+    decisions.push(...listMasterDamageWakeUpDecisions(state));
+  }
+
+  if (actionIds.includes("berserk_power")) {
+    decisions.push(...listMasterDamageBerserkDecisions(state, weights));
+  }
+
+  return decisions;
+}
+
+function listMasterDamageWakeUpDecisions(state: GameState): CpuDecision[] {
+  const playerId = state.currentPlayer;
+  const beforeDirectDamage = bestDirectMasterDamageForPlayer(state, playerId);
+  return getMasterActionTargets(state, "wake_up")
+    .filter((target): target is Extract<Target, { kind: "monster" }> => {
+      if (target.kind !== "monster") {
+        return false;
+      }
+      const monster = state.slots[target.slotKey].monster;
+      return !!monster && monster.owner === playerId && monster.status === "prepared";
+    })
+    .flatMap((target): CpuDecision[] => {
+      let after: GameState;
+      try {
+        after = useMasterAction(state, "wake_up", target);
+      } catch {
+        return [];
+      }
+      const afterDirectDamage = bestDirectMasterDamageForPlayer(after, playerId);
+      if (afterDirectDamage <= beforeDirectDamage && bestMasterLethalOpportunityScore(after, target.slotKey) <= 0) {
+        return [];
+      }
+      return [{
+        type: "master_action",
+        actionId: "wake_up",
+        target,
+        reason: "最大打点ラインで準備中の味方を起こすためウェイクアップ",
+        score: 420 + afterDirectDamage * 120,
+      }];
+    });
+}
+
+function listMasterDamageBerserkDecisions(state: GameState, weights: AiEvaluationWeights): CpuDecision[] {
+  const playerId = state.currentPlayer;
+  const beforeDirectDamage = bestDirectMasterDamageForPlayer(state, playerId);
+  return getMasterActionTargets(state, "berserk_power")
+    .filter((target): target is Extract<Target, { kind: "monster" }> => {
+      if (target.kind !== "monster") {
+        return false;
+      }
+      const monster = state.slots[target.slotKey].monster;
+      return !!monster && monster.owner === playerId && monster.status === "active" && !monster.berserkPower;
+    })
+    .flatMap((target): CpuDecision[] => {
+      let after: GameState;
+      try {
+        after = useMasterAction(state, "berserk_power", target);
+      } catch {
+        return [];
+      }
+      const afterDirectDamage = bestDirectMasterDamageForPlayer(after, playerId);
+      if (afterDirectDamage <= beforeDirectDamage) {
+        return [];
+      }
+      return [{
+        type: "master_action",
+        actionId: "berserk_power",
+        target,
+        reason: "最大打点ラインで相手マスターへの打点を伸ばすためバーサクパワー",
+        score: 160 + masterDamageScore(state, playerId, afterDirectDamage - beforeDirectDamage, weights),
+      }];
+    });
+}
+
+function listMasterDamageMagicDecisions(state: GameState, weights: AiEvaluationWeights): CpuDecision[] {
+  const decisions: CpuDecision[] = [];
+  const playerId = state.currentPlayer;
+  const beforeScore = evaluateState(state, playerId, weights);
+  const beforeDirectDamage = bestDirectMasterDamageForPlayer(state, playerId);
+
+  for (const card of state.players[playerId].hand) {
+    const def = getCardDef(card.cardId);
+    if (def.type !== "magic") {
+      continue;
+    }
+    const trait = getMagicAiTrait(card.cardId);
+    if (!trait || (trait.effectKind !== "damage" && trait.effectKind !== "wake" && trait.effectKind !== "buff")) {
+      continue;
+    }
+
+    for (const target of getMagicTargets(state, card.instanceId)) {
+      for (const action of expandMagicActions(state, { handInstanceId: card.instanceId, target })) {
+        let after: GameState;
+        try {
+          after = playMagic(state, action);
+        } catch {
+          continue;
+        }
+        if (!isMasterDamagePlanMagicCandidate(state, after, action, card.cardId, beforeDirectDamage)) {
+          continue;
+        }
+        decisions.push({
+          type: "magic",
+          action,
+          reason: magicReason(state, after, action),
+          score: Math.max(120, scoreMagicDecision(state, after, action, beforeScore, weights)),
+        });
+      }
+    }
+  }
+
+  return decisions;
+}
+
+function isMasterDamagePlanMagicCandidate(
+  before: GameState,
+  after: GameState,
+  action: MagicAction,
+  cardId: string,
+  beforeDirectDamage: number,
+): boolean {
+  const playerId = before.currentPlayer;
+  const opponent = opponentOf(playerId);
+  if (after.winner === playerId || after.players[opponent].masterHp < before.players[opponent].masterHp) {
+    return true;
+  }
+  if (action.target.kind !== "monster") {
+    return false;
+  }
+  const beforeTarget = before.slots[action.target.slotKey].monster;
+  const afterTarget = after.slots[action.target.slotKey].monster;
+  if (!beforeTarget || beforeTarget.owner !== playerId || !afterTarget || afterTarget.owner !== playerId) {
+    return false;
+  }
+  const trait = getMagicAiTrait(cardId);
+  if (trait?.effectKind !== "wake" && trait?.effectKind !== "buff") {
+    return false;
+  }
+  return bestDirectMasterDamageForPlayer(after, playerId) > beforeDirectDamage;
+}
+
+function listMasterDamageSummonDecisions(state: GameState): CpuDecision[] {
+  const decisions: CpuDecision[] = [];
+  const playerId = state.currentPlayer;
+  for (const card of state.players[playerId].hand) {
+    const def = getCardDef(card.cardId);
+    if (def.type !== "monster") {
+      continue;
+    }
+    for (const slotKey of SUMMON_SLOT_ORDER_BY_PLAYER[playerId]) {
+      if (!canSummonTo(state, card.instanceId, slotKey) || !summonWakeCreatesMasterPressure(state, card.instanceId, slotKey)) {
+        continue;
+      }
+      decisions.push({
+        type: "summon",
+        handInstanceId: card.instanceId,
+        slotKey,
+        reason: "最大打点ラインでウェイクアップにつなげるため召喚",
+        score: Math.max(80, scoreSummon(state, card, slotKey)),
+      });
+    }
+  }
+  return decisions;
+}
+
+function summonWakeCreatesMasterPressure(state: GameState, handInstanceId: string, slotKey: SlotKey): boolean {
+  const wakeCost = getMasterActionCost("wake_up");
+  if (!getCurrentMasterActionIds(state).includes("wake_up") || state.players[state.currentPlayer].stones < 1 + wakeCost) {
+    return false;
+  }
+
+  try {
+    const summoned = summonMonster(state, handInstanceId, slotKey);
+    const target: Target = { kind: "monster", slotKey };
+    if (!getMasterActionTargets(summoned, "wake_up").some((candidate) => isSameTargetForAi(candidate, target))) {
+      return false;
+    }
+    const woken = useMasterAction(summoned, "wake_up", target);
+    return bestDirectMasterDamageForPlayer(woken, state.currentPlayer) > bestDirectMasterDamageForPlayer(state, state.currentPlayer);
+  } catch {
+    return false;
+  }
+}
+
 export function applyCpuDecision(state: GameState, decision: CpuDecision): GameState {
   const stateWithReason = appendDecisionReasonLog(state, decision);
   if (decision.type === "attack") {
@@ -2675,6 +3090,28 @@ export function applyCpuDecision(state: GameState, decision: CpuDecision): GameS
     return moveMonster(stateWithReason, decision.fromSlotKey, decision.toSlotKey);
   }
   return endTurn(stateWithReason);
+}
+
+function applyCpuDecisionForPlanning(state: GameState, decision: CpuDecision): GameState {
+  if (decision.type === "attack") {
+    return attackWithCommand(state, decision.action);
+  }
+  if (decision.type === "master_action") {
+    return useMasterAction(state, decision.actionId, decision.target);
+  }
+  if (decision.type === "summon") {
+    return summonMonster(state, decision.handInstanceId, decision.slotKey);
+  }
+  if (decision.type === "focus") {
+    return focusMonster(state, decision.slotKey);
+  }
+  if (decision.type === "magic") {
+    return playMagic(state, decision.action);
+  }
+  if (decision.type === "move") {
+    return moveMonster(state, decision.fromSlotKey, decision.toSlotKey);
+  }
+  return endTurn(state);
 }
 
 function appendDecisionReasonLog(state: GameState, decision: CpuDecision): GameState {
@@ -3459,6 +3896,22 @@ function listMasterAttackDecisions(state: GameState): CpuDecision[] {
 
 function createMasterAttackDecision(state: GameState, target: Target): CpuDecision | undefined {
   const after = useMasterAction(state, "master_attack", target);
+  if (target.kind === "master") {
+    const beforeHp = state.players[target.playerId].masterHp;
+    const afterHp = after.players[target.playerId].masterHp;
+    const damage = beforeHp - afterHp;
+    if (damage <= 0 && after.winner !== state.currentPlayer) {
+      return undefined;
+    }
+    return {
+      type: "master_action",
+      actionId: "master_attack",
+      target,
+      reason: after.winner ? "マスターアタックで相手マスターを倒せるため使用" : "相手マスターへ実ダメージを与えられるためマスターアタック",
+      score: after.winner ? 1_000_000 : masterDamageScore(state, state.currentPlayer, damage) - getMasterActionCost("master_attack") * 8,
+    };
+  }
+
   const targetBefore = target.kind === "monster" ? state.slots[target.slotKey].monster : undefined;
   const targetAfter = target.kind === "monster" ? after.slots[target.slotKey].monster : undefined;
   if (!targetBefore || target.kind !== "monster") {
@@ -4230,6 +4683,97 @@ function compareTieBreak(a: CpuDecision, b: CpuDecision, aIndex: number, bIndex:
     return priorityDiff;
   }
   return aIndex - bIndex;
+}
+
+function cpuDecisionKey(decision: CpuDecision): string {
+  if (decision.type === "attack") {
+    return `attack:${decision.action.attackerSlotKey}:${decision.action.commandId}:${targetKey(decision.action.target)}:${targetKey(decision.action.secondaryTarget)}:${decision.action.secondaryHandInstanceId ?? ""}`;
+  }
+  if (decision.type === "master_action") {
+    return `master:${decision.actionId}:${targetKey(decision.target)}`;
+  }
+  if (decision.type === "summon") {
+    return `summon:${decision.handInstanceId}:${decision.slotKey}`;
+  }
+  if (decision.type === "magic") {
+    return `magic:${decision.action.handInstanceId}:${targetKey(decision.action.target)}:${targetKey(decision.action.secondaryTarget)}:${decision.action.secondaryHandInstanceId ?? ""}:${decision.action.selectedHandInstanceIds?.join(",") ?? ""}:${decision.action.deckTopOrderInstanceIds?.join(",") ?? ""}:${decision.action.searchCategory ?? ""}:${decision.action.rotationDirection ?? ""}`;
+  }
+  if (decision.type === "move") {
+    return `move:${decision.fromSlotKey}:${decision.toSlotKey}`;
+  }
+  if (decision.type === "focus") {
+    return `focus:${decision.slotKey}`;
+  }
+  return "end_turn";
+}
+
+function targetKey(target: Target | undefined): string {
+  if (!target) {
+    return "";
+  }
+  return target.kind === "monster" ? `monster:${target.slotKey}` : `master:${target.playerId}`;
+}
+
+function masterDamagePlanDecisionPriority(decision: CpuDecision): number {
+  if (decision.type === "attack" && decision.action.target.kind === "master") {
+    return 90;
+  }
+  if (decision.type === "magic" && decision.reason.includes("相手マスター")) {
+    return 86;
+  }
+  if (decision.type === "master_action" && decision.actionId === "master_attack") {
+    return 84;
+  }
+  if (decision.type === "magic") {
+    return 78;
+  }
+  if (decision.type === "master_action" && decision.actionId === "wake_up") {
+    return 74;
+  }
+  if (decision.type === "master_action") {
+    return 70;
+  }
+  if (decision.type === "summon") {
+    return 60;
+  }
+  return decisionPriority(decision);
+}
+
+function masterDamagePlanStateKey(state: GameState, perspective: PlayerId): string {
+  const player = state.players[perspective];
+  const opponent = state.players[opponentOf(perspective)];
+  return JSON.stringify({
+    currentPlayer: state.currentPlayer,
+    player: {
+      hp: player.masterHp,
+      stones: player.stones,
+      masterPowerBonus: player.masterPowerBonus ?? 0,
+      masterFrozen: player.masterFrozen ?? false,
+      hand: player.hand.map((card) => `${card.instanceId}:${card.cardId}`),
+    },
+    opponentHp: opponent.masterHp,
+    slots: ALL_FIELD_ORDER.map((slotKey) => {
+      const monster = state.slots[slotKey].monster;
+      return [
+        slotKey,
+        monster
+          ? {
+              id: monster.instanceId,
+              cardId: monster.cardId,
+              hp: monster.hp,
+              level: monster.level,
+              status: monster.status,
+              actionCount: monster.actionCount,
+              actionLimit: monster.actionLimit,
+              focused: monster.focused,
+              powerUp: monster.powerUp,
+              berserkPower: monster.berserkPower,
+              usedCommandIds: monster.usedCommandIds ?? [],
+            }
+          : null,
+      ];
+    }),
+  });
 }
 
 function decisionPriority(decision: CpuDecision): number {

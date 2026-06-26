@@ -1773,6 +1773,57 @@ describe("cpu ai", () => {
     ).toBe(false);
   });
 
+  it("uses a turn-start master damage plan when wake-up plus board attacks are lethal", () => {
+    let game = createCpuGame([]);
+    game.players.cpu.masterId = "white";
+    game.players.player.masterId = "white";
+    game.players.cpu.stones = 5;
+    game.players.player.masterHp = 2;
+    game.slots.cpu_back_left.monster = createActiveMonster("morgan", "cpu", {
+      level: 2,
+      hp: 4,
+    });
+    game.slots.cpu_back_right.monster = createActiveMonster("morgan", "cpu", {
+      instanceId: "cpu_morgan_prepared_closeout",
+      level: 2,
+      hp: 4,
+      status: "prepared",
+    });
+    game.slots.player_front_left.monster = createActiveMonster("takokke", "player", { hp: 2 });
+
+    const first = chooseCpuDecision(game, { profile: "white" });
+
+    expect(isMasterDamagePlanStep(first)).toBe(true);
+    expect(first.reason).toContain("最大打点");
+
+    for (let step = 0; step < 4 && !game.winner && game.currentPlayer === "cpu"; step += 1) {
+      game = applyCpuDecision(game, chooseCpuDecision(game, { profile: "white" }));
+    }
+    expect(game.winner).toBe("cpu");
+  });
+
+  it("uses hand wake-up when it is part of the master lethal line", () => {
+    const game = createCpuGame([{ cardId: "card_117", instanceId: "cpu_hand_wake_closeout" }]);
+    game.players.cpu.masterId = "white";
+    game.players.cpu.masterFrozen = true;
+    game.players.cpu.stones = 2;
+    game.players.player.masterHp = 1;
+    game.slots.cpu_back_left.monster = createActiveMonster("morgan", "cpu", {
+      level: 2,
+      hp: 4,
+      status: "prepared",
+    });
+    game.slots.player_front_left.monster = createActiveMonster("takokke", "player", { hp: 2 });
+
+    const decision = chooseCpuDecision(game, { profile: "white" });
+
+    expect(decision.type).toBe("magic");
+    if (decision.type === "magic") {
+      expect(decision.action.handInstanceId).toBe("cpu_hand_wake_closeout");
+      expect(decision.action.target).toEqual({ kind: "monster", slotKey: "cpu_back_left" });
+    }
+  });
+
   it("wakes up an enemy prepared monster when it can be defeated immediately", () => {
     const game = createCpuGame([]);
     game.players.cpu.stones = 5;
@@ -2425,6 +2476,19 @@ function createPlayerAutoGame(hand: CardInstance[] = []): GameState {
   game.players.player.discard = [];
   game.players.cpu.hand = [];
   return game;
+}
+
+function isMasterDamagePlanStep(decision: ReturnType<typeof chooseCpuDecision>): boolean {
+  if (decision.type === "attack") {
+    return decision.action.target.kind === "master";
+  }
+  if (decision.type === "master_action") {
+    return decision.actionId === "wake_up" || decision.actionId === "master_attack";
+  }
+  if (decision.type === "magic") {
+    return true;
+  }
+  return false;
 }
 
 function createActiveMonster(
