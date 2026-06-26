@@ -783,14 +783,15 @@ describe("cpu ai", () => {
     wakeGame.players.cpu.masterId = "white";
     wakeGame.players.cpu.hand = [];
     wakeGame.players.cpu.stones = 3;
-    wakeGame.slots.cpu_back_left.monster = createActiveMonster("morgan", "cpu", { status: "prepared" });
+    wakeGame.slots.cpu_front_left.monster = createActiveMonster("takokke", "cpu", { status: "prepared" });
+    wakeGame.slots.player_front_left.monster = createActiveMonster("takokke", "player", { hp: 2 });
     const findWake = (options = {}) =>
       inspectCpuDecisionEvaluations(wakeGame, options).find(
         (evaluation) =>
           evaluation.decision.type === "master_action" &&
           evaluation.decision.actionId === "wake_up" &&
           evaluation.decision.target.kind === "monster" &&
-          evaluation.decision.target.slotKey === "cpu_back_left",
+          evaluation.decision.target.slotKey === "cpu_front_left",
       );
     const wakeBaseline = findWake();
     const wakeTuned = findWake({ tunings: { cpu: { situationalBias: { whiteLowStoneWakePenalty: 7 } } } });
@@ -902,18 +903,17 @@ describe("cpu ai", () => {
     wakeGame.players.cpu.masterId = "white";
     wakeGame.players.cpu.hand = [];
     wakeGame.players.cpu.stones = 4;
-    wakeGame.slots.cpu_back_left.monster = createActiveMonster("morgan", "cpu", {
+    wakeGame.slots.cpu_front_left.monster = createActiveMonster("takokke", "cpu", {
       status: "prepared",
-      level: 2,
-      hp: 4,
     });
+    wakeGame.slots.player_front_left.monster = createActiveMonster("takokke", "player", { hp: 2 });
     const findWake = (options = {}) =>
       inspectCpuDecisionEvaluations(wakeGame, options).find(
         (evaluation) =>
           evaluation.decision.type === "master_action" &&
           evaluation.decision.actionId === "wake_up" &&
           evaluation.decision.target.kind === "monster" &&
-          evaluation.decision.target.slotKey === "cpu_back_left",
+          evaluation.decision.target.slotKey === "cpu_front_left",
       );
     const wakeBaseline = findWake();
     const wakeTuned = findWake({ tunings: { cpu: { situationalBias: { whiteWakeImmediateWorkBonus: 8 } } } });
@@ -1371,11 +1371,10 @@ describe("cpu ai", () => {
     game.players.cpu.masterId = "white";
     game.players.cpu.hand = [];
     game.players.cpu.stones = 4;
-    game.slots.cpu_back_left.monster = createActiveMonster("morgan", "cpu", {
+    game.slots.cpu_front_left.monster = createActiveMonster("takokke", "cpu", {
       status: "prepared",
-      level: 2,
-      hp: 4,
     });
+    game.slots.player_front_left.monster = createActiveMonster("takokke", "player", { hp: 2 });
 
     const findWake = (options = {}) =>
       inspectCpuDecisionEvaluations(game, options).find(
@@ -1383,7 +1382,7 @@ describe("cpu ai", () => {
           evaluation.decision.type === "master_action" &&
           evaluation.decision.actionId === "wake_up" &&
           evaluation.decision.target.kind === "monster" &&
-          evaluation.decision.target.slotKey === "cpu_back_left",
+          evaluation.decision.target.slotKey === "cpu_front_left",
       );
     const baseline = findWake();
     const tuned = findWake({ tunings: { cpu: { situationalBias: { whiteWakeSafeWorkBonus: 7 } } } });
@@ -1572,6 +1571,7 @@ describe("cpu ai", () => {
 
   it("summons front-role cards to the front row", () => {
     const game = createCpuGame([{ cardId: "takokke", instanceId: "cpu_takokke_test" }]);
+    game.players.cpu.masterId = "black";
 
     const decision = chooseCpuDecision(game);
 
@@ -1588,7 +1588,7 @@ describe("cpu ai", () => {
 
     expect(decision.type).toBe("summon");
     if (decision.type === "summon") {
-      expect(decision.slotKey).toBe("player_front_left");
+      expect(decision.slotKey).toBe("player_back_left");
     }
   });
 
@@ -1651,19 +1651,19 @@ describe("cpu ai", () => {
 
     const next = applyCpuDecision(game, decision);
 
-    expect(next.slots.cpu_front_left.monster?.cardId).toBe("takokke");
+    expect(next.slots.cpu_back_left.monster?.cardId).toBe("takokke");
     expect(next.players.cpu.stones).toBe(2);
     expect(next.log.some((entry) => entry.startsWith("CPU判断:"))).toBe(true);
     expect(next.log.find((entry) => entry.startsWith("CPU判断:"))).not.toContain("タコッケー");
   });
 
-  it("wakes up a prepared ally when it can act immediately", () => {
+  it("wakes up a prepared ally when it can immediately defeat an enemy", () => {
     const game = createCpuGame([]);
     game.players.cpu.stones = 5;
-    game.slots.cpu_back_left.monster = createActiveMonster("morgan", "cpu", {
+    game.slots.cpu_front_left.monster = createActiveMonster("takokke", "cpu", {
       status: "prepared",
-      hp: 4,
     });
+    game.slots.player_front_left.monster = createActiveMonster("takokke", "player", { hp: 2 });
 
     const decision = chooseCpuDecision(game);
 
@@ -1672,6 +1672,27 @@ describe("cpu ai", () => {
       expect(decision.actionId).toBe("wake_up");
       expect(decision.reason).toContain("ウェイクアップ");
     }
+  });
+
+  it("does not wake a prepared ally just for non-lethal action or future focus", () => {
+    const game = createCpuGame([]);
+    game.players.cpu.stones = 5;
+    game.slots.cpu_back_left.monster = createActiveMonster("morgan", "cpu", {
+      status: "prepared",
+      hp: 4,
+    });
+
+    const decisions = listCpuDecisions(game);
+
+    expect(
+      decisions.some(
+        (decision) =>
+          decision.type === "master_action" &&
+          decision.actionId === "wake_up" &&
+          decision.target.kind === "monster" &&
+          decision.target.slotKey === "cpu_back_left",
+      ),
+    ).toBe(false);
   });
 
   it("wakes up an enemy prepared monster when it can be defeated immediately", () => {

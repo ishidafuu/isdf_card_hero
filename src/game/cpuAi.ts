@@ -215,7 +215,6 @@ const WHITE_AI_BASE_TUNING = {
     whiteSecondShieldLowStonePenalty: 120,
     whiteSecondShieldCommitmentPenalty: 180,
     whiteBlackFrontThreatBonus: 8,
-    whiteWakeLevelUpSetupBonus: 130,
   },
 } satisfies CpuAiTuning;
 
@@ -1669,10 +1668,7 @@ function whiteWakeImmediateWorkDecisionBonus(
   if (!target || target.owner !== perspective || target.status !== "active") {
     return 0;
   }
-  return bestAttackOpportunityScore(after, decision.target.slotKey) > 0 ||
-    nextTurnLevelUpPotential(after, decision.target.slotKey) > 0
-    ? value
-    : 0;
+  return bestWakeFollowUpFinishScore(after, decision.target.slotKey) > 0 ? value : 0;
 }
 
 function whiteWakeLevelUpSetupDecisionBonus(
@@ -1917,9 +1913,7 @@ function whiteWakeSafeWorkDecisionBonus(
   if (isLethalIncomingThreat(threat)) {
     return 0;
   }
-  return bestAttackOpportunityScore(after, targetSlotKey) > 0 || nextTurnWorkPotential(after, targetSlotKey, perspective) > 0
-    ? value
-    : 0;
+  return bestWakeFollowUpFinishScore(after, targetSlotKey) > 0 ? value : 0;
 }
 
 function whiteLowStoneFocusMissedAttackDecisionPenalty(
@@ -3314,8 +3308,8 @@ function createWakeUpDecision(state: GameState, target: Target): CpuDecision | u
   }
   const after = useMasterAction(state, "wake_up", target);
   if (monster.owner !== state.currentPlayer) {
-    const attackScore = bestAttackOpportunityScore(after, undefined, target.slotKey);
-    if (attackScore < 260) {
+    const attackScore = bestMonsterKillOpportunityScore(after, undefined, target.slotKey);
+    if (attackScore <= 0) {
       return undefined;
     }
     return {
@@ -3327,18 +3321,11 @@ function createWakeUpDecision(state: GameState, target: Target): CpuDecision | u
     };
   }
 
-  const bestFollowUpAttack = bestAttackOpportunityScore(after, target.slotKey);
-  const canActNow = bestFollowUpAttack > 0;
-  if (!canActNow && isLoneOwnFrontWakeExposure(state, target.slotKey, state.currentPlayer)) {
+  const followUpFinish = bestWakeFollowUpFinishScore(after, target.slotKey);
+  if (followUpFinish <= 0) {
     return undefined;
   }
-  if (!canActNow && isDeckOutRace(state)) {
-    return undefined;
-  }
-  if (!canActNow && shouldPruneCloseoutNonProgressActions(state, state.currentPlayer)) {
-    return undefined;
-  }
-  const score = 28 + monsterValue(state, target.slotKey) * 0.35 + bestFollowUpAttack * 0.45 + (canActNow ? 35 : 0) - 16;
+  const score = 46 + monsterValue(state, target.slotKey) * 0.2 + followUpFinish * 0.62 - 16;
   if (score < 32) {
     return undefined;
   }
@@ -3346,24 +3333,9 @@ function createWakeUpDecision(state: GameState, target: Target): CpuDecision | u
     type: "master_action",
     actionId: "wake_up",
     target,
-    reason: canActNow
-      ? "準備中の味方を起こすと追加行動できるためウェイクアップ"
-      : "高価値の準備中味方を早く登場させるためウェイクアップ",
+    reason: "準備中の味方を起こして敵を撃破できるためウェイクアップ",
     score,
   };
-}
-
-function isLoneOwnFrontWakeExposure(state: GameState, slotKey: SlotKey, playerId: PlayerId): boolean {
-  const slot = state.slots[slotKey];
-  const monster = slot.monster;
-  if (slot.owner !== playerId || slot.row !== "front" || monster?.owner !== playerId || monster.status !== "prepared") {
-    return false;
-  }
-  return ownMonsterCount(state, playerId) === 1;
-}
-
-function ownMonsterCount(state: GameState, playerId: PlayerId): number {
-  return FIELD_ORDER_BY_PLAYER[playerId].filter((slotKey) => state.slots[slotKey].monster?.owner === playerId).length;
 }
 
 function listShieldDecisions(state: GameState, weights: AiEvaluationWeights): CpuDecision[] {
@@ -3627,6 +3599,9 @@ function listSummonDecisions(state: GameState): CpuDecision[] {
       if (!canSummonTo(state, card.instanceId, slotKey)) {
         continue;
       }
+      if (shouldSkipLoneFrontSummonWithoutWakeFinish(state, card.instanceId, slotKey)) {
+        continue;
+      }
       const score = scoreSummon(state, card, slotKey);
       if (shouldPruneCloseoutNonProgressActions(state, playerId) && score <= 20) {
         continue;
@@ -3674,6 +3649,21 @@ function scoreSummon(state: GameState, card: CardInstance, slotKey: SlotKey): nu
   return score + memberRatingValueBonus(card.cardId, state.players[state.currentPlayer].masterId);
 }
 
+function shouldSkipLoneFrontSummonWithoutWakeFinish(state: GameState, handInstanceId: string, slotKey: SlotKey): boolean {
+  const slot = state.slots[slotKey];
+  if (slot.row !== "front") {
+    return false;
+  }
+  if (!getCurrentMasterActionIds(state).includes("wake_up")) {
+    return false;
+  }
+  if (state.players[state.currentPlayer].stones < 1 + getMasterActionCost("wake_up")) {
+    return false;
+  }
+  const ownBoardEmpty = SUMMON_SLOT_ORDER_BY_PLAYER[slot.owner].every((key) => !state.slots[key].monster);
+  return ownBoardEmpty && !summonWakeCreatesImmediateWork(state, handInstanceId, slotKey);
+}
+
 function summonWakeCreatesImmediateWork(state: GameState, handInstanceId: string, slotKey: SlotKey): boolean {
   const wakeCost = getMasterActionCost("wake_up");
   if (!getCurrentMasterActionIds(state).includes("wake_up") || state.players[state.currentPlayer].stones < 1 + wakeCost) {
@@ -3687,7 +3677,7 @@ function summonWakeCreatesImmediateWork(state: GameState, handInstanceId: string
       return false;
     }
     const woken = useMasterAction(summoned, "wake_up", target);
-    return bestAttackOpportunityScore(woken, slotKey) > 0;
+    return bestWakeFollowUpFinishScore(woken, slotKey) > 0;
   } catch {
     return false;
   }
@@ -4413,6 +4403,74 @@ function bestAttackOpportunityScore(
           continue;
         }
         best = Math.max(best, estimateAttackScore(state, slotKey, command, target));
+      }
+    }
+  }
+
+  return best;
+}
+
+function bestWakeFollowUpFinishScore(state: GameState, attackerSlotKey: SlotKey): number {
+  return Math.max(
+    bestMonsterKillOpportunityScore(state, attackerSlotKey),
+    bestMasterLethalOpportunityScore(state, attackerSlotKey),
+  );
+}
+
+function bestMonsterKillOpportunityScore(
+  state: GameState,
+  onlyAttackerSlotKey?: SlotKey,
+  onlyTargetSlotKey?: SlotKey,
+): number {
+  let best = 0;
+  const playerId = state.currentPlayer;
+  const attackerSlots = onlyAttackerSlotKey ? [onlyAttackerSlotKey] : FIELD_ORDER_BY_PLAYER[playerId];
+
+  for (const slotKey of attackerSlots) {
+    const monster = state.slots[slotKey].monster;
+    if (!monster?.status || monster.status !== "active" || monster.actionCount >= monster.actionLimit) {
+      continue;
+    }
+    for (const command of getMonsterCommands(monster)) {
+      for (const target of getCommandTargets(state, slotKey, command.id)) {
+        if (target.kind !== "monster" || isOwnedMonsterTarget(state, target, playerId)) {
+          continue;
+        }
+        if (onlyTargetSlotKey && target.slotKey !== onlyTargetSlotKey) {
+          continue;
+        }
+        const targetMonster = state.slots[target.slotKey].monster;
+        if (!targetMonster) {
+          continue;
+        }
+        const damage = estimateMonsterDamage(state, targetMonster, slotKey, command);
+        if (damage >= targetMonster.hp) {
+          best = Math.max(best, 300 + monsterValue(state, target.slotKey));
+        }
+      }
+    }
+  }
+
+  return best;
+}
+
+function bestMasterLethalOpportunityScore(state: GameState, attackerSlotKey: SlotKey): number {
+  const playerId = state.currentPlayer;
+  const monster = state.slots[attackerSlotKey].monster;
+  if (!monster?.status || monster.status !== "active" || monster.actionCount >= monster.actionLimit) {
+    return 0;
+  }
+
+  const opponent = opponentOf(playerId);
+  let best = 0;
+  for (const command of getMonsterCommands(monster)) {
+    for (const target of getCommandTargets(state, attackerSlotKey, command.id)) {
+      if (target.kind !== "master" || target.playerId !== opponent) {
+        continue;
+      }
+      const damage = Math.max(0, estimateCommandPower(state, attackerSlotKey, command) - 2);
+      if (damage >= state.players[opponent].masterHp) {
+        best = Math.max(best, 420 + masterDamageScore(state, playerId, damage));
       }
     }
   }
