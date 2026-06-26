@@ -1824,6 +1824,37 @@ describe("cpu ai", () => {
     }
   });
 
+  it("penalizes ending the turn when the opponent has a master lethal plan", () => {
+    const game = createCpuGame([]);
+    game.players.cpu.masterId = "white";
+    game.players.player.masterId = "white";
+    game.players.cpu.stones = 0;
+    game.players.cpu.masterHp = 1;
+    game.players.player.masterHp = 8;
+    game.slots.cpu_front_left.monster = createActiveMonster("takokke", "cpu");
+    game.slots.player_front_left.monster = createActiveMonster("morgan", "player", {
+      level: 2,
+      hp: 2,
+    });
+
+    const evaluations = inspectCpuDecisionEvaluations(game, { profile: "white" });
+    const endTurn = evaluations.find((evaluation) => evaluation.decision.type === "end_turn");
+    const frontKill = evaluations.find(
+      (evaluation) =>
+        evaluation.decision.type === "attack" &&
+        evaluation.decision.action.target.kind === "monster" &&
+        evaluation.decision.action.target.slotKey === "player_front_left",
+    );
+    const decision = chooseCpuDecision(game, { profile: "white" });
+
+    expect(endTurn?.totalScore).toBeLessThan(-100_000);
+    expect(frontKill?.totalScore).toBeGreaterThan(endTurn?.totalScore ?? 0);
+    expect(decision.type).toBe("attack");
+    if (decision.type === "attack") {
+      expect(decision.action.target).toEqual({ kind: "monster", slotKey: "player_front_left" });
+    }
+  });
+
   it("wakes up an enemy prepared monster when it can be defeated immediately", () => {
     const game = createCpuGame([]);
     game.players.cpu.stones = 5;
