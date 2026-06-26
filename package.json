@@ -35,6 +35,7 @@
     "select:white-deck": "vite-node scripts/white-vs-white-deck-selection.ts",
     "benchmark:white-search": "vite-node scripts/white-vs-white-search-benchmark.ts",
     "audit:white-terminal-plans": "vite-node scripts/white-ai-terminal-plan-audit.ts",
+    "audit:white-front-chip": "vite-node scripts/white-ai-front-chip-response-audit.ts",
     "lab:masters:select": "vite-node scripts/master-lab-selection-loop.ts",
     "audit:deck-submissions": "vite-node scripts/deck-submission-audit.ts",
     "import:deck-submissions": "node scripts/import-cardhero-bu-decks.mjs",

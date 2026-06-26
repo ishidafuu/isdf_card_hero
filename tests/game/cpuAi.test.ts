@@ -506,6 +506,66 @@ describe("cpu ai", () => {
     expect(defaultWhite?.totalScore).toBeCloseTo((disabled?.totalScore ?? 0) + 8);
   });
 
+  it("penalizes white mirror front chips that hand action back to the target", () => {
+    const game = createCpuGame();
+    game.players.cpu.masterId = "white";
+    game.players.player.masterId = "white";
+    game.players.cpu.hand = [];
+    game.players.cpu.stones = 0;
+    game.slots.cpu_front_left.monster = createActiveMonster("takokke", "cpu");
+    game.slots.player_front_left.monster = createActiveMonster("takokke", "player", { hp: 5 });
+
+    const findFrontAttack = (options = {}) =>
+      inspectCpuDecisionEvaluations(game, {
+        profile: "white",
+        search: { sameTurnSearchDepth: 0 },
+        ...options,
+      }).find(
+        (evaluation) =>
+          evaluation.decision.type === "attack" &&
+          evaluation.decision.action.target.kind === "monster" &&
+          evaluation.decision.action.target.slotKey === "player_front_left",
+      );
+    const disabled = findFrontAttack({
+      tunings: { cpu: { situationalBias: { whiteFrontChipResponsePenalty: 0 } } },
+    });
+    const defaultWhite = findFrontAttack();
+
+    expect(disabled).toBeDefined();
+    expect(defaultWhite).toBeDefined();
+    expect(defaultWhite?.totalScore).toBeLessThan((disabled?.totalScore ?? 0) - 80);
+  });
+
+  it("does not penalize white mirror front chips that can be finished by master attack", () => {
+    const game = createCpuGame();
+    game.players.cpu.masterId = "white";
+    game.players.player.masterId = "white";
+    game.players.cpu.hand = [];
+    game.players.cpu.stones = 3;
+    game.slots.cpu_front_left.monster = createActiveMonster("takokke", "cpu");
+    game.slots.player_front_left.monster = createActiveMonster("takokke", "player", { hp: 3 });
+
+    const findFrontAttack = (options = {}) =>
+      inspectCpuDecisionEvaluations(game, {
+        profile: "white",
+        search: { sameTurnSearchDepth: 0 },
+        ...options,
+      }).find(
+        (evaluation) =>
+          evaluation.decision.type === "attack" &&
+          evaluation.decision.action.target.kind === "monster" &&
+          evaluation.decision.action.target.slotKey === "player_front_left",
+      );
+    const disabled = findFrontAttack({
+      tunings: { cpu: { situationalBias: { whiteFrontChipResponsePenalty: 0 } } },
+    });
+    const defaultWhite = findFrontAttack();
+
+    expect(disabled).toBeDefined();
+    expect(defaultWhite).toBeDefined();
+    expect(defaultWhite?.totalScore).toBeCloseTo(disabled?.totalScore ?? 0);
+  });
+
   it("penalizes low-stone white master attacks while black front pressure remains", () => {
     const game = createCpuGame();
     game.players.cpu.masterId = "white";

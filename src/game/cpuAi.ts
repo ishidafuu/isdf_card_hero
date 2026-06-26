@@ -145,6 +145,7 @@ const WHITE_MIRROR_OPPONENT_RESPONSE_ROOT_MARGIN = 160;
 const WHITE_MIRROR_OPPONENT_RESPONSE_MIN_ROOT_CANDIDATES = 4;
 const WHITE_MIRROR_TERMINAL_RESPONSE_TIE_MARGIN = 16;
 const WHITE_MIRROR_NON_CONVERTING_BACKLINE_CHIP_PENALTY = 132;
+const WHITE_MIRROR_NON_CONVERTING_FRONT_THREAT_CHIP_MAX_PENALTY = 220;
 const WHITE_MIRROR_EXPOSED_POWER_MAGIC_PENALTY = 200;
 const WHITE_MIRROR_RESPONSE_COLLAPSE_THRESHOLD = 120;
 const WHITE_MIRROR_RESPONSE_COLLAPSE_PENALTY_WEIGHT = 0.25;
@@ -216,6 +217,7 @@ export interface CpuAiTuning {
     whiteReadyBacklineRetreatPenalty?: number;
     whiteDisadvantagedSummonOvercommitPenalty?: number;
     whiteBlackUnsafeMasterAttackPenalty?: number;
+    whiteFrontChipResponsePenalty?: number;
   };
 }
 
@@ -237,6 +239,7 @@ const WHITE_AI_BASE_TUNING = {
     whiteBoardControlMasterAttackPenalty: 320,
     whiteReadyBacklineRetreatPenalty: 180,
     whiteDisadvantagedSummonOvercommitPenalty: 260,
+    whiteFrontChipResponsePenalty: 86,
   },
 } satisfies CpuAiTuning;
 
@@ -1195,6 +1198,15 @@ function decisionSituationalBonus(
       decision,
       perspective,
       bias.whiteBlackUnsafeMasterAttackPenalty,
+    );
+  }
+  if (bias.whiteFrontChipResponsePenalty) {
+    bonus -= whiteFrontChipResponseDecisionPenalty(
+      before,
+      after,
+      decision,
+      perspective,
+      bias.whiteFrontChipResponsePenalty,
     );
   }
   return bonus;
@@ -3754,13 +3766,119 @@ function whiteMirrorNonConvertingBacklineChipPenalty(
     : WHITE_MIRROR_NON_CONVERTING_BACKLINE_CHIP_PENALTY;
 }
 
+function whiteFrontChipResponseDecisionPenalty(
+  before: GameState,
+  after: GameState,
+  decision: CpuDecision,
+  perspective: PlayerId,
+  value: number,
+): number {
+  const targetSlotKey = whiteFrontChipResponseTargetSlot(before, after, decision, perspective);
+  if (!targetSlotKey) {
+    return 0;
+  }
+  const targetAfter = after.slots[targetSlotKey].monster;
+  if (!targetAfter) {
+    return 0;
+  }
+  return whiteMirrorNonConvertingFrontThreatChipPenalty(before, after, targetSlotKey, targetAfter, value);
+}
+
+function whiteFrontChipResponseTargetSlot(
+  before: GameState,
+  after: GameState,
+  decision: CpuDecision,
+  perspective: PlayerId,
+): SlotKey | undefined {
+  const target = decision.type === "attack"
+    ? decision.action.target
+    : decision.type === "master_action" && decision.actionId === "master_attack"
+      ? decision.target
+      : undefined;
+  if (target?.kind !== "monster") {
+    return undefined;
+  }
+  const targetBefore = before.slots[target.slotKey].monster;
+  const targetAfter = after.slots[target.slotKey].monster;
+  if (
+    !targetBefore ||
+    !targetAfter ||
+    targetBefore.instanceId !== targetAfter.instanceId ||
+    targetBefore.owner !== opponentOf(perspective) ||
+    targetAfter.owner !== targetBefore.owner ||
+    targetAfter.hp >= targetBefore.hp
+  ) {
+    return undefined;
+  }
+  return target.slotKey;
+}
+
+function whiteMirrorNonConvertingFrontThreatChipPenalty(
+  state: GameState,
+  after: GameState,
+  targetSlotKey: SlotKey,
+  targetAfter: MonsterState,
+  value: number,
+): number {
+  const perspective = state.currentPlayer;
+  const targetBefore = state.slots[targetSlotKey].monster;
+  if (
+    value <= 0 ||
+    !isWhiteMirrorState(state, perspective) ||
+    state.slots[targetSlotKey].row !== "front" ||
+    !targetBefore ||
+    targetBefore.owner !== opponentOf(perspective) ||
+    targetAfter.owner !== targetBefore.owner ||
+    targetAfter.instanceId !== targetBefore.instanceId ||
+    targetAfter.hp >= targetBefore.hp ||
+    targetAfter.hp <= 1
+  ) {
+    return 0;
+  }
+
+  if (canFinishEnemyMonsterThisTurn(after, targetSlotKey, perspective)) {
+    return 0;
+  }
+
+  const responseThreat = enemyFrontChipResponseThreatScore(after, targetSlotKey, perspective);
+  if (responseThreat <= 0) {
+    return 0;
+  }
+
+  const remainingHpPenalty = Math.max(0, targetAfter.hp - 1) * 16;
+  const levelPenalty = targetAfter.level > 1 ? (targetAfter.level - 1) * 30 : 0;
+  const lowStonePenalty = after.players[perspective].stones <= 1 ? 35 : after.players[perspective].stones <= 3 ? 15 : 0;
+  return Math.min(
+    WHITE_MIRROR_NON_CONVERTING_FRONT_THREAT_CHIP_MAX_PENALTY,
+    value +
+      responseThreat * 0.22 +
+      remainingHpPenalty +
+      levelPenalty +
+      lowStonePenalty,
+  );
+}
+
+function enemyFrontChipResponseThreatScore(
+  state: GameState,
+  targetSlotKey: SlotKey,
+  perspective: PlayerId,
+): number {
+  const opponent = opponentOf(perspective);
+  const target = state.slots[targetSlotKey].monster;
+  if (!target || target.owner !== opponent) {
+    return 0;
+  }
+  const readyState = readyPlayerForTacticalEvaluation(state, opponent);
+  return bestAttackOpportunityScore(readyState, targetSlotKey);
+}
+
 function canFinishEnemyMonsterThisTurn(state: GameState, targetSlotKey: SlotKey, perspective: PlayerId): boolean {
   const target = state.slots[targetSlotKey].monster;
   if (!target || target.owner === perspective) {
     return false;
   }
 
-  return FIELD_ORDER_BY_PLAYER[perspective].some((attackerSlotKey) => {
+  if (FIELD_ORDER_BY_PLAYER[perspective].some((attackerSlotKey) => {
     const attacker = state.slots[attackerSlotKey].monster;
     if (!attacker || attacker.owner !== perspective || attacker.status !== "active" || attacker.actionCount >= attacker.actionLimit) {
       return false;
@@ -3771,7 +3889,23 @@ function canFinishEnemyMonsterThisTurn(state: GameState, targetSlotKey: SlotKey,
       );
       return canTarget && estimateMonsterDamage(state, target, attackerSlotKey, command) >= target.hp;
     });
-  });
+  })) {
+    return true;
+  }
+
+  if (!getCurrentMasterActionIds(state).includes("master_attack")) {
+    return false;
+  }
+  if (!getMasterActionTargets(state, "master_attack").some((candidate) => candidate.kind === "monster" && candidate.slotKey === targetSlotKey)) {
+    return false;
+  }
+  try {
+    const after = useMasterAction(state, "master_attack", { kind: "monster", slotKey: targetSlotKey });
+    const targetAfter = after.slots[targetSlotKey].monster;
+    return !targetAfter || targetAfter.instanceId !== target.instanceId || targetAfter.owner !== target.owner;
+  } catch {
+    return false;
+  }
 }
 
 function scoreZeroDamageMonsterAttack(
