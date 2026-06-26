@@ -215,6 +215,7 @@ export interface CpuAiTuning {
     whiteBoardControlMasterAttackPenalty?: number;
     whiteReadyBacklineRetreatPenalty?: number;
     whiteDisadvantagedSummonOvercommitPenalty?: number;
+    whiteBlackUnsafeMasterAttackPenalty?: number;
   };
 }
 
@@ -1187,6 +1188,15 @@ function decisionSituationalBonus(
       bias.whiteDisadvantagedSummonOvercommitPenalty,
     );
   }
+  if (bias.whiteBlackUnsafeMasterAttackPenalty) {
+    bonus -= whiteBlackUnsafeMasterAttackDecisionPenalty(
+      before,
+      after,
+      decision,
+      perspective,
+      bias.whiteBlackUnsafeMasterAttackPenalty,
+    );
+  }
   return bonus;
 }
 
@@ -1720,6 +1730,61 @@ function isDisadvantagedUnderMasterAssault(
     return false;
   }
   return own.masterHp <= 5 || own.masterHp + 2 <= enemy.masterHp || opponentMasterDamage >= Math.max(2, own.masterHp - 1);
+}
+
+function whiteBlackUnsafeMasterAttackDecisionPenalty(
+  before: GameState,
+  after: GameState,
+  decision: CpuDecision,
+  perspective: PlayerId,
+  value: number,
+): number {
+  if (
+    value <= 0 ||
+    before.players[perspective].masterId !== "white" ||
+    before.players[opponentOf(perspective)].masterId !== "black" ||
+    !isDirectMasterAttackDecision(decision) ||
+    after.winner === perspective
+  ) {
+    return 0;
+  }
+
+  const opponent = opponentOf(perspective);
+  const damage = before.players[opponent].masterHp - after.players[opponent].masterHp;
+  if (damage <= 0 || after.players[opponent].masterHp <= 4 || after.players[perspective].stones > 1) {
+    return 0;
+  }
+
+  const threatDamage = maxEnemyFrontMasterDamagePotential(after, perspective);
+  if (threatDamage <= 0) {
+    return 0;
+  }
+
+  const ownCloseoutDamage = bestDirectMasterDamageForPlayer(after, perspective);
+  if (ownCloseoutDamage >= after.players[opponent].masterHp && after.players[perspective].masterHp > threatDamage) {
+    return 0;
+  }
+
+  const hpRacePenalty = after.players[perspective].masterHp <= after.players[opponent].masterHp ? 70 : 0;
+  const urgentThreatPenalty = threatDamage >= after.players[perspective].masterHp - 1 ? 95 : 0;
+  return value + Math.min(180, threatDamage * 45) + hpRacePenalty + urgentThreatPenalty;
+}
+
+function isDirectMasterAttackDecision(decision: CpuDecision): boolean {
+  return (
+    (decision.type === "attack" && decision.action.target.kind === "master") ||
+    (decision.type === "master_action" && decision.actionId === "master_attack" && decision.target.kind === "master")
+  );
+}
+
+function maxEnemyFrontMasterDamagePotential(state: GameState, perspective: PlayerId): number {
+  const opponent = opponentOf(perspective);
+  return Math.max(
+    0,
+    ...FIELD_ORDER_BY_PLAYER[opponent]
+      .filter((slotKey) => state.slots[slotKey].row === "front")
+      .map((slotKey) => blackFrontMasterDamagePotential(state, slotKey, opponent)),
+  );
 }
 
 function findSafeBackRoleRetreat(state: GameState, fromSlotKey: SlotKey, perspective: PlayerId): GameState | undefined {

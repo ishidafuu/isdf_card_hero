@@ -506,6 +506,51 @@ describe("cpu ai", () => {
     expect(defaultWhite?.totalScore).toBeCloseTo((disabled?.totalScore ?? 0) + 8);
   });
 
+  it("penalizes low-stone white master attacks while black front pressure remains", () => {
+    const game = createCpuGame();
+    game.players.cpu.masterId = "white";
+    game.players.cpu.hand = [];
+    game.players.cpu.stones = 0;
+    game.players.cpu.masterHp = 8;
+    game.players.player.masterId = "black";
+    game.players.player.stones = 3;
+    game.players.player.masterHp = 8;
+    game.slots.cpu_back_left.monster = createActiveMonster("morgan", "cpu", {
+      level: 2,
+      hp: 4,
+    });
+    game.slots.player_front_left.monster = createActiveMonster("takokke", "player", { hp: 5 });
+
+    const findMasterAttack = (options = {}) =>
+      inspectCpuDecisionEvaluations(game, options).find(
+        (evaluation) =>
+          evaluation.decision.type === "attack" &&
+          evaluation.decision.action.target.kind === "master",
+      );
+    const baseline = findMasterAttack({ profile: "white" });
+    const tuned = findMasterAttack({
+      profile: "white",
+      tunings: { cpu: { situationalBias: { whiteBlackUnsafeMasterAttackPenalty: 150 } } },
+    });
+
+    game.players.player.masterId = "white";
+    const whiteOpponentBaseline = findMasterAttack({
+      profile: "white",
+      tunings: { cpu: { situationalBias: { whiteBlackUnsafeMasterAttackPenalty: 0 } } },
+    });
+    const whiteOpponentTuned = findMasterAttack({
+      profile: "white",
+      tunings: { cpu: { situationalBias: { whiteBlackUnsafeMasterAttackPenalty: 150 } } },
+    });
+
+    expect(baseline).toBeDefined();
+    expect(tuned).toBeDefined();
+    expect(tuned?.totalScore).toBeLessThan((baseline?.totalScore ?? 0) - 150);
+    expect(whiteOpponentBaseline).toBeDefined();
+    expect(whiteOpponentTuned).toBeDefined();
+    expect(whiteOpponentTuned?.totalScore).toBeCloseTo(whiteOpponentBaseline?.totalScore ?? 0);
+  });
+
   it("penalizes omniscient end turns that allow a known opponent response", () => {
     const game = createCpuGame();
     game.players.cpu.masterId = "white";
