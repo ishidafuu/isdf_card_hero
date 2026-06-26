@@ -1679,6 +1679,31 @@ describe("cpu ai", () => {
     expect(decisions.some((decision) => decision.type === "focus")).toBe(false);
   });
 
+  it("holds hand and stones instead of overcommitting a summon while behind under master assault", () => {
+    const game = createCpuGame([{ cardId: "yanbaru", instanceId: "cpu_hold_yanbaru" }]);
+    game.players.cpu.masterId = "white";
+    game.players.player.masterId = "black";
+    game.players.cpu.stones = 2;
+    game.players.player.stones = 3;
+    game.players.cpu.masterHp = 4;
+    game.players.player.masterHp = 9;
+    game.slots.player_front_left.monster = createActiveMonster("morgan", "player", {
+      level: 2,
+      hp: 4,
+      focused: true,
+    });
+    game.slots.player_front_right.monster = createActiveMonster("takokke", "player");
+
+    const decision = chooseCpuDecision(game, { profile: "white" });
+    const overcommitDecision = chooseCpuDecision(game, {
+      profile: "white",
+      tunings: { cpu: { situationalBias: { whiteDisadvantagedSummonOvercommitPenalty: 0 } } },
+    });
+
+    expect(decision.type).toBe("end_turn");
+    expect(overcommitDecision.type).toBe("summon");
+  });
+
   it("does not use closeout master attack for non-lethal chip damage", () => {
     const game = createCpuGame([]);
     game.players.cpu.stones = 3;

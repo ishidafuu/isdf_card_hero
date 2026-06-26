@@ -200,6 +200,7 @@ export interface CpuAiTuning {
     whiteSafeRetreatOverShieldBonus?: number;
     whiteBoardControlMasterAttackPenalty?: number;
     whiteReadyBacklineRetreatPenalty?: number;
+    whiteDisadvantagedSummonOvercommitPenalty?: number;
   };
 }
 
@@ -220,6 +221,7 @@ const WHITE_AI_BASE_TUNING = {
     whiteBlackFrontThreatBonus: 8,
     whiteBoardControlMasterAttackPenalty: 320,
     whiteReadyBacklineRetreatPenalty: 180,
+    whiteDisadvantagedSummonOvercommitPenalty: 260,
   },
 } satisfies CpuAiTuning;
 
@@ -990,6 +992,15 @@ function decisionSituationalBonus(
   if (bias.whiteReadyBacklineRetreatPenalty) {
     bonus -= whiteReadyBacklineRetreatDecisionPenalty(before, decision, perspective, bias.whiteReadyBacklineRetreatPenalty);
   }
+  if (bias.whiteDisadvantagedSummonOvercommitPenalty) {
+    bonus -= whiteDisadvantagedSummonOvercommitDecisionPenalty(
+      before,
+      after,
+      decision,
+      perspective,
+      bias.whiteDisadvantagedSummonOvercommitPenalty,
+    );
+  }
   return bonus;
 }
 
@@ -1462,6 +1473,67 @@ function whiteReadyBacklineRetreatDecisionPenalty(
   const moverWorkLoss = bestAttackOpportunityScore(before, decision.fromSlotKey) > 0 ? 60 : 0;
   const backlineWorkLoss = bestAttackOpportunityScore(before, decision.toSlotKey) > 0 ? 80 : 0;
   return value + moverWorkLoss + backlineWorkLoss;
+}
+
+function whiteDisadvantagedSummonOvercommitDecisionPenalty(
+  before: GameState,
+  after: GameState,
+  decision: CpuDecision,
+  perspective: PlayerId,
+  value: number,
+): number {
+  if (
+    value <= 0 ||
+    before.players[perspective].masterId !== "white" ||
+    decision.type !== "summon" ||
+    after.winner === perspective ||
+    summonWakeCreatesImmediateWork(before, decision.handInstanceId, decision.slotKey)
+  ) {
+    return 0;
+  }
+
+  const opponent = opponentOf(perspective);
+  const beforeOpponentThreat = buildThreatModel(before, opponent);
+  const beforeMasterDamage = beforeOpponentThreat.masterDamage[perspective];
+  if (!isDisadvantagedUnderMasterAssault(before, perspective, beforeMasterDamage)) {
+    return 0;
+  }
+
+  const afterOpponentThreat = buildThreatModel(after, opponent);
+  const afterMasterDamage = afterOpponentThreat.masterDamage[perspective];
+  const masterDamageReduction = beforeMasterDamage - afterMasterDamage;
+  if (masterDamageReduction >= 2 || afterMasterDamage <= 0) {
+    return 0;
+  }
+
+  const summoned = after.slots[decision.slotKey].monster;
+  const summonedThreat = afterOpponentThreat.monsterThreats[decision.slotKey] ?? NO_THREAT;
+  const exposurePenalty = summoned && isLethalIncomingThreat(summonedThreat)
+    ? 120
+    : summoned && summonedThreat.threatened
+      ? 45
+      : 0;
+  const lowResourcePenalty = after.players[perspective].stones <= 1 ? 70 : 0;
+  const lowHandPenalty = before.players[perspective].hand.length <= 2 ? 55 : 0;
+  const remainingAssaultPenalty = Math.min(180, afterMasterDamage * 45);
+  return value + remainingAssaultPenalty + exposurePenalty + lowResourcePenalty + lowHandPenalty;
+}
+
+function isDisadvantagedUnderMasterAssault(
+  state: GameState,
+  perspective: PlayerId,
+  opponentMasterDamage: number,
+): boolean {
+  if (opponentMasterDamage <= 0) {
+    return false;
+  }
+  const opponent = opponentOf(perspective);
+  const own = state.players[perspective];
+  const enemy = state.players[opponent];
+  if (enemy.masterHp <= 4 && bestDirectMasterDamageForPlayer(state, perspective) > 0) {
+    return false;
+  }
+  return own.masterHp <= 5 || own.masterHp + 2 <= enemy.masterHp || opponentMasterDamage >= Math.max(2, own.masterHp - 1);
 }
 
 function findSafeBackRoleRetreat(state: GameState, fromSlotKey: SlotKey, perspective: PlayerId): GameState | undefined {
