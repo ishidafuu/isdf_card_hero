@@ -198,6 +198,8 @@ export interface CpuAiTuning {
     whiteRedirectMarkedAttackPenalty?: number;
     whiteThreatLeftLowStoneSetupPenalty?: number;
     whiteSafeRetreatOverShieldBonus?: number;
+    whiteBoardControlMasterAttackPenalty?: number;
+    whiteReadyBacklineRetreatPenalty?: number;
   };
 }
 
@@ -214,7 +216,10 @@ const WHITE_AI_BASE_TUNING = {
   situationalBias: {
     whiteSecondShieldLowStonePenalty: 120,
     whiteSecondShieldCommitmentPenalty: 180,
+    whiteActiveFrontWorkBonus: 72,
     whiteBlackFrontThreatBonus: 8,
+    whiteBoardControlMasterAttackPenalty: 320,
+    whiteReadyBacklineRetreatPenalty: 180,
   },
 } satisfies CpuAiTuning;
 
@@ -973,6 +978,18 @@ function decisionSituationalBonus(
   if (bias.whiteSafeRetreatOverShieldBonus) {
     bonus += whiteSafeRetreatOverShieldDecisionBonus(before, after, decision, perspective, bias.whiteSafeRetreatOverShieldBonus);
   }
+  if (bias.whiteBoardControlMasterAttackPenalty) {
+    bonus -= whiteBoardControlMasterAttackDecisionPenalty(
+      before,
+      after,
+      decision,
+      perspective,
+      bias.whiteBoardControlMasterAttackPenalty,
+    );
+  }
+  if (bias.whiteReadyBacklineRetreatPenalty) {
+    bonus -= whiteReadyBacklineRetreatDecisionPenalty(before, decision, perspective, bias.whiteReadyBacklineRetreatPenalty);
+  }
   return bonus;
 }
 
@@ -1335,6 +1352,116 @@ function whiteSafeRetreatOverShieldDecisionBonus(
     return 0;
   }
   return isSafeBackRoleRetreat(before, after, decision.fromSlotKey, perspective) ? value : 0;
+}
+
+function whiteBoardControlMasterAttackDecisionPenalty(
+  before: GameState,
+  after: GameState,
+  decision: CpuDecision,
+  perspective: PlayerId,
+  value: number,
+): number {
+  if (
+    value <= 0 ||
+    before.players[perspective].masterId !== "white" ||
+    decision.type !== "attack" ||
+    decision.action.target.kind !== "master" ||
+    after.winner === perspective
+  ) {
+    return 0;
+  }
+
+  const opponent = opponentOf(perspective);
+  const damage = before.players[opponent].masterHp - after.players[opponent].masterHp;
+  if (damage <= 0 || before.players[opponent].masterHp <= 4) {
+    return 0;
+  }
+
+  const boardControlScore = bestSameAttackerEnemyFrontControlScore(before, decision.action.attackerSlotKey, perspective);
+  if (boardControlScore <= 0) {
+    return 0;
+  }
+
+  return value + Math.min(180, boardControlScore * 0.45);
+}
+
+function bestSameAttackerEnemyFrontControlScore(
+  state: GameState,
+  attackerSlotKey: SlotKey,
+  perspective: PlayerId,
+): number {
+  const attacker = state.slots[attackerSlotKey].monster;
+  if (!attacker?.status || attacker.owner !== perspective || attacker.status !== "active" || attacker.actionCount >= attacker.actionLimit) {
+    return 0;
+  }
+
+  const opponent = opponentOf(perspective);
+  let best = 0;
+  for (const command of getMonsterCommands(attacker)) {
+    for (const target of getCommandTargets(state, attackerSlotKey, command.id)) {
+      if (target.kind !== "monster") {
+        continue;
+      }
+      const targetSlot = state.slots[target.slotKey];
+      const targetMonster = targetSlot.monster;
+      if (!targetMonster || targetMonster.owner !== opponent || targetSlot.row !== "front") {
+        continue;
+      }
+      const damage = estimateMonsterDamage(state, targetMonster, attackerSlotKey, command);
+      if (damage <= 0) {
+        continue;
+      }
+      if (damage >= targetMonster.hp) {
+        best = Math.max(best, 320 + monsterValue(state, target.slotKey) * 0.5);
+        continue;
+      }
+      const targetMasterPressure = directMasterDamageFromSlot(state, target.slotKey, opponent);
+      best = Math.max(
+        best,
+        80 + damage * 32 + Math.min(100, monsterValue(state, target.slotKey) * 0.35) + (targetMasterPressure > 0 ? 80 + targetMasterPressure * 30 : 0),
+      );
+    }
+  }
+  return best;
+}
+
+function whiteReadyBacklineRetreatDecisionPenalty(
+  before: GameState,
+  decision: CpuDecision,
+  perspective: PlayerId,
+  value: number,
+): number {
+  if (
+    value <= 0 ||
+    before.players[perspective].masterId !== "white" ||
+    decision.type !== "move" ||
+    before.slots[decision.fromSlotKey].owner !== perspective ||
+    before.slots[decision.fromSlotKey].row !== "front" ||
+    before.slots[decision.toSlotKey].row !== "back"
+  ) {
+    return 0;
+  }
+
+  const mover = before.slots[decision.fromSlotKey].monster;
+  const swapped = before.slots[decision.toSlotKey].monster;
+  if (
+    !mover ||
+    !swapped ||
+    swapped.owner !== perspective ||
+    swapped.status !== "active" ||
+    swapped.actionCount >= swapped.actionLimit
+  ) {
+    return 0;
+  }
+
+  const moverThreat = incomingThreat(before, decision.fromSlotKey);
+  if (mover.hp > 2 && !isLethalIncomingThreat(moverThreat)) {
+    return 0;
+  }
+
+  const moverWorkLoss = bestAttackOpportunityScore(before, decision.fromSlotKey) > 0 ? 60 : 0;
+  const backlineWorkLoss = bestAttackOpportunityScore(before, decision.toSlotKey) > 0 ? 80 : 0;
+  return value + moverWorkLoss + backlineWorkLoss;
 }
 
 function findSafeBackRoleRetreat(state: GameState, fromSlotKey: SlotKey, perspective: PlayerId): GameState | undefined {
@@ -2855,7 +2982,7 @@ function scoreAttackDecision(state: GameState, after: GameState, action: Command
     return -100;
   }
   const directMasterDamage = bestDirectMasterDamageForPlayer(state, playerId);
-  if (directMasterDamage > 0) {
+  if (directMasterDamage > 0 && state.players[playerId].masterId !== "white") {
     const racePenalty =
       34 +
       directMasterDamage * 22 +

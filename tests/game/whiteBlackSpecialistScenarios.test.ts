@@ -7,21 +7,21 @@ import type { GameState } from "../../src/game/types";
 const WHITE_VS_BLACK_FRONT_PRESSURE_SEED = 38004;
 
 describe("white black specialist scenarios", () => {
-  it("keeps a seed-derived low-stone white turn on enemy-front pressure instead of focus", () => {
-    const pressureState = replayWhiteCpuVsBlackStrongToStep(WHITE_VS_BLACK_FRONT_PRESSURE_SEED, 16);
+  it("keeps a seed-derived low-stone white turn on enemy-front pressure instead of setup", () => {
+    const pressureState = replayWhiteCpuVsBlackStrongToStep(WHITE_VS_BLACK_FRONT_PRESSURE_SEED, 15);
     const decision = chooseCpuDecision(pressureState, defaultOptions());
     const disabledDecision = chooseCpuDecision(pressureState, withoutBlackMonsterPressure());
 
     expect(pressureState.currentPlayer).toBe("cpu");
-    expect(pressureState.players.cpu.stones).toBe(2);
+    expect(pressureState.players.cpu.stones).toBe(3);
     expect(decision.type).toBe("attack");
     if (decision.type === "attack") {
       expect(decision.action.attackerSlotKey).toBe("cpu_front_left");
       expect(decision.action.target).toEqual({ kind: "monster", slotKey: "player_front_left" });
     }
-    expect(disabledDecision.type).toBe("focus");
-    if (disabledDecision.type === "focus") {
-      expect(disabledDecision.slotKey).toBe("cpu_front_left");
+    expect(disabledDecision.type).toBe("summon");
+    if (disabledDecision.type === "summon") {
+      expect(disabledDecision.slotKey).toBe("cpu_back_right");
     }
   });
 });
@@ -54,6 +54,8 @@ function withoutBlackMonsterPressure(): CpuAiOptions {
       cpu: {
         situationalBias: {
           whiteMonsterPressureBonus: 0,
+          whiteActiveFrontWorkBonus: 0,
+          whiteBoardControlMasterAttackPenalty: 0,
         },
       },
     },

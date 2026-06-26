@@ -64,6 +64,31 @@ describe("cpu ai", () => {
     }
   });
 
+  it("keeps white on board control over non-lethal master damage while an enemy front remains", () => {
+    const game = createCpuGame();
+    game.players.cpu.masterId = "white";
+    game.players.player.masterId = "white";
+    game.players.cpu.hand = [];
+    game.players.cpu.stones = 0;
+    game.players.cpu.masterHp = 10;
+    game.players.player.masterHp = 10;
+    game.slots.cpu_front_left.monster = createActiveMonster("morgan", "cpu", {
+      hp: 4,
+      level: 2,
+    });
+    game.slots.player_front_left.monster = createActiveMonster("morgan", "player", {
+      hp: 4,
+      level: 2,
+    });
+
+    const decision = chooseCpuDecision(game, { profile: "white" });
+
+    expect(decision.type).toBe("attack");
+    if (decision.type === "attack") {
+      expect(decision.action.target).toEqual({ kind: "monster", slotKey: "player_front_left" });
+    }
+  });
+
   it("does not spend an action focusing when direct master damage is already available", () => {
     const game = createCpuGame();
     game.players.cpu.hand = [];
@@ -709,6 +734,34 @@ describe("cpu ai", () => {
     expect(baseline).toBeDefined();
     expect(tuned).toBeDefined();
     expect(tuned?.totalScore).toBeCloseTo((baseline?.totalScore ?? 0) + 11);
+  });
+
+  it("penalizes white retreats that consume an unacted back-row ally", () => {
+    const game = createCpuGame();
+    game.players.cpu.masterId = "white";
+    game.players.cpu.hand = [];
+    game.players.cpu.stones = 0;
+    game.slots.cpu_front_left.monster = createActiveMonster("card_051", "cpu", { hp: 1 });
+    game.slots.cpu_front_right.monster = createActiveMonster("takokke", "cpu");
+    game.slots.cpu_back_left.monster = createActiveMonster("yanbaru", "cpu");
+    game.slots.cpu_back_right.monster = createActiveMonster("morgan", "cpu");
+    game.slots.player_front_left.monster = createActiveMonster("takokke", "player");
+
+    const findRetreat = (options = {}) =>
+      inspectCpuDecisionEvaluations(game, { profile: "white", ...options }).find(
+        (evaluation) =>
+          evaluation.decision.type === "move" &&
+          evaluation.decision.fromSlotKey === "cpu_front_left" &&
+          evaluation.decision.toSlotKey === "cpu_back_left",
+      );
+    const penalized = findRetreat();
+    const unpenalized = findRetreat({
+      tunings: { cpu: { situationalBias: { whiteReadyBacklineRetreatPenalty: 0 } } },
+    });
+
+    expect(penalized).toBeDefined();
+    expect(unpenalized).toBeDefined();
+    expect(penalized?.totalScore).toBeLessThan((unpenalized?.totalScore ?? 0) - 170);
   });
 
   it("does not list shielding before a safe back-role retreat", () => {
