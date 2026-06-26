@@ -1824,6 +1824,100 @@ describe("cpu ai", () => {
     }
   });
 
+  it("keeps white mirror pressure from overcommitting power-up before a late shield", () => {
+    let game = createPlayerAutoGame([
+      { cardId: "card_149", instanceId: "player_bell_fixture" },
+      { cardId: "card_129", instanceId: "player_soul_charge_a" },
+      { cardId: "card_129", instanceId: "player_soul_charge_b" },
+      { cardId: "power_up", instanceId: "player_power_up_fixture" },
+    ]);
+    game.players.player.masterId = "white";
+    game.players.cpu.masterId = "white";
+    game.players.player.stones = 4;
+    game.players.cpu.stones = 0;
+    Object.values(game.slots).forEach((slot) => {
+      slot.monster = undefined;
+    });
+    game.slots.cpu_back_left.monster = createActiveMonster("card_051", "cpu", {
+      level: 2,
+      hp: 3,
+      actionCount: 2,
+      actionLimit: 2,
+    });
+    game.slots.cpu_back_right.monster = createActiveMonster("card_051", "cpu", {
+      hp: 3,
+      actionCount: 2,
+      actionLimit: 2,
+    });
+    game.slots.cpu_front_left.monster = createActiveMonster("yanbaru", "cpu", {
+      hp: 3,
+      actionCount: 1,
+      focused: true,
+    });
+    game.slots.cpu_front_right.monster = createActiveMonster("card_037", "cpu", {
+      level: 2,
+      hp: 5,
+      actionCount: 1,
+      shielded: true,
+    });
+    game.slots.player_front_left.monster = createActiveMonster("card_133", "player", {
+      level: 2,
+      hp: 3,
+    });
+    game.slots.player_front_right.monster = createActiveMonster("sigma", "player", { hp: 6 });
+    game.slots.player_back_left.monster = createActiveMonster("card_051", "player", {
+      hp: 3,
+      actionLimit: 2,
+    });
+
+    const whiteMirrorOptions = {
+      profiles: { player: "white" as const, cpu: "white" as const },
+      searches: {
+        player: {
+          sameTurnSearchDepth: 4,
+          sameTurnSearchWidth: 4,
+          detailedWidth: 4,
+          sameTurnTerminalPlanDepth: 6,
+          sameTurnTerminalPlanWidth: 2,
+          sameTurnTerminalPlanWeight: 2,
+          sameTurnOpponentTerminalPlanDepth: 2,
+          sameTurnOpponentTerminalPlanWidth: 1,
+          sameTurnOpponentTerminalPlanWeight: 0.35,
+        },
+        cpu: {
+          sameTurnSearchDepth: 4,
+          sameTurnSearchWidth: 4,
+          detailedWidth: 4,
+          sameTurnTerminalPlanDepth: 6,
+          sameTurnTerminalPlanWidth: 2,
+          sameTurnTerminalPlanWeight: 2,
+          sameTurnOpponentTerminalPlanDepth: 2,
+          sameTurnOpponentTerminalPlanWidth: 1,
+          sameTurnOpponentTerminalPlanWeight: 0.35,
+        },
+      },
+    };
+
+    const signatures: string[] = [];
+    for (let step = 0; step < 6 && !game.winner && game.currentPlayer === "player"; step += 1) {
+      const decision = chooseCpuDecision(game, whiteMirrorOptions);
+      signatures.push(decisionTestSignature(decision));
+      game = applyCpuDecision(game, decision);
+      for (let guard = 0; guard < 4 && game.pendingLevelUp && !game.winner; guard += 1) {
+        game = runAutoStep(game, whiteMirrorOptions);
+      }
+    }
+
+    expect(signatures).toEqual([
+      "attack:player_front_left:cpu_front_left",
+      "attack:player_back_left:cpu_front_left",
+      "focus:player_back_left",
+      "focus:player_front_right",
+      "master_action:shield:player_front_left",
+      "end_turn",
+    ]);
+  });
+
   it("penalizes ending the turn when the opponent has a master lethal plan", () => {
     const game = createCpuGame([]);
     game.players.cpu.masterId = "white";
@@ -2558,6 +2652,30 @@ function isMasterDamagePlanStep(decision: ReturnType<typeof chooseCpuDecision>):
     return true;
   }
   return false;
+}
+
+function decisionTestSignature(decision: ReturnType<typeof chooseCpuDecision>): string {
+  if (decision.type === "attack") {
+    const target = decision.action.target;
+    return `attack:${decision.action.attackerSlotKey}:${target.kind === "monster" ? target.slotKey : target.playerId}`;
+  }
+  if (decision.type === "focus") {
+    return `focus:${decision.slotKey}`;
+  }
+  if (decision.type === "master_action") {
+    const target = decision.target;
+    return `master_action:${decision.actionId}:${target.kind === "monster" ? target.slotKey : target.playerId}`;
+  }
+  if (decision.type === "magic") {
+    return `magic:${decision.action.handInstanceId}`;
+  }
+  if (decision.type === "summon") {
+    return `summon:${decision.handInstanceId}:${decision.slotKey}`;
+  }
+  if (decision.type === "move") {
+    return `move:${decision.fromSlotKey}:${decision.toSlotKey}`;
+  }
+  return decision.type;
 }
 
 function createActiveMonster(

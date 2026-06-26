@@ -144,6 +144,8 @@ const OPPONENT_TERMINAL_RESPONSE_MIN_ROOT_CANDIDATES = 2;
 const WHITE_MIRROR_OPPONENT_RESPONSE_ROOT_MARGIN = 160;
 const WHITE_MIRROR_OPPONENT_RESPONSE_MIN_ROOT_CANDIDATES = 4;
 const WHITE_MIRROR_TERMINAL_RESPONSE_TIE_MARGIN = 16;
+const WHITE_MIRROR_NON_CONVERTING_BACKLINE_CHIP_PENALTY = 132;
+const WHITE_MIRROR_EXPOSED_POWER_MAGIC_PENALTY = 200;
 const WHITE_MIRROR_RESPONSE_COLLAPSE_THRESHOLD = 120;
 const WHITE_MIRROR_RESPONSE_COLLAPSE_PENALTY_WEIGHT = 0.25;
 const WHITE_MIRROR_LOW_STONE_RESPONSE_COLLAPSE_THRESHOLD = 80;
@@ -3649,8 +3651,62 @@ function scoreAttackDecision(state: GameState, after: GameState, action: Command
   return (
     weights.monsterDamagePerPoint * damage +
     recoilPenalty +
-    whiteMirrorFrontLevelUpSetupAttackBonus(state, action, targetAfter)
+    whiteMirrorFrontLevelUpSetupAttackBonus(state, action, targetAfter) -
+    whiteMirrorNonConvertingBacklineChipPenalty(state, after, action, targetAfter)
   );
+}
+
+function whiteMirrorNonConvertingBacklineChipPenalty(
+  state: GameState,
+  after: GameState,
+  action: CommandAction,
+  targetAfter: MonsterState,
+): number {
+  if (
+    action.target.kind !== "monster" ||
+    !isWhiteMirrorState(state, state.currentPlayer) ||
+    state.slots[action.target.slotKey].row !== "back" ||
+    targetAfter.owner === state.currentPlayer ||
+    targetAfter.hp <= 1
+  ) {
+    return 0;
+  }
+
+  const attacker = state.slots[action.attackerSlotKey].monster;
+  const attackerAfter = after.slots[action.attackerSlotKey].monster;
+  if (
+    !attacker ||
+    !attackerAfter ||
+    attacker.owner !== state.currentPlayer ||
+    (getMonsterAiTrait(attacker.cardId).role !== "back" && attacker.actionLimit <= 1) ||
+    attackerAfter.actionCount < attackerAfter.actionLimit
+  ) {
+    return 0;
+  }
+
+  return canFinishEnemyMonsterThisTurn(after, action.target.slotKey, state.currentPlayer)
+    ? 0
+    : WHITE_MIRROR_NON_CONVERTING_BACKLINE_CHIP_PENALTY;
+}
+
+function canFinishEnemyMonsterThisTurn(state: GameState, targetSlotKey: SlotKey, perspective: PlayerId): boolean {
+  const target = state.slots[targetSlotKey].monster;
+  if (!target || target.owner === perspective) {
+    return false;
+  }
+
+  return FIELD_ORDER_BY_PLAYER[perspective].some((attackerSlotKey) => {
+    const attacker = state.slots[attackerSlotKey].monster;
+    if (!attacker || attacker.owner !== perspective || attacker.status !== "active" || attacker.actionCount >= attacker.actionLimit) {
+      return false;
+    }
+    return getMonsterCommands(attacker).some((command) => {
+      const canTarget = getCommandTargets(state, attackerSlotKey, command.id).some(
+        (targetCandidate) => targetCandidate.kind === "monster" && targetCandidate.slotKey === targetSlotKey,
+      );
+      return canTarget && estimateMonsterDamage(state, target, attackerSlotKey, command) >= target.hp;
+    });
+  });
 }
 
 function scoreZeroDamageMonsterAttack(
@@ -5173,7 +5229,24 @@ function scorePowerMagicDecision(state: GameState, after: GameState, action: Mag
   if (afterBest < 40 || improvement <= 20) {
     return -100;
   }
-  return 22 + afterBest * 0.35 + improvement * 0.8 - cost * 6;
+  return 22 + afterBest * 0.35 + improvement * 0.8 - cost * 6 - whiteMirrorExposedPowerMagicPenalty(after, action);
+}
+
+function whiteMirrorExposedPowerMagicPenalty(state: GameState, action: MagicAction): number {
+  if (
+    action.target.kind !== "monster" ||
+    !isWhiteMirrorState(state, state.currentPlayer) ||
+    state.players[state.currentPlayer].stones > 1 ||
+    bestMasterLethalOpportunityScore(state, action.target.slotKey) > 0 ||
+    nextTurnLevelUpPotential(state, action.target.slotKey) > 0
+  ) {
+    return 0;
+  }
+  const target = state.slots[action.target.slotKey].monster;
+  if (!target || target.owner !== state.currentPlayer || target.level < 2) {
+    return 0;
+  }
+  return WHITE_MIRROR_EXPOSED_POWER_MAGIC_PENALTY;
 }
 
 function scoreShieldMagicDecision(
