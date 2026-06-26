@@ -1855,6 +1855,44 @@ describe("cpu ai", () => {
     }
   });
 
+  it("prefers reducing the opponent master lethal plan over non-lethal face damage", () => {
+    const game = createCpuGame([]);
+    game.players.cpu.masterId = "white";
+    game.players.player.masterId = "white";
+    game.players.cpu.stones = 0;
+    game.players.cpu.masterHp = 1;
+    game.players.player.masterHp = 8;
+    game.slots.cpu_back_left.monster = createActiveMonster("morgan", "cpu", {
+      level: 2,
+      hp: 4,
+    });
+    game.slots.cpu_front_left.monster = createActiveMonster("takokke", "cpu");
+    game.slots.player_front_left.monster = createActiveMonster("morgan", "player", {
+      level: 2,
+      hp: 2,
+    });
+
+    const evaluations = inspectCpuDecisionEvaluations(game, { profile: "white" });
+    const threatKill = evaluations.find(
+      (evaluation) =>
+        evaluation.decision.type === "attack" &&
+        evaluation.decision.action.target.kind === "monster" &&
+        evaluation.decision.action.target.slotKey === "player_front_left",
+    );
+    const faceDamage = evaluations.find(
+      (evaluation) =>
+        evaluation.decision.type === "attack" &&
+        evaluation.decision.action.target.kind === "master",
+    );
+    const decision = chooseCpuDecision(game, { profile: "white" });
+
+    expect(threatKill?.totalScore).toBeGreaterThan(faceDamage?.totalScore ?? Number.NEGATIVE_INFINITY);
+    expect(decision.type).toBe("attack");
+    if (decision.type === "attack") {
+      expect(decision.action.target).toEqual({ kind: "monster", slotKey: "player_front_left" });
+    }
+  });
+
   it("wakes up an enemy prepared monster when it can be defeated immediately", () => {
     const game = createCpuGame([]);
     game.players.cpu.stones = 5;

@@ -159,6 +159,8 @@ const MASTER_DAMAGE_PLAN_MAX_DEPTH = 8;
 const OPPONENT_MASTER_DAMAGE_RESPONSE_MAX_DEPTH = 5;
 const MASTER_DAMAGE_PLAN_MAX_BRANCHES = 10;
 const MASTER_DAMAGE_PLAN_CLOSEOUT_HP = 6;
+const MASTER_DAMAGE_PLAN_GLOBAL_CACHE_LIMIT = 5_000;
+const masterDamagePlanGlobalCache = new Map<string, MasterDamagePlan>();
 
 export const CPU_AI_PROFILES = ["stable", "strong", "pressure", "defensive", "white", "omniscient"] as const;
 export type CpuAiProfile = (typeof CPU_AI_PROFILES)[number];
@@ -441,6 +443,12 @@ function findMasterDamagePlan(
     return createEmptyMasterDamagePlan();
   }
 
+  const rootCacheKey = `${perspective}:${maxDepth}:${masterDamagePlanStateKey(state, perspective)}`;
+  const rootCached = masterDamagePlanGlobalCache.get(rootCacheKey);
+  if (rootCached) {
+    return rootCached;
+  }
+
   const cache = new Map<string, MasterDamagePlan>();
   const search = (current: GameState, depth: number): MasterDamagePlan => {
     const damage = Math.max(0, startingOpponentHp - current.players[opponent].masterHp);
@@ -490,7 +498,16 @@ function findMasterDamagePlan(
     return best;
   };
 
-  return search(state, maxDepth);
+  const result = search(state, maxDepth);
+  rememberMasterDamagePlan(rootCacheKey, result);
+  return result;
+}
+
+function rememberMasterDamagePlan(key: string, plan: MasterDamagePlan): void {
+  if (masterDamagePlanGlobalCache.size >= MASTER_DAMAGE_PLAN_GLOBAL_CACHE_LIMIT) {
+    masterDamagePlanGlobalCache.clear();
+  }
+  masterDamagePlanGlobalCache.set(key, plan);
 }
 
 function createEmptyMasterDamagePlan(): MasterDamagePlan {
@@ -743,7 +760,8 @@ function evaluateCpuDecisions(
       beforeScore +
       evaluateConfiguredFutureTacticalValue(candidate.after, perspective, true, config) -
       beforeDetailedFutureScore -
-      opponentMasterDamagePlanCommitmentPenalty(state, candidate.after, candidate.decision, perspective, config.weights);
+      opponentMasterDamagePlanCommitmentPenalty(state, candidate.after, candidate.decision, perspective, config.weights) +
+      opponentMasterDamagePlanReductionBonus(state, candidate.after, perspective, config.weights);
     const continuation =
       config.sameTurnSearchDepth > 1
         ? evaluateSameTurnBeamContinuation(candidate.after, perspective, config.sameTurnSearchDepth - 1, config)
@@ -1006,7 +1024,8 @@ function evaluateDecisionTransition(
       beforeScore +
       evaluateConfiguredFutureTacticalValue(after, perspective, detailedFuture, config) -
       beforeFutureScore -
-      opponentMasterDamagePlanCommitmentPenalty(state, after, decision, perspective, config.weights),
+      opponentMasterDamagePlanCommitmentPenalty(state, after, decision, perspective, config.weights) +
+      opponentMasterDamagePlanReductionBonus(state, after, perspective, config.weights),
   };
 }
 
@@ -3312,6 +3331,45 @@ function opponentMasterDamagePlanCommitmentPenalty(
   return penalty >= 100_000 ? penalty : 0;
 }
 
+function opponentMasterDamagePlanReductionBonus(
+  before: GameState,
+  after: GameState,
+  perspective: PlayerId,
+  weights: AiEvaluationWeights,
+): number {
+  if (
+    before.players[perspective].masterHp > MASTER_DAMAGE_PLAN_CLOSEOUT_HP ||
+    after.winner ||
+    after.pendingLevelUp ||
+    after.currentPlayer !== perspective
+  ) {
+    return 0;
+  }
+
+  const beforeHandoff = handoffToOpponentForMasterDamagePlan(before, perspective);
+  const afterHandoff = handoffToOpponentForMasterDamagePlan(after, perspective);
+  if (!beforeHandoff || !afterHandoff) {
+    return 0;
+  }
+
+  const opponent = opponentOf(perspective);
+  const beforePlan = findMasterDamagePlan(beforeHandoff, opponent, weights, OPPONENT_MASTER_DAMAGE_RESPONSE_MAX_DEPTH);
+  if (!beforePlan.lethal && beforePlan.damage < before.players[perspective].masterHp - 1) {
+    return 0;
+  }
+
+  const afterPlan = findMasterDamagePlan(afterHandoff, opponent, weights, OPPONENT_MASTER_DAMAGE_RESPONSE_MAX_DEPTH);
+  if (beforePlan.lethal && !afterPlan.lethal) {
+    return 520 + Math.max(0, beforePlan.damage - afterPlan.damage) * 70;
+  }
+
+  const damageReduction = beforePlan.damage - afterPlan.damage;
+  if (damageReduction <= 0) {
+    return 0;
+  }
+  return 120 + damageReduction * 55;
+}
+
 function isDeferredSetupDecision(decision: CpuDecision): boolean {
   return decision.type === "summon" || decision.type === "move" || decision.type === "focus";
 }
@@ -4834,9 +4892,13 @@ function masterDamagePlanStateKey(state: GameState, perspective: PlayerId): stri
       stones: player.stones,
       masterPowerBonus: player.masterPowerBonus ?? 0,
       masterFrozen: player.masterFrozen ?? false,
+      masterActionsExchanged: player.masterActionsExchanged ?? false,
       hand: player.hand.map((card) => `${card.instanceId}:${card.cardId}`),
     },
-    opponentHp: opponent.masterHp,
+    opponent: {
+      hp: opponent.masterHp,
+      masterActionsExchanged: opponent.masterActionsExchanged ?? false,
+    },
     slots: ALL_FIELD_ORDER.map((slotKey) => {
       const monster = state.slots[slotKey].monster;
       return [
