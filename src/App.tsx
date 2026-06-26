@@ -6688,8 +6688,7 @@ function BoardSlot({
   const visibleStatusBadges = monsterStatusBadges.slice(0, 4);
   const hiddenStatusBadgeCount = monsterStatusBadges.length - visibleStatusBadges.length;
   const actionSpent =
-    visibleMonster?.owner === "player" &&
-    visibleMonster.status === "active" &&
+    visibleMonster?.status === "active" &&
     visibleMonster.actionCount >= visibleMonster.actionLimit;
 
   return (
