@@ -1829,7 +1829,7 @@ export function App() {
     if (!monster || monster.owner !== game.currentPlayer || monster.status !== "active") {
       return;
     }
-    if (!canFocusMonster(game, slotKey)) {
+    if (!canManualFocusMonster(game, slotKey)) {
       return;
     }
     applyChange((state) => focusMonster(state, slotKey));
@@ -2502,7 +2502,7 @@ export function App() {
     }
 
     if (target.kind === "monster") {
-      if (payload.slotKey === target.slotKey && canFocusMonster(game, payload.slotKey)) {
+      if (payload.slotKey === target.slotKey && canManualFocusMonster(game, payload.slotKey)) {
         return { kind: "focus", slotKey: payload.slotKey };
       }
       const targetSlot = game.slots[target.slotKey];
@@ -7040,6 +7040,7 @@ function MonsterCommands({
       : undefined;
   const moveTargets = getMovableTargets(game, slotKey);
   const moveDisabledReason = getMoveDisabledReason(game, slotKey, moveTargets);
+  const showFocusAction = canShowManualFocusAction(game, slotKey);
   const focusDisabledReason = getFocusDisabledReason(game, slotKey);
   const commandActions: UnitActionItem[] = hidePreparedInfo
     ? []
@@ -7074,15 +7075,17 @@ function MonsterCommands({
           selected: Boolean(pendingMoveAction),
           selectedLabel: pendingMoveAction ? "選択中 / クリックで確定" : undefined,
         },
-        {
-          key: "focus",
-          icon: "🔥",
-          title: "ためる",
-          meta: "上の技+1P / 被ダメージ-1 / 行動後に解除",
-          disabledReason: focusDisabledReason,
-          readyLabel: "使用可",
-          onClick: onFocus,
-        },
+        ...(showFocusAction
+          ? [{
+              key: "focus",
+              icon: "🔥",
+              title: "ためる",
+              meta: "上の技+1P / 被ダメージ-1 / 行動後に解除",
+              disabledReason: focusDisabledReason,
+              readyLabel: "使用可",
+              onClick: onFocus,
+            }]
+          : []),
       ];
   const renderActionButton = (action: UnitActionItem) => (
     <button
@@ -7188,6 +7191,15 @@ function getFocusDisabledReason(game: GameState, slotKey: SlotKey): string | und
     return "ためられない状態";
   }
   return undefined;
+}
+
+function canShowManualFocusAction(game: GameState, slotKey: SlotKey): boolean {
+  const monster = game.slots[slotKey].monster;
+  return !!monster && monster.actionLimit > 1;
+}
+
+function canManualFocusMonster(game: GameState, slotKey: SlotKey): boolean {
+  return canShowManualFocusAction(game, slotKey) && canFocusMonster(game, slotKey);
 }
 
 function getMonsterActionDisabledReason(game: GameState, slotKey: SlotKey): string | undefined {
@@ -7416,7 +7428,7 @@ function getDragTargetKeys(game: GameState, payload: DragPayload, controlsDisabl
     return new Set();
   }
   const targets: Target[] = [
-    ...(canFocusMonster(game, payload.slotKey) ? [{ kind: "monster", slotKey: payload.slotKey } as Target] : []),
+    ...(canManualFocusMonster(game, payload.slotKey) ? [{ kind: "monster", slotKey: payload.slotKey } as Target] : []),
     ...getMovableTargets(game, payload.slotKey).map<Target>((slotKey) => ({ kind: "monster", slotKey })),
     ...getMonsterCommands(game.slots[payload.slotKey].monster!)
       .flatMap((command) => getCommandTargets(game, payload.slotKey, command.id)),
@@ -7507,7 +7519,7 @@ function targetRoleForDragTarget(game: GameState, target: Target, payload: DragP
     }
   }
   if (payload.kind === "monster" && target.kind === "monster") {
-    if (target.slotKey === payload.slotKey && canFocusMonster(game, payload.slotKey)) {
+    if (target.slotKey === payload.slotKey && canManualFocusMonster(game, payload.slotKey)) {
       return "focus";
     }
     if (getMovableTargets(game, payload.slotKey).includes(target.slotKey)) {
