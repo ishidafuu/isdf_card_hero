@@ -566,6 +566,60 @@ describe("cpu ai", () => {
     expect(defaultWhite?.totalScore).toBeCloseTo(disabled?.totalScore ?? 0);
   });
 
+  it("bonuses white mirror focus over a risky nonlethal front chip", () => {
+    const game = createCpuGame();
+    game.players.cpu.masterId = "white";
+    game.players.player.masterId = "white";
+    game.players.cpu.hand = [];
+    game.players.cpu.stones = 0;
+    game.slots.cpu_front_left.monster = createActiveMonster("takokke", "cpu");
+    game.slots.player_front_left.monster = createActiveMonster("takokke", "player", { hp: 5 });
+
+    const findFocus = (options = {}) =>
+      inspectCpuDecisionEvaluations(game, {
+        profile: "white",
+        search: { sameTurnSearchDepth: 0 },
+        ...options,
+      }).find(
+        (evaluation) => evaluation.decision.type === "focus" && evaluation.decision.slotKey === "cpu_front_left",
+      );
+    const disabled = findFocus({
+      tunings: { cpu: { situationalBias: { whiteFrontThreatFocusCounterBonus: 0 } } },
+    });
+    const defaultWhite = findFocus();
+
+    expect(disabled).toBeDefined();
+    expect(defaultWhite).toBeDefined();
+    expect(defaultWhite?.totalScore).toBeGreaterThan((disabled?.totalScore ?? 0) + 70);
+  });
+
+  it("does not bonus white mirror focus when the front target is already in finish range", () => {
+    const game = createCpuGame();
+    game.players.cpu.masterId = "white";
+    game.players.player.masterId = "white";
+    game.players.cpu.hand = [];
+    game.players.cpu.stones = 3;
+    game.slots.cpu_front_left.monster = createActiveMonster("takokke", "cpu");
+    game.slots.player_front_left.monster = createActiveMonster("takokke", "player", { hp: 3 });
+
+    const findFocus = (options = {}) =>
+      inspectCpuDecisionEvaluations(game, {
+        profile: "white",
+        search: { sameTurnSearchDepth: 0 },
+        ...options,
+      }).find(
+        (evaluation) => evaluation.decision.type === "focus" && evaluation.decision.slotKey === "cpu_front_left",
+      );
+    const disabled = findFocus({
+      tunings: { cpu: { situationalBias: { whiteFrontThreatFocusCounterBonus: 0 } } },
+    });
+    const defaultWhite = findFocus();
+
+    expect(disabled).toBeDefined();
+    expect(defaultWhite).toBeDefined();
+    expect(defaultWhite?.totalScore).toBeCloseTo(disabled?.totalScore ?? 0);
+  });
+
   it("penalizes low-stone white master attacks while black front pressure remains", () => {
     const game = createCpuGame();
     game.players.cpu.masterId = "white";

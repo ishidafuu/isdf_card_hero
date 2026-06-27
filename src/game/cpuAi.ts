@@ -218,6 +218,7 @@ export interface CpuAiTuning {
     whiteDisadvantagedSummonOvercommitPenalty?: number;
     whiteBlackUnsafeMasterAttackPenalty?: number;
     whiteFrontChipResponsePenalty?: number;
+    whiteFrontThreatFocusCounterBonus?: number;
   };
 }
 
@@ -240,6 +241,7 @@ const WHITE_AI_BASE_TUNING = {
     whiteReadyBacklineRetreatPenalty: 180,
     whiteDisadvantagedSummonOvercommitPenalty: 260,
     whiteFrontChipResponsePenalty: 86,
+    whiteFrontThreatFocusCounterBonus: 72,
   },
 } satisfies CpuAiTuning;
 
@@ -1207,6 +1209,15 @@ function decisionSituationalBonus(
       decision,
       perspective,
       bias.whiteFrontChipResponsePenalty,
+    );
+  }
+  if (bias.whiteFrontThreatFocusCounterBonus) {
+    bonus += whiteFrontThreatFocusCounterDecisionBonus(
+      before,
+      after,
+      decision,
+      perspective,
+      bias.whiteFrontThreatFocusCounterBonus,
     );
   }
   return bonus;
@@ -3784,6 +3795,97 @@ function whiteFrontChipResponseDecisionPenalty(
   return whiteMirrorNonConvertingFrontThreatChipPenalty(before, after, targetSlotKey, targetAfter, value);
 }
 
+function whiteFrontThreatFocusCounterDecisionBonus(
+  before: GameState,
+  after: GameState,
+  decision: CpuDecision,
+  perspective: PlayerId,
+  value: number,
+): number {
+  if (
+    value <= 0 ||
+    before.players[perspective].masterId !== "white" ||
+    !isWhiteMirrorState(before, perspective) ||
+    decision.type !== "focus" ||
+    bestDirectMasterDamageForPlayer(before, perspective) > 0
+  ) {
+    return 0;
+  }
+
+  const focused = after.slots[decision.slotKey].monster;
+  if (!focused || focused.owner !== perspective || !focused.focused) {
+    return 0;
+  }
+
+  const riskyFrontChip = riskyNonConvertingFrontChipScore(before, decision.slotKey, perspective);
+  if (riskyFrontChip <= 0) {
+    return 0;
+  }
+
+  const nextWork = nextTurnWorkPotential(after, decision.slotKey, perspective);
+  if (nextWork <= 0) {
+    return 0;
+  }
+
+  const threat = incomingThreat(after, decision.slotKey);
+  if (isLethalIncomingThreat(threat) && nextWork < 300) {
+    return 0;
+  }
+
+  const workBonus = Math.min(72, nextWork * 0.18);
+  const riskBonus = Math.min(96, riskyFrontChip * 0.45);
+  const frontRoleBonus = getMonsterAiTrait(focused.cardId).role === "front" ? 18 : 0;
+  return Math.min(190, value + workBonus + riskBonus + frontRoleBonus);
+}
+
+function riskyNonConvertingFrontChipScore(
+  state: GameState,
+  attackerSlotKey: SlotKey,
+  perspective: PlayerId,
+): number {
+  const attacker = state.slots[attackerSlotKey].monster;
+  if (
+    !attacker ||
+    attacker.owner !== perspective ||
+    attacker.status !== "active" ||
+    attacker.actionCount >= attacker.actionLimit
+  ) {
+    return 0;
+  }
+
+  let best = 0;
+  for (const command of getMonsterCommands(attacker)) {
+    for (const target of getCommandTargets(state, attackerSlotKey, command.id)) {
+      if (target.kind !== "monster" || state.slots[target.slotKey].row !== "front") {
+        continue;
+      }
+      const targetBefore = state.slots[target.slotKey].monster;
+      if (!targetBefore || targetBefore.owner !== opponentOf(perspective)) {
+        continue;
+      }
+      for (const action of expandCommandActions(state, { attackerSlotKey, commandId: command.id, target })) {
+        let after: GameState;
+        try {
+          after = attackWithCommand(state, action);
+        } catch {
+          continue;
+        }
+        const targetAfter = after.slots[target.slotKey].monster;
+        if (
+          !targetAfter ||
+          targetAfter.owner !== targetBefore.owner ||
+          targetAfter.instanceId !== targetBefore.instanceId ||
+          targetAfter.hp >= targetBefore.hp
+        ) {
+          continue;
+        }
+        best = Math.max(best, whiteMirrorNonConvertingFrontThreatChipRiskScore(state, after, target.slotKey, targetAfter));
+      }
+    }
+  }
+  return best;
+}
+
 function whiteFrontChipResponseTargetSlot(
   before: GameState,
   after: GameState,
@@ -3840,6 +3942,39 @@ function whiteMirrorNonConvertingFrontThreatChipPenalty(
     return 0;
   }
 
+  const riskScore = whiteMirrorNonConvertingFrontThreatChipRiskScore(state, after, targetSlotKey, targetAfter);
+  if (riskScore <= 0) {
+    return 0;
+  }
+
+  return Math.min(WHITE_MIRROR_NON_CONVERTING_FRONT_THREAT_CHIP_MAX_PENALTY, value + riskScore);
+}
+
+function whiteMirrorNonConvertingFrontThreatChipRiskScore(
+  state: GameState,
+  after: GameState,
+  targetSlotKey: SlotKey,
+  targetAfter: MonsterState,
+): number {
+  const perspective = state.currentPlayer;
+  const targetBefore = state.slots[targetSlotKey].monster;
+  if (
+    !isWhiteMirrorState(state, perspective) ||
+    state.slots[targetSlotKey].row !== "front" ||
+    !targetBefore ||
+    targetBefore.owner !== opponentOf(perspective) ||
+    targetAfter.owner !== targetBefore.owner ||
+    targetAfter.instanceId !== targetBefore.instanceId ||
+    targetAfter.hp >= targetBefore.hp ||
+    targetAfter.hp <= 1
+  ) {
+    return 0;
+  }
+
+  if (canFinishEnemyMonsterThisTurn(after, targetSlotKey, perspective)) {
+    return 0;
+  }
+
   const responseThreat = enemyFrontChipResponseThreatScore(after, targetSlotKey, perspective);
   if (responseThreat <= 0) {
     return 0;
@@ -3848,14 +3983,7 @@ function whiteMirrorNonConvertingFrontThreatChipPenalty(
   const remainingHpPenalty = Math.max(0, targetAfter.hp - 1) * 16;
   const levelPenalty = targetAfter.level > 1 ? (targetAfter.level - 1) * 30 : 0;
   const lowStonePenalty = after.players[perspective].stones <= 1 ? 35 : after.players[perspective].stones <= 3 ? 15 : 0;
-  return Math.min(
-    WHITE_MIRROR_NON_CONVERTING_FRONT_THREAT_CHIP_MAX_PENALTY,
-    value +
-      responseThreat * 0.22 +
-      remainingHpPenalty +
-      levelPenalty +
-      lowStonePenalty,
-  );
+  return responseThreat * 0.22 + remainingHpPenalty + levelPenalty + lowStonePenalty;
 }
 
 function enemyFrontChipResponseThreatScore(
