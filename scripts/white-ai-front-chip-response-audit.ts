@@ -78,6 +78,7 @@ interface FrontChipEvent {
   targetActed: boolean;
   targetAction?: DecisionSummary;
   targetActionTurn?: number;
+  responseActionsBeforeTargetActed: DecisionSummary[];
   targetDamagedMaster: boolean;
   targetMasterDamage: number;
   targetDamagedOwnMonster: boolean;
@@ -122,6 +123,7 @@ interface FrontChipResponseAuditReport {
     targetRemovedBeforeResponse: number;
     targetRemovedBeforeActing: number;
     targetActed: number;
+    targetActedAfterPriorResponseAction: number;
     harmfulResponse: number;
     boardHarmfulResponse: number;
     masterOnlyResponse: number;
@@ -137,6 +139,8 @@ interface FrontChipResponseAuditReport {
     byHpAfter: Record<string, number>;
     byDecisionKind: Record<string, number>;
     byTarget: Record<string, number>;
+    byFirstPriorResponseActionKind: Record<string, number>;
+    harmfulByFirstPriorResponseActionKind: Record<string, number>;
   };
   conclusion: string[];
 }
@@ -389,6 +393,7 @@ function createFrontChipEvent(
     targetRemovedBeforeResponse: false,
     targetRemovedBeforeActing: false,
     targetActed: false,
+    responseActionsBeforeTargetActed: [],
     targetDamagedMaster: false,
     targetMasterDamage: 0,
     targetDamagedOwnMonster: false,
@@ -441,6 +446,9 @@ function observeTransition(
       continue;
     }
     if (!isDecisionByInstance(before, decision, event.targetInstanceId)) {
+      if (!event.targetActed && decision.type !== "end_turn" && event.responseActionsBeforeTargetActed.length < 5) {
+        event.responseActionsBeforeTargetActed.push(summarizeDecision(before, decision, 0));
+      }
       continue;
     }
 
@@ -615,6 +623,9 @@ function summarize(events: readonly FrontChipEvent[], games: readonly GameAuditR
     targetRemovedBeforeResponse: events.filter((event) => event.targetRemovedBeforeResponse).length,
     targetRemovedBeforeActing: events.filter((event) => event.targetRemovedBeforeActing).length,
     targetActed: events.filter((event) => event.targetActed).length,
+    targetActedAfterPriorResponseAction: events.filter(
+      (event) => event.targetActed && event.responseActionsBeforeTargetActed.length > 0,
+    ).length,
     harmfulResponse: events.filter((event) => event.finalOutcome === "harmful_response").length,
     boardHarmfulResponse: events.filter(isBoardHarmfulResponse).length,
     masterOnlyResponse: events.filter(isMasterOnlyResponse).length,
@@ -630,6 +641,14 @@ function summarize(events: readonly FrontChipEvent[], games: readonly GameAuditR
     byHpAfter: countBy(events, (event) => `HP${event.targetHpAfter}`),
     byDecisionKind: countBy(events, (event) => event.decisionKind),
     byTarget: countBy(events, (event) => event.target),
+    byFirstPriorResponseActionKind: countBy(
+      events.filter((event) => event.targetActed && event.responseActionsBeforeTargetActed.length > 0),
+      (event) => decisionSummaryKind(event.responseActionsBeforeTargetActed[0]),
+    ),
+    harmfulByFirstPriorResponseActionKind: countBy(
+      events.filter((event) => event.finalOutcome === "harmful_response" && event.responseActionsBeforeTargetActed.length > 0),
+      (event) => decisionSummaryKind(event.responseActionsBeforeTargetActed[0]),
+    ),
   };
 }
 
@@ -646,8 +665,10 @@ function buildConclusion(events: readonly FrontChipEvent[]): string[] {
   const hpTwoPlusBoardHarmful = boardHarmful.filter((event) => event.targetHpAfter >= 2);
   const focusAvailableBoardHarmful = boardHarmful.filter((event) => event.alternatives.bestFocus);
   const finishAvailable = events.filter((event) => event.alternatives.bestImmediateFinish);
+  const actedAfterPrior = acted.filter((event) => event.responseActionsBeforeTargetActed.length > 0);
   const lines = [
     `非リーサル前衛削りは ${events.length}件。返しで対象が行動したのは ${acted.length}件、従来の被害判定は ${harmful.length}件、同ターン中に処理へ変換できたのは ${converted.length}件。`,
+    `対象が動く前に返し側の別行動が入ったものは ${actedAfterPrior.length}件。単純な「対象が即動けるか」だけでは拾えない返し手順が残っている。`,
     `盤面被害は ${boardHarmful.length}件、マスターのみ被弾は ${masterOnly.length}件。白ミラーでは盤面被害を主指標にし、マスターのみ被弾は詰めろ圏かどうかを別途見る。`,
     `盤面被害の内訳は、残HP1が ${hpOneBoardHarmful.length}件、残HP2以上が ${hpTwoPlusBoardHarmful.length}件。`,
     `盤面被害イベントのうち、ためる代替が候補にあったものは ${focusAvailableBoardHarmful.length}件。即撃破代替が候補にあった削りは全体で ${finishAvailable.length}件。`,
@@ -683,6 +704,7 @@ function formatMarkdown(report: FrontChipResponseAuditReport): string {
     `- events: ${report.summary.events}`,
     `- converted same turn: ${report.summary.convertedSameTurn}`,
     `- target acted on response: ${report.summary.targetActed}`,
+    `- target acted after prior response action: ${report.summary.targetActedAfterPriorResponseAction}`,
     `- harmful response: ${report.summary.harmfulResponse}`,
     `- board harmful response: ${report.summary.boardHarmfulResponse}`,
     `- master-only response: ${report.summary.masterOnlyResponse}`,
@@ -701,6 +723,8 @@ function formatMarkdown(report: FrontChipResponseAuditReport): string {
     `- by HP after: ${formatCounts(report.summary.byHpAfter)}`,
     `- by decision: ${formatCounts(report.summary.byDecisionKind)}`,
     `- by target: ${formatCounts(report.summary.byTarget)}`,
+    `- first prior response action: ${formatCounts(report.summary.byFirstPriorResponseActionKind)}`,
+    `- harmful first prior response action: ${formatCounts(report.summary.harmfulByFirstPriorResponseActionKind)}`,
     "",
     "## Conclusion",
     "",
@@ -736,6 +760,9 @@ function formatSamples(samples: readonly FrontChipEvent[]): string[] {
     if (event.targetAction) {
       lines.push(`- response action: ${event.targetAction.label}`);
     }
+    if (event.responseActionsBeforeTargetActed.length > 0) {
+      lines.push(`- prior response actions: ${event.responseActionsBeforeTargetActed.map((action) => action.label).join(" / ")}`);
+    }
     lines.push(`- flags: acted=${event.targetActed}, masterDamage=${event.targetMasterDamage}, monsterDamage=${event.targetDamagedOwnMonster}, monsterKill=${event.targetKilledOwnMonster}, levelUp=${event.targetLeveledUpOnResponse}, converted=${event.convertedSameTurn}`);
     lines.push(`- state: ${event.stateBefore}`);
     lines.push(`- before: ${event.boardBefore}`);
@@ -754,6 +781,10 @@ function summarizeDecision(state: GameState, decision: CpuDecision, score: numbe
     label: decisionLabel(state, decision),
     score: round(score, 1),
   };
+}
+
+function decisionSummaryKind(decision: DecisionSummary): string {
+  return decision.key.split(":", 1)[0] || "unknown";
 }
 
 function decisionLabel(state: GameState, decision: CpuDecision): string {
