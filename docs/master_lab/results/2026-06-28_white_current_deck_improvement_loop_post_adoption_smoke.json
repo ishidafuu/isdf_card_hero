@@ -1,0 +1,294 @@
+{
+  "generatedAt": "2026-06-27T16:59:17.943Z",
+  "deckPreset": "master-lab-white-1377-death-sheep3",
+  "screen": {
+    "gamesPerMatchup": 1,
+    "totalGames": 96,
+    "standings": [
+      {
+        "rank": 1,
+        "variantId": "current_black_front_threat16",
+        "label": "候補: 黒前衛脅威 16",
+        "score": 71.5,
+        "wins": 6,
+        "losses": 2,
+        "draws": 0,
+        "overall": 0.75,
+        "vsBlack": 0.75,
+        "vsDecoy": 0.5,
+        "vsWhite": 1,
+        "averageTurns": 17,
+        "issues": "0F/0W",
+        "notes": [
+          "黒耐性あり",
+          "シールド偏重"
+        ]
+      },
+      {
+        "rank": 2,
+        "variantId": "current_front_work_light",
+        "label": "候補: 既存前衛仕事 48",
+        "score": 60.5,
+        "wins": 5,
+        "losses": 3,
+        "draws": 0,
+        "overall": 0.625,
+        "vsBlack": 0.5,
+        "vsDecoy": 1,
+        "vsWhite": 0.5,
+        "averageTurns": 13.5,
+        "issues": "0F/0W",
+        "notes": [
+          "黒耐性あり"
+        ]
+      },
+      {
+        "rank": 3,
+        "variantId": "current_threat_left_low_stone_guard",
+        "label": "候補: 脅威残り低石布石抑制",
+        "score": 60.5,
+        "wins": 5,
+        "losses": 3,
+        "draws": 0,
+        "overall": 0.625,
+        "vsBlack": 0.5,
+        "vsDecoy": 1,
+        "vsWhite": 0.5,
+        "averageTurns": 15.9,
+        "issues": "0F/0W",
+        "notes": [
+          "黒耐性あり",
+          "シールド偏重"
+        ]
+      },
+      {
+        "rank": 4,
+        "variantId": "current_wake_safe_work8",
+        "label": "候補: 安全ウェイク仕事 8",
+        "score": 60,
+        "wins": 6,
+        "losses": 2,
+        "draws": 0,
+        "overall": 0.75,
+        "vsBlack": 0.5,
+        "vsDecoy": 1,
+        "vsWhite": 1,
+        "averageTurns": 17.6,
+        "issues": "0F/1W",
+        "notes": [
+          "warning 1",
+          "黒耐性あり",
+          "シールド偏重"
+        ]
+      },
+      {
+        "rank": 5,
+        "variantId": "current_front_work_strong",
+        "label": "候補: 既存前衛仕事 96",
+        "score": 50,
+        "wins": 5,
+        "losses": 3,
+        "draws": 0,
+        "overall": 0.625,
+        "vsBlack": 0.25,
+        "vsDecoy": 1,
+        "vsWhite": 1,
+        "averageTurns": 19,
+        "issues": "0F/0W",
+        "notes": [
+          "黒に弱い",
+          "シールド偏重"
+        ]
+      },
+      {
+        "rank": 6,
+        "variantId": "current_strong_profile",
+        "label": "比較: デスシープ3 / strong",
+        "score": 44.5,
+        "wins": 4,
+        "losses": 4,
+        "draws": 0,
+        "overall": 0.5,
+        "vsBlack": 0.25,
+        "vsDecoy": 1,
+        "vsWhite": 0.5,
+        "averageTurns": 12.8,
+        "issues": "0F/0W",
+        "notes": [
+          "黒に弱い",
+          "シールド偏重"
+        ]
+      },
+      {
+        "rank": 7,
+        "variantId": "current_threat_source_attack4",
+        "label": "候補: 脅威源攻撃 4",
+        "score": 44.5,
+        "wins": 4,
+        "losses": 4,
+        "draws": 0,
+        "overall": 0.5,
+        "vsBlack": 0.25,
+        "vsDecoy": 1,
+        "vsWhite": 0.5,
+        "averageTurns": 20,
+        "issues": "0F/0W",
+        "notes": [
+          "黒に弱い",
+          "シールド偏重"
+        ]
+      },
+      {
+        "rank": 8,
+        "variantId": "current_threat_source_attack8",
+        "label": "候補: 脅威源攻撃 8",
+        "score": 36,
+        "wins": 3,
+        "losses": 5,
+        "draws": 0,
+        "overall": 0.375,
+        "vsBlack": 0.25,
+        "vsDecoy": 1,
+        "vsWhite": 0,
+        "averageTurns": 15,
+        "issues": "0F/0W",
+        "notes": [
+          "黒に弱い",
+          "シールド偏重"
+        ]
+      },
+      {
+        "rank": 9,
+        "variantId": "current_white_baseline",
+        "label": "現行: デスシープ3 / white",
+        "score": 28.5,
+        "wins": 2,
+        "losses": 6,
+        "draws": 0,
+        "overall": 0.25,
+        "vsBlack": 0.25,
+        "vsDecoy": 0.5,
+        "vsWhite": 0,
+        "averageTurns": 18.8,
+        "issues": "0F/0W",
+        "notes": [
+          "黒に弱い",
+          "シールド偏重"
+        ]
+      },
+      {
+        "rank": 10,
+        "variantId": "current_threat_then_setup",
+        "label": "候補: 脅威処理後布石",
+        "score": 28.5,
+        "wins": 3,
+        "losses": 5,
+        "draws": 0,
+        "overall": 0.375,
+        "vsBlack": 0,
+        "vsDecoy": 1,
+        "vsWhite": 0.5,
+        "averageTurns": 13.5,
+        "issues": "0F/0W",
+        "notes": [
+          "黒に弱い",
+          "シールド偏重"
+        ]
+      },
+      {
+        "rank": 11,
+        "variantId": "current_wake_safe_work4",
+        "label": "候補: 安全ウェイク仕事 4",
+        "score": 28.5,
+        "wins": 3,
+        "losses": 5,
+        "draws": 0,
+        "overall": 0.375,
+        "vsBlack": 0,
+        "vsDecoy": 1,
+        "vsWhite": 0.5,
+        "averageTurns": 18.8,
+        "issues": "0F/0W",
+        "notes": [
+          "黒に弱い",
+          "シールド偏重"
+        ]
+      },
+      {
+        "rank": 12,
+        "variantId": "current_shield_wake_quality",
+        "label": "候補: 盾/起動品質",
+        "score": 15.5,
+        "wins": 1,
+        "losses": 7,
+        "draws": 0,
+        "overall": 0.125,
+        "vsBlack": 0,
+        "vsDecoy": 0.5,
+        "vsWhite": 0,
+        "averageTurns": 20.3,
+        "issues": "0F/0W",
+        "notes": [
+          "黒に弱い",
+          "シールド偏重"
+        ]
+      }
+    ]
+  },
+  "confirm": {
+    "gamesPerMatchup": 1,
+    "totalGames": 16,
+    "standings": [
+      {
+        "rank": 1,
+        "variantId": "current_white_baseline",
+        "label": "現行: デスシープ3 / white",
+        "score": 62.7,
+        "wins": 5,
+        "losses": 3,
+        "draws": 0,
+        "overall": 0.625,
+        "vsBlack": 0.5,
+        "vsDecoy": 1,
+        "vsWhite": 0.5,
+        "averageTurns": 17.4,
+        "issues": "0F/0W",
+        "notes": [
+          "黒耐性あり",
+          "シールド偏重"
+        ]
+      },
+      {
+        "rank": 2,
+        "variantId": "current_black_front_threat16",
+        "label": "候補: 黒前衛脅威 16",
+        "score": 38,
+        "wins": 3,
+        "losses": 5,
+        "draws": 0,
+        "overall": 0.375,
+        "vsBlack": 0.25,
+        "vsDecoy": 1,
+        "vsWhite": 0,
+        "averageTurns": 21.1,
+        "issues": "0F/0W",
+        "notes": [
+          "黒に弱い",
+          "シールド偏重",
+          "盾の成果化不足"
+        ]
+      }
+    ]
+  },
+  "adopted": {
+    "variantId": "current_white_baseline",
+    "label": "現行: デスシープ3 / white",
+    "recommendation": "hold",
+    "reason": "確認ループで現行baselineが首位または比較baselineがないため、AI本体への反映は保留。"
+  },
+  "nextSteps": [
+    "今回の確認では即採用せず、ベースラインを維持する。",
+    "対黒がまだ不安定。負けseedから、デスシープが前に出た後の盾/ウェイク/攻撃順を重点監査する。",
+    "デッキ側はデスシープ3を固定し、次ループはAIだけを触る。元1377は比較対象として残す。"
+  ]
+}

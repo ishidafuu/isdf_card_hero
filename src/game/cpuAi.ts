@@ -242,6 +242,7 @@ const WHITE_AI_BASE_TUNING = {
     whiteDisadvantagedSummonOvercommitPenalty: 260,
     whiteFrontChipResponsePenalty: 86,
     whiteFrontThreatFocusCounterBonus: 72,
+    whiteThreatSourceAttackBonus: 8,
   },
 } satisfies CpuAiTuning;
 

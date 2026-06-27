@@ -31,6 +31,7 @@
     "lab:masters:white-ai-decision-trace": "vite-node scripts/white-ai-decision-trace.ts",
     "lab:masters:white-ai-diff": "vite-node scripts/white-ai-decision-diff-loop.ts",
     "lab:masters:white-ai-action-order": "vite-node scripts/white-ai-action-order-audit.ts",
+    "lab:masters:white-current-deck-loop": "vite-node scripts/white-current-deck-improvement-loop.ts",
     "lab:masters:shield-audit": "vite-node scripts/shield-usage-audit-loop.ts",
     "select:white-deck": "vite-node scripts/white-vs-white-deck-selection.ts",
     "tier:white-no-rare8": "vite-node scripts/white-no-rare8-tier.ts",
