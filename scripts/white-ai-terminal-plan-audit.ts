@@ -855,7 +855,7 @@ function formatPlanLines(plans: readonly PlanLine[]): string[] {
 
 function parseArgs(args: string[]): CliOptions {
   const parsed: CliOptions = {
-    deckA: "submission-pro-with-rare8-white-1339",
+    deckA: "submission-pro-no-rare8-white-1377",
     deckB: "submission-pro-no-rare8-white-1377",
     seedStart: 56000,
     maxSeeds: 20,
@@ -1029,7 +1029,7 @@ Usage:
   npm run audit:white-terminal-plans -- [options]
 
 Options:
-  --deck-a <id>                 First white deck. Default: submission-pro-with-rare8-white-1339
+  --deck-a <id>                 First white deck. Default: submission-pro-no-rare8-white-1377
   --deck-b <id>                 Second white deck. Default: submission-pro-no-rare8-white-1377
   --seed-start <n>              First seed. Default: 56000
   --max-seeds <n>               Maximum seeds to scan. Default: 20

@@ -301,7 +301,7 @@ function summarizeRuns(games: readonly SearchBenchmarkGame[]): Array<{
 
 function parseArgs(args: string[]): CliOptions {
   const parsed: CliOptions = {
-    deckA: "submission-pro-with-rare8-white-1339",
+    deckA: "submission-pro-no-rare8-white-1377",
     deckB: "submission-pro-no-rare8-white-1377",
     gamesPerDirection: 5,
     seedStart: 47000,
@@ -458,7 +458,7 @@ Usage:
   npm run benchmark:white-search -- [options]
 
 Options:
-  --deck-a <id>                 First white deck. Default: submission-pro-with-rare8-white-1339
+  --deck-a <id>                 First white deck. Default: submission-pro-no-rare8-white-1377
   --deck-b <id>                 Second white deck. Default: submission-pro-no-rare8-white-1377
   --games-per-direction <n>     Games per directed matchup. Default: 5
   --seed-start <n>              First seed. Default: 47000

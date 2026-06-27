@@ -11,12 +11,12 @@ describe("default deck presets", () => {
     });
   });
 
-  it("uses the selected white-vs-white winner as the CPU default", () => {
-    expect(DEFAULT_CPU_DECK_PRESET_ID).toBe("submission-pro-with-rare8-white-1339");
+  it("keeps the CPU default on the no-rare8 white baseline", () => {
+    expect(DEFAULT_CPU_DECK_PRESET_ID).toBe("submission-pro-no-rare8-white-1377");
     expect(getDeckPreset(DEFAULT_CPU_DECK_PRESET_ID)).toMatchObject({
       masterId: "white",
-      sourceDeckId: 1339,
+      mode: "Pro 8なし",
     });
-    expect(deckPresetAllowsSpecial(DEFAULT_CPU_DECK_PRESET_ID)).toBe(true);
+    expect(deckPresetAllowsSpecial(DEFAULT_CPU_DECK_PRESET_ID)).toBe(false);
   });
 });
