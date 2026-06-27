@@ -33,6 +33,7 @@
     "lab:masters:white-ai-action-order": "vite-node scripts/white-ai-action-order-audit.ts",
     "lab:masters:shield-audit": "vite-node scripts/shield-usage-audit-loop.ts",
     "select:white-deck": "vite-node scripts/white-vs-white-deck-selection.ts",
+    "tier:white-no-rare8": "vite-node scripts/white-no-rare8-tier.ts",
     "benchmark:white-search": "vite-node scripts/white-vs-white-search-benchmark.ts",
     "audit:white-terminal-plans": "vite-node scripts/white-ai-terminal-plan-audit.ts",
     "audit:white-front-chip": "vite-node scripts/white-ai-front-chip-response-audit.ts",
