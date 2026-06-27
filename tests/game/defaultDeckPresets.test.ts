@@ -3,16 +3,16 @@ import { deckPresetAllowsSpecial, getDeckPreset } from "../../src/game/deckPrese
 import { DEFAULT_CPU_DECK_PRESET_ID, DEFAULT_PLAYER_DECK_PRESET_ID } from "../../src/game/defaultDeckPresets";
 
 describe("default deck presets", () => {
-  it("keeps the player default on the no-rare8 white baseline", () => {
-    expect(DEFAULT_PLAYER_DECK_PRESET_ID).toBe("submission-pro-no-rare8-white-1377");
+  it("keeps the player default on the provisional strongest no-rare8 white baseline", () => {
+    expect(DEFAULT_PLAYER_DECK_PRESET_ID).toBe("master-lab-white-1377-death-sheep3");
     expect(getDeckPreset(DEFAULT_PLAYER_DECK_PRESET_ID)).toMatchObject({
       masterId: "white",
       mode: "Pro 8なし",
     });
   });
 
-  it("keeps the CPU default on the no-rare8 white baseline", () => {
-    expect(DEFAULT_CPU_DECK_PRESET_ID).toBe("submission-pro-no-rare8-white-1377");
+  it("keeps the CPU default on the provisional strongest no-rare8 white baseline", () => {
+    expect(DEFAULT_CPU_DECK_PRESET_ID).toBe("master-lab-white-1377-death-sheep3");
     expect(getDeckPreset(DEFAULT_CPU_DECK_PRESET_ID)).toMatchObject({
       masterId: "white",
       mode: "Pro 8なし",

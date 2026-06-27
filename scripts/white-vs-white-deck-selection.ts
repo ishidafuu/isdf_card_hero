@@ -64,6 +64,7 @@ interface WhiteDeckSelectionReport {
 const DEFAULT_EXPLICIT_CANDIDATES = [
   "pressure-normal",
   "balanced-normal",
+  "master-lab-white-1377-death-sheep3",
   "submission-pro-no-rare8-white-1377",
   "submission-pro-with-rare8-white-975",
 ] as const satisfies readonly DeckPresetId[];

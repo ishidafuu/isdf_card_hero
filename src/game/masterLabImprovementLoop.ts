@@ -126,7 +126,7 @@ export const DEFAULT_MASTER_LAB_IMPROVEMENT_DECK_PRESETS = [
   "submission-pro-with-rare8-black-1387",
   "submission-pro-with-rare8-white-1384",
   "submission-pro-with-rare8-black-1382",
-  "submission-pro-no-rare8-white-1377",
+  "master-lab-white-1377-death-sheep3",
   "submission-pro-no-rare8-black-1375",
   "submission-pro-with-rare8-black-1374",
   "submission-pro-with-rare8-black-1354",

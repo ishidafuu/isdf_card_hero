@@ -12,6 +12,7 @@ import {
 } from "../src/game/cpuAi";
 import { AI_EVALUATION_WEIGHTS } from "../src/game/aiWeights";
 import { getCardName } from "../src/game/cards";
+import { DEFAULT_CPU_DECK_PRESET_ID, DEFAULT_PLAYER_DECK_PRESET_ID } from "../src/game/defaultDeckPresets";
 import {
   buildDeckPresetCardIds,
   deckPresetAllowsSpecial,
@@ -855,8 +856,8 @@ function formatPlanLines(plans: readonly PlanLine[]): string[] {
 
 function parseArgs(args: string[]): CliOptions {
   const parsed: CliOptions = {
-    deckA: "submission-pro-no-rare8-white-1377",
-    deckB: "submission-pro-no-rare8-white-1377",
+    deckA: DEFAULT_PLAYER_DECK_PRESET_ID,
+    deckB: DEFAULT_CPU_DECK_PRESET_ID,
     seedStart: 56000,
     maxSeeds: 20,
     scenarios: 3,
@@ -1029,8 +1030,8 @@ Usage:
   npm run audit:white-terminal-plans -- [options]
 
 Options:
-  --deck-a <id>                 First white deck. Default: submission-pro-no-rare8-white-1377
-  --deck-b <id>                 Second white deck. Default: submission-pro-no-rare8-white-1377
+  --deck-a <id>                 First white deck. Default: ${DEFAULT_PLAYER_DECK_PRESET_ID}
+  --deck-b <id>                 Second white deck. Default: ${DEFAULT_CPU_DECK_PRESET_ID}
   --seed-start <n>              First seed. Default: 56000
   --max-seeds <n>               Maximum seeds to scan. Default: 20
   --scenarios <n>               Audited scenarios. Default: 3

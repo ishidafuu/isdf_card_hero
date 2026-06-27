@@ -18,7 +18,8 @@ export type MasterLabDeckPresetId =
   | "master-lab-decoy-unit-front-growth"
   | "master-lab-decoy-unit-back-stable"
   | "master-lab-decoy-unit-back-pressure"
-  | "master-lab-tempo-1403-no-lostone";
+  | "master-lab-tempo-1403-no-lostone"
+  | "master-lab-white-1377-death-sheep3";
 export type DeckSubmissionPresetId = `submission-${string}`;
 export type DeckPresetId = BuiltInDeckPresetId | MasterLabDeckPresetId | DeckSubmissionPresetId;
 export type DeckPresetGroupId = "built-in" | "master-lab" | DeckSubmissionGroupId;
@@ -158,6 +159,15 @@ const DECOY_UNIT_BACK_PRESSURE_DECK_CARD_IDS = replaceDeckCards(BLACK_PRESSURE_D
 const TEMPO_1403_NO_LOSTONE_DECK_CARD_IDS = replaceDeckCards(submissionDeckCardIds("submission-pro-no-rare8-black-1403"), [
   ["card_113", "card_114"],
 ]);
+
+const WHITE_1377_DEATH_SHEEP3_DECK_CARD_IDS = replaceDeckCards(
+  submissionDeckCardIds("submission-pro-no-rare8-white-1377"),
+  [
+    ["card_105", "card_133"],
+    ["card_105", "card_133"],
+    ["card_105", "card_133"],
+  ],
+);
 
 const BUILT_IN_DECK_PRESETS: DeckPresetDef[] = [
   {
@@ -303,6 +313,18 @@ const MASTER_LAB_DECK_PRESETS: DeckPresetDef[] = [
     allowSpecial: false,
     masterId: "black",
     mode: "Master Lab",
+    group: "master-lab",
+  },
+  {
+    id: "master-lab-white-1377-death-sheep3",
+    name: "白暫定最強: 1377デスシープ3",
+    description: "submission-pro-no-rare8-white-1377派生。ヤミー3枚をデスシープ3枚へ差し替え、現AI白ミラーの暫定基準にする。",
+    cardIds: WHITE_1377_DEATH_SHEEP3_DECK_CARD_IDS,
+    allowSpecial: false,
+    sourceUrl: "https://www.cardhero-bu.com/deck/topic.php?id=1377",
+    sourceDeckId: 1377,
+    masterId: "white",
+    mode: "Pro 8なし",
     group: "master-lab",
   },
 ];

@@ -3,6 +3,7 @@ import { performance } from "node:perf_hooks";
 import { dirname } from "node:path";
 import { buildDeckPresetCardIds, deckPresetAllowsSpecial, getDeckPreset, type DeckPresetId } from "../src/game/deckPresets";
 import type { CpuAiSearchOptions } from "../src/game/cpuAi";
+import { DEFAULT_CPU_DECK_PRESET_ID, DEFAULT_PLAYER_DECK_PRESET_ID } from "../src/game/defaultDeckPresets";
 import { createInitialGame, runAutoStep } from "../src/game/rules";
 import type { GameState, PlayerId } from "../src/game/types";
 
@@ -301,8 +302,8 @@ function summarizeRuns(games: readonly SearchBenchmarkGame[]): Array<{
 
 function parseArgs(args: string[]): CliOptions {
   const parsed: CliOptions = {
-    deckA: "submission-pro-no-rare8-white-1377",
-    deckB: "submission-pro-no-rare8-white-1377",
+    deckA: DEFAULT_PLAYER_DECK_PRESET_ID,
+    deckB: DEFAULT_CPU_DECK_PRESET_ID,
     gamesPerDirection: 5,
     seedStart: 47000,
     maxSteps: 700,
@@ -458,8 +459,8 @@ Usage:
   npm run benchmark:white-search -- [options]
 
 Options:
-  --deck-a <id>                 First white deck. Default: submission-pro-no-rare8-white-1377
-  --deck-b <id>                 Second white deck. Default: submission-pro-no-rare8-white-1377
+  --deck-a <id>                 First white deck. Default: ${DEFAULT_PLAYER_DECK_PRESET_ID}
+  --deck-b <id>                 Second white deck. Default: ${DEFAULT_CPU_DECK_PRESET_ID}
   --games-per-direction <n>     Games per directed matchup. Default: 5
   --seed-start <n>              First seed. Default: 47000
   --only-config <id:d:w[:dw[:td:tw:twgt[:od:ow:owgt]]]>
