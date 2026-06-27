@@ -14,7 +14,9 @@ import { getCardName } from "../src/game/cards";
 import {
   buildDeckPresetCardIds,
   deckPresetAllowsSpecial,
+  type DeckPresetId,
 } from "../src/game/deckPresets";
+import { DEFAULT_PLAYER_DECK_PRESET_ID } from "../src/game/defaultDeckPresets";
 import { DEFAULT_WHITE_AI_TUNING_OPPONENTS, DEFAULT_WHITE_AI_TUNING_VARIANTS, type WhiteAiTuningOpponent, type WhiteAiTuningVariant } from "../src/game/whiteAiTuningLoop";
 import { createInitialGame, runAutoStep, targetToKey } from "../src/game/rules";
 import type { GameState, MasterId, PlayerId, SlotKey } from "../src/game/types";
@@ -70,12 +72,24 @@ interface VariantMetrics {
   losses: number;
   draws: number;
   candidateDecisionSteps: number;
+  candidateTurns: number;
+  turnsWithShield: number;
+  shieldFirstInTurn: number;
+  shieldThenWork: number;
+  workThenShield: number;
+  wakeThenAttack: number;
+  attackThenWake: number;
   selectedShields: number;
   shieldWithRetreatAlternative: number;
   retreatAlternativeHigher: number;
   retreatAlternativeClose: number;
   selectedMoves: number;
   selectedRetreats: number;
+  selectedWakes: number;
+  wakeWithAttackAlternative: number;
+  wakeAttackAlternativeHigher: number;
+  wakeAttackAlternativeClose: number;
+  wakeWithShieldAlternative: number;
   shieldThenRetreat: number;
   backRoleShieldThenRetreat: number;
   shieldWithAttackAlternative: number;
@@ -103,14 +117,68 @@ interface ActionOrderAuditReport {
 
 const DEFAULT_OPTIONS: CliOptions = {
   seedStart: 28000,
-  count: 8,
+  count: 4,
   maxSteps: 700,
   maxTurns: 160,
   maxSamples: 10,
   margin: 15,
-  variantIds: ["pressure_white_baseline", "pressure_white_shield_quality_breakthrough_v1"],
-  opponentIds: ["black_pressure_strong", "black_pressure_pressure", "white_pressure_strong"],
+  variantIds: ["current_white_baseline", "current_wake_safe_work4", "current_threat_left_low_stone_guard"],
+  opponentIds: ["black_pressure_strong", "black_1375_pressure", "white_current_mirror"],
 };
+
+const CURRENT_WHITE_DECK = DEFAULT_PLAYER_DECK_PRESET_ID;
+
+const CURRENT_ACTION_ORDER_VARIANTS = [
+  currentVariant("current_white_baseline", "現行: デスシープ3 / white", undefined, "暫定白最強デッキで現行white profileの順序を監査する。"),
+  currentVariant("current_wake_safe_work4", "順序候補: 安全ウェイク仕事+4", {
+    situationalBias: { whiteWakeSafeWorkBonus: 4 },
+  }, "仕事へ変換できるウェイクアップを軽く押し、盾より先に起こすべき局面が拾えるか見る。"),
+  currentVariant("current_wake_safe_work8", "順序候補: 安全ウェイク仕事+8", {
+    situationalBias: { whiteWakeSafeWorkBonus: 8 },
+  }, "ウェイクアップ品質加点を強め、攻撃前の起動が増えすぎないか見る。"),
+  currentVariant("current_threat_left_low_stone_guard", "順序候補: 脅威残り低石布石抑制", {
+    situationalBias: { whiteThreatLeftLowStoneSetupPenalty: 6 },
+  }, "攻撃で脅威を減らす前に低石の盾/起動/召喚へ入る順序を抑える。"),
+  currentVariant("current_black_front_threat16", "順序候補: 黒前衛脅威+16", {
+    situationalBias: { whiteBlackFrontThreatBonus: 16 },
+  }, "黒の打点源処理を強め、盾より攻撃が先に出るか見る。"),
+] as const satisfies readonly WhiteAiTuningVariant[];
+
+const CURRENT_ACTION_ORDER_OPPONENTS = [
+  {
+    id: "black_1375_pressure",
+    category: "black",
+    label: "黒: 1375 / pressure",
+    participant: "black",
+    deckPreset: "submission-pro-no-rare8-black-1375",
+    aiProfile: "pressure",
+  },
+  {
+    id: "white_current_mirror",
+    category: "white",
+    label: "白: 暫定白最強ミラー / white",
+    participant: "white",
+    deckPreset: CURRENT_WHITE_DECK,
+    aiProfile: "white",
+  },
+] as const satisfies readonly WhiteAiTuningOpponent[];
+
+function currentVariant(
+  id: string,
+  label: string,
+  tuning: CpuAiTuning | undefined,
+  hypothesis: string,
+): WhiteAiTuningVariant {
+  return {
+    id,
+    kind: tuning ? "hybrid" : "baseline",
+    label,
+    deckPreset: CURRENT_WHITE_DECK as DeckPresetId,
+    aiProfile: "white",
+    ...(tuning ? { tuning } : {}),
+    hypothesis,
+  };
+}
 
 const options = parseArgs(process.argv.slice(2));
 const report = runActionOrderAudit(options);
@@ -179,11 +247,14 @@ function runGameAudit(
   const aiOptions = aiOptionsForSeats(variant, opponent, candidateSeat);
   const pendingShields = new Map<SlotKey, PendingShield>();
   let currentTurnKey = "";
+  let turnActions: string[] = [];
   let step = 0;
 
   for (; step < options.maxSteps && !game.winner && game.turnNumber <= options.maxTurns; step += 1) {
     const nextTurnKey = `${game.currentPlayer}:${game.turnNumber}`;
     if (nextTurnKey !== currentTurnKey) {
+      finalizeTurnActions(metrics, turnActions);
+      turnActions = [];
       pendingShields.clear();
       currentTurnKey = nextTurnKey;
     }
@@ -192,12 +263,14 @@ function runGameAudit(
       const evaluations = inspectCpuDecisionEvaluations(game, aiOptions);
       const choice = chooseDecisionWithEvaluation(game, evaluations, aiOptions);
       metrics.candidateDecisionSteps += 1;
+      recordTurnAction(turnActions, choice.decision);
       auditSelectedDecision(game, choice, evaluations, seed, variant, opponent, candidateSeat, step, options, metrics, pendingShields);
       game = applyCpuDecision(game, choice.decision);
     } else {
       game = runAutoStep(game, aiOptions);
     }
   }
+  finalizeTurnActions(metrics, turnActions);
 
   metrics.games += 1;
   const opponentSeat = candidateSeat === "player" ? "cpu" : "player";
@@ -224,6 +297,40 @@ function auditSelectedDecision(
   pendingShields: Map<SlotKey, PendingShield>,
 ): void {
   const selected = toAlternative(choice.decision, choice.totalScore, game, candidateSeat);
+  if (choice.decision.type === "master_action" && choice.decision.actionId === "wake_up") {
+    metrics.selectedWakes += 1;
+    const attackFirst = bestAttackAlternative(evaluations, game, candidateSeat);
+    const shieldAlternative = bestShieldAlternative(evaluations, game, candidateSeat);
+    if (attackFirst) {
+      metrics.wakeWithAttackAlternative += 1;
+      if (attackFirst.score > selected.score) {
+        metrics.wakeAttackAlternativeHigher += 1;
+        addSample(metrics, options, {
+          seed,
+          opponentId: opponent.id,
+          candidateSeat,
+          variantId: variant.id,
+          turnNumber: game.turnNumber,
+          step,
+          slotKey: choice.decision.target.kind === "monster" ? choice.decision.target.slotKey : "player_front_left",
+          monsterInstanceId: "",
+          monsterName: "wake_up",
+          selected,
+          attackFirst,
+          state: stateLine(game),
+          board: boardLine(game),
+          kind: "wake_attack_alt_higher",
+        });
+      } else if (selected.score - attackFirst.score <= options.margin) {
+        metrics.wakeAttackAlternativeClose += 1;
+      }
+    }
+    if (shieldAlternative) {
+      metrics.wakeWithShieldAlternative += 1;
+    }
+    return;
+  }
+
   if (choice.decision.type === "move") {
     metrics.selectedMoves += 1;
     if (isFrontToBackMove(game, choice.decision)) {
@@ -374,6 +481,23 @@ function bestWakeAlternative(
     game,
     candidateSeat,
     (decision) => decision.type === "master_action" && decision.actionId === "wake_up",
+  );
+}
+
+function bestShieldAlternative(
+  evaluations: readonly CpuDecisionEvaluation[],
+  game: GameState,
+  candidateSeat: PlayerId,
+): AlternativeDecision | undefined {
+  return bestAlternative(
+    evaluations,
+    game,
+    candidateSeat,
+    (decision) =>
+      decision.type === "master_action" &&
+      decision.actionId === "shield" &&
+      decision.target.kind === "monster" &&
+      game.slots[decision.target.slotKey].monster?.owner === candidateSeat,
   );
 }
 
@@ -542,6 +666,71 @@ function monsterNameAt(game: GameState, slotKey: SlotKey): string | undefined {
   return monster ? getCardName(monster.cardId) : undefined;
 }
 
+function recordTurnAction(turnActions: string[], decision: CpuDecision): void {
+  const category = orderCategory(decision);
+  if (category) {
+    turnActions.push(category);
+  }
+}
+
+function orderCategory(decision: CpuDecision): string | undefined {
+  if (decision.type === "attack") {
+    return "attack";
+  }
+  if (decision.type === "master_action") {
+    if (decision.actionId === "shield") {
+      return "shield";
+    }
+    if (decision.actionId === "wake_up") {
+      return "wake";
+    }
+    return "master_action";
+  }
+  if (decision.type === "magic") {
+    return "magic";
+  }
+  if (decision.type === "move") {
+    return "move";
+  }
+  if (decision.type === "summon") {
+    return "summon";
+  }
+  if (decision.type === "focus") {
+    return "focus";
+  }
+  return undefined;
+}
+
+function finalizeTurnActions(metrics: VariantMetrics, turnActions: string[]): void {
+  if (turnActions.length === 0) {
+    return;
+  }
+  metrics.candidateTurns += 1;
+  const firstShield = turnActions.indexOf("shield");
+  const firstAttack = turnActions.indexOf("attack");
+  const firstWake = turnActions.indexOf("wake");
+  const lastAttack = turnActions.lastIndexOf("attack");
+  const lastWake = turnActions.lastIndexOf("wake");
+  if (firstShield >= 0) {
+    metrics.turnsWithShield += 1;
+    if (firstShield === 0) {
+      metrics.shieldFirstInTurn += 1;
+    }
+    if ((lastAttack > firstShield) || (lastWake > firstShield)) {
+      metrics.shieldThenWork += 1;
+    }
+    if ((firstAttack >= 0 && firstAttack < firstShield) || (firstWake >= 0 && firstWake < firstShield)) {
+      metrics.workThenShield += 1;
+    }
+  }
+  if (firstWake >= 0 && lastAttack > firstWake) {
+    metrics.wakeThenAttack += 1;
+  }
+  if (firstAttack >= 0 && lastWake > firstAttack) {
+    metrics.attackThenWake += 1;
+  }
+}
+
 function createMetrics(variantId: string): VariantMetrics {
   return {
     variantId,
@@ -550,12 +739,24 @@ function createMetrics(variantId: string): VariantMetrics {
     losses: 0,
     draws: 0,
     candidateDecisionSteps: 0,
+    candidateTurns: 0,
+    turnsWithShield: 0,
+    shieldFirstInTurn: 0,
+    shieldThenWork: 0,
+    workThenShield: 0,
+    wakeThenAttack: 0,
+    attackThenWake: 0,
     selectedShields: 0,
     shieldWithRetreatAlternative: 0,
     retreatAlternativeHigher: 0,
     retreatAlternativeClose: 0,
     selectedMoves: 0,
     selectedRetreats: 0,
+    selectedWakes: 0,
+    wakeWithAttackAlternative: 0,
+    wakeAttackAlternativeHigher: 0,
+    wakeAttackAlternativeClose: 0,
+    wakeWithShieldAlternative: 0,
     shieldThenRetreat: 0,
     backRoleShieldThenRetreat: 0,
     shieldWithAttackAlternative: 0,
@@ -591,8 +792,8 @@ function formatMarkdown(report: ActionOrderAuditReport): string {
     "",
     "## Summary",
     "",
-    "| Variant | W-L-D | Steps | Shield | Retreat Alt | Retreat Higher | Retreat Close | Shield->Retreat | BackRole S->R | Attack Higher/Close | Wake Higher/Close |",
-    "| --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: |",
+    "| Variant | W-L-D | Steps | Turns | Shield | Shield Turns | Shield First | Shield Then Work | Work Then Shield | Retreat Alt | Shield->Retreat | Shield Attack Higher/Close | Shield Wake Higher/Close | Wake | Wake Attack Higher/Close | Wake Then Attack |",
+    "| --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: |",
     ...report.metrics.map(formatMetricRow),
     "",
     "## Samples",
@@ -606,6 +807,8 @@ function formatMarkdown(report: ActionOrderAuditReport): string {
     "- `Retreat Close` は、選択シールドとの差が close margin 以内の件数。",
     "- `Shield->Retreat` は、シールドした対象を同ターン中に後列へ下げた件数。行動順としては雑になりやすい。",
     "- `Attack/Wake Higher/Close` は、シールドを選ぶ前に攻撃またはウェイクアップがどれくらい競合していたかの探索値。",
+    "- `Wake Attack Higher/Close` は、ウェイクアップを選んだ局面で、攻撃候補がどれくらい競合していたかの探索値。",
+    "- `Turn Order` では、実際の同一ターン内で shield の後に attack/wake したか、attack/wake の後に shield したかを見る。",
   ].join("\n");
 }
 
@@ -614,14 +817,19 @@ function formatMetricRow(metric: VariantMetrics): string {
     metric.variantId,
     `${metric.wins}-${metric.losses}-${metric.draws}`,
     metric.candidateDecisionSteps,
+    metric.candidateTurns,
     formatCountRate(metric.selectedShields, metric.candidateDecisionSteps),
+    formatCountRate(metric.turnsWithShield, metric.candidateTurns),
+    formatCountRate(metric.shieldFirstInTurn, metric.turnsWithShield),
+    formatCountRate(metric.shieldThenWork, metric.turnsWithShield),
+    formatCountRate(metric.workThenShield, metric.turnsWithShield),
     formatCountRate(metric.shieldWithRetreatAlternative, metric.selectedShields),
-    formatCountRate(metric.retreatAlternativeHigher, metric.selectedShields),
-    formatCountRate(metric.retreatAlternativeClose, metric.selectedShields),
     formatCountRate(metric.shieldThenRetreat, metric.selectedShields),
-    formatCountRate(metric.backRoleShieldThenRetreat, metric.selectedShields),
     `${formatCountRate(metric.attackAlternativeHigher, metric.selectedShields)} / ${formatCountRate(metric.attackAlternativeClose, metric.selectedShields)}`,
     `${formatCountRate(metric.wakeAlternativeHigher, metric.selectedShields)} / ${formatCountRate(metric.wakeAlternativeClose, metric.selectedShields)}`,
+    formatCountRate(metric.selectedWakes, metric.candidateDecisionSteps),
+    `${formatCountRate(metric.wakeAttackAlternativeHigher, metric.selectedWakes)} / ${formatCountRate(metric.wakeAttackAlternativeClose, metric.selectedWakes)}`,
+    formatCountRate(metric.wakeThenAttack, metric.candidateTurns),
   ].join(" | ").replace(/^/, "| ").replace(/$/, " |");
 }
 
@@ -671,6 +879,13 @@ function buildConclusion(metrics: readonly VariantMetrics[]): string[] {
     if (metric.attackAlternativeHigher + metric.wakeAlternativeHigher > metric.retreatAlternativeHigher) {
       lines.push(`${metric.variantId}: 後退以外にも攻撃/ウェイクアップがシールドを上回る局面があるため、次の監査では行動順を攻撃先行・起動先行に分解する余地がある。`);
     }
+    if (metric.wakeAttackAlternativeHigher > 0) {
+      lines.push(`${metric.variantId}: ウェイクアップ選択時に攻撃候補が上回る局面が ${metric.wakeAttackAlternativeHigher}件ある。起動前に盤面処理する条件の監査対象。`);
+    }
+    lines.push(`${metric.variantId}: turn order は shield含み ${metric.turnsWithShield}/${metric.candidateTurns}ターン、shield先行後にattack/wake ${metric.shieldThenWork}件、attack/wake後にshield ${metric.workThenShield}件、wake後attack ${metric.wakeThenAttack}件。`);
+    if (metric.shieldThenWork > metric.workThenShield) {
+      lines.push(`${metric.variantId}: shield後に仕事をするターンが多い。反撃回避以外は shield last を候補化する価値がある。`);
+    }
   }
   if (lines.length === 0) {
     lines.push("対象候補がないため、シールド行動順の追加調整は保留でよい。");
@@ -679,7 +894,7 @@ function buildConclusion(metrics: readonly VariantMetrics[]): string[] {
 }
 
 function getVariant(id: string): WhiteAiTuningVariant {
-  const variant = DEFAULT_WHITE_AI_TUNING_VARIANTS.find((candidate) => candidate.id === id);
+  const variant = [...CURRENT_ACTION_ORDER_VARIANTS, ...DEFAULT_WHITE_AI_TUNING_VARIANTS].find((candidate) => candidate.id === id);
   if (!variant) {
     throw new Error(`Unknown variant: ${id}`);
   }
@@ -687,7 +902,7 @@ function getVariant(id: string): WhiteAiTuningVariant {
 }
 
 function getOpponent(id: string): WhiteAiTuningOpponent {
-  const opponent = DEFAULT_WHITE_AI_TUNING_OPPONENTS.find((candidate) => candidate.id === id);
+  const opponent = [...CURRENT_ACTION_ORDER_OPPONENTS, ...DEFAULT_WHITE_AI_TUNING_OPPONENTS].find((candidate) => candidate.id === id);
   if (!opponent) {
     throw new Error(`Unknown opponent: ${id}`);
   }
