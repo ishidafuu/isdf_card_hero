@@ -566,6 +566,76 @@ describe("cpu ai", () => {
     expect(defaultWhite?.totalScore).toBeCloseTo(disabled?.totalScore ?? 0);
   });
 
+  it("does not penalize safe white mirror front chips for master-only response damage", () => {
+    const game = createCpuGame();
+    game.players.cpu.masterId = "white";
+    game.players.player.masterId = "white";
+    game.players.cpu.hand = [];
+    game.players.cpu.stones = 3;
+    game.players.cpu.masterHp = 10;
+    game.slots.player_front_left.monster = createActiveMonster("morgan", "player", {
+      hp: 4,
+      level: 2,
+      investedStones: 2,
+    });
+
+    const findFrontAttack = (options = {}) =>
+      inspectCpuDecisionEvaluations(game, {
+        profile: "white",
+        search: { sameTurnSearchDepth: 0 },
+        ...options,
+      }).find(
+        (evaluation) =>
+          evaluation.decision.type === "master_action" &&
+          evaluation.decision.actionId === "master_attack" &&
+          evaluation.decision.target.kind === "monster" &&
+          evaluation.decision.target.slotKey === "player_front_left",
+      );
+    const disabled = findFrontAttack({
+      tunings: { cpu: { situationalBias: { whiteFrontChipResponsePenalty: 0 } } },
+    });
+    const defaultWhite = findFrontAttack();
+
+    expect(disabled).toBeDefined();
+    expect(defaultWhite).toBeDefined();
+    expect(defaultWhite?.totalScore).toBeCloseTo(disabled?.totalScore ?? 0);
+  });
+
+  it("penalizes white mirror front chips that leave lethal master-only response damage", () => {
+    const game = createCpuGame();
+    game.players.cpu.masterId = "white";
+    game.players.player.masterId = "white";
+    game.players.cpu.hand = [];
+    game.players.cpu.stones = 0;
+    game.players.cpu.masterHp = 1;
+    game.slots.cpu_front_left.monster = createActiveMonster("takokke", "cpu", { immune: true });
+    game.slots.player_front_left.monster = createActiveMonster("morgan", "player", {
+      hp: 4,
+      level: 2,
+      investedStones: 2,
+    });
+
+    const findFrontAttack = (options = {}) =>
+      inspectCpuDecisionEvaluations(game, {
+        profile: "white",
+        search: { sameTurnSearchDepth: 0 },
+        ...options,
+      }).find(
+        (evaluation) =>
+          evaluation.decision.type === "attack" &&
+          evaluation.decision.action.target.kind === "monster" &&
+          evaluation.decision.action.target.slotKey === "player_front_left",
+      );
+    const disabled = findFrontAttack({
+      tunings: { cpu: { situationalBias: { whiteFrontChipResponsePenalty: 0 } } },
+    });
+    const defaultWhite = findFrontAttack();
+
+    expect(disabled).toBeDefined();
+    expect(defaultWhite).toBeDefined();
+    expect(defaultWhite?.totalScore).toBeLessThan((disabled?.totalScore ?? 0) - 80);
+  });
+
   it("bonuses white mirror focus over a risky nonlethal front chip", () => {
     const game = createCpuGame();
     game.players.cpu.masterId = "white";

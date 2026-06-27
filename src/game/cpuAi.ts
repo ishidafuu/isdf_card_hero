@@ -145,7 +145,7 @@ const WHITE_MIRROR_OPPONENT_RESPONSE_ROOT_MARGIN = 160;
 const WHITE_MIRROR_OPPONENT_RESPONSE_MIN_ROOT_CANDIDATES = 4;
 const WHITE_MIRROR_TERMINAL_RESPONSE_TIE_MARGIN = 16;
 const WHITE_MIRROR_NON_CONVERTING_BACKLINE_CHIP_PENALTY = 132;
-const WHITE_MIRROR_NON_CONVERTING_FRONT_THREAT_CHIP_MAX_PENALTY = 220;
+const WHITE_MIRROR_NON_CONVERTING_FRONT_THREAT_CHIP_MAX_PENALTY = 340;
 const WHITE_MIRROR_EXPOSED_POWER_MAGIC_PENALTY = 200;
 const WHITE_MIRROR_RESPONSE_COLLAPSE_THRESHOLD = 120;
 const WHITE_MIRROR_RESPONSE_COLLAPSE_PENALTY_WEIGHT = 0.25;
@@ -3975,18 +3975,26 @@ function whiteMirrorNonConvertingFrontThreatChipRiskScore(
     return 0;
   }
 
-  const responseThreat = enemyFrontChipResponseThreatScore(after, targetSlotKey, perspective);
-  if (responseThreat <= 0) {
+  const boardThreat = enemyFrontChipResponseBoardThreatScore(after, targetSlotKey, perspective);
+  const unsafeMasterThreat = whiteMirrorUnsafeMasterResponseScore(after, targetSlotKey, perspective);
+  if (boardThreat <= 0 && unsafeMasterThreat <= 0) {
     return 0;
   }
 
-  const remainingHpPenalty = Math.max(0, targetAfter.hp - 1) * 16;
-  const levelPenalty = targetAfter.level > 1 ? (targetAfter.level - 1) * 30 : 0;
-  const lowStonePenalty = after.players[perspective].stones <= 1 ? 35 : after.players[perspective].stones <= 3 ? 15 : 0;
-  return responseThreat * 0.22 + remainingHpPenalty + levelPenalty + lowStonePenalty;
+  const boardRisk = boardThreat > 0;
+  const remainingHpPenalty = boardRisk ? Math.max(0, targetAfter.hp - 1) * 16 : 0;
+  const levelPenalty = boardRisk && targetAfter.level > 1 ? (targetAfter.level - 1) * 30 : 0;
+  const lowStonePenalty = boardRisk
+    ? after.players[perspective].stones <= 1
+      ? 35
+      : after.players[perspective].stones <= 3
+        ? 15
+        : 0
+    : 0;
+  return boardThreat * 0.24 + unsafeMasterThreat + remainingHpPenalty + levelPenalty + lowStonePenalty;
 }
 
-function enemyFrontChipResponseThreatScore(
+function enemyFrontChipResponseBoardThreatScore(
   state: GameState,
   targetSlotKey: SlotKey,
   perspective: PlayerId,
@@ -3996,8 +4004,112 @@ function enemyFrontChipResponseThreatScore(
   if (!target || target.owner !== opponent) {
     return 0;
   }
-  const readyState = readyPlayerForTacticalEvaluation(state, opponent);
-  return bestAttackOpportunityScore(readyState, targetSlotKey);
+  const readyState = responseTurnTacticalEvaluationState(state, opponent);
+  const readyTarget = readyState.slots[targetSlotKey].monster;
+  if (!readyTarget || readyTarget.owner !== opponent || readyTarget.actionCount >= readyTarget.actionLimit) {
+    return 0;
+  }
+
+  let best = 0;
+  for (const command of getMonsterCommands(readyTarget)) {
+    for (const responseTarget of getCommandTargets(readyState, targetSlotKey, command.id)) {
+      if (responseTarget.kind !== "monster") {
+        continue;
+      }
+      const victim = readyState.slots[responseTarget.slotKey].monster;
+      if (!victim || victim.owner !== perspective) {
+        continue;
+      }
+      const damage = estimateMonsterDamage(readyState, victim, targetSlotKey, command);
+      if (damage <= 0) {
+        continue;
+      }
+      const killScore = damage >= victim.hp
+        ? 620 + monsterValue(readyState, responseTarget.slotKey) + enemyResponseLevelUpRiskScore(readyTarget)
+        : 0;
+      best = Math.max(best, killScore || damage * 25);
+    }
+  }
+  return best;
+}
+
+function enemyResponseLevelUpRiskScore(attacker: MonsterState): number {
+  return attacker.level < getMonsterDef(attacker.cardId).maxLevel ? 70 : 0;
+}
+
+function whiteMirrorUnsafeMasterResponseScore(
+  state: GameState,
+  targetSlotKey: SlotKey,
+  perspective: PlayerId,
+): number {
+  const opponent = opponentOf(perspective);
+  const responseState = responseTurnTacticalEvaluationState(state, opponent);
+  const damage = directMasterDamageFromSlot(responseState, targetSlotKey, opponent);
+  if (damage <= 0) {
+    return 0;
+  }
+
+  const ownHp = state.players[perspective].masterHp;
+  if (damage >= ownHp) {
+    return 360 + damage * 80;
+  }
+  if (ownHp <= 3) {
+    return 60 + damage * 30;
+  }
+  if (ownHp <= 4 && damage >= 2) {
+    return 100 + damage * 36;
+  }
+  if (ownHp <= 6 && damage >= 3) {
+    return 80 + damage * 30;
+  }
+  return 0;
+}
+
+function responseTurnTacticalEvaluationState(state: GameState, responsePlayer: PlayerId): GameState {
+  if (state.currentPlayer === responsePlayer) {
+    return readyPlayerForTacticalEvaluation(state, responsePlayer);
+  }
+
+  const next = structuredClone(state) as GameState;
+  next.currentPlayer = responsePlayer;
+  next.players[responsePlayer].stones += 3;
+
+  for (const slotKey of FIELD_ORDER_BY_PLAYER[responsePlayer]) {
+    const monster = next.slots[slotKey].monster;
+    if (monster?.status === "prepared") {
+      monster.status = "active";
+      monster.focused = false;
+    }
+  }
+
+  const exposedPlayer = opponentOf(responsePlayer);
+  for (const slotKey of FIELD_ORDER_BY_PLAYER[exposedPlayer]) {
+    const monster = next.slots[slotKey].monster;
+    if (monster?.status === "prepared") {
+      monster.status = "active";
+      monster.focused = false;
+    }
+  }
+
+  for (const lane of ["left", "right"] as const) {
+    const backSlotKey = `${responsePlayer}_back_${lane}` as SlotKey;
+    const frontSlotKey = `${responsePlayer}_front_${lane}` as SlotKey;
+    const backMonster = next.slots[backSlotKey].monster;
+    if (backMonster?.status === "active" && !next.slots[frontSlotKey].monster) {
+      next.slots[frontSlotKey].monster = backMonster;
+      delete next.slots[backSlotKey].monster;
+    }
+  }
+
+  for (const slotKey of FIELD_ORDER_BY_PLAYER[responsePlayer]) {
+    const monster = next.slots[slotKey].monster;
+    if (monster?.status === "active") {
+      monster.actionCount = 0;
+      monster.actionLimit = getMonsterDef(monster.cardId).actionLimit ?? 1;
+    }
+  }
+
+  return next;
 }
 
 function canFinishEnemyMonsterThisTurn(state: GameState, targetSlotKey: SlotKey, perspective: PlayerId): boolean {

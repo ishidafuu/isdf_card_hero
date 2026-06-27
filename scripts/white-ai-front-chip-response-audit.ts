@@ -123,6 +123,8 @@ interface FrontChipResponseAuditReport {
     targetRemovedBeforeActing: number;
     targetActed: number;
     harmfulResponse: number;
+    boardHarmfulResponse: number;
+    masterOnlyResponse: number;
     targetDamagedMaster: number;
     targetDamagedOwnMonster: number;
     targetKilledOwnMonster: number;
@@ -508,6 +510,14 @@ function classifyFinalOutcome(event: FrontChipEvent): FrontChipEvent["finalOutco
   return "unresolved";
 }
 
+function isBoardHarmfulResponse(event: FrontChipEvent): boolean {
+  return event.targetDamagedOwnMonster || event.targetKilledOwnMonster || event.targetLeveledUpOnResponse;
+}
+
+function isMasterOnlyResponse(event: FrontChipEvent): boolean {
+  return event.targetDamagedMaster && !isBoardHarmfulResponse(event);
+}
+
 function summarizeAlternatives(
   state: GameState,
   targetSlotKey: SlotKey,
@@ -606,6 +616,8 @@ function summarize(events: readonly FrontChipEvent[], games: readonly GameAuditR
     targetRemovedBeforeActing: events.filter((event) => event.targetRemovedBeforeActing).length,
     targetActed: events.filter((event) => event.targetActed).length,
     harmfulResponse: events.filter((event) => event.finalOutcome === "harmful_response").length,
+    boardHarmfulResponse: events.filter(isBoardHarmfulResponse).length,
+    masterOnlyResponse: events.filter(isMasterOnlyResponse).length,
     targetDamagedMaster: events.filter((event) => event.targetDamagedMaster).length,
     targetDamagedOwnMonster: events.filter((event) => event.targetDamagedOwnMonster).length,
     targetKilledOwnMonster: events.filter((event) => event.targetKilledOwnMonster).length,
@@ -626,23 +638,26 @@ function buildConclusion(events: readonly FrontChipEvent[]): string[] {
     return ["白ミラーの指定条件では、非リーサル前衛削りイベントを採取できなかった。seed範囲を広げて再監査する。"];
   }
   const harmful = events.filter((event) => event.finalOutcome === "harmful_response");
+  const boardHarmful = harmful.filter(isBoardHarmfulResponse);
+  const masterOnly = harmful.filter(isMasterOnlyResponse);
   const converted = events.filter((event) => event.convertedSameTurn);
   const acted = events.filter((event) => event.targetActed);
-  const hpOneHarmful = harmful.filter((event) => event.targetHpAfter <= 1);
-  const hpTwoPlusHarmful = harmful.filter((event) => event.targetHpAfter >= 2);
-  const focusAvailableHarmful = harmful.filter((event) => event.alternatives.bestFocus);
+  const hpOneBoardHarmful = boardHarmful.filter((event) => event.targetHpAfter <= 1);
+  const hpTwoPlusBoardHarmful = boardHarmful.filter((event) => event.targetHpAfter >= 2);
+  const focusAvailableBoardHarmful = boardHarmful.filter((event) => event.alternatives.bestFocus);
   const finishAvailable = events.filter((event) => event.alternatives.bestImmediateFinish);
   const lines = [
-    `非リーサル前衛削りは ${events.length}件。返しで対象が行動したのは ${acted.length}件、明確な被害につながったのは ${harmful.length}件、同ターン中に処理へ変換できたのは ${converted.length}件。`,
-    `被害イベントの内訳は、残HP1が ${hpOneHarmful.length}件、残HP2以上が ${hpTwoPlusHarmful.length}件。`,
-    `被害イベントのうち、ためる代替が候補にあったものは ${focusAvailableHarmful.length}件。即撃破代替が候補にあった削りは全体で ${finishAvailable.length}件。`,
+    `非リーサル前衛削りは ${events.length}件。返しで対象が行動したのは ${acted.length}件、従来の被害判定は ${harmful.length}件、同ターン中に処理へ変換できたのは ${converted.length}件。`,
+    `盤面被害は ${boardHarmful.length}件、マスターのみ被弾は ${masterOnly.length}件。白ミラーでは盤面被害を主指標にし、マスターのみ被弾は詰めろ圏かどうかを別途見る。`,
+    `盤面被害の内訳は、残HP1が ${hpOneBoardHarmful.length}件、残HP2以上が ${hpTwoPlusBoardHarmful.length}件。`,
+    `盤面被害イベントのうち、ためる代替が候補にあったものは ${focusAvailableBoardHarmful.length}件。即撃破代替が候補にあった削りは全体で ${finishAvailable.length}件。`,
   ];
-  if (harmful.length === 0) {
-    lines.push("今回の母数では、非リーサル前衛削りが直接の返し被害になる例は出なかった。係数を増やすより、さらにseedを広げて稀な事故だけを探す段階。");
-  } else if (hpTwoPlusHarmful.length >= hpOneHarmful.length) {
+  if (boardHarmful.length === 0) {
+    lines.push("今回の母数では、非リーサル前衛削りが盤面被害へ直結する例は出なかった。マスターのみ被弾を避けるために盤面制圧を落とす調整は不要。");
+  } else if (hpTwoPlusBoardHarmful.length >= hpOneBoardHarmful.length) {
     lines.push("次の候補は一律ペナルティではなく、残HP2以上で返しに攻撃可能な前衛を残す局面だけを監査対象にする。");
   } else {
-    lines.push("残HP1でも返し被害が出ているため、HPだけでは危険判定に足りない。対象の行動可否・射程・こちらの被撃破価値まで含める必要がある。");
+    lines.push("残HP1でも盤面被害が出ているため、HPだけでは危険判定に足りない。対象の行動可否・射程・こちらの被撃破価値まで含める必要がある。");
   }
   return lines;
 }
@@ -669,6 +684,8 @@ function formatMarkdown(report: FrontChipResponseAuditReport): string {
     `- converted same turn: ${report.summary.convertedSameTurn}`,
     `- target acted on response: ${report.summary.targetActed}`,
     `- harmful response: ${report.summary.harmfulResponse}`,
+    `- board harmful response: ${report.summary.boardHarmfulResponse}`,
+    `- master-only response: ${report.summary.masterOnlyResponse}`,
     `- damaged master: ${report.summary.targetDamagedMaster}`,
     `- damaged own monster: ${report.summary.targetDamagedOwnMonster}`,
     `- killed own monster: ${report.summary.targetKilledOwnMonster}`,
@@ -697,6 +714,8 @@ function formatMarkdown(report: FrontChipResponseAuditReport): string {
     "",
     "- `converted same turn` は削った対象を相手ターン前に処理できたケース。",
     "- `harmful response` は削った対象が返しにマスター/味方へ被害、撃破、またはレベルアップを発生させたケース。",
+    "- `board harmful response` は味方モンスター被害/撃破/相手レベルアップに絞ったケース。白ミラーの主指標。",
+    "- `master-only response` は盤面被害なしでマスターだけ被弾したケース。白ミラーでは詰めろ圏でなければ許容寄りに読む。",
     "- `selected minus best focus avg` と `selected minus immediate finish avg` は、選択手が代替候補より何点上だったか。正なら現在AIは削りを上に見ている。",
   ].join("\n");
 }
