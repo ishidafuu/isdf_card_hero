@@ -19,7 +19,7 @@ import {
 import { DEFAULT_PLAYER_DECK_PRESET_ID } from "../src/game/defaultDeckPresets";
 import { DEFAULT_WHITE_AI_TUNING_OPPONENTS, DEFAULT_WHITE_AI_TUNING_VARIANTS, type WhiteAiTuningOpponent, type WhiteAiTuningVariant } from "../src/game/whiteAiTuningLoop";
 import { createInitialGame, runAutoStep, targetToKey } from "../src/game/rules";
-import type { GameState, MasterId, PlayerId, SlotKey } from "../src/game/types";
+import type { GameState, MasterId, MonsterState, PlayerId, SlotKey } from "../src/game/types";
 
 interface CliOptions {
   seedStart: number;
@@ -30,6 +30,7 @@ interface CliOptions {
   margin: number;
   variantIds: string[];
   opponentIds: string[];
+  stopAfterSamples?: number;
   markdownPath?: string;
   jsonPath?: string;
 }
@@ -63,6 +64,8 @@ interface PendingShield {
 interface AuditSample extends PendingShield {
   kind: string;
   moveDecision?: AlternativeDecision;
+  alternativeCounts?: Record<string, number>;
+  topAlternatives?: AlternativeDecision[];
 }
 
 interface VariantMetrics {
@@ -71,6 +74,7 @@ interface VariantMetrics {
   wins: number;
   losses: number;
   draws: number;
+  partialGames: number;
   candidateDecisionSteps: number;
   candidateTurns: number;
   turnsWithShield: number;
@@ -212,10 +216,14 @@ function runActionOrderAudit(options: CliOptions): ActionOrderAuditReport {
 
   for (const variant of variants) {
     const metric = requireMetrics(metricsByVariant, variant.id);
+    opponentLoop:
     for (const opponent of opponents) {
       for (const candidateSeat of candidateSeats) {
         for (const seed of seedRange(options.seedStart, options.count)) {
-          runGameAudit(seed, variant, opponent, candidateSeat, options, metric);
+          const stopped = runGameAudit(seed, variant, opponent, candidateSeat, options, metric);
+          if (stopped) {
+            break opponentLoop;
+          }
         }
       }
     }
@@ -242,7 +250,7 @@ function runGameAudit(
   candidateSeat: PlayerId,
   options: CliOptions,
   metrics: VariantMetrics,
-): void {
+): boolean {
   let game = createGame(seed, variant, opponent, candidateSeat);
   const aiOptions = aiOptionsForSeats(variant, opponent, candidateSeat);
   const pendingShields = new Map<SlotKey, PendingShield>();
@@ -260,11 +268,20 @@ function runGameAudit(
     }
 
     if (!game.pendingLevelUp && game.currentPlayer === candidateSeat) {
-      const evaluations = inspectCpuDecisionEvaluations(game, aiOptions);
-      const choice = chooseDecisionWithEvaluation(game, evaluations, aiOptions);
+      const decision = chooseCpuDecision(game, aiOptions);
+      const evaluations = shouldInspectSelectedDecision(game, decision, candidateSeat)
+        ? inspectCpuDecisionEvaluations(game, aiOptions)
+        : [];
+      const choice = attachEvaluationScore(game, decision, evaluations);
       metrics.candidateDecisionSteps += 1;
+      const turnActionIndex = turnActions.length;
       recordTurnAction(turnActions, choice.decision);
-      auditSelectedDecision(game, choice, evaluations, seed, variant, opponent, candidateSeat, step, options, metrics, pendingShields);
+      auditSelectedDecision(game, choice, evaluations, seed, variant, opponent, candidateSeat, step, turnActionIndex, options, metrics, pendingShields);
+      if (shouldStopAfterSamples(metrics, options)) {
+        finalizeTurnActions(metrics, turnActions);
+        metrics.partialGames += 1;
+        return true;
+      }
       game = applyCpuDecision(game, choice.decision);
     } else {
       game = runAutoStep(game, aiOptions);
@@ -281,6 +298,7 @@ function runGameAudit(
   } else {
     metrics.draws += 1;
   }
+  return false;
 }
 
 function auditSelectedDecision(
@@ -292,6 +310,7 @@ function auditSelectedDecision(
   opponent: WhiteAiTuningOpponent,
   candidateSeat: PlayerId,
   step: number,
+  turnActionIndex: number,
   options: CliOptions,
   metrics: VariantMetrics,
   pendingShields: Map<SlotKey, PendingShield>,
@@ -389,6 +408,15 @@ function auditSelectedDecision(
   };
   pendingShields.set(targetSlotKey, pending);
 
+  if (turnActionIndex === 0) {
+    addSample(metrics, options, {
+      ...pending,
+      kind: "shield_first_turn",
+      alternativeCounts: countAlternativeCategories(evaluations),
+      topAlternatives: topAlternatives(evaluations, game, candidateSeat, 8),
+    });
+  }
+
   if (retreatOnly) {
     metrics.shieldWithRetreatAlternative += 1;
     if (retreatOnly.score > selected.score) {
@@ -422,12 +450,22 @@ function auditSelectedDecision(
   }
 }
 
-function chooseDecisionWithEvaluation(
+function shouldInspectSelectedDecision(
   game: GameState,
+  decision: CpuDecision,
+  candidateSeat: PlayerId,
+): boolean {
+  return (
+    isOwnShieldDecision(game, decision, candidateSeat) ||
+    (decision.type === "master_action" && decision.actionId === "wake_up")
+  );
+}
+
+function attachEvaluationScore(
+  game: GameState,
+  decision: CpuDecision,
   evaluations: readonly CpuDecisionEvaluation[],
-  options: CpuAiOptions,
 ): { decision: CpuDecision; totalScore: number } {
-  const decision = chooseCpuDecision(game, options);
   const key = decisionKey(decision);
   const evaluation = evaluations.find((candidate) => decisionKey(candidate.decision) === key);
   return {
@@ -511,6 +549,25 @@ function bestAlternative(
     .filter((evaluation) => predicate(evaluation.decision))
     .sort((a, b) => b.totalScore - a.totalScore || a.index - b.index)
     .map((evaluation) => toAlternative(evaluation.decision, evaluation.totalScore, game, candidateSeat))[0];
+}
+
+function topAlternatives(
+  evaluations: readonly CpuDecisionEvaluation[],
+  game: GameState,
+  candidateSeat: PlayerId,
+  limit: number,
+): AlternativeDecision[] {
+  return [...evaluations]
+    .sort((a, b) => b.totalScore - a.totalScore || a.index - b.index)
+    .slice(0, limit)
+    .map((evaluation) => toAlternative(evaluation.decision, evaluation.totalScore, game, candidateSeat));
+}
+
+function countAlternativeCategories(evaluations: readonly CpuDecisionEvaluation[]): Record<string, number> {
+  return evaluations.reduce<Record<string, number>>((counts, evaluation) => {
+    counts[evaluation.decision.type] = (counts[evaluation.decision.type] ?? 0) + 1;
+    return counts;
+  }, {});
 }
 
 function isOwnShieldDecision(game: GameState, decision: CpuDecision, candidateSeat: PlayerId): decision is Extract<CpuDecision, { type: "master_action" }> & { target: { kind: "monster"; slotKey: SlotKey } } {
@@ -658,12 +715,40 @@ function slotLine(game: GameState, slotKey: SlotKey): string {
   const side = monster.owner === "player" ? "P" : "C";
   const row = game.slots[slotKey].row === "front" ? "F" : "B";
   const status = monster.status === "prepared" ? "prep" : `act${monster.actionCount}/${monster.actionLimit}`;
-  return `${slotKey}:${side}${row}:${getCardName(monster.cardId)} Lv${monster.level} HP${monster.hp} ${status}`;
+  const flags = monsterFlags(monster);
+  return `${slotKey}:${side}${row}:${getCardName(monster.cardId)} Lv${monster.level} HP${monster.hp} ${status}${flags ? ` ${flags}` : ""}`;
 }
 
 function monsterNameAt(game: GameState, slotKey: SlotKey): string | undefined {
   const monster = game.slots[slotKey].monster;
   return monster ? getCardName(monster.cardId) : undefined;
+}
+
+function monsterFlags(monster: MonsterState): string {
+  const flags = [
+    monster.focused ? "focus" : "",
+    monster.powerUp ? "powerUp" : "",
+    monster.shielded ? "shield" : "",
+    monster.halfShielded ? "halfShield" : "",
+    monster.oneShotShield ? "oneShotShield" : "",
+    monster.dragonShield ? "dragonShield" : "",
+    monster.scapegoat ? "scapegoat" : "",
+    monster.berserkPower ? "berserk" : "",
+    monster.provokeTargetSlotKey ? `provoke:${monster.provokeTargetSlotKey}` : "",
+    monster.commandSealed ? "sealed" : "",
+    monster.cannotActUntilDamaged ? "sleep" : "",
+    monster.cannotMove ? "noMove" : "",
+    monster.canAttackAnywhere ? "rangeAll" : "",
+    monster.stoneCurse ? "stoneCurse" : "",
+    monster.damageCurse ? "damageCurse" : "",
+    monster.damageGuarded ? "damageGuard" : "",
+    monster.masterAttackBlockedUntilTurnEnd ? "masterBlock" : "",
+    monster.immune ? "immune" : "",
+    monster.levelFixed ? "levelFixed" : "",
+    monster.hollow ? "hollow" : "",
+    monster.dodgeChance ? "dodge" : "",
+  ].filter(Boolean);
+  return flags.length > 0 ? `[${flags.join(",")}]` : "";
 }
 
 function recordTurnAction(turnActions: string[], decision: CpuDecision): void {
@@ -738,6 +823,7 @@ function createMetrics(variantId: string): VariantMetrics {
     wins: 0,
     losses: 0,
     draws: 0,
+    partialGames: 0,
     candidateDecisionSteps: 0,
     candidateTurns: 0,
     turnsWithShield: 0,
@@ -776,6 +862,10 @@ function addSample(metrics: VariantMetrics, options: CliOptions, sample: AuditSa
   }
 }
 
+function shouldStopAfterSamples(metrics: VariantMetrics, options: CliOptions): boolean {
+  return options.stopAfterSamples !== undefined && metrics.samples.length >= options.stopAfterSamples;
+}
+
 function formatMarkdown(report: ActionOrderAuditReport): string {
   return [
     "# White AI Action Order Audit",
@@ -809,13 +899,14 @@ function formatMarkdown(report: ActionOrderAuditReport): string {
     "- `Attack/Wake Higher/Close` は、シールドを選ぶ前に攻撃またはウェイクアップがどれくらい競合していたかの探索値。",
     "- `Wake Attack Higher/Close` は、ウェイクアップを選んだ局面で、攻撃候補がどれくらい競合していたかの探索値。",
     "- `Turn Order` では、実際の同一ターン内で shield の後に attack/wake したか、attack/wake の後に shield したかを見る。",
+    "- `partial` は、サンプル採取用に `--stop-after-samples` で途中終了したゲーム数。勝敗集計には含めない。",
   ].join("\n");
 }
 
 function formatMetricRow(metric: VariantMetrics): string {
   return [
     metric.variantId,
-    `${metric.wins}-${metric.losses}-${metric.draws}`,
+    `${metric.wins}-${metric.losses}-${metric.draws}${metric.partialGames > 0 ? ` (+${metric.partialGames} partial)` : ""}`,
     metric.candidateDecisionSteps,
     metric.candidateTurns,
     formatCountRate(metric.selectedShields, metric.candidateDecisionSteps),
@@ -854,6 +945,25 @@ function formatMetricSamples(metric: VariantMetrics): string[] {
     if (sample.moveDecision) {
       lines.push(`  - later move: ${sample.moveDecision.category} \`${sample.moveDecision.key}\` score ${sample.moveDecision.score}`);
     }
+    lines.push(`  - selected reason: ${sample.selected.reason}`);
+    if (sample.attackFirst) {
+      lines.push(`  - attack reason: ${sample.attackFirst.reason}`);
+    }
+    if (sample.wakeFirst) {
+      lines.push(`  - wake reason: ${sample.wakeFirst.reason}`);
+    }
+    if (sample.retreatOnly) {
+      lines.push(`  - retreat reason: ${sample.retreatOnly.reason}`);
+    }
+    if (sample.alternativeCounts) {
+      lines.push(`  - alternatives: ${Object.entries(sample.alternativeCounts).map(([key, count]) => `${key} ${count}`).join(", ")}`);
+    }
+    if (sample.topAlternatives && sample.topAlternatives.length > 0) {
+      lines.push("  - top alternatives:");
+      for (const alternative of sample.topAlternatives) {
+        lines.push(`    - ${alternative.category} \`${alternative.key}\` score ${alternative.score} / ${alternative.reason}`);
+      }
+    }
     lines.push(`  - state: ${sample.state}`);
     lines.push(`  - board: ${sample.board}`);
   }
@@ -866,6 +976,9 @@ function buildConclusion(metrics: readonly VariantMetrics[]): string[] {
   const reference = metrics[0];
   for (const metric of metrics) {
     lines.push(`${metric.variantId}: シールド ${metric.selectedShields}件中、同一対象の後退候補あり ${metric.shieldWithRetreatAlternative}件、後退が上回ったもの ${metric.retreatAlternativeHigher}件、同ターン shield->retreat ${metric.shieldThenRetreat}件。`);
+    if (metric.partialGames > 0) {
+      lines.push(`${metric.variantId}: サンプル採取のため ${metric.partialGames}ゲームを途中終了。勝率ではなく行動例の監査として読む。`);
+    }
     if (
       reference &&
       metric.variantId !== reference.variantId &&
@@ -978,6 +1091,9 @@ function parseArgs(args: string[]): CliOptions {
     } else if (arg === "--max-samples") {
       parsed.maxSamples = readNumber(arg, next);
       i += 1;
+    } else if (arg === "--stop-after-samples") {
+      parsed.stopAfterSamples = readNumber(arg, next);
+      i += 1;
     } else if (arg === "--margin") {
       parsed.margin = readNumber(arg, next);
       i += 1;
@@ -1040,6 +1156,7 @@ Options:
   --max-turns <n>            Max turn number per game. Default: ${DEFAULT_OPTIONS.maxTurns}
   --margin <n>               Close alternative margin. Default: ${DEFAULT_OPTIONS.margin}
   --max-samples <n>          Sample cap per variant. Default: ${DEFAULT_OPTIONS.maxSamples}
+  --stop-after-samples <n>   Stop a variant early after collecting this many samples.
   --markdown <path>          Write Markdown report.
   --json <path>              Write JSON report.
 `);
