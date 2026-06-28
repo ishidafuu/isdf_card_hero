@@ -1,0 +1,183 @@
+{
+  "generatedAt": "2026-06-28T05:38:02.566Z",
+  "deckPreset": "master-lab-white-1377-death-sheep3",
+  "screen": {
+    "gamesPerMatchup": 3,
+    "totalGames": 60,
+    "standings": [
+      {
+        "rank": 1,
+        "variantId": "current_shield_no_pressure8_wake4",
+        "label": "候補: ノープレッシャー盾抑制 8 / 安全ウェイク 4",
+        "score": 45,
+        "wins": 6,
+        "losses": 6,
+        "draws": 0,
+        "overall": 0.5,
+        "vsBlack": 0.5,
+        "vsDecoy": 0,
+        "vsWhite": 0.5,
+        "averageTurns": 17.3,
+        "issues": "0F/0W",
+        "notes": [
+          "黒耐性あり",
+          "シールド偏重"
+        ]
+      },
+      {
+        "rank": 2,
+        "variantId": "current_shield_no_pressure4_wake4",
+        "label": "候補: ノープレッシャー盾抑制 4 / 安全ウェイク 4",
+        "score": 43.3,
+        "wins": 6,
+        "losses": 6,
+        "draws": 0,
+        "overall": 0.5,
+        "vsBlack": 0.667,
+        "vsDecoy": 0,
+        "vsWhite": 0.333,
+        "averageTurns": 18.1,
+        "issues": "0F/1W",
+        "notes": [
+          "warning 1",
+          "黒耐性あり",
+          "シールド偏重"
+        ]
+      },
+      {
+        "rank": 3,
+        "variantId": "current_shield_no_pressure8",
+        "label": "候補: ノープレッシャー盾抑制 8",
+        "score": 32,
+        "wins": 3,
+        "losses": 9,
+        "draws": 0,
+        "overall": 0.25,
+        "vsBlack": 0.5,
+        "vsDecoy": 0,
+        "vsWhite": 0,
+        "averageTurns": 19.6,
+        "issues": "0F/0W",
+        "notes": [
+          "黒耐性あり",
+          "シールド偏重"
+        ]
+      },
+      {
+        "rank": 4,
+        "variantId": "current_shield_no_pressure4",
+        "label": "候補: ノープレッシャー盾抑制 4",
+        "score": 27.7,
+        "wins": 3,
+        "losses": 9,
+        "draws": 0,
+        "overall": 0.25,
+        "vsBlack": 0.333,
+        "vsDecoy": 0,
+        "vsWhite": 0.167,
+        "averageTurns": 18.2,
+        "issues": "0F/0W",
+        "notes": [
+          "黒に弱い",
+          "シールド偏重"
+        ]
+      },
+      {
+        "rank": 5,
+        "variantId": "current_white_baseline",
+        "label": "現行: デスシープ3 / white",
+        "score": 26,
+        "wins": 4,
+        "losses": 8,
+        "draws": 0,
+        "overall": 0.333,
+        "vsBlack": 0.333,
+        "vsDecoy": 0,
+        "vsWhite": 0.333,
+        "averageTurns": 16.3,
+        "issues": "0F/1W",
+        "notes": [
+          "warning 1",
+          "黒に弱い",
+          "シールド偏重"
+        ]
+      }
+    ]
+  },
+  "confirm": {
+    "gamesPerMatchup": 3,
+    "totalGames": 36,
+    "standings": [
+      {
+        "rank": 1,
+        "variantId": "current_white_baseline",
+        "label": "現行: デスシープ3 / white",
+        "score": 43.3,
+        "wins": 6,
+        "losses": 6,
+        "draws": 0,
+        "overall": 0.5,
+        "vsBlack": 0.667,
+        "vsDecoy": 0,
+        "vsWhite": 0.333,
+        "averageTurns": 15.7,
+        "issues": "0F/1W",
+        "notes": [
+          "warning 1",
+          "黒耐性あり",
+          "シールド偏重"
+        ]
+      },
+      {
+        "rank": 2,
+        "variantId": "current_shield_no_pressure4_wake4",
+        "label": "候補: ノープレッシャー盾抑制 4 / 安全ウェイク 4",
+        "score": 40.7,
+        "wins": 5,
+        "losses": 7,
+        "draws": 0,
+        "overall": 0.417,
+        "vsBlack": 0.5,
+        "vsDecoy": 0,
+        "vsWhite": 0.333,
+        "averageTurns": 15.9,
+        "issues": "0F/0W",
+        "notes": [
+          "黒耐性あり",
+          "シールド偏重"
+        ]
+      },
+      {
+        "rank": 3,
+        "variantId": "current_shield_no_pressure8_wake4",
+        "label": "候補: ノープレッシャー盾抑制 8 / 安全ウェイク 4",
+        "score": 34.3,
+        "wins": 5,
+        "losses": 7,
+        "draws": 0,
+        "overall": 0.417,
+        "vsBlack": 0.333,
+        "vsDecoy": 0,
+        "vsWhite": 0.5,
+        "averageTurns": 17.1,
+        "issues": "0F/0W",
+        "notes": [
+          "黒に弱い",
+          "シールド偏重"
+        ]
+      }
+    ]
+  },
+  "adopted": {
+    "variantId": "current_shield_no_pressure4_wake4",
+    "label": "候補: ノープレッシャー盾抑制 4 / 安全ウェイク 4",
+    "recommendation": "hold",
+    "reason": "baseline比 score -2.6, overall -8.3%, vsBlack -16.7%, vsWhite +0%, issues 0F/0W。"
+  },
+  "nextSteps": [
+    "今回の確認では即採用せず、ベースラインを維持する。",
+    "次は `current_shield_no_pressure4_wake4` と `current_white_baseline` を games-per-matchup 3-4 で再確認し、seed差を潰す。",
+    "対黒がまだ不安定。負けseedから、デスシープが前に出た後の盾/ウェイク/攻撃順を重点監査する。",
+    "デッキ側はデスシープ3を固定し、次ループはAIだけを触る。元1377は比較対象として残す。"
+  ]
+}

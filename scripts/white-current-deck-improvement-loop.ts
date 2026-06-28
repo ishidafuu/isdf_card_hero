@@ -20,6 +20,9 @@ interface CliOptions {
   maxSteps: number;
   maxTurns: number;
   top: number;
+  confirmIncludeHistory: boolean;
+  variantIds: string[];
+  opponentIds: string[];
   markdownPath?: string;
   screenMarkdownPath?: string;
   confirmMarkdownPath?: string;
@@ -66,8 +69,8 @@ interface AdoptionSummary {
 }
 
 const options = parseArgs(process.argv.slice(2));
-const variants = buildVariants();
-const opponents = buildOpponents();
+const variants = selectByIds(buildVariants(), options.variantIds, "variant");
+const opponents = selectByIds(buildOpponents(), options.opponentIds, "opponent");
 
 const screenReport = runWhiteAiTuningLoop({
   variants,
@@ -88,7 +91,7 @@ const confirmReport = runWhiteAiTuningLoop({
   seedStart: confirmSeedStart,
   maxSteps: options.maxSteps,
   maxTurns: options.maxTurns,
-  includeGameHistory: true,
+  includeGameHistory: options.confirmIncludeHistory,
 });
 
 const summary = buildSummary(screenReport, confirmReport);
@@ -158,11 +161,33 @@ function buildVariants(): WhiteAiTuningVariant[] {
     variant("current_shield_no_pressure8", "候補: ノープレッシャー盾抑制 8", {
       situationalBias: { whiteShieldNoPressurePenalty: 8 },
     }, "盾品質監査で良化した、相手の次ターン打点が見えないシールドだけを抑える候補。"),
+    variant("current_shield_no_pressure4", "候補: ノープレッシャー盾抑制 4", {
+      situationalBias: { whiteShieldNoPressurePenalty: 4 },
+    }, "no-pressure8 が対白を落とすため、抑制を半分にして副作用を抑える。"),
+    variant("current_shield_no_pressure8_wake4", "候補: ノープレッシャー盾抑制 8 / 安全ウェイク 4", {
+      situationalBias: { whiteShieldNoPressurePenalty: 8, whiteWakeSafeWorkBonus: 4 },
+    }, "ノープレッシャー盾を抑えた分、仕事へ変換できるウェイクアップで勝ち切りを補う。"),
+    variant("current_shield_no_pressure4_wake4", "候補: ノープレッシャー盾抑制 4 / 安全ウェイク 4", {
+      situationalBias: { whiteShieldNoPressurePenalty: 4, whiteWakeSafeWorkBonus: 4 },
+    }, "軽い盾抑制と安全ウェイクを併用し、対黒改善と対白維持の両立を見る。"),
   ];
 }
 
 function buildOpponents(): WhiteAiTuningOpponent[] {
   return [...CURRENT_WHITE_AI_DEFAULT_OPPONENTS];
+}
+
+function selectByIds<T extends { id: string }>(items: T[], ids: readonly string[], label: string): T[] {
+  if (ids.length === 0) {
+    return items;
+  }
+  return ids.map((id) => {
+    const item = items.find((candidate) => candidate.id === id);
+    if (!item) {
+      throw new Error(`Unknown ${label}: ${id}`);
+    }
+    return item;
+  });
 }
 
 function selectConfirmVariants(report: WhiteAiTuningReport, top: number): WhiteAiTuningVariant[] {
@@ -367,6 +392,9 @@ function parseArgs(args: string[]): CliOptions {
     maxSteps: 700,
     maxTurns: 160,
     top: 4,
+    confirmIncludeHistory: true,
+    variantIds: [],
+    opponentIds: [],
   };
 
   for (let i = 0; i < args.length; i += 1) {
@@ -390,6 +418,16 @@ function parseArgs(args: string[]): CliOptions {
     } else if (arg === "--top") {
       parsed.top = readNonNegativeInteger(arg, next);
       i += 1;
+    } else if (arg === "--variant") {
+      parsed.variantIds.push(readString(arg, next));
+      i += 1;
+    } else if (arg === "--opponent") {
+      parsed.opponentIds.push(readString(arg, next));
+      i += 1;
+    } else if (arg === "--confirm-history") {
+      parsed.confirmIncludeHistory = true;
+    } else if (arg === "--no-confirm-history") {
+      parsed.confirmIncludeHistory = false;
     } else if (arg === "--markdown") {
       parsed.markdownPath = readString(arg, next);
       i += 1;
@@ -440,6 +478,10 @@ Options:
   --confirm-games-per-matchup <n>   Confirm games per directed matchup. Default: 2
   --seed-start <n>                  First screen seed. Default: 82000
   --top <n>                         Top screen variants to confirm, plus baseline. Default: 4
+  --variant <id>                    Run only the specified variant. Can be repeated.
+  --opponent <id>                   Run only the specified opponent. Can be repeated.
+  --confirm-history                 Include full game history in confirm phase. Default.
+  --no-confirm-history              Skip full game history in confirm phase for faster win-rate checks.
   --max-steps <n>                   Failure threshold per game. Default: 700
   --max-turns <n>                   Failure threshold per game. Default: 160
   --markdown <path>                 Summary Markdown output path.

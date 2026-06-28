@@ -1,0 +1,2710 @@
+{
+  "generatedAt": "2026-06-28T05:38:02.566Z",
+  "gamesPerMatchup": 3,
+  "variants": [
+    {
+      "id": "current_white_baseline",
+      "kind": "baseline",
+      "label": "現行: デスシープ3 / white",
+      "deckPreset": "master-lab-white-1377-death-sheep3",
+      "aiProfile": "white",
+      "hypothesis": "暫定白最強デッキで現行white profileを基準化する。"
+    },
+    {
+      "id": "current_shield_no_pressure8_wake4",
+      "kind": "hybrid",
+      "label": "候補: ノープレッシャー盾抑制 8 / 安全ウェイク 4",
+      "deckPreset": "master-lab-white-1377-death-sheep3",
+      "aiProfile": "white",
+      "tuning": {
+        "situationalBias": {
+          "whiteShieldNoPressurePenalty": 8,
+          "whiteWakeSafeWorkBonus": 4
+        }
+      },
+      "hypothesis": "ノープレッシャー盾を抑えた分、仕事へ変換できるウェイクアップで勝ち切りを補う。"
+    },
+    {
+      "id": "current_shield_no_pressure4_wake4",
+      "kind": "hybrid",
+      "label": "候補: ノープレッシャー盾抑制 4 / 安全ウェイク 4",
+      "deckPreset": "master-lab-white-1377-death-sheep3",
+      "aiProfile": "white",
+      "tuning": {
+        "situationalBias": {
+          "whiteShieldNoPressurePenalty": 4,
+          "whiteWakeSafeWorkBonus": 4
+        }
+      },
+      "hypothesis": "軽い盾抑制と安全ウェイクを併用し、対黒改善と対白維持の両立を見る。"
+    }
+  ],
+  "opponents": [
+    {
+      "id": "black_1375_pressure",
+      "category": "black",
+      "label": "黒: 1375 / pressure",
+      "participant": "black",
+      "deckPreset": "submission-pro-no-rare8-black-1375",
+      "aiProfile": "pressure"
+    },
+    {
+      "id": "white_current_mirror",
+      "category": "white",
+      "label": "白: 暫定白最強ミラー / white",
+      "participant": "white",
+      "deckPreset": "master-lab-white-1377-death-sheep3",
+      "aiProfile": "white"
+    }
+  ],
+  "runs": [
+    {
+      "id": "current_white_baseline_vs_black_1375_pressure_player",
+      "variantId": "current_white_baseline",
+      "opponentId": "black_1375_pressure",
+      "opponentCategory": "black",
+      "candidateSeat": "player",
+      "seedStart": 135200,
+      "games": 3,
+      "result": {
+        "ok": true,
+        "seeds": [
+          135200,
+          135201,
+          135202
+        ],
+        "options": {
+          "seedStart": 135200,
+          "seedEnd": 135202,
+          "count": 3,
+          "maxSteps": 700,
+          "maxTurns": 120,
+          "stagnationLimit": 8,
+          "longGameSteps": 320,
+          "longGameTurns": 90,
+          "historyLimit": 700,
+          "failOnWarnings": false,
+          "includeGameHistory": false,
+          "deckPreset": "random",
+          "deckPresets": {
+            "player": "master-lab-white-1377-death-sheep3",
+            "cpu": "submission-pro-no-rare8-black-1375"
+          },
+          "aiProfile": "stable",
+          "aiProfiles": {
+            "player": "white",
+            "cpu": "pressure"
+          },
+          "aiTunings": {},
+          "participants": {
+            "player": "white",
+            "cpu": "black"
+          },
+          "labActionMargin": 0,
+          "labEvaluationTuning": {}
+        },
+        "games": [
+          {
+            "seed": 135200,
+            "steps": 108,
+            "turns": 10,
+            "winner": "cpu",
+            "issueCount": 0,
+            "warningCount": 0,
+            "labDecisionCount": 0,
+            "labActionUsage": {},
+            "labActionTargetUsage": {},
+            "masterActionUsage": {
+              "shield": 4,
+              "berserk_power": 10,
+              "master_attack": 4,
+              "wake_up": 1
+            },
+            "masterActionUsageByPlayer": {
+              "player": {
+                "shield": 4,
+                "master_attack": 3,
+                "wake_up": 1
+              },
+              "cpu": {
+                "berserk_power": 10,
+                "master_attack": 1
+              }
+            },
+            "magicCardUsage": {},
+            "magicOpportunityCount": 0,
+            "magicOpportunityUsage": {},
+            "magicOpportunityLethalUsage": {},
+            "magicOpportunityDeltaTotal": {},
+            "magicOpportunityNonLethalDeltaTotal": {},
+            "magicOpportunityBestDelta": {},
+            "magicOpportunityRecords": []
+          },
+          {
+            "seed": 135201,
+            "steps": 148,
+            "turns": 13,
+            "winner": "player",
+            "issueCount": 0,
+            "warningCount": 0,
+            "labDecisionCount": 0,
+            "labActionUsage": {},
+            "labActionTargetUsage": {},
+            "masterActionUsage": {
+              "shield": 11,
+              "berserk_power": 8,
+              "master_attack": 4,
+              "wake_up": 3,
+              "earth_anger": 1
+            },
+            "masterActionUsageByPlayer": {
+              "player": {
+                "shield": 11,
+                "master_attack": 2,
+                "wake_up": 3
+              },
+              "cpu": {
+                "berserk_power": 8,
+                "master_attack": 2,
+                "earth_anger": 1
+              }
+            },
+            "magicCardUsage": {
+              "card_122": 1
+            },
+            "magicOpportunityCount": 0,
+            "magicOpportunityUsage": {},
+            "magicOpportunityLethalUsage": {},
+            "magicOpportunityDeltaTotal": {},
+            "magicOpportunityNonLethalDeltaTotal": {},
+            "magicOpportunityBestDelta": {},
+            "magicOpportunityRecords": []
+          },
+          {
+            "seed": 135202,
+            "steps": 94,
+            "turns": 10,
+            "winner": "player",
+            "issueCount": 0,
+            "warningCount": 0,
+            "labDecisionCount": 0,
+            "labActionUsage": {},
+            "labActionTargetUsage": {},
+            "masterActionUsage": {
+              "shield": 4,
+              "berserk_power": 7,
+              "master_attack": 5,
+              "wake_up": 2
+            },
+            "masterActionUsageByPlayer": {
+              "player": {
+                "shield": 4,
+                "master_attack": 2,
+                "wake_up": 2
+              },
+              "cpu": {
+                "berserk_power": 7,
+                "master_attack": 3
+              }
+            },
+            "magicCardUsage": {
+              "card_031": 1,
+              "card_122": 1
+            },
+            "magicOpportunityCount": 0,
+            "magicOpportunityUsage": {},
+            "magicOpportunityLethalUsage": {},
+            "magicOpportunityDeltaTotal": {},
+            "magicOpportunityNonLethalDeltaTotal": {},
+            "magicOpportunityBestDelta": {},
+            "magicOpportunityRecords": []
+          }
+        ],
+        "issues": [],
+        "summary": {
+          "games": 3,
+          "winners": {
+            "player": 2,
+            "cpu": 1
+          },
+          "undecided": 0,
+          "failures": 0,
+          "warnings": 0,
+          "maxSteps": 148,
+          "maxTurns": 13,
+          "labDecisionCount": 0,
+          "labActionUsage": {},
+          "labActionTargetUsage": {},
+          "masterActionUsage": {
+            "shield": 19,
+            "berserk_power": 25,
+            "master_attack": 13,
+            "wake_up": 6,
+            "earth_anger": 1
+          },
+          "magicCardUsage": {
+            "card_122": 2,
+            "card_031": 1
+          },
+          "magicOpportunityCount": 0,
+          "magicOpportunityUsage": {},
+          "magicOpportunityLethalUsage": {},
+          "magicOpportunityDeltaTotal": {},
+          "magicOpportunityNonLethalDeltaTotal": {},
+          "magicOpportunityBestDelta": {}
+        }
+      }
+    },
+    {
+      "id": "current_white_baseline_vs_black_1375_pressure_cpu",
+      "variantId": "current_white_baseline",
+      "opponentId": "black_1375_pressure",
+      "opponentCategory": "black",
+      "candidateSeat": "cpu",
+      "seedStart": 135203,
+      "games": 3,
+      "result": {
+        "ok": true,
+        "seeds": [
+          135203,
+          135204,
+          135205
+        ],
+        "options": {
+          "seedStart": 135203,
+          "seedEnd": 135205,
+          "count": 3,
+          "maxSteps": 700,
+          "maxTurns": 120,
+          "stagnationLimit": 8,
+          "longGameSteps": 320,
+          "longGameTurns": 90,
+          "historyLimit": 700,
+          "failOnWarnings": false,
+          "includeGameHistory": false,
+          "deckPreset": "random",
+          "deckPresets": {
+            "player": "submission-pro-no-rare8-black-1375",
+            "cpu": "master-lab-white-1377-death-sheep3"
+          },
+          "aiProfile": "stable",
+          "aiProfiles": {
+            "player": "pressure",
+            "cpu": "white"
+          },
+          "aiTunings": {},
+          "participants": {
+            "player": "black",
+            "cpu": "white"
+          },
+          "labActionMargin": 0,
+          "labEvaluationTuning": {}
+        },
+        "games": [
+          {
+            "seed": 135203,
+            "steps": 104,
+            "turns": 10,
+            "winner": "cpu",
+            "issueCount": 0,
+            "warningCount": 0,
+            "labDecisionCount": 0,
+            "labActionUsage": {},
+            "labActionTargetUsage": {},
+            "masterActionUsage": {
+              "berserk_power": 7,
+              "wake_up": 3,
+              "earth_anger": 1,
+              "shield": 7,
+              "master_attack": 1
+            },
+            "masterActionUsageByPlayer": {
+              "player": {
+                "berserk_power": 7,
+                "earth_anger": 1,
+                "master_attack": 1
+              },
+              "cpu": {
+                "wake_up": 3,
+                "shield": 7
+              }
+            },
+            "magicCardUsage": {
+              "card_122": 1,
+              "card_093": 1,
+              "card_031": 1
+            },
+            "magicOpportunityCount": 0,
+            "magicOpportunityUsage": {},
+            "magicOpportunityLethalUsage": {},
+            "magicOpportunityDeltaTotal": {},
+            "magicOpportunityNonLethalDeltaTotal": {},
+            "magicOpportunityBestDelta": {},
+            "magicOpportunityRecords": []
+          },
+          {
+            "seed": 135204,
+            "steps": 94,
+            "turns": 10,
+            "winner": "player",
+            "issueCount": 0,
+            "warningCount": 0,
+            "labDecisionCount": 0,
+            "labActionUsage": {},
+            "labActionTargetUsage": {},
+            "masterActionUsage": {
+              "berserk_power": 8,
+              "wake_up": 2,
+              "shield": 6,
+              "master_attack": 1,
+              "earth_anger": 1
+            },
+            "masterActionUsageByPlayer": {
+              "player": {
+                "berserk_power": 8,
+                "earth_anger": 1
+              },
+              "cpu": {
+                "wake_up": 2,
+                "shield": 6,
+                "master_attack": 1
+              }
+            },
+            "magicCardUsage": {},
+            "magicOpportunityCount": 0,
+            "magicOpportunityUsage": {},
+            "magicOpportunityLethalUsage": {},
+            "magicOpportunityDeltaTotal": {},
+            "magicOpportunityNonLethalDeltaTotal": {},
+            "magicOpportunityBestDelta": {},
+            "magicOpportunityRecords": []
+          },
+          {
+            "seed": 135205,
+            "steps": 136,
+            "turns": 12,
+            "winner": "cpu",
+            "issueCount": 0,
+            "warningCount": 0,
+            "labDecisionCount": 0,
+            "labActionUsage": {},
+            "labActionTargetUsage": {},
+            "masterActionUsage": {
+              "berserk_power": 9,
+              "shield": 9,
+              "master_attack": 5
+            },
+            "masterActionUsageByPlayer": {
+              "player": {
+                "berserk_power": 9,
+                "master_attack": 3
+              },
+              "cpu": {
+                "shield": 9,
+                "master_attack": 2
+              }
+            },
+            "magicCardUsage": {
+              "card_122": 1
+            },
+            "magicOpportunityCount": 0,
+            "magicOpportunityUsage": {},
+            "magicOpportunityLethalUsage": {},
+            "magicOpportunityDeltaTotal": {},
+            "magicOpportunityNonLethalDeltaTotal": {},
+            "magicOpportunityBestDelta": {},
+            "magicOpportunityRecords": []
+          }
+        ],
+        "issues": [],
+        "summary": {
+          "games": 3,
+          "winners": {
+            "player": 1,
+            "cpu": 2
+          },
+          "undecided": 0,
+          "failures": 0,
+          "warnings": 0,
+          "maxSteps": 136,
+          "maxTurns": 12,
+          "labDecisionCount": 0,
+          "labActionUsage": {},
+          "labActionTargetUsage": {},
+          "masterActionUsage": {
+            "berserk_power": 24,
+            "wake_up": 5,
+            "earth_anger": 2,
+            "shield": 22,
+            "master_attack": 7
+          },
+          "magicCardUsage": {
+            "card_122": 2,
+            "card_093": 1,
+            "card_031": 1
+          },
+          "magicOpportunityCount": 0,
+          "magicOpportunityUsage": {},
+          "magicOpportunityLethalUsage": {},
+          "magicOpportunityDeltaTotal": {},
+          "magicOpportunityNonLethalDeltaTotal": {},
+          "magicOpportunityBestDelta": {}
+        }
+      }
+    },
+    {
+      "id": "current_white_baseline_vs_white_current_mirror_player",
+      "variantId": "current_white_baseline",
+      "opponentId": "white_current_mirror",
+      "opponentCategory": "white",
+      "candidateSeat": "player",
+      "seedStart": 135206,
+      "games": 3,
+      "result": {
+        "ok": true,
+        "seeds": [
+          135206,
+          135207,
+          135208
+        ],
+        "options": {
+          "seedStart": 135206,
+          "seedEnd": 135208,
+          "count": 3,
+          "maxSteps": 700,
+          "maxTurns": 120,
+          "stagnationLimit": 8,
+          "longGameSteps": 320,
+          "longGameTurns": 90,
+          "historyLimit": 700,
+          "failOnWarnings": false,
+          "includeGameHistory": false,
+          "deckPreset": "random",
+          "deckPresets": {
+            "player": "master-lab-white-1377-death-sheep3",
+            "cpu": "master-lab-white-1377-death-sheep3"
+          },
+          "aiProfile": "stable",
+          "aiProfiles": {
+            "player": "white",
+            "cpu": "white"
+          },
+          "aiTunings": {},
+          "participants": {
+            "player": "white",
+            "cpu": "white"
+          },
+          "labActionMargin": 0,
+          "labEvaluationTuning": {}
+        },
+        "games": [
+          {
+            "seed": 135206,
+            "steps": 126,
+            "turns": 14,
+            "winner": "player",
+            "issueCount": 0,
+            "warningCount": 0,
+            "labDecisionCount": 0,
+            "labActionUsage": {},
+            "labActionTargetUsage": {},
+            "masterActionUsage": {
+              "shield": 10,
+              "master_attack": 11
+            },
+            "masterActionUsageByPlayer": {
+              "player": {
+                "shield": 7,
+                "master_attack": 5
+              },
+              "cpu": {
+                "master_attack": 6,
+                "shield": 3
+              }
+            },
+            "magicCardUsage": {
+              "card_031": 2
+            },
+            "magicOpportunityCount": 0,
+            "magicOpportunityUsage": {},
+            "magicOpportunityLethalUsage": {},
+            "magicOpportunityDeltaTotal": {},
+            "magicOpportunityNonLethalDeltaTotal": {},
+            "magicOpportunityBestDelta": {},
+            "magicOpportunityRecords": []
+          },
+          {
+            "seed": 135207,
+            "steps": 299,
+            "turns": 24,
+            "winner": "cpu",
+            "issueCount": 0,
+            "warningCount": 0,
+            "labDecisionCount": 0,
+            "labActionUsage": {},
+            "labActionTargetUsage": {},
+            "masterActionUsage": {
+              "shield": 17,
+              "wake_up": 7,
+              "master_attack": 26
+            },
+            "masterActionUsageByPlayer": {
+              "player": {
+                "shield": 9,
+                "master_attack": 14,
+                "wake_up": 2
+              },
+              "cpu": {
+                "wake_up": 5,
+                "shield": 8,
+                "master_attack": 12
+              }
+            },
+            "magicCardUsage": {
+              "card_031": 2,
+              "card_093": 1
+            },
+            "magicOpportunityCount": 0,
+            "magicOpportunityUsage": {},
+            "magicOpportunityLethalUsage": {},
+            "magicOpportunityDeltaTotal": {},
+            "magicOpportunityNonLethalDeltaTotal": {},
+            "magicOpportunityBestDelta": {},
+            "magicOpportunityRecords": []
+          },
+          {
+            "seed": 135208,
+            "steps": 324,
+            "turns": 27,
+            "winner": "cpu",
+            "issueCount": 0,
+            "warningCount": 1,
+            "labDecisionCount": 0,
+            "labActionUsage": {},
+            "labActionTargetUsage": {},
+            "masterActionUsage": {
+              "wake_up": 8,
+              "shield": 25,
+              "master_attack": 21
+            },
+            "masterActionUsageByPlayer": {
+              "player": {
+                "wake_up": 4,
+                "master_attack": 10,
+                "shield": 12
+              },
+              "cpu": {
+                "shield": 13,
+                "master_attack": 11,
+                "wake_up": 4
+              }
+            },
+            "magicCardUsage": {
+              "card_093": 1,
+              "card_031": 2
+            },
+            "magicOpportunityCount": 0,
+            "magicOpportunityUsage": {},
+            "magicOpportunityLethalUsage": {},
+            "magicOpportunityDeltaTotal": {},
+            "magicOpportunityNonLethalDeltaTotal": {},
+            "magicOpportunityBestDelta": {},
+            "magicOpportunityRecords": []
+          }
+        ],
+        "issues": [
+          {
+            "kind": "long_game",
+            "severity": "warning",
+            "seed": 135208,
+            "step": 324,
+            "turnNumber": 27,
+            "message": "long game finished after 324 steps / 27 turns"
+          }
+        ],
+        "summary": {
+          "games": 3,
+          "winners": {
+            "player": 1,
+            "cpu": 2
+          },
+          "undecided": 0,
+          "failures": 0,
+          "warnings": 1,
+          "maxSteps": 324,
+          "maxTurns": 27,
+          "labDecisionCount": 0,
+          "labActionUsage": {},
+          "labActionTargetUsage": {},
+          "masterActionUsage": {
+            "shield": 52,
+            "master_attack": 58,
+            "wake_up": 15
+          },
+          "magicCardUsage": {
+            "card_031": 6,
+            "card_093": 2
+          },
+          "magicOpportunityCount": 0,
+          "magicOpportunityUsage": {},
+          "magicOpportunityLethalUsage": {},
+          "magicOpportunityDeltaTotal": {},
+          "magicOpportunityNonLethalDeltaTotal": {},
+          "magicOpportunityBestDelta": {}
+        }
+      }
+    },
+    {
+      "id": "current_white_baseline_vs_white_current_mirror_cpu",
+      "variantId": "current_white_baseline",
+      "opponentId": "white_current_mirror",
+      "opponentCategory": "white",
+      "candidateSeat": "cpu",
+      "seedStart": 135209,
+      "games": 3,
+      "result": {
+        "ok": true,
+        "seeds": [
+          135209,
+          135210,
+          135211
+        ],
+        "options": {
+          "seedStart": 135209,
+          "seedEnd": 135211,
+          "count": 3,
+          "maxSteps": 700,
+          "maxTurns": 120,
+          "stagnationLimit": 8,
+          "longGameSteps": 320,
+          "longGameTurns": 90,
+          "historyLimit": 700,
+          "failOnWarnings": false,
+          "includeGameHistory": false,
+          "deckPreset": "random",
+          "deckPresets": {
+            "player": "master-lab-white-1377-death-sheep3",
+            "cpu": "master-lab-white-1377-death-sheep3"
+          },
+          "aiProfile": "stable",
+          "aiProfiles": {
+            "player": "white",
+            "cpu": "white"
+          },
+          "aiTunings": {},
+          "participants": {
+            "player": "white",
+            "cpu": "white"
+          },
+          "labActionMargin": 0,
+          "labEvaluationTuning": {}
+        },
+        "games": [
+          {
+            "seed": 135209,
+            "steps": 205,
+            "turns": 19,
+            "winner": "player",
+            "issueCount": 0,
+            "warningCount": 0,
+            "labDecisionCount": 0,
+            "labActionUsage": {},
+            "labActionTargetUsage": {},
+            "masterActionUsage": {
+              "shield": 18,
+              "wake_up": 5,
+              "master_attack": 16
+            },
+            "masterActionUsageByPlayer": {
+              "player": {
+                "shield": 12,
+                "wake_up": 2,
+                "master_attack": 6
+              },
+              "cpu": {
+                "wake_up": 3,
+                "shield": 6,
+                "master_attack": 10
+              }
+            },
+            "magicCardUsage": {
+              "card_031": 1
+            },
+            "magicOpportunityCount": 0,
+            "magicOpportunityUsage": {},
+            "magicOpportunityLethalUsage": {},
+            "magicOpportunityDeltaTotal": {},
+            "magicOpportunityNonLethalDeltaTotal": {},
+            "magicOpportunityBestDelta": {},
+            "magicOpportunityRecords": []
+          },
+          {
+            "seed": 135210,
+            "steps": 305,
+            "turns": 26,
+            "winner": "player",
+            "issueCount": 0,
+            "warningCount": 0,
+            "labDecisionCount": 0,
+            "labActionUsage": {},
+            "labActionTargetUsage": {},
+            "masterActionUsage": {
+              "shield": 21,
+              "master_attack": 18,
+              "wake_up": 5
+            },
+            "masterActionUsageByPlayer": {
+              "player": {
+                "shield": 12,
+                "master_attack": 8,
+                "wake_up": 5
+              },
+              "cpu": {
+                "shield": 9,
+                "master_attack": 10
+              }
+            },
+            "magicCardUsage": {
+              "card_031": 2,
+              "card_093": 1
+            },
+            "magicOpportunityCount": 0,
+            "magicOpportunityUsage": {},
+            "magicOpportunityLethalUsage": {},
+            "magicOpportunityDeltaTotal": {},
+            "magicOpportunityNonLethalDeltaTotal": {},
+            "magicOpportunityBestDelta": {},
+            "magicOpportunityRecords": []
+          },
+          {
+            "seed": 135211,
+            "steps": 134,
+            "turns": 13,
+            "winner": "cpu",
+            "issueCount": 0,
+            "warningCount": 0,
+            "labDecisionCount": 0,
+            "labActionUsage": {},
+            "labActionTargetUsage": {},
+            "masterActionUsage": {
+              "shield": 13,
+              "master_attack": 9,
+              "wake_up": 2
+            },
+            "masterActionUsageByPlayer": {
+              "player": {
+                "shield": 7,
+                "master_attack": 5
+              },
+              "cpu": {
+                "shield": 6,
+                "master_attack": 4,
+                "wake_up": 2
+              }
+            },
+            "magicCardUsage": {
+              "card_093": 1,
+              "card_031": 1
+            },
+            "magicOpportunityCount": 0,
+            "magicOpportunityUsage": {},
+            "magicOpportunityLethalUsage": {},
+            "magicOpportunityDeltaTotal": {},
+            "magicOpportunityNonLethalDeltaTotal": {},
+            "magicOpportunityBestDelta": {},
+            "magicOpportunityRecords": []
+          }
+        ],
+        "issues": [],
+        "summary": {
+          "games": 3,
+          "winners": {
+            "player": 2,
+            "cpu": 1
+          },
+          "undecided": 0,
+          "failures": 0,
+          "warnings": 0,
+          "maxSteps": 305,
+          "maxTurns": 26,
+          "labDecisionCount": 0,
+          "labActionUsage": {},
+          "labActionTargetUsage": {},
+          "masterActionUsage": {
+            "shield": 52,
+            "wake_up": 12,
+            "master_attack": 43
+          },
+          "magicCardUsage": {
+            "card_031": 4,
+            "card_093": 2
+          },
+          "magicOpportunityCount": 0,
+          "magicOpportunityUsage": {},
+          "magicOpportunityLethalUsage": {},
+          "magicOpportunityDeltaTotal": {},
+          "magicOpportunityNonLethalDeltaTotal": {},
+          "magicOpportunityBestDelta": {}
+        }
+      }
+    },
+    {
+      "id": "current_shield_no_pressure8_wake4_vs_black_1375_pressure_player",
+      "variantId": "current_shield_no_pressure8_wake4",
+      "opponentId": "black_1375_pressure",
+      "opponentCategory": "black",
+      "candidateSeat": "player",
+      "seedStart": 135212,
+      "games": 3,
+      "result": {
+        "ok": true,
+        "seeds": [
+          135212,
+          135213,
+          135214
+        ],
+        "options": {
+          "seedStart": 135212,
+          "seedEnd": 135214,
+          "count": 3,
+          "maxSteps": 700,
+          "maxTurns": 120,
+          "stagnationLimit": 8,
+          "longGameSteps": 320,
+          "longGameTurns": 90,
+          "historyLimit": 700,
+          "failOnWarnings": false,
+          "includeGameHistory": false,
+          "deckPreset": "random",
+          "deckPresets": {
+            "player": "master-lab-white-1377-death-sheep3",
+            "cpu": "submission-pro-no-rare8-black-1375"
+          },
+          "aiProfile": "stable",
+          "aiProfiles": {
+            "player": "white",
+            "cpu": "pressure"
+          },
+          "aiTunings": {
+            "player": {
+              "situationalBias": {
+                "whiteShieldNoPressurePenalty": 8,
+                "whiteWakeSafeWorkBonus": 4
+              }
+            }
+          },
+          "participants": {
+            "player": "white",
+            "cpu": "black"
+          },
+          "labActionMargin": 0,
+          "labEvaluationTuning": {}
+        },
+        "games": [
+          {
+            "seed": 135212,
+            "steps": 209,
+            "turns": 22,
+            "winner": "cpu",
+            "issueCount": 0,
+            "warningCount": 0,
+            "labDecisionCount": 0,
+            "labActionUsage": {},
+            "labActionTargetUsage": {},
+            "masterActionUsage": {
+              "shield": 12,
+              "berserk_power": 17,
+              "master_attack": 10,
+              "wake_up": 1,
+              "earth_anger": 1
+            },
+            "masterActionUsageByPlayer": {
+              "player": {
+                "shield": 12,
+                "master_attack": 7,
+                "wake_up": 1
+              },
+              "cpu": {
+                "berserk_power": 17,
+                "master_attack": 3,
+                "earth_anger": 1
+              }
+            },
+            "magicCardUsage": {
+              "card_031": 1
+            },
+            "magicOpportunityCount": 0,
+            "magicOpportunityUsage": {},
+            "magicOpportunityLethalUsage": {},
+            "magicOpportunityDeltaTotal": {},
+            "magicOpportunityNonLethalDeltaTotal": {},
+            "magicOpportunityBestDelta": {},
+            "magicOpportunityRecords": []
+          },
+          {
+            "seed": 135213,
+            "steps": 141,
+            "turns": 12,
+            "winner": "cpu",
+            "issueCount": 0,
+            "warningCount": 0,
+            "labDecisionCount": 0,
+            "labActionUsage": {},
+            "labActionTargetUsage": {},
+            "masterActionUsage": {
+              "shield": 6,
+              "berserk_power": 9,
+              "master_attack": 3,
+              "wake_up": 3,
+              "earth_anger": 1
+            },
+            "masterActionUsageByPlayer": {
+              "player": {
+                "shield": 6,
+                "master_attack": 2,
+                "wake_up": 3
+              },
+              "cpu": {
+                "berserk_power": 9,
+                "master_attack": 1,
+                "earth_anger": 1
+              }
+            },
+            "magicCardUsage": {
+              "card_031": 1,
+              "card_122": 1
+            },
+            "magicOpportunityCount": 0,
+            "magicOpportunityUsage": {},
+            "magicOpportunityLethalUsage": {},
+            "magicOpportunityDeltaTotal": {},
+            "magicOpportunityNonLethalDeltaTotal": {},
+            "magicOpportunityBestDelta": {},
+            "magicOpportunityRecords": []
+          },
+          {
+            "seed": 135214,
+            "steps": 100,
+            "turns": 10,
+            "winner": "player",
+            "issueCount": 0,
+            "warningCount": 0,
+            "labDecisionCount": 0,
+            "labActionUsage": {},
+            "labActionTargetUsage": {},
+            "masterActionUsage": {
+              "shield": 4,
+              "berserk_power": 6,
+              "master_attack": 3,
+              "wake_up": 3,
+              "earth_anger": 1
+            },
+            "masterActionUsageByPlayer": {
+              "player": {
+                "shield": 4,
+                "master_attack": 2,
+                "wake_up": 3
+              },
+              "cpu": {
+                "berserk_power": 6,
+                "master_attack": 1,
+                "earth_anger": 1
+              }
+            },
+            "magicCardUsage": {
+              "card_122": 1
+            },
+            "magicOpportunityCount": 0,
+            "magicOpportunityUsage": {},
+            "magicOpportunityLethalUsage": {},
+            "magicOpportunityDeltaTotal": {},
+            "magicOpportunityNonLethalDeltaTotal": {},
+            "magicOpportunityBestDelta": {},
+            "magicOpportunityRecords": []
+          }
+        ],
+        "issues": [],
+        "summary": {
+          "games": 3,
+          "winners": {
+            "player": 1,
+            "cpu": 2
+          },
+          "undecided": 0,
+          "failures": 0,
+          "warnings": 0,
+          "maxSteps": 209,
+          "maxTurns": 22,
+          "labDecisionCount": 0,
+          "labActionUsage": {},
+          "labActionTargetUsage": {},
+          "masterActionUsage": {
+            "shield": 22,
+            "berserk_power": 32,
+            "master_attack": 16,
+            "wake_up": 7,
+            "earth_anger": 3
+          },
+          "magicCardUsage": {
+            "card_031": 2,
+            "card_122": 2
+          },
+          "magicOpportunityCount": 0,
+          "magicOpportunityUsage": {},
+          "magicOpportunityLethalUsage": {},
+          "magicOpportunityDeltaTotal": {},
+          "magicOpportunityNonLethalDeltaTotal": {},
+          "magicOpportunityBestDelta": {}
+        }
+      }
+    },
+    {
+      "id": "current_shield_no_pressure8_wake4_vs_black_1375_pressure_cpu",
+      "variantId": "current_shield_no_pressure8_wake4",
+      "opponentId": "black_1375_pressure",
+      "opponentCategory": "black",
+      "candidateSeat": "cpu",
+      "seedStart": 135215,
+      "games": 3,
+      "result": {
+        "ok": true,
+        "seeds": [
+          135215,
+          135216,
+          135217
+        ],
+        "options": {
+          "seedStart": 135215,
+          "seedEnd": 135217,
+          "count": 3,
+          "maxSteps": 700,
+          "maxTurns": 120,
+          "stagnationLimit": 8,
+          "longGameSteps": 320,
+          "longGameTurns": 90,
+          "historyLimit": 700,
+          "failOnWarnings": false,
+          "includeGameHistory": false,
+          "deckPreset": "random",
+          "deckPresets": {
+            "player": "submission-pro-no-rare8-black-1375",
+            "cpu": "master-lab-white-1377-death-sheep3"
+          },
+          "aiProfile": "stable",
+          "aiProfiles": {
+            "player": "pressure",
+            "cpu": "white"
+          },
+          "aiTunings": {
+            "cpu": {
+              "situationalBias": {
+                "whiteShieldNoPressurePenalty": 8,
+                "whiteWakeSafeWorkBonus": 4
+              }
+            }
+          },
+          "participants": {
+            "player": "black",
+            "cpu": "white"
+          },
+          "labActionMargin": 0,
+          "labEvaluationTuning": {}
+        },
+        "games": [
+          {
+            "seed": 135215,
+            "steps": 124,
+            "turns": 13,
+            "winner": "player",
+            "issueCount": 0,
+            "warningCount": 0,
+            "labDecisionCount": 0,
+            "labActionUsage": {},
+            "labActionTargetUsage": {},
+            "masterActionUsage": {
+              "berserk_power": 9,
+              "wake_up": 3,
+              "master_attack": 2,
+              "earth_anger": 2,
+              "shield": 3
+            },
+            "masterActionUsageByPlayer": {
+              "player": {
+                "berserk_power": 9,
+                "earth_anger": 2,
+                "master_attack": 1
+              },
+              "cpu": {
+                "wake_up": 3,
+                "master_attack": 1,
+                "shield": 3
+              }
+            },
+            "magicCardUsage": {
+              "card_031": 1
+            },
+            "magicOpportunityCount": 0,
+            "magicOpportunityUsage": {},
+            "magicOpportunityLethalUsage": {},
+            "magicOpportunityDeltaTotal": {},
+            "magicOpportunityNonLethalDeltaTotal": {},
+            "magicOpportunityBestDelta": {},
+            "magicOpportunityRecords": []
+          },
+          {
+            "seed": 135216,
+            "steps": 117,
+            "turns": 11,
+            "winner": "cpu",
+            "issueCount": 0,
+            "warningCount": 0,
+            "labDecisionCount": 0,
+            "labActionUsage": {},
+            "labActionTargetUsage": {},
+            "masterActionUsage": {
+              "berserk_power": 7,
+              "wake_up": 3,
+              "master_attack": 8,
+              "shield": 2
+            },
+            "masterActionUsageByPlayer": {
+              "player": {
+                "berserk_power": 7,
+                "master_attack": 5
+              },
+              "cpu": {
+                "wake_up": 3,
+                "master_attack": 3,
+                "shield": 2
+              }
+            },
+            "magicCardUsage": {
+              "card_122": 1
+            },
+            "magicOpportunityCount": 0,
+            "magicOpportunityUsage": {},
+            "magicOpportunityLethalUsage": {},
+            "magicOpportunityDeltaTotal": {},
+            "magicOpportunityNonLethalDeltaTotal": {},
+            "magicOpportunityBestDelta": {},
+            "magicOpportunityRecords": []
+          },
+          {
+            "seed": 135217,
+            "steps": 85,
+            "turns": 10,
+            "winner": "player",
+            "issueCount": 0,
+            "warningCount": 0,
+            "labDecisionCount": 0,
+            "labActionUsage": {},
+            "labActionTargetUsage": {},
+            "masterActionUsage": {
+              "berserk_power": 8,
+              "shield": 2,
+              "master_attack": 3,
+              "wake_up": 2,
+              "earth_anger": 1
+            },
+            "masterActionUsageByPlayer": {
+              "player": {
+                "berserk_power": 8,
+                "earth_anger": 1
+              },
+              "cpu": {
+                "shield": 2,
+                "master_attack": 3,
+                "wake_up": 2
+              }
+            },
+            "magicCardUsage": {},
+            "magicOpportunityCount": 0,
+            "magicOpportunityUsage": {},
+            "magicOpportunityLethalUsage": {},
+            "magicOpportunityDeltaTotal": {},
+            "magicOpportunityNonLethalDeltaTotal": {},
+            "magicOpportunityBestDelta": {},
+            "magicOpportunityRecords": []
+          }
+        ],
+        "issues": [],
+        "summary": {
+          "games": 3,
+          "winners": {
+            "player": 2,
+            "cpu": 1
+          },
+          "undecided": 0,
+          "failures": 0,
+          "warnings": 0,
+          "maxSteps": 124,
+          "maxTurns": 13,
+          "labDecisionCount": 0,
+          "labActionUsage": {},
+          "labActionTargetUsage": {},
+          "masterActionUsage": {
+            "berserk_power": 24,
+            "wake_up": 8,
+            "master_attack": 13,
+            "earth_anger": 3,
+            "shield": 7
+          },
+          "magicCardUsage": {
+            "card_031": 1,
+            "card_122": 1
+          },
+          "magicOpportunityCount": 0,
+          "magicOpportunityUsage": {},
+          "magicOpportunityLethalUsage": {},
+          "magicOpportunityDeltaTotal": {},
+          "magicOpportunityNonLethalDeltaTotal": {},
+          "magicOpportunityBestDelta": {}
+        }
+      }
+    },
+    {
+      "id": "current_shield_no_pressure8_wake4_vs_white_current_mirror_player",
+      "variantId": "current_shield_no_pressure8_wake4",
+      "opponentId": "white_current_mirror",
+      "opponentCategory": "white",
+      "candidateSeat": "player",
+      "seedStart": 135218,
+      "games": 3,
+      "result": {
+        "ok": true,
+        "seeds": [
+          135218,
+          135219,
+          135220
+        ],
+        "options": {
+          "seedStart": 135218,
+          "seedEnd": 135220,
+          "count": 3,
+          "maxSteps": 700,
+          "maxTurns": 120,
+          "stagnationLimit": 8,
+          "longGameSteps": 320,
+          "longGameTurns": 90,
+          "historyLimit": 700,
+          "failOnWarnings": false,
+          "includeGameHistory": false,
+          "deckPreset": "random",
+          "deckPresets": {
+            "player": "master-lab-white-1377-death-sheep3",
+            "cpu": "master-lab-white-1377-death-sheep3"
+          },
+          "aiProfile": "stable",
+          "aiProfiles": {
+            "player": "white",
+            "cpu": "white"
+          },
+          "aiTunings": {
+            "player": {
+              "situationalBias": {
+                "whiteShieldNoPressurePenalty": 8,
+                "whiteWakeSafeWorkBonus": 4
+              }
+            }
+          },
+          "participants": {
+            "player": "white",
+            "cpu": "white"
+          },
+          "labActionMargin": 0,
+          "labEvaluationTuning": {}
+        },
+        "games": [
+          {
+            "seed": 135218,
+            "steps": 179,
+            "turns": 17,
+            "winner": "player",
+            "issueCount": 0,
+            "warningCount": 0,
+            "labDecisionCount": 0,
+            "labActionUsage": {},
+            "labActionTargetUsage": {},
+            "masterActionUsage": {
+              "shield": 17,
+              "wake_up": 4,
+              "master_attack": 12
+            },
+            "masterActionUsageByPlayer": {
+              "player": {
+                "shield": 10,
+                "wake_up": 1,
+                "master_attack": 5
+              },
+              "cpu": {
+                "shield": 7,
+                "wake_up": 3,
+                "master_attack": 7
+              }
+            },
+            "magicCardUsage": {
+              "card_093": 1,
+              "card_031": 1
+            },
+            "magicOpportunityCount": 0,
+            "magicOpportunityUsage": {},
+            "magicOpportunityLethalUsage": {},
+            "magicOpportunityDeltaTotal": {},
+            "magicOpportunityNonLethalDeltaTotal": {},
+            "magicOpportunityBestDelta": {},
+            "magicOpportunityRecords": []
+          },
+          {
+            "seed": 135219,
+            "steps": 288,
+            "turns": 26,
+            "winner": "cpu",
+            "issueCount": 0,
+            "warningCount": 0,
+            "labDecisionCount": 0,
+            "labActionUsage": {},
+            "labActionTargetUsage": {},
+            "masterActionUsage": {
+              "shield": 19,
+              "wake_up": 6,
+              "master_attack": 21
+            },
+            "masterActionUsageByPlayer": {
+              "player": {
+                "shield": 9,
+                "master_attack": 11,
+                "wake_up": 3
+              },
+              "cpu": {
+                "shield": 10,
+                "wake_up": 3,
+                "master_attack": 10
+              }
+            },
+            "magicCardUsage": {
+              "card_031": 2,
+              "card_093": 1
+            },
+            "magicOpportunityCount": 0,
+            "magicOpportunityUsage": {},
+            "magicOpportunityLethalUsage": {},
+            "magicOpportunityDeltaTotal": {},
+            "magicOpportunityNonLethalDeltaTotal": {},
+            "magicOpportunityBestDelta": {},
+            "magicOpportunityRecords": []
+          },
+          {
+            "seed": 135220,
+            "steps": 114,
+            "turns": 11,
+            "winner": "cpu",
+            "issueCount": 0,
+            "warningCount": 0,
+            "labDecisionCount": 0,
+            "labActionUsage": {},
+            "labActionTargetUsage": {},
+            "masterActionUsage": {
+              "shield": 6,
+              "master_attack": 10,
+              "wake_up": 4
+            },
+            "masterActionUsageByPlayer": {
+              "player": {
+                "shield": 4,
+                "master_attack": 8
+              },
+              "cpu": {
+                "shield": 2,
+                "master_attack": 2,
+                "wake_up": 4
+              }
+            },
+            "magicCardUsage": {
+              "card_031": 1
+            },
+            "magicOpportunityCount": 0,
+            "magicOpportunityUsage": {},
+            "magicOpportunityLethalUsage": {},
+            "magicOpportunityDeltaTotal": {},
+            "magicOpportunityNonLethalDeltaTotal": {},
+            "magicOpportunityBestDelta": {},
+            "magicOpportunityRecords": []
+          }
+        ],
+        "issues": [],
+        "summary": {
+          "games": 3,
+          "winners": {
+            "player": 1,
+            "cpu": 2
+          },
+          "undecided": 0,
+          "failures": 0,
+          "warnings": 0,
+          "maxSteps": 288,
+          "maxTurns": 26,
+          "labDecisionCount": 0,
+          "labActionUsage": {},
+          "labActionTargetUsage": {},
+          "masterActionUsage": {
+            "shield": 42,
+            "wake_up": 14,
+            "master_attack": 43
+          },
+          "magicCardUsage": {
+            "card_093": 2,
+            "card_031": 4
+          },
+          "magicOpportunityCount": 0,
+          "magicOpportunityUsage": {},
+          "magicOpportunityLethalUsage": {},
+          "magicOpportunityDeltaTotal": {},
+          "magicOpportunityNonLethalDeltaTotal": {},
+          "magicOpportunityBestDelta": {}
+        }
+      }
+    },
+    {
+      "id": "current_shield_no_pressure8_wake4_vs_white_current_mirror_cpu",
+      "variantId": "current_shield_no_pressure8_wake4",
+      "opponentId": "white_current_mirror",
+      "opponentCategory": "white",
+      "candidateSeat": "cpu",
+      "seedStart": 135221,
+      "games": 3,
+      "result": {
+        "ok": true,
+        "seeds": [
+          135221,
+          135222,
+          135223
+        ],
+        "options": {
+          "seedStart": 135221,
+          "seedEnd": 135223,
+          "count": 3,
+          "maxSteps": 700,
+          "maxTurns": 120,
+          "stagnationLimit": 8,
+          "longGameSteps": 320,
+          "longGameTurns": 90,
+          "historyLimit": 700,
+          "failOnWarnings": false,
+          "includeGameHistory": false,
+          "deckPreset": "random",
+          "deckPresets": {
+            "player": "master-lab-white-1377-death-sheep3",
+            "cpu": "master-lab-white-1377-death-sheep3"
+          },
+          "aiProfile": "stable",
+          "aiProfiles": {
+            "player": "white",
+            "cpu": "white"
+          },
+          "aiTunings": {
+            "cpu": {
+              "situationalBias": {
+                "whiteShieldNoPressurePenalty": 8,
+                "whiteWakeSafeWorkBonus": 4
+              }
+            }
+          },
+          "participants": {
+            "player": "white",
+            "cpu": "white"
+          },
+          "labActionMargin": 0,
+          "labEvaluationTuning": {}
+        },
+        "games": [
+          {
+            "seed": 135221,
+            "steps": 302,
+            "turns": 31,
+            "winner": "cpu",
+            "issueCount": 0,
+            "warningCount": 0,
+            "labDecisionCount": 0,
+            "labActionUsage": {},
+            "labActionTargetUsage": {},
+            "masterActionUsage": {
+              "shield": 22,
+              "wake_up": 8,
+              "master_attack": 21
+            },
+            "masterActionUsageByPlayer": {
+              "player": {
+                "shield": 13,
+                "master_attack": 6,
+                "wake_up": 6
+              },
+              "cpu": {
+                "wake_up": 2,
+                "master_attack": 15,
+                "shield": 9
+              }
+            },
+            "magicCardUsage": {
+              "card_031": 2,
+              "card_093": 1
+            },
+            "magicOpportunityCount": 0,
+            "magicOpportunityUsage": {},
+            "magicOpportunityLethalUsage": {},
+            "magicOpportunityDeltaTotal": {},
+            "magicOpportunityNonLethalDeltaTotal": {},
+            "magicOpportunityBestDelta": {},
+            "magicOpportunityRecords": []
+          },
+          {
+            "seed": 135222,
+            "steps": 132,
+            "turns": 16,
+            "winner": "player",
+            "issueCount": 0,
+            "warningCount": 0,
+            "labDecisionCount": 0,
+            "labActionUsage": {},
+            "labActionTargetUsage": {},
+            "masterActionUsage": {
+              "shield": 8,
+              "master_attack": 8,
+              "wake_up": 1
+            },
+            "masterActionUsageByPlayer": {
+              "player": {
+                "shield": 4,
+                "master_attack": 4,
+                "wake_up": 1
+              },
+              "cpu": {
+                "shield": 4,
+                "master_attack": 4
+              }
+            },
+            "magicCardUsage": {
+              "card_031": 1,
+              "card_093": 1
+            },
+            "magicOpportunityCount": 0,
+            "magicOpportunityUsage": {},
+            "magicOpportunityLethalUsage": {},
+            "magicOpportunityDeltaTotal": {},
+            "magicOpportunityNonLethalDeltaTotal": {},
+            "magicOpportunityBestDelta": {},
+            "magicOpportunityRecords": []
+          },
+          {
+            "seed": 135223,
+            "steps": 271,
+            "turns": 26,
+            "winner": "cpu",
+            "issueCount": 0,
+            "warningCount": 0,
+            "labDecisionCount": 0,
+            "labActionUsage": {},
+            "labActionTargetUsage": {},
+            "masterActionUsage": {
+              "shield": 23,
+              "master_attack": 21,
+              "wake_up": 7
+            },
+            "masterActionUsageByPlayer": {
+              "player": {
+                "shield": 10,
+                "master_attack": 15,
+                "wake_up": 1
+              },
+              "cpu": {
+                "shield": 13,
+                "master_attack": 6,
+                "wake_up": 6
+              }
+            },
+            "magicCardUsage": {
+              "card_093": 2,
+              "card_031": 2
+            },
+            "magicOpportunityCount": 0,
+            "magicOpportunityUsage": {},
+            "magicOpportunityLethalUsage": {},
+            "magicOpportunityDeltaTotal": {},
+            "magicOpportunityNonLethalDeltaTotal": {},
+            "magicOpportunityBestDelta": {},
+            "magicOpportunityRecords": []
+          }
+        ],
+        "issues": [],
+        "summary": {
+          "games": 3,
+          "winners": {
+            "player": 1,
+            "cpu": 2
+          },
+          "undecided": 0,
+          "failures": 0,
+          "warnings": 0,
+          "maxSteps": 302,
+          "maxTurns": 31,
+          "labDecisionCount": 0,
+          "labActionUsage": {},
+          "labActionTargetUsage": {},
+          "masterActionUsage": {
+            "shield": 53,
+            "wake_up": 16,
+            "master_attack": 50
+          },
+          "magicCardUsage": {
+            "card_031": 5,
+            "card_093": 4
+          },
+          "magicOpportunityCount": 0,
+          "magicOpportunityUsage": {},
+          "magicOpportunityLethalUsage": {},
+          "magicOpportunityDeltaTotal": {},
+          "magicOpportunityNonLethalDeltaTotal": {},
+          "magicOpportunityBestDelta": {}
+        }
+      }
+    },
+    {
+      "id": "current_shield_no_pressure4_wake4_vs_black_1375_pressure_player",
+      "variantId": "current_shield_no_pressure4_wake4",
+      "opponentId": "black_1375_pressure",
+      "opponentCategory": "black",
+      "candidateSeat": "player",
+      "seedStart": 135224,
+      "games": 3,
+      "result": {
+        "ok": true,
+        "seeds": [
+          135224,
+          135225,
+          135226
+        ],
+        "options": {
+          "seedStart": 135224,
+          "seedEnd": 135226,
+          "count": 3,
+          "maxSteps": 700,
+          "maxTurns": 120,
+          "stagnationLimit": 8,
+          "longGameSteps": 320,
+          "longGameTurns": 90,
+          "historyLimit": 700,
+          "failOnWarnings": false,
+          "includeGameHistory": false,
+          "deckPreset": "random",
+          "deckPresets": {
+            "player": "master-lab-white-1377-death-sheep3",
+            "cpu": "submission-pro-no-rare8-black-1375"
+          },
+          "aiProfile": "stable",
+          "aiProfiles": {
+            "player": "white",
+            "cpu": "pressure"
+          },
+          "aiTunings": {
+            "player": {
+              "situationalBias": {
+                "whiteShieldNoPressurePenalty": 4,
+                "whiteWakeSafeWorkBonus": 4
+              }
+            }
+          },
+          "participants": {
+            "player": "white",
+            "cpu": "black"
+          },
+          "labActionMargin": 0,
+          "labEvaluationTuning": {}
+        },
+        "games": [
+          {
+            "seed": 135224,
+            "steps": 91,
+            "turns": 8,
+            "winner": "player",
+            "issueCount": 0,
+            "warningCount": 0,
+            "labDecisionCount": 0,
+            "labActionUsage": {},
+            "labActionTargetUsage": {},
+            "masterActionUsage": {
+              "shield": 5,
+              "berserk_power": 7,
+              "master_attack": 2,
+              "wake_up": 1
+            },
+            "masterActionUsageByPlayer": {
+              "player": {
+                "shield": 5,
+                "master_attack": 1,
+                "wake_up": 1
+              },
+              "cpu": {
+                "berserk_power": 7,
+                "master_attack": 1
+              }
+            },
+            "magicCardUsage": {},
+            "magicOpportunityCount": 0,
+            "magicOpportunityUsage": {},
+            "magicOpportunityLethalUsage": {},
+            "magicOpportunityDeltaTotal": {},
+            "magicOpportunityNonLethalDeltaTotal": {},
+            "magicOpportunityBestDelta": {},
+            "magicOpportunityRecords": []
+          },
+          {
+            "seed": 135225,
+            "steps": 129,
+            "turns": 13,
+            "winner": "cpu",
+            "issueCount": 0,
+            "warningCount": 0,
+            "labDecisionCount": 0,
+            "labActionUsage": {},
+            "labActionTargetUsage": {},
+            "masterActionUsage": {
+              "shield": 6,
+              "berserk_power": 9,
+              "master_attack": 4
+            },
+            "masterActionUsageByPlayer": {
+              "player": {
+                "shield": 6,
+                "master_attack": 1
+              },
+              "cpu": {
+                "berserk_power": 9,
+                "master_attack": 3
+              }
+            },
+            "magicCardUsage": {
+              "card_122": 1,
+              "card_031": 1
+            },
+            "magicOpportunityCount": 0,
+            "magicOpportunityUsage": {},
+            "magicOpportunityLethalUsage": {},
+            "magicOpportunityDeltaTotal": {},
+            "magicOpportunityNonLethalDeltaTotal": {},
+            "magicOpportunityBestDelta": {},
+            "magicOpportunityRecords": []
+          },
+          {
+            "seed": 135226,
+            "steps": 174,
+            "turns": 18,
+            "winner": "cpu",
+            "issueCount": 0,
+            "warningCount": 0,
+            "labDecisionCount": 0,
+            "labActionUsage": {},
+            "labActionTargetUsage": {},
+            "masterActionUsage": {
+              "shield": 4,
+              "berserk_power": 13,
+              "wake_up": 4,
+              "master_attack": 9
+            },
+            "masterActionUsageByPlayer": {
+              "player": {
+                "shield": 4,
+                "wake_up": 4,
+                "master_attack": 5
+              },
+              "cpu": {
+                "berserk_power": 13,
+                "master_attack": 4
+              }
+            },
+            "magicCardUsage": {
+              "card_122": 1
+            },
+            "magicOpportunityCount": 0,
+            "magicOpportunityUsage": {},
+            "magicOpportunityLethalUsage": {},
+            "magicOpportunityDeltaTotal": {},
+            "magicOpportunityNonLethalDeltaTotal": {},
+            "magicOpportunityBestDelta": {},
+            "magicOpportunityRecords": []
+          }
+        ],
+        "issues": [],
+        "summary": {
+          "games": 3,
+          "winners": {
+            "player": 1,
+            "cpu": 2
+          },
+          "undecided": 0,
+          "failures": 0,
+          "warnings": 0,
+          "maxSteps": 174,
+          "maxTurns": 18,
+          "labDecisionCount": 0,
+          "labActionUsage": {},
+          "labActionTargetUsage": {},
+          "masterActionUsage": {
+            "shield": 15,
+            "berserk_power": 29,
+            "master_attack": 15,
+            "wake_up": 5
+          },
+          "magicCardUsage": {
+            "card_122": 2,
+            "card_031": 1
+          },
+          "magicOpportunityCount": 0,
+          "magicOpportunityUsage": {},
+          "magicOpportunityLethalUsage": {},
+          "magicOpportunityDeltaTotal": {},
+          "magicOpportunityNonLethalDeltaTotal": {},
+          "magicOpportunityBestDelta": {}
+        }
+      }
+    },
+    {
+      "id": "current_shield_no_pressure4_wake4_vs_black_1375_pressure_cpu",
+      "variantId": "current_shield_no_pressure4_wake4",
+      "opponentId": "black_1375_pressure",
+      "opponentCategory": "black",
+      "candidateSeat": "cpu",
+      "seedStart": 135227,
+      "games": 3,
+      "result": {
+        "ok": true,
+        "seeds": [
+          135227,
+          135228,
+          135229
+        ],
+        "options": {
+          "seedStart": 135227,
+          "seedEnd": 135229,
+          "count": 3,
+          "maxSteps": 700,
+          "maxTurns": 120,
+          "stagnationLimit": 8,
+          "longGameSteps": 320,
+          "longGameTurns": 90,
+          "historyLimit": 700,
+          "failOnWarnings": false,
+          "includeGameHistory": false,
+          "deckPreset": "random",
+          "deckPresets": {
+            "player": "submission-pro-no-rare8-black-1375",
+            "cpu": "master-lab-white-1377-death-sheep3"
+          },
+          "aiProfile": "stable",
+          "aiProfiles": {
+            "player": "pressure",
+            "cpu": "white"
+          },
+          "aiTunings": {
+            "cpu": {
+              "situationalBias": {
+                "whiteShieldNoPressurePenalty": 4,
+                "whiteWakeSafeWorkBonus": 4
+              }
+            }
+          },
+          "participants": {
+            "player": "black",
+            "cpu": "white"
+          },
+          "labActionMargin": 0,
+          "labEvaluationTuning": {}
+        },
+        "games": [
+          {
+            "seed": 135227,
+            "steps": 106,
+            "turns": 11,
+            "winner": "cpu",
+            "issueCount": 0,
+            "warningCount": 0,
+            "labDecisionCount": 0,
+            "labActionUsage": {},
+            "labActionTargetUsage": {},
+            "masterActionUsage": {
+              "berserk_power": 7,
+              "shield": 5,
+              "master_attack": 4,
+              "earth_anger": 2,
+              "wake_up": 1
+            },
+            "masterActionUsageByPlayer": {
+              "player": {
+                "berserk_power": 7,
+                "master_attack": 1,
+                "earth_anger": 2
+              },
+              "cpu": {
+                "shield": 5,
+                "master_attack": 3,
+                "wake_up": 1
+              }
+            },
+            "magicCardUsage": {
+              "card_122": 1
+            },
+            "magicOpportunityCount": 0,
+            "magicOpportunityUsage": {},
+            "magicOpportunityLethalUsage": {},
+            "magicOpportunityDeltaTotal": {},
+            "magicOpportunityNonLethalDeltaTotal": {},
+            "magicOpportunityBestDelta": {},
+            "magicOpportunityRecords": []
+          },
+          {
+            "seed": 135228,
+            "steps": 172,
+            "turns": 18,
+            "winner": "player",
+            "issueCount": 0,
+            "warningCount": 0,
+            "labDecisionCount": 0,
+            "labActionUsage": {},
+            "labActionTargetUsage": {},
+            "masterActionUsage": {
+              "berserk_power": 14,
+              "master_attack": 8,
+              "wake_up": 2,
+              "shield": 4
+            },
+            "masterActionUsageByPlayer": {
+              "player": {
+                "berserk_power": 14,
+                "master_attack": 3
+              },
+              "cpu": {
+                "master_attack": 5,
+                "wake_up": 2,
+                "shield": 4
+              }
+            },
+            "magicCardUsage": {
+              "card_122": 1
+            },
+            "magicOpportunityCount": 0,
+            "magicOpportunityUsage": {},
+            "magicOpportunityLethalUsage": {},
+            "magicOpportunityDeltaTotal": {},
+            "magicOpportunityNonLethalDeltaTotal": {},
+            "magicOpportunityBestDelta": {},
+            "magicOpportunityRecords": []
+          },
+          {
+            "seed": 135229,
+            "steps": 100,
+            "turns": 10,
+            "winner": "cpu",
+            "issueCount": 0,
+            "warningCount": 0,
+            "labDecisionCount": 0,
+            "labActionUsage": {},
+            "labActionTargetUsage": {},
+            "masterActionUsage": {
+              "berserk_power": 6,
+              "shield": 4,
+              "master_attack": 4,
+              "earth_anger": 1,
+              "wake_up": 1
+            },
+            "masterActionUsageByPlayer": {
+              "player": {
+                "berserk_power": 6,
+                "master_attack": 3,
+                "earth_anger": 1
+              },
+              "cpu": {
+                "shield": 4,
+                "master_attack": 1,
+                "wake_up": 1
+              }
+            },
+            "magicCardUsage": {
+              "card_093": 1
+            },
+            "magicOpportunityCount": 0,
+            "magicOpportunityUsage": {},
+            "magicOpportunityLethalUsage": {},
+            "magicOpportunityDeltaTotal": {},
+            "magicOpportunityNonLethalDeltaTotal": {},
+            "magicOpportunityBestDelta": {},
+            "magicOpportunityRecords": []
+          }
+        ],
+        "issues": [],
+        "summary": {
+          "games": 3,
+          "winners": {
+            "player": 1,
+            "cpu": 2
+          },
+          "undecided": 0,
+          "failures": 0,
+          "warnings": 0,
+          "maxSteps": 172,
+          "maxTurns": 18,
+          "labDecisionCount": 0,
+          "labActionUsage": {},
+          "labActionTargetUsage": {},
+          "masterActionUsage": {
+            "berserk_power": 27,
+            "shield": 13,
+            "master_attack": 16,
+            "earth_anger": 3,
+            "wake_up": 4
+          },
+          "magicCardUsage": {
+            "card_122": 2,
+            "card_093": 1
+          },
+          "magicOpportunityCount": 0,
+          "magicOpportunityUsage": {},
+          "magicOpportunityLethalUsage": {},
+          "magicOpportunityDeltaTotal": {},
+          "magicOpportunityNonLethalDeltaTotal": {},
+          "magicOpportunityBestDelta": {}
+        }
+      }
+    },
+    {
+      "id": "current_shield_no_pressure4_wake4_vs_white_current_mirror_player",
+      "variantId": "current_shield_no_pressure4_wake4",
+      "opponentId": "white_current_mirror",
+      "opponentCategory": "white",
+      "candidateSeat": "player",
+      "seedStart": 135230,
+      "games": 3,
+      "result": {
+        "ok": true,
+        "seeds": [
+          135230,
+          135231,
+          135232
+        ],
+        "options": {
+          "seedStart": 135230,
+          "seedEnd": 135232,
+          "count": 3,
+          "maxSteps": 700,
+          "maxTurns": 120,
+          "stagnationLimit": 8,
+          "longGameSteps": 320,
+          "longGameTurns": 90,
+          "historyLimit": 700,
+          "failOnWarnings": false,
+          "includeGameHistory": false,
+          "deckPreset": "random",
+          "deckPresets": {
+            "player": "master-lab-white-1377-death-sheep3",
+            "cpu": "master-lab-white-1377-death-sheep3"
+          },
+          "aiProfile": "stable",
+          "aiProfiles": {
+            "player": "white",
+            "cpu": "white"
+          },
+          "aiTunings": {
+            "player": {
+              "situationalBias": {
+                "whiteShieldNoPressurePenalty": 4,
+                "whiteWakeSafeWorkBonus": 4
+              }
+            }
+          },
+          "participants": {
+            "player": "white",
+            "cpu": "white"
+          },
+          "labActionMargin": 0,
+          "labEvaluationTuning": {}
+        },
+        "games": [
+          {
+            "seed": 135230,
+            "steps": 232,
+            "turns": 20,
+            "winner": "cpu",
+            "issueCount": 0,
+            "warningCount": 0,
+            "labDecisionCount": 0,
+            "labActionUsage": {},
+            "labActionTargetUsage": {},
+            "masterActionUsage": {
+              "shield": 22,
+              "master_attack": 15,
+              "wake_up": 5
+            },
+            "masterActionUsageByPlayer": {
+              "player": {
+                "shield": 13,
+                "master_attack": 6,
+                "wake_up": 4
+              },
+              "cpu": {
+                "shield": 9,
+                "master_attack": 9,
+                "wake_up": 1
+              }
+            },
+            "magicCardUsage": {
+              "card_093": 1,
+              "card_031": 1
+            },
+            "magicOpportunityCount": 0,
+            "magicOpportunityUsage": {},
+            "magicOpportunityLethalUsage": {},
+            "magicOpportunityDeltaTotal": {},
+            "magicOpportunityNonLethalDeltaTotal": {},
+            "magicOpportunityBestDelta": {},
+            "magicOpportunityRecords": []
+          },
+          {
+            "seed": 135231,
+            "steps": 158,
+            "turns": 14,
+            "winner": "cpu",
+            "issueCount": 0,
+            "warningCount": 0,
+            "labDecisionCount": 0,
+            "labActionUsage": {},
+            "labActionTargetUsage": {},
+            "masterActionUsage": {
+              "shield": 22,
+              "master_attack": 7,
+              "wake_up": 3
+            },
+            "masterActionUsageByPlayer": {
+              "player": {
+                "shield": 11,
+                "wake_up": 2,
+                "master_attack": 4
+              },
+              "cpu": {
+                "shield": 11,
+                "master_attack": 3,
+                "wake_up": 1
+              }
+            },
+            "magicCardUsage": {
+              "card_093": 1,
+              "card_031": 1
+            },
+            "magicOpportunityCount": 0,
+            "magicOpportunityUsage": {},
+            "magicOpportunityLethalUsage": {},
+            "magicOpportunityDeltaTotal": {},
+            "magicOpportunityNonLethalDeltaTotal": {},
+            "magicOpportunityBestDelta": {},
+            "magicOpportunityRecords": []
+          },
+          {
+            "seed": 135232,
+            "steps": 188,
+            "turns": 18,
+            "winner": "player",
+            "issueCount": 0,
+            "warningCount": 0,
+            "labDecisionCount": 0,
+            "labActionUsage": {},
+            "labActionTargetUsage": {},
+            "masterActionUsage": {
+              "shield": 19,
+              "master_attack": 12,
+              "wake_up": 3
+            },
+            "masterActionUsageByPlayer": {
+              "player": {
+                "shield": 11,
+                "master_attack": 4
+              },
+              "cpu": {
+                "shield": 8,
+                "master_attack": 8,
+                "wake_up": 3
+              }
+            },
+            "magicCardUsage": {
+              "card_031": 2,
+              "card_093": 1
+            },
+            "magicOpportunityCount": 0,
+            "magicOpportunityUsage": {},
+            "magicOpportunityLethalUsage": {},
+            "magicOpportunityDeltaTotal": {},
+            "magicOpportunityNonLethalDeltaTotal": {},
+            "magicOpportunityBestDelta": {},
+            "magicOpportunityRecords": []
+          }
+        ],
+        "issues": [],
+        "summary": {
+          "games": 3,
+          "winners": {
+            "player": 1,
+            "cpu": 2
+          },
+          "undecided": 0,
+          "failures": 0,
+          "warnings": 0,
+          "maxSteps": 232,
+          "maxTurns": 20,
+          "labDecisionCount": 0,
+          "labActionUsage": {},
+          "labActionTargetUsage": {},
+          "masterActionUsage": {
+            "shield": 63,
+            "master_attack": 34,
+            "wake_up": 11
+          },
+          "magicCardUsage": {
+            "card_093": 3,
+            "card_031": 4
+          },
+          "magicOpportunityCount": 0,
+          "magicOpportunityUsage": {},
+          "magicOpportunityLethalUsage": {},
+          "magicOpportunityDeltaTotal": {},
+          "magicOpportunityNonLethalDeltaTotal": {},
+          "magicOpportunityBestDelta": {}
+        }
+      }
+    },
+    {
+      "id": "current_shield_no_pressure4_wake4_vs_white_current_mirror_cpu",
+      "variantId": "current_shield_no_pressure4_wake4",
+      "opponentId": "white_current_mirror",
+      "opponentCategory": "white",
+      "candidateSeat": "cpu",
+      "seedStart": 135233,
+      "games": 3,
+      "result": {
+        "ok": true,
+        "seeds": [
+          135233,
+          135234,
+          135235
+        ],
+        "options": {
+          "seedStart": 135233,
+          "seedEnd": 135235,
+          "count": 3,
+          "maxSteps": 700,
+          "maxTurns": 120,
+          "stagnationLimit": 8,
+          "longGameSteps": 320,
+          "longGameTurns": 90,
+          "historyLimit": 700,
+          "failOnWarnings": false,
+          "includeGameHistory": false,
+          "deckPreset": "random",
+          "deckPresets": {
+            "player": "master-lab-white-1377-death-sheep3",
+            "cpu": "master-lab-white-1377-death-sheep3"
+          },
+          "aiProfile": "stable",
+          "aiProfiles": {
+            "player": "white",
+            "cpu": "white"
+          },
+          "aiTunings": {
+            "cpu": {
+              "situationalBias": {
+                "whiteShieldNoPressurePenalty": 4,
+                "whiteWakeSafeWorkBonus": 4
+              }
+            }
+          },
+          "participants": {
+            "player": "white",
+            "cpu": "white"
+          },
+          "labActionMargin": 0,
+          "labEvaluationTuning": {}
+        },
+        "games": [
+          {
+            "seed": 135233,
+            "steps": 253,
+            "turns": 23,
+            "winner": "player",
+            "issueCount": 0,
+            "warningCount": 0,
+            "labDecisionCount": 0,
+            "labActionUsage": {},
+            "labActionTargetUsage": {},
+            "masterActionUsage": {
+              "shield": 18,
+              "master_attack": 22,
+              "wake_up": 6
+            },
+            "masterActionUsageByPlayer": {
+              "player": {
+                "shield": 10,
+                "master_attack": 9,
+                "wake_up": 3
+              },
+              "cpu": {
+                "shield": 8,
+                "master_attack": 13,
+                "wake_up": 3
+              }
+            },
+            "magicCardUsage": {
+              "card_031": 2
+            },
+            "magicOpportunityCount": 0,
+            "magicOpportunityUsage": {},
+            "magicOpportunityLethalUsage": {},
+            "magicOpportunityDeltaTotal": {},
+            "magicOpportunityNonLethalDeltaTotal": {},
+            "magicOpportunityBestDelta": {},
+            "magicOpportunityRecords": []
+          },
+          {
+            "seed": 135234,
+            "steps": 283,
+            "turns": 26,
+            "winner": "cpu",
+            "issueCount": 0,
+            "warningCount": 0,
+            "labDecisionCount": 0,
+            "labActionUsage": {},
+            "labActionTargetUsage": {},
+            "masterActionUsage": {
+              "shield": 19,
+              "master_attack": 21,
+              "wake_up": 8
+            },
+            "masterActionUsageByPlayer": {
+              "player": {
+                "shield": 8,
+                "master_attack": 14,
+                "wake_up": 4
+              },
+              "cpu": {
+                "shield": 11,
+                "master_attack": 7,
+                "wake_up": 4
+              }
+            },
+            "magicCardUsage": {
+              "card_031": 2,
+              "card_093": 2
+            },
+            "magicOpportunityCount": 0,
+            "magicOpportunityUsage": {},
+            "magicOpportunityLethalUsage": {},
+            "magicOpportunityDeltaTotal": {},
+            "magicOpportunityNonLethalDeltaTotal": {},
+            "magicOpportunityBestDelta": {},
+            "magicOpportunityRecords": []
+          },
+          {
+            "seed": 135235,
+            "steps": 132,
+            "turns": 12,
+            "winner": "player",
+            "issueCount": 0,
+            "warningCount": 0,
+            "labDecisionCount": 0,
+            "labActionUsage": {},
+            "labActionTargetUsage": {},
+            "masterActionUsage": {
+              "wake_up": 7,
+              "master_attack": 6,
+              "shield": 10
+            },
+            "masterActionUsageByPlayer": {
+              "player": {
+                "wake_up": 4,
+                "shield": 4,
+                "master_attack": 2
+              },
+              "cpu": {
+                "master_attack": 4,
+                "wake_up": 3,
+                "shield": 6
+              }
+            },
+            "magicCardUsage": {
+              "card_031": 2
+            },
+            "magicOpportunityCount": 0,
+            "magicOpportunityUsage": {},
+            "magicOpportunityLethalUsage": {},
+            "magicOpportunityDeltaTotal": {},
+            "magicOpportunityNonLethalDeltaTotal": {},
+            "magicOpportunityBestDelta": {},
+            "magicOpportunityRecords": []
+          }
+        ],
+        "issues": [],
+        "summary": {
+          "games": 3,
+          "winners": {
+            "player": 2,
+            "cpu": 1
+          },
+          "undecided": 0,
+          "failures": 0,
+          "warnings": 0,
+          "maxSteps": 283,
+          "maxTurns": 26,
+          "labDecisionCount": 0,
+          "labActionUsage": {},
+          "labActionTargetUsage": {},
+          "masterActionUsage": {
+            "shield": 47,
+            "master_attack": 49,
+            "wake_up": 21
+          },
+          "magicCardUsage": {
+            "card_031": 6,
+            "card_093": 2
+          },
+          "magicOpportunityCount": 0,
+          "magicOpportunityUsage": {},
+          "magicOpportunityLethalUsage": {},
+          "magicOpportunityDeltaTotal": {},
+          "magicOpportunityNonLethalDeltaTotal": {},
+          "magicOpportunityBestDelta": {}
+        }
+      }
+    }
+  ],
+  "standings": [
+    {
+      "variant": {
+        "id": "current_white_baseline",
+        "kind": "baseline",
+        "label": "現行: デスシープ3 / white",
+        "deckPreset": "master-lab-white-1377-death-sheep3",
+        "aiProfile": "white",
+        "hypothesis": "暫定白最強デッキで現行white profileを基準化する。"
+      },
+      "games": 12,
+      "wins": 6,
+      "losses": 6,
+      "draws": 0,
+      "winPointRate": 0.5,
+      "score": 43.3,
+      "averageSteps": 173.1,
+      "averageTurns": 15.7,
+      "failures": 0,
+      "warnings": 1,
+      "bannedCardCount": 0,
+      "masterActionUsage": {
+        "shield": 90,
+        "master_attack": 63,
+        "wake_up": 22
+      },
+      "turnIntentMetrics": {
+        "totalActions": 0,
+        "executionActions": 0,
+        "setupActions": 0,
+        "lowStoneAfterSetup": 0,
+        "shieldUses": 0,
+        "shieldConvertedNextTurn": 0,
+        "shieldNoConversion": 0,
+        "woundedLevelUpHeal": 0,
+        "pygmyActions": 0,
+        "pygmySetupHits": 0,
+        "polyspinnerFirstActions": 0,
+        "polyspinnerPurposefulFirstAction": 0,
+        "polyspinnerWasteAction": 0
+      },
+      "matchups": {
+        "black": {
+          "games": 6,
+          "wins": 4,
+          "losses": 2,
+          "draws": 0,
+          "winPointRate": 0.667
+        },
+        "decoy": {
+          "games": 0,
+          "wins": 0,
+          "losses": 0,
+          "draws": 0,
+          "winPointRate": 0
+        },
+        "white": {
+          "games": 6,
+          "wins": 2,
+          "losses": 4,
+          "draws": 0,
+          "winPointRate": 0.333
+        }
+      },
+      "notes": [
+        "warning 1",
+        "黒耐性あり",
+        "シールド偏重"
+      ]
+    },
+    {
+      "variant": {
+        "id": "current_shield_no_pressure4_wake4",
+        "kind": "hybrid",
+        "label": "候補: ノープレッシャー盾抑制 4 / 安全ウェイク 4",
+        "deckPreset": "master-lab-white-1377-death-sheep3",
+        "aiProfile": "white",
+        "tuning": {
+          "situationalBias": {
+            "whiteShieldNoPressurePenalty": 4,
+            "whiteWakeSafeWorkBonus": 4
+          }
+        },
+        "hypothesis": "軽い盾抑制と安全ウェイクを併用し、対黒改善と対白維持の両立を見る。"
+      },
+      "games": 12,
+      "wins": 5,
+      "losses": 7,
+      "draws": 0,
+      "winPointRate": 0.417,
+      "score": 40.7,
+      "averageSteps": 168.2,
+      "averageTurns": 15.9,
+      "failures": 0,
+      "warnings": 0,
+      "bannedCardCount": 0,
+      "masterActionUsage": {
+        "shield": 88,
+        "master_attack": 54,
+        "wake_up": 25
+      },
+      "turnIntentMetrics": {
+        "totalActions": 0,
+        "executionActions": 0,
+        "setupActions": 0,
+        "lowStoneAfterSetup": 0,
+        "shieldUses": 0,
+        "shieldConvertedNextTurn": 0,
+        "shieldNoConversion": 0,
+        "woundedLevelUpHeal": 0,
+        "pygmyActions": 0,
+        "pygmySetupHits": 0,
+        "polyspinnerFirstActions": 0,
+        "polyspinnerPurposefulFirstAction": 0,
+        "polyspinnerWasteAction": 0
+      },
+      "matchups": {
+        "black": {
+          "games": 6,
+          "wins": 3,
+          "losses": 3,
+          "draws": 0,
+          "winPointRate": 0.5
+        },
+        "decoy": {
+          "games": 0,
+          "wins": 0,
+          "losses": 0,
+          "draws": 0,
+          "winPointRate": 0
+        },
+        "white": {
+          "games": 6,
+          "wins": 2,
+          "losses": 4,
+          "draws": 0,
+          "winPointRate": 0.333
+        }
+      },
+      "notes": [
+        "黒耐性あり",
+        "シールド偏重"
+      ]
+    },
+    {
+      "variant": {
+        "id": "current_shield_no_pressure8_wake4",
+        "kind": "hybrid",
+        "label": "候補: ノープレッシャー盾抑制 8 / 安全ウェイク 4",
+        "deckPreset": "master-lab-white-1377-death-sheep3",
+        "aiProfile": "white",
+        "tuning": {
+          "situationalBias": {
+            "whiteShieldNoPressurePenalty": 8,
+            "whiteWakeSafeWorkBonus": 4
+          }
+        },
+        "hypothesis": "ノープレッシャー盾を抑えた分、仕事へ変換できるウェイクアップで勝ち切りを補う。"
+      },
+      "games": 12,
+      "wins": 5,
+      "losses": 7,
+      "draws": 0,
+      "winPointRate": 0.417,
+      "score": 34.3,
+      "averageSteps": 171.8,
+      "averageTurns": 17.1,
+      "failures": 0,
+      "warnings": 0,
+      "bannedCardCount": 0,
+      "masterActionUsage": {
+        "shield": 78,
+        "master_attack": 67,
+        "wake_up": 27
+      },
+      "turnIntentMetrics": {
+        "totalActions": 0,
+        "executionActions": 0,
+        "setupActions": 0,
+        "lowStoneAfterSetup": 0,
+        "shieldUses": 0,
+        "shieldConvertedNextTurn": 0,
+        "shieldNoConversion": 0,
+        "woundedLevelUpHeal": 0,
+        "pygmyActions": 0,
+        "pygmySetupHits": 0,
+        "polyspinnerFirstActions": 0,
+        "polyspinnerPurposefulFirstAction": 0,
+        "polyspinnerWasteAction": 0
+      },
+      "matchups": {
+        "black": {
+          "games": 6,
+          "wins": 2,
+          "losses": 4,
+          "draws": 0,
+          "winPointRate": 0.333
+        },
+        "decoy": {
+          "games": 0,
+          "wins": 0,
+          "losses": 0,
+          "draws": 0,
+          "winPointRate": 0
+        },
+        "white": {
+          "games": 6,
+          "wins": 3,
+          "losses": 3,
+          "draws": 0,
+          "winPointRate": 0.5
+        }
+      },
+      "notes": [
+        "黒に弱い",
+        "シールド偏重"
+      ]
+    }
+  ],
+  "conclusion": {
+    "summary": "首位は `current_white_baseline`（score 43.3 / overall 50% / vs Black 66.7%）。 安定候補（vs Black 45%以上、0F/1W以下）は 2 件。 上位候補: current_white_baseline 66.7% / current_shield_no_pressure4_wake4 50% / current_shield_no_pressure8_wake4 33.3%。",
+    "nextSteps": [
+      "次は `current_white_baseline`, `current_shield_no_pressure4_wake4` を games-per-matchup 8-12 で確認する。",
+      "首位はシールド寄り。確認ループでは `wake_up` 補正を少し足す条件を横に置き、守った後の勝ち切り不足を確認する。",
+      "採用候補を白プロファイルへ反映する場合は、今回の実験用 `actionBias` をそのまま入れず、対応する局面評価へ還元する。",
+      "次回レポートでは上位候補の負けログから、相手残HPが低い惜敗と高HPの完敗を分けてカード/AIどちらを触るか決める。"
+    ]
+  }
+}
