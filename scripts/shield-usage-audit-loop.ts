@@ -3,6 +3,7 @@ import { dirname } from "node:path";
 import { getCardName, getMonsterDef } from "../src/game/cards";
 import { getMonsterAiTrait } from "../src/game/aiUnitTraits";
 import { getCommandTargets } from "../src/game/ruleEngine/targeting";
+import { DEFAULT_PLAYER_DECK_PRESET_ID } from "../src/game/defaultDeckPresets";
 import {
   DEFAULT_WHITE_AI_TUNING_OPPONENTS,
   DEFAULT_WHITE_AI_TUNING_VARIANTS,
@@ -11,6 +12,8 @@ import {
   type WhiteAiTuningOpponent,
   type WhiteAiTuningVariant,
 } from "../src/game/whiteAiTuningLoop";
+import type { DeckPresetId } from "../src/game/deckPresets";
+import type { CpuAiTuning } from "../src/game/cpuAi";
 import type { MasterLabDecisionEvent, MasterLabGameStateSummary } from "../src/game/masterLabAutoPlay";
 import type { GameState, MonsterState, PlayerId, SlotKey, SlotState } from "../src/game/types";
 
@@ -141,22 +144,76 @@ interface ShieldOutcomeAudit {
 type SummarySlot = MasterLabGameStateSummary["slots"][number];
 
 const DEFAULT_VARIANT_IDS = [
-  "pressure_white_baseline",
-  "white494_white_baseline",
-  "pressure_white_strict_shield_v1",
-  "pressure_white_low_stone_shield_wake_v1",
-  "pressure_white_shield_threat_conversion_v1",
-  "pressure_white_shield_quality_second_guard_v1",
-  "pressure_white_shield_breakthrough_guard_v1",
-  "pressure_white_shield_pressure_breakthrough_v1",
-  "pressure_white_shield_quality_breakthrough_v1",
+  "current_white_baseline",
+  "current_shield_no_pressure8",
+  "current_shield_breakthrough12",
+  "current_shield_quality_combo",
+  "current_second_shield_guard",
 ] as const;
 
 const DEFAULT_OPPONENT_IDS = [
   "black_pressure_strong",
-  "black_pressure_pressure",
-  "decoy_back_stable",
+  "black_1375_pressure",
+  "white_current_mirror",
 ] as const;
+
+const CURRENT_WHITE_DECK = DEFAULT_PLAYER_DECK_PRESET_ID;
+
+const CURRENT_SHIELD_AUDIT_VARIANTS = [
+  currentVariant("current_white_baseline", "現行: デスシープ3 / white", undefined, "暫定白最強デッキで現行white profileのシールド品質を監査する。"),
+  currentVariant("current_shield_no_pressure8", "候補: ノープレッシャー盾抑制8", {
+    situationalBias: { whiteShieldNoPressurePenalty: 8 },
+  }, "相手の次ターン打点が見えないシールドを抑える。成果化シールドは除外される。"),
+  currentVariant("current_shield_breakthrough12", "候補: 突破盾抑制12", {
+    situationalBias: { whiteShieldBreakthroughPenalty: 12 },
+  }, "盾を張っても致死圏のままなら、守り切れない盾として抑える。"),
+  currentVariant("current_shield_quality_combo", "候補: 盾品質コンボ", {
+    situationalBias: {
+      whiteShieldThreatConversionBonus: 8,
+      whiteShieldNoPressurePenalty: 8,
+      whiteShieldBreakthroughPenalty: 12,
+    },
+  }, "脅威軽減/成果化する盾だけ押し、ノープレッシャー盾と突破される盾を同時に抑える。"),
+  currentVariant("current_second_shield_guard", "候補: 2枚目盾低石抑制", {
+    situationalBias: { whiteSecondShieldLowStonePenalty: 8, whiteSecondShieldCommitmentPenalty: 8 },
+  }, "同ターン2枚目の盾、特に低石化する盾を抑える。"),
+] as const satisfies readonly WhiteAiTuningVariant[];
+
+const CURRENT_SHIELD_AUDIT_OPPONENTS = [
+  {
+    id: "black_1375_pressure",
+    category: "black",
+    label: "黒: 1375 / pressure",
+    participant: "black",
+    deckPreset: "submission-pro-no-rare8-black-1375",
+    aiProfile: "pressure",
+  },
+  {
+    id: "white_current_mirror",
+    category: "white",
+    label: "白: 暫定白最強ミラー / white",
+    participant: "white",
+    deckPreset: CURRENT_WHITE_DECK,
+    aiProfile: "white",
+  },
+] as const satisfies readonly WhiteAiTuningOpponent[];
+
+function currentVariant(
+  id: string,
+  label: string,
+  tuning: CpuAiTuning | undefined,
+  hypothesis: string,
+): WhiteAiTuningVariant {
+  return {
+    id,
+    kind: tuning ? "hybrid" : "baseline",
+    label,
+    deckPreset: CURRENT_WHITE_DECK as DeckPresetId,
+    aiProfile: "white",
+    ...(tuning ? { tuning } : {}),
+    hypothesis,
+  };
+}
 
 const SLOT_KEYS: SlotKey[] = [
   "cpu_back_left",
@@ -1047,7 +1104,7 @@ function parseArgs(args: string[]): CliOptions {
 
 function resolveVariants(ids: readonly string[]): WhiteAiTuningVariant[] {
   return ids.map((id) => {
-    const variant = DEFAULT_WHITE_AI_TUNING_VARIANTS.find((candidate) => candidate.id === id);
+    const variant = [...CURRENT_SHIELD_AUDIT_VARIANTS, ...DEFAULT_WHITE_AI_TUNING_VARIANTS].find((candidate) => candidate.id === id);
     if (!variant) {
       throw new Error(`Unknown variant: ${id}`);
     }
@@ -1057,7 +1114,7 @@ function resolveVariants(ids: readonly string[]): WhiteAiTuningVariant[] {
 
 function resolveOpponents(ids: readonly string[]): WhiteAiTuningOpponent[] {
   return ids.map((id) => {
-    const opponent = DEFAULT_WHITE_AI_TUNING_OPPONENTS.find((candidate) => candidate.id === id);
+    const opponent = [...CURRENT_SHIELD_AUDIT_OPPONENTS, ...DEFAULT_WHITE_AI_TUNING_OPPONENTS].find((candidate) => candidate.id === id);
     if (!opponent) {
       throw new Error(`Unknown opponent: ${id}`);
     }

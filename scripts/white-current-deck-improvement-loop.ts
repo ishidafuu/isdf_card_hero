@@ -155,6 +155,9 @@ function buildVariants(): WhiteAiTuningVariant[] {
     variant("current_shield_wake_quality", "候補: 盾/起動品質", {
       situationalBias: { whiteShieldThreatConversionBonus: 8, whiteWakeSafeWorkBonus: 4 },
     }, "守る価値のある盾と仕事へ変換できる起動だけを少し押す。"),
+    variant("current_shield_no_pressure8", "候補: ノープレッシャー盾抑制 8", {
+      situationalBias: { whiteShieldNoPressurePenalty: 8 },
+    }, "盾品質監査で良化した、相手の次ターン打点が見えないシールドだけを抑える候補。"),
   ];
 }
 
