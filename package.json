@@ -33,6 +33,7 @@
     "lab:masters:white-ai-action-order": "vite-node scripts/white-ai-action-order-audit.ts",
     "lab:masters:white-current-deck-loop": "vite-node scripts/white-current-deck-improvement-loop.ts",
     "lab:masters:shield-audit": "vite-node scripts/shield-usage-audit-loop.ts",
+    "lab:masters:white-shield-followup-loss": "vite-node scripts/white-shield-followup-loss-audit.ts",
     "select:white-deck": "vite-node scripts/white-vs-white-deck-selection.ts",
     "tier:white-no-rare8": "vite-node scripts/white-no-rare8-tier.ts",
     "check:white-1377-yummy-variants": "vite-node scripts/white-1377-yummy-variants.ts",
