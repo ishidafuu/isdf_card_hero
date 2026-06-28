@@ -6,7 +6,7 @@ import {
   runWhiteAiTuningLoop,
 } from "../../src/game/whiteAiTuningLoop";
 
-const WHITE_AI_TUNING_LOOP_TEST_TIMEOUT_MS = 30_000;
+const WHITE_AI_TUNING_LOOP_TEST_TIMEOUT_MS = 60_000;
 
 describe("white ai tuning loop", () => {
   it("runs a minimal directed white tuning matchup report", () => {

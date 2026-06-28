@@ -74,6 +74,9 @@ interface VariantMetrics {
   wins: number;
   losses: number;
   draws: number;
+  incompleteGames: number;
+  maxStepGames: number;
+  maxTurnGames: number;
   partialGames: number;
   candidateDecisionSteps: number;
   candidateTurns: number;
@@ -197,7 +200,9 @@ if (options.jsonPath) {
 
 console.log(`White AI action-order audit: ${report.metrics.reduce((sum, metric) => sum + metric.games, 0)} games`);
 for (const metric of report.metrics) {
-  console.log(`${metric.variantId}: ${metric.wins}-${metric.losses}-${metric.draws}, shields ${metric.selectedShields}, shield->retreat ${metric.shieldThenRetreat}`);
+  const incomplete = metric.incompleteGames > 0 ? `, incomplete ${metric.incompleteGames}` : "";
+  const partial = metric.partialGames > 0 ? `, partial ${metric.partialGames}` : "";
+  console.log(`${metric.variantId}: ${metric.wins}-${metric.losses}-${metric.draws}${incomplete}${partial}, shields ${metric.selectedShields}, shield->retreat ${metric.shieldThenRetreat}`);
 }
 if (options.markdownPath) {
   console.log(`Markdown: ${options.markdownPath}`);
@@ -295,6 +300,14 @@ function runGameAudit(
     metrics.wins += 1;
   } else if (game.winner === opponentSeat) {
     metrics.losses += 1;
+  } else if (step >= options.maxSteps || game.turnNumber > options.maxTurns) {
+    metrics.incompleteGames += 1;
+    if (step >= options.maxSteps) {
+      metrics.maxStepGames += 1;
+    }
+    if (game.turnNumber > options.maxTurns) {
+      metrics.maxTurnGames += 1;
+    }
   } else {
     metrics.draws += 1;
   }
@@ -823,6 +836,9 @@ function createMetrics(variantId: string): VariantMetrics {
     wins: 0,
     losses: 0,
     draws: 0,
+    incompleteGames: 0,
+    maxStepGames: 0,
+    maxTurnGames: 0,
     partialGames: 0,
     candidateDecisionSteps: 0,
     candidateTurns: 0,
@@ -882,8 +898,8 @@ function formatMarkdown(report: ActionOrderAuditReport): string {
     "",
     "## Summary",
     "",
-    "| Variant | W-L-D | Steps | Turns | Shield | Shield Turns | Shield First | Shield Then Work | Work Then Shield | Retreat Alt | Shield->Retreat | Shield Attack Higher/Close | Shield Wake Higher/Close | Wake | Wake Attack Higher/Close | Wake Then Attack |",
-    "| --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: |",
+    "| Variant | W-L-D | Incomplete | Steps | Turns | Shield | Shield Turns | Shield First | Shield Then Work | Work Then Shield | Retreat Alt | Shield->Retreat | Shield Attack Higher/Close | Shield Wake Higher/Close | Wake | Wake Attack Higher/Close | Wake Then Attack |",
+    "| --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: |",
     ...report.metrics.map(formatMetricRow),
     "",
     "## Samples",
@@ -899,6 +915,7 @@ function formatMarkdown(report: ActionOrderAuditReport): string {
     "- `Attack/Wake Higher/Close` は、シールドを選ぶ前に攻撃またはウェイクアップがどれくらい競合していたかの探索値。",
     "- `Wake Attack Higher/Close` は、ウェイクアップを選んだ局面で、攻撃候補がどれくらい競合していたかの探索値。",
     "- `Turn Order` では、実際の同一ターン内で shield の後に attack/wake したか、attack/wake の後に shield したかを見る。",
+    "- `Incomplete` は、勝敗が決まる前に `--max-steps` または `--max-turns` へ到達したゲーム数。W-L-D の draw には含めない。",
     "- `partial` は、サンプル採取用に `--stop-after-samples` で途中終了したゲーム数。勝敗集計には含めない。",
   ].join("\n");
 }
@@ -907,6 +924,7 @@ function formatMetricRow(metric: VariantMetrics): string {
   return [
     metric.variantId,
     `${metric.wins}-${metric.losses}-${metric.draws}${metric.partialGames > 0 ? ` (+${metric.partialGames} partial)` : ""}`,
+    `${metric.incompleteGames}${metric.incompleteGames > 0 ? ` (${metric.maxStepGames} step / ${metric.maxTurnGames} turn)` : ""}`,
     metric.candidateDecisionSteps,
     metric.candidateTurns,
     formatCountRate(metric.selectedShields, metric.candidateDecisionSteps),
@@ -978,6 +996,9 @@ function buildConclusion(metrics: readonly VariantMetrics[]): string[] {
     lines.push(`${metric.variantId}: シールド ${metric.selectedShields}件中、同一対象の後退候補あり ${metric.shieldWithRetreatAlternative}件、後退が上回ったもの ${metric.retreatAlternativeHigher}件、同ターン shield->retreat ${metric.shieldThenRetreat}件。`);
     if (metric.partialGames > 0) {
       lines.push(`${metric.variantId}: サンプル採取のため ${metric.partialGames}ゲームを途中終了。勝率ではなく行動例の監査として読む。`);
+    }
+    if (metric.incompleteGames > 0) {
+      lines.push(`${metric.variantId}: ${metric.incompleteGames}ゲームが上限到達で未完了（step ${metric.maxStepGames}件 / turn ${metric.maxTurnGames}件）。W-L-Dの引き分けとは分けて読む。`);
     }
     if (
       reference &&

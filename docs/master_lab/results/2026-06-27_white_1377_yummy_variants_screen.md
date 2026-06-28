@@ -48,4 +48,3 @@ AI: white profile current default
 - AI は両席とも current white profile。デッキ以外のAI設定は変えていない。
 - 1377のヤミー3枠だけを差し替え、他29/30枚または27/30枚の構成は固定した。
 - 小母数の派生比較なので、上位候補は別seed・中母数で再確認する前提。
-

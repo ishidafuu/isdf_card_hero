@@ -234,7 +234,7 @@ function selectConfirmVariants(report: WhiteAiTuningReport, top: number): WhiteA
 }
 
 function buildSummary(screenReport: WhiteAiTuningReport, confirmReport: WhiteAiTuningReport): LoopSummary {
-  const confirmBest = confirmReport.standings[0];
+  const confirmBest = bestAdoptionCandidate(confirmReport);
   const confirmBaseline = confirmReport.standings.find((standing) => standing.variant.id === "current_white_baseline");
   const adopted = buildAdoption(confirmBest, confirmBaseline);
   return {
@@ -245,6 +245,14 @@ function buildSummary(screenReport: WhiteAiTuningReport, confirmReport: WhiteAiT
     adopted,
     nextSteps: buildNextSteps(confirmReport, adopted),
   };
+}
+
+function bestAdoptionCandidate(report: WhiteAiTuningReport): WhiteAiTuningStanding | undefined {
+  return report.standings.find(isAdoptionCandidate);
+}
+
+function isAdoptionCandidate(standing: WhiteAiTuningStanding): boolean {
+  return standing.variant.id !== "current_white_baseline" && standing.variant.aiProfile === "white" && !!standing.variant.tuning;
 }
 
 function buildAdoption(
@@ -304,17 +312,19 @@ function summarizePhase(report: WhiteAiTuningReport): PhaseSummary {
 function buildNextSteps(report: WhiteAiTuningReport, adoption: AdoptionSummary | undefined): string[] {
   const baseline = report.standings.find((standing) => standing.variant.id === "current_white_baseline");
   const best = report.standings[0];
+  const adoptionStanding = adoption ? report.standings.find((standing) => standing.variant.id === adoption.variantId) : undefined;
+  const nextCandidate = adoptionStanding ?? bestAdoptionCandidate(report) ?? best;
   const steps: string[] = [];
   if (!best) {
     return ["検証結果が空。候補/相手セットを確認して再実行する。"];
   }
   if (adoption?.recommendation === "adopt") {
-    steps.push(`\`${best.variant.id}\` は採用候補。係数をそのままではなく、対応する局面評価として white profile に反映する。`);
+    steps.push(`\`${adoption.variantId}\` は採用候補。係数をそのままではなく、対応する局面評価として white profile に反映する。`);
   } else {
     steps.push("今回の確認では即採用せず、ベースラインを維持する。");
   }
-  if (baseline && best.variant.id !== baseline.variant.id) {
-    steps.push(`次は \`${best.variant.id}\` と \`current_white_baseline\` を games-per-matchup 3-4 で再確認し、seed差を潰す。`);
+  if (baseline && nextCandidate && nextCandidate.variant.id !== baseline.variant.id) {
+    steps.push(`次は \`${nextCandidate.variant.id}\` と \`current_white_baseline\` を games-per-matchup 3-4 で再確認し、seed差を潰す。`);
   }
   const weakBlack = report.standings.filter((standing) => standing.matchups.black.winPointRate < 0.5).slice(0, 3);
   if (weakBlack.length > 0) {

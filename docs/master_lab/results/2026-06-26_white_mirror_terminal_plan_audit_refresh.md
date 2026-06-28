@@ -576,4 +576,3 @@ beamWidth: 2, maxActions: 8, responseRankLimit: 8
      - final: turn 6 / current player / HP player/cpu 10/10 / stones player/cpu 9/0 / hand player/cpu 4/4
      - metrics: HP 10/10, stones 9/0, boardValue 300/430, ready 2/0, shield 0/0, Lv2+ 0/0
      - board: cpu_back_right:CB:ピグミィ Lv1 HP3 act2/2 | cpu_front_left:CF:ヤミー Lv1 HP5 act1/1 | cpu_front_right:CF:ドノマンティス Lv1 HP5 act1/1 | player_front_left:PF:デスシープ Lv1 HP6 act0/1 focus | player_front_right:PF:鉄拳シグマ Lv1 HP4 act0/1
-
