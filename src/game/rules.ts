@@ -34,6 +34,7 @@ import {
 } from "./ruleEngine/damage";
 import { removeDefeatedMonster, type DefeatedMonster } from "./ruleEngine/defeat";
 import { resolveLevelUpChoice } from "./ruleEngine/levelUp";
+import { opponentOf, playerLabel } from "./ruleEngine/players";
 import { randomChance, randomInt, shuffle } from "./ruleEngine/random";
 import { cloneState } from "./ruleEngine/state";
 import {
@@ -72,6 +73,7 @@ import type {
 } from "./types";
 
 export { FIELD_ORDER, PLAYER_SLOT_ORDER } from "./ruleEngine/constants";
+export { opponentOf, playerLabel } from "./ruleEngine/players";
 
 const ROTATION_SLOT_ORDER: Record<PlayerId, SlotKey[]> = {
   player: ["player_front_left", "player_front_right", "player_back_right", "player_back_left"],
@@ -1582,14 +1584,6 @@ export function canSummonTo(state: GameState, handInstanceId: string, slotKey: S
 
 export function targetToKey(target: Target): string {
   return targetToKeyFromTargeting(target);
-}
-
-export function opponentOf(playerId: PlayerId): PlayerId {
-  return playerId === "player" ? "cpu" : "player";
-}
-
-export function playerLabel(playerId: PlayerId): string {
-  return playerId === "player" ? "プレイヤー" : "CPU";
 }
 
 function createPlayer(id: PlayerId, deck: CardInstance[], masterId: MasterId): PlayerState {

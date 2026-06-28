@@ -1,9 +1,11 @@
-import { mkdir, writeFile } from "node:fs/promises";
-import { dirname } from "node:path";
 import { getCardName, getMonsterDef } from "../src/game/cards";
 import { getMonsterAiTrait } from "../src/game/aiUnitTraits";
 import { getCommandTargets } from "../src/game/ruleEngine/targeting";
-import { DEFAULT_PLAYER_DECK_PRESET_ID } from "../src/game/defaultDeckPresets";
+import {
+  CURRENT_WHITE_AI_BLACK_1375_PRESSURE_OPPONENT,
+  CURRENT_WHITE_AI_MIRROR_OPPONENT,
+  createCurrentWhiteAiVariant as currentVariant,
+} from "../src/game/currentWhiteAiFixtures";
 import {
   DEFAULT_WHITE_AI_TUNING_OPPONENTS,
   DEFAULT_WHITE_AI_TUNING_VARIANTS,
@@ -12,10 +14,9 @@ import {
   type WhiteAiTuningOpponent,
   type WhiteAiTuningVariant,
 } from "../src/game/whiteAiTuningLoop";
-import type { DeckPresetId } from "../src/game/deckPresets";
-import type { CpuAiTuning } from "../src/game/cpuAi";
 import type { MasterLabDecisionEvent, MasterLabGameStateSummary } from "../src/game/masterLabAutoPlay";
 import type { GameState, MonsterState, PlayerId, SlotKey, SlotState } from "../src/game/types";
+import { escapeMarkdownTableCell, formatPercent, readInteger, readString, round, writeReport } from "./lib/cli";
 
 type Outcome = "win" | "loss" | "draw";
 
@@ -157,8 +158,6 @@ const DEFAULT_OPPONENT_IDS = [
   "white_current_mirror",
 ] as const;
 
-const CURRENT_WHITE_DECK = DEFAULT_PLAYER_DECK_PRESET_ID;
-
 const CURRENT_SHIELD_AUDIT_VARIANTS = [
   currentVariant("current_white_baseline", "現行: デスシープ3 / white", undefined, "暫定白最強デッキで現行white profileのシールド品質を監査する。"),
   currentVariant("current_shield_no_pressure8", "候補: ノープレッシャー盾抑制8", {
@@ -180,40 +179,9 @@ const CURRENT_SHIELD_AUDIT_VARIANTS = [
 ] as const satisfies readonly WhiteAiTuningVariant[];
 
 const CURRENT_SHIELD_AUDIT_OPPONENTS = [
-  {
-    id: "black_1375_pressure",
-    category: "black",
-    label: "黒: 1375 / pressure",
-    participant: "black",
-    deckPreset: "submission-pro-no-rare8-black-1375",
-    aiProfile: "pressure",
-  },
-  {
-    id: "white_current_mirror",
-    category: "white",
-    label: "白: 暫定白最強ミラー / white",
-    participant: "white",
-    deckPreset: CURRENT_WHITE_DECK,
-    aiProfile: "white",
-  },
+  CURRENT_WHITE_AI_BLACK_1375_PRESSURE_OPPONENT,
+  CURRENT_WHITE_AI_MIRROR_OPPONENT,
 ] as const satisfies readonly WhiteAiTuningOpponent[];
-
-function currentVariant(
-  id: string,
-  label: string,
-  tuning: CpuAiTuning | undefined,
-  hypothesis: string,
-): WhiteAiTuningVariant {
-  return {
-    id,
-    kind: tuning ? "hybrid" : "baseline",
-    label,
-    deckPreset: CURRENT_WHITE_DECK as DeckPresetId,
-    aiProfile: "white",
-    ...(tuning ? { tuning } : {}),
-    hypothesis,
-  };
-}
 
 const SLOT_KEYS: SlotKey[] = [
   "cpu_back_left",
@@ -252,11 +220,6 @@ if (options.markdownPath) {
 }
 if (options.jsonPath) {
   console.log(`JSON: ${options.jsonPath}`);
-}
-
-async function writeReport(path: string, content: string): Promise<void> {
-  await mkdir(dirname(path), { recursive: true });
-  await writeFile(path, `${content}\n`);
 }
 
 function buildShieldUsageAuditReport(loopReport: ReturnType<typeof runWhiteAiTuningLoop>): ShieldUsageAuditReport {
@@ -384,7 +347,7 @@ function buildShieldUsageAuditReport(loopReport: ReturnType<typeof runWhiteAiTun
         slotKey: audit.slotKey,
         card: audit.cardName,
         reason: audit.event.reason,
-        score: round1(audit.event.score),
+        score: round(audit.event.score, 1),
         predictedNoShieldDamage: audit.estimate.noShieldDamage,
         predictedWithShieldDamage: audit.estimate.withShieldDamage,
         actualContacts: audit.outcomeAudit.actualContacts,
@@ -966,7 +929,7 @@ function formatVariantRow(variant: VariantShieldAudit): string {
     formatCountRate(m.predictedMasterAttackAvailable, m.shieldUses),
     formatCountRate(m.predictedMasterAttackOnly, m.shieldUses),
     formatCountRate(m.predictedMasterAttackChangesLethal, m.shieldUses),
-    `${round1(m.predictedNoShieldDamageTotal / Math.max(1, m.shieldUses))}/${round1(m.predictedWithShieldDamageTotal / Math.max(1, m.shieldUses))}`,
+    `${round(m.predictedNoShieldDamageTotal / Math.max(1, m.shieldUses), 1)}/${round(m.predictedWithShieldDamageTotal / Math.max(1, m.shieldUses), 1)}`,
     formatCountRate(m.preservedToNextOwnTurn, m.shieldUses),
     formatCountRate(m.forcedExtraActionProxy, m.shieldUses),
     formatCountRate(m.singleContactRemoved, m.shieldUses),
@@ -1062,10 +1025,10 @@ function parseArgs(args: string[]): CliOptions {
     const arg = args[i];
     const next = args[i + 1];
     if (arg === "--games-per-matchup") {
-      parsed.gamesPerMatchup = readNumber(arg, next);
+      parsed.gamesPerMatchup = readInteger(arg, next);
       i += 1;
     } else if (arg === "--seed-start") {
-      parsed.seedStart = readNumber(arg, next);
+      parsed.seedStart = readInteger(arg, next);
       i += 1;
     } else if (arg === "--variant") {
       variantIds.push(readString(arg, next));
@@ -1074,10 +1037,10 @@ function parseArgs(args: string[]): CliOptions {
       opponentIds.push(readString(arg, next));
       i += 1;
     } else if (arg === "--max-steps") {
-      parsed.maxSteps = readNumber(arg, next);
+      parsed.maxSteps = readInteger(arg, next);
       i += 1;
     } else if (arg === "--max-turns") {
-      parsed.maxTurns = readNumber(arg, next);
+      parsed.maxTurns = readInteger(arg, next);
       i += 1;
     } else if (arg === "--markdown") {
       parsed.markdownPath = readString(arg, next);
@@ -1122,39 +1085,16 @@ function resolveOpponents(ids: readonly string[]): WhiteAiTuningOpponent[] {
   });
 }
 
-function readNumber(name: string, value: string | undefined): number {
-  const number = Number(readString(name, value));
-  if (!Number.isInteger(number)) {
-    throw new Error(`${name} must be an integer`);
-  }
-  return number;
-}
-
-function readString(name: string, value: string | undefined): string {
-  if (!value) {
-    throw new Error(`${name} requires a value`);
-  }
-  return value;
-}
-
 function formatCountRate(count: number, total: number): string {
   return `${count}<br>${formatPercent(rate(count, total))}`;
-}
-
-function formatPercent(value: number): string {
-  return `${round1(value * 100)}%`;
 }
 
 function rate(count: number, total: number): number {
   return total > 0 ? count / total : 0;
 }
 
-function round1(value: number): number {
-  return Math.round(value * 10) / 10;
-}
-
 function escapeCell(value: string): string {
-  return value.replace(/\|/g, "\\|");
+  return escapeMarkdownTableCell(value);
 }
 
 function printHelp(): void {

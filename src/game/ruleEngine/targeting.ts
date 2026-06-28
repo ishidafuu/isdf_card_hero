@@ -18,6 +18,7 @@ import type {
 import { FIELD_ORDER, PLAYER_SLOT_ORDER } from "./constants";
 import { drillBreakPartnerSlotKey } from "./drillBreak";
 import { isOpponentMasterInCommandRange, isTargetInCommandRange } from "./field";
+import { opponentOf } from "./players";
 
 export function getCommandTargets(
   state: GameState,
@@ -662,8 +663,4 @@ function slotInFrontOf(slot: SlotState): SlotKey | undefined {
 
 function makeSlotKey(owner: PlayerId, row: Row, lane: Lane): SlotKey {
   return `${owner}_${row}_${lane}`;
-}
-
-function opponentOf(playerId: PlayerId): PlayerId {
-  return playerId === "player" ? "cpu" : "player";
 }

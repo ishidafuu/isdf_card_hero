@@ -1,7 +1,8 @@
-import { mkdir, writeFile } from "node:fs/promises";
-import { dirname } from "node:path";
-import type { CpuAiTuning } from "../src/game/cpuAi";
-import { DEFAULT_PLAYER_DECK_PRESET_ID } from "../src/game/defaultDeckPresets";
+import {
+  CURRENT_WHITE_AI_DECK_PRESET_ID,
+  CURRENT_WHITE_AI_DEFAULT_OPPONENTS,
+  createCurrentWhiteAiVariant as variant,
+} from "../src/game/currentWhiteAiFixtures";
 import {
   formatWhiteAiTuningLoopMarkdown,
   runWhiteAiTuningLoop,
@@ -10,6 +11,7 @@ import {
   type WhiteAiTuningStanding,
   type WhiteAiTuningVariant,
 } from "../src/game/whiteAiTuningLoop";
+import { escapeMarkdownTableCell, formatPercent, readNonNegativeInteger, readString, signedPercent, signedRounded, writeReport } from "./lib/cli";
 
 interface CliOptions {
   screenGamesPerMatchup: number;
@@ -62,8 +64,6 @@ interface AdoptionSummary {
   recommendation: "adopt" | "hold";
   reason: string;
 }
-
-const CURRENT_WHITE_DECK = DEFAULT_PLAYER_DECK_PRESET_ID;
 
 const options = parseArgs(process.argv.slice(2));
 const variants = buildVariants();
@@ -161,61 +161,8 @@ function buildVariants(): WhiteAiTuningVariant[] {
   ];
 }
 
-function variant(
-  id: string,
-  label: string,
-  tuning: CpuAiTuning | undefined,
-  hypothesis: string,
-  aiProfile: WhiteAiTuningVariant["aiProfile"] = "white",
-): WhiteAiTuningVariant {
-  return {
-    id,
-    kind: tuning ? "hybrid" : "baseline",
-    label,
-    deckPreset: CURRENT_WHITE_DECK,
-    aiProfile,
-    ...(tuning ? { tuning } : {}),
-    hypothesis,
-  };
-}
-
 function buildOpponents(): WhiteAiTuningOpponent[] {
-  return [
-    {
-      id: "black_pressure_strong",
-      category: "black",
-      label: "黒: black-pressure / strong",
-      participant: "black",
-      deckPreset: "black-pressure",
-      aiProfile: "strong",
-    },
-    {
-      id: "black_1375_pressure",
-      category: "black",
-      label: "黒: 1375 / pressure",
-      participant: "black",
-      deckPreset: "submission-pro-no-rare8-black-1375",
-      aiProfile: "pressure",
-    },
-    {
-      id: "decoy_back_stable",
-      category: "decoy",
-      label: "デコイ: 後衛安定 / enemy+16",
-      participant: "decoy",
-      deckPreset: "master-lab-decoy-unit-back-stable",
-      aiProfile: "strong",
-      labActionMargin: 12,
-      labEvaluationTuning: { targetOwnerBias: { enemy: 16 } },
-    },
-    {
-      id: "white_current_mirror",
-      category: "white",
-      label: "白: 暫定白最強ミラー / white",
-      participant: "white",
-      deckPreset: CURRENT_WHITE_DECK,
-      aiProfile: "white",
-    },
-  ];
+  return [...CURRENT_WHITE_AI_DEFAULT_OPPONENTS];
 }
 
 function selectConfirmVariants(report: WhiteAiTuningReport, top: number): WhiteAiTuningVariant[] {
@@ -242,7 +189,7 @@ function buildSummary(screenReport: WhiteAiTuningReport, confirmReport: WhiteAiT
   const adopted = buildAdoption(confirmBest, confirmBaseline);
   return {
     generatedAt: new Date().toISOString(),
-    deckPreset: CURRENT_WHITE_DECK,
+    deckPreset: CURRENT_WHITE_AI_DECK_PRESET_ID,
     screen: summarizePhase(screenReport),
     confirm: summarizePhase(confirmReport),
     adopted,
@@ -426,22 +373,22 @@ function parseArgs(args: string[]): CliOptions {
     const arg = args[i];
     const next = args[i + 1];
     if (arg === "--screen-games-per-matchup") {
-      parsed.screenGamesPerMatchup = readNumber(arg, next);
+      parsed.screenGamesPerMatchup = readNonNegativeInteger(arg, next);
       i += 1;
     } else if (arg === "--confirm-games-per-matchup") {
-      parsed.confirmGamesPerMatchup = readNumber(arg, next);
+      parsed.confirmGamesPerMatchup = readNonNegativeInteger(arg, next);
       i += 1;
     } else if (arg === "--seed-start") {
-      parsed.seedStart = readNumber(arg, next);
+      parsed.seedStart = readNonNegativeInteger(arg, next);
       i += 1;
     } else if (arg === "--max-steps") {
-      parsed.maxSteps = readNumber(arg, next);
+      parsed.maxSteps = readNonNegativeInteger(arg, next);
       i += 1;
     } else if (arg === "--max-turns") {
-      parsed.maxTurns = readNumber(arg, next);
+      parsed.maxTurns = readNonNegativeInteger(arg, next);
       i += 1;
     } else if (arg === "--top") {
-      parsed.top = readNumber(arg, next);
+      parsed.top = readNonNegativeInteger(arg, next);
       i += 1;
     } else if (arg === "--markdown") {
       parsed.markdownPath = readString(arg, next);
@@ -471,40 +418,16 @@ function parseArgs(args: string[]): CliOptions {
   return parsed;
 }
 
-function readNumber(name: string, value: string | undefined): number {
-  const number = Number(readString(name, value));
-  if (!Number.isInteger(number) || number < 0) {
-    throw new Error(`${name} must be a non-negative integer`);
-  }
-  return number;
-}
-
-function readString(name: string, value: string | undefined): string {
-  if (!value) {
-    throw new Error(`${name} requires a value`);
-  }
-  return value;
-}
-
-async function writeReport(path: string, content: string): Promise<void> {
-  await mkdir(dirname(path), { recursive: true });
-  await writeFile(path, `${content}\n`);
-}
-
 function percent(value: number): string {
-  return `${Math.round(value * 1000) / 10}%`;
+  return formatPercent(value);
 }
 
 function signed(value: number): string {
-  return value >= 0 ? `+${Math.round(value * 10) / 10}` : `${Math.round(value * 10) / 10}`;
-}
-
-function signedPercent(value: number): string {
-  return `${value >= 0 ? "+" : ""}${percent(value)}`;
+  return signedRounded(value);
 }
 
 function escapeCell(value: string): string {
-  return value.replaceAll("|", "\\|");
+  return escapeMarkdownTableCell(value);
 }
 
 function printHelp(): void {

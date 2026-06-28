@@ -1,10 +1,9 @@
-import { mkdir, writeFile } from "node:fs/promises";
 import { performance } from "node:perf_hooks";
-import { dirname } from "node:path";
 import { getCardName, summarizeDeckCardIds } from "../src/game/cards";
 import { getDeckPreset, type DeckPresetId } from "../src/game/deckPresets";
 import { createInitialGame, runAutoStep } from "../src/game/rules";
 import type { GameState, PlayerId } from "../src/game/types";
+import { average, escapeMarkdownTableCell, formatPercent, readNonNegativeInteger, readString, round, signed, writeReport } from "./lib/cli";
 
 type VariantId = "1377-original" | "1377-death-sheep3" | "1377-ash-roro3" | "1377-yummy-death-sheep-ash-roro";
 
@@ -561,16 +560,16 @@ function parseArgs(args: string[]): CliOptions {
     const arg = args[i];
     const next = args[i + 1];
     if (arg === "--games-per-direction") {
-      parsed.gamesPerDirection = readNumber(arg, next);
+      parsed.gamesPerDirection = readNonNegativeInteger(arg, next);
       i += 1;
     } else if (arg === "--seed-start") {
-      parsed.seedStart = readNumber(arg, next);
+      parsed.seedStart = readNonNegativeInteger(arg, next);
       i += 1;
     } else if (arg === "--max-steps") {
-      parsed.maxSteps = readNumber(arg, next);
+      parsed.maxSteps = readNonNegativeInteger(arg, next);
       i += 1;
     } else if (arg === "--max-turns") {
-      parsed.maxTurns = readNumber(arg, next);
+      parsed.maxTurns = readNonNegativeInteger(arg, next);
       i += 1;
     } else if (arg === "--markdown") {
       parsed.markdownPath = readString(arg, next);
@@ -590,49 +589,12 @@ function parseArgs(args: string[]): CliOptions {
   return parsed;
 }
 
-function readNumber(name: string, value: string | undefined): number {
-  const valueNumber = Number(readString(name, value));
-  if (!Number.isInteger(valueNumber) || valueNumber < 0) {
-    throw new Error(`${name} must be a non-negative integer`);
-  }
-  return valueNumber;
-}
-
-function readString(name: string, value: string | undefined): string {
-  if (!value) {
-    throw new Error(`${name} requires a value`);
-  }
-  return value;
-}
-
 function addTurnElapsed(turnElapsed: Map<string, number>, turnKey: string, elapsedMs: number): void {
   turnElapsed.set(turnKey, (turnElapsed.get(turnKey) ?? 0) + elapsedMs);
 }
 
-function average(values: readonly number[]): number {
-  return values.length > 0 ? values.reduce((sum, value) => sum + value, 0) / values.length : 0;
-}
-
-function round(value: number, precision: number): number {
-  const factor = 10 ** precision;
-  return Math.round(value * factor) / factor;
-}
-
-function formatPercent(value: number): string {
-  return `${Math.round(value * 1000) / 10}%`;
-}
-
-function signed(value: number): string {
-  return value >= 0 ? `+${value}` : `${value}`;
-}
-
 function escapeCell(value: string): string {
-  return value.replaceAll("|", "\\|");
-}
-
-async function writeReport(path: string, content: string): Promise<void> {
-  await mkdir(dirname(path), { recursive: true });
-  await writeFile(path, `${content}\n`);
+  return escapeMarkdownTableCell(value);
 }
 
 function printHelp(): void {
