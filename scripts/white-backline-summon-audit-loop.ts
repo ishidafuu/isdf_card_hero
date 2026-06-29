@@ -84,6 +84,11 @@ interface BacklineSummonMetrics {
   badTopAlternativeMove: number;
   badTopAlternativeFrontSummon: number;
   badTopAlternativeOtherSummon: number;
+  badTopSummonAlternative: number;
+  badTopSummonSameCard: number;
+  badTopSummonBlocked: number;
+  badTopSummonBacklinePattern: number;
+  badTopSummonNoBacklinePattern: number;
 }
 
 interface BacklineSummonAudit {
@@ -123,6 +128,7 @@ interface BacklineAlternativeAudit {
   closestMove?: CpuEvaluationTrace;
   closestFrontSummon?: CpuEvaluationTrace;
   closestOtherSummon?: CpuEvaluationTrace;
+  topSummon?: CpuEvaluationTrace;
   closeNonSummon: boolean;
 }
 
@@ -348,6 +354,7 @@ function auditAlternatives(event: MasterLabDecisionEvent): BacklineAlternativeAu
     closestOtherSummon: nonSelected.find((evaluation) =>
       evaluation.type === "summon" && summonTargetRow(evaluation.decision) !== "front",
     ),
+    topSummon: nonSelected.find((evaluation) => evaluation.type === "summon"),
     closeNonSummon: bestNonSummon ? bestNonSummon.deltaFromSelected <= 35 : false,
   };
 }
@@ -458,6 +465,7 @@ function addAudit(metrics: BacklineSummonMetrics, audit: BacklineSummonAudit): v
       metrics.badWithCloseNonSummonAlternative += 1;
     }
     addBadTopAlternative(metrics, audit.alternatives.topNonSelected);
+    addBadTopSummonAlternative(metrics, audit, audit.alternatives.topSummon);
   }
 }
 
@@ -484,6 +492,28 @@ function addBadTopAlternative(metrics: BacklineSummonMetrics, alternative: CpuEv
     metrics.badTopAlternativeFrontSummon += 1;
   } else if (alternative.type === "summon") {
     metrics.badTopAlternativeOtherSummon += 1;
+  }
+}
+
+function addBadTopSummonAlternative(
+  metrics: BacklineSummonMetrics,
+  audit: BacklineSummonAudit,
+  alternative: CpuEvaluationTrace | undefined,
+): void {
+  if (alternative?.type !== "summon" || !alternative.summon) {
+    return;
+  }
+  metrics.badTopSummonAlternative += 1;
+  if (alternative.summon.cardId === audit.cardId) {
+    metrics.badTopSummonSameCard += 1;
+  }
+  if (alternative.summon.frontBlocked) {
+    metrics.badTopSummonBlocked += 1;
+  }
+  if (monsterHasBacklineAttackPattern(alternative.summon.cardId)) {
+    metrics.badTopSummonBacklinePattern += 1;
+  } else {
+    metrics.badTopSummonNoBacklinePattern += 1;
   }
 }
 
@@ -574,6 +604,7 @@ function formatAlternatives(alternatives: BacklineAlternativeAudit): string {
     `end=${formatEvaluation(alternatives.closestEndTurn)}`,
     `move=${formatEvaluation(alternatives.closestMove)}`,
     `frontSummon=${formatEvaluation(alternatives.closestFrontSummon)}`,
+    `topSummon=${formatEvaluation(alternatives.topSummon)}`,
   ].join(" / ");
 }
 
@@ -581,7 +612,10 @@ function formatEvaluation(evaluation: CpuEvaluationTrace | undefined): string {
   if (!evaluation) {
     return "-";
   }
-  return `${evaluation.type}:${evaluation.deltaFromSelected >= 0 ? "+" : ""}${round(evaluation.deltaFromSelected, 1)} ${evaluation.decision}`;
+  const summon = evaluation.summon
+    ? ` [${evaluation.summon.cardName}->${evaluation.summon.slotKey}${evaluation.summon.frontBlocker ? ` behind ${evaluation.summon.frontBlocker.cardName} HP${evaluation.summon.frontBlocker.hp}` : ""}]`
+    : "";
+  return `${evaluation.type}:${evaluation.deltaFromSelected >= 0 ? "+" : ""}${round(evaluation.deltaFromSelected, 1)} ${evaluation.decision}${summon}`;
 }
 
 function buildNotes(metrics: BacklineSummonMetrics): string[] {
@@ -604,6 +638,12 @@ function buildNotes(metrics: BacklineSummonMetrics): string[] {
   if (rate(metrics.badWithCloseNonSummonAlternative, metrics.badBlockedBacklineSummons) >= 0.4) {
     notes.push("bad summon の多くで近い非召喚代替がある。次は召喚ペナルティより、攻撃/ためる/終了との比較条件を詰める価値が高い。");
   }
+  if (rate(metrics.badTopSummonSameCard, metrics.badTopSummonAlternative) >= 0.5) {
+    notes.push("bad summon の代替召喚が同じカードに寄っている。カード選択より、同カードを左右後列に置く予約召喚そのものを疑うべき。");
+  }
+  if (rate(metrics.badTopSummonNoBacklinePattern, metrics.badTopSummonAlternative) >= 0.5) {
+    notes.push("bad summon の代替召喚も後列射程なしに寄っている。後列で仕事できるカードを優先する召喚候補品質の改善が必要。");
+  }
   return notes;
 }
 
@@ -613,7 +653,9 @@ function buildNextLoopProposal(metrics: BacklineSummonMetrics): string[] {
   }
   const steps: string[] = [];
   if (metrics.badBlockedBacklineSummons > 0) {
-    if (rate(metrics.badWithCloseNonSummonAlternative, metrics.badBlockedBacklineSummons) >= 0.35) {
+    if (rate(metrics.badTopSummonNoBacklinePattern, metrics.badTopSummonAlternative) >= 0.5) {
+      steps.push("次は bad summon 局面で、後列射程なし前衛カード同士の召喚を避け、手札内に後列仕事カードがあるならそちらを優先する候補を作る。");
+    } else if (rate(metrics.badWithCloseNonSummonAlternative, metrics.badBlockedBacklineSummons) >= 0.35) {
       steps.push("bad summon で近い非召喚代替が多い場合、召喚そのものを罰するのではなく、低石・仕事予定なし局面で `attack/focus/end_turn` が勝てる条件を実装候補化する。");
     } else {
       steps.push("bad summon の代替が召喚同士に寄る場合、後列仕事なし召喚を抑えるより、召喚先・カード選択の品質を比較する候補へ移る。");
@@ -703,6 +745,9 @@ function formatMetricsSummary(metrics: BacklineSummonMetrics): string {
     `- Bad blocked summon: ${metrics.badBlockedBacklineSummons} (${formatPercent(rate(metrics.badBlockedBacklineSummons, metrics.blockedBacklineSummons))})`,
     `- Bad with evaluation trace: ${metrics.badWithEvaluationTrace} (${formatPercent(rate(metrics.badWithEvaluationTrace, metrics.badBlockedBacklineSummons))})`,
     `- Bad close non-summon alt: ${metrics.badWithCloseNonSummonAlternative} (${formatPercent(rate(metrics.badWithCloseNonSummonAlternative, metrics.badBlockedBacklineSummons))})`,
+    `- Bad top summon alt: ${metrics.badTopSummonAlternative} (${formatPercent(rate(metrics.badTopSummonAlternative, metrics.badBlockedBacklineSummons))})`,
+    `- Bad top summon same card: ${metrics.badTopSummonSameCard} (${formatPercent(rate(metrics.badTopSummonSameCard, metrics.badTopSummonAlternative))})`,
+    `- Bad top summon backline pattern: ${metrics.badTopSummonBacklinePattern} (${formatPercent(rate(metrics.badTopSummonBacklinePattern, metrics.badTopSummonAlternative))})`,
   ].join("\n");
 }
 
@@ -788,6 +833,11 @@ function emptyMetrics(): BacklineSummonMetrics {
     badTopAlternativeMove: 0,
     badTopAlternativeFrontSummon: 0,
     badTopAlternativeOtherSummon: 0,
+    badTopSummonAlternative: 0,
+    badTopSummonSameCard: 0,
+    badTopSummonBlocked: 0,
+    badTopSummonBacklinePattern: 0,
+    badTopSummonNoBacklinePattern: 0,
   };
 }
 
@@ -963,6 +1013,9 @@ function formatTopAlternativeBreakdown(metrics: BacklineSummonMetrics): string {
     metrics.badTopAlternativeMove > 0 ? `Move${metrics.badTopAlternativeMove}` : undefined,
     metrics.badTopAlternativeFrontSummon > 0 ? `FrontSum${metrics.badTopAlternativeFrontSummon}` : undefined,
     metrics.badTopAlternativeOtherSummon > 0 ? `OtherSum${metrics.badTopAlternativeOtherSummon}` : undefined,
+    metrics.badTopSummonSameCard > 0 ? `SameCard${metrics.badTopSummonSameCard}` : undefined,
+    metrics.badTopSummonBacklinePattern > 0 ? `ReachSum${metrics.badTopSummonBacklinePattern}` : undefined,
+    metrics.badTopSummonNoBacklinePattern > 0 ? `NoReachSum${metrics.badTopSummonNoBacklinePattern}` : undefined,
   ].filter((value): value is string => !!value).join(", ") || "-";
 }
 

@@ -95,6 +95,24 @@ export interface MasterLabCpuDecisionEvaluation {
   deltaFromSelected: number;
   index: number;
   selected: boolean;
+  summon?: MasterLabCpuSummonEvaluation;
+}
+
+export interface MasterLabCpuSummonEvaluation {
+  handInstanceId: string;
+  cardId: string;
+  cardName: string;
+  slotKey: SlotKey;
+  row: "front" | "back";
+  lane: "left" | "right";
+  frontBlocked: boolean;
+  frontBlocker?: {
+    cardId: string;
+    cardName: string;
+    hp: number;
+    level: number;
+    status: string;
+  };
 }
 
 export interface MasterLabGameStateSummary {
@@ -225,7 +243,9 @@ type SelectedDecision =
     }
   | { source: "master_lab"; evaluation: MasterLabActionEvaluation; score: number; legalDecisionCount: number; labDecisionCount: number; reason: string };
 
-const CPU_DECISION_EVALUATION_TRACE_LIMIT = 8;
+const CPU_DECISION_EVALUATION_TRACE_LIMIT = 12;
+const CPU_DECISION_OVERALL_EVALUATION_TRACE_LIMIT = 8;
+const CPU_DECISION_SUMMON_EVALUATION_TRACE_LIMIT = 4;
 
 const DEFAULT_OPTIONS = {
   seedStart: 900,
@@ -675,7 +695,7 @@ function chooseMixedDecision(game: GameState, options: ResolvedMasterLabAutoPlay
       legalDecisionCount: evaluations.length,
       labDecisionCount: 0,
       reason: decision.reason,
-      ...(evaluations.length > 0 ? { cpuDecisionEvaluations: cpuDecisionEvaluationTrace(evaluations, decision) } : {}),
+      ...(evaluations.length > 0 ? { cpuDecisionEvaluations: cpuDecisionEvaluationTrace(evaluations, decision, game) } : {}),
     };
   }
 
@@ -706,13 +726,14 @@ function chooseMixedDecision(game: GameState, options: ResolvedMasterLabAutoPlay
     legalDecisionCount: cpuEvaluations.length,
     labDecisionCount: labEvaluations.length,
     reason: decision.reason,
-    ...(options.includeGameHistory ? { cpuDecisionEvaluations: cpuDecisionEvaluationTrace(cpuEvaluations, decision) } : {}),
+    ...(options.includeGameHistory ? { cpuDecisionEvaluations: cpuDecisionEvaluationTrace(cpuEvaluations, decision, game) } : {}),
   };
 }
 
 function cpuDecisionEvaluationTrace(
   evaluations: readonly CpuDecisionEvaluation[],
   selectedDecision: CpuDecision,
+  state: GameState,
 ): MasterLabCpuDecisionEvaluation[] {
   const selectedDecisionText = decisionToText(selectedDecision);
   const selectedEvaluation = evaluations.find((evaluation) =>
@@ -721,13 +742,23 @@ function cpuDecisionEvaluationTrace(
   const selectedTotalScore = selectedEvaluation?.totalScore ?? selectedDecision.score;
   const selectedIndex = selectedEvaluation?.index;
   const ranked = [...evaluations].sort((a, b) => b.totalScore - a.totalScore || a.index - b.index);
-  const top = ranked.slice(0, CPU_DECISION_EVALUATION_TRACE_LIMIT);
-  if (selectedEvaluation && !top.some((evaluation) => evaluation.index === selectedEvaluation.index)) {
-    top.unshift(selectedEvaluation);
-    top.length = Math.min(top.length, CPU_DECISION_EVALUATION_TRACE_LIMIT);
-  }
+  const top: CpuDecisionEvaluation[] = [];
+  const addTrace = (evaluation: CpuDecisionEvaluation | undefined) => {
+    if (evaluation && !top.some((candidate) => candidate.index === evaluation.index)) {
+      top.push(evaluation);
+    }
+  };
 
-  return top.map((evaluation) => {
+  if (selectedEvaluation) {
+    addTrace(selectedEvaluation);
+  }
+  ranked.slice(0, CPU_DECISION_OVERALL_EVALUATION_TRACE_LIMIT).forEach(addTrace);
+  ranked
+    .filter((evaluation) => evaluation.decision.type === "summon")
+    .slice(0, CPU_DECISION_SUMMON_EVALUATION_TRACE_LIMIT)
+    .forEach(addTrace);
+
+  return top.slice(0, CPU_DECISION_EVALUATION_TRACE_LIMIT).map((evaluation) => {
     const decisionText = decisionToText(evaluation.decision);
     const selected = selectedIndex !== undefined
       ? evaluation.index === selectedIndex
@@ -741,8 +772,57 @@ function cpuDecisionEvaluationTrace(
       deltaFromSelected: round1(selectedTotalScore - evaluation.totalScore),
       index: evaluation.index,
       selected,
+      ...(evaluation.decision.type === "summon"
+        ? { summon: summarizeCpuSummonEvaluation(state, evaluation.decision) }
+        : {}),
     };
   });
+}
+
+function summarizeCpuSummonEvaluation(
+  state: GameState,
+  decision: Extract<CpuDecision, { type: "summon" }>,
+): MasterLabCpuSummonEvaluation {
+  const slot = state.slots[decision.slotKey];
+  const card = state.players[state.currentPlayer].hand.find((candidate) =>
+    candidate.instanceId === decision.handInstanceId,
+  );
+  const cardId = card?.cardId ?? decision.handInstanceId;
+  const frontSlotKey = slot.row === "back" ? frontSlotKeyFor(decision.slotKey) : undefined;
+  const frontMonster = frontSlotKey ? state.slots[frontSlotKey].monster : undefined;
+  return {
+    handInstanceId: decision.handInstanceId,
+    cardId,
+    cardName: safeCardName(cardId),
+    slotKey: decision.slotKey,
+    row: slot.row,
+    lane: slot.lane,
+    frontBlocked: !!frontMonster,
+    ...(frontMonster
+      ? {
+          frontBlocker: {
+            cardId: frontMonster.cardId,
+            cardName: safeCardName(frontMonster.cardId),
+            hp: frontMonster.hp,
+            level: frontMonster.level,
+            status: frontMonster.status,
+          },
+        }
+      : {}),
+  };
+}
+
+function frontSlotKeyFor(slotKey: SlotKey): SlotKey {
+  const [owner, , lane] = slotKey.split("_") as [PlayerId, "back", "left" | "right"];
+  return `${owner}_front_${lane}`;
+}
+
+function safeCardName(cardId: string): string {
+  try {
+    return getCardDef(cardId).name;
+  } catch {
+    return cardId;
+  }
 }
 
 function createMasterLabInitialGame(seed: number, options: ResolvedMasterLabAutoPlayOptions): GameState {
