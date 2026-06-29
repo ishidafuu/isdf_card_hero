@@ -245,6 +245,30 @@ const ALL_VARIANTS = [
   currentVariant("current_low_stone_back_slot_alt140", "候補: 低石後列枠代替 140", {
     situationalBias: { whiteLowStoneBackSlotAlternativeBonus: 140 },
   }, "同条件で、より強く非召喚のターン計画を押す。広域の枠保存ではなく低石過剰展開に限定する。"),
+  currentVariant("current_last_back_slot_no_reach_guard35", "候補: 最後後列射程なしガード 35", {
+    situationalBias: { whiteLastBackSlotNoReachSummonGuardPenalty: 35 },
+  }, "最後の後列枠を、後列から仕事できない召喚で潰し、手札/山札上位の後列仕事カードが見える時だけ軽く抑える。"),
+  currentVariant("current_last_back_slot_no_reach_guard55", "候補: 最後後列射程なしガード 55", {
+    situationalBias: { whiteLastBackSlotNoReachSummonGuardPenalty: 55 },
+  }, "同条件を中程度に抑える。future_state より狭く、召喚側だけを対象にする。"),
+  currentVariant("current_last_back_slot_no_reach_guard75", "候補: 最後後列射程なしガード 75", {
+    situationalBias: { whiteLastBackSlotNoReachSummonGuardPenalty: 75 },
+  }, "bad summon をしっかり動かせるかを見る強めの候補。"),
+  currentVariant("current_last_back_slot_no_reach_guard95", "候補: 最後後列射程なしガード 95", {
+    situationalBias: { whiteLastBackSlotNoReachSummonGuardPenalty: 95 },
+  }, "強すぎる時の勝敗副作用を確認する上限候補。"),
+  currentVariant("current_death_sheep_special_lock90", "候補: デスシープ特技封じ 90", {
+    situationalBias: { whiteDeathSheepSpecialLockPenalty: 90 },
+  }, "デスシープを特技持ち前衛の後ろへ置いて下段特技を封じる召喚だけを抑える。"),
+  currentVariant("current_death_sheep_special_lock130", "候補: デスシープ特技封じ 130", {
+    situationalBias: { whiteDeathSheepSpecialLockPenalty: 130 },
+  }, "デスシープ特技封じを強めに抑え、配置違和感が減るかと勝敗副作用を見る。"),
+  currentVariant("current_black_guard35_sheep90", "候補: 黒用最後後列35+羊90", {
+    situationalBias: {
+      whiteLastBackSlotNoReachSummonGuardPenalty: 35,
+      whiteDeathSheepSpecialLockPenalty: 90,
+    },
+  }, "黒相手で有効だった最後後列ガード35に、全体候補のデスシープ特技封じを組み合わせる。"),
   currentVariant("current_search_terminal_w3", "検索: terminal width 3", undefined, "評価係数を変えず、同ターン終盤面比較の幅だけを広げて後列枠問題が自然に減るか見る。", "white", {
     sameTurnSearchDepth: 3,
     sameTurnSearchWidth: 4,

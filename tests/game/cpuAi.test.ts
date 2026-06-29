@@ -1886,6 +1886,176 @@ describe("cpu ai", () => {
     }
   });
 
+  it("penalizes no-reach summons that consume the last back slot before queued backline work", () => {
+    const game = createCpuGame([{ cardId: "card_047", instanceId: "cpu_last_slot_dyne" }]);
+    game.players.cpu.masterId = "white";
+    game.players.cpu.stones = 5;
+    game.players.cpu.deck = [
+      { cardId: "yanbaru", instanceId: "cpu_top_yanbaru" },
+      { cardId: "takokke", instanceId: "cpu_deck_takokke_1" },
+      { cardId: "takokke", instanceId: "cpu_deck_takokke_2" },
+      { cardId: "takokke", instanceId: "cpu_deck_takokke_3" },
+      { cardId: "takokke", instanceId: "cpu_deck_takokke_4" },
+    ];
+    for (const slot of Object.values(game.slots)) {
+      delete slot.monster;
+    }
+    game.slots.cpu_front_left.monster = createActiveMonster("takokke", "cpu");
+    game.slots.cpu_front_right.monster = createActiveMonster("card_037", "cpu", { hp: 5 });
+    game.slots.cpu_back_left.monster = createActiveMonster("yanbaru", "cpu");
+
+    const findSummon = (options = {}) =>
+      inspectCpuDecisionEvaluations(game, {
+        profile: "white",
+        search: { sameTurnSearchDepth: 0 },
+        ...options,
+      }).find(
+        (evaluation) =>
+          evaluation.decision.type === "summon" &&
+          evaluation.decision.handInstanceId === "cpu_last_slot_dyne" &&
+          evaluation.decision.slotKey === "cpu_back_right",
+      );
+    const baseline = findSummon();
+    const guarded = findSummon({
+      tunings: { cpu: { situationalBias: { whiteLastBackSlotNoReachSummonGuardPenalty: 95 } } },
+    });
+
+    expect(baseline).toBeDefined();
+    expect(guarded).toBeDefined();
+    expect(guarded?.totalScore).toBeLessThan((baseline?.totalScore ?? 0) - 80);
+  });
+
+  it("uses the last back-slot no-reach guard only in the default white-vs-black matchup", () => {
+    const createLastSlotGame = (opponentMasterId: "black" | "white") => {
+      const game = createCpuGame([{ cardId: "card_047", instanceId: "cpu_last_slot_dyne" }]);
+      game.players.cpu.masterId = "white";
+      game.players.player.masterId = opponentMasterId;
+      game.players.cpu.stones = 5;
+      game.players.cpu.deck = [
+        { cardId: "yanbaru", instanceId: "cpu_top_yanbaru" },
+        { cardId: "takokke", instanceId: "cpu_deck_takokke_1" },
+        { cardId: "takokke", instanceId: "cpu_deck_takokke_2" },
+        { cardId: "takokke", instanceId: "cpu_deck_takokke_3" },
+        { cardId: "takokke", instanceId: "cpu_deck_takokke_4" },
+      ];
+      for (const slot of Object.values(game.slots)) {
+        delete slot.monster;
+      }
+      game.slots.cpu_front_left.monster = createActiveMonster("takokke", "cpu");
+      game.slots.cpu_front_right.monster = createActiveMonster("card_037", "cpu", { hp: 5 });
+      game.slots.cpu_back_left.monster = createActiveMonster("yanbaru", "cpu");
+      return game;
+    };
+    const findSummon = (game: GameState, options = {}) =>
+      inspectCpuDecisionEvaluations(game, {
+        profile: "white",
+        search: { sameTurnSearchDepth: 0 },
+        ...options,
+      }).find(
+        (evaluation) =>
+          evaluation.decision.type === "summon" &&
+          evaluation.decision.handInstanceId === "cpu_last_slot_dyne" &&
+          evaluation.decision.slotKey === "cpu_back_right",
+      );
+
+    const blackGame = createLastSlotGame("black");
+    const blackDisabled = findSummon(blackGame, {
+      tunings: { cpu: { situationalBias: { whiteLastBackSlotNoReachSummonGuardPenalty: 0 } } },
+    });
+    const defaultVsBlack = findSummon(blackGame);
+
+    const mirrorGame = createLastSlotGame("white");
+    const mirrorDisabled = findSummon(mirrorGame, {
+      tunings: { cpu: { situationalBias: { whiteLastBackSlotNoReachSummonGuardPenalty: 0 } } },
+    });
+    const defaultMirror = findSummon(mirrorGame);
+
+    expect(blackDisabled).toBeDefined();
+    expect(defaultVsBlack).toBeDefined();
+    expect(defaultVsBlack?.totalScore).toBeLessThan((blackDisabled?.totalScore ?? 0) - 45);
+    expect(mirrorDisabled).toBeDefined();
+    expect(defaultMirror).toBeDefined();
+    expect(defaultMirror?.totalScore).toBeCloseTo(mirrorDisabled?.totalScore ?? 0);
+  });
+
+  it("does not penalize range-capable summons behind an occupied front lane", () => {
+    const game = createCpuGame([{ cardId: "yanbaru", instanceId: "cpu_last_slot_yanbaru" }]);
+    game.players.cpu.masterId = "white";
+    game.players.cpu.stones = 5;
+    game.players.cpu.deck = [
+      { cardId: "card_051", instanceId: "cpu_top_pygmy" },
+      { cardId: "takokke", instanceId: "cpu_deck_takokke_1" },
+      { cardId: "takokke", instanceId: "cpu_deck_takokke_2" },
+      { cardId: "takokke", instanceId: "cpu_deck_takokke_3" },
+      { cardId: "takokke", instanceId: "cpu_deck_takokke_4" },
+    ];
+    for (const slot of Object.values(game.slots)) {
+      delete slot.monster;
+    }
+    game.slots.cpu_front_left.monster = createActiveMonster("takokke", "cpu");
+    game.slots.cpu_front_right.monster = createActiveMonster("card_037", "cpu", { hp: 5 });
+    game.slots.cpu_back_left.monster = createActiveMonster("yanbaru", "cpu");
+
+    const findSummon = (options = {}) =>
+      inspectCpuDecisionEvaluations(game, {
+        profile: "white",
+        search: { sameTurnSearchDepth: 0 },
+        ...options,
+      }).find(
+        (evaluation) =>
+          evaluation.decision.type === "summon" &&
+          evaluation.decision.handInstanceId === "cpu_last_slot_yanbaru" &&
+          evaluation.decision.slotKey === "cpu_back_right",
+      );
+    const baseline = findSummon();
+    const guarded = findSummon({
+      tunings: { cpu: { situationalBias: { whiteLastBackSlotNoReachSummonGuardPenalty: 95 } } },
+    });
+
+    expect(baseline).toBeDefined();
+    expect(guarded).toBeDefined();
+    expect(guarded?.totalScore).toBeCloseTo(baseline?.totalScore ?? 0);
+  });
+
+  it("uses the death sheep special-lock guard in the default white profile", () => {
+    const game = createCpuGame([{ cardId: "card_133", instanceId: "cpu_last_slot_sheep" }]);
+    game.players.cpu.masterId = "white";
+    game.players.cpu.stones = 5;
+    game.players.cpu.deck = [
+      { cardId: "takokke", instanceId: "cpu_deck_takokke_1" },
+      { cardId: "takokke", instanceId: "cpu_deck_takokke_2" },
+      { cardId: "takokke", instanceId: "cpu_deck_takokke_3" },
+      { cardId: "takokke", instanceId: "cpu_deck_takokke_4" },
+      { cardId: "takokke", instanceId: "cpu_deck_takokke_5" },
+    ];
+    for (const slot of Object.values(game.slots)) {
+      delete slot.monster;
+    }
+    game.slots.cpu_front_left.monster = createActiveMonster("takokke", "cpu");
+    game.slots.cpu_front_right.monster = createActiveMonster("card_037", "cpu", { level: 2, hp: 5 });
+    game.slots.cpu_back_left.monster = createActiveMonster("yanbaru", "cpu");
+
+    const findSummon = (options = {}) =>
+      inspectCpuDecisionEvaluations(game, {
+        profile: "white",
+        search: { sameTurnSearchDepth: 0 },
+        ...options,
+      }).find(
+        (evaluation) =>
+          evaluation.decision.type === "summon" &&
+          evaluation.decision.handInstanceId === "cpu_last_slot_sheep" &&
+          evaluation.decision.slotKey === "cpu_back_right",
+      );
+    const disabled = findSummon({
+      tunings: { cpu: { situationalBias: { whiteDeathSheepSpecialLockPenalty: 0 } } },
+    });
+    const defaultWhite = findSummon();
+
+    expect(disabled).toBeDefined();
+    expect(defaultWhite).toBeDefined();
+    expect(defaultWhite?.totalScore).toBeLessThan((disabled?.totalScore ?? 0) - 120);
+  });
+
   it("focuses when there is no useful attack or summon", () => {
     const game = createCpuGame([]);
     game.players.cpu.stones = 0;

@@ -186,6 +186,7 @@ const WHITE_AI_BASE_TUNING = {
     whiteFrontChipResponsePenalty: 86,
     whiteFrontThreatFocusCounterBonus: 72,
     whiteThreatSourceAttackBonus: 8,
+    whiteDeathSheepSpecialLockPenalty: 90,
   },
 } satisfies CpuAiTuning;
 
@@ -286,6 +287,7 @@ const CPU_AI_PROFILE_CONFIG: Record<CpuAiProfile, CpuAiProfileConfig> = {
 const WHITE_VS_BLACK_MATCHUP_TUNING = {
   situationalBias: {
     whiteMonsterPressureBonus: 4,
+    whiteLastBackSlotNoReachSummonGuardPenalty: 35,
   },
 } satisfies CpuAiTuning;
 
@@ -1121,6 +1123,24 @@ function decisionSituationalBonus(
       bias.whiteLowStoneBackSlotAlternativeBonus,
     );
   }
+  if (bias.whiteLastBackSlotNoReachSummonGuardPenalty) {
+    bonus -= whiteLastBackSlotNoReachSummonGuardDecisionPenalty(
+      before,
+      after,
+      decision,
+      perspective,
+      bias.whiteLastBackSlotNoReachSummonGuardPenalty,
+    );
+  }
+  if (bias.whiteDeathSheepSpecialLockPenalty) {
+    bonus -= whiteDeathSheepSpecialLockDecisionPenalty(
+      before,
+      after,
+      decision,
+      perspective,
+      bias.whiteDeathSheepSpecialLockPenalty,
+    );
+  }
   if (bias.whiteBlackUnsafeMasterAttackPenalty) {
     bonus -= whiteBlackUnsafeMasterAttackDecisionPenalty(
       before,
@@ -1812,6 +1832,136 @@ function whiteLowStoneBackSlotAlternativeDecisionBonus(
   const focusBonus = focus && ownReadyFrontMonsterCount(before, perspective) > 0 ? value * 0.2 : 0;
   const lowStoneBonus = before.players[perspective].stones <= 1 ? value * 0.25 : 0;
   return value + (enemyRemoved ? value * 0.5 : 0) + focusBonus + lowStoneBonus;
+}
+
+function whiteLastBackSlotNoReachSummonGuardDecisionPenalty(
+  before: GameState,
+  after: GameState,
+  decision: CpuDecision,
+  perspective: PlayerId,
+  value: number,
+): number {
+  if (
+    value <= 0 ||
+    before.players[perspective].masterId !== "white" ||
+    decision.type !== "summon" ||
+    after.winner === perspective ||
+    summonWakeCreatesImmediateWork(before, decision.handInstanceId, decision.slotKey) ||
+    emptyBackSlotCountForPlayer(before, perspective) !== 1 ||
+    emptyBackSlotCountForPlayer(after, perspective) !== 0
+  ) {
+    return 0;
+  }
+
+  const slot = after.slots[decision.slotKey];
+  const summoned = slot.monster;
+  if (!summoned || summoned.owner !== perspective || slot.row !== "back") {
+    return 0;
+  }
+  if (monsterHasBacklineAttackPattern(summoned.cardId)) {
+    return 0;
+  }
+
+  const frontSlotKey = frontSlotFor(slot);
+  const beforeFront = before.slots[frontSlotKey].monster;
+  const afterFront = after.slots[frontSlotKey].monster;
+  if (
+    beforeFront?.owner !== perspective ||
+    afterFront?.owner !== perspective ||
+    beforeFront.instanceId !== afterFront.instanceId
+  ) {
+    return 0;
+  }
+
+  const handBacklineWork = handBacklineWorkLastBackSummonCount(before, perspective, decision.handInstanceId);
+  const deckTop5BacklineWork = deckBacklineWorkCount(before, perspective, 5);
+  if (handBacklineWork <= 0 && deckTop5BacklineWork <= 0) {
+    return 0;
+  }
+
+  if (
+    enemyMonsterWasRemoved(before, after, perspective) ||
+    ownMonsterLeveledUp(before, after, perspective) ||
+    masterDamageFromTransition(before, after, perspective) > 0
+  ) {
+    return 0;
+  }
+
+  const readyState = readyPlayerForTacticalEvaluation(after, perspective);
+  if (bestAttackOpportunityScore(readyState, decision.slotKey) > 0) {
+    return 0;
+  }
+
+  const handPressurePenalty = handBacklineWork * Math.min(40, value * 0.5);
+  const deckPressurePenalty = deckTop5BacklineWork * Math.min(30, value * 0.35);
+  const durableFrontPenalty = afterFront.hp >= 3 ? Math.min(25, value * 0.25) : 0;
+  const lowStonePenalty = after.players[perspective].stones <= 1 ? Math.min(30, value * 0.3) : 0;
+  return value + handPressurePenalty + deckPressurePenalty + durableFrontPenalty + lowStonePenalty;
+}
+
+function handBacklineWorkLastBackSummonCount(
+  state: GameState,
+  playerId: PlayerId,
+  excludingHandInstanceId: string,
+): number {
+  const emptyBackSlot = lastEmptyBackSlot(state, playerId);
+  if (!emptyBackSlot) {
+    return 0;
+  }
+  return state.players[playerId].hand.filter((card) => {
+    if (card.instanceId === excludingHandInstanceId) {
+      return false;
+    }
+    try {
+      const def = getCardDef(card.cardId);
+      return def.type === "monster" &&
+        monsterHasBacklineAttackPattern(card.cardId) &&
+        canSummonTo(state, card.instanceId, emptyBackSlot);
+    } catch {
+      return false;
+    }
+  }).length;
+}
+
+function whiteDeathSheepSpecialLockDecisionPenalty(
+  before: GameState,
+  after: GameState,
+  decision: CpuDecision,
+  perspective: PlayerId,
+  value: number,
+): number {
+  if (
+    value <= 0 ||
+    before.players[perspective].masterId !== "white" ||
+    decision.type !== "summon" ||
+    after.winner === perspective
+  ) {
+    return 0;
+  }
+
+  const slot = after.slots[decision.slotKey];
+  const summoned = slot.monster;
+  if (!summoned || summoned.owner !== perspective || summoned.cardId !== "card_133" || slot.row !== "back") {
+    return 0;
+  }
+
+  const beforeFront = before.slots[frontSlotFor(slot)].monster;
+  const afterFront = after.slots[frontSlotFor(slot)].monster;
+  if (
+    beforeFront?.owner !== perspective ||
+    afterFront?.owner !== perspective ||
+    beforeFront.instanceId !== afterFront.instanceId
+  ) {
+    return 0;
+  }
+
+  const sealedCommands = getMonsterCommands(afterFront).slice(1).filter((command) => command.implemented !== false);
+  if (sealedCommands.length === 0) {
+    return 0;
+  }
+
+  const levelPenalty = afterFront.level >= 2 ? Math.min(60, value * 0.5) : 0;
+  return value + sealedCommands.length * 30 + levelPenalty;
 }
 
 function hasRiskyNoReachLastBackSummon(state: GameState, playerId: PlayerId): boolean {

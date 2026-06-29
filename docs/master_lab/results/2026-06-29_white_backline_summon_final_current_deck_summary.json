@@ -1,0 +1,61 @@
+{
+  "generatedAt": "2026-06-29T15:28:31.816Z",
+  "deckPreset": "master-lab-white-1377-death-sheep3",
+  "screen": {
+    "gamesPerMatchup": 1,
+    "totalGames": 8,
+    "standings": [
+      {
+        "rank": 1,
+        "variantId": "current_white_baseline",
+        "label": "現行: デスシープ3 / white",
+        "score": 17.8,
+        "wins": 3,
+        "losses": 4,
+        "draws": 1,
+        "overall": 0.438,
+        "vsBlack": 0.25,
+        "vsDecoy": 1,
+        "vsWhite": 0.25,
+        "averageTurns": 17.3,
+        "issues": "1F/0W",
+        "notes": [
+          "failure 1",
+          "黒に弱い",
+          "シールド偏重"
+        ]
+      }
+    ]
+  },
+  "confirm": {
+    "gamesPerMatchup": 2,
+    "totalGames": 16,
+    "standings": [
+      {
+        "rank": 1,
+        "variantId": "current_white_baseline",
+        "label": "現行: デスシープ3 / white",
+        "score": 21.9,
+        "wins": 8,
+        "losses": 7,
+        "draws": 1,
+        "overall": 0.531,
+        "vsBlack": 0.25,
+        "vsDecoy": 1,
+        "vsWhite": 0.625,
+        "averageTurns": 14.3,
+        "issues": "1F/0W",
+        "notes": [
+          "failure 1",
+          "黒に弱い",
+          "シールド偏重"
+        ]
+      }
+    ]
+  },
+  "nextSteps": [
+    "今回の確認では即採用せず、ベースラインを維持する。",
+    "対黒がまだ不安定。負けseedから、デスシープが前に出た後の盾/ウェイク/攻撃順を重点監査する。",
+    "デッキ側はデスシープ3を固定し、次ループはAIだけを触る。元1377は比較対象として残す。"
+  ]
+}
