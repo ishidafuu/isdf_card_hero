@@ -89,6 +89,11 @@ interface BacklineSummonMetrics {
   badTopSummonBlocked: number;
   badTopSummonBacklinePattern: number;
   badTopSummonNoBacklinePattern: number;
+  badWithOtherBacklineWorkInHand: number;
+  badConsumesLastBackSlot: number;
+  badLeavesNoEmptyBackSlot: number;
+  badOtherBacklineWorkCardsInHandTotal: number;
+  badNoReachFrontBackSlotsAfterTotal: number;
 }
 
 interface BacklineSummonAudit {
@@ -106,6 +111,7 @@ interface BacklineSummonAudit {
   immediateWakeWork: boolean;
   followup: BacklineSummonFollowup;
   alternatives: BacklineAlternativeAudit;
+  handPressure: BacklineHandPressureAudit;
 }
 
 interface BacklineSummonFollowup {
@@ -132,6 +138,19 @@ interface BacklineAlternativeAudit {
   closeNonSummon: boolean;
 }
 
+type HandCardSummary = NonNullable<MasterLabDecisionEvent["currentPlayerHand"]>[number];
+
+interface BacklineHandPressureAudit {
+  hasHandTrace: boolean;
+  otherBacklineWorkCards: HandCardSummary[];
+  otherNoReachFrontMonsters: HandCardSummary[];
+  emptyBackSlotsBefore: number;
+  emptyBackSlotsAfter: number;
+  noReachFrontBackSlotsAfter: number;
+  consumesLastBackSlot: boolean;
+  leavesNoEmptyBackSlot: boolean;
+}
+
 interface BacklineSummonSample {
   kind: string;
   variantId: string;
@@ -150,6 +169,7 @@ interface BacklineSummonSample {
   reason: string;
   flags: string;
   alternatives: string;
+  handPressure: string;
   nextTurn: string;
   board: string;
 }
@@ -167,6 +187,12 @@ const ALL_VARIANTS = [
   currentVariant("current_blocked_backline_no_work120", "候補: 詰まり後列仕事なし 120", {
     situationalBias: { whiteBlockedBacklineNoWorkSummonPenalty: 120 },
   }, "前列が詰まった後列に仕事なしユニットを置く挙動を強く抑える。"),
+  currentVariant("current_back_slot_future_value40", "候補: 後列枠将来価値 40", {
+    situationalBias: { whiteBackSlotFutureValuePenalty: 40 },
+  }, "最後の後列空き枠や後列射程なし前衛の増加を、候補削除ではなく盤面の将来価値として軽く下げる。"),
+  currentVariant("current_back_slot_future_value80", "候補: 後列枠将来価値 80", {
+    situationalBias: { whiteBackSlotFutureValuePenalty: 80 },
+  }, "後列枠を潰す召喚の将来損を中程度に見る。"),
 ] as const satisfies readonly WhiteAiTuningVariant[];
 
 const ALL_OPPONENTS = [
@@ -329,9 +355,36 @@ function auditGameBacklineSummons(
       immediateWakeWork: event.reason.includes("即仕事") || event.reason.includes("ウェイク"),
       followup: auditFollowup(history, index, context.candidateSeat, slotKey, slot.card),
       alternatives: auditAlternatives(event),
+      handPressure: auditHandPressure(event, context.candidateSeat),
     });
   }
   return audits;
+}
+
+function auditHandPressure(event: MasterLabDecisionEvent, candidateSeat: PlayerId): BacklineHandPressureAudit {
+  const hand = event.currentPlayerHand ?? [];
+  const selectedHandInstanceId = summonHandInstanceIdForDecision(event.decision);
+  const otherHand = selectedHandInstanceId
+    ? hand.filter((card) => card.instanceId !== selectedHandInstanceId)
+    : hand;
+  const otherMonsters = otherHand.filter((card) => card.type === "monster");
+  const otherBacklineWorkCards = otherMonsters.filter((card) => monsterHasBacklineAttackPattern(card.cardId));
+  const otherNoReachFrontMonsters = otherMonsters.filter((card) =>
+    card.role === "front" && !monsterHasBacklineAttackPattern(card.cardId),
+  );
+  const emptyBackSlotsBefore = emptyBackSlotCount(event.before, candidateSeat);
+  const emptyBackSlotsAfter = emptyBackSlotCount(event.after, candidateSeat);
+  const noReachFrontBackSlotsAfter = noReachFrontBackSlotCount(event.after, candidateSeat);
+  return {
+    hasHandTrace: hand.length > 0,
+    otherBacklineWorkCards,
+    otherNoReachFrontMonsters,
+    emptyBackSlotsBefore,
+    emptyBackSlotsAfter,
+    noReachFrontBackSlotsAfter,
+    consumesLastBackSlot: emptyBackSlotsBefore > 0 && emptyBackSlotsAfter === 0,
+    leavesNoEmptyBackSlot: emptyBackSlotsAfter === 0,
+  };
 }
 
 function auditAlternatives(event: MasterLabDecisionEvent): BacklineAlternativeAudit {
@@ -466,6 +519,17 @@ function addAudit(metrics: BacklineSummonMetrics, audit: BacklineSummonAudit): v
     }
     addBadTopAlternative(metrics, audit.alternatives.topNonSelected);
     addBadTopSummonAlternative(metrics, audit, audit.alternatives.topSummon);
+    if (audit.handPressure.otherBacklineWorkCards.length > 0) {
+      metrics.badWithOtherBacklineWorkInHand += 1;
+    }
+    if (audit.handPressure.consumesLastBackSlot) {
+      metrics.badConsumesLastBackSlot += 1;
+    }
+    if (audit.handPressure.leavesNoEmptyBackSlot) {
+      metrics.badLeavesNoEmptyBackSlot += 1;
+    }
+    metrics.badOtherBacklineWorkCardsInHandTotal += audit.handPressure.otherBacklineWorkCards.length;
+    metrics.badNoReachFrontBackSlotsAfterTotal += audit.handPressure.noReachFrontBackSlotsAfter;
   }
 }
 
@@ -575,6 +639,7 @@ function formatSample(kind: string, audit: BacklineSummonAudit): BacklineSummonS
     reason: audit.event.reason,
     flags: formatFlags(audit),
     alternatives: formatAlternatives(audit.alternatives),
+    handPressure: formatHandPressure(audit.handPressure),
     nextTurn: shortList(audit.followup.nextTurnDecisions),
     board: formatBoard(audit.event.before),
   };
@@ -606,6 +671,24 @@ function formatAlternatives(alternatives: BacklineAlternativeAudit): string {
     `frontSummon=${formatEvaluation(alternatives.closestFrontSummon)}`,
     `topSummon=${formatEvaluation(alternatives.topSummon)}`,
   ].join(" / ");
+}
+
+function formatHandPressure(pressure: BacklineHandPressureAudit): string {
+  if (!pressure.hasHandTrace) {
+    return "no-hand-trace";
+  }
+  return [
+    `backWork=${formatHandCards(pressure.otherBacklineWorkCards)}`,
+    `noReachFront=${formatHandCards(pressure.otherNoReachFrontMonsters)}`,
+    `emptyBack ${pressure.emptyBackSlotsBefore}->${pressure.emptyBackSlotsAfter}`,
+    `noReachBackAfter=${pressure.noReachFrontBackSlotsAfter}`,
+    pressure.consumesLastBackSlot ? "consumes-last-back-slot" : undefined,
+    pressure.leavesNoEmptyBackSlot ? "no-empty-back-slot" : undefined,
+  ].filter((value): value is string => !!value).join(" / ");
+}
+
+function formatHandCards(cards: readonly HandCardSummary[]): string {
+  return cards.length > 0 ? cards.map((card) => card.cardName).join(",") : "-";
 }
 
 function formatEvaluation(evaluation: CpuEvaluationTrace | undefined): string {
@@ -644,6 +727,12 @@ function buildNotes(metrics: BacklineSummonMetrics): string[] {
   if (rate(metrics.badTopSummonNoBacklinePattern, metrics.badTopSummonAlternative) >= 0.5) {
     notes.push("bad summon の代替召喚も後列射程なしに寄っている。後列で仕事できるカードを優先する召喚候補品質の改善が必要。");
   }
+  if (rate(metrics.badConsumesLastBackSlot, metrics.badBlockedBacklineSummons) >= 0.4) {
+    notes.push("bad summon が最後の後列空き枠を消費している。後から後衛カードを引いた時の置き場を潰す問題として扱うべき。");
+  }
+  if (rate(metrics.badWithOtherBacklineWorkInHand, metrics.badBlockedBacklineSummons) >= 0.25) {
+    notes.push("bad summon 時点で手札に後列仕事カードが残っている例がある。召喚カード選択の優先順位を疑うべき。");
+  }
   return notes;
 }
 
@@ -653,7 +742,11 @@ function buildNextLoopProposal(metrics: BacklineSummonMetrics): string[] {
   }
   const steps: string[] = [];
   if (metrics.badBlockedBacklineSummons > 0) {
-    if (rate(metrics.badTopSummonNoBacklinePattern, metrics.badTopSummonAlternative) >= 0.5) {
+    if (rate(metrics.badConsumesLastBackSlot, metrics.badBlockedBacklineSummons) >= 0.4) {
+      steps.push("次候補は、後列射程なし前衛カードの召喚で最後の後列空き枠を潰す場合に、手札圧迫や前列空き見込みがない限り保留する。");
+    } else if (rate(metrics.badWithOtherBacklineWorkInHand, metrics.badBlockedBacklineSummons) >= 0.25) {
+      steps.push("次候補は、手札に後列仕事カードがある場合、後列射程なし前衛カードより後列仕事カードの召喚を優先する。");
+    } else if (rate(metrics.badTopSummonNoBacklinePattern, metrics.badTopSummonAlternative) >= 0.5) {
       steps.push("次は bad summon 局面で、後列射程なし前衛カード同士の召喚を避け、手札内に後列仕事カードがあるならそちらを優先する候補を作る。");
     } else if (rate(metrics.badWithCloseNonSummonAlternative, metrics.badBlockedBacklineSummons) >= 0.35) {
       steps.push("bad summon で近い非召喚代替が多い場合、召喚そのものを罰するのではなく、低石・仕事予定なし局面で `attack/focus/end_turn` が勝てる条件を実装候補化する。");
@@ -748,6 +841,10 @@ function formatMetricsSummary(metrics: BacklineSummonMetrics): string {
     `- Bad top summon alt: ${metrics.badTopSummonAlternative} (${formatPercent(rate(metrics.badTopSummonAlternative, metrics.badBlockedBacklineSummons))})`,
     `- Bad top summon same card: ${metrics.badTopSummonSameCard} (${formatPercent(rate(metrics.badTopSummonSameCard, metrics.badTopSummonAlternative))})`,
     `- Bad top summon backline pattern: ${metrics.badTopSummonBacklinePattern} (${formatPercent(rate(metrics.badTopSummonBacklinePattern, metrics.badTopSummonAlternative))})`,
+    `- Bad with other backline work in hand: ${metrics.badWithOtherBacklineWorkInHand} (${formatPercent(rate(metrics.badWithOtherBacklineWorkInHand, metrics.badBlockedBacklineSummons))})`,
+    `- Bad consumes last back slot: ${metrics.badConsumesLastBackSlot} (${formatPercent(rate(metrics.badConsumesLastBackSlot, metrics.badBlockedBacklineSummons))})`,
+    `- Bad leaves no empty back slot: ${metrics.badLeavesNoEmptyBackSlot} (${formatPercent(rate(metrics.badLeavesNoEmptyBackSlot, metrics.badBlockedBacklineSummons))})`,
+    `- Avg no-reach front cards in back after bad: ${round(rate(metrics.badNoReachFrontBackSlotsAfterTotal, metrics.badBlockedBacklineSummons), 2)}`,
   ].join("\n");
 }
 
@@ -800,6 +897,7 @@ function formatSamples(samples: readonly BacklineSummonSample[]): string[] {
     `- decision: ${sample.slotKey} / role ${sample.role} / front ${sample.frontBlocker} / stones after ${sample.afterStones} / score ${sample.score}`,
     `- flags: ${sample.flags}`,
     `- alternatives: ${sample.alternatives}`,
+    `- hand pressure: ${sample.handPressure}`,
     `- next turn: ${sample.nextTurn}`,
     `- reason: ${sample.reason}`,
     `- board: ${sample.board}`,
@@ -838,6 +936,11 @@ function emptyMetrics(): BacklineSummonMetrics {
     badTopSummonBlocked: 0,
     badTopSummonBacklinePattern: 0,
     badTopSummonNoBacklinePattern: 0,
+    badWithOtherBacklineWorkInHand: 0,
+    badConsumesLastBackSlot: 0,
+    badLeavesNoEmptyBackSlot: 0,
+    badOtherBacklineWorkCardsInHandTotal: 0,
+    badNoReachFrontBackSlotsAfterTotal: 0,
   };
 }
 
@@ -891,6 +994,13 @@ function summonSlotKeyForDecision(decision: string): SlotKey | undefined {
   return isSlotKey(slotKey) ? slotKey : undefined;
 }
 
+function summonHandInstanceIdForDecision(decision: string): string | undefined {
+  if (!decision.startsWith("summon:")) {
+    return undefined;
+  }
+  return decision.slice("summon:".length).split("->")[0] || undefined;
+}
+
 function summonTargetRow(decision: string): "front" | "back" | undefined {
   const slotKey = summonSlotKeyForDecision(decision);
   return slotKey ? slotRow(slotKey) : undefined;
@@ -924,6 +1034,24 @@ function slotBelongsToCard(
 
 function slotByKey(summary: MasterLabGameStateSummary, slotKey: string): SummarySlot | undefined {
   return summary.slots.find((slot) => slot.slotKey === slotKey);
+}
+
+function emptyBackSlotCount(summary: MasterLabGameStateSummary, playerId: PlayerId): number {
+  return summary.slots.filter((slot) =>
+    slot.owner !== "cpu" &&
+    slot.owner !== "player" &&
+    slot.slotKey.startsWith(`${playerId}_back_`),
+  ).length;
+}
+
+function noReachFrontBackSlotCount(summary: MasterLabGameStateSummary, playerId: PlayerId): number {
+  return summary.slots.filter((slot) =>
+    slot.owner === playerId &&
+    slot.card &&
+    slotRow(slot.slotKey) === "back" &&
+    safeMonsterRole(slot.card) === "front" &&
+    !monsterHasBacklineAttackPattern(slot.card),
+  ).length;
 }
 
 function frontSlotKeyFor(slotKey: SlotKey): SlotKey {
@@ -1016,6 +1144,9 @@ function formatTopAlternativeBreakdown(metrics: BacklineSummonMetrics): string {
     metrics.badTopSummonSameCard > 0 ? `SameCard${metrics.badTopSummonSameCard}` : undefined,
     metrics.badTopSummonBacklinePattern > 0 ? `ReachSum${metrics.badTopSummonBacklinePattern}` : undefined,
     metrics.badTopSummonNoBacklinePattern > 0 ? `NoReachSum${metrics.badTopSummonNoBacklinePattern}` : undefined,
+    metrics.badWithOtherBacklineWorkInHand > 0 ? `HandReach${metrics.badWithOtherBacklineWorkInHand}` : undefined,
+    metrics.badConsumesLastBackSlot > 0 ? `LastBack${metrics.badConsumesLastBackSlot}` : undefined,
+    metrics.badLeavesNoEmptyBackSlot > 0 ? `NoEmptyBack${metrics.badLeavesNoEmptyBackSlot}` : undefined,
   ].filter((value): value is string => !!value).join(", ") || "-";
 }
 

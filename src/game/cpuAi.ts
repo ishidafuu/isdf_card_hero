@@ -1094,6 +1094,15 @@ function decisionSituationalBonus(
       bias.whiteBlockedBacklineNoWorkSummonPenalty,
     );
   }
+  if (bias.whiteBackSlotFutureValuePenalty) {
+    bonus -= whiteBackSlotFutureValueDecisionPenalty(
+      before,
+      after,
+      decision,
+      perspective,
+      bias.whiteBackSlotFutureValuePenalty,
+    );
+  }
   if (bias.whiteBlackUnsafeMasterAttackPenalty) {
     bonus -= whiteBlackUnsafeMasterAttackDecisionPenalty(
       before,
@@ -1681,6 +1690,43 @@ function whiteBlockedBacklineNoWorkSummonDecisionPenalty(
   return value + durableFrontBlockerPenalty + lowResourcePenalty;
 }
 
+function whiteBackSlotFutureValueDecisionPenalty(
+  before: GameState,
+  after: GameState,
+  decision: CpuDecision,
+  perspective: PlayerId,
+  value: number,
+): number {
+  if (
+    value <= 0 ||
+    before.players[perspective].masterId !== "white" ||
+    decision.type !== "summon" ||
+    before.players[perspective].hand.length >= 6
+  ) {
+    return 0;
+  }
+
+  const summoned = after.slots[decision.slotKey].monster;
+  if (!summoned || summoned.owner !== perspective || monsterHasBacklineAttackPattern(summoned.cardId)) {
+    return 0;
+  }
+
+  const beforeEmptyBackSlots = emptyBackSlotCountForPlayer(before, perspective);
+  const afterEmptyBackSlots = emptyBackSlotCountForPlayer(after, perspective);
+  const noReachFrontBackIncrease = Math.max(
+    0,
+    noReachFrontBackSlotCountForPlayer(after, perspective) -
+      noReachFrontBackSlotCountForPlayer(before, perspective),
+  );
+  if (beforeEmptyBackSlots <= afterEmptyBackSlots && noReachFrontBackIncrease <= 0) {
+    return 0;
+  }
+
+  const lastBackSlotPenalty = beforeEmptyBackSlots > 0 && afterEmptyBackSlots === 0 ? value : 0;
+  const noReachBackPenalty = noReachFrontBackIncrease * value;
+  return lastBackSlotPenalty + noReachBackPenalty;
+}
+
 function monsterHasBacklineAttackPattern(cardId: string): boolean {
   const def = getMonsterDef(cardId);
   return def.levels.some((level) => level.commands.some(commandHasBacklineAttackPattern));
@@ -1704,6 +1750,23 @@ function commandHasBacklineAttackPattern(command: CommandDef): boolean {
     "any_target",
     "master",
   ].includes(command.range);
+}
+
+function emptyBackSlotCountForPlayer(state: GameState, playerId: PlayerId): number {
+  return FIELD_ORDER_BY_PLAYER[playerId].filter((slotKey) =>
+    state.slots[slotKey].row === "back" && !state.slots[slotKey].monster,
+  ).length;
+}
+
+function noReachFrontBackSlotCountForPlayer(state: GameState, playerId: PlayerId): number {
+  return FIELD_ORDER_BY_PLAYER[playerId].filter((slotKey) => {
+    const slot = state.slots[slotKey];
+    const monster = slot.monster;
+    return slot.row === "back" &&
+      monster?.owner === playerId &&
+      getMonsterAiTrait(monster.cardId).role === "front" &&
+      !monsterHasBacklineAttackPattern(monster.cardId);
+  }).length;
 }
 
 function isDisadvantagedUnderMasterAssault(

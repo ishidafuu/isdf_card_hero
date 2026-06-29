@@ -80,10 +80,19 @@ export interface MasterLabDecisionEvent {
   score: number;
   legalDecisionCount: number;
   labDecisionCount: number;
+  currentPlayerHand?: MasterLabHandCardSummary[];
   cpuDecisionEvaluations?: MasterLabCpuDecisionEvaluation[];
   before: MasterLabGameStateSummary;
   after: MasterLabGameStateSummary;
   newLog: string[];
+}
+
+export interface MasterLabHandCardSummary {
+  instanceId: string;
+  cardId: string;
+  cardName: string;
+  type: "monster" | "magic";
+  role?: "front" | "back";
 }
 
 export interface MasterLabCpuDecisionEvaluation {
@@ -555,6 +564,7 @@ function runMasterLabDecisionStep(
     score: selected.score,
     legalDecisionCount: selected.legalDecisionCount,
     labDecisionCount: selected.labDecisionCount,
+    ...(context.options.includeGameHistory ? { currentPlayerHand: summarizeHand(game, game.currentPlayer) } : {}),
     ...(selected.source === "cpu" && selected.cpuDecisionEvaluations
       ? { cpuDecisionEvaluations: selected.cpuDecisionEvaluations }
       : {}),
@@ -947,6 +957,19 @@ function summarizePlayer(
     deck: player.deck.length,
     discard: player.discard.length,
   };
+}
+
+function summarizeHand(game: GameState, playerId: PlayerId): MasterLabHandCardSummary[] {
+  return game.players[playerId].hand.map((card) => {
+    const def = getCardDef(card.cardId);
+    return {
+      instanceId: card.instanceId,
+      cardId: card.cardId,
+      cardName: def.name,
+      type: def.type,
+      ...(def.type === "monster" ? { role: def.role } : {}),
+    };
+  });
 }
 
 function decisionToText(decision: CpuDecision): string {
