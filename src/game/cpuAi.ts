@@ -50,6 +50,7 @@ import type {
 import { appendLog } from "./ruleEngine/log";
 import type {
   CommandAction,
+  CommandDef,
   CardInstance,
   GameState,
   MagicAction,
@@ -1084,6 +1085,15 @@ function decisionSituationalBonus(
       bias.whiteDisadvantagedSummonOvercommitPenalty,
     );
   }
+  if (bias.whiteBlockedBacklineNoWorkSummonPenalty) {
+    bonus -= whiteBlockedBacklineNoWorkSummonDecisionPenalty(
+      before,
+      after,
+      decision,
+      perspective,
+      bias.whiteBlockedBacklineNoWorkSummonPenalty,
+    );
+  }
   if (bias.whiteBlackUnsafeMasterAttackPenalty) {
     bonus -= whiteBlackUnsafeMasterAttackDecisionPenalty(
       before,
@@ -1627,6 +1637,73 @@ function whiteDisadvantagedSummonOvercommitDecisionPenalty(
   const lowHandPenalty = before.players[perspective].hand.length <= 2 ? 55 : 0;
   const remainingAssaultPenalty = Math.min(180, afterMasterDamage * 45);
   return value + remainingAssaultPenalty + exposurePenalty + lowResourcePenalty + lowHandPenalty;
+}
+
+function whiteBlockedBacklineNoWorkSummonDecisionPenalty(
+  before: GameState,
+  after: GameState,
+  decision: CpuDecision,
+  perspective: PlayerId,
+  value: number,
+): number {
+  if (
+    value <= 0 ||
+    before.players[perspective].masterId !== "white" ||
+    decision.type !== "summon" ||
+    summonWakeCreatesImmediateWork(before, decision.handInstanceId, decision.slotKey)
+  ) {
+    return 0;
+  }
+
+  const slot = after.slots[decision.slotKey];
+  const summoned = slot.monster;
+  if (!summoned || summoned.owner !== perspective || slot.row !== "back") {
+    return 0;
+  }
+
+  const frontSlotKey = frontSlotFor(slot);
+  const frontMonster = after.slots[frontSlotKey].monster;
+  if (!frontMonster || frontMonster.owner !== perspective) {
+    return 0;
+  }
+
+  if (monsterHasBacklineAttackPattern(summoned.cardId)) {
+    return 0;
+  }
+
+  const readyState = readyPlayerForTacticalEvaluation(after, perspective);
+  if (bestAttackOpportunityScore(readyState, decision.slotKey) > 0) {
+    return 0;
+  }
+
+  const durableFrontBlockerPenalty = frontMonster.hp >= 3 ? 40 : 0;
+  const lowResourcePenalty = after.players[perspective].stones <= 1 ? 30 : 0;
+  return value + durableFrontBlockerPenalty + lowResourcePenalty;
+}
+
+function monsterHasBacklineAttackPattern(cardId: string): boolean {
+  const def = getMonsterDef(cardId);
+  return def.levels.some((level) => level.commands.some(commandHasBacklineAttackPattern));
+}
+
+function commandHasBacklineAttackPattern(command: CommandDef): boolean {
+  if (!command.implemented || command.power <= 0) {
+    return false;
+  }
+  if (command.rangeText === "前衛攻撃" || command.rangeText === "後衛攻撃" || command.rangeText === "桂馬飛び") {
+    return true;
+  }
+  return [
+    "one_skip",
+    "two_skip",
+    "straight",
+    "piercing",
+    "decreasing_straight",
+    "line",
+    "any_monster",
+    "any_target",
+    "master",
+  ].includes(command.range);
 }
 
 function isDisadvantagedUnderMasterAssault(

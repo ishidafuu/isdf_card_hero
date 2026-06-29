@@ -67,6 +67,7 @@ export interface CpuAiTuning {
     whiteBoardControlMasterAttackPenalty?: number;
     whiteReadyBacklineRetreatPenalty?: number;
     whiteDisadvantagedSummonOvercommitPenalty?: number;
+    whiteBlockedBacklineNoWorkSummonPenalty?: number;
     whiteBlackUnsafeMasterAttackPenalty?: number;
     whiteFrontChipResponsePenalty?: number;
     whiteFrontThreatFocusCounterBonus?: number;
