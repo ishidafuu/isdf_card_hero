@@ -21,7 +21,7 @@ export type WhiteAiTuningOpponentCategory = "black" | "decoy" | "white";
 
 export interface WhiteAiTuningLoopOptions extends Pick<
   MasterLabAutoPlayOptions,
-  "maxSteps" | "maxTurns" | "stagnationLimit" | "longGameSteps" | "longGameTurns" | "failOnWarnings"
+  "maxSteps" | "maxTurns" | "stagnationLimit" | "longGameSteps" | "longGameTurns" | "failOnWarnings" | "includeCpuDecisionEvaluations"
 > {
   variants?: readonly WhiteAiTuningVariant[];
   opponents?: readonly WhiteAiTuningOpponent[];
@@ -560,6 +560,7 @@ function runWhiteAiTuningMatchup(options: {
       longGameTurns: options.options.longGameTurns,
       failOnWarnings: options.options.failOnWarnings,
       includeGameHistory: options.options.includeGameHistory ?? true,
+      includeCpuDecisionEvaluations: options.options.includeCpuDecisionEvaluations,
       historyLimit: options.options.maxSteps ?? 700,
       participants: {
         player: player.participant,

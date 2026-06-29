@@ -64,6 +64,11 @@ interface BacklineSummonMetrics {
   backlineSummons: number;
   blockedBacklineSummons: number;
   frontRoleBlockedBacklineSummons: number;
+  blockedDeathSheepSummons: number;
+  blockedDeathSheepSpecialLockSummons: number;
+  deathSheepSpecialLockWins: number;
+  deathSheepSpecialLockLosses: number;
+  deathSheepSpecialLockCommandTotal: number;
   blockedWithBacklinePattern: number;
   blockedWithoutBacklinePattern: number;
   blockedWithImmediateWakeWork: number;
@@ -108,6 +113,13 @@ interface BacklineSummonMetrics {
   badDeckNoReachFrontCardsTotal: number;
 }
 
+interface DeathSheepSpecialLockAudit {
+  applies: boolean;
+  frontCardName?: string;
+  frontLevel?: number;
+  commandNames: string[];
+}
+
 interface BacklineSummonAudit {
   event: MasterLabDecisionEvent;
   variantId: string;
@@ -120,6 +132,7 @@ interface BacklineSummonAudit {
   role: string;
   frontBlocker?: SummarySlot;
   hasBacklinePattern: boolean;
+  deathSheepSpecialLock: DeathSheepSpecialLockAudit;
   immediateWakeWork: boolean;
   followup: BacklineSummonFollowup;
   alternatives: BacklineAlternativeAudit;
@@ -193,6 +206,7 @@ interface BacklineSummonSample {
   alternatives: string;
   handPressure: string;
   deckPressure: string;
+  specialLock: string;
   nextTurn: string;
   board: string;
 }
@@ -305,6 +319,7 @@ for (const audit of report.byVariant) {
   console.log(
     `${audit.variantId}: ${audit.wins}-${audit.losses}-${audit.draws} ` +
       `blocked ${audit.metrics.blockedBacklineSummons} ` +
+      `sheepLock ${audit.metrics.blockedDeathSheepSpecialLockSummons} ` +
       `noPattern ${formatPercent(rate(audit.metrics.blockedWithoutBacklinePattern, audit.metrics.blockedBacklineSummons))} ` +
       `noWork ${formatPercent(rate(audit.metrics.blockedNextTurnNoWork, audit.metrics.blockedBacklineSummons))} ` +
       `bad ${audit.metrics.badBlockedBacklineSummons} ` +
@@ -430,6 +445,7 @@ function auditGameBacklineSummons(
       role: safeMonsterRole(slot.card),
       frontBlocker: frontBlocker?.owner === context.candidateSeat && frontBlocker.card ? frontBlocker : undefined,
       hasBacklinePattern: monsterHasBacklineAttackPattern(slot.card),
+      deathSheepSpecialLock: auditDeathSheepSpecialLock(slot.card, frontBlocker, context.candidateSeat),
       immediateWakeWork: event.reason.includes("即仕事") || event.reason.includes("ウェイク"),
       followup: auditFollowup(history, index, context.candidateSeat, slotKey, slot.card),
       alternatives: auditAlternatives(event),
@@ -573,6 +589,18 @@ function addAudit(metrics: BacklineSummonMetrics, audit: BacklineSummonAudit): v
   metrics.blockedBacklineSummons += 1;
   if (audit.role === "front") {
     metrics.frontRoleBlockedBacklineSummons += 1;
+  }
+  if (audit.cardId === "card_133") {
+    metrics.blockedDeathSheepSummons += 1;
+  }
+  if (audit.deathSheepSpecialLock.applies) {
+    metrics.blockedDeathSheepSpecialLockSummons += 1;
+    metrics.deathSheepSpecialLockCommandTotal += audit.deathSheepSpecialLock.commandNames.length;
+    if (audit.outcome === "loss") {
+      metrics.deathSheepSpecialLockLosses += 1;
+    } else if (audit.outcome === "win") {
+      metrics.deathSheepSpecialLockWins += 1;
+    }
   }
   if (audit.hasBacklinePattern) {
     metrics.blockedWithBacklinePattern += 1;
@@ -734,6 +762,9 @@ function sampleKinds(audit: BacklineSummonAudit): string[] {
   if (audit.hasBacklinePattern && audit.followup.nextTurnBacklineAttack) {
     kinds.push("blocked_backline_pattern_worked");
   }
+  if (audit.deathSheepSpecialLock.applies) {
+    kinds.push("death_sheep_special_lock");
+  }
   if (audit.role === "front" && audit.hasBacklinePattern) {
     kinds.push("front_role_allowed_by_range");
   }
@@ -764,6 +795,7 @@ function formatSample(kind: string, audit: BacklineSummonAudit): BacklineSummonS
     alternatives: formatAlternatives(audit.alternatives),
     handPressure: formatHandPressure(audit.handPressure),
     deckPressure: formatDeckPressure(audit.deckPressure),
+    specialLock: formatDeathSheepSpecialLock(audit.deathSheepSpecialLock),
     nextTurn: shortList(audit.followup.nextTurnDecisions),
     board: formatBoard(audit.event.before),
   };
@@ -772,6 +804,7 @@ function formatSample(kind: string, audit: BacklineSummonAudit): BacklineSummonS
 function formatFlags(audit: BacklineSummonAudit): string {
   return [
     audit.hasBacklinePattern ? "backline-pattern" : "no-backline-pattern",
+    audit.deathSheepSpecialLock.applies ? "death-sheep-special-lock" : undefined,
     audit.followup.nextTurnAttack ? "next-attack" : undefined,
     audit.followup.nextTurnBacklineAttack ? "next-backline-attack" : undefined,
     audit.followup.nextTurnMoveForward ? "next-move-front" : undefined,
@@ -835,6 +868,13 @@ function formatDeckCards(cards: readonly DeckCardSummary[], limit = 8): string {
   return cards.length > limit ? `${shown},...(+${cards.length - limit})` : shown;
 }
 
+function formatDeathSheepSpecialLock(lock: DeathSheepSpecialLockAudit): string {
+  if (!lock.applies) {
+    return "-";
+  }
+  return `${lock.frontCardName ?? "unknown"} Lv${lock.frontLevel ?? "?"}: ${lock.commandNames.join(",")}`;
+}
+
 function formatEvaluation(evaluation: CpuEvaluationTrace | undefined): string {
   if (!evaluation) {
     return "-";
@@ -858,6 +898,9 @@ function buildNotes(metrics: BacklineSummonMetrics): string[] {
   }
   if (rate(metrics.blockedWithBacklinePattern, metrics.blockedBacklineSummons) >= 0.4) {
     notes.push("詰まり後列召喚の多くは射程持ちカードでもあるため、一律ペナルティは避けるべき。");
+  }
+  if (rate(metrics.blockedDeathSheepSpecialLockSummons, metrics.blockedDeathSheepSummons) >= 0.2) {
+    notes.push("デスシープ後列召喚の中に、味方前列の下段特技を封じる例が混ざっている。後列枠問題とは別に、前列特技の機会損失として監査・候補化すべき。");
   }
   if (metrics.badBlockedBacklineSummons > 0 && metrics.badWithEvaluationTrace < metrics.badBlockedBacklineSummons) {
     notes.push("一部の bad summon には候補評価traceがない。古い結果ファイルではなく、このスクリプトで再生成した履歴を使う必要がある。");
@@ -900,6 +943,9 @@ function buildNextLoopProposal(metrics: BacklineSummonMetrics): string[] {
     return ["対象seedでは詰まり後列召喚がほぼ出ていないため、games-per-matchupを増やすか、実戦で見たseedに寄せて再監査する。"];
   }
   const steps: string[] = [];
+  if (metrics.blockedDeathSheepSpecialLockSummons > 0) {
+    steps.push("デスシープを後列に置く候補は、同レーン前列の下段特技を封じる場合に `special lock loss` として別比較する。特にドノマンティスLv2など高打点/除去寄り特技持ちは、召喚評価から差し引く候補を作る。");
+  }
   if (metrics.badBlockedBacklineSummons > 0) {
     if (rate(metrics.badConsumesLastBackSlotWithBacklineWorkInDeck, metrics.badBlockedBacklineSummons) >= 0.25) {
       steps.push("次候補は、最後の後列空き枠を潰す召喚で、残り山札に後列仕事カードがある場合を `summon now` と `hold slot` のターン計画比較に回す。");
@@ -953,14 +999,14 @@ function formatMarkdown(report: BacklineSummonAuditReport): string {
     "",
     "## Variant Metrics",
     "",
-    "| Variant | W-L-D | Summon | Backline | Blocked | Front Role Blocked | Backline Pattern | No Pattern | Next Attack | Backline Attack | Move Front | No Work | Bad | Close Non-Summon | Top Alt | Low Stone | Blocked W/L |",
-    "| --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | --- | ---: | ---: |",
+    "| Variant | W-L-D | Summon | Backline | Blocked | Front Role Blocked | Death Sheep Lock | Backline Pattern | No Pattern | Next Attack | Backline Attack | Move Front | No Work | Bad | Close Non-Summon | Top Alt | Low Stone | Blocked W/L |",
+    "| --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | --- | ---: | ---: |",
     ...report.byVariant.map(formatVariantRow),
     "",
     "## Opponent Breakdown",
     "",
-    "| Variant | Opponent | W-L-D | Blocked | Backline Pattern | No Pattern | No Work | Bad | Close Non-Summon |",
-    "| --- | --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: |",
+    "| Variant | Opponent | W-L-D | Blocked | Death Sheep Lock | Backline Pattern | No Pattern | No Work | Bad | Close Non-Summon |",
+    "| --- | --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: |",
     ...report.byVariant.flatMap((variant) => variant.byOpponent.map((opponent) => formatOpponentRow(variant.variantId, opponent))),
     "",
     "## Samples",
@@ -980,6 +1026,7 @@ function formatMarkdown(report: BacklineSummonAuditReport): string {
     "- `Blocked`: 同レーン前列に自軍ユニットがいる後列召喚。",
     "- `Backline Pattern`: 後列から攻撃しうる射程/攻撃パターンをカードが持つ。ボムゾウ系はここに入る。",
     "- `No Pattern`: 後列から攻撃しにくいカード。ここが多い場合だけ抑制候補にする。",
+    "- `Death Sheep Lock`: デスシープを後列に置いたことで、同レーン味方前列の下段特技を封じたケース。",
     "- `No Work`: 次自ターンにその召喚ユニットが攻撃も前進もしなかったケース。",
     "- `Bad`: Blocked + No Pattern + No Work を満たす、今回もっとも疑う後列召喚。",
     "- `Close Non-Summon`: Bad の局面で、選択召喚から35点以内に攻撃/ためる/移動/終了などの非召喚代替があったケース。",
@@ -995,6 +1042,9 @@ function formatMetricsSummary(metrics: BacklineSummonMetrics): string {
     `- 後列召喚: ${metrics.backlineSummons} (${formatPercent(rate(metrics.backlineSummons, metrics.summons))})`,
     `- 前列あり後列召喚: ${metrics.blockedBacklineSummons} (${formatPercent(rate(metrics.blockedBacklineSummons, metrics.backlineSummons))})`,
     `- うち前衛ロール: ${metrics.frontRoleBlockedBacklineSummons} (${formatPercent(rate(metrics.frontRoleBlockedBacklineSummons, metrics.blockedBacklineSummons))})`,
+    `- デスシープ後列召喚: ${metrics.blockedDeathSheepSummons} (${formatPercent(rate(metrics.blockedDeathSheepSummons, metrics.blockedBacklineSummons))})`,
+    `- デスシープ特技封じ損: ${metrics.blockedDeathSheepSpecialLockSummons} (${formatPercent(rate(metrics.blockedDeathSheepSpecialLockSummons, metrics.blockedDeathSheepSummons))}) / W-L ${metrics.deathSheepSpecialLockWins}-${metrics.deathSheepSpecialLockLosses}`,
+    `- デスシープ特技封じ平均コマンド数: ${round(rate(metrics.deathSheepSpecialLockCommandTotal, metrics.blockedDeathSheepSpecialLockSummons), 2)}`,
     `- Backline patternあり: ${metrics.blockedWithBacklinePattern} (${formatPercent(rate(metrics.blockedWithBacklinePattern, metrics.blockedBacklineSummons))})`,
     `- Backline patternなし: ${metrics.blockedWithoutBacklinePattern} (${formatPercent(rate(metrics.blockedWithoutBacklinePattern, metrics.blockedBacklineSummons))})`,
     `- 次自ターン攻撃: ${metrics.blockedNextTurnAttack} (${formatPercent(rate(metrics.blockedNextTurnAttack, metrics.blockedBacklineSummons))})`,
@@ -1032,6 +1082,7 @@ function formatVariantRow(audit: VariantBacklineSummonAudit): string {
     formatCountRate(m.backlineSummons, m.summons),
     formatCountRate(m.blockedBacklineSummons, m.backlineSummons),
     formatCountRate(m.frontRoleBlockedBacklineSummons, m.blockedBacklineSummons),
+    formatCountRate(m.blockedDeathSheepSpecialLockSummons, m.blockedDeathSheepSummons),
     formatCountRate(m.blockedWithBacklinePattern, m.blockedBacklineSummons),
     formatCountRate(m.blockedWithoutBacklinePattern, m.blockedBacklineSummons),
     formatCountRate(m.blockedNextTurnAttack, m.blockedBacklineSummons),
@@ -1053,6 +1104,7 @@ function formatOpponentRow(variantId: string, audit: OpponentBacklineSummonAudit
     escapeMarkdownTableCell(audit.opponentId),
     `${audit.wins}-${audit.losses}-${audit.draws}`,
     m.blockedBacklineSummons,
+    formatCountRate(m.blockedDeathSheepSpecialLockSummons, m.blockedDeathSheepSummons),
     formatCountRate(m.blockedWithBacklinePattern, m.blockedBacklineSummons),
     formatCountRate(m.blockedWithoutBacklinePattern, m.blockedBacklineSummons),
     formatCountRate(m.blockedNextTurnNoWork, m.blockedBacklineSummons),
@@ -1074,6 +1126,7 @@ function formatSamples(samples: readonly BacklineSummonSample[]): string[] {
     `- alternatives: ${sample.alternatives}`,
     `- hand pressure: ${sample.handPressure}`,
     `- deck pressure: ${sample.deckPressure}`,
+    `- special lock: ${sample.specialLock}`,
     `- next turn: ${sample.nextTurn}`,
     `- reason: ${sample.reason}`,
     `- board: ${sample.board}`,
@@ -1087,6 +1140,11 @@ function emptyMetrics(): BacklineSummonMetrics {
     backlineSummons: 0,
     blockedBacklineSummons: 0,
     frontRoleBlockedBacklineSummons: 0,
+    blockedDeathSheepSummons: 0,
+    blockedDeathSheepSpecialLockSummons: 0,
+    deathSheepSpecialLockWins: 0,
+    deathSheepSpecialLockLosses: 0,
+    deathSheepSpecialLockCommandTotal: 0,
     blockedWithBacklinePattern: 0,
     blockedWithoutBacklinePattern: 0,
     blockedWithImmediateWakeWork: 0,
@@ -1267,6 +1325,37 @@ function monsterHasBacklineAttackPattern(cardId: string): boolean {
   return def.levels.some((level) => level.commands.some(commandHasBacklineAttackPattern));
 }
 
+function auditDeathSheepSpecialLock(
+  cardId: string,
+  frontBlocker: SummarySlot | undefined,
+  candidateSeat: PlayerId,
+): DeathSheepSpecialLockAudit {
+  if (cardId !== "card_133" || frontBlocker?.owner !== candidateSeat || !frontBlocker.card) {
+    return { applies: false, commandNames: [] };
+  }
+  const commandNames = lowerImplementedCommandNamesAtLevel(frontBlocker.card, frontBlocker.level ?? 1);
+  return {
+    applies: commandNames.length > 0,
+    frontCardName: safeCardName(frontBlocker.card),
+    frontLevel: frontBlocker.level,
+    commandNames,
+  };
+}
+
+function lowerImplementedCommandNamesAtLevel(cardId: string, level: number): string[] {
+  const def = getMonsterDef(cardId);
+  const levelDef = def.levels.find((candidate) => candidate.level === level) ??
+    def.levels[Math.max(0, level - 1)] ??
+    def.levels[0];
+  if (!levelDef) {
+    return [];
+  }
+  return levelDef.commands
+    .slice(1)
+    .filter((command) => command.implemented !== false)
+    .map((command) => command.name);
+}
+
 function commandHasBacklineAttackPattern(command: CommandDef): boolean {
   if (!command.implemented || command.power <= 0) {
     return false;
@@ -1392,6 +1481,8 @@ function parseArgs(args: string[]): CliOptions {
     } else if (arg === "--max-samples") {
       parsed.maxSamples = readInteger(arg, next);
       i += 1;
+    } else if (arg === "--no-eval-trace") {
+      parsed.includeCpuDecisionEvaluations = false;
     } else if (arg === "--markdown") {
       parsed.markdownPath = readString(arg, next);
       i += 1;
@@ -1434,6 +1525,7 @@ Options:
   --max-steps <n>               Step cap. Default: 700
   --max-turns <n>               Turn cap. Default: 160
   --max-samples <n>             Maximum samples in report. Default: 36
+  --no-eval-trace               Keep game history but skip expensive CPU evaluation trace.
   --markdown <path>             Write markdown report.
   --json <path>                 Write JSON report.
 `);

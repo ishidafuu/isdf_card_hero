@@ -56,6 +56,7 @@ export interface MasterLabAutoPlayOptions {
   labActionMargin?: number;
   labEvaluationTuning?: MasterLabEvaluationTuning;
   includeGameHistory?: boolean;
+  includeCpuDecisionEvaluations?: boolean;
   magicOpportunity?: MasterLabMagicOpportunityOptions;
 }
 
@@ -275,6 +276,7 @@ const DEFAULT_OPTIONS = {
   historyLimit: 40,
   failOnWarnings: false,
   includeGameHistory: false,
+  includeCpuDecisionEvaluations: true,
   deckPreset: "random" as const,
   participants: { player: "decoy", cpu: "black" } satisfies Record<PlayerId, MasterLabParticipantId>,
   aiProfile: "stable" as const satisfies CpuAiProfile,
@@ -389,6 +391,7 @@ function resolveOptions(options: MasterLabAutoPlayOptions): ResolvedMasterLabAut
     historyLimit: integerOption(options.historyLimit, DEFAULT_OPTIONS.historyLimit),
     failOnWarnings: options.failOnWarnings ?? DEFAULT_OPTIONS.failOnWarnings,
     includeGameHistory: options.includeGameHistory ?? DEFAULT_OPTIONS.includeGameHistory,
+    includeCpuDecisionEvaluations: options.includeCpuDecisionEvaluations ?? DEFAULT_OPTIONS.includeCpuDecisionEvaluations,
     deckPreset,
     deckPresets: {
       player: options.deckPresets?.player ?? deckPreset,
@@ -712,7 +715,9 @@ function chooseMixedDecision(game: GameState, options: ResolvedMasterLabAutoPlay
   const profileOptions = { profiles: options.aiProfiles, tunings: options.aiTunings, searches: options.aiSearches };
   if (!isMasterLabCandidateId(participant)) {
     const decision = chooseCpuDecision(game, profileOptions);
-    const evaluations = options.includeGameHistory ? inspectCpuDecisionEvaluations(game, profileOptions) : [];
+    const evaluations = options.includeGameHistory && options.includeCpuDecisionEvaluations
+      ? inspectCpuDecisionEvaluations(game, profileOptions)
+      : [];
     return {
       source: "cpu",
       decision,
@@ -751,7 +756,9 @@ function chooseMixedDecision(game: GameState, options: ResolvedMasterLabAutoPlay
     legalDecisionCount: cpuEvaluations.length,
     labDecisionCount: labEvaluations.length,
     reason: decision.reason,
-    ...(options.includeGameHistory ? { cpuDecisionEvaluations: cpuDecisionEvaluationTrace(cpuEvaluations, decision, game) } : {}),
+    ...(options.includeGameHistory && options.includeCpuDecisionEvaluations
+      ? { cpuDecisionEvaluations: cpuDecisionEvaluationTrace(cpuEvaluations, decision, game) }
+      : {}),
   };
 }
 

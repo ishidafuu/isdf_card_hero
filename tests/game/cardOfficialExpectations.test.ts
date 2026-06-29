@@ -2038,6 +2038,25 @@ describe("official card effect expectations", () => {
     });
   });
 
+  it("card_133 デスシープ behind an allied Lv2 ドノマンティス seals 呪いの刃", () => {
+    const game = createGameWithPlayerHand([]);
+    game.currentPlayer = "cpu";
+    game.players.cpu.stones = 3;
+    game.slots.cpu_front_left.monster = createActiveMonster("card_037", "cpu", {
+      level: 2,
+      hp: 5,
+      investedStones: 2,
+    });
+    game.slots.cpu_back_left.monster = createActiveMonster("card_133", "cpu");
+    game.slots.player_front_left.monster = createActiveMonster("takokke", "player");
+
+    expect(getCommandTargets(game, "cpu_front_left", "呪いの刃")).toEqual([]);
+    expect(getCommandTargets(game, "cpu_front_left", "attack")).toContainEqual({
+      kind: "monster",
+      slotKey: "player_front_left",
+    });
+  });
+
   it("card_107 and card_108 combine their upper attack power for ドリルブレイク", () => {
     let game = createGameWithPlayerHand([]);
     game.slots.player_front_left.monster = createActiveMonster("card_108", "player", {
