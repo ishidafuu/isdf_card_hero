@@ -1483,6 +1483,8 @@ function parseArgs(args: string[]): CliOptions {
       i += 1;
     } else if (arg === "--no-eval-trace") {
       parsed.includeCpuDecisionEvaluations = false;
+    } else if (arg === "--blocked-summon-eval-trace") {
+      parsed.includeCpuDecisionEvaluations = "selected_blocked_backline_summon";
     } else if (arg === "--markdown") {
       parsed.markdownPath = readString(arg, next);
       i += 1;
@@ -1526,6 +1528,7 @@ Options:
   --max-turns <n>               Turn cap. Default: 160
   --max-samples <n>             Maximum samples in report. Default: 36
   --no-eval-trace               Keep game history but skip expensive CPU evaluation trace.
+  --blocked-summon-eval-trace   Trace CPU alternatives only when the selected action is a blocked backline summon.
   --markdown <path>             Write markdown report.
   --json <path>                 Write JSON report.
 `);

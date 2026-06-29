@@ -35,6 +35,8 @@ export interface MasterLabMagicOpportunityOptions {
   candidateOnly?: boolean;
 }
 
+export type MasterLabCpuDecisionEvaluationMode = boolean | "selected_blocked_backline_summon";
+
 export interface MasterLabAutoPlayOptions {
   seedStart?: number;
   seedEnd?: number;
@@ -56,7 +58,7 @@ export interface MasterLabAutoPlayOptions {
   labActionMargin?: number;
   labEvaluationTuning?: MasterLabEvaluationTuning;
   includeGameHistory?: boolean;
-  includeCpuDecisionEvaluations?: boolean;
+  includeCpuDecisionEvaluations?: MasterLabCpuDecisionEvaluationMode;
   magicOpportunity?: MasterLabMagicOpportunityOptions;
 }
 
@@ -715,7 +717,8 @@ function chooseMixedDecision(game: GameState, options: ResolvedMasterLabAutoPlay
   const profileOptions = { profiles: options.aiProfiles, tunings: options.aiTunings, searches: options.aiSearches };
   if (!isMasterLabCandidateId(participant)) {
     const decision = chooseCpuDecision(game, profileOptions);
-    const evaluations = options.includeGameHistory && options.includeCpuDecisionEvaluations
+    const traceDecision = shouldTraceCpuDecision(game, decision, options);
+    const evaluations = traceDecision
       ? inspectCpuDecisionEvaluations(game, profileOptions)
       : [];
     return {
@@ -749,6 +752,7 @@ function chooseMixedDecision(game: GameState, options: ResolvedMasterLabAutoPlay
   }
 
   const decision = bestCpu?.decision ?? chooseCpuDecision(game, profileOptions);
+  const traceDecision = shouldTraceCpuDecision(game, decision, options);
   return {
     source: "cpu",
     decision,
@@ -756,10 +760,41 @@ function chooseMixedDecision(game: GameState, options: ResolvedMasterLabAutoPlay
     legalDecisionCount: cpuEvaluations.length,
     labDecisionCount: labEvaluations.length,
     reason: decision.reason,
-    ...(options.includeGameHistory && options.includeCpuDecisionEvaluations
+    ...(traceDecision
       ? { cpuDecisionEvaluations: cpuDecisionEvaluationTrace(cpuEvaluations, decision, game) }
       : {}),
   };
+}
+
+function shouldTraceCpuDecision(
+  game: GameState,
+  decision: CpuDecision,
+  options: ResolvedMasterLabAutoPlayOptions,
+): boolean {
+  if (!options.includeGameHistory) {
+    return false;
+  }
+  const mode = options.includeCpuDecisionEvaluations;
+  if (mode === true) {
+    return true;
+  }
+  if (mode === "selected_blocked_backline_summon") {
+    return isSelectedBlockedBacklineSummon(game, decision);
+  }
+  return false;
+}
+
+function isSelectedBlockedBacklineSummon(game: GameState, decision: CpuDecision): boolean {
+  if (decision.type !== "summon") {
+    return false;
+  }
+  const slot = game.slots[decision.slotKey];
+  if (slot.row !== "back") {
+    return false;
+  }
+  const frontSlotKey = frontSlotKeyFor(decision.slotKey);
+  const frontMonster = game.slots[frontSlotKey].monster;
+  return frontMonster?.owner === game.currentPlayer;
 }
 
 function cpuDecisionEvaluationTrace(
