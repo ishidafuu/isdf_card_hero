@@ -1103,6 +1103,24 @@ function decisionSituationalBonus(
       bias.whiteBackSlotFutureValuePenalty,
     );
   }
+  if (bias.whiteBackSlotReservationPlanBonus) {
+    bonus += whiteBackSlotReservationPlanDecisionBonus(
+      before,
+      after,
+      decision,
+      perspective,
+      bias.whiteBackSlotReservationPlanBonus,
+    );
+  }
+  if (bias.whiteLowStoneBackSlotAlternativeBonus) {
+    bonus += whiteLowStoneBackSlotAlternativeDecisionBonus(
+      before,
+      after,
+      decision,
+      perspective,
+      bias.whiteLowStoneBackSlotAlternativeBonus,
+    );
+  }
   if (bias.whiteBlackUnsafeMasterAttackPenalty) {
     bonus -= whiteBlackUnsafeMasterAttackDecisionPenalty(
       before,
@@ -1725,6 +1743,150 @@ function whiteBackSlotFutureValueDecisionPenalty(
   const lastBackSlotPenalty = beforeEmptyBackSlots > 0 && afterEmptyBackSlots === 0 ? value : 0;
   const noReachBackPenalty = noReachFrontBackIncrease * value;
   return lastBackSlotPenalty + noReachBackPenalty;
+}
+
+function whiteBackSlotReservationPlanDecisionBonus(
+  before: GameState,
+  after: GameState,
+  decision: CpuDecision,
+  perspective: PlayerId,
+  value: number,
+): number {
+  if (
+    value <= 0 ||
+    before.players[perspective].masterId !== "white" ||
+    before.players[perspective].hand.length >= 5 ||
+    after.winner ||
+    emptyBackSlotCountForPlayer(before, perspective) !== 1 ||
+    emptyBackSlotCountForPlayer(after, perspective) === 0 ||
+    deckBacklineWorkCount(before, perspective, 5) === 0
+  ) {
+    return 0;
+  }
+
+  if (decision.type === "summon" && afterBackSlotWasFilled(before, after, perspective)) {
+    return 0;
+  }
+
+  const immediateProgress = enemyMonsterWasRemoved(before, after, perspective) ||
+    ownMonsterLeveledUp(before, after, perspective) ||
+    masterDamageFromTransition(before, after, perspective) > 0;
+  const focusOrEnd = decision.type === "focus" || decision.type === "end_turn";
+  const top5ReachCount = deckBacklineWorkCount(before, perspective, 5);
+  return value + (immediateProgress ? value * 0.4 : 0) + (focusOrEnd ? value * 0.15 : 0) + top5ReachCount * 8;
+}
+
+function whiteLowStoneBackSlotAlternativeDecisionBonus(
+  before: GameState,
+  after: GameState,
+  decision: CpuDecision,
+  perspective: PlayerId,
+  value: number,
+): number {
+  if (
+    value <= 0 ||
+    before.players[perspective].masterId !== "white" ||
+    before.players[perspective].stones > 2 ||
+    emptyBackSlotCountForPlayer(before, perspective) !== 1 ||
+    emptyBackSlotCountForPlayer(after, perspective) === 0 ||
+    deckBacklineWorkCount(before, perspective, 5) === 0 ||
+    !hasRiskyNoReachLastBackSummon(before, perspective) ||
+    hasBacklineWorkLastBackSummon(before, perspective)
+  ) {
+    return 0;
+  }
+
+  if (decision.type === "summon" && afterBackSlotWasFilled(before, after, perspective)) {
+    return 0;
+  }
+
+  const attacksMonster = decision.type === "attack" && decision.action.target.kind === "monster";
+  const focus = decision.type === "focus";
+  const end = decision.type === "end_turn";
+  const move = decision.type === "move" && emptyBackSlotCountForPlayer(after, perspective) > 0;
+  if (!attacksMonster && !focus && !end && !move) {
+    return 0;
+  }
+
+  const enemyRemoved = enemyMonsterWasRemoved(before, after, perspective);
+  const focusBonus = focus && ownReadyFrontMonsterCount(before, perspective) > 0 ? value * 0.2 : 0;
+  const lowStoneBonus = before.players[perspective].stones <= 1 ? value * 0.25 : 0;
+  return value + (enemyRemoved ? value * 0.5 : 0) + focusBonus + lowStoneBonus;
+}
+
+function hasRiskyNoReachLastBackSummon(state: GameState, playerId: PlayerId): boolean {
+  const emptyBackSlot = lastEmptyBackSlot(state, playerId);
+  if (!emptyBackSlot) {
+    return false;
+  }
+  const frontSlotKey = frontSlotFor(state.slots[emptyBackSlot]);
+  if (!state.slots[frontSlotKey].monster) {
+    return false;
+  }
+  return state.players[playerId].hand.some((card) => {
+    try {
+      const def = getCardDef(card.cardId);
+      return def.type === "monster" &&
+        inferMonsterAiTrait(def).role === "front" &&
+        !monsterHasBacklineAttackPattern(card.cardId) &&
+        canSummonTo(state, card.instanceId, emptyBackSlot);
+    } catch {
+      return false;
+    }
+  });
+}
+
+function hasBacklineWorkLastBackSummon(state: GameState, playerId: PlayerId): boolean {
+  const emptyBackSlot = lastEmptyBackSlot(state, playerId);
+  if (!emptyBackSlot) {
+    return false;
+  }
+  return state.players[playerId].hand.some((card) => {
+    try {
+      const def = getCardDef(card.cardId);
+      return def.type === "monster" &&
+        monsterHasBacklineAttackPattern(card.cardId) &&
+        canSummonTo(state, card.instanceId, emptyBackSlot);
+    } catch {
+      return false;
+    }
+  });
+}
+
+function lastEmptyBackSlot(state: GameState, playerId: PlayerId): SlotKey | undefined {
+  const emptyBackSlots = FIELD_ORDER_BY_PLAYER[playerId].filter((slotKey) =>
+    state.slots[slotKey].row === "back" && !state.slots[slotKey].monster,
+  );
+  return emptyBackSlots.length === 1 ? emptyBackSlots[0] : undefined;
+}
+
+function ownReadyFrontMonsterCount(state: GameState, playerId: PlayerId): number {
+  return FIELD_ORDER_BY_PLAYER[playerId].filter((slotKey) => {
+    const slot = state.slots[slotKey];
+    const monster = slot.monster;
+    return slot.row === "front" && monster?.owner === playerId && monster.status === "active";
+  }).length;
+}
+
+function afterBackSlotWasFilled(before: GameState, after: GameState, playerId: PlayerId): boolean {
+  return FIELD_ORDER_BY_PLAYER[playerId].some((slotKey) =>
+    before.slots[slotKey].row === "back" &&
+    !before.slots[slotKey].monster &&
+    !!after.slots[slotKey].monster,
+  );
+}
+
+function deckBacklineWorkCount(state: GameState, playerId: PlayerId, topCount: number): number {
+  return state.players[playerId].deck
+    .slice(0, Math.max(0, topCount))
+    .filter((card) => {
+      try {
+        const def = getCardDef(card.cardId);
+        return def.type === "monster" && monsterHasBacklineAttackPattern(card.cardId);
+      } catch {
+        return false;
+      }
+    }).length;
 }
 
 function monsterHasBacklineAttackPattern(cardId: string): boolean {
@@ -3302,11 +3464,32 @@ function evaluateConfiguredFutureTacticalValue(
   detailed: boolean,
   config: CpuAiProfileConfig,
 ): number {
-  const base = evaluateFutureTacticalValue(state, perspective, detailed, config.weights);
+  const base = evaluateFutureTacticalValue(state, perspective, detailed, config.weights) +
+    whiteBackSlotFutureStateValue(state, perspective, config);
   if (!config.omniscient) {
     return base;
   }
   return base + evaluateOmniscientHiddenInfoValue(state, perspective, detailed, config) * config.omniscient.hiddenInfoWeight;
+}
+
+function whiteBackSlotFutureStateValue(
+  state: GameState,
+  perspective: PlayerId,
+  config: CpuAiProfileConfig,
+): number {
+  const value = config.tuning?.situationalBias?.whiteBackSlotFutureStateBonus ?? 0;
+  if (value <= 0 || state.players[perspective].masterId !== "white" || state.winner) {
+    return 0;
+  }
+
+  const top5BacklineWork = deckBacklineWorkCount(state, perspective, 5);
+  if (top5BacklineWork <= 0) {
+    return 0;
+  }
+
+  const emptyBackSlots = emptyBackSlotCountForPlayer(state, perspective);
+  const noReachFrontBackSlots = noReachFrontBackSlotCountForPlayer(state, perspective);
+  return (emptyBackSlots - noReachFrontBackSlots) * top5BacklineWork * value;
 }
 
 function evaluateOmniscientHiddenInfoValue(

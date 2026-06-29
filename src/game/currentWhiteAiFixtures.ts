@@ -1,4 +1,4 @@
-import type { CpuAiProfile, CpuAiTuning } from "./cpuAiTypes";
+import type { CpuAiProfile, CpuAiSearchOptions, CpuAiTuning } from "./cpuAiTypes";
 import { DEFAULT_PLAYER_DECK_PRESET_ID } from "./defaultDeckPresets";
 import type { DeckPresetId } from "./deckPresets";
 import type { WhiteAiTuningOpponent, WhiteAiTuningVariant } from "./whiteAiTuningLoop";
@@ -56,6 +56,7 @@ export function createCurrentWhiteAiVariant(
   tuning: CpuAiTuning | undefined,
   hypothesis: string,
   aiProfile: CpuAiProfile = "white",
+  search?: CpuAiSearchOptions,
 ): WhiteAiTuningVariant {
   return {
     id,
@@ -64,6 +65,7 @@ export function createCurrentWhiteAiVariant(
     deckPreset: CURRENT_WHITE_AI_DECK_PRESET_ID,
     aiProfile,
     ...(tuning ? { tuning } : {}),
+    ...(search ? { search } : {}),
     hypothesis,
   };
 }

@@ -13,7 +13,7 @@ import {
   type MasterLabParticipantId,
 } from "./masterLabAutoPlay";
 import type { MasterLabEvaluationTuning } from "./masterLab";
-import type { CpuAiProfile, CpuAiTuning } from "./cpuAi";
+import type { CpuAiProfile, CpuAiSearchOptions, CpuAiTuning } from "./cpuAi";
 import type { PlayerId } from "./types";
 
 export type WhiteAiTuningExperimentKind = "baseline" | "action_bias" | "weights" | "hybrid" | "deck";
@@ -39,6 +39,7 @@ export interface WhiteAiTuningVariant {
   deckPreset: DeckPresetId;
   aiProfile: CpuAiProfile;
   tuning?: CpuAiTuning;
+  search?: CpuAiSearchOptions;
   hypothesis: string;
 }
 
@@ -576,6 +577,10 @@ function runWhiteAiTuningMatchup(options: {
         ...(player.tuning ? { player: player.tuning } : {}),
         ...(cpu.tuning ? { cpu: cpu.tuning } : {}),
       },
+      aiSearches: {
+        ...(player.search ? { player: player.search } : {}),
+        ...(cpu.search ? { cpu: cpu.search } : {}),
+      },
       ...labOptions,
     }),
   };
@@ -586,6 +591,7 @@ interface SeatConfig {
   deckPreset: DeckPresetId;
   aiProfile: CpuAiProfile;
   tuning?: CpuAiTuning;
+  search?: CpuAiSearchOptions;
   labActionMargin?: number;
   labEvaluationTuning?: MasterLabEvaluationTuning;
 }
@@ -596,6 +602,7 @@ function variantSeatConfig(variant: WhiteAiTuningVariant): SeatConfig {
     deckPreset: variant.deckPreset,
     aiProfile: variant.aiProfile,
     ...(variant.tuning ? { tuning: variant.tuning } : {}),
+    ...(variant.search ? { search: variant.search } : {}),
   };
 }
 

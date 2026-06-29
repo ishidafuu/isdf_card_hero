@@ -4,6 +4,7 @@ import {
   inspectCpuDecisionEvaluations,
   type CpuAiProfile,
   type CpuAiProfiles,
+  type CpuAiSearchOptions,
   type CpuAiTuning,
   type CpuDecision,
   type CpuDecisionEvaluation,
@@ -51,6 +52,7 @@ export interface MasterLabAutoPlayOptions {
   aiProfile?: CpuAiProfile;
   aiProfiles?: Partial<CpuAiProfiles>;
   aiTunings?: Partial<Record<PlayerId, CpuAiTuning>>;
+  aiSearches?: Partial<Record<PlayerId, CpuAiSearchOptions>>;
   labActionMargin?: number;
   labEvaluationTuning?: MasterLabEvaluationTuning;
   includeGameHistory?: boolean;
@@ -58,7 +60,7 @@ export interface MasterLabAutoPlayOptions {
 }
 
 type ResolvedMasterLabAutoPlayOptions = Required<
-  Omit<MasterLabAutoPlayOptions, "seedEnd" | "failOnWarnings" | "deckPresets" | "participants" | "aiProfiles" | "aiTunings" | "magicOpportunity">
+  Omit<MasterLabAutoPlayOptions, "seedEnd" | "failOnWarnings" | "deckPresets" | "participants" | "aiProfiles" | "aiTunings" | "aiSearches" | "magicOpportunity">
 > & {
   seedEnd: number;
   failOnWarnings: boolean;
@@ -66,6 +68,7 @@ type ResolvedMasterLabAutoPlayOptions = Required<
   participants: Record<PlayerId, MasterLabParticipantId>;
   aiProfiles: CpuAiProfiles;
   aiTunings: Partial<Record<PlayerId, CpuAiTuning>>;
+  aiSearches: Partial<Record<PlayerId, CpuAiSearchOptions>>;
   magicOpportunity: MasterLabMagicOpportunityOptions | undefined;
 };
 
@@ -81,6 +84,7 @@ export interface MasterLabDecisionEvent {
   legalDecisionCount: number;
   labDecisionCount: number;
   currentPlayerHand?: MasterLabHandCardSummary[];
+  currentPlayerDeck?: MasterLabDeckCardSummary[];
   cpuDecisionEvaluations?: MasterLabCpuDecisionEvaluation[];
   before: MasterLabGameStateSummary;
   after: MasterLabGameStateSummary;
@@ -93,6 +97,10 @@ export interface MasterLabHandCardSummary {
   cardName: string;
   type: "monster" | "magic";
   role?: "front" | "back";
+}
+
+export interface MasterLabDeckCardSummary extends MasterLabHandCardSummary {
+  index: number;
 }
 
 export interface MasterLabCpuDecisionEvaluation {
@@ -392,6 +400,7 @@ function resolveOptions(options: MasterLabAutoPlayOptions): ResolvedMasterLabAut
       cpu: options.aiProfiles?.cpu ?? fallbackAiProfile,
     },
     aiTunings: options.aiTunings ?? {},
+    aiSearches: options.aiSearches ?? {},
     participants: {
       player: options.participants?.player ?? DEFAULT_OPTIONS.participants.player,
       cpu: options.participants?.cpu ?? DEFAULT_OPTIONS.participants.cpu,
@@ -432,7 +441,7 @@ function runMasterLabAutoPlayGame(
       }
 
       if (game.pendingLevelUp) {
-        game = runAutoStep(game, { profiles: options.aiProfiles, tunings: options.aiTunings });
+        game = runAutoStep(game, { profiles: options.aiProfiles, tunings: options.aiTunings, searches: options.aiSearches });
         if (game.pendingLevelUp) {
           pushIssue(context, "unresolved_level_up", "failure", game, step, "level-up prompt remained after auto resolution");
           break;
@@ -564,7 +573,12 @@ function runMasterLabDecisionStep(
     score: selected.score,
     legalDecisionCount: selected.legalDecisionCount,
     labDecisionCount: selected.labDecisionCount,
-    ...(context.options.includeGameHistory ? { currentPlayerHand: summarizeHand(game, game.currentPlayer) } : {}),
+    ...(context.options.includeGameHistory
+      ? {
+          currentPlayerHand: summarizeHand(game, game.currentPlayer),
+          currentPlayerDeck: summarizeDeck(game, game.currentPlayer),
+        }
+      : {}),
     ...(selected.source === "cpu" && selected.cpuDecisionEvaluations
       ? { cpuDecisionEvaluations: selected.cpuDecisionEvaluations }
       : {}),
@@ -629,6 +643,7 @@ function inspectMagicOpportunityRecords(
     const opportunity = inspectCpuDecisionEvaluations(virtual, {
       profiles: context.options.aiProfiles,
       tunings: context.options.aiTunings,
+      searches: context.options.aiSearches,
     })
       .filter((evaluation) =>
         evaluation.decision.type === "magic" &&
@@ -694,7 +709,7 @@ function labActionTargetUsageKey(game: GameState, actionId: string, target: Targ
 
 function chooseMixedDecision(game: GameState, options: ResolvedMasterLabAutoPlayOptions): SelectedDecision {
   const participant = options.participants[game.currentPlayer];
-  const profileOptions = { profiles: options.aiProfiles, tunings: options.aiTunings };
+  const profileOptions = { profiles: options.aiProfiles, tunings: options.aiTunings, searches: options.aiSearches };
   if (!isMasterLabCandidateId(participant)) {
     const decision = chooseCpuDecision(game, profileOptions);
     const evaluations = options.includeGameHistory ? inspectCpuDecisionEvaluations(game, profileOptions) : [];
@@ -963,6 +978,20 @@ function summarizeHand(game: GameState, playerId: PlayerId): MasterLabHandCardSu
   return game.players[playerId].hand.map((card) => {
     const def = getCardDef(card.cardId);
     return {
+      instanceId: card.instanceId,
+      cardId: card.cardId,
+      cardName: def.name,
+      type: def.type,
+      ...(def.type === "monster" ? { role: def.role } : {}),
+    };
+  });
+}
+
+function summarizeDeck(game: GameState, playerId: PlayerId): MasterLabDeckCardSummary[] {
+  return game.players[playerId].deck.map((card, index) => {
+    const def = getCardDef(card.cardId);
+    return {
+      index,
       instanceId: card.instanceId,
       cardId: card.cardId,
       cardName: def.name,
