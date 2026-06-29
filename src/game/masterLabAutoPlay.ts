@@ -6,6 +6,7 @@ import {
   type CpuAiProfiles,
   type CpuAiTuning,
   type CpuDecision,
+  type CpuDecisionEvaluation,
 } from "./cpuAi";
 import { getCardDef } from "./cards";
 import { buildDeckPresetCardIds, deckPresetAllowsSpecial, type DeckPresetId } from "./deckPresets";
@@ -79,9 +80,21 @@ export interface MasterLabDecisionEvent {
   score: number;
   legalDecisionCount: number;
   labDecisionCount: number;
+  cpuDecisionEvaluations?: MasterLabCpuDecisionEvaluation[];
   before: MasterLabGameStateSummary;
   after: MasterLabGameStateSummary;
   newLog: string[];
+}
+
+export interface MasterLabCpuDecisionEvaluation {
+  decision: string;
+  type: CpuDecision["type"];
+  reason: string;
+  score: number;
+  totalScore: number;
+  deltaFromSelected: number;
+  index: number;
+  selected: boolean;
 }
 
 export interface MasterLabGameStateSummary {
@@ -201,8 +214,18 @@ interface MasterLabRunContext {
 }
 
 type SelectedDecision =
-  | { source: "cpu"; decision: CpuDecision; score: number; legalDecisionCount: number; labDecisionCount: number; reason: string }
+  | {
+      source: "cpu";
+      decision: CpuDecision;
+      score: number;
+      legalDecisionCount: number;
+      labDecisionCount: number;
+      reason: string;
+      cpuDecisionEvaluations?: MasterLabCpuDecisionEvaluation[];
+    }
   | { source: "master_lab"; evaluation: MasterLabActionEvaluation; score: number; legalDecisionCount: number; labDecisionCount: number; reason: string };
+
+const CPU_DECISION_EVALUATION_TRACE_LIMIT = 8;
 
 const DEFAULT_OPTIONS = {
   seedStart: 900,
@@ -512,6 +535,9 @@ function runMasterLabDecisionStep(
     score: selected.score,
     legalDecisionCount: selected.legalDecisionCount,
     labDecisionCount: selected.labDecisionCount,
+    ...(selected.source === "cpu" && selected.cpuDecisionEvaluations
+      ? { cpuDecisionEvaluations: selected.cpuDecisionEvaluations }
+      : {}),
     before: beforeSummary,
     after: summarizeMasterLabGameState(next, context.options.participants),
     newLog: newLogEntries(logBefore, next.log),
@@ -641,13 +667,15 @@ function chooseMixedDecision(game: GameState, options: ResolvedMasterLabAutoPlay
   const profileOptions = { profiles: options.aiProfiles, tunings: options.aiTunings };
   if (!isMasterLabCandidateId(participant)) {
     const decision = chooseCpuDecision(game, profileOptions);
+    const evaluations = options.includeGameHistory ? inspectCpuDecisionEvaluations(game, profileOptions) : [];
     return {
       source: "cpu",
       decision,
       score: decision.score,
-      legalDecisionCount: 0,
+      legalDecisionCount: evaluations.length,
       labDecisionCount: 0,
       reason: decision.reason,
+      ...(evaluations.length > 0 ? { cpuDecisionEvaluations: cpuDecisionEvaluationTrace(evaluations, decision) } : {}),
     };
   }
 
@@ -678,7 +706,43 @@ function chooseMixedDecision(game: GameState, options: ResolvedMasterLabAutoPlay
     legalDecisionCount: cpuEvaluations.length,
     labDecisionCount: labEvaluations.length,
     reason: decision.reason,
+    ...(options.includeGameHistory ? { cpuDecisionEvaluations: cpuDecisionEvaluationTrace(cpuEvaluations, decision) } : {}),
   };
+}
+
+function cpuDecisionEvaluationTrace(
+  evaluations: readonly CpuDecisionEvaluation[],
+  selectedDecision: CpuDecision,
+): MasterLabCpuDecisionEvaluation[] {
+  const selectedDecisionText = decisionToText(selectedDecision);
+  const selectedEvaluation = evaluations.find((evaluation) =>
+    decisionToText(evaluation.decision) === selectedDecisionText,
+  );
+  const selectedTotalScore = selectedEvaluation?.totalScore ?? selectedDecision.score;
+  const selectedIndex = selectedEvaluation?.index;
+  const ranked = [...evaluations].sort((a, b) => b.totalScore - a.totalScore || a.index - b.index);
+  const top = ranked.slice(0, CPU_DECISION_EVALUATION_TRACE_LIMIT);
+  if (selectedEvaluation && !top.some((evaluation) => evaluation.index === selectedEvaluation.index)) {
+    top.unshift(selectedEvaluation);
+    top.length = Math.min(top.length, CPU_DECISION_EVALUATION_TRACE_LIMIT);
+  }
+
+  return top.map((evaluation) => {
+    const decisionText = decisionToText(evaluation.decision);
+    const selected = selectedIndex !== undefined
+      ? evaluation.index === selectedIndex
+      : decisionText === selectedDecisionText;
+    return {
+      decision: decisionText,
+      type: evaluation.decision.type,
+      reason: evaluation.decision.reason,
+      score: round1(evaluation.decision.score),
+      totalScore: round1(evaluation.totalScore),
+      deltaFromSelected: round1(selectedTotalScore - evaluation.totalScore),
+      index: evaluation.index,
+      selected,
+    };
+  });
 }
 
 function createMasterLabInitialGame(seed: number, options: ResolvedMasterLabAutoPlayOptions): GameState {

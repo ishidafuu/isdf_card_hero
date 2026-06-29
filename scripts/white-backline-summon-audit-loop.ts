@@ -75,6 +75,15 @@ interface BacklineSummonMetrics {
   blockedVeryLowStoneAfterSummon: number;
   blockedLosses: number;
   blockedWins: number;
+  badBlockedBacklineSummons: number;
+  badWithEvaluationTrace: number;
+  badWithCloseNonSummonAlternative: number;
+  badTopAlternativeAttack: number;
+  badTopAlternativeFocus: number;
+  badTopAlternativeEndTurn: number;
+  badTopAlternativeMove: number;
+  badTopAlternativeFrontSummon: number;
+  badTopAlternativeOtherSummon: number;
 }
 
 interface BacklineSummonAudit {
@@ -91,6 +100,7 @@ interface BacklineSummonAudit {
   hasBacklinePattern: boolean;
   immediateWakeWork: boolean;
   followup: BacklineSummonFollowup;
+  alternatives: BacklineAlternativeAudit;
 }
 
 interface BacklineSummonFollowup {
@@ -99,6 +109,21 @@ interface BacklineSummonFollowup {
   nextTurnMoveForward: boolean;
   nextTurnNoWork: boolean;
   nextTurnDecisions: string[];
+}
+
+type CpuEvaluationTrace = NonNullable<MasterLabDecisionEvent["cpuDecisionEvaluations"]>[number];
+
+interface BacklineAlternativeAudit {
+  hasTrace: boolean;
+  topNonSelected?: CpuEvaluationTrace;
+  bestNonSummon?: CpuEvaluationTrace;
+  closestAttack?: CpuEvaluationTrace;
+  closestFocus?: CpuEvaluationTrace;
+  closestEndTurn?: CpuEvaluationTrace;
+  closestMove?: CpuEvaluationTrace;
+  closestFrontSummon?: CpuEvaluationTrace;
+  closestOtherSummon?: CpuEvaluationTrace;
+  closeNonSummon: boolean;
 }
 
 interface BacklineSummonSample {
@@ -118,6 +143,7 @@ interface BacklineSummonSample {
   score: number;
   reason: string;
   flags: string;
+  alternatives: string;
   nextTurn: string;
   board: string;
 }
@@ -170,7 +196,9 @@ for (const audit of report.byVariant) {
     `${audit.variantId}: ${audit.wins}-${audit.losses}-${audit.draws} ` +
       `blocked ${audit.metrics.blockedBacklineSummons} ` +
       `noPattern ${formatPercent(rate(audit.metrics.blockedWithoutBacklinePattern, audit.metrics.blockedBacklineSummons))} ` +
-      `noWork ${formatPercent(rate(audit.metrics.blockedNextTurnNoWork, audit.metrics.blockedBacklineSummons))}`,
+      `noWork ${formatPercent(rate(audit.metrics.blockedNextTurnNoWork, audit.metrics.blockedBacklineSummons))} ` +
+      `bad ${audit.metrics.badBlockedBacklineSummons} ` +
+      `closeAlt ${audit.metrics.badWithCloseNonSummonAlternative}`,
   );
 }
 if (options.markdownPath) {
@@ -294,9 +322,34 @@ function auditGameBacklineSummons(
       hasBacklinePattern: monsterHasBacklineAttackPattern(slot.card),
       immediateWakeWork: event.reason.includes("即仕事") || event.reason.includes("ウェイク"),
       followup: auditFollowup(history, index, context.candidateSeat, slotKey, slot.card),
+      alternatives: auditAlternatives(event),
     });
   }
   return audits;
+}
+
+function auditAlternatives(event: MasterLabDecisionEvent): BacklineAlternativeAudit {
+  const evaluations = event.cpuDecisionEvaluations ?? [];
+  const nonSelected = evaluations
+    .filter((evaluation) => !evaluation.selected)
+    .sort((a, b) => b.totalScore - a.totalScore || a.index - b.index);
+  const bestNonSummon = nonSelected.find((evaluation) => evaluation.type !== "summon");
+  return {
+    hasTrace: evaluations.length > 0,
+    topNonSelected: nonSelected[0],
+    bestNonSummon,
+    closestAttack: nonSelected.find((evaluation) => evaluation.type === "attack"),
+    closestFocus: nonSelected.find((evaluation) => evaluation.type === "focus"),
+    closestEndTurn: nonSelected.find((evaluation) => evaluation.type === "end_turn"),
+    closestMove: nonSelected.find((evaluation) => evaluation.type === "move"),
+    closestFrontSummon: nonSelected.find((evaluation) =>
+      evaluation.type === "summon" && summonTargetRow(evaluation.decision) === "front",
+    ),
+    closestOtherSummon: nonSelected.find((evaluation) =>
+      evaluation.type === "summon" && summonTargetRow(evaluation.decision) !== "front",
+    ),
+    closeNonSummon: bestNonSummon ? bestNonSummon.deltaFromSelected <= 35 : false,
+  };
 }
 
 function auditFollowup(
@@ -396,6 +449,42 @@ function addAudit(metrics: BacklineSummonMetrics, audit: BacklineSummonAudit): v
   } else if (audit.outcome === "win") {
     metrics.blockedWins += 1;
   }
+  if (isBadBlockedBacklineSummon(audit)) {
+    metrics.badBlockedBacklineSummons += 1;
+    if (audit.alternatives.hasTrace) {
+      metrics.badWithEvaluationTrace += 1;
+    }
+    if (audit.alternatives.closeNonSummon) {
+      metrics.badWithCloseNonSummonAlternative += 1;
+    }
+    addBadTopAlternative(metrics, audit.alternatives.topNonSelected);
+  }
+}
+
+function isBadBlockedBacklineSummon(audit: BacklineSummonAudit): boolean {
+  return !!audit.frontBlocker &&
+    slotRow(audit.slotKey) === "back" &&
+    !audit.hasBacklinePattern &&
+    audit.followup.nextTurnNoWork;
+}
+
+function addBadTopAlternative(metrics: BacklineSummonMetrics, alternative: CpuEvaluationTrace | undefined): void {
+  if (!alternative) {
+    return;
+  }
+  if (alternative.type === "attack") {
+    metrics.badTopAlternativeAttack += 1;
+  } else if (alternative.type === "focus") {
+    metrics.badTopAlternativeFocus += 1;
+  } else if (alternative.type === "end_turn") {
+    metrics.badTopAlternativeEndTurn += 1;
+  } else if (alternative.type === "move") {
+    metrics.badTopAlternativeMove += 1;
+  } else if (alternative.type === "summon" && summonTargetRow(alternative.decision) === "front") {
+    metrics.badTopAlternativeFrontSummon += 1;
+  } else if (alternative.type === "summon") {
+    metrics.badTopAlternativeOtherSummon += 1;
+  }
 }
 
 function addSamples(samples: BacklineSummonSample[], audit: BacklineSummonAudit, maxSamples: number): void {
@@ -415,6 +504,12 @@ function sampleKinds(audit: BacklineSummonAudit): string[] {
   const kinds: string[] = [];
   if (!audit.hasBacklinePattern && audit.followup.nextTurnNoWork) {
     kinds.push("blocked_no_pattern_no_work");
+    if (audit.alternatives.closeNonSummon) {
+      kinds.push("bad_blocked_close_non_summon_alt");
+    }
+    if (!audit.alternatives.hasTrace) {
+      kinds.push("bad_blocked_no_eval_trace");
+    }
   }
   if (!audit.hasBacklinePattern && audit.followup.nextTurnMoveForward) {
     kinds.push("blocked_no_pattern_move_forward");
@@ -449,6 +544,7 @@ function formatSample(kind: string, audit: BacklineSummonAudit): BacklineSummonS
     score: round(audit.event.score, 1),
     reason: audit.event.reason,
     flags: formatFlags(audit),
+    alternatives: formatAlternatives(audit.alternatives),
     nextTurn: shortList(audit.followup.nextTurnDecisions),
     board: formatBoard(audit.event.before),
   };
@@ -466,6 +562,28 @@ function formatFlags(audit: BacklineSummonAudit): string {
   ].filter((value): value is string => !!value).join(", ");
 }
 
+function formatAlternatives(alternatives: BacklineAlternativeAudit): string {
+  if (!alternatives.hasTrace) {
+    return "no-trace";
+  }
+  return [
+    `top=${formatEvaluation(alternatives.topNonSelected)}`,
+    `nonSummon=${formatEvaluation(alternatives.bestNonSummon)}`,
+    `attack=${formatEvaluation(alternatives.closestAttack)}`,
+    `focus=${formatEvaluation(alternatives.closestFocus)}`,
+    `end=${formatEvaluation(alternatives.closestEndTurn)}`,
+    `move=${formatEvaluation(alternatives.closestMove)}`,
+    `frontSummon=${formatEvaluation(alternatives.closestFrontSummon)}`,
+  ].join(" / ");
+}
+
+function formatEvaluation(evaluation: CpuEvaluationTrace | undefined): string {
+  if (!evaluation) {
+    return "-";
+  }
+  return `${evaluation.type}:${evaluation.deltaFromSelected >= 0 ? "+" : ""}${round(evaluation.deltaFromSelected, 1)} ${evaluation.decision}`;
+}
+
 function buildNotes(metrics: BacklineSummonMetrics): string[] {
   const notes = [
     "この監査は前衛/後衛ラベルだけではなく、後列から攻撃できるパターンを別扱いにする。",
@@ -480,6 +598,12 @@ function buildNotes(metrics: BacklineSummonMetrics): string[] {
   if (rate(metrics.blockedWithBacklinePattern, metrics.blockedBacklineSummons) >= 0.4) {
     notes.push("詰まり後列召喚の多くは射程持ちカードでもあるため、一律ペナルティは避けるべき。");
   }
+  if (metrics.badBlockedBacklineSummons > 0 && metrics.badWithEvaluationTrace < metrics.badBlockedBacklineSummons) {
+    notes.push("一部の bad summon には候補評価traceがない。古い結果ファイルではなく、このスクリプトで再生成した履歴を使う必要がある。");
+  }
+  if (rate(metrics.badWithCloseNonSummonAlternative, metrics.badBlockedBacklineSummons) >= 0.4) {
+    notes.push("bad summon の多くで近い非召喚代替がある。次は召喚ペナルティより、攻撃/ためる/終了との比較条件を詰める価値が高い。");
+  }
   return notes;
 }
 
@@ -488,6 +612,13 @@ function buildNextLoopProposal(metrics: BacklineSummonMetrics): string[] {
     return ["対象seedでは詰まり後列召喚がほぼ出ていないため、games-per-matchupを増やすか、実戦で見たseedに寄せて再監査する。"];
   }
   const steps: string[] = [];
+  if (metrics.badBlockedBacklineSummons > 0) {
+    if (rate(metrics.badWithCloseNonSummonAlternative, metrics.badBlockedBacklineSummons) >= 0.35) {
+      steps.push("bad summon で近い非召喚代替が多い場合、召喚そのものを罰するのではなく、低石・仕事予定なし局面で `attack/focus/end_turn` が勝てる条件を実装候補化する。");
+    } else {
+      steps.push("bad summon の代替が召喚同士に寄る場合、後列仕事なし召喚を抑えるより、召喚先・カード選択の品質を比較する候補へ移る。");
+    }
+  }
   if (rate(metrics.blockedWithoutBacklinePattern, metrics.blockedBacklineSummons) >= 0.2) {
     steps.push("候補 `whiteBlockedBacklineNoWorkSummonPenalty` は一括スクリーニングだけで判断せず、同一seed比較で勝率と `blocked_no_pattern_no_work` 減少が両立する値だけ中母数確認する。");
   }
@@ -524,14 +655,14 @@ function formatMarkdown(report: BacklineSummonAuditReport): string {
     "",
     "## Variant Metrics",
     "",
-    "| Variant | W-L-D | Summon | Backline | Blocked | Front Role Blocked | Backline Pattern | No Pattern | Next Attack | Backline Attack | Move Front | No Work | Low Stone | Blocked W/L |",
-    "| --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: |",
+    "| Variant | W-L-D | Summon | Backline | Blocked | Front Role Blocked | Backline Pattern | No Pattern | Next Attack | Backline Attack | Move Front | No Work | Bad | Close Non-Summon | Top Alt | Low Stone | Blocked W/L |",
+    "| --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | --- | ---: | ---: |",
     ...report.byVariant.map(formatVariantRow),
     "",
     "## Opponent Breakdown",
     "",
-    "| Variant | Opponent | W-L-D | Blocked | Backline Pattern | No Pattern | No Work |",
-    "| --- | --- | ---: | ---: | ---: | ---: | ---: |",
+    "| Variant | Opponent | W-L-D | Blocked | Backline Pattern | No Pattern | No Work | Bad | Close Non-Summon |",
+    "| --- | --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: |",
     ...report.byVariant.flatMap((variant) => variant.byOpponent.map((opponent) => formatOpponentRow(variant.variantId, opponent))),
     "",
     "## Samples",
@@ -552,6 +683,8 @@ function formatMarkdown(report: BacklineSummonAuditReport): string {
     "- `Backline Pattern`: 後列から攻撃しうる射程/攻撃パターンをカードが持つ。ボムゾウ系はここに入る。",
     "- `No Pattern`: 後列から攻撃しにくいカード。ここが多い場合だけ抑制候補にする。",
     "- `No Work`: 次自ターンにその召喚ユニットが攻撃も前進もしなかったケース。",
+    "- `Bad`: Blocked + No Pattern + No Work を満たす、今回もっとも疑う後列召喚。",
+    "- `Close Non-Summon`: Bad の局面で、選択召喚から35点以内に攻撃/ためる/移動/終了などの非召喚代替があったケース。",
   ].join("\n");
 }
 
@@ -567,6 +700,9 @@ function formatMetricsSummary(metrics: BacklineSummonMetrics): string {
     `- 次自ターン後列攻撃: ${metrics.blockedNextTurnBacklineAttack} (${formatPercent(rate(metrics.blockedNextTurnBacklineAttack, metrics.blockedBacklineSummons))})`,
     `- 次自ターン前進: ${metrics.blockedNextTurnMoveForward} (${formatPercent(rate(metrics.blockedNextTurnMoveForward, metrics.blockedBacklineSummons))})`,
     `- 次自ターン仕事なし: ${metrics.blockedNextTurnNoWork} (${formatPercent(rate(metrics.blockedNextTurnNoWork, metrics.blockedBacklineSummons))})`,
+    `- Bad blocked summon: ${metrics.badBlockedBacklineSummons} (${formatPercent(rate(metrics.badBlockedBacklineSummons, metrics.blockedBacklineSummons))})`,
+    `- Bad with evaluation trace: ${metrics.badWithEvaluationTrace} (${formatPercent(rate(metrics.badWithEvaluationTrace, metrics.badBlockedBacklineSummons))})`,
+    `- Bad close non-summon alt: ${metrics.badWithCloseNonSummonAlternative} (${formatPercent(rate(metrics.badWithCloseNonSummonAlternative, metrics.badBlockedBacklineSummons))})`,
   ].join("\n");
 }
 
@@ -585,6 +721,9 @@ function formatVariantRow(audit: VariantBacklineSummonAudit): string {
     formatCountRate(m.blockedNextTurnBacklineAttack, m.blockedBacklineSummons),
     formatCountRate(m.blockedNextTurnMoveForward, m.blockedBacklineSummons),
     formatCountRate(m.blockedNextTurnNoWork, m.blockedBacklineSummons),
+    formatCountRate(m.badBlockedBacklineSummons, m.blockedBacklineSummons),
+    formatCountRate(m.badWithCloseNonSummonAlternative, m.badBlockedBacklineSummons),
+    formatTopAlternativeBreakdown(m),
     formatCountRate(m.blockedLowStoneAfterSummon, m.blockedBacklineSummons),
     `${m.blockedWins}/${m.blockedLosses}`,
   ].join(" | ").replace(/^/, "| ").replace(/$/, " |");
@@ -600,6 +739,8 @@ function formatOpponentRow(variantId: string, audit: OpponentBacklineSummonAudit
     formatCountRate(m.blockedWithBacklinePattern, m.blockedBacklineSummons),
     formatCountRate(m.blockedWithoutBacklinePattern, m.blockedBacklineSummons),
     formatCountRate(m.blockedNextTurnNoWork, m.blockedBacklineSummons),
+    formatCountRate(m.badBlockedBacklineSummons, m.blockedBacklineSummons),
+    formatCountRate(m.badWithCloseNonSummonAlternative, m.badBlockedBacklineSummons),
   ].join(" | ").replace(/^/, "| ").replace(/$/, " |");
 }
 
@@ -613,6 +754,7 @@ function formatSamples(samples: readonly BacklineSummonSample[]): string[] {
     `- variant/opponent: \`${sample.variantId}\` vs \`${sample.opponentId}\` (${sample.candidateSeat}, ${sample.outcome})`,
     `- decision: ${sample.slotKey} / role ${sample.role} / front ${sample.frontBlocker} / stones after ${sample.afterStones} / score ${sample.score}`,
     `- flags: ${sample.flags}`,
+    `- alternatives: ${sample.alternatives}`,
     `- next turn: ${sample.nextTurn}`,
     `- reason: ${sample.reason}`,
     `- board: ${sample.board}`,
@@ -637,6 +779,15 @@ function emptyMetrics(): BacklineSummonMetrics {
     blockedVeryLowStoneAfterSummon: 0,
     blockedLosses: 0,
     blockedWins: 0,
+    badBlockedBacklineSummons: 0,
+    badWithEvaluationTrace: 0,
+    badWithCloseNonSummonAlternative: 0,
+    badTopAlternativeAttack: 0,
+    badTopAlternativeFocus: 0,
+    badTopAlternativeEndTurn: 0,
+    badTopAlternativeMove: 0,
+    badTopAlternativeFrontSummon: 0,
+    badTopAlternativeOtherSummon: 0,
   };
 }
 
@@ -688,6 +839,11 @@ function summonSlotKeyForDecision(decision: string): SlotKey | undefined {
   }
   const slotKey = decision.split("->")[1];
   return isSlotKey(slotKey) ? slotKey : undefined;
+}
+
+function summonTargetRow(decision: string): "front" | "back" | undefined {
+  const slotKey = summonSlotKeyForDecision(decision);
+  return slotKey ? slotRow(slotKey) : undefined;
 }
 
 function attackForDecision(decision: string): { actor: string } | undefined {
@@ -797,6 +953,17 @@ function formatBoard(summary: MasterLabGameStateSummary): string {
       return `${owner}${row}:${formatSlot(slot)}`;
     })
     .join(" / ") || "-";
+}
+
+function formatTopAlternativeBreakdown(metrics: BacklineSummonMetrics): string {
+  return [
+    metrics.badTopAlternativeAttack > 0 ? `Atk${metrics.badTopAlternativeAttack}` : undefined,
+    metrics.badTopAlternativeFocus > 0 ? `Focus${metrics.badTopAlternativeFocus}` : undefined,
+    metrics.badTopAlternativeEndTurn > 0 ? `End${metrics.badTopAlternativeEndTurn}` : undefined,
+    metrics.badTopAlternativeMove > 0 ? `Move${metrics.badTopAlternativeMove}` : undefined,
+    metrics.badTopAlternativeFrontSummon > 0 ? `FrontSum${metrics.badTopAlternativeFrontSummon}` : undefined,
+    metrics.badTopAlternativeOtherSummon > 0 ? `OtherSum${metrics.badTopAlternativeOtherSummon}` : undefined,
+  ].filter((value): value is string => !!value).join(", ") || "-";
 }
 
 function shortList(values: readonly string[], limit = 4): string {
