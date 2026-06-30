@@ -1043,6 +1043,50 @@ describe("cpu ai", () => {
     expect(shield).toBeDefined();
   });
 
+  it("does not list idle white mirror shields with no threat or next-turn work", () => {
+    const game = createCpuGame([]);
+    game.players.cpu.masterId = "white";
+    game.players.player.masterId = "white";
+    game.players.cpu.stones = 5;
+    for (const slot of Object.values(game.slots)) {
+      delete slot.monster;
+    }
+    game.slots.cpu_back_left.monster = createActiveMonster("yanbaru", "cpu", { level: 2, actionCount: 1 });
+
+    const shield = listCpuDecisions(game).find(
+      (decision) =>
+        decision.type === "master_action" &&
+        decision.actionId === "shield" &&
+        decision.target.kind === "monster" &&
+        decision.target.slotKey === "cpu_back_left",
+    );
+
+    expect(shield).toBeUndefined();
+  });
+
+  it("keeps white mirror shield candidates when they reduce incoming damage", () => {
+    const game = createCpuGame([]);
+    game.players.cpu.masterId = "white";
+    game.players.player.masterId = "white";
+    game.players.cpu.stones = 5;
+    game.players.player.stones = 0;
+    for (const slot of Object.values(game.slots)) {
+      delete slot.monster;
+    }
+    game.slots.cpu_front_left.monster = createActiveMonster("beyond", "cpu", { hp: 2, actionCount: 1 });
+    game.slots.player_front_left.monster = createActiveMonster("takokke", "player", { shielded: true });
+
+    const shield = listCpuDecisions(game).find(
+      (decision) =>
+        decision.type === "master_action" &&
+        decision.actionId === "shield" &&
+        decision.target.kind === "monster" &&
+        decision.target.slotKey === "cpu_front_left",
+    );
+
+    expect(shield).toBeDefined();
+  });
+
   it("penalizes low-stone white shield, wake, and summon setup by decision type", () => {
     const shieldGame = createCpuGame();
     shieldGame.players.cpu.masterId = "white";

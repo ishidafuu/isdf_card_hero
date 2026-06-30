@@ -5093,6 +5093,9 @@ function createShieldDecision(state: GameState, target: Target, weights: AiEvalu
   if (isWhiteMirrorCloseout(state) && !preventsLethal && !lethalThreat && levelUpPotential <= 0) {
     return undefined;
   }
+  if (shouldSkipWhiteMirrorIdleShield(state, target.slotKey, threat, reducesDamage, preventsLethal, levelUpPotential)) {
+    return undefined;
+  }
   if (!shouldProtectInDeckOutRace(state, target.slotKey, threat, preventsLethal, levelUpPotential)) {
     return undefined;
   }
@@ -5124,6 +5127,23 @@ function createShieldDecision(state: GameState, target: Target, weights: AiEvalu
           : "高価値の味方を守るためシールド",
     score,
   };
+}
+
+function shouldSkipWhiteMirrorIdleShield(
+  state: GameState,
+  targetSlotKey: SlotKey,
+  threat: IncomingThreat,
+  reducesDamage: boolean,
+  preventsLethal: boolean,
+  levelUpPotential: number,
+): boolean {
+  if (!isWhiteMirrorState(state, state.currentPlayer)) {
+    return false;
+  }
+  if (preventsLethal || isLethalIncomingThreat(threat) || reducesDamage || levelUpPotential > 0) {
+    return false;
+  }
+  return nextTurnWorkPotential(state, targetSlotKey, state.currentPlayer) <= 0;
 }
 
 function shouldHoldShieldForMasterRace(

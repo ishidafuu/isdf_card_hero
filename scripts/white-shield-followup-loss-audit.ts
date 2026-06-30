@@ -96,6 +96,16 @@ interface ShieldFollowupMetrics {
   sameTurnRetreatAfterShield: number;
   backRoleFrontRetreatAfterShield: number;
   shieldBeforeSameTurnWork: number;
+  sameTurnBeforeFrontProcess: number;
+  sameTurnAfterFrontProcess: number;
+  nextTurnFrontProcess: number;
+  anyFrontProcessPlan: number;
+  noFrontProcessPlan: number;
+  shieldFirstAction: number;
+  shieldFirstNoFrontProcessPlan: number;
+  shieldAfterFrontProcess: number;
+  shieldBeforeFrontProcess: number;
+  nextTurnStartsFrontProcess: number;
 }
 
 interface ShieldFollowupSample {
@@ -113,8 +123,11 @@ interface ShieldFollowupSample {
   score: number;
   reason: string;
   flags: string;
+  sameTurnBefore: string;
   sameTurn: string;
+  sameTurnAfterFirst: string;
   nextTurn: string;
+  nextTurnFirst: string;
   opponentResponse: string;
   board: string;
 }
@@ -160,6 +173,22 @@ interface ShieldFollowup {
   sameTurnRetreatAfterShield: boolean;
   backRoleFrontRetreatAfterShield: boolean;
   shieldBeforeSameTurnWork: boolean;
+  sameTurnBeforeAttack: boolean;
+  sameTurnBeforeWake: boolean;
+  sameTurnBeforeFrontProcess: boolean;
+  sameTurnBeforeFrontDamageOrKill: boolean;
+  sameTurnAfterFrontProcess: boolean;
+  nextTurnFrontProcess: boolean;
+  anyFrontProcessPlan: boolean;
+  noFrontProcessPlan: boolean;
+  shieldFirstAction: boolean;
+  shieldFirstNoFrontProcessPlan: boolean;
+  shieldAfterFrontProcess: boolean;
+  shieldBeforeFrontProcess: boolean;
+  nextTurnStartsFrontProcess: boolean;
+  sameTurnBeforeDecisions: string[];
+  sameTurnAfterFirstDecision?: string;
+  nextTurnFirstDecision?: string;
   sameTurnDecisions: string[];
   nextTurnDecisions: string[];
   opponentResponses: string[];
@@ -384,9 +413,38 @@ function auditShieldFollowup(
   let removedBeforeNextOwnTurn = false;
   let sameTurnRetreatAfterShield = false;
   let backRoleFrontRetreatAfterShield = false;
+  let sameTurnBeforeAttack = false;
+  let sameTurnBeforeWake = false;
+  let sameTurnBeforeFrontProcess = false;
+  let sameTurnBeforeFrontDamageOrKill = false;
+  let sameTurnAfterFirstDecision: string | undefined;
+  let nextTurnFirstDecision: string | undefined;
+  let nextTurnStartsFrontProcess = false;
+  const sameTurnBeforeDecisions: string[] = [];
   const sameTurnDecisions: string[] = [];
   const nextTurnDecisions: string[] = [];
   const opponentResponses: string[] = [];
+
+  for (let index = 0; index < shieldEventIndex; index += 1) {
+    const current = history[index];
+    if (!current || current.player !== candidateSeat || current.turnNumber !== event.turnNumber) {
+      continue;
+    }
+    sameTurnBeforeDecisions.push(current.decision);
+    if (current.decision.startsWith("master:wake_up->")) {
+      sameTurnBeforeWake = true;
+    }
+    if (attackForEvent(current)) {
+      sameTurnBeforeAttack = true;
+    }
+    const frontResult = frontProcessResult(current, opponent);
+    if (frontResult.processed) {
+      sameTurnBeforeFrontProcess = true;
+    }
+    if (frontResult.damageOrKill) {
+      sameTurnBeforeFrontDamageOrKill = true;
+    }
+  }
 
   for (let index = shieldEventIndex + 1; index < history.length; index += 1) {
     const current = history[index];
@@ -399,6 +457,7 @@ function auditShieldFollowup(
 
     if (current.player === candidateSeat && current.turnNumber === event.turnNumber) {
       sameTurnDecisions.push(current.decision);
+      sameTurnAfterFirstDecision ??= current.decision;
       const moved = moveForDecision(current.decision);
       if (moved?.from === trackedSlotKey) {
         if (slotRow(moved.from) === "front" && slotRow(moved.to) === "back") {
@@ -432,6 +491,8 @@ function auditShieldFollowup(
 
     if (nextOwnTurn && index >= nextOwnTurn.startIndex && index < nextOwnTurn.endIndex) {
       nextTurnDecisions.push(current.decision);
+      const isFirstNextTurnDecision = nextTurnFirstDecision === undefined;
+      nextTurnFirstDecision ??= current.decision;
       const moved = moveForDecision(current.decision);
       if (moved?.from === trackedSlotKey) {
         trackedSlotKey = moved.to;
@@ -445,6 +506,9 @@ function auditShieldFollowup(
         const frontResult = frontProcessResult(current, opponent);
         if (frontResult.processed) {
           teamNextTurnFrontProcess = true;
+          if (isFirstNextTurnDecision) {
+            nextTurnStartsFrontProcess = true;
+          }
         }
         if (frontResult.damageOrKill) {
           teamNextTurnFrontDamageOrKill = true;
@@ -500,6 +564,14 @@ function auditShieldFollowup(
     teamNextTurnAttack || teamNextTurnWake || teamNextTurnFrontProcess;
   const frontProcessConnected = targetSameTurnFrontProcess || targetNextTurnFrontProcess ||
     teamSameTurnFrontProcess || teamNextTurnFrontProcess;
+  const sameTurnAfterFrontProcess = teamSameTurnFrontProcess;
+  const nextTurnFrontProcess = teamNextTurnFrontProcess;
+  const anyFrontProcessPlan = sameTurnBeforeFrontProcess || sameTurnAfterFrontProcess || nextTurnFrontProcess;
+  const noFrontProcessPlan = !anyFrontProcessPlan;
+  const shieldFirstAction = sameTurnBeforeDecisions.length === 0;
+  const shieldFirstNoFrontProcessPlan = shieldFirstAction && noFrontProcessPlan;
+  const shieldAfterFrontProcess = sameTurnBeforeFrontProcess;
+  const shieldBeforeFrontProcess = sameTurnAfterFrontProcess;
   const sameTurnShieldCount = sameTurnCpuDecisionCount(history, shieldEventIndex, candidateSeat, "master:shield->");
   const sameTurnShieldOrder = sameTurnCpuDecisionOrder(history, shieldEventIndex, candidateSeat, "master:shield->");
   const shieldBeforeSameTurnWork = sameTurnDecisions.some((decision) =>
@@ -535,6 +607,22 @@ function auditShieldFollowup(
     sameTurnRetreatAfterShield,
     backRoleFrontRetreatAfterShield,
     shieldBeforeSameTurnWork,
+    sameTurnBeforeAttack,
+    sameTurnBeforeWake,
+    sameTurnBeforeFrontProcess,
+    sameTurnBeforeFrontDamageOrKill,
+    sameTurnAfterFrontProcess,
+    nextTurnFrontProcess,
+    anyFrontProcessPlan,
+    noFrontProcessPlan,
+    shieldFirstAction,
+    shieldFirstNoFrontProcessPlan,
+    shieldAfterFrontProcess,
+    shieldBeforeFrontProcess,
+    nextTurnStartsFrontProcess,
+    sameTurnBeforeDecisions,
+    sameTurnAfterFirstDecision,
+    nextTurnFirstDecision,
     sameTurnDecisions,
     nextTurnDecisions,
     opponentResponses,
@@ -574,6 +662,16 @@ function addShieldAudit(metrics: ShieldFollowupMetrics, audit: ShieldEventAudit)
   if (f.sameTurnRetreatAfterShield) metrics.sameTurnRetreatAfterShield += 1;
   if (f.backRoleFrontRetreatAfterShield) metrics.backRoleFrontRetreatAfterShield += 1;
   if (f.shieldBeforeSameTurnWork) metrics.shieldBeforeSameTurnWork += 1;
+  if (f.sameTurnBeforeFrontProcess) metrics.sameTurnBeforeFrontProcess += 1;
+  if (f.sameTurnAfterFrontProcess) metrics.sameTurnAfterFrontProcess += 1;
+  if (f.nextTurnFrontProcess) metrics.nextTurnFrontProcess += 1;
+  if (f.anyFrontProcessPlan) metrics.anyFrontProcessPlan += 1;
+  if (f.noFrontProcessPlan) metrics.noFrontProcessPlan += 1;
+  if (f.shieldFirstAction) metrics.shieldFirstAction += 1;
+  if (f.shieldFirstNoFrontProcessPlan) metrics.shieldFirstNoFrontProcessPlan += 1;
+  if (f.shieldAfterFrontProcess) metrics.shieldAfterFrontProcess += 1;
+  if (f.shieldBeforeFrontProcess) metrics.shieldBeforeFrontProcess += 1;
+  if (f.nextTurnStartsFrontProcess) metrics.nextTurnStartsFrontProcess += 1;
 }
 
 function addSamples(samples: ShieldFollowupSample[], audit: ShieldEventAudit, maxSamples: number): void {
@@ -611,6 +709,21 @@ function sampleKinds(audit: ShieldEventAudit): string[] {
   if (f.shieldBeforeSameTurnWork) {
     kinds.push("shield_before_same_turn_work");
   }
+  if (f.noFrontProcessPlan) {
+    kinds.push("no_front_process_plan");
+  }
+  if (f.shieldFirstNoFrontProcessPlan) {
+    kinds.push("shield_first_no_front_plan");
+  }
+  if (f.shieldBeforeFrontProcess) {
+    kinds.push("shield_before_front_process");
+  }
+  if (f.shieldAfterFrontProcess) {
+    kinds.push("shield_after_front_process");
+  }
+  if (f.nextTurnStartsFrontProcess) {
+    kinds.push("next_turn_starts_front_process");
+  }
   if (f.frontProcessConnected && f.teamConnected) {
     kinds.push("front_process_connected");
   }
@@ -634,8 +747,11 @@ function formatSample(kind: string, audit: ShieldEventAudit): ShieldFollowupSamp
     score: round(audit.event.score, 1),
     reason: audit.event.reason,
     flags: formatFlags(f),
+    sameTurnBefore: shortList(f.sameTurnBeforeDecisions),
     sameTurn: shortList(f.sameTurnDecisions),
+    sameTurnAfterFirst: f.sameTurnAfterFirstDecision ?? "-",
     nextTurn: shortList(f.nextTurnDecisions),
+    nextTurnFirst: f.nextTurnFirstDecision ?? "-",
     opponentResponse: shortList(f.opponentResponses),
     board: formatBoard(audit.event.before),
   };
@@ -652,6 +768,11 @@ function formatFlags(followup: ShieldFollowup): string {
     followup.multiShieldTurn ? "multi-shield-turn" : undefined,
     followup.shieldBeforeSameTurnWork ? "shield-before-work" : undefined,
     followup.sameTurnRetreatAfterShield ? "retreat-after-shield" : undefined,
+    followup.anyFrontProcessPlan ? "front-plan" : "no-front-plan",
+    followup.shieldFirstAction ? "shield-first" : undefined,
+    followup.shieldAfterFrontProcess ? "shield-after-front" : undefined,
+    followup.shieldBeforeFrontProcess ? "shield-before-front" : undefined,
+    followup.nextTurnStartsFrontProcess ? "next-start-front" : undefined,
   ].filter((value): value is string => !!value).join(", ");
 }
 
@@ -676,6 +797,12 @@ function buildNotes(metrics: ShieldFollowupMetrics): string[] {
   if (rate(metrics.frontProcessConnected, metrics.shieldUses) < 0.3 && metrics.shieldUses >= 8) {
     notes.push("盾後に敵前衛処理へつながる割合が低い。白対白では盤面制圧優先なので、盾後の前衛処理予定を評価へ入れる候補がある。");
   }
+  if (rate(metrics.noFrontProcessPlan, metrics.shieldUses) >= 0.25) {
+    notes.push("同ターン前後/次自ターンのどこにも敵前衛処理予定がない盾が多い。盾の価値ではなく、盤面処理計画の有無で分ける必要がある。");
+  }
+  if (rate(metrics.shieldFirstNoFrontProcessPlan, metrics.shieldUses) >= 0.12) {
+    notes.push("ターン初手で盾を張り、その後も敵前衛処理へ行かないケースが目立つ。白ミラーでは初手盾より先に盤面処理候補を評価する必要がある。");
+  }
   return notes;
 }
 
@@ -692,6 +819,9 @@ function buildNextLoopProposal(metrics: ShieldFollowupMetrics): string[] {
   }
   if (rate(metrics.frontProcessConnected, metrics.shieldUses) < 0.35) {
     steps.push("白ミラー用に、盾後の敵前衛処理予定がある場合だけ盾の価値を上げる評価を検討する。係数ではなく `shield enables board-control follow-up` として局面化する。");
+  }
+  if (rate(metrics.noFrontProcessPlan, metrics.shieldUses) >= 0.2) {
+    steps.push("盾候補ごとに `no front-process plan` を抽出し、守った対象・石残量・相手前衛脅威を見て、盾を打つ前に攻撃/ウェイク/マスターアタックを優先すべきseedをfixture化する。");
   }
   if (rate(metrics.multiShieldTurn, metrics.shieldUses) >= 0.15) {
     steps.push("同ターン2枚盾は、2枚目の後に仕事が残る場合だけ許す条件を設計する。単純ペナルティではなく `second shield keeps a converter alive` を見る。");
@@ -728,6 +858,12 @@ function formatMarkdown(report: ShieldFollowupLossAuditReport): string {
     "| Variant | W-L-D | Loss Shield | Team Conn | Target Conn | Front Proc | Front Dmg/Kill | Same Attack | Same Wake | Next Attack | Next Wake | NoContact NoConn | Contact NoConn | Removed | LowStone | MultiShield | Shield Before Work | Retreat |",
     "| --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: |",
     ...report.byVariant.map(formatVariantRow),
+    "",
+    "## Shield Connection Plan Metrics",
+    "",
+    "| Variant | W-L-D | Loss Shield | Before Front | After Front | Next Front | Any Front Plan | No Front Plan | Shield First | Shield First No Plan | Shield After Front | Shield Before Front | Next Starts Front |",
+    "| --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: |",
+    ...report.byVariant.map(formatVariantPlanRow),
     "",
     "## Opponent Breakdown",
     "",
@@ -769,6 +905,9 @@ function formatMetricsSummary(metrics: ShieldFollowupMetrics): string {
     `- Low stone after shield: ${metrics.lowStoneAfterShield} (${formatPercent(rate(metrics.lowStoneAfterShield, metrics.shieldUses))})`,
     `- Multi-shield turn: ${metrics.multiShieldTurn} (${formatPercent(rate(metrics.multiShieldTurn, metrics.shieldUses))})`,
     `- Shield before same-turn work: ${metrics.shieldBeforeSameTurnWork} (${formatPercent(rate(metrics.shieldBeforeSameTurnWork, metrics.shieldUses))})`,
+    `- Any front-process plan: ${metrics.anyFrontProcessPlan} (${formatPercent(rate(metrics.anyFrontProcessPlan, metrics.shieldUses))})`,
+    `- No front-process plan: ${metrics.noFrontProcessPlan} (${formatPercent(rate(metrics.noFrontProcessPlan, metrics.shieldUses))})`,
+    `- Shield first with no front-process plan: ${metrics.shieldFirstNoFrontProcessPlan} (${formatPercent(rate(metrics.shieldFirstNoFrontProcessPlan, metrics.shieldUses))})`,
   ].join("\n");
 }
 
@@ -793,6 +932,25 @@ function formatVariantRow(audit: VariantShieldFollowupAudit): string {
     formatCountRate(m.multiShieldTurn, m.shieldUses),
     formatCountRate(m.shieldBeforeSameTurnWork, m.shieldUses),
     formatCountRate(m.sameTurnRetreatAfterShield, m.shieldUses),
+  ].join(" | ").replace(/^/, "| ").replace(/$/, " |");
+}
+
+function formatVariantPlanRow(audit: VariantShieldFollowupAudit): string {
+  const m = audit.metrics;
+  return [
+    escapeMarkdownTableCell(audit.variantId),
+    `${audit.wins}-${audit.losses}-${audit.draws}`,
+    m.shieldUses,
+    formatCountRate(m.sameTurnBeforeFrontProcess, m.shieldUses),
+    formatCountRate(m.sameTurnAfterFrontProcess, m.shieldUses),
+    formatCountRate(m.nextTurnFrontProcess, m.shieldUses),
+    formatCountRate(m.anyFrontProcessPlan, m.shieldUses),
+    formatCountRate(m.noFrontProcessPlan, m.shieldUses),
+    formatCountRate(m.shieldFirstAction, m.shieldUses),
+    formatCountRate(m.shieldFirstNoFrontProcessPlan, m.shieldUses),
+    formatCountRate(m.shieldAfterFrontProcess, m.shieldUses),
+    formatCountRate(m.shieldBeforeFrontProcess, m.shieldUses),
+    formatCountRate(m.nextTurnStartsFrontProcess, m.shieldUses),
   ].join(" | ").replace(/^/, "| ").replace(/$/, " |");
 }
 
@@ -821,8 +979,11 @@ function formatSamples(samples: readonly ShieldFollowupSample[]): string[] {
     `- variant/opponent: \`${sample.variantId}\` vs \`${sample.opponentId}\` (${sample.candidateSeat})`,
     `- decision: ${sample.slotKey} / role ${sample.role} / stones after ${sample.afterStones} / score ${sample.score}`,
     `- flags: ${sample.flags}`,
+    `- same turn before shield: ${sample.sameTurnBefore}`,
     `- same turn: ${sample.sameTurn}`,
+    `- same turn first after shield: ${sample.sameTurnAfterFirst}`,
     `- next turn: ${sample.nextTurn}`,
+    `- next turn first: ${sample.nextTurnFirst}`,
     `- opponent response: ${sample.opponentResponse}`,
     `- reason: ${sample.reason}`,
     `- board: ${sample.board}`,
@@ -863,6 +1024,16 @@ function emptyMetrics(): ShieldFollowupMetrics {
     sameTurnRetreatAfterShield: 0,
     backRoleFrontRetreatAfterShield: 0,
     shieldBeforeSameTurnWork: 0,
+    sameTurnBeforeFrontProcess: 0,
+    sameTurnAfterFrontProcess: 0,
+    nextTurnFrontProcess: 0,
+    anyFrontProcessPlan: 0,
+    noFrontProcessPlan: 0,
+    shieldFirstAction: 0,
+    shieldFirstNoFrontProcessPlan: 0,
+    shieldAfterFrontProcess: 0,
+    shieldBeforeFrontProcess: 0,
+    nextTurnStartsFrontProcess: 0,
   };
 }
 
