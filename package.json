@@ -35,6 +35,7 @@
     "lab:masters:shield-audit": "vite-node scripts/shield-usage-audit-loop.ts",
     "lab:masters:white-shield-followup-loss": "vite-node scripts/white-shield-followup-loss-audit.ts",
     "lab:masters:white-backline-summon-audit": "vite-node scripts/white-backline-summon-audit-loop.ts",
+    "lab:masters:white-back-slot-hold-plan": "vite-node scripts/white-back-slot-hold-plan-audit.ts",
     "select:white-deck": "vite-node scripts/white-vs-white-deck-selection.ts",
     "tier:white-no-rare8": "vite-node scripts/white-no-rare8-tier.ts",
     "check:white-1377-yummy-variants": "vite-node scripts/white-1377-yummy-variants.ts",
