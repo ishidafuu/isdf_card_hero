@@ -287,7 +287,7 @@ const CPU_AI_PROFILE_CONFIG: Record<CpuAiProfile, CpuAiProfileConfig> = {
 const WHITE_VS_BLACK_MATCHUP_TUNING = {
   situationalBias: {
     whiteMonsterPressureBonus: 4,
-    whiteLastBackSlotNoReachSummonGuardPenalty: 35,
+    whiteLastBackSlotNoReachSummonGuardPenalty: 55,
   },
 } satisfies CpuAiTuning;
 
@@ -1132,6 +1132,15 @@ function decisionSituationalBonus(
       bias.whiteLastBackSlotNoReachSummonGuardPenalty,
     );
   }
+  if (bias.whiteLastBackSlotHoldPlanBonus) {
+    bonus += whiteLastBackSlotHoldPlanDecisionBonus(
+      before,
+      after,
+      decision,
+      perspective,
+      bias.whiteLastBackSlotHoldPlanBonus,
+    );
+  }
   if (bias.whiteDeathSheepSpecialLockPenalty) {
     bonus -= whiteDeathSheepSpecialLockDecisionPenalty(
       before,
@@ -1897,6 +1906,46 @@ function whiteLastBackSlotNoReachSummonGuardDecisionPenalty(
   const durableFrontPenalty = afterFront.hp >= 3 ? Math.min(25, value * 0.25) : 0;
   const lowStonePenalty = after.players[perspective].stones <= 1 ? Math.min(30, value * 0.3) : 0;
   return value + handPressurePenalty + deckPressurePenalty + durableFrontPenalty + lowStonePenalty;
+}
+
+function whiteLastBackSlotHoldPlanDecisionBonus(
+  before: GameState,
+  after: GameState,
+  decision: CpuDecision,
+  perspective: PlayerId,
+  value: number,
+): number {
+  const deckTop5BacklineWork = deckBacklineWorkCount(before, perspective, 5);
+  if (
+    value <= 0 ||
+    before.players[perspective].masterId !== "white" ||
+    after.winner ||
+    emptyBackSlotCountForPlayer(before, perspective) !== 1 ||
+    emptyBackSlotCountForPlayer(after, perspective) === 0 ||
+    deckTop5BacklineWork === 0 ||
+    !hasRiskyNoReachLastBackSummon(before, perspective) ||
+    hasBacklineWorkLastBackSummon(before, perspective)
+  ) {
+    return 0;
+  }
+
+  if (decision.type === "summon" && afterBackSlotWasFilled(before, after, perspective)) {
+    return 0;
+  }
+
+  const attack = decision.type === "attack";
+  const focus = decision.type === "focus";
+  const end = decision.type === "end_turn";
+  const move = decision.type === "move" && emptyBackSlotCountForPlayer(after, perspective) > 0;
+  if (!attack && !focus && !end && !move) {
+    return 0;
+  }
+
+  const enemyRemoved = enemyMonsterWasRemoved(before, after, perspective);
+  const top5Bonus = deckTop5BacklineWork * Math.min(8, value * 0.3);
+  const focusBonus = focus && ownReadyFrontMonsterCount(before, perspective) > 0 ? value * 0.3 : 0;
+  const attackBonus = attack ? value * 0.15 : 0;
+  return value + top5Bonus + focusBonus + attackBonus + (enemyRemoved ? value * 0.5 : 0);
 }
 
 function handBacklineWorkLastBackSummonCount(

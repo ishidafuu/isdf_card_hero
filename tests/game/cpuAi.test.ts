@@ -1978,6 +1978,48 @@ describe("cpu ai", () => {
     expect(defaultMirror?.totalScore).toBeCloseTo(mirrorDisabled?.totalScore ?? 0);
   });
 
+  it("can bonus holding the last back slot as an explicit experiment", () => {
+    const game = createCpuGame([{ cardId: "card_047", instanceId: "cpu_last_slot_dyne" }]);
+    game.players.cpu.masterId = "white";
+    game.players.player.masterId = "black";
+    game.players.cpu.stones = 5;
+    game.players.cpu.deck = [
+      { cardId: "yanbaru", instanceId: "cpu_top_yanbaru" },
+      { cardId: "takokke", instanceId: "cpu_deck_takokke_1" },
+      { cardId: "takokke", instanceId: "cpu_deck_takokke_2" },
+      { cardId: "takokke", instanceId: "cpu_deck_takokke_3" },
+      { cardId: "takokke", instanceId: "cpu_deck_takokke_4" },
+    ];
+    for (const slot of Object.values(game.slots)) {
+      delete slot.monster;
+    }
+    game.slots.cpu_front_left.monster = createActiveMonster("takokke", "cpu");
+    game.slots.cpu_front_right.monster = createActiveMonster("card_037", "cpu", { hp: 5 });
+    game.slots.cpu_back_left.monster = createActiveMonster("yanbaru", "cpu");
+
+    const findFocus = (game: GameState, options = {}) =>
+      inspectCpuDecisionEvaluations(game, {
+        profile: "white",
+        search: { sameTurnSearchDepth: 0 },
+        ...options,
+      }).find(
+        (evaluation) =>
+          evaluation.decision.type === "focus" &&
+          evaluation.decision.slotKey === "cpu_front_left",
+      );
+
+    const disabled = findFocus(game, {
+      tunings: { cpu: { situationalBias: { whiteLastBackSlotHoldPlanBonus: 0 } } },
+    });
+    const tuned = findFocus(game, {
+      tunings: { cpu: { situationalBias: { whiteLastBackSlotHoldPlanBonus: 20 } } },
+    });
+
+    expect(disabled).toBeDefined();
+    expect(tuned).toBeDefined();
+    expect(tuned?.totalScore).toBeGreaterThan((disabled?.totalScore ?? 0) + 25);
+  });
+
   it("does not penalize range-capable summons behind an occupied front lane", () => {
     const game = createCpuGame([{ cardId: "yanbaru", instanceId: "cpu_last_slot_yanbaru" }]);
     game.players.cpu.masterId = "white";

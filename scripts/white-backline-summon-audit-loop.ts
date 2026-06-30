@@ -257,6 +257,15 @@ const ALL_VARIANTS = [
   currentVariant("current_last_back_slot_no_reach_guard95", "候補: 最後後列射程なしガード 95", {
     situationalBias: { whiteLastBackSlotNoReachSummonGuardPenalty: 95 },
   }, "強すぎる時の勝敗副作用を確認する上限候補。"),
+  currentVariant("current_last_back_slot_hold_plan_off", "比較: 最後後列hold planなし", {
+    situationalBias: { whiteLastBackSlotHoldPlanBonus: 0 },
+  }, "hold slot加点を明示的に外し、最後の後列枠を空ける代替評価の寄与を見る。"),
+  currentVariant("current_last_back_slot_hold_plan20", "候補: 最後後列hold plan 20", {
+    situationalBias: { whiteLastBackSlotHoldPlanBonus: 20 },
+  }, "山札上位に後列仕事カードが見え、射程なし召喚で最後の後列枠を潰しそうな時だけ、攻撃/ためる/終了/移動を軽く押す。"),
+  currentVariant("current_last_back_slot_hold_plan32", "候補: 最後後列hold plan 32", {
+    situationalBias: { whiteLastBackSlotHoldPlanBonus: 32 },
+  }, "山札上位に後列仕事カードが見え、射程なし召喚で最後の後列枠を潰しそうな時だけ、攻撃/ためる/終了/移動を現行より強く押す。"),
   currentVariant("current_death_sheep_special_lock90", "候補: デスシープ特技封じ 90", {
     situationalBias: { whiteDeathSheepSpecialLockPenalty: 90 },
   }, "デスシープを特技持ち前衛の後ろへ置いて下段特技を封じる召喚だけを抑える。"),
