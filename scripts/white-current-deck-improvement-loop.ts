@@ -127,6 +127,9 @@ if (options.jsonPath) {
 function buildVariants(): WhiteAiTuningVariant[] {
   return [
     variant("current_white_baseline", "現行: デスシープ3 / white", undefined, "暫定白最強デッキで現行white profileを基準化する。"),
+    variant("current_white_mirror_low_stone_guard_off", "比較: 白ミラー低石布石抑制 off", {
+      situationalBias: { whiteThreatLeftLowStoneSetupPenalty: 0 },
+    }, "採用済みの白ミラー限定低石布石抑制を外し、現行baselineとの差分を見る。"),
     variant("current_strong_profile", "比較: デスシープ3 / strong", undefined, "白専用補正が本当に必要かを確認するため、strong profileを横に置く。", "strong"),
     variant("current_front_work_light", "候補: 既存前衛仕事 48", {
       situationalBias: { whiteActiveFrontWorkBonus: 48 },

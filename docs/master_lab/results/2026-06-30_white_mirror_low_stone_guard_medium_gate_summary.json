@@ -1,0 +1,100 @@
+{
+  "generatedAt": "2026-06-30T05:43:00.716Z",
+  "deckPreset": "master-lab-white-1377-death-sheep3",
+  "screen": {
+    "gamesPerMatchup": 1,
+    "totalGames": 4,
+    "standings": [
+      {
+        "rank": 1,
+        "variantId": "current_white_mirror_low_stone_guard_off",
+        "label": "比較: 白ミラー低石布石抑制 off",
+        "score": 6,
+        "wins": 0,
+        "losses": 2,
+        "draws": 0,
+        "overall": 0,
+        "vsBlack": 0,
+        "vsDecoy": 0,
+        "vsWhite": 0,
+        "averageTurns": 17.5,
+        "issues": "0F/0W",
+        "notes": [
+          "シールド偏重"
+        ]
+      },
+      {
+        "rank": 2,
+        "variantId": "current_white_baseline",
+        "label": "現行: デスシープ3 / white",
+        "score": 5.3,
+        "wins": 0,
+        "losses": 2,
+        "draws": 0,
+        "overall": 0,
+        "vsBlack": 0,
+        "vsDecoy": 0,
+        "vsWhite": 0,
+        "averageTurns": 24.5,
+        "issues": "0F/0W",
+        "notes": [
+          "シールド偏重"
+        ]
+      }
+    ]
+  },
+  "confirm": {
+    "gamesPerMatchup": 8,
+    "totalGames": 32,
+    "standings": [
+      {
+        "rank": 1,
+        "variantId": "current_white_baseline",
+        "label": "現行: デスシープ3 / white",
+        "score": 19.3,
+        "wins": 7,
+        "losses": 9,
+        "draws": 0,
+        "overall": 0.438,
+        "vsBlack": 0,
+        "vsDecoy": 0,
+        "vsWhite": 0.438,
+        "averageTurns": 24.4,
+        "issues": "0F/0W",
+        "notes": [
+          "シールド偏重"
+        ]
+      },
+      {
+        "rank": 2,
+        "variantId": "current_white_mirror_low_stone_guard_off",
+        "label": "比較: 白ミラー低石布石抑制 off",
+        "score": 18,
+        "wins": 6,
+        "losses": 10,
+        "draws": 0,
+        "overall": 0.375,
+        "vsBlack": 0,
+        "vsDecoy": 0,
+        "vsWhite": 0.375,
+        "averageTurns": 21.7,
+        "issues": "0F/0W",
+        "notes": [
+          "シールド偏重"
+        ]
+      }
+    ]
+  },
+  "adopted": {
+    "variantId": "current_white_mirror_low_stone_guard_off",
+    "label": "比較: 白ミラー低石布石抑制 off",
+    "recommendation": "hold",
+    "reason": "baseline比 score -1.3, overall -6.3%, vsBlack +0%, vsWhite -6.3%, issues 0F/0W。"
+  },
+  "nextSteps": [
+    "今回の確認では即採用せず、ベースラインを維持する。",
+    "次は `current_white_mirror_low_stone_guard_off` と `current_white_baseline` を games-per-matchup 3-4 で再確認し、seed差を潰す。",
+    "対黒がまだ不安定。負けseedから、デスシープが前に出た後の盾/ウェイク/攻撃順を重点監査する。",
+    "デッキ側はデスシープ3を固定し、次ループはAIだけを触る。元1377は比較対象として残す。"
+  ]
+}

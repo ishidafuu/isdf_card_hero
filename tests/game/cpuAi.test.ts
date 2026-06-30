@@ -1136,6 +1136,46 @@ describe("cpu ai", () => {
     expect(tuned?.totalScore).toBeCloseTo((baseline?.totalScore ?? 0) - 7);
   });
 
+  it("applies low-stone setup guard only in the white mirror matchup", () => {
+    const createThreatLeftGame = (opponentMasterId: "black" | "white") => {
+      const game = createCpuGame([{ cardId: "takokke", instanceId: "cpu_threat_left_matchup_summon" }]);
+      game.players.cpu.masterId = "white";
+      game.players.player.masterId = opponentMasterId;
+      game.players.cpu.stones = 1;
+      for (const slot of Object.values(game.slots)) {
+        delete slot.monster;
+      }
+      game.slots.cpu_front_left.monster = createActiveMonster("beyond", "cpu", { hp: 3 });
+      game.slots.player_front_left.monster = createActiveMonster("takokke", "player", { shielded: true });
+      return game;
+    };
+    const findSummon = (game: GameState, options = {}) =>
+      inspectCpuDecisionEvaluations(game, { profile: "white", search: { sameTurnSearchDepth: 0 }, ...options }).find(
+        (evaluation) =>
+          evaluation.decision.type === "summon" &&
+          evaluation.decision.handInstanceId === "cpu_threat_left_matchup_summon",
+      );
+
+    const whiteMirror = createThreatLeftGame("white");
+    const whiteMirrorDefault = findSummon(whiteMirror);
+    const whiteMirrorDisabled = findSummon(whiteMirror, {
+      tunings: { cpu: { situationalBias: { whiteThreatLeftLowStoneSetupPenalty: 0 } } },
+    });
+
+    const blackMatchup = createThreatLeftGame("black");
+    const blackDefault = findSummon(blackMatchup);
+    const blackDisabled = findSummon(blackMatchup, {
+      tunings: { cpu: { situationalBias: { whiteThreatLeftLowStoneSetupPenalty: 0 } } },
+    });
+
+    expect(whiteMirrorDefault).toBeDefined();
+    expect(whiteMirrorDisabled).toBeDefined();
+    expect(whiteMirrorDefault?.totalScore).toBeCloseTo((whiteMirrorDisabled?.totalScore ?? 0) - 6);
+    expect(blackDefault).toBeDefined();
+    expect(blackDisabled).toBeDefined();
+    expect(blackDefault?.totalScore).toBeCloseTo(blackDisabled?.totalScore ?? 0);
+  });
+
   it("does not penalize urgent low-stone shield while enemy front threats remain", () => {
     const game = createCpuGame();
     game.players.cpu.masterId = "white";

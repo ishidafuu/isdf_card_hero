@@ -1,0 +1,100 @@
+{
+  "generatedAt": "2026-06-30T04:19:32.649Z",
+  "deckPreset": "master-lab-white-1377-death-sheep3",
+  "screen": {
+    "gamesPerMatchup": 3,
+    "totalGames": 12,
+    "standings": [
+      {
+        "rank": 1,
+        "variantId": "current_white_baseline",
+        "label": "現行: デスシープ3 / white",
+        "score": 27,
+        "wins": 4,
+        "losses": 2,
+        "draws": 0,
+        "overall": 0.667,
+        "vsBlack": 0,
+        "vsDecoy": 0,
+        "vsWhite": 0.667,
+        "averageTurns": 23.3,
+        "issues": "0F/0W",
+        "notes": [
+          "シールド偏重"
+        ]
+      },
+      {
+        "rank": 2,
+        "variantId": "current_threat_left_low_stone_guard",
+        "label": "候補: 脅威残り低石布石抑制",
+        "score": 16.6,
+        "wins": 2,
+        "losses": 4,
+        "draws": 0,
+        "overall": 0.333,
+        "vsBlack": 0,
+        "vsDecoy": 0,
+        "vsWhite": 0.333,
+        "averageTurns": 22.3,
+        "issues": "0F/0W",
+        "notes": [
+          "シールド偏重"
+        ]
+      }
+    ]
+  },
+  "confirm": {
+    "gamesPerMatchup": 6,
+    "totalGames": 24,
+    "standings": [
+      {
+        "rank": 1,
+        "variantId": "current_threat_left_low_stone_guard",
+        "label": "候補: 脅威残り低石布石抑制",
+        "score": 27.3,
+        "wins": 8,
+        "losses": 4,
+        "draws": 0,
+        "overall": 0.667,
+        "vsBlack": 0,
+        "vsDecoy": 0,
+        "vsWhite": 0.667,
+        "averageTurns": 20,
+        "issues": "0F/0W",
+        "notes": [
+          "シールド偏重"
+        ]
+      },
+      {
+        "rank": 2,
+        "variantId": "current_white_baseline",
+        "label": "現行: デスシープ3 / white",
+        "score": 19.3,
+        "wins": 5,
+        "losses": 7,
+        "draws": 0,
+        "overall": 0.417,
+        "vsBlack": 0,
+        "vsDecoy": 0,
+        "vsWhite": 0.417,
+        "averageTurns": 22.1,
+        "issues": "0F/0W",
+        "notes": [
+          "シールド偏重"
+        ]
+      }
+    ]
+  },
+  "adopted": {
+    "variantId": "current_threat_left_low_stone_guard",
+    "label": "候補: 脅威残り低石布石抑制",
+    "recommendation": "adopt",
+    "reason": "baseline比 score +8, overall +25%, vsBlack +0%, vsWhite +25%, issues 0F/0W。"
+  },
+  "nextSteps": [
+    "`current_threat_left_low_stone_guard` は採用候補。係数をそのままではなく、対応する局面評価として white profile に反映する。",
+    "次は `current_threat_left_low_stone_guard` と `current_white_baseline` を games-per-matchup 3-4 で再確認し、seed差を潰す。",
+    "対黒がまだ不安定。負けseedから、デスシープが前に出た後の盾/ウェイク/攻撃順を重点監査する。",
+    "デッキ側はデスシープ3を固定し、次ループはAIだけを触る。元1377は比較対象として残す。"
+  ]
+}

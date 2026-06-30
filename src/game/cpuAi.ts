@@ -291,6 +291,12 @@ const WHITE_VS_BLACK_MATCHUP_TUNING = {
   },
 } satisfies CpuAiTuning;
 
+const WHITE_VS_WHITE_MATCHUP_TUNING = {
+  situationalBias: {
+    whiteThreatLeftLowStoneSetupPenalty: 6,
+  },
+} satisfies CpuAiTuning;
+
 export function runCpuDecisionStep(state: GameState, options: CpuAiOptions = {}): GameState {
   const decision = chooseCpuDecision(state, options);
   return applyCpuDecision(state, decision);
@@ -574,6 +580,13 @@ function resolveCpuAiMatchupTuning(state: GameState, profile: CpuAiProfile): Cpu
     state.players[opponent].masterId === "black"
   ) {
     return WHITE_VS_BLACK_MATCHUP_TUNING;
+  }
+  if (
+    (profile === "white" || profile === "omniscient") &&
+    state.players[perspective].masterId === "white" &&
+    state.players[opponent].masterId === "white"
+  ) {
+    return WHITE_VS_WHITE_MATCHUP_TUNING;
   }
   return undefined;
 }
