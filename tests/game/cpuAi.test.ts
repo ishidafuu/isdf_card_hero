@@ -1632,6 +1632,45 @@ describe("cpu ai", () => {
     expect(threatenedTuned?.totalScore).toBeCloseTo(threatenedBaseline?.totalScore ?? 0);
   });
 
+  it("applies threat-then-setup only in the white mirror matchup", () => {
+    const createClearedThreatGame = (opponentMasterId: "black" | "white") => {
+      const game = createCpuGame();
+      game.players.cpu.masterId = "white";
+      game.players.player.masterId = opponentMasterId;
+      game.players.cpu.hand = [];
+      game.players.cpu.stones = 1;
+      for (const slot of Object.values(game.slots)) {
+        delete slot.monster;
+      }
+      game.slots.cpu_back_left.monster = createActiveMonster("takokke", "cpu", { actionCount: 1 });
+      game.slots.cpu_back_right.monster = createActiveMonster("takokke", "cpu");
+      return game;
+    };
+    const findFocus = (game: GameState, options = {}) =>
+      inspectCpuDecisionEvaluations(game, { profile: "white", search: { sameTurnSearchDepth: 0 }, ...options }).find(
+        (evaluation) => evaluation.decision.type === "focus" && evaluation.decision.slotKey === "cpu_back_right",
+      );
+
+    const whiteMirror = createClearedThreatGame("white");
+    const whiteMirrorDefault = findFocus(whiteMirror);
+    const whiteMirrorDisabled = findFocus(whiteMirror, {
+      tunings: { cpu: { situationalBias: { whiteSetupAfterThreatReductionBonus: 0 } } },
+    });
+
+    const blackMatchup = createClearedThreatGame("black");
+    const blackDefault = findFocus(blackMatchup);
+    const blackDisabled = findFocus(blackMatchup, {
+      tunings: { cpu: { situationalBias: { whiteSetupAfterThreatReductionBonus: 0 } } },
+    });
+
+    expect(whiteMirrorDefault).toBeDefined();
+    expect(whiteMirrorDisabled).toBeDefined();
+    expect(whiteMirrorDefault?.totalScore).toBeCloseTo((whiteMirrorDisabled?.totalScore ?? 0) + 6);
+    expect(blackDefault).toBeDefined();
+    expect(blackDisabled).toBeDefined();
+    expect(blackDefault?.totalScore).toBeCloseTo(blackDisabled?.totalScore ?? 0);
+  });
+
   it("penalizes low-value white attacks into redirect-marked enemies", () => {
     const game = createCpuGame();
     game.players.cpu.masterId = "white";

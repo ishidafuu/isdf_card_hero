@@ -1,0 +1,100 @@
+{
+  "generatedAt": "2026-06-30T11:39:07.291Z",
+  "deckPreset": "master-lab-white-1377-death-sheep3",
+  "screen": {
+    "gamesPerMatchup": 1,
+    "totalGames": 4,
+    "standings": [
+      {
+        "rank": 1,
+        "variantId": "current_white_mirror_threat_then_setup_off",
+        "label": "比較: 白ミラー脅威処理後布石 off",
+        "score": 38,
+        "wins": 2,
+        "losses": 0,
+        "draws": 0,
+        "overall": 1,
+        "vsBlack": 0,
+        "vsDecoy": 0,
+        "vsWhite": 1,
+        "averageTurns": 15.5,
+        "issues": "0F/0W",
+        "notes": [
+          "シールド偏重"
+        ]
+      },
+      {
+        "rank": 2,
+        "variantId": "current_white_baseline",
+        "label": "現行: デスシープ3 / white",
+        "score": 22,
+        "wins": 1,
+        "losses": 1,
+        "draws": 0,
+        "overall": 0.5,
+        "vsBlack": 0,
+        "vsDecoy": 0,
+        "vsWhite": 0.5,
+        "averageTurns": 20,
+        "issues": "0F/0W",
+        "notes": [
+          "シールド偏重"
+        ]
+      }
+    ]
+  },
+  "confirm": {
+    "gamesPerMatchup": 4,
+    "totalGames": 16,
+    "standings": [
+      {
+        "rank": 1,
+        "variantId": "current_white_baseline",
+        "label": "現行: デスシープ3 / white",
+        "score": 24.4,
+        "wins": 5,
+        "losses": 3,
+        "draws": 0,
+        "overall": 0.625,
+        "vsBlack": 0,
+        "vsDecoy": 0,
+        "vsWhite": 0.625,
+        "averageTurns": 27.5,
+        "issues": "0F/0W",
+        "notes": [
+          "シールド偏重"
+        ]
+      },
+      {
+        "rank": 2,
+        "variantId": "current_white_mirror_threat_then_setup_off",
+        "label": "比較: 白ミラー脅威処理後布石 off",
+        "score": 17.9,
+        "wins": 3,
+        "losses": 5,
+        "draws": 0,
+        "overall": 0.375,
+        "vsBlack": 0,
+        "vsDecoy": 0,
+        "vsWhite": 0.375,
+        "averageTurns": 22.4,
+        "issues": "0F/0W",
+        "notes": [
+          "シールド偏重"
+        ]
+      }
+    ]
+  },
+  "adopted": {
+    "variantId": "current_white_mirror_threat_then_setup_off",
+    "label": "比較: 白ミラー脅威処理後布石 off",
+    "recommendation": "hold",
+    "reason": "baseline比 score -6.5, overall -25%, vsBlack +0%, vsWhite -25%, issues 0F/0W。"
+  },
+  "nextSteps": [
+    "今回の確認では即採用せず、ベースラインを維持する。",
+    "次は `current_white_mirror_threat_then_setup_off` と `current_white_baseline` を games-per-matchup 3-4 で再確認し、seed差を潰す。",
+    "対黒がまだ不安定。負けseedから、デスシープが前に出た後の盾/ウェイク/攻撃順を重点監査する。",
+    "デッキ側はデスシープ3を固定し、次ループはAIだけを触る。元1377は比較対象として残す。"
+  ]
+}

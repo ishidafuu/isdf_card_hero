@@ -130,6 +130,9 @@ function buildVariants(): WhiteAiTuningVariant[] {
     variant("current_white_mirror_low_stone_guard_off", "比較: 白ミラー低石布石抑制 off", {
       situationalBias: { whiteThreatLeftLowStoneSetupPenalty: 0 },
     }, "採用済みの白ミラー限定低石布石抑制を外し、現行baselineとの差分を見る。"),
+    variant("current_white_mirror_threat_then_setup_off", "比較: 白ミラー脅威処理後布石 off", {
+      situationalBias: { whiteThreatSourceAttackBonus: 8, whiteSetupAfterThreatReductionBonus: 0 },
+    }, "採用済みの白ミラー限定の脅威処理後布石を外し、現行baselineとの差分を見る。"),
     variant("current_strong_profile", "比較: デスシープ3 / strong", undefined, "白専用補正が本当に必要かを確認するため、strong profileを横に置く。", "strong"),
     variant("current_front_work_light", "候補: 既存前衛仕事 48", {
       situationalBias: { whiteActiveFrontWorkBonus: 48 },

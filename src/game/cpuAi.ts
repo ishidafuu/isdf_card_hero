@@ -293,6 +293,8 @@ const WHITE_VS_BLACK_MATCHUP_TUNING = {
 
 const WHITE_VS_WHITE_MATCHUP_TUNING = {
   situationalBias: {
+    whiteThreatSourceAttackBonus: 6,
+    whiteSetupAfterThreatReductionBonus: 6,
     whiteThreatLeftLowStoneSetupPenalty: 6,
   },
 } satisfies CpuAiTuning;

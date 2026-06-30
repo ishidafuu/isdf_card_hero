@@ -1,0 +1,100 @@
+{
+  "generatedAt": "2026-06-30T10:35:58.007Z",
+  "deckPreset": "master-lab-white-1377-death-sheep3",
+  "screen": {
+    "gamesPerMatchup": 1,
+    "totalGames": 4,
+    "standings": [
+      {
+        "rank": 1,
+        "variantId": "current_threat_then_setup",
+        "label": "候補: 脅威処理後布石",
+        "score": 20.2,
+        "wins": 1,
+        "losses": 1,
+        "draws": 0,
+        "overall": 0.5,
+        "vsBlack": 0,
+        "vsDecoy": 0,
+        "vsWhite": 0.5,
+        "averageTurns": 28,
+        "issues": "0F/0W",
+        "notes": [
+          "シールド偏重"
+        ]
+      },
+      {
+        "rank": 2,
+        "variantId": "current_white_baseline",
+        "label": "現行: デスシープ3 / white",
+        "score": 4.8,
+        "wins": 0,
+        "losses": 2,
+        "draws": 0,
+        "overall": 0,
+        "vsBlack": 0,
+        "vsDecoy": 0,
+        "vsWhite": 0,
+        "averageTurns": 26,
+        "issues": "0F/0W",
+        "notes": [
+          "シールド偏重"
+        ]
+      }
+    ]
+  },
+  "confirm": {
+    "gamesPerMatchup": 8,
+    "totalGames": 32,
+    "standings": [
+      {
+        "rank": 1,
+        "variantId": "current_threat_then_setup",
+        "label": "候補: 脅威処理後布石",
+        "score": 24,
+        "wins": 9,
+        "losses": 7,
+        "draws": 0,
+        "overall": 0.563,
+        "vsBlack": 0,
+        "vsDecoy": 0,
+        "vsWhite": 0.563,
+        "averageTurns": 21,
+        "issues": "0F/0W",
+        "notes": [
+          "シールド偏重"
+        ]
+      },
+      {
+        "rank": 2,
+        "variantId": "current_white_baseline",
+        "label": "現行: デスシープ3 / white",
+        "score": 18,
+        "wins": 6,
+        "losses": 10,
+        "draws": 0,
+        "overall": 0.375,
+        "vsBlack": 0,
+        "vsDecoy": 0,
+        "vsWhite": 0.375,
+        "averageTurns": 22,
+        "issues": "0F/0W",
+        "notes": [
+          "シールド偏重"
+        ]
+      }
+    ]
+  },
+  "adopted": {
+    "variantId": "current_threat_then_setup",
+    "label": "候補: 脅威処理後布石",
+    "recommendation": "hold",
+    "reason": "baseline比 score +6, overall +18.8%, vsBlack +0%, vsWhite +18.8%, issues 0F/0W。"
+  },
+  "nextSteps": [
+    "今回の確認では即採用せず、ベースラインを維持する。",
+    "次は `current_threat_then_setup` と `current_white_baseline` を games-per-matchup 3-4 で再確認し、seed差を潰す。",
+    "対黒がまだ不安定。負けseedから、デスシープが前に出た後の盾/ウェイク/攻撃順を重点監査する。",
+    "デッキ側はデスシープ3を固定し、次ループはAIだけを触る。元1377は比較対象として残す。"
+  ]
+}
