@@ -1,0 +1,2650 @@
+{
+  "generatedAt": "2026-07-01T05:37:59.770Z",
+  "options": {
+    "variantIds": [
+      "current_white_baseline"
+    ],
+    "opponentIds": [
+      "white_current_mirror",
+      "black_1375_pressure"
+    ],
+    "candidateSeat": "both",
+    "gamesPerMatchup": 2,
+    "seedStart": 932000,
+    "maxSteps": 500,
+    "maxTurns": 120,
+    "maxOwnActionsAfterShield": 8,
+    "maxOpponentActions": 8,
+    "maxShieldEventsPerGame": 5,
+    "maxShieldEventsPerAudit": 16,
+    "maxSamples": 64,
+    "markdownPath": "docs/master_lab/results/2026-07-01_white_shield_response_matrix_audit.md",
+    "jsonPath": "docs/master_lab/results/2026-07-01_white_shield_response_matrix_audit.json"
+  },
+  "audits": [
+    {
+      "variantId": "current_white_baseline",
+      "opponentId": "white_current_mirror",
+      "candidateSeat": "player",
+      "seedStart": 932000,
+      "games": 2,
+      "metrics": {
+        "games": 2,
+        "shieldEvents": 9,
+        "ignoredBoth": 1,
+        "deterrent": 3,
+        "anomaly": 1,
+        "absorbed": 4,
+        "withShieldContacts": 5,
+        "noShieldContacts": 7,
+        "withShieldTargetRemoved": 1,
+        "noShieldTargetRemoved": 4,
+        "shieldSavedTarget": 3,
+        "withShieldMasterDamageMore": 0,
+        "withShieldMasterDamageLess": 1,
+        "noShieldTargetMissingAtHandoff": 0,
+        "withShieldTargetMissingAtHandoff": 0,
+        "ownBranchTruncated": 0,
+        "responseTruncated": 0
+      },
+      "samples": [
+        {
+          "variantId": "current_white_baseline",
+          "opponentId": "white_current_mirror",
+          "candidateSeat": "player",
+          "seed": 932001,
+          "step": 9,
+          "turnNumber": 2,
+          "shieldScore": 51.1,
+          "shieldReason": "高価値の味方を守るためシールド / 見送り: マスター特技は9点差で見送り",
+          "targetSlotKey": "player_back_left",
+          "targetCardName": "ヤンバル",
+          "targetHp": 3,
+          "targetLevel": 1,
+          "targetFocused": false,
+          "targetShieldedBefore": false,
+          "ownStonesBefore": 3,
+          "ownHpBefore": 10,
+          "enemyHpBefore": 10,
+          "matrixClass": "ignored_both",
+          "withShieldOwnBranchTruncated": false,
+          "noShieldOwnBranchTruncated": false,
+          "withShieldOwnActions": [
+            "end_turn"
+          ],
+          "noShieldOwnActions": [
+            "master:shield->monster:player_front_left",
+            "end_turn"
+          ],
+          "withShieldResponse": {
+            "targetPresentAtHandoff": true,
+            "targetPresentAfterResponse": true,
+            "targetRemovedDuringResponse": false,
+            "targetDamagedDuringResponse": false,
+            "targetContacted": false,
+            "masterDamageTaken": 0,
+            "actions": [
+              "attack:cpu_front_right:storm_bomb->monster:player_front_left",
+              "attack:cpu_front_left:attack->monster:player_front_left",
+              "summon:ドノマンティス->cpu_back_right",
+              "focus:cpu_back_left",
+              "end_turn"
+            ],
+            "contactActions": [],
+            "truncated": false,
+            "finalState": "turn 3 player HP10/S5 cpu HP10/S1 current player",
+            "finalBoard": "cpu_back_left:デスシープ HP6 Lv1 A/F<br>cpu_back_right:ドノマンティス HP5 Lv1 P<br>cpu_front_left:デスシープ HP6 Lv2 A<br>cpu_front_right:ボムゾウ HP6 Lv1 A<br>player_front_left:ヤンバル HP3 Lv1 A<br>player_front_right:ポリスピナー HP3 Lv1 A<br>player_back_left:empty<br>player_back_right:empty"
+          },
+          "noShieldResponse": {
+            "targetPresentAtHandoff": true,
+            "targetPresentAfterResponse": true,
+            "targetRemovedDuringResponse": false,
+            "targetDamagedDuringResponse": false,
+            "targetContacted": false,
+            "masterDamageTaken": 0,
+            "actions": [
+              "summon:ドノマンティス->cpu_back_right",
+              "end_turn"
+            ],
+            "contactActions": [],
+            "truncated": false,
+            "finalState": "turn 3 player HP10/S4 cpu HP10/S2 current player",
+            "finalBoard": "cpu_back_left:デスシープ HP6 Lv1 A/F<br>cpu_back_right:ドノマンティス HP5 Lv1 P<br>cpu_front_left:デスシープ HP6 Lv1 A/F<br>cpu_front_right:ボムゾウ HP6 Lv1 A/F<br>player_front_left:ヤンバル HP3 Lv1 A<br>player_front_right:ポリスピナー HP3 Lv1 A<br>player_back_left:ヤンバル HP3 Lv1 A<br>player_back_right:empty"
+          },
+          "boardBefore": "cpu_back_left:デスシープ HP6 Lv1 P<br>cpu_back_right:empty<br>cpu_front_left:デスシープ HP6 Lv1 P<br>cpu_front_right:ボムゾウ HP6 Lv1 P<br>player_front_left:ヤンバル HP3 Lv1 A<br>player_front_right:ポリスピナー HP3 Lv1 P<br>player_back_left:ヤンバル HP3 Lv1 A<br>player_back_right:empty",
+          "stateBefore": "turn 2 player HP10/S3 cpu HP10/S0 current player"
+        },
+        {
+          "variantId": "current_white_baseline",
+          "opponentId": "white_current_mirror",
+          "candidateSeat": "player",
+          "seed": 932000,
+          "step": 116,
+          "turnNumber": 11,
+          "shieldScore": 53.9,
+          "shieldReason": "高価値の味方を守るためシールド",
+          "targetSlotKey": "player_front_left",
+          "targetCardName": "ドノマンティス",
+          "targetHp": 5,
+          "targetLevel": 1,
+          "targetFocused": true,
+          "targetShieldedBefore": false,
+          "ownStonesBefore": 5,
+          "ownHpBefore": 6,
+          "enemyHpBefore": 5,
+          "matrixClass": "anomaly",
+          "withShieldOwnBranchTruncated": false,
+          "noShieldOwnBranchTruncated": false,
+          "withShieldOwnActions": [
+            "end_turn"
+          ],
+          "noShieldOwnActions": [
+            "end_turn"
+          ],
+          "withShieldResponse": {
+            "targetPresentAtHandoff": true,
+            "targetPresentAfterResponse": true,
+            "targetRemovedDuringResponse": false,
+            "targetDamagedDuringResponse": false,
+            "targetContacted": true,
+            "masterDamageTaken": 0,
+            "actions": [
+              "master:master_attack->monster:player_front_right",
+              "attack:cpu_front_right:ダイン斬り->monster:player_front_right",
+              "attack:cpu_front_left:ダイン斬り->monster:player_front_left",
+              "summon:ドノマンティス->cpu_back_left",
+              "end_turn"
+            ],
+            "contactActions": [
+              "attack:cpu_front_left:ダイン斬り->monster:player_front_left"
+            ],
+            "truncated": false,
+            "finalState": "turn 12 player HP6/S7 cpu HP5/S1 current player",
+            "finalBoard": "cpu_back_left:ドノマンティス HP5 Lv1 P<br>cpu_back_right:empty<br>cpu_front_left:真勇者ダイン HP6 Lv1 A<br>cpu_front_right:真勇者ダイン HP6 Lv3 A<br>player_front_left:ドノマンティス HP5 Lv1 A<br>player_front_right:ドノマンティス HP5 Lv1 A<br>player_back_left:ピグミィ HP3 Lv2 A/F<br>player_back_right:empty"
+          },
+          "noShieldResponse": {
+            "targetPresentAtHandoff": true,
+            "targetPresentAfterResponse": true,
+            "targetRemovedDuringResponse": false,
+            "targetDamagedDuringResponse": false,
+            "targetContacted": false,
+            "masterDamageTaken": 0,
+            "actions": [
+              "master:master_attack->monster:player_front_right",
+              "attack:cpu_front_right:ダイン斬り->monster:player_front_right",
+              "focus:cpu_front_left",
+              "master:shield->monster:cpu_front_right",
+              "end_turn"
+            ],
+            "contactActions": [],
+            "truncated": false,
+            "finalState": "turn 12 player HP6/S9 cpu HP5/S0 current player",
+            "finalBoard": "cpu_back_left:empty<br>cpu_back_right:empty<br>cpu_front_left:真勇者ダイン HP6 Lv1 A/F<br>cpu_front_right:真勇者ダイン HP6 Lv3 A/S<br>player_front_left:ドノマンティス HP5 Lv1 A/F<br>player_front_right:ドノマンティス HP5 Lv1 A<br>player_back_left:ピグミィ HP3 Lv2 A/F<br>player_back_right:empty"
+          },
+          "boardBefore": "cpu_back_left:empty<br>cpu_back_right:真勇者ダイン HP6 Lv3 A/S<br>cpu_front_left:真勇者ダイン HP6 Lv1 P<br>cpu_front_right:empty<br>player_front_left:ドノマンティス HP5 Lv1 A/F<br>player_front_right:デスシープ HP6 Lv1 A<br>player_back_left:ピグミィ HP3 Lv2 A/F<br>player_back_right:ドノマンティス HP5 Lv1 P",
+          "stateBefore": "turn 11 player HP6/S5 cpu HP5/S2 current player"
+        },
+        {
+          "variantId": "current_white_baseline",
+          "opponentId": "white_current_mirror",
+          "candidateSeat": "player",
+          "seed": 932001,
+          "step": 177,
+          "turnNumber": 17,
+          "shieldScore": 121.2,
+          "shieldReason": "致死圏の味方を守れるためシールド",
+          "targetSlotKey": "player_front_left",
+          "targetCardName": "ボムゾウ",
+          "targetHp": 2,
+          "targetLevel": 2,
+          "targetFocused": false,
+          "targetShieldedBefore": false,
+          "ownStonesBefore": 4,
+          "ownHpBefore": 4,
+          "enemyHpBefore": 6,
+          "matrixClass": "absorbed",
+          "withShieldOwnBranchTruncated": false,
+          "noShieldOwnBranchTruncated": false,
+          "withShieldOwnActions": [
+            "end_turn"
+          ],
+          "noShieldOwnActions": [
+            "end_turn"
+          ],
+          "withShieldResponse": {
+            "targetPresentAtHandoff": true,
+            "targetPresentAfterResponse": false,
+            "targetRemovedDuringResponse": true,
+            "targetDamagedDuringResponse": false,
+            "targetContacted": true,
+            "masterDamageTaken": 1,
+            "actions": [
+              "attack:cpu_front_left:attack->master:player",
+              "attack:cpu_front_left:attack->monster:player_front_left",
+              "end_turn"
+            ],
+            "contactActions": [
+              "attack:cpu_front_left:attack->monster:player_front_left"
+            ],
+            "truncated": false,
+            "finalState": "turn 18 player HP3/S8 cpu HP6/S11 current player",
+            "finalBoard": "cpu_back_left:empty<br>cpu_back_right:empty<br>cpu_front_left:ポリスピナー HP3 Lv2 A<br>cpu_front_right:真勇者ダイン HP6 Lv1 A/F<br>player_front_left:empty<br>player_front_right:真勇者ダイン HP5 Lv3 A<br>player_back_left:empty<br>player_back_right:ボムゾウ HP6 Lv1 A/F"
+          },
+          "noShieldResponse": {
+            "targetPresentAtHandoff": true,
+            "targetPresentAfterResponse": false,
+            "targetRemovedDuringResponse": true,
+            "targetDamagedDuringResponse": false,
+            "targetContacted": true,
+            "masterDamageTaken": 2,
+            "actions": [
+              "attack:cpu_front_left:attack->master:player",
+              "attack:cpu_front_left:attack->master:player",
+              "master:master_attack->monster:player_front_left",
+              "master:shield->monster:cpu_front_right",
+              "master:shield->monster:cpu_front_left",
+              "end_turn"
+            ],
+            "contactActions": [
+              "master:master_attack->monster:player_front_left"
+            ],
+            "truncated": false,
+            "finalState": "turn 18 player HP2/S11 cpu HP6/S4 current player",
+            "finalBoard": "cpu_back_left:empty<br>cpu_back_right:empty<br>cpu_front_left:ポリスピナー HP3 Lv2 A/S<br>cpu_front_right:真勇者ダイン HP6 Lv1 A/F/S<br>player_front_left:empty<br>player_front_right:真勇者ダイン HP5 Lv3 A<br>player_back_left:empty<br>player_back_right:ボムゾウ HP6 Lv1 A/F"
+          },
+          "boardBefore": "cpu_back_left:ポリスピナー HP3 Lv2 A/S<br>cpu_back_right:empty<br>cpu_front_left:empty<br>cpu_front_right:真勇者ダイン HP6 Lv1 P<br>player_front_left:ボムゾウ HP2 Lv2 A<br>player_front_right:真勇者ダイン HP5 Lv3 A<br>player_back_left:empty<br>player_back_right:ボムゾウ HP6 Lv1 A",
+          "stateBefore": "turn 17 player HP4/S4 cpu HP6/S8 current player"
+        },
+        {
+          "variantId": "current_white_baseline",
+          "opponentId": "white_current_mirror",
+          "candidateSeat": "player",
+          "seed": 932000,
+          "step": 23,
+          "turnNumber": 3,
+          "shieldScore": 73.2,
+          "shieldReason": "倒されそうな高価値味方を守るためシールド",
+          "targetSlotKey": "player_front_right",
+          "targetCardName": "ボムゾウ",
+          "targetHp": 2,
+          "targetLevel": 2,
+          "targetFocused": false,
+          "targetShieldedBefore": false,
+          "ownStonesBefore": 2,
+          "ownHpBefore": 10,
+          "enemyHpBefore": 9,
+          "matrixClass": "deterrent",
+          "withShieldOwnBranchTruncated": false,
+          "noShieldOwnBranchTruncated": false,
+          "withShieldOwnActions": [
+            "end_turn"
+          ],
+          "noShieldOwnActions": [
+            "end_turn"
+          ],
+          "withShieldResponse": {
+            "targetPresentAtHandoff": true,
+            "targetPresentAfterResponse": true,
+            "targetRemovedDuringResponse": false,
+            "targetDamagedDuringResponse": false,
+            "targetContacted": false,
+            "masterDamageTaken": 0,
+            "actions": [
+              "master:wake_up->monster:player_back_left",
+              "attack:cpu_front_right:wild_claw->monster:player_back_left",
+              "focus:cpu_front_left",
+              "summon:デスシープ->cpu_back_left",
+              "end_turn"
+            ],
+            "contactActions": [],
+            "truncated": false,
+            "finalState": "turn 4 player HP10/S4 cpu HP9/S1 current player",
+            "finalBoard": "cpu_back_left:デスシープ HP6 Lv1 P<br>cpu_back_right:empty<br>cpu_front_left:デスシープ HP6 Lv1 A/F<br>cpu_front_right:ヤンバル HP3 Lv2 A<br>player_front_left:真勇者ダイン HP6 Lv1 A<br>player_front_right:ボムゾウ HP2 Lv2 A<br>player_back_left:empty<br>player_back_right:ポリスピナー HP3 Lv1 A/F"
+          },
+          "noShieldResponse": {
+            "targetPresentAtHandoff": true,
+            "targetPresentAfterResponse": false,
+            "targetRemovedDuringResponse": true,
+            "targetDamagedDuringResponse": false,
+            "targetContacted": true,
+            "masterDamageTaken": 0,
+            "actions": [
+              "move:cpu_front_right->cpu_back_left",
+              "summon:デスシープ->cpu_front_right",
+              "master:wake_up->monster:cpu_front_right",
+              "attack:cpu_front_right:attack->monster:player_front_right",
+              "focus:cpu_front_left",
+              "end_turn"
+            ],
+            "contactActions": [
+              "attack:cpu_front_right:attack->monster:player_front_right"
+            ],
+            "truncated": false,
+            "finalState": "turn 4 player HP10/S7 cpu HP9/S0 current player",
+            "finalBoard": "cpu_back_left:ヤンバル HP3 Lv2 A<br>cpu_back_right:empty<br>cpu_front_left:デスシープ HP6 Lv1 A/F<br>cpu_front_right:デスシープ HP6 Lv2 A<br>player_front_left:真勇者ダイン HP6 Lv1 A<br>player_front_right:ポリスピナー HP3 Lv1 A/F<br>player_back_left:ピグミィ HP3 Lv1 A<br>player_back_right:empty"
+          },
+          "boardBefore": "cpu_back_left:empty<br>cpu_back_right:ヤンバル HP3 Lv2 A<br>cpu_front_left:デスシープ HP6 Lv1 P<br>cpu_front_right:empty<br>player_front_left:真勇者ダイン HP6 Lv1 P<br>player_front_right:ボムゾウ HP2 Lv2 A<br>player_back_left:ピグミィ HP3 Lv1 P<br>player_back_right:ポリスピナー HP3 Lv1 A/F",
+          "stateBefore": "turn 3 player HP10/S2 cpu HP9/S1 current player"
+        },
+        {
+          "variantId": "current_white_baseline",
+          "opponentId": "white_current_mirror",
+          "candidateSeat": "player",
+          "seed": 932000,
+          "step": 72,
+          "turnNumber": 7,
+          "shieldScore": 122.3,
+          "shieldReason": "致死圏の味方を守れるためシールド / 見送り: マスター特技は97点差で見送り",
+          "targetSlotKey": "player_front_right",
+          "targetCardName": "ポリスピナー",
+          "targetHp": 3,
+          "targetLevel": 2,
+          "targetFocused": false,
+          "targetShieldedBefore": false,
+          "ownStonesBefore": 3,
+          "ownHpBefore": 10,
+          "enemyHpBefore": 5,
+          "matrixClass": "deterrent",
+          "withShieldOwnBranchTruncated": false,
+          "noShieldOwnBranchTruncated": false,
+          "withShieldOwnActions": [
+            "end_turn"
+          ],
+          "noShieldOwnActions": [
+            "master:shield->monster:player_front_left",
+            "end_turn"
+          ],
+          "withShieldResponse": {
+            "targetPresentAtHandoff": true,
+            "targetPresentAfterResponse": true,
+            "targetRemovedDuringResponse": false,
+            "targetDamagedDuringResponse": false,
+            "targetContacted": false,
+            "masterDamageTaken": 0,
+            "actions": [
+              "focus:cpu_front_right",
+              "attack:cpu_front_left:attack->monster:player_front_left",
+              "master:master_attack->monster:player_front_left",
+              "master:master_attack->monster:player_front_left",
+              "end_turn"
+            ],
+            "contactActions": [],
+            "truncated": false,
+            "finalState": "turn 8 player HP10/S5 cpu HP5/S0 current player",
+            "finalBoard": "cpu_back_left:empty<br>cpu_back_right:真勇者ダイン HP6 Lv1 A/F<br>cpu_front_left:デスシープ HP6 Lv1 A<br>cpu_front_right:ドノマンティス HP5 Lv1 A/F<br>player_front_left:empty<br>player_front_right:ポリスピナー HP3 Lv2 A<br>player_back_left:empty<br>player_back_right:ピグミィ HP3 Lv1 A/F"
+          },
+          "noShieldResponse": {
+            "targetPresentAtHandoff": true,
+            "targetPresentAfterResponse": false,
+            "targetRemovedDuringResponse": true,
+            "targetDamagedDuringResponse": true,
+            "targetContacted": true,
+            "masterDamageTaken": 0,
+            "actions": [
+              "master:master_attack->monster:player_front_right",
+              "attack:cpu_front_right:attack->monster:player_front_right",
+              "focus:cpu_front_left",
+              "focus:cpu_back_right",
+              "end_turn"
+            ],
+            "contactActions": [
+              "master:master_attack->monster:player_front_right",
+              "attack:cpu_front_right:attack->monster:player_front_right"
+            ],
+            "truncated": false,
+            "finalState": "turn 8 player HP10/S6 cpu HP5/S2 current player",
+            "finalBoard": "cpu_back_left:empty<br>cpu_back_right:真勇者ダイン HP6 Lv1 A/F<br>cpu_front_left:デスシープ HP6 Lv1 A/F<br>cpu_front_right:ドノマンティス HP5 Lv2 A<br>player_front_left:デスシープ HP6 Lv1 A<br>player_front_right:ピグミィ HP3 Lv1 A/F<br>player_back_left:empty<br>player_back_right:empty"
+          },
+          "boardBefore": "cpu_back_left:empty<br>cpu_back_right:真勇者ダイン HP6 Lv1 P<br>cpu_front_left:デスシープ HP6 Lv1 A/S<br>cpu_front_right:ドノマンティス HP5 Lv1 P<br>player_front_left:デスシープ HP6 Lv1 A<br>player_front_right:ポリスピナー HP3 Lv2 A<br>player_back_left:empty<br>player_back_right:ピグミィ HP3 Lv1 A/F",
+          "stateBefore": "turn 7 player HP10/S3 cpu HP5/S3 current player"
+        },
+        {
+          "variantId": "current_white_baseline",
+          "opponentId": "white_current_mirror",
+          "candidateSeat": "player",
+          "seed": 932000,
+          "step": 102,
+          "turnNumber": 10,
+          "shieldScore": 55,
+          "shieldReason": "高価値の味方を守るためシールド",
+          "targetSlotKey": "player_front_right",
+          "targetCardName": "デスシープ",
+          "targetHp": 6,
+          "targetLevel": 1,
+          "targetFocused": true,
+          "targetShieldedBefore": false,
+          "ownStonesBefore": 7,
+          "ownHpBefore": 8,
+          "enemyHpBefore": 5,
+          "matrixClass": "deterrent",
+          "withShieldOwnBranchTruncated": false,
+          "noShieldOwnBranchTruncated": false,
+          "withShieldOwnActions": [
+            "end_turn"
+          ],
+          "noShieldOwnActions": [
+            "end_turn"
+          ],
+          "withShieldResponse": {
+            "targetPresentAtHandoff": true,
+            "targetPresentAfterResponse": true,
+            "targetRemovedDuringResponse": false,
+            "targetDamagedDuringResponse": false,
+            "targetContacted": false,
+            "masterDamageTaken": 2,
+            "actions": [
+              "attack:cpu_front_right:ダイン斬り->master:player",
+              "attack:cpu_back_right:スパイクボール->monster:player_front_left",
+              "summon:真勇者ダイン->cpu_front_left",
+              "focus:cpu_back_right",
+              "master:shield->monster:cpu_front_right",
+              "end_turn"
+            ],
+            "contactActions": [],
+            "truncated": false,
+            "finalState": "turn 11 player HP6/S10 cpu HP5/S1 current player",
+            "finalBoard": "cpu_back_left:empty<br>cpu_back_right:ピグミィ HP3 Lv1 A/F<br>cpu_front_left:真勇者ダイン HP6 Lv1 P<br>cpu_front_right:真勇者ダイン HP6 Lv3 A/S<br>player_front_left:ドノマンティス HP5 Lv1 A<br>player_front_right:デスシープ HP6 Lv1 A/F<br>player_back_left:ピグミィ HP3 Lv1 A/F<br>player_back_right:empty"
+          },
+          "noShieldResponse": {
+            "targetPresentAtHandoff": true,
+            "targetPresentAfterResponse": true,
+            "targetRemovedDuringResponse": false,
+            "targetDamagedDuringResponse": false,
+            "targetContacted": true,
+            "masterDamageTaken": 2,
+            "actions": [
+              "attack:cpu_front_right:ダイン斬り->master:player",
+              "attack:cpu_back_right:スパイクボール->monster:player_front_right",
+              "attack:cpu_back_right:スパイクボール->monster:player_front_left",
+              "summon:真勇者ダイン->cpu_front_left",
+              "master:shield->monster:cpu_front_right",
+              "end_turn"
+            ],
+            "contactActions": [
+              "attack:cpu_back_right:スパイクボール->monster:player_front_right"
+            ],
+            "truncated": false,
+            "finalState": "turn 11 player HP6/S12 cpu HP5/S1 current player",
+            "finalBoard": "cpu_back_left:empty<br>cpu_back_right:ピグミィ HP3 Lv1 A<br>cpu_front_left:真勇者ダイン HP6 Lv1 P<br>cpu_front_right:真勇者ダイン HP6 Lv3 A/S<br>player_front_left:ドノマンティス HP5 Lv1 A<br>player_front_right:デスシープ HP6 Lv1 A<br>player_back_left:ピグミィ HP3 Lv1 A/F<br>player_back_right:empty"
+          },
+          "boardBefore": "cpu_back_left:empty<br>cpu_back_right:ピグミィ HP3 Lv1 P<br>cpu_front_left:empty<br>cpu_front_right:真勇者ダイン HP6 Lv3 A/S<br>player_front_left:ドノマンティス HP5 Lv1 A/F<br>player_front_right:デスシープ HP6 Lv1 A/F<br>player_back_left:ピグミィ HP3 Lv1 A/F<br>player_back_right:empty",
+          "stateBefore": "turn 10 player HP8/S7 cpu HP5/S1 current player"
+        },
+        {
+          "variantId": "current_white_baseline",
+          "opponentId": "white_current_mirror",
+          "candidateSeat": "player",
+          "seed": 932000,
+          "step": 35,
+          "turnNumber": 4,
+          "shieldScore": 55,
+          "shieldReason": "高価値の味方を守るためシールド / 見送り: マスター特技は2点差で見送り",
+          "targetSlotKey": "player_front_left",
+          "targetCardName": "真勇者ダイン",
+          "targetHp": 6,
+          "targetLevel": 1,
+          "targetFocused": true,
+          "targetShieldedBefore": false,
+          "ownStonesBefore": 5,
+          "ownHpBefore": 10,
+          "enemyHpBefore": 9,
+          "matrixClass": "absorbed",
+          "withShieldOwnBranchTruncated": false,
+          "noShieldOwnBranchTruncated": false,
+          "withShieldOwnActions": [
+            "end_turn"
+          ],
+          "noShieldOwnActions": [
+            "master:shield->monster:player_front_right",
+            "end_turn"
+          ],
+          "withShieldResponse": {
+            "targetPresentAtHandoff": true,
+            "targetPresentAfterResponse": true,
+            "targetRemovedDuringResponse": false,
+            "targetDamagedDuringResponse": true,
+            "targetContacted": true,
+            "masterDamageTaken": 0,
+            "actions": [
+              "summon:ポリスピナー->cpu_front_right",
+              "attack:cpu_front_left:attack->monster:player_front_left",
+              "focus:cpu_back_left",
+              "master:shield->monster:cpu_front_left",
+              "end_turn"
+            ],
+            "contactActions": [
+              "attack:cpu_front_left:attack->monster:player_front_left"
+            ],
+            "truncated": false,
+            "finalState": "turn 5 player HP10/S6 cpu HP9/S3 current player",
+            "finalBoard": "cpu_back_left:デスシープ HP6 Lv1 A/F<br>cpu_back_right:empty<br>cpu_front_left:デスシープ HP6 Lv1 A/S<br>cpu_front_right:ポリスピナー HP3 Lv1 P<br>player_front_left:真勇者ダイン HP5 Lv1 A<br>player_front_right:ポリスピナー HP3 Lv1 A/F<br>player_back_left:ピグミィ HP3 Lv1 A<br>player_back_right:empty"
+          },
+          "noShieldResponse": {
+            "targetPresentAtHandoff": true,
+            "targetPresentAfterResponse": true,
+            "targetRemovedDuringResponse": false,
+            "targetDamagedDuringResponse": true,
+            "targetContacted": true,
+            "masterDamageTaken": 0,
+            "actions": [
+              "summon:ポリスピナー->cpu_front_right",
+              "attack:cpu_front_left:attack->monster:player_front_left",
+              "focus:cpu_back_left",
+              "master:master_attack->monster:player_front_left",
+              "master:shield->monster:cpu_front_left",
+              "end_turn"
+            ],
+            "contactActions": [
+              "attack:cpu_front_left:attack->monster:player_front_left",
+              "master:master_attack->monster:player_front_left"
+            ],
+            "truncated": false,
+            "finalState": "turn 5 player HP10/S6 cpu HP9/S0 current player",
+            "finalBoard": "cpu_back_left:デスシープ HP6 Lv1 A/F<br>cpu_back_right:empty<br>cpu_front_left:デスシープ HP6 Lv1 A/S<br>cpu_front_right:ポリスピナー HP3 Lv1 P<br>player_front_left:真勇者ダイン HP2 Lv1 A<br>player_front_right:ポリスピナー HP3 Lv1 A/F<br>player_back_left:ピグミィ HP3 Lv1 A<br>player_back_right:empty"
+          },
+          "boardBefore": "cpu_back_left:デスシープ HP6 Lv1 P<br>cpu_back_right:empty<br>cpu_front_left:デスシープ HP6 Lv1 A/F<br>cpu_front_right:empty<br>player_front_left:真勇者ダイン HP6 Lv1 A/F<br>player_front_right:ポリスピナー HP3 Lv1 A/F<br>player_back_left:ピグミィ HP3 Lv1 P<br>player_back_right:empty",
+          "stateBefore": "turn 4 player HP10/S5 cpu HP9/S3 current player"
+        },
+        {
+          "variantId": "current_white_baseline",
+          "opponentId": "white_current_mirror",
+          "candidateSeat": "player",
+          "seed": 932001,
+          "step": 101,
+          "turnNumber": 11,
+          "shieldScore": 51.8,
+          "shieldReason": "高価値の味方を守るためシールド",
+          "targetSlotKey": "player_front_left",
+          "targetCardName": "真勇者ダイン",
+          "targetHp": 6,
+          "targetLevel": 1,
+          "targetFocused": false,
+          "targetShieldedBefore": false,
+          "ownStonesBefore": 2,
+          "ownHpBefore": 7,
+          "enemyHpBefore": 10,
+          "matrixClass": "absorbed",
+          "withShieldOwnBranchTruncated": false,
+          "noShieldOwnBranchTruncated": false,
+          "withShieldOwnActions": [
+            "end_turn"
+          ],
+          "noShieldOwnActions": [
+            "end_turn"
+          ],
+          "withShieldResponse": {
+            "targetPresentAtHandoff": true,
+            "targetPresentAfterResponse": true,
+            "targetRemovedDuringResponse": false,
+            "targetDamagedDuringResponse": true,
+            "targetContacted": true,
+            "masterDamageTaken": 1,
+            "actions": [
+              "attack:cpu_front_right:attack->master:player",
+              "focus:cpu_front_left",
+              "attack:cpu_back_right:wild_claw->monster:player_front_left",
+              "master:shield->monster:cpu_front_left",
+              "master:shield->monster:cpu_front_right",
+              "end_turn"
+            ],
+            "contactActions": [
+              "attack:cpu_back_right:wild_claw->monster:player_front_left"
+            ],
+            "truncated": false,
+            "finalState": "turn 12 player HP6/S4 cpu HP10/S0 current player",
+            "finalBoard": "cpu_back_left:ピグミィ HP3 Lv2 A/F<br>cpu_back_right:ヤンバル HP3 Lv1 A<br>cpu_front_left:ボムゾウ HP6 Lv1 A/F/S<br>cpu_front_right:デスシープ HP4 Lv2 A/S<br>player_front_left:真勇者ダイン HP5 Lv1 A<br>player_front_right:真勇者ダイン HP6 Lv1 A<br>player_back_left:ドノマンティス HP5 Lv1 A/F<br>player_back_right:ピグミィ HP3 Lv1 A"
+          },
+          "noShieldResponse": {
+            "targetPresentAtHandoff": true,
+            "targetPresentAfterResponse": false,
+            "targetRemovedDuringResponse": true,
+            "targetDamagedDuringResponse": true,
+            "targetContacted": true,
+            "masterDamageTaken": 1,
+            "actions": [
+              "attack:cpu_front_right:attack->master:player",
+              "attack:cpu_back_right:wild_claw->monster:player_front_left",
+              "master:master_attack->monster:player_front_left",
+              "attack:cpu_front_left:self_bomb->monster:player_front_left",
+              "end_turn"
+            ],
+            "contactActions": [
+              "attack:cpu_back_right:wild_claw->monster:player_front_left",
+              "master:master_attack->monster:player_front_left",
+              "attack:cpu_front_left:self_bomb->monster:player_front_left"
+            ],
+            "truncated": false,
+            "finalState": "turn 12 player HP6/S7 cpu HP10/S0 current player",
+            "finalBoard": "cpu_back_left:ピグミィ HP3 Lv2 A/F<br>cpu_back_right:ヤンバル HP3 Lv1 A<br>cpu_front_left:ボムゾウ HP5 Lv2 A<br>cpu_front_right:デスシープ HP4 Lv2 A<br>player_front_left:ドノマンティス HP5 Lv1 A/F<br>player_front_right:真勇者ダイン HP6 Lv1 A<br>player_back_left:empty<br>player_back_right:ピグミィ HP3 Lv1 A"
+          },
+          "boardBefore": "cpu_back_left:ピグミィ HP3 Lv2 A/F<br>cpu_back_right:ヤンバル HP3 Lv1 A/F<br>cpu_front_left:ボムゾウ HP6 Lv1 A/S<br>cpu_front_right:デスシープ HP4 Lv2 A<br>player_front_left:真勇者ダイン HP6 Lv1 A<br>player_front_right:真勇者ダイン HP6 Lv1 P<br>player_back_left:ドノマンティス HP5 Lv1 A/F<br>player_back_right:ピグミィ HP3 Lv1 P",
+          "stateBefore": "turn 11 player HP7/S2 cpu HP10/S1 current player"
+        },
+        {
+          "variantId": "current_white_baseline",
+          "opponentId": "white_current_mirror",
+          "candidateSeat": "player",
+          "seed": 932001,
+          "step": 112,
+          "turnNumber": 12,
+          "shieldScore": 55,
+          "shieldReason": "高価値の味方を守るためシールド / 見送り: マスター特技は4点差で見送り",
+          "targetSlotKey": "player_front_right",
+          "targetCardName": "真勇者ダイン",
+          "targetHp": 6,
+          "targetLevel": 1,
+          "targetFocused": true,
+          "targetShieldedBefore": false,
+          "ownStonesBefore": 4,
+          "ownHpBefore": 6,
+          "enemyHpBefore": 10,
+          "matrixClass": "absorbed",
+          "withShieldOwnBranchTruncated": false,
+          "noShieldOwnBranchTruncated": false,
+          "withShieldOwnActions": [
+            "end_turn"
+          ],
+          "noShieldOwnActions": [
+            "master:shield->monster:player_front_left",
+            "end_turn"
+          ],
+          "withShieldResponse": {
+            "targetPresentAtHandoff": true,
+            "targetPresentAfterResponse": true,
+            "targetRemovedDuringResponse": false,
+            "targetDamagedDuringResponse": false,
+            "targetContacted": true,
+            "masterDamageTaken": 0,
+            "actions": [
+              "magic:ワープ->monster:player_front_right",
+              "attack:cpu_back_right:wild_claw->monster:player_front_right",
+              "attack:cpu_front_right:attack->monster:player_front_right",
+              "focus:cpu_front_left",
+              "attack:cpu_back_left:スパイクボール->monster:player_front_left",
+              "focus:cpu_back_left",
+              "end_turn"
+            ],
+            "contactActions": [
+              "magic:ワープ->monster:player_front_right"
+            ],
+            "truncated": false,
+            "finalState": "turn 13 player HP6/S6 cpu HP10/S0 current player",
+            "finalBoard": "cpu_back_left:ピグミィ HP3 Lv2 A/F<br>cpu_back_right:ヤンバル HP3 Lv1 A<br>cpu_front_left:ボムゾウ HP6 Lv1 A/F<br>cpu_front_right:デスシープ HP4 Lv2 A<br>player_front_left:真勇者ダイン HP4 Lv1 A<br>player_front_right:真勇者ダイン HP6 Lv1 A/F<br>player_back_left:ドノマンティス HP5 Lv1 A/F<br>player_back_right:empty"
+          },
+          "noShieldResponse": {
+            "targetPresentAtHandoff": true,
+            "targetPresentAfterResponse": true,
+            "targetRemovedDuringResponse": false,
+            "targetDamagedDuringResponse": false,
+            "targetContacted": true,
+            "masterDamageTaken": 0,
+            "actions": [
+              "magic:ワープ->monster:player_front_right",
+              "attack:cpu_back_right:wild_claw->monster:player_front_right",
+              "attack:cpu_front_right:attack->monster:player_front_right",
+              "focus:cpu_front_left",
+              "end_turn"
+            ],
+            "contactActions": [
+              "magic:ワープ->monster:player_front_right"
+            ],
+            "truncated": false,
+            "finalState": "turn 13 player HP6/S6 cpu HP10/S0 current player",
+            "finalBoard": "cpu_back_left:ピグミィ HP3 Lv2 A/F<br>cpu_back_right:ヤンバル HP3 Lv1 A<br>cpu_front_left:ボムゾウ HP6 Lv1 A/F<br>cpu_front_right:デスシープ HP4 Lv2 A<br>player_front_left:真勇者ダイン HP5 Lv1 A<br>player_front_right:真勇者ダイン HP6 Lv1 A/F<br>player_back_left:ドノマンティス HP5 Lv1 A/F<br>player_back_right:empty"
+          },
+          "boardBefore": "cpu_back_left:ピグミィ HP3 Lv2 A/F<br>cpu_back_right:ヤンバル HP3 Lv1 A<br>cpu_front_left:ボムゾウ HP6 Lv1 A/S<br>cpu_front_right:デスシープ HP4 Lv2 A/S<br>player_front_left:真勇者ダイン HP5 Lv1 A<br>player_front_right:真勇者ダイン HP6 Lv1 A/F<br>player_back_left:ドノマンティス HP5 Lv1 A/F<br>player_back_right:ピグミィ HP3 Lv1 A/F",
+          "stateBefore": "turn 12 player HP6/S4 cpu HP10/S0 current player"
+        }
+      ]
+    },
+    {
+      "variantId": "current_white_baseline",
+      "opponentId": "white_current_mirror",
+      "candidateSeat": "cpu",
+      "seedStart": 932002,
+      "games": 2,
+      "metrics": {
+        "games": 2,
+        "shieldEvents": 10,
+        "ignoredBoth": 1,
+        "deterrent": 5,
+        "anomaly": 1,
+        "absorbed": 3,
+        "withShieldContacts": 4,
+        "noShieldContacts": 8,
+        "withShieldTargetRemoved": 0,
+        "noShieldTargetRemoved": 4,
+        "shieldSavedTarget": 4,
+        "withShieldMasterDamageMore": 0,
+        "withShieldMasterDamageLess": 0,
+        "noShieldTargetMissingAtHandoff": 0,
+        "withShieldTargetMissingAtHandoff": 0,
+        "ownBranchTruncated": 0,
+        "responseTruncated": 0
+      },
+      "samples": [
+        {
+          "variantId": "current_white_baseline",
+          "opponentId": "white_current_mirror",
+          "candidateSeat": "cpu",
+          "seed": 932002,
+          "step": 85,
+          "turnNumber": 8,
+          "shieldScore": 51.8,
+          "shieldReason": "高価値の味方を守るためシールド / 見送り: マスター特技は1点差で見送り",
+          "targetSlotKey": "cpu_front_left",
+          "targetCardName": "デスシープ",
+          "targetHp": 6,
+          "targetLevel": 1,
+          "targetFocused": false,
+          "targetShieldedBefore": false,
+          "ownStonesBefore": 3,
+          "ownHpBefore": 10,
+          "enemyHpBefore": 10,
+          "matrixClass": "ignored_both",
+          "withShieldOwnBranchTruncated": false,
+          "noShieldOwnBranchTruncated": false,
+          "withShieldOwnActions": [
+            "end_turn"
+          ],
+          "noShieldOwnActions": [
+            "master:shield->monster:cpu_front_right",
+            "end_turn"
+          ],
+          "withShieldResponse": {
+            "targetPresentAtHandoff": true,
+            "targetPresentAfterResponse": true,
+            "targetRemovedDuringResponse": false,
+            "targetDamagedDuringResponse": false,
+            "targetContacted": false,
+            "masterDamageTaken": 0,
+            "actions": [
+              "summon:ヤンバル->player_back_right",
+              "attack:player_front_right:attack->monster:cpu_front_right",
+              "master:master_attack->monster:cpu_front_right",
+              "master:wake_up->monster:player_back_right",
+              "attack:player_back_right:wild_claw->monster:cpu_front_right",
+              "focus:player_front_left",
+              "end_turn"
+            ],
+            "contactActions": [],
+            "truncated": false,
+            "finalState": "turn 9 cpu HP10/S6 player HP10/S0 current cpu",
+            "finalBoard": "cpu_back_left:ヤンバル HP3 Lv1 A<br>cpu_back_right:empty<br>cpu_front_left:デスシープ HP6 Lv1 A<br>cpu_front_right:ピグミィ HP3 Lv1 A/F<br>player_front_left:ボムゾウ HP5 Lv1 A/F<br>player_front_right:デスシープ HP6 Lv1 A<br>player_back_left:デスシープ HP6 Lv1 A/F<br>player_back_right:ヤンバル HP3 Lv1 A"
+          },
+          "noShieldResponse": {
+            "targetPresentAtHandoff": true,
+            "targetPresentAfterResponse": true,
+            "targetRemovedDuringResponse": false,
+            "targetDamagedDuringResponse": false,
+            "targetContacted": false,
+            "masterDamageTaken": 0,
+            "actions": [
+              "summon:ヤンバル->player_back_right",
+              "end_turn"
+            ],
+            "contactActions": [],
+            "truncated": false,
+            "finalState": "turn 9 cpu HP10/S4 player HP10/S5 current cpu",
+            "finalBoard": "cpu_back_left:ヤンバル HP3 Lv1 A<br>cpu_back_right:ピグミィ HP3 Lv1 A/F<br>cpu_front_left:デスシープ HP6 Lv1 A<br>cpu_front_right:デスシープ HP6 Lv2 A<br>player_front_left:ボムゾウ HP5 Lv1 A/F<br>player_front_right:デスシープ HP6 Lv1 A/F<br>player_back_left:デスシープ HP6 Lv1 A/F<br>player_back_right:ヤンバル HP3 Lv1 P"
+          },
+          "boardBefore": "cpu_back_left:ヤンバル HP3 Lv1 A<br>cpu_back_right:ピグミィ HP3 Lv1 A/F<br>cpu_front_left:デスシープ HP6 Lv1 A<br>cpu_front_right:デスシープ HP6 Lv2 A<br>player_front_left:ボムゾウ HP5 Lv1 A/S<br>player_front_right:empty<br>player_back_left:デスシープ HP6 Lv1 A/F<br>player_back_right:デスシープ HP6 Lv1 A/F",
+          "stateBefore": "turn 8 cpu HP10/S3 player HP10/S3 current cpu"
+        },
+        {
+          "variantId": "current_white_baseline",
+          "opponentId": "white_current_mirror",
+          "candidateSeat": "cpu",
+          "seed": 932002,
+          "step": 65,
+          "turnNumber": 6,
+          "shieldScore": 55,
+          "shieldReason": "高価値の味方を守るためシールド / 見送り: マスター特技は7点差で見送り、マスター特技は247点差で見送り",
+          "targetSlotKey": "cpu_front_right",
+          "targetCardName": "デスシープ",
+          "targetHp": 6,
+          "targetLevel": 1,
+          "targetFocused": true,
+          "targetShieldedBefore": false,
+          "ownStonesBefore": 3,
+          "ownHpBefore": 10,
+          "enemyHpBefore": 10,
+          "matrixClass": "anomaly",
+          "withShieldOwnBranchTruncated": false,
+          "noShieldOwnBranchTruncated": false,
+          "withShieldOwnActions": [
+            "end_turn"
+          ],
+          "noShieldOwnActions": [
+            "master:shield->monster:cpu_front_left",
+            "end_turn"
+          ],
+          "withShieldResponse": {
+            "targetPresentAtHandoff": true,
+            "targetPresentAfterResponse": true,
+            "targetRemovedDuringResponse": false,
+            "targetDamagedDuringResponse": false,
+            "targetContacted": true,
+            "masterDamageTaken": 0,
+            "actions": [
+              "focus:player_front_left",
+              "attack:player_front_right:attack->monster:cpu_front_right",
+              "focus:player_back_left",
+              "master:shield->monster:player_front_left",
+              "end_turn"
+            ],
+            "contactActions": [
+              "attack:player_front_right:attack->monster:cpu_front_right"
+            ],
+            "truncated": false,
+            "finalState": "turn 7 cpu HP10/S4 player HP10/S1 current cpu",
+            "finalBoard": "cpu_back_left:ヤンバル HP3 Lv1 A/F<br>cpu_back_right:ピグミィ HP3 Lv1 A<br>cpu_front_left:デスシープ HP6 Lv1 A<br>cpu_front_right:デスシープ HP6 Lv1 A<br>player_front_left:ボムゾウ HP6 Lv1 A/F/S<br>player_front_right:デスシープ HP6 Lv1 A<br>player_back_left:デスシープ HP6 Lv1 A/F<br>player_back_right:デスシープ HP6 Lv1 A/F"
+          },
+          "noShieldResponse": {
+            "targetPresentAtHandoff": true,
+            "targetPresentAfterResponse": true,
+            "targetRemovedDuringResponse": false,
+            "targetDamagedDuringResponse": false,
+            "targetContacted": false,
+            "masterDamageTaken": 0,
+            "actions": [
+              "focus:player_front_left",
+              "focus:player_front_right",
+              "focus:player_back_left",
+              "master:shield->monster:player_front_left",
+              "end_turn"
+            ],
+            "contactActions": [],
+            "truncated": false,
+            "finalState": "turn 7 cpu HP10/S4 player HP10/S1 current cpu",
+            "finalBoard": "cpu_back_left:ヤンバル HP3 Lv1 A/F<br>cpu_back_right:ピグミィ HP3 Lv1 A<br>cpu_front_left:デスシープ HP6 Lv1 A<br>cpu_front_right:デスシープ HP6 Lv1 A/F<br>player_front_left:ボムゾウ HP6 Lv1 A/F/S<br>player_front_right:デスシープ HP6 Lv1 A/F<br>player_back_left:デスシープ HP6 Lv1 A/F<br>player_back_right:デスシープ HP6 Lv1 A/F"
+          },
+          "boardBefore": "cpu_back_left:ヤンバル HP3 Lv1 A/F<br>cpu_back_right:ピグミィ HP3 Lv1 A<br>cpu_front_left:デスシープ HP6 Lv1 A<br>cpu_front_right:デスシープ HP6 Lv1 A/F<br>player_front_left:ボムゾウ HP6 Lv1 A<br>player_front_right:デスシープ HP6 Lv1 A<br>player_back_left:デスシープ HP6 Lv1 P<br>player_back_right:デスシープ HP6 Lv1 A/F",
+          "stateBefore": "turn 6 cpu HP10/S3 player HP10/S0 current cpu"
+        },
+        {
+          "variantId": "current_white_baseline",
+          "opponentId": "white_current_mirror",
+          "candidateSeat": "cpu",
+          "seed": 932003,
+          "step": 16,
+          "turnNumber": 2,
+          "shieldScore": 55,
+          "shieldReason": "高価値の味方を守るためシールド / 見送り: マスター特技は8点差で見送り",
+          "targetSlotKey": "cpu_front_left",
+          "targetCardName": "真勇者ダイン",
+          "targetHp": 6,
+          "targetLevel": 1,
+          "targetFocused": true,
+          "targetShieldedBefore": false,
+          "ownStonesBefore": 3,
+          "ownHpBefore": 10,
+          "enemyHpBefore": 10,
+          "matrixClass": "deterrent",
+          "withShieldOwnBranchTruncated": false,
+          "noShieldOwnBranchTruncated": false,
+          "withShieldOwnActions": [
+            "end_turn"
+          ],
+          "noShieldOwnActions": [
+            "master:shield->monster:cpu_front_right",
+            "end_turn"
+          ],
+          "withShieldResponse": {
+            "targetPresentAtHandoff": true,
+            "targetPresentAfterResponse": true,
+            "targetRemovedDuringResponse": false,
+            "targetDamagedDuringResponse": false,
+            "targetContacted": false,
+            "masterDamageTaken": 0,
+            "actions": [
+              "magic:ワープ->monster:cpu_back_right",
+              "attack:player_front_right:self_bomb->monster:cpu_front_right",
+              "focus:player_front_left",
+              "end_turn"
+            ],
+            "contactActions": [],
+            "truncated": false,
+            "finalState": "turn 3 cpu HP10/S5 player HP10/S0 current cpu",
+            "finalBoard": "cpu_back_left:empty<br>cpu_back_right:empty<br>cpu_front_left:真勇者ダイン HP6 Lv1 A/F<br>cpu_front_right:デスシープ HP6 Lv1 A/F<br>player_front_left:デスシープ HP6 Lv1 A/F<br>player_front_right:ボムゾウ HP5 Lv2 A<br>player_back_left:ピグミィ HP3 Lv1 A/F<br>player_back_right:empty"
+          },
+          "noShieldResponse": {
+            "targetPresentAtHandoff": true,
+            "targetPresentAfterResponse": true,
+            "targetRemovedDuringResponse": false,
+            "targetDamagedDuringResponse": false,
+            "targetContacted": true,
+            "masterDamageTaken": 0,
+            "actions": [
+              "magic:ワープ->monster:cpu_back_right",
+              "attack:player_front_right:self_bomb->monster:cpu_front_right",
+              "focus:player_front_left",
+              "attack:player_back_left:スパイクボール->monster:cpu_front_left",
+              "focus:player_back_left",
+              "end_turn"
+            ],
+            "contactActions": [
+              "attack:player_back_left:スパイクボール->monster:cpu_front_left"
+            ],
+            "truncated": false,
+            "finalState": "turn 3 cpu HP10/S5 player HP10/S0 current cpu",
+            "finalBoard": "cpu_back_left:empty<br>cpu_back_right:empty<br>cpu_front_left:真勇者ダイン HP6 Lv1 A<br>cpu_front_right:デスシープ HP6 Lv1 A/F<br>player_front_left:デスシープ HP6 Lv1 A/F<br>player_front_right:ボムゾウ HP5 Lv2 A<br>player_back_left:ピグミィ HP3 Lv1 A/F<br>player_back_right:empty"
+          },
+          "boardBefore": "cpu_back_left:empty<br>cpu_back_right:ヤンバル HP3 Lv1 A<br>cpu_front_left:真勇者ダイン HP6 Lv1 A/F<br>cpu_front_right:デスシープ HP6 Lv1 A/F<br>player_front_left:デスシープ HP6 Lv1 A/S<br>player_front_right:ボムゾウ HP6 Lv1 A/F<br>player_back_left:ピグミィ HP3 Lv1 A/F<br>player_back_right:empty",
+          "stateBefore": "turn 2 cpu HP10/S3 player HP10/S1 current cpu"
+        },
+        {
+          "variantId": "current_white_baseline",
+          "opponentId": "white_current_mirror",
+          "candidateSeat": "cpu",
+          "seed": 932003,
+          "step": 37,
+          "turnNumber": 4,
+          "shieldScore": 58.4,
+          "shieldReason": "高価値の味方を守るためシールド / 見送り: マスター特技は7点差で見送り",
+          "targetSlotKey": "cpu_front_right",
+          "targetCardName": "デスシープ",
+          "targetHp": 5,
+          "targetLevel": 2,
+          "targetFocused": false,
+          "targetShieldedBefore": false,
+          "ownStonesBefore": 2,
+          "ownHpBefore": 10,
+          "enemyHpBefore": 9,
+          "matrixClass": "deterrent",
+          "withShieldOwnBranchTruncated": false,
+          "noShieldOwnBranchTruncated": false,
+          "withShieldOwnActions": [
+            "end_turn"
+          ],
+          "noShieldOwnActions": [
+            "master:shield->monster:cpu_front_left",
+            "end_turn"
+          ],
+          "withShieldResponse": {
+            "targetPresentAtHandoff": true,
+            "targetPresentAfterResponse": true,
+            "targetRemovedDuringResponse": false,
+            "targetDamagedDuringResponse": false,
+            "targetContacted": false,
+            "masterDamageTaken": 0,
+            "actions": [
+              "focus:player_front_right",
+              "attack:player_front_left:attack->monster:cpu_front_left",
+              "master:master_attack->monster:cpu_front_left",
+              "summon:ヤンバル->player_back_right",
+              "master:wake_up->monster:player_back_right",
+              "attack:player_back_right:wild_claw->monster:cpu_front_left",
+              "end_turn"
+            ],
+            "contactActions": [],
+            "truncated": false,
+            "finalState": "turn 5 cpu HP10/S4 player HP9/S0 current cpu",
+            "finalBoard": "cpu_back_left:empty<br>cpu_back_right:ヤンバル HP3 Lv1 A<br>cpu_front_left:ピグミィ HP3 Lv1 A/F<br>cpu_front_right:デスシープ HP5 Lv2 A<br>player_front_left:デスシープ HP4 Lv1 A<br>player_front_right:デスシープ HP6 Lv1 A/F<br>player_back_left:ピグミィ HP3 Lv1 A/F<br>player_back_right:ヤンバル HP3 Lv1 A"
+          },
+          "noShieldResponse": {
+            "targetPresentAtHandoff": true,
+            "targetPresentAfterResponse": false,
+            "targetRemovedDuringResponse": true,
+            "targetDamagedDuringResponse": true,
+            "targetContacted": true,
+            "masterDamageTaken": 0,
+            "actions": [
+              "focus:player_front_right",
+              "focus:player_front_left",
+              "master:master_attack->monster:cpu_front_right",
+              "attack:player_back_left:スパイクボール->monster:cpu_front_right",
+              "summon:ヤンバル->player_back_right",
+              "master:wake_up->monster:player_back_right",
+              "attack:player_back_right:wild_claw->monster:cpu_front_right",
+              "end_turn"
+            ],
+            "contactActions": [
+              "master:master_attack->monster:cpu_front_right",
+              "attack:player_back_left:スパイクボール->monster:cpu_front_right",
+              "attack:player_back_right:wild_claw->monster:cpu_front_right"
+            ],
+            "truncated": false,
+            "finalState": "turn 5 cpu HP10/S5 player HP9/S0 current cpu",
+            "finalBoard": "cpu_back_left:ピグミィ HP3 Lv1 A/F<br>cpu_back_right:empty<br>cpu_front_left:真勇者ダイン HP6 Lv1 A<br>cpu_front_right:ヤンバル HP3 Lv1 A<br>player_front_left:デスシープ HP4 Lv1 A/F<br>player_front_right:デスシープ HP6 Lv1 A/F<br>player_back_left:ピグミィ HP3 Lv1 A/F<br>player_back_right:ヤンバル HP3 Lv1 A"
+          },
+          "boardBefore": "cpu_back_left:ピグミィ HP3 Lv1 A/F<br>cpu_back_right:ヤンバル HP3 Lv1 P<br>cpu_front_left:真勇者ダイン HP6 Lv1 A<br>cpu_front_right:デスシープ HP5 Lv2 A<br>player_front_left:デスシープ HP4 Lv1 A/S<br>player_front_right:デスシープ HP6 Lv1 P<br>player_back_left:ピグミィ HP3 Lv1 A/F<br>player_back_right:empty",
+          "stateBefore": "turn 4 cpu HP10/S2 player HP9/S3 current cpu"
+        },
+        {
+          "variantId": "current_white_baseline",
+          "opponentId": "white_current_mirror",
+          "candidateSeat": "cpu",
+          "seed": 932003,
+          "step": 83,
+          "turnNumber": 8,
+          "shieldScore": 55.2,
+          "shieldReason": "高価値の味方を守るためシールド / 見送り: マスター特技は44点差で見送り",
+          "targetSlotKey": "cpu_front_left",
+          "targetCardName": "ピグミィ",
+          "targetHp": 3,
+          "targetLevel": 2,
+          "targetFocused": true,
+          "targetShieldedBefore": false,
+          "ownStonesBefore": 3,
+          "ownHpBefore": 10,
+          "enemyHpBefore": 9,
+          "matrixClass": "deterrent",
+          "withShieldOwnBranchTruncated": false,
+          "noShieldOwnBranchTruncated": false,
+          "withShieldOwnActions": [
+            "end_turn"
+          ],
+          "noShieldOwnActions": [
+            "master:shield->monster:cpu_back_left",
+            "end_turn"
+          ],
+          "withShieldResponse": {
+            "targetPresentAtHandoff": true,
+            "targetPresentAfterResponse": true,
+            "targetRemovedDuringResponse": false,
+            "targetDamagedDuringResponse": false,
+            "targetContacted": false,
+            "masterDamageTaken": 1,
+            "actions": [
+              "attack:player_front_right:attack->master:cpu",
+              "focus:player_front_left",
+              "summon:真勇者ダイン->player_back_left",
+              "master:shield->monster:player_front_right",
+              "end_turn"
+            ],
+            "contactActions": [],
+            "truncated": false,
+            "finalState": "turn 9 cpu HP9/S5 player HP9/S3 current cpu",
+            "finalBoard": "cpu_back_left:ヤンバル HP3 Lv2 A<br>cpu_back_right:empty<br>cpu_front_left:ピグミィ HP3 Lv2 A/F<br>cpu_front_right:ボムゾウ HP6 Lv1 A<br>player_front_left:真勇者ダイン HP6 Lv1 A/F<br>player_front_right:デスシープ HP6 Lv2 A/S<br>player_back_left:真勇者ダイン HP6 Lv1 P<br>player_back_right:empty"
+          },
+          "noShieldResponse": {
+            "targetPresentAtHandoff": true,
+            "targetPresentAfterResponse": false,
+            "targetRemovedDuringResponse": true,
+            "targetDamagedDuringResponse": true,
+            "targetContacted": true,
+            "masterDamageTaken": 1,
+            "actions": [
+              "attack:player_front_right:attack->master:cpu",
+              "attack:player_front_left:ダイン斬り->monster:cpu_front_left",
+              "master:master_attack->monster:cpu_front_left",
+              "summon:真勇者ダイン->player_back_left",
+              "master:shield->monster:player_front_right",
+              "end_turn"
+            ],
+            "contactActions": [
+              "attack:player_front_left:ダイン斬り->monster:cpu_front_left",
+              "master:master_attack->monster:cpu_front_left"
+            ],
+            "truncated": false,
+            "finalState": "turn 9 cpu HP9/S7 player HP9/S0 current cpu",
+            "finalBoard": "cpu_back_left:empty<br>cpu_back_right:empty<br>cpu_front_left:ヤンバル HP3 Lv2 A<br>cpu_front_right:ボムゾウ HP6 Lv1 A<br>player_front_left:真勇者ダイン HP6 Lv1 A<br>player_front_right:デスシープ HP6 Lv2 A/S<br>player_back_left:真勇者ダイン HP6 Lv1 P<br>player_back_right:empty"
+          },
+          "boardBefore": "cpu_back_left:ヤンバル HP3 Lv2 A<br>cpu_back_right:empty<br>cpu_front_left:ピグミィ HP3 Lv2 A/F<br>cpu_front_right:ボムゾウ HP6 Lv1 P<br>player_front_left:真勇者ダイン HP6 Lv1 P<br>player_front_right:デスシープ HP6 Lv2 A/S<br>player_back_left:empty<br>player_back_right:empty",
+          "stateBefore": "turn 8 cpu HP10/S3 player HP9/S3 current cpu"
+        },
+        {
+          "variantId": "current_white_baseline",
+          "opponentId": "white_current_mirror",
+          "candidateSeat": "cpu",
+          "seed": 932003,
+          "step": 95,
+          "turnNumber": 9,
+          "shieldScore": 55,
+          "shieldReason": "高価値の味方を守るためシールド / 見送り: マスター特技は36点差で見送り、マスター特技は180点差で見送り",
+          "targetSlotKey": "cpu_front_right",
+          "targetCardName": "ボムゾウ",
+          "targetHp": 6,
+          "targetLevel": 1,
+          "targetFocused": true,
+          "targetShieldedBefore": false,
+          "ownStonesBefore": 4,
+          "ownHpBefore": 9,
+          "enemyHpBefore": 9,
+          "matrixClass": "deterrent",
+          "withShieldOwnBranchTruncated": false,
+          "noShieldOwnBranchTruncated": false,
+          "withShieldOwnActions": [
+            "end_turn"
+          ],
+          "noShieldOwnActions": [
+            "master:shield->monster:cpu_back_left",
+            "end_turn"
+          ],
+          "withShieldResponse": {
+            "targetPresentAtHandoff": true,
+            "targetPresentAfterResponse": true,
+            "targetRemovedDuringResponse": false,
+            "targetDamagedDuringResponse": false,
+            "targetContacted": false,
+            "masterDamageTaken": 0,
+            "actions": [
+              "summon:ポリスピナー->player_back_right",
+              "end_turn"
+            ],
+            "contactActions": [],
+            "truncated": false,
+            "finalState": "turn 10 cpu HP9/S5 player HP9/S5 current cpu",
+            "finalBoard": "cpu_back_left:ヤンバル HP3 Lv2 A<br>cpu_back_right:ピグミィ HP3 Lv2 A/F<br>cpu_front_left:ドノマンティス HP5 Lv1 A<br>cpu_front_right:ボムゾウ HP6 Lv1 A/F<br>player_front_left:真勇者ダイン HP4 Lv1 A/F<br>player_front_right:デスシープ HP6 Lv2 A/F<br>player_back_left:真勇者ダイン HP6 Lv1 A/F<br>player_back_right:ポリスピナー HP3 Lv1 P"
+          },
+          "noShieldResponse": {
+            "targetPresentAtHandoff": true,
+            "targetPresentAfterResponse": false,
+            "targetRemovedDuringResponse": true,
+            "targetDamagedDuringResponse": true,
+            "targetContacted": true,
+            "masterDamageTaken": 0,
+            "actions": [
+              "attack:player_front_right:attack->monster:cpu_front_right",
+              "focus:player_front_left",
+              "master:master_attack->monster:cpu_front_right",
+              "master:master_attack->monster:cpu_front_right",
+              "focus:player_back_left",
+              "end_turn"
+            ],
+            "contactActions": [
+              "attack:player_front_right:attack->monster:cpu_front_right",
+              "master:master_attack->monster:cpu_front_right",
+              "master:master_attack->monster:cpu_front_right"
+            ],
+            "truncated": false,
+            "finalState": "turn 10 cpu HP9/S6 player HP9/S0 current cpu",
+            "finalBoard": "cpu_back_left:ヤンバル HP3 Lv2 A<br>cpu_back_right:empty<br>cpu_front_left:ドノマンティス HP5 Lv1 A<br>cpu_front_right:ピグミィ HP3 Lv2 A/F<br>player_front_left:真勇者ダイン HP4 Lv1 A/F<br>player_front_right:デスシープ HP6 Lv2 A<br>player_back_left:真勇者ダイン HP6 Lv1 A/F<br>player_back_right:empty"
+          },
+          "boardBefore": "cpu_back_left:ヤンバル HP3 Lv2 A<br>cpu_back_right:ピグミィ HP3 Lv2 A/F<br>cpu_front_left:ドノマンティス HP5 Lv1 P<br>cpu_front_right:ボムゾウ HP6 Lv1 A/F<br>player_front_left:真勇者ダイン HP4 Lv1 A<br>player_front_right:デスシープ HP6 Lv2 A/S<br>player_back_left:真勇者ダイン HP6 Lv1 P<br>player_back_right:empty",
+          "stateBefore": "turn 9 cpu HP9/S4 player HP9/S3 current cpu"
+        },
+        {
+          "variantId": "current_white_baseline",
+          "opponentId": "white_current_mirror",
+          "candidateSeat": "cpu",
+          "seed": 932003,
+          "step": 158,
+          "turnNumber": 14,
+          "shieldScore": 58.4,
+          "shieldReason": "高価値の味方を守るためシールド",
+          "targetSlotKey": "cpu_front_right",
+          "targetCardName": "ドノマンティス",
+          "targetHp": 5,
+          "targetLevel": 2,
+          "targetFocused": false,
+          "targetShieldedBefore": false,
+          "ownStonesBefore": 2,
+          "ownHpBefore": 9,
+          "enemyHpBefore": 9,
+          "matrixClass": "deterrent",
+          "withShieldOwnBranchTruncated": false,
+          "noShieldOwnBranchTruncated": false,
+          "withShieldOwnActions": [
+            "end_turn"
+          ],
+          "noShieldOwnActions": [
+            "end_turn"
+          ],
+          "withShieldResponse": {
+            "targetPresentAtHandoff": true,
+            "targetPresentAfterResponse": true,
+            "targetRemovedDuringResponse": false,
+            "targetDamagedDuringResponse": false,
+            "targetContacted": false,
+            "masterDamageTaken": 0,
+            "actions": [
+              "master:wake_up->monster:cpu_front_left",
+              "attack:player_front_left:attack->monster:cpu_front_left",
+              "summon:ドノマンティス->player_front_right",
+              "focus:player_back_left",
+              "master:shield->monster:player_front_left",
+              "end_turn"
+            ],
+            "contactActions": [],
+            "truncated": false,
+            "finalState": "turn 15 cpu HP9/S4 player HP9/S0 current cpu",
+            "finalBoard": "cpu_back_left:empty<br>cpu_back_right:ピグミィ HP3 Lv2 A<br>cpu_front_left:empty<br>cpu_front_right:ドノマンティス HP5 Lv2 A<br>player_front_left:デスシープ HP6 Lv2 A/S<br>player_front_right:ドノマンティス HP5 Lv1 P<br>player_back_left:ピグミィ HP3 Lv1 A/F<br>player_back_right:empty"
+          },
+          "noShieldResponse": {
+            "targetPresentAtHandoff": true,
+            "targetPresentAfterResponse": true,
+            "targetRemovedDuringResponse": false,
+            "targetDamagedDuringResponse": true,
+            "targetContacted": true,
+            "masterDamageTaken": 0,
+            "actions": [
+              "master:wake_up->monster:cpu_front_left",
+              "attack:player_front_left:attack->monster:cpu_front_left",
+              "attack:player_back_left:スパイクボール->monster:cpu_front_right",
+              "attack:player_back_left:スパイクボール->monster:cpu_front_right",
+              "summon:ドノマンティス->player_front_right",
+              "master:shield->monster:player_front_left",
+              "end_turn"
+            ],
+            "contactActions": [
+              "attack:player_back_left:スパイクボール->monster:cpu_front_right",
+              "attack:player_back_left:スパイクボール->monster:cpu_front_right"
+            ],
+            "truncated": false,
+            "finalState": "turn 15 cpu HP9/S6 player HP9/S0 current cpu",
+            "finalBoard": "cpu_back_left:empty<br>cpu_back_right:ピグミィ HP3 Lv2 A<br>cpu_front_left:empty<br>cpu_front_right:ドノマンティス HP3 Lv2 A<br>player_front_left:デスシープ HP6 Lv2 A/S<br>player_front_right:ドノマンティス HP5 Lv1 P<br>player_back_left:ピグミィ HP3 Lv1 A<br>player_back_right:empty"
+          },
+          "boardBefore": "cpu_back_left:empty<br>cpu_back_right:ピグミィ HP3 Lv2 A<br>cpu_front_left:ポリスピナー HP3 Lv1 P<br>cpu_front_right:ドノマンティス HP5 Lv2 A<br>player_front_left:デスシープ HP6 Lv2 A<br>player_front_right:empty<br>player_back_left:ピグミィ HP3 Lv1 A<br>player_back_right:empty",
+          "stateBefore": "turn 14 cpu HP9/S2 player HP9/S2 current cpu"
+        },
+        {
+          "variantId": "current_white_baseline",
+          "opponentId": "white_current_mirror",
+          "candidateSeat": "cpu",
+          "seed": 932002,
+          "step": 17,
+          "turnNumber": 2,
+          "shieldScore": 55,
+          "shieldReason": "高価値の味方を守るためシールド / 見送り: マスター特技は8点差で見送り、マスター特技は247点差で見送り",
+          "targetSlotKey": "cpu_front_left",
+          "targetCardName": "デスシープ",
+          "targetHp": 6,
+          "targetLevel": 1,
+          "targetFocused": true,
+          "targetShieldedBefore": false,
+          "ownStonesBefore": 3,
+          "ownHpBefore": 10,
+          "enemyHpBefore": 10,
+          "matrixClass": "absorbed",
+          "withShieldOwnBranchTruncated": false,
+          "noShieldOwnBranchTruncated": false,
+          "withShieldOwnActions": [
+            "end_turn"
+          ],
+          "noShieldOwnActions": [
+            "master:shield->monster:cpu_front_right",
+            "end_turn"
+          ],
+          "withShieldResponse": {
+            "targetPresentAtHandoff": true,
+            "targetPresentAfterResponse": true,
+            "targetRemovedDuringResponse": false,
+            "targetDamagedDuringResponse": false,
+            "targetContacted": true,
+            "masterDamageTaken": 0,
+            "actions": [
+              "attack:player_front_left:attack->monster:cpu_front_left",
+              "attack:player_back_left:storm_bomb->monster:cpu_front_right",
+              "end_turn"
+            ],
+            "contactActions": [
+              "attack:player_front_left:attack->monster:cpu_front_left"
+            ],
+            "truncated": false,
+            "finalState": "turn 3 cpu HP10/S4 player HP10/S3 current cpu",
+            "finalBoard": "cpu_back_left:empty<br>cpu_back_right:ピグミィ HP3 Lv1 A/F<br>cpu_front_left:デスシープ HP6 Lv1 A<br>cpu_front_right:ボムゾウ HP6 Lv1 A<br>player_front_left:デスシープ HP6 Lv1 A<br>player_front_right:ドノマンティス HP5 Lv1 A/F<br>player_back_left:ボムゾウ HP6 Lv1 A<br>player_back_right:デスシープ HP6 Lv1 A/F"
+          },
+          "noShieldResponse": {
+            "targetPresentAtHandoff": true,
+            "targetPresentAfterResponse": true,
+            "targetRemovedDuringResponse": false,
+            "targetDamagedDuringResponse": false,
+            "targetContacted": true,
+            "masterDamageTaken": 0,
+            "actions": [
+              "attack:player_back_left:storm_bomb->monster:cpu_front_left",
+              "end_turn"
+            ],
+            "contactActions": [
+              "attack:player_back_left:storm_bomb->monster:cpu_front_left"
+            ],
+            "truncated": false,
+            "finalState": "turn 3 cpu HP10/S4 player HP10/S3 current cpu",
+            "finalBoard": "cpu_back_left:empty<br>cpu_back_right:ピグミィ HP3 Lv1 A/F<br>cpu_front_left:デスシープ HP6 Lv1 A<br>cpu_front_right:ボムゾウ HP6 Lv1 A/F<br>player_front_left:デスシープ HP6 Lv1 A/F<br>player_front_right:ドノマンティス HP5 Lv1 A/F<br>player_back_left:ボムゾウ HP6 Lv1 A<br>player_back_right:デスシープ HP6 Lv1 A/F"
+          },
+          "boardBefore": "cpu_back_left:empty<br>cpu_back_right:ピグミィ HP3 Lv1 A/F<br>cpu_front_left:デスシープ HP6 Lv1 A/F<br>cpu_front_right:ボムゾウ HP6 Lv1 A/F<br>player_front_left:デスシープ HP6 Lv1 A<br>player_front_right:ドノマンティス HP5 Lv1 A/F/S<br>player_back_left:ボムゾウ HP6 Lv1 A<br>player_back_right:デスシープ HP6 Lv1 P",
+          "stateBefore": "turn 2 cpu HP10/S3 player HP10/S0 current cpu"
+        },
+        {
+          "variantId": "current_white_baseline",
+          "opponentId": "white_current_mirror",
+          "candidateSeat": "cpu",
+          "seed": 932002,
+          "step": 27,
+          "turnNumber": 3,
+          "shieldScore": 55,
+          "shieldReason": "高価値の味方を守るためシールド / 見送り: マスター特技は1点差で見送り、マスター特技は194点差で見送り",
+          "targetSlotKey": "cpu_front_left",
+          "targetCardName": "デスシープ",
+          "targetHp": 6,
+          "targetLevel": 1,
+          "targetFocused": true,
+          "targetShieldedBefore": false,
+          "ownStonesBefore": 3,
+          "ownHpBefore": 10,
+          "enemyHpBefore": 10,
+          "matrixClass": "absorbed",
+          "withShieldOwnBranchTruncated": false,
+          "noShieldOwnBranchTruncated": false,
+          "withShieldOwnActions": [
+            "end_turn"
+          ],
+          "noShieldOwnActions": [
+            "master:shield->monster:cpu_front_right",
+            "end_turn"
+          ],
+          "withShieldResponse": {
+            "targetPresentAtHandoff": true,
+            "targetPresentAfterResponse": true,
+            "targetRemovedDuringResponse": false,
+            "targetDamagedDuringResponse": false,
+            "targetContacted": true,
+            "masterDamageTaken": 0,
+            "actions": [
+              "focus:player_front_right",
+              "attack:player_front_left:attack->monster:cpu_front_left",
+              "attack:player_back_left:storm_bomb->monster:cpu_front_right",
+              "end_turn"
+            ],
+            "contactActions": [
+              "attack:player_front_left:attack->monster:cpu_front_left"
+            ],
+            "truncated": false,
+            "finalState": "turn 4 cpu HP10/S4 player HP10/S6 current cpu",
+            "finalBoard": "cpu_back_left:デスシープ HP6 Lv1 A<br>cpu_back_right:ピグミィ HP3 Lv1 A/F<br>cpu_front_left:デスシープ HP6 Lv1 A<br>cpu_front_right:ボムゾウ HP6 Lv1 A<br>player_front_left:デスシープ HP6 Lv1 A<br>player_front_right:ドノマンティス HP5 Lv1 A/F<br>player_back_left:ボムゾウ HP6 Lv1 A<br>player_back_right:デスシープ HP6 Lv1 A/F"
+          },
+          "noShieldResponse": {
+            "targetPresentAtHandoff": true,
+            "targetPresentAfterResponse": true,
+            "targetRemovedDuringResponse": false,
+            "targetDamagedDuringResponse": false,
+            "targetContacted": true,
+            "masterDamageTaken": 0,
+            "actions": [
+              "focus:player_front_left",
+              "attack:player_back_left:storm_bomb->monster:cpu_front_left",
+              "attack:player_front_right:attack->monster:cpu_front_right",
+              "end_turn"
+            ],
+            "contactActions": [
+              "attack:player_back_left:storm_bomb->monster:cpu_front_left"
+            ],
+            "truncated": false,
+            "finalState": "turn 4 cpu HP10/S4 player HP10/S6 current cpu",
+            "finalBoard": "cpu_back_left:デスシープ HP6 Lv1 A<br>cpu_back_right:ピグミィ HP3 Lv1 A/F<br>cpu_front_left:デスシープ HP6 Lv1 A<br>cpu_front_right:ボムゾウ HP6 Lv1 A<br>player_front_left:デスシープ HP6 Lv1 A/F<br>player_front_right:ドノマンティス HP5 Lv1 A<br>player_back_left:ボムゾウ HP6 Lv1 A<br>player_back_right:デスシープ HP6 Lv1 A/F"
+          },
+          "boardBefore": "cpu_back_left:デスシープ HP6 Lv1 P<br>cpu_back_right:ピグミィ HP3 Lv1 A/F<br>cpu_front_left:デスシープ HP6 Lv1 A/F<br>cpu_front_right:ボムゾウ HP6 Lv1 A/F<br>player_front_left:デスシープ HP6 Lv1 A<br>player_front_right:ドノマンティス HP5 Lv1 A<br>player_back_left:ボムゾウ HP6 Lv1 A<br>player_back_right:デスシープ HP6 Lv1 A/F",
+          "stateBefore": "turn 3 cpu HP10/S3 player HP10/S3 current cpu"
+        },
+        {
+          "variantId": "current_white_baseline",
+          "opponentId": "white_current_mirror",
+          "candidateSeat": "cpu",
+          "seed": 932002,
+          "step": 38,
+          "turnNumber": 4,
+          "shieldScore": 55,
+          "shieldReason": "高価値の味方を守るためシールド / 見送り: マスター特技は1点差で見送り、マスター特技は180点差で見送り",
+          "targetSlotKey": "cpu_front_left",
+          "targetCardName": "デスシープ",
+          "targetHp": 6,
+          "targetLevel": 1,
+          "targetFocused": true,
+          "targetShieldedBefore": false,
+          "ownStonesBefore": 4,
+          "ownHpBefore": 10,
+          "enemyHpBefore": 10,
+          "matrixClass": "absorbed",
+          "withShieldOwnBranchTruncated": false,
+          "noShieldOwnBranchTruncated": false,
+          "withShieldOwnActions": [
+            "end_turn"
+          ],
+          "noShieldOwnActions": [
+            "master:shield->monster:cpu_front_right",
+            "end_turn"
+          ],
+          "withShieldResponse": {
+            "targetPresentAtHandoff": true,
+            "targetPresentAfterResponse": true,
+            "targetRemovedDuringResponse": false,
+            "targetDamagedDuringResponse": false,
+            "targetContacted": true,
+            "masterDamageTaken": 0,
+            "actions": [
+              "focus:player_front_right",
+              "attack:player_front_left:attack->monster:cpu_front_left",
+              "attack:player_back_left:storm_bomb->monster:cpu_front_right",
+              "master:master_attack->monster:cpu_front_right",
+              "master:master_attack->monster:cpu_front_right",
+              "master:master_attack->monster:cpu_front_right",
+              "end_turn"
+            ],
+            "contactActions": [
+              "attack:player_front_left:attack->monster:cpu_front_left"
+            ],
+            "truncated": false,
+            "finalState": "turn 5 cpu HP10/S6 player HP10/S0 current cpu",
+            "finalBoard": "cpu_back_left:デスシープ HP6 Lv1 A/F<br>cpu_back_right:empty<br>cpu_front_left:デスシープ HP6 Lv1 A<br>cpu_front_right:ピグミィ HP3 Lv1 A/F<br>player_front_left:デスシープ HP6 Lv1 A<br>player_front_right:ドノマンティス HP5 Lv1 A/F<br>player_back_left:ボムゾウ HP6 Lv1 A<br>player_back_right:デスシープ HP6 Lv1 A/F"
+          },
+          "noShieldResponse": {
+            "targetPresentAtHandoff": true,
+            "targetPresentAfterResponse": false,
+            "targetRemovedDuringResponse": true,
+            "targetDamagedDuringResponse": true,
+            "targetContacted": true,
+            "masterDamageTaken": 0,
+            "actions": [
+              "focus:player_front_left",
+              "attack:player_back_left:storm_bomb->monster:cpu_front_left",
+              "attack:player_front_right:attack->monster:cpu_front_right",
+              "master:master_attack->monster:cpu_front_left",
+              "master:master_attack->monster:cpu_front_left",
+              "master:master_attack->monster:cpu_front_left",
+              "end_turn"
+            ],
+            "contactActions": [
+              "attack:player_back_left:storm_bomb->monster:cpu_front_left",
+              "master:master_attack->monster:cpu_front_left",
+              "master:master_attack->monster:cpu_front_left",
+              "master:master_attack->monster:cpu_front_left"
+            ],
+            "truncated": false,
+            "finalState": "turn 5 cpu HP10/S6 player HP10/S0 current cpu",
+            "finalBoard": "cpu_back_left:empty<br>cpu_back_right:ピグミィ HP3 Lv1 A/F<br>cpu_front_left:デスシープ HP6 Lv1 A/F<br>cpu_front_right:ボムゾウ HP6 Lv1 A<br>player_front_left:デスシープ HP6 Lv1 A/F<br>player_front_right:ドノマンティス HP5 Lv1 A<br>player_back_left:ボムゾウ HP6 Lv1 A<br>player_back_right:デスシープ HP6 Lv1 A/F"
+          },
+          "boardBefore": "cpu_back_left:デスシープ HP6 Lv1 A/F<br>cpu_back_right:ピグミィ HP3 Lv1 A/F<br>cpu_front_left:デスシープ HP6 Lv1 A/F<br>cpu_front_right:ボムゾウ HP6 Lv1 A/F<br>player_front_left:デスシープ HP6 Lv1 A<br>player_front_right:ドノマンティス HP5 Lv1 A<br>player_back_left:ボムゾウ HP6 Lv1 A<br>player_back_right:デスシープ HP6 Lv1 A/F",
+          "stateBefore": "turn 4 cpu HP10/S4 player HP10/S6 current cpu"
+        }
+      ]
+    },
+    {
+      "variantId": "current_white_baseline",
+      "opponentId": "black_1375_pressure",
+      "candidateSeat": "player",
+      "seedStart": 932000,
+      "games": 2,
+      "metrics": {
+        "games": 2,
+        "shieldEvents": 8,
+        "ignoredBoth": 3,
+        "deterrent": 4,
+        "anomaly": 0,
+        "absorbed": 1,
+        "withShieldContacts": 1,
+        "noShieldContacts": 5,
+        "withShieldTargetRemoved": 0,
+        "noShieldTargetRemoved": 4,
+        "shieldSavedTarget": 4,
+        "withShieldMasterDamageMore": 3,
+        "withShieldMasterDamageLess": 0,
+        "noShieldTargetMissingAtHandoff": 0,
+        "withShieldTargetMissingAtHandoff": 0,
+        "ownBranchTruncated": 0,
+        "responseTruncated": 0
+      },
+      "samples": [
+        {
+          "variantId": "current_white_baseline",
+          "opponentId": "black_1375_pressure",
+          "candidateSeat": "player",
+          "seed": 932000,
+          "step": 80,
+          "turnNumber": 8,
+          "shieldScore": 55,
+          "shieldReason": "高価値の味方を守るためシールド / 見送り: マスター特技は42点差で見送り",
+          "targetSlotKey": "player_front_left",
+          "targetCardName": "デスシープ",
+          "targetHp": 6,
+          "targetLevel": 1,
+          "targetFocused": true,
+          "targetShieldedBefore": false,
+          "ownStonesBefore": 4,
+          "ownHpBefore": 8,
+          "enemyHpBefore": 8,
+          "matrixClass": "ignored_both",
+          "withShieldOwnBranchTruncated": false,
+          "noShieldOwnBranchTruncated": false,
+          "withShieldOwnActions": [
+            "end_turn"
+          ],
+          "noShieldOwnActions": [
+            "master:shield->monster:player_back_right",
+            "end_turn"
+          ],
+          "withShieldResponse": {
+            "targetPresentAtHandoff": true,
+            "targetPresentAfterResponse": true,
+            "targetRemovedDuringResponse": false,
+            "targetDamagedDuringResponse": false,
+            "targetContacted": false,
+            "masterDamageTaken": 1,
+            "actions": [
+              "master:berserk_power->monster:cpu_front_left",
+              "attack:cpu_front_left:attack->master:player",
+              "end_turn"
+            ],
+            "contactActions": [],
+            "truncated": false,
+            "finalState": "turn 9 player HP7/S6 cpu HP8/S1 current player",
+            "finalBoard": "cpu_back_left:empty<br>cpu_back_right:empty<br>cpu_front_left:ユニフォーン HP4 Lv1 A<br>cpu_front_right:empty<br>player_front_left:デスシープ HP6 Lv1 A/F<br>player_front_right:真勇者ダイン HP5 Lv1 A<br>player_back_left:ピグミィ HP3 Lv1 A<br>player_back_right:ピグミィ HP3 Lv2 A"
+          },
+          "noShieldResponse": {
+            "targetPresentAtHandoff": true,
+            "targetPresentAfterResponse": true,
+            "targetRemovedDuringResponse": false,
+            "targetDamagedDuringResponse": false,
+            "targetContacted": false,
+            "masterDamageTaken": 1,
+            "actions": [
+              "master:berserk_power->monster:cpu_front_left",
+              "attack:cpu_front_left:attack->master:player",
+              "end_turn"
+            ],
+            "contactActions": [],
+            "truncated": false,
+            "finalState": "turn 9 player HP7/S6 cpu HP8/S1 current player",
+            "finalBoard": "cpu_back_left:empty<br>cpu_back_right:empty<br>cpu_front_left:ユニフォーン HP4 Lv1 A<br>cpu_front_right:empty<br>player_front_left:デスシープ HP6 Lv1 A/F<br>player_front_right:真勇者ダイン HP5 Lv1 A<br>player_back_left:ピグミィ HP3 Lv1 A<br>player_back_right:ピグミィ HP3 Lv2 A"
+          },
+          "boardBefore": "cpu_back_left:empty<br>cpu_back_right:empty<br>cpu_front_left:ユニフォーン HP5 Lv1 P<br>cpu_front_right:empty<br>player_front_left:デスシープ HP6 Lv1 A/F<br>player_front_right:真勇者ダイン HP5 Lv1 A<br>player_back_left:ピグミィ HP3 Lv1 A<br>player_back_right:ピグミィ HP3 Lv2 A",
+          "stateBefore": "turn 8 player HP8/S4 cpu HP8/S1 current player"
+        },
+        {
+          "variantId": "current_white_baseline",
+          "opponentId": "black_1375_pressure",
+          "candidateSeat": "player",
+          "seed": 932000,
+          "step": 100,
+          "turnNumber": 11,
+          "shieldScore": 32,
+          "shieldReason": "高価値の味方を守るためシールド / 見送り: マスター特技は100点差で見送り、マスター特技は138点差で見送り",
+          "targetSlotKey": "player_back_right",
+          "targetCardName": "ピグミィ",
+          "targetHp": 1,
+          "targetLevel": 2,
+          "targetFocused": true,
+          "targetShieldedBefore": false,
+          "ownStonesBefore": 6,
+          "ownHpBefore": 7,
+          "enemyHpBefore": 5,
+          "matrixClass": "ignored_both",
+          "withShieldOwnBranchTruncated": false,
+          "noShieldOwnBranchTruncated": false,
+          "withShieldOwnActions": [
+            "end_turn"
+          ],
+          "noShieldOwnActions": [
+            "master:shield->monster:player_front_right",
+            "end_turn"
+          ],
+          "withShieldResponse": {
+            "targetPresentAtHandoff": true,
+            "targetPresentAfterResponse": true,
+            "targetRemovedDuringResponse": false,
+            "targetDamagedDuringResponse": false,
+            "targetContacted": false,
+            "masterDamageTaken": 0,
+            "actions": [
+              "master:berserk_power->monster:cpu_front_left",
+              "attack:cpu_front_left:attack->monster:player_front_left",
+              "summon:真勇者ダイン->cpu_front_right",
+              "attack:cpu_back_left:スパイクボール->monster:player_front_right",
+              "focus:cpu_back_left",
+              "end_turn"
+            ],
+            "contactActions": [],
+            "truncated": false,
+            "finalState": "turn 12 player HP7/S8 cpu HP5/S1 current player",
+            "finalBoard": "cpu_back_left:ピグミィ HP3 Lv1 A/F<br>cpu_back_right:empty<br>cpu_front_left:ユニフォーン HP5 Lv2 A<br>cpu_front_right:真勇者ダイン HP6 Lv1 P<br>player_front_left:ピグミィ HP1 Lv1 A/F<br>player_front_right:真勇者ダイン HP2 Lv1 A<br>player_back_left:empty<br>player_back_right:ピグミィ HP1 Lv2 A/F"
+          },
+          "noShieldResponse": {
+            "targetPresentAtHandoff": true,
+            "targetPresentAfterResponse": true,
+            "targetRemovedDuringResponse": false,
+            "targetDamagedDuringResponse": false,
+            "targetContacted": false,
+            "masterDamageTaken": 0,
+            "actions": [
+              "master:berserk_power->monster:cpu_front_left",
+              "attack:cpu_front_left:attack->monster:player_front_left",
+              "summon:真勇者ダイン->cpu_front_right",
+              "focus:cpu_back_left",
+              "end_turn"
+            ],
+            "contactActions": [],
+            "truncated": false,
+            "finalState": "turn 12 player HP7/S8 cpu HP5/S1 current player",
+            "finalBoard": "cpu_back_left:ピグミィ HP3 Lv1 A/F<br>cpu_back_right:empty<br>cpu_front_left:ユニフォーン HP5 Lv2 A<br>cpu_front_right:真勇者ダイン HP6 Lv1 P<br>player_front_left:ピグミィ HP1 Lv1 A/F<br>player_front_right:真勇者ダイン HP3 Lv1 A<br>player_back_left:empty<br>player_back_right:ピグミィ HP1 Lv2 A/F"
+          },
+          "boardBefore": "cpu_back_left:ピグミィ HP3 Lv1 P<br>cpu_back_right:empty<br>cpu_front_left:ユニフォーン HP5 Lv1 P<br>cpu_front_right:empty<br>player_front_left:デスシープ HP3 Lv1 A<br>player_front_right:真勇者ダイン HP3 Lv1 A<br>player_back_left:ピグミィ HP1 Lv1 A/F<br>player_back_right:ピグミィ HP1 Lv2 A/F",
+          "stateBefore": "turn 11 player HP7/S6 cpu HP5/S3 current player"
+        },
+        {
+          "variantId": "current_white_baseline",
+          "opponentId": "black_1375_pressure",
+          "candidateSeat": "player",
+          "seed": 932001,
+          "step": 9,
+          "turnNumber": 2,
+          "shieldScore": 44.2,
+          "shieldReason": "高価値の味方を守るためシールド",
+          "targetSlotKey": "player_front_left",
+          "targetCardName": "ヤンバル",
+          "targetHp": 3,
+          "targetLevel": 1,
+          "targetFocused": false,
+          "targetShieldedBefore": false,
+          "ownStonesBefore": 3,
+          "ownHpBefore": 10,
+          "enemyHpBefore": 10,
+          "matrixClass": "deterrent",
+          "withShieldOwnBranchTruncated": false,
+          "noShieldOwnBranchTruncated": false,
+          "withShieldOwnActions": [
+            "end_turn"
+          ],
+          "noShieldOwnActions": [
+            "end_turn"
+          ],
+          "withShieldResponse": {
+            "targetPresentAtHandoff": true,
+            "targetPresentAfterResponse": true,
+            "targetRemovedDuringResponse": false,
+            "targetDamagedDuringResponse": false,
+            "targetContacted": false,
+            "masterDamageTaken": 1,
+            "actions": [
+              "master:berserk_power->monster:cpu_front_right",
+              "attack:cpu_front_right:attack->master:player",
+              "focus:cpu_front_left",
+              "focus:cpu_back_left",
+              "end_turn"
+            ],
+            "contactActions": [],
+            "truncated": false,
+            "finalState": "turn 3 player HP9/S5 cpu HP10/S0 current player",
+            "finalBoard": "cpu_back_left:ボムゾウ HP6 Lv1 A/F<br>cpu_back_right:empty<br>cpu_front_left:真勇者ダイン HP6 Lv1 A/F<br>cpu_front_right:ナッツロックル HP5 Lv1 A<br>player_front_left:ヤンバル HP3 Lv1 A<br>player_front_right:ポリスピナー HP3 Lv1 A<br>player_back_left:ヤンバル HP3 Lv1 A<br>player_back_right:empty"
+          },
+          "noShieldResponse": {
+            "targetPresentAtHandoff": true,
+            "targetPresentAfterResponse": false,
+            "targetRemovedDuringResponse": true,
+            "targetDamagedDuringResponse": false,
+            "targetContacted": true,
+            "masterDamageTaken": 0,
+            "actions": [
+              "master:berserk_power->monster:cpu_front_left",
+              "attack:cpu_front_left:ダイン斬り->monster:player_front_left",
+              "focus:cpu_front_right",
+              "focus:cpu_back_left",
+              "end_turn"
+            ],
+            "contactActions": [
+              "attack:cpu_front_left:ダイン斬り->monster:player_front_left"
+            ],
+            "truncated": false,
+            "finalState": "turn 3 player HP10/S7 cpu HP10/S0 current player",
+            "finalBoard": "cpu_back_left:ボムゾウ HP6 Lv1 A/F<br>cpu_back_right:empty<br>cpu_front_left:真勇者ダイン HP5 Lv1 A<br>cpu_front_right:ナッツロックル HP6 Lv1 A/F<br>player_front_left:ヤンバル HP3 Lv1 A<br>player_front_right:ポリスピナー HP3 Lv1 A<br>player_back_left:empty<br>player_back_right:empty"
+          },
+          "boardBefore": "cpu_back_left:ボムゾウ HP6 Lv1 P<br>cpu_back_right:empty<br>cpu_front_left:真勇者ダイン HP6 Lv1 P<br>cpu_front_right:ナッツロックル HP6 Lv1 P<br>player_front_left:ヤンバル HP3 Lv1 A<br>player_front_right:ポリスピナー HP3 Lv1 P<br>player_back_left:ヤンバル HP3 Lv1 A<br>player_back_right:empty",
+          "stateBefore": "turn 2 player HP10/S3 cpu HP10/S0 current player"
+        },
+        {
+          "variantId": "current_white_baseline",
+          "opponentId": "black_1375_pressure",
+          "candidateSeat": "player",
+          "seed": 932001,
+          "step": 32,
+          "turnNumber": 4,
+          "shieldScore": 51.1,
+          "shieldReason": "高価値の味方を守るためシールド / 見送り: マスター特技は1点差で見送り、マスター特技は93点差で見送り",
+          "targetSlotKey": "player_back_left",
+          "targetCardName": "ヤンバル",
+          "targetHp": 3,
+          "targetLevel": 1,
+          "targetFocused": false,
+          "targetShieldedBefore": false,
+          "ownStonesBefore": 5,
+          "ownHpBefore": 7,
+          "enemyHpBefore": 8,
+          "matrixClass": "ignored_both",
+          "withShieldOwnBranchTruncated": false,
+          "noShieldOwnBranchTruncated": false,
+          "withShieldOwnActions": [
+            "master:shield->monster:player_front_right",
+            "end_turn"
+          ],
+          "noShieldOwnActions": [
+            "master:shield->monster:player_back_right",
+            "master:shield->monster:player_front_right",
+            "end_turn"
+          ],
+          "withShieldResponse": {
+            "targetPresentAtHandoff": true,
+            "targetPresentAfterResponse": true,
+            "targetRemovedDuringResponse": false,
+            "targetDamagedDuringResponse": false,
+            "targetContacted": false,
+            "masterDamageTaken": 2,
+            "actions": [
+              "master:berserk_power->monster:cpu_front_left",
+              "attack:cpu_front_left:self_bomb->master:player",
+              "summon:ヤミー->cpu_back_left",
+              "focus:cpu_front_right",
+              "summon:ヤミー->cpu_back_right",
+              "end_turn"
+            ],
+            "contactActions": [],
+            "truncated": false,
+            "finalState": "turn 5 player HP5/S6 cpu HP8/S1 current player",
+            "finalBoard": "cpu_back_left:ヤミー HP5 Lv1 P<br>cpu_back_right:ヤミー HP5 Lv1 P<br>cpu_front_left:ボムゾウ HP3 Lv1 A<br>cpu_front_right:ボムゾウ HP6 Lv1 A/F<br>player_front_left:デスシープ HP6 Lv2 A<br>player_front_right:ポリスピナー HP3 Lv2 A<br>player_back_left:ヤンバル HP3 Lv1 A<br>player_back_right:ヤンバル HP3 Lv1 A"
+          },
+          "noShieldResponse": {
+            "targetPresentAtHandoff": true,
+            "targetPresentAfterResponse": true,
+            "targetRemovedDuringResponse": false,
+            "targetDamagedDuringResponse": false,
+            "targetContacted": false,
+            "masterDamageTaken": 2,
+            "actions": [
+              "master:berserk_power->monster:cpu_front_left",
+              "attack:cpu_front_left:self_bomb->master:player",
+              "summon:ヤミー->cpu_back_left",
+              "focus:cpu_front_right",
+              "summon:ヤミー->cpu_back_right",
+              "end_turn"
+            ],
+            "contactActions": [],
+            "truncated": false,
+            "finalState": "turn 5 player HP5/S6 cpu HP8/S1 current player",
+            "finalBoard": "cpu_back_left:ヤミー HP5 Lv1 P<br>cpu_back_right:ヤミー HP5 Lv1 P<br>cpu_front_left:ボムゾウ HP3 Lv1 A<br>cpu_front_right:ボムゾウ HP6 Lv1 A/F<br>player_front_left:デスシープ HP6 Lv2 A<br>player_front_right:ポリスピナー HP3 Lv2 A<br>player_back_left:ヤンバル HP3 Lv1 A<br>player_back_right:ヤンバル HP3 Lv1 A"
+          },
+          "boardBefore": "cpu_back_left:ボムゾウ HP6 Lv1 A/F<br>cpu_back_right:empty<br>cpu_front_left:empty<br>cpu_front_right:ボムゾウ HP6 Lv1 P<br>player_front_left:デスシープ HP6 Lv2 A<br>player_front_right:ポリスピナー HP3 Lv2 A<br>player_back_left:ヤンバル HP3 Lv1 A<br>player_back_right:ヤンバル HP3 Lv1 A",
+          "stateBefore": "turn 4 player HP7/S5 cpu HP8/S3 current player"
+        },
+        {
+          "variantId": "current_white_baseline",
+          "opponentId": "black_1375_pressure",
+          "candidateSeat": "player",
+          "seed": 932001,
+          "step": 33,
+          "turnNumber": 4,
+          "shieldScore": 122.3,
+          "shieldReason": "致死圏の味方を守れるためシールド / 見送り: マスター特技は119点差で見送り、マスター特技は157点差で見送り",
+          "targetSlotKey": "player_front_right",
+          "targetCardName": "ポリスピナー",
+          "targetHp": 3,
+          "targetLevel": 2,
+          "targetFocused": false,
+          "targetShieldedBefore": false,
+          "ownStonesBefore": 3,
+          "ownHpBefore": 7,
+          "enemyHpBefore": 8,
+          "matrixClass": "deterrent",
+          "withShieldOwnBranchTruncated": false,
+          "noShieldOwnBranchTruncated": false,
+          "withShieldOwnActions": [
+            "end_turn"
+          ],
+          "noShieldOwnActions": [
+            "end_turn"
+          ],
+          "withShieldResponse": {
+            "targetPresentAtHandoff": true,
+            "targetPresentAfterResponse": true,
+            "targetRemovedDuringResponse": false,
+            "targetDamagedDuringResponse": false,
+            "targetContacted": false,
+            "masterDamageTaken": 2,
+            "actions": [
+              "master:berserk_power->monster:cpu_front_left",
+              "attack:cpu_front_left:self_bomb->master:player",
+              "summon:ヤミー->cpu_back_left",
+              "focus:cpu_front_right",
+              "summon:ヤミー->cpu_back_right",
+              "end_turn"
+            ],
+            "contactActions": [],
+            "truncated": false,
+            "finalState": "turn 5 player HP5/S6 cpu HP8/S1 current player",
+            "finalBoard": "cpu_back_left:ヤミー HP5 Lv1 P<br>cpu_back_right:ヤミー HP5 Lv1 P<br>cpu_front_left:ボムゾウ HP3 Lv1 A<br>cpu_front_right:ボムゾウ HP6 Lv1 A/F<br>player_front_left:デスシープ HP6 Lv2 A<br>player_front_right:ポリスピナー HP3 Lv2 A<br>player_back_left:ヤンバル HP3 Lv1 A<br>player_back_right:ヤンバル HP3 Lv1 A"
+          },
+          "noShieldResponse": {
+            "targetPresentAtHandoff": true,
+            "targetPresentAfterResponse": false,
+            "targetRemovedDuringResponse": true,
+            "targetDamagedDuringResponse": false,
+            "targetContacted": true,
+            "masterDamageTaken": 1,
+            "actions": [
+              "master:berserk_power->monster:cpu_front_right",
+              "attack:cpu_front_right:self_bomb->monster:player_front_right",
+              "attack:cpu_front_left:self_bomb->master:player",
+              "summon:ヤミー->cpu_back_left",
+              "summon:ヤミー->cpu_back_right",
+              "end_turn"
+            ],
+            "contactActions": [
+              "attack:cpu_front_right:self_bomb->monster:player_front_right"
+            ],
+            "truncated": false,
+            "finalState": "turn 5 player HP6/S9 cpu HP8/S0 current player",
+            "finalBoard": "cpu_back_left:ヤミー HP5 Lv1 P<br>cpu_back_right:ヤミー HP5 Lv1 P<br>cpu_front_left:ボムゾウ HP4 Lv1 A<br>cpu_front_right:ボムゾウ HP5 Lv2 A<br>player_front_left:デスシープ HP6 Lv2 A<br>player_front_right:ヤンバル HP3 Lv1 A<br>player_back_left:ヤンバル HP3 Lv1 A<br>player_back_right:empty"
+          },
+          "boardBefore": "cpu_back_left:ボムゾウ HP6 Lv1 A/F<br>cpu_back_right:empty<br>cpu_front_left:empty<br>cpu_front_right:ボムゾウ HP6 Lv1 P<br>player_front_left:デスシープ HP6 Lv2 A<br>player_front_right:ポリスピナー HP3 Lv2 A<br>player_back_left:ヤンバル HP3 Lv1 A/S<br>player_back_right:ヤンバル HP3 Lv1 A",
+          "stateBefore": "turn 4 player HP7/S3 cpu HP8/S3 current player"
+        },
+        {
+          "variantId": "current_white_baseline",
+          "opponentId": "black_1375_pressure",
+          "candidateSeat": "player",
+          "seed": 932001,
+          "step": 47,
+          "turnNumber": 5,
+          "shieldScore": 28.8,
+          "shieldReason": "高価値の味方を守るためシールド / 見送り: マスター特技は205点差で見送り、マスター特技は214点差で見送り",
+          "targetSlotKey": "player_back_left",
+          "targetCardName": "ヤンバル",
+          "targetHp": 3,
+          "targetLevel": 2,
+          "targetFocused": false,
+          "targetShieldedBefore": false,
+          "ownStonesBefore": 2,
+          "ownHpBefore": 5,
+          "enemyHpBefore": 7,
+          "matrixClass": "deterrent",
+          "withShieldOwnBranchTruncated": false,
+          "noShieldOwnBranchTruncated": false,
+          "withShieldOwnActions": [
+            "end_turn"
+          ],
+          "noShieldOwnActions": [
+            "master:shield->monster:player_front_right",
+            "end_turn"
+          ],
+          "withShieldResponse": {
+            "targetPresentAtHandoff": true,
+            "targetPresentAfterResponse": true,
+            "targetRemovedDuringResponse": false,
+            "targetDamagedDuringResponse": false,
+            "targetContacted": false,
+            "masterDamageTaken": 1,
+            "actions": [
+              "master:berserk_power->monster:cpu_front_right",
+              "attack:cpu_front_right:attack->monster:player_front_right",
+              "master:berserk_power->monster:cpu_front_left",
+              "attack:cpu_front_left:attack->master:player",
+              "end_turn"
+            ],
+            "contactActions": [],
+            "truncated": false,
+            "finalState": "turn 6 player HP4/S6 cpu HP7/S0 current player",
+            "finalBoard": "cpu_back_left:empty<br>cpu_back_right:empty<br>cpu_front_left:ヤミー HP4 Lv1 A<br>cpu_front_right:ヤミー HP5 Lv2 A<br>player_front_left:デスシープ HP6 Lv2 A<br>player_front_right:ヤンバル HP3 Lv1 A/F<br>player_back_left:ヤンバル HP3 Lv2 A<br>player_back_right:empty"
+          },
+          "noShieldResponse": {
+            "targetPresentAtHandoff": true,
+            "targetPresentAfterResponse": false,
+            "targetRemovedDuringResponse": true,
+            "targetDamagedDuringResponse": false,
+            "targetContacted": true,
+            "masterDamageTaken": 0,
+            "actions": [
+              "master:earth_anger->master:cpu",
+              "attack:cpu_front_right:attack->monster:player_front_right",
+              "attack:cpu_front_left:attack->monster:player_front_left",
+              "end_turn"
+            ],
+            "contactActions": [
+              "master:earth_anger->master:cpu"
+            ],
+            "truncated": false,
+            "finalState": "turn 6 player HP5/S7 cpu HP7/S0 current player",
+            "finalBoard": "cpu_back_left:empty<br>cpu_back_right:empty<br>cpu_front_left:ヤミー HP2 Lv1 A<br>cpu_front_right:ヤミー HP5 Lv2 A<br>player_front_left:デスシープ HP1 Lv2 A<br>player_front_right:ヤンバル HP1 Lv1 A<br>player_back_left:empty<br>player_back_right:empty"
+          },
+          "boardBefore": "cpu_back_left:ヤミー HP5 Lv1 P<br>cpu_back_right:ヤミー HP5 Lv1 P<br>cpu_front_left:empty<br>cpu_front_right:empty<br>player_front_left:デスシープ HP6 Lv2 A<br>player_front_right:ポリスピナー HP3 Lv2 A<br>player_back_left:ヤンバル HP3 Lv2 A<br>player_back_right:ヤンバル HP3 Lv1 A/F",
+          "stateBefore": "turn 5 player HP5/S2 cpu HP7/S4 current player"
+        },
+        {
+          "variantId": "current_white_baseline",
+          "opponentId": "black_1375_pressure",
+          "candidateSeat": "player",
+          "seed": 932001,
+          "step": 21,
+          "turnNumber": 3,
+          "shieldScore": 56.3,
+          "shieldReason": "高価値の味方を守るためシールド",
+          "targetSlotKey": "player_front_right",
+          "targetCardName": "ポリスピナー",
+          "targetHp": 3,
+          "targetLevel": 2,
+          "targetFocused": false,
+          "targetShieldedBefore": false,
+          "ownStonesBefore": 3,
+          "ownHpBefore": 9,
+          "enemyHpBefore": 10,
+          "matrixClass": "deterrent",
+          "withShieldOwnBranchTruncated": false,
+          "noShieldOwnBranchTruncated": false,
+          "withShieldOwnActions": [
+            "end_turn"
+          ],
+          "noShieldOwnActions": [
+            "end_turn"
+          ],
+          "withShieldResponse": {
+            "targetPresentAtHandoff": true,
+            "targetPresentAfterResponse": true,
+            "targetRemovedDuringResponse": false,
+            "targetDamagedDuringResponse": false,
+            "targetContacted": false,
+            "masterDamageTaken": 2,
+            "actions": [
+              "summon:ボムゾウ->cpu_front_right",
+              "master:berserk_power->monster:cpu_front_left",
+              "attack:cpu_front_left:ダイン斬り->master:player",
+              "end_turn"
+            ],
+            "contactActions": [],
+            "truncated": false,
+            "finalState": "turn 4 player HP7/S6 cpu HP10/S0 current player",
+            "finalBoard": "cpu_back_left:ボムゾウ HP6 Lv1 A/F<br>cpu_back_right:empty<br>cpu_front_left:真勇者ダイン HP5 Lv1 A<br>cpu_front_right:ボムゾウ HP6 Lv1 P<br>player_front_left:デスシープ HP6 Lv1 A<br>player_front_right:ポリスピナー HP3 Lv2 A<br>player_back_left:ヤンバル HP3 Lv1 A<br>player_back_right:ヤンバル HP3 Lv1 A"
+          },
+          "noShieldResponse": {
+            "targetPresentAtHandoff": true,
+            "targetPresentAfterResponse": true,
+            "targetRemovedDuringResponse": false,
+            "targetDamagedDuringResponse": true,
+            "targetContacted": true,
+            "masterDamageTaken": 2,
+            "actions": [
+              "summon:ボムゾウ->cpu_front_right",
+              "master:berserk_power->monster:cpu_front_left",
+              "attack:cpu_front_left:ダイン斬り->master:player",
+              "attack:cpu_back_left:storm_bomb->monster:player_front_right",
+              "end_turn"
+            ],
+            "contactActions": [
+              "attack:cpu_back_left:storm_bomb->monster:player_front_right"
+            ],
+            "truncated": false,
+            "finalState": "turn 4 player HP7/S8 cpu HP10/S0 current player",
+            "finalBoard": "cpu_back_left:ボムゾウ HP6 Lv1 A<br>cpu_back_right:empty<br>cpu_front_left:真勇者ダイン HP5 Lv1 A<br>cpu_front_right:ボムゾウ HP6 Lv1 P<br>player_front_left:デスシープ HP6 Lv1 A<br>player_front_right:ポリスピナー HP2 Lv2 A<br>player_back_left:ヤンバル HP3 Lv1 A<br>player_back_right:ヤンバル HP3 Lv1 A"
+          },
+          "boardBefore": "cpu_back_left:ボムゾウ HP6 Lv1 A/F<br>cpu_back_right:empty<br>cpu_front_left:真勇者ダイン HP6 Lv1 A/F<br>cpu_front_right:empty<br>player_front_left:デスシープ HP6 Lv1 P<br>player_front_right:ポリスピナー HP3 Lv2 A<br>player_back_left:ヤンバル HP3 Lv1 A<br>player_back_right:ヤンバル HP3 Lv1 A",
+          "stateBefore": "turn 3 player HP9/S3 cpu HP10/S1 current player"
+        },
+        {
+          "variantId": "current_white_baseline",
+          "opponentId": "black_1375_pressure",
+          "candidateSeat": "player",
+          "seed": 932000,
+          "step": 116,
+          "turnNumber": 12,
+          "shieldScore": 116.7,
+          "shieldReason": "致死圏の味方を守れるためシールド / 見送り: マスター特技は130点差で見送り",
+          "targetSlotKey": "player_front_right",
+          "targetCardName": "真勇者ダイン",
+          "targetHp": 2,
+          "targetLevel": 1,
+          "targetFocused": true,
+          "targetShieldedBefore": false,
+          "ownStonesBefore": 3,
+          "ownHpBefore": 7,
+          "enemyHpBefore": 5,
+          "matrixClass": "absorbed",
+          "withShieldOwnBranchTruncated": false,
+          "noShieldOwnBranchTruncated": false,
+          "withShieldOwnActions": [
+            "end_turn"
+          ],
+          "noShieldOwnActions": [
+            "master:shield->monster:player_front_left",
+            "end_turn"
+          ],
+          "withShieldResponse": {
+            "targetPresentAtHandoff": true,
+            "targetPresentAfterResponse": true,
+            "targetRemovedDuringResponse": false,
+            "targetDamagedDuringResponse": false,
+            "targetContacted": true,
+            "masterDamageTaken": 0,
+            "actions": [
+              "attack:cpu_front_left:スパイクボール->monster:player_back_right",
+              "attack:cpu_front_left:スパイクボール->monster:player_back_left",
+              "attack:cpu_front_right:ダイン斬り->monster:player_front_right",
+              "summon:ボムゾウ->cpu_back_left",
+              "master:master_attack->monster:player_front_left",
+              "end_turn"
+            ],
+            "contactActions": [
+              "attack:cpu_front_right:ダイン斬り->monster:player_front_right"
+            ],
+            "truncated": false,
+            "finalState": "turn 13 player HP7/S7 cpu HP5/S1 current player",
+            "finalBoard": "cpu_back_left:ボムゾウ HP6 Lv1 P<br>cpu_back_right:empty<br>cpu_front_left:ピグミィ HP3 Lv2 A<br>cpu_front_right:真勇者ダイン HP6 Lv1 A<br>player_front_left:真勇者ダイン HP4 Lv3 A<br>player_front_right:真勇者ダイン HP2 Lv1 A<br>player_back_left:empty<br>player_back_right:empty"
+          },
+          "noShieldResponse": {
+            "targetPresentAtHandoff": true,
+            "targetPresentAfterResponse": false,
+            "targetRemovedDuringResponse": true,
+            "targetDamagedDuringResponse": false,
+            "targetContacted": true,
+            "masterDamageTaken": 0,
+            "actions": [
+              "attack:cpu_front_left:スパイクボール->monster:player_back_right",
+              "master:berserk_power->monster:cpu_front_right",
+              "attack:cpu_front_right:ダイン斬り->monster:player_front_right",
+              "attack:cpu_front_left:スパイクボール->monster:player_back_left",
+              "summon:ボムゾウ->cpu_back_left",
+              "end_turn"
+            ],
+            "contactActions": [
+              "attack:cpu_front_right:ダイン斬り->monster:player_front_right"
+            ],
+            "truncated": false,
+            "finalState": "turn 13 player HP7/S8 cpu HP5/S0 current player",
+            "finalBoard": "cpu_back_left:ボムゾウ HP6 Lv1 P<br>cpu_back_right:empty<br>cpu_front_left:ピグミィ HP3 Lv2 A<br>cpu_front_right:真勇者ダイン HP6 Lv2 A<br>player_front_left:真勇者ダイン HP6 Lv3 A<br>player_front_right:empty<br>player_back_left:empty<br>player_back_right:empty"
+          },
+          "boardBefore": "cpu_back_left:ピグミィ HP3 Lv1 A/F<br>cpu_back_right:empty<br>cpu_front_left:empty<br>cpu_front_right:真勇者ダイン HP6 Lv1 P<br>player_front_left:真勇者ダイン HP6 Lv3 A<br>player_front_right:真勇者ダイン HP2 Lv1 A/F<br>player_back_left:ピグミィ HP1 Lv1 A<br>player_back_right:ピグミィ HP1 Lv2 A",
+          "stateBefore": "turn 12 player HP7/S3 cpu HP5/S3 current player"
+        }
+      ]
+    },
+    {
+      "variantId": "current_white_baseline",
+      "opponentId": "black_1375_pressure",
+      "candidateSeat": "cpu",
+      "seedStart": 932002,
+      "games": 2,
+      "metrics": {
+        "games": 2,
+        "shieldEvents": 8,
+        "ignoredBoth": 4,
+        "deterrent": 3,
+        "anomaly": 0,
+        "absorbed": 1,
+        "withShieldContacts": 1,
+        "noShieldContacts": 4,
+        "withShieldTargetRemoved": 1,
+        "noShieldTargetRemoved": 4,
+        "shieldSavedTarget": 3,
+        "withShieldMasterDamageMore": 0,
+        "withShieldMasterDamageLess": 0,
+        "noShieldTargetMissingAtHandoff": 0,
+        "withShieldTargetMissingAtHandoff": 0,
+        "ownBranchTruncated": 0,
+        "responseTruncated": 0
+      },
+      "samples": [
+        {
+          "variantId": "current_white_baseline",
+          "opponentId": "black_1375_pressure",
+          "candidateSeat": "cpu",
+          "seed": 932002,
+          "step": 17,
+          "turnNumber": 2,
+          "shieldScore": 51.8,
+          "shieldReason": "高価値の味方を守るためシールド / 見送り: マスター特技は7点差で見送り、マスター特技は34点差で見送り",
+          "targetSlotKey": "cpu_front_left",
+          "targetCardName": "デスシープ",
+          "targetHp": 6,
+          "targetLevel": 1,
+          "targetFocused": false,
+          "targetShieldedBefore": false,
+          "ownStonesBefore": 3,
+          "ownHpBefore": 9,
+          "enemyHpBefore": 10,
+          "matrixClass": "ignored_both",
+          "withShieldOwnBranchTruncated": false,
+          "noShieldOwnBranchTruncated": false,
+          "withShieldOwnActions": [
+            "end_turn"
+          ],
+          "noShieldOwnActions": [
+            "master:shield->monster:cpu_front_right",
+            "end_turn"
+          ],
+          "withShieldResponse": {
+            "targetPresentAtHandoff": true,
+            "targetPresentAfterResponse": true,
+            "targetRemovedDuringResponse": false,
+            "targetDamagedDuringResponse": false,
+            "targetContacted": false,
+            "masterDamageTaken": 3,
+            "actions": [
+              "master:berserk_power->monster:player_front_right",
+              "attack:player_front_right:attack->master:cpu",
+              "summon:ヤミー->player_back_left",
+              "attack:player_front_left:self_bomb->master:cpu",
+              "end_turn"
+            ],
+            "contactActions": [],
+            "truncated": false,
+            "finalState": "turn 3 cpu HP6/S7 player HP10/S0 current cpu",
+            "finalBoard": "cpu_back_left:ピグミィ HP3 Lv2 A<br>cpu_back_right:empty<br>cpu_front_left:デスシープ HP6 Lv1 A<br>cpu_front_right:ボムゾウ HP6 Lv1 A<br>player_front_left:ボムゾウ HP4 Lv1 A<br>player_front_right:ナッツロックル HP5 Lv1 A<br>player_back_left:ヤミー HP5 Lv1 P<br>player_back_right:empty"
+          },
+          "noShieldResponse": {
+            "targetPresentAtHandoff": true,
+            "targetPresentAfterResponse": true,
+            "targetRemovedDuringResponse": false,
+            "targetDamagedDuringResponse": false,
+            "targetContacted": false,
+            "masterDamageTaken": 3,
+            "actions": [
+              "master:berserk_power->monster:player_front_right",
+              "attack:player_front_right:attack->master:cpu",
+              "summon:ヤミー->player_back_left",
+              "attack:player_front_left:self_bomb->master:cpu",
+              "end_turn"
+            ],
+            "contactActions": [],
+            "truncated": false,
+            "finalState": "turn 3 cpu HP6/S7 player HP10/S0 current cpu",
+            "finalBoard": "cpu_back_left:ピグミィ HP3 Lv2 A<br>cpu_back_right:empty<br>cpu_front_left:デスシープ HP6 Lv1 A<br>cpu_front_right:ボムゾウ HP6 Lv1 A<br>player_front_left:ボムゾウ HP4 Lv1 A<br>player_front_right:ナッツロックル HP5 Lv1 A<br>player_back_left:ヤミー HP5 Lv1 P<br>player_back_right:empty"
+          },
+          "boardBefore": "cpu_back_left:ピグミィ HP3 Lv2 A<br>cpu_back_right:empty<br>cpu_front_left:デスシープ HP6 Lv1 A<br>cpu_front_right:ボムゾウ HP6 Lv1 A<br>player_front_left:empty<br>player_front_right:ナッツロックル HP6 Lv1 A/F<br>player_back_left:ボムゾウ HP6 Lv1 A/F<br>player_back_right:empty",
+          "stateBefore": "turn 2 cpu HP9/S3 player HP10/S1 current cpu"
+        },
+        {
+          "variantId": "current_white_baseline",
+          "opponentId": "black_1375_pressure",
+          "candidateSeat": "cpu",
+          "seed": 932002,
+          "step": 82,
+          "turnNumber": 9,
+          "shieldScore": 67.8,
+          "shieldReason": "倒されそうな高価値味方を守るためシールド",
+          "targetSlotKey": "cpu_front_left",
+          "targetCardName": "ピグミィ",
+          "targetHp": 1,
+          "targetLevel": 2,
+          "targetFocused": false,
+          "targetShieldedBefore": false,
+          "ownStonesBefore": 20,
+          "ownHpBefore": 2,
+          "enemyHpBefore": 6,
+          "matrixClass": "ignored_both",
+          "withShieldOwnBranchTruncated": false,
+          "noShieldOwnBranchTruncated": false,
+          "withShieldOwnActions": [
+            "end_turn"
+          ],
+          "noShieldOwnActions": [
+            "end_turn"
+          ],
+          "withShieldResponse": {
+            "targetPresentAtHandoff": true,
+            "targetPresentAfterResponse": true,
+            "targetRemovedDuringResponse": false,
+            "targetDamagedDuringResponse": false,
+            "targetContacted": false,
+            "masterDamageTaken": 2,
+            "actions": [
+              "attack:player_front_left:ダイン斬り->master:cpu"
+            ],
+            "contactActions": [],
+            "truncated": false,
+            "finalState": "turn 10 cpu HP0/S20 player HP6/S4 current player",
+            "finalBoard": "cpu_back_left:empty<br>cpu_back_right:empty<br>cpu_front_left:ピグミィ HP1 Lv2 A/S<br>cpu_front_right:デスシープ HP4 Lv1 A/F<br>player_front_left:真勇者ダイン HP6 Lv3 A<br>player_front_right:empty<br>player_back_left:empty<br>player_back_right:empty"
+          },
+          "noShieldResponse": {
+            "targetPresentAtHandoff": true,
+            "targetPresentAfterResponse": true,
+            "targetRemovedDuringResponse": false,
+            "targetDamagedDuringResponse": false,
+            "targetContacted": false,
+            "masterDamageTaken": 2,
+            "actions": [
+              "attack:player_front_left:ダイン斬り->master:cpu"
+            ],
+            "contactActions": [],
+            "truncated": false,
+            "finalState": "turn 10 cpu HP0/S22 player HP6/S4 current player",
+            "finalBoard": "cpu_back_left:empty<br>cpu_back_right:empty<br>cpu_front_left:ピグミィ HP1 Lv2 A<br>cpu_front_right:デスシープ HP4 Lv1 A/F<br>player_front_left:真勇者ダイン HP6 Lv3 A<br>player_front_right:empty<br>player_back_left:empty<br>player_back_right:empty"
+          },
+          "boardBefore": "cpu_back_left:empty<br>cpu_back_right:empty<br>cpu_front_left:ピグミィ HP1 Lv2 A<br>cpu_front_right:デスシープ HP4 Lv1 A<br>player_front_left:真勇者ダイン HP6 Lv3 A<br>player_front_right:empty<br>player_back_left:empty<br>player_back_right:empty",
+          "stateBefore": "turn 9 cpu HP2/S20 player HP6/S1 current cpu"
+        },
+        {
+          "variantId": "current_white_baseline",
+          "opponentId": "black_1375_pressure",
+          "candidateSeat": "cpu",
+          "seed": 932003,
+          "step": 27,
+          "turnNumber": 3,
+          "shieldScore": 67.3,
+          "shieldReason": "高価値の味方を守るためシールド / 見送り: マスター特技は23点差で見送り",
+          "targetSlotKey": "cpu_front_left",
+          "targetCardName": "真勇者ダイン",
+          "targetHp": 6,
+          "targetLevel": 3,
+          "targetFocused": false,
+          "targetShieldedBefore": false,
+          "ownStonesBefore": 2,
+          "ownHpBefore": 9,
+          "enemyHpBefore": 10,
+          "matrixClass": "ignored_both",
+          "withShieldOwnBranchTruncated": false,
+          "noShieldOwnBranchTruncated": false,
+          "withShieldOwnActions": [
+            "end_turn"
+          ],
+          "noShieldOwnActions": [
+            "master:shield->monster:cpu_front_right",
+            "end_turn"
+          ],
+          "withShieldResponse": {
+            "targetPresentAtHandoff": true,
+            "targetPresentAfterResponse": true,
+            "targetRemovedDuringResponse": false,
+            "targetDamagedDuringResponse": false,
+            "targetContacted": false,
+            "masterDamageTaken": 1,
+            "actions": [
+              "move:player_front_left->player_back_right",
+              "summon:ヤミー->player_front_left",
+              "master:berserk_power->monster:player_front_right",
+              "attack:player_front_right:self_bomb->master:cpu",
+              "focus:player_back_right",
+              "end_turn"
+            ],
+            "contactActions": [],
+            "truncated": false,
+            "finalState": "turn 4 cpu HP8/S4 player HP10/S0 current cpu",
+            "finalBoard": "cpu_back_left:ピグミィ HP3 Lv1 A<br>cpu_back_right:empty<br>cpu_front_left:真勇者ダイン HP6 Lv3 A<br>cpu_front_right:デスシープ HP6 Lv1 A<br>player_front_left:ヤミー HP5 Lv1 P<br>player_front_right:ボムゾウ HP1 Lv1 A<br>player_back_left:empty<br>player_back_right:ピグミィ HP3 Lv1 A/F"
+          },
+          "noShieldResponse": {
+            "targetPresentAtHandoff": true,
+            "targetPresentAfterResponse": true,
+            "targetRemovedDuringResponse": false,
+            "targetDamagedDuringResponse": false,
+            "targetContacted": false,
+            "masterDamageTaken": 1,
+            "actions": [
+              "move:player_front_left->player_back_right",
+              "master:berserk_power->monster:player_front_right",
+              "summon:ヤミー->player_front_left",
+              "attack:player_front_right:self_bomb->master:cpu",
+              "focus:player_back_right",
+              "end_turn"
+            ],
+            "contactActions": [],
+            "truncated": false,
+            "finalState": "turn 4 cpu HP8/S4 player HP10/S0 current cpu",
+            "finalBoard": "cpu_back_left:ピグミィ HP3 Lv1 A<br>cpu_back_right:empty<br>cpu_front_left:真勇者ダイン HP6 Lv3 A<br>cpu_front_right:デスシープ HP6 Lv1 A<br>player_front_left:ヤミー HP5 Lv1 P<br>player_front_right:ボムゾウ HP1 Lv1 A<br>player_back_left:empty<br>player_back_right:ピグミィ HP3 Lv1 A/F"
+          },
+          "boardBefore": "cpu_back_left:ピグミィ HP3 Lv1 P<br>cpu_back_right:empty<br>cpu_front_left:真勇者ダイン HP6 Lv3 A<br>cpu_front_right:デスシープ HP6 Lv1 A<br>player_front_left:empty<br>player_front_right:ボムゾウ HP4 Lv1 A<br>player_back_left:ピグミィ HP3 Lv1 P<br>player_back_right:empty",
+          "stateBefore": "turn 3 cpu HP9/S2 player HP10/S1 current cpu"
+        },
+        {
+          "variantId": "current_white_baseline",
+          "opponentId": "black_1375_pressure",
+          "candidateSeat": "cpu",
+          "seed": 932003,
+          "step": 40,
+          "turnNumber": 4,
+          "shieldScore": 67.3,
+          "shieldReason": "高価値の味方を守るためシールド / 見送り: マスター特技は14点差で見送り、マスター特技は49点差で見送り",
+          "targetSlotKey": "cpu_front_left",
+          "targetCardName": "真勇者ダイン",
+          "targetHp": 6,
+          "targetLevel": 3,
+          "targetFocused": false,
+          "targetShieldedBefore": false,
+          "ownStonesBefore": 2,
+          "ownHpBefore": 8,
+          "enemyHpBefore": 8,
+          "matrixClass": "ignored_both",
+          "withShieldOwnBranchTruncated": false,
+          "noShieldOwnBranchTruncated": false,
+          "withShieldOwnActions": [
+            "end_turn"
+          ],
+          "noShieldOwnActions": [
+            "master:shield->monster:cpu_front_right",
+            "end_turn"
+          ],
+          "withShieldResponse": {
+            "targetPresentAtHandoff": true,
+            "targetPresentAfterResponse": true,
+            "targetRemovedDuringResponse": false,
+            "targetDamagedDuringResponse": false,
+            "targetContacted": false,
+            "masterDamageTaken": 1,
+            "actions": [
+              "master:berserk_power->monster:player_front_left",
+              "summon:ヤンバル->player_back_right",
+              "move:player_front_right->player_back_left",
+              "attack:player_front_left:attack->master:cpu",
+              "attack:player_back_left:スパイクボール->monster:cpu_front_right",
+              "end_turn"
+            ],
+            "contactActions": [],
+            "truncated": false,
+            "finalState": "turn 5 cpu HP7/S4 player HP8/S2 current cpu",
+            "finalBoard": "cpu_back_left:ピグミィ HP3 Lv2 A/F<br>cpu_back_right:ヤンバル HP3 Lv1 A<br>cpu_front_left:真勇者ダイン HP6 Lv3 A<br>cpu_front_right:デスシープ HP6 Lv1 A<br>player_front_left:ヤミー HP4 Lv1 A<br>player_front_right:empty<br>player_back_left:ピグミィ HP3 Lv1 A<br>player_back_right:ヤンバル HP3 Lv1 P"
+          },
+          "noShieldResponse": {
+            "targetPresentAtHandoff": true,
+            "targetPresentAfterResponse": true,
+            "targetRemovedDuringResponse": false,
+            "targetDamagedDuringResponse": false,
+            "targetContacted": false,
+            "masterDamageTaken": 1,
+            "actions": [
+              "summon:ヤンバル->player_back_right",
+              "master:berserk_power->monster:player_front_left",
+              "move:player_front_right->player_back_left",
+              "attack:player_front_left:attack->master:cpu",
+              "focus:player_back_left",
+              "end_turn"
+            ],
+            "contactActions": [],
+            "truncated": false,
+            "finalState": "turn 5 cpu HP7/S4 player HP8/S2 current cpu",
+            "finalBoard": "cpu_back_left:ピグミィ HP3 Lv2 A/F<br>cpu_back_right:ヤンバル HP3 Lv1 A<br>cpu_front_left:真勇者ダイン HP6 Lv3 A<br>cpu_front_right:デスシープ HP6 Lv1 A/F<br>player_front_left:ヤミー HP4 Lv1 A<br>player_front_right:empty<br>player_back_left:ピグミィ HP3 Lv1 A/F<br>player_back_right:ヤンバル HP3 Lv1 P"
+          },
+          "boardBefore": "cpu_back_left:ピグミィ HP3 Lv2 A/F<br>cpu_back_right:ヤンバル HP3 Lv1 P<br>cpu_front_left:真勇者ダイン HP6 Lv3 A<br>cpu_front_right:デスシープ HP6 Lv1 A/F<br>player_front_left:ヤミー HP5 Lv1 P<br>player_front_right:empty<br>player_back_left:empty<br>player_back_right:ピグミィ HP3 Lv1 A/F",
+          "stateBefore": "turn 4 cpu HP8/S2 player HP8/S3 current cpu"
+        },
+        {
+          "variantId": "current_white_baseline",
+          "opponentId": "black_1375_pressure",
+          "candidateSeat": "cpu",
+          "seed": 932002,
+          "step": 74,
+          "turnNumber": 8,
+          "shieldScore": 72.1,
+          "shieldReason": "倒されそうな高価値味方を守るためシールド",
+          "targetSlotKey": "cpu_front_left",
+          "targetCardName": "デスシープ",
+          "targetHp": 1,
+          "targetLevel": 2,
+          "targetFocused": false,
+          "targetShieldedBefore": false,
+          "ownStonesBefore": 16,
+          "ownHpBefore": 3,
+          "enemyHpBefore": 6,
+          "matrixClass": "absorbed",
+          "withShieldOwnBranchTruncated": false,
+          "noShieldOwnBranchTruncated": false,
+          "withShieldOwnActions": [
+            "end_turn"
+          ],
+          "noShieldOwnActions": [
+            "end_turn"
+          ],
+          "withShieldResponse": {
+            "targetPresentAtHandoff": true,
+            "targetPresentAfterResponse": false,
+            "targetRemovedDuringResponse": true,
+            "targetDamagedDuringResponse": false,
+            "targetContacted": true,
+            "masterDamageTaken": 1,
+            "actions": [
+              "attack:player_front_left:ダイン斬り->monster:cpu_front_left",
+              "master:berserk_power->monster:player_back_left",
+              "attack:player_back_left:wild_claw->master:cpu",
+              "end_turn"
+            ],
+            "contactActions": [
+              "attack:player_front_left:ダイン斬り->monster:cpu_front_left"
+            ],
+            "truncated": false,
+            "finalState": "turn 9 cpu HP2/S20 player HP6/S0 current cpu",
+            "finalBoard": "cpu_back_left:empty<br>cpu_back_right:empty<br>cpu_front_left:ピグミィ HP1 Lv2 A/F<br>cpu_front_right:デスシープ HP4 Lv1 A<br>player_front_left:真勇者ダイン HP6 Lv3 A<br>player_front_right:empty<br>player_back_left:ヤンバル HP2 Lv1 A<br>player_back_right:empty"
+          },
+          "noShieldResponse": {
+            "targetPresentAtHandoff": true,
+            "targetPresentAfterResponse": false,
+            "targetRemovedDuringResponse": true,
+            "targetDamagedDuringResponse": false,
+            "targetContacted": true,
+            "masterDamageTaken": 1,
+            "actions": [
+              "attack:player_front_left:ダイン斬り->monster:cpu_front_left",
+              "master:berserk_power->monster:player_back_left",
+              "attack:player_back_left:wild_claw->master:cpu",
+              "end_turn"
+            ],
+            "contactActions": [
+              "attack:player_front_left:ダイン斬り->monster:cpu_front_left"
+            ],
+            "truncated": false,
+            "finalState": "turn 9 cpu HP2/S22 player HP6/S0 current cpu",
+            "finalBoard": "cpu_back_left:empty<br>cpu_back_right:empty<br>cpu_front_left:ピグミィ HP1 Lv2 A/F<br>cpu_front_right:デスシープ HP4 Lv1 A<br>player_front_left:真勇者ダイン HP6 Lv3 A<br>player_front_right:empty<br>player_back_left:ヤンバル HP2 Lv1 A<br>player_back_right:empty"
+          },
+          "boardBefore": "cpu_back_left:ピグミィ HP1 Lv2 A/F<br>cpu_back_right:empty<br>cpu_front_left:デスシープ HP1 Lv2 A<br>cpu_front_right:デスシープ HP4 Lv1 A<br>player_front_left:真勇者ダイン HP6 Lv1 P<br>player_front_right:empty<br>player_back_left:ヤンバル HP3 Lv1 A<br>player_back_right:empty",
+          "stateBefore": "turn 8 cpu HP3/S16 player HP6/S2 current cpu"
+        },
+        {
+          "variantId": "current_white_baseline",
+          "opponentId": "black_1375_pressure",
+          "candidateSeat": "cpu",
+          "seed": 932003,
+          "step": 70,
+          "turnNumber": 7,
+          "shieldScore": 28.8,
+          "shieldReason": "高価値の味方を守るためシールド",
+          "targetSlotKey": "cpu_back_right",
+          "targetCardName": "ヤンバル",
+          "targetHp": 3,
+          "targetLevel": 2,
+          "targetFocused": false,
+          "targetShieldedBefore": false,
+          "ownStonesBefore": 9,
+          "ownHpBefore": 7,
+          "enemyHpBefore": 8,
+          "matrixClass": "deterrent",
+          "withShieldOwnBranchTruncated": false,
+          "noShieldOwnBranchTruncated": false,
+          "withShieldOwnActions": [
+            "end_turn"
+          ],
+          "noShieldOwnActions": [
+            "end_turn"
+          ],
+          "withShieldResponse": {
+            "targetPresentAtHandoff": true,
+            "targetPresentAfterResponse": true,
+            "targetRemovedDuringResponse": false,
+            "targetDamagedDuringResponse": false,
+            "targetContacted": false,
+            "masterDamageTaken": 0,
+            "actions": [
+              "summon:ユニフォーン->player_front_right",
+              "move:player_front_left->player_back_right",
+              "attack:player_back_right:スパイクボール->monster:cpu_front_right",
+              "master:master_attack->monster:cpu_front_right",
+              "end_turn"
+            ],
+            "contactActions": [],
+            "truncated": false,
+            "finalState": "turn 8 cpu HP7/S10 player HP8/S0 current cpu",
+            "finalBoard": "cpu_back_left:ヤンバル HP3 Lv1 A<br>cpu_back_right:ヤンバル HP3 Lv2 A<br>cpu_front_left:ピグミィ HP3 Lv2 A/F<br>cpu_front_right:デスシープ HP3 Lv1 A<br>player_front_left:empty<br>player_front_right:ユニフォーン HP5 Lv1 P<br>player_back_left:empty<br>player_back_right:ピグミィ HP3 Lv1 A"
+          },
+          "noShieldResponse": {
+            "targetPresentAtHandoff": true,
+            "targetPresentAfterResponse": false,
+            "targetRemovedDuringResponse": true,
+            "targetDamagedDuringResponse": true,
+            "targetContacted": true,
+            "masterDamageTaken": 0,
+            "actions": [
+              "summon:ユニフォーン->player_front_right",
+              "attack:player_front_left:スパイクボール->monster:cpu_back_right",
+              "master:berserk_power->monster:player_front_left",
+              "attack:player_front_left:スパイクボール->monster:cpu_back_right",
+              "end_turn"
+            ],
+            "contactActions": [
+              "attack:player_front_left:スパイクボール->monster:cpu_back_right",
+              "attack:player_front_left:スパイクボール->monster:cpu_back_right"
+            ],
+            "truncated": false,
+            "finalState": "turn 8 cpu HP7/S14 player HP8/S0 current cpu",
+            "finalBoard": "cpu_back_left:ヤンバル HP3 Lv1 A<br>cpu_back_right:empty<br>cpu_front_left:ピグミィ HP3 Lv2 A/F<br>cpu_front_right:デスシープ HP5 Lv1 A/F<br>player_front_left:ピグミィ HP2 Lv1 A<br>player_front_right:ユニフォーン HP5 Lv1 P<br>player_back_left:empty<br>player_back_right:empty"
+          },
+          "boardBefore": "cpu_back_left:ヤンバル HP3 Lv1 P<br>cpu_back_right:ヤンバル HP3 Lv2 A<br>cpu_front_left:ピグミィ HP3 Lv2 A/F<br>cpu_front_right:デスシープ HP5 Lv1 A/F<br>player_front_left:empty<br>player_front_right:empty<br>player_back_left:ピグミィ HP3 Lv1 A/F<br>player_back_right:empty",
+          "stateBefore": "turn 7 cpu HP7/S9 player HP8/S1 current cpu"
+        },
+        {
+          "variantId": "current_white_baseline",
+          "opponentId": "black_1375_pressure",
+          "candidateSeat": "cpu",
+          "seed": 932003,
+          "step": 81,
+          "turnNumber": 8,
+          "shieldScore": 66.3,
+          "shieldReason": "次ターンのレベルアップ筋を残すためシールド / 見送り: マスター特技は16点差で見送り、マスター特技は63点差で見送り",
+          "targetSlotKey": "cpu_front_left",
+          "targetCardName": "ヤンバル",
+          "targetHp": 3,
+          "targetLevel": 1,
+          "targetFocused": false,
+          "targetShieldedBefore": false,
+          "ownStonesBefore": 10,
+          "ownHpBefore": 7,
+          "enemyHpBefore": 7,
+          "matrixClass": "deterrent",
+          "withShieldOwnBranchTruncated": false,
+          "noShieldOwnBranchTruncated": false,
+          "withShieldOwnActions": [
+            "end_turn"
+          ],
+          "noShieldOwnActions": [
+            "master:shield->monster:cpu_front_right",
+            "end_turn"
+          ],
+          "withShieldResponse": {
+            "targetPresentAtHandoff": true,
+            "targetPresentAfterResponse": true,
+            "targetRemovedDuringResponse": false,
+            "targetDamagedDuringResponse": false,
+            "targetContacted": false,
+            "masterDamageTaken": 0,
+            "actions": [
+              "attack:player_back_right:スパイクボール->monster:cpu_front_right",
+              "master:berserk_power->monster:player_front_right",
+              "attack:player_front_right:attack->monster:cpu_front_right",
+              "focus:player_back_right",
+              "end_turn"
+            ],
+            "contactActions": [],
+            "truncated": false,
+            "finalState": "turn 9 cpu HP7/S12 player HP7/S0 current cpu",
+            "finalBoard": "cpu_back_left:ピグミィ HP3 Lv2 A<br>cpu_back_right:empty<br>cpu_front_left:ヤンバル HP3 Lv1 A<br>cpu_front_right:ヤンバル HP3 Lv2 A<br>player_front_left:empty<br>player_front_right:ユニフォーン HP5 Lv2 A<br>player_back_left:empty<br>player_back_right:ピグミィ HP2 Lv1 A/F"
+          },
+          "noShieldResponse": {
+            "targetPresentAtHandoff": true,
+            "targetPresentAfterResponse": false,
+            "targetRemovedDuringResponse": true,
+            "targetDamagedDuringResponse": true,
+            "targetContacted": true,
+            "masterDamageTaken": 0,
+            "actions": [
+              "attack:player_front_right:attack->monster:cpu_front_right",
+              "attack:player_back_right:スパイクボール->monster:cpu_front_left",
+              "master:berserk_power->monster:player_back_right",
+              "attack:player_back_right:スパイクボール->monster:cpu_front_left",
+              "end_turn"
+            ],
+            "contactActions": [
+              "attack:player_back_right:スパイクボール->monster:cpu_front_left",
+              "attack:player_back_right:スパイクボール->monster:cpu_front_left"
+            ],
+            "truncated": false,
+            "finalState": "turn 9 cpu HP7/S12 player HP7/S0 current cpu",
+            "finalBoard": "cpu_back_left:empty<br>cpu_back_right:ヤンバル HP3 Lv2 A<br>cpu_front_left:ピグミィ HP3 Lv2 A<br>cpu_front_right:デスシープ HP3 Lv1 A<br>player_front_left:empty<br>player_front_right:ユニフォーン HP5 Lv1 A<br>player_back_left:empty<br>player_back_right:ピグミィ HP3 Lv2 A"
+          },
+          "boardBefore": "cpu_back_left:ピグミィ HP3 Lv2 A<br>cpu_back_right:ヤンバル HP3 Lv2 A<br>cpu_front_left:ヤンバル HP3 Lv1 A<br>cpu_front_right:デスシープ HP3 Lv1 A/F<br>player_front_left:empty<br>player_front_right:ユニフォーン HP5 Lv1 P<br>player_back_left:empty<br>player_back_right:ピグミィ HP2 Lv1 A",
+          "stateBefore": "turn 8 cpu HP7/S10 player HP7/S1 current cpu"
+        },
+        {
+          "variantId": "current_white_baseline",
+          "opponentId": "black_1375_pressure",
+          "candidateSeat": "cpu",
+          "seed": 932003,
+          "step": 94,
+          "turnNumber": 9,
+          "shieldScore": 44.2,
+          "shieldReason": "高価値の味方を守るためシールド / 見送り: マスター特技は15点差で見送り、マスター特技は20点差で見送り",
+          "targetSlotKey": "cpu_front_left",
+          "targetCardName": "ヤンバル",
+          "targetHp": 3,
+          "targetLevel": 1,
+          "targetFocused": false,
+          "targetShieldedBefore": false,
+          "ownStonesBefore": 8,
+          "ownHpBefore": 7,
+          "enemyHpBefore": 7,
+          "matrixClass": "deterrent",
+          "withShieldOwnBranchTruncated": false,
+          "noShieldOwnBranchTruncated": false,
+          "withShieldOwnActions": [
+            "master:shield->monster:cpu_front_right",
+            "end_turn"
+          ],
+          "noShieldOwnActions": [
+            "master:shield->monster:cpu_back_left",
+            "master:shield->monster:cpu_front_right",
+            "end_turn"
+          ],
+          "withShieldResponse": {
+            "targetPresentAtHandoff": true,
+            "targetPresentAfterResponse": true,
+            "targetRemovedDuringResponse": false,
+            "targetDamagedDuringResponse": false,
+            "targetContacted": false,
+            "masterDamageTaken": 0,
+            "actions": [
+              "summon:ポリスピナー->player_front_left",
+              "summon:ユニフォーン->player_front_right",
+              "end_turn"
+            ],
+            "contactActions": [],
+            "truncated": false,
+            "finalState": "turn 10 cpu HP7/S7 player HP7/S4 current cpu",
+            "finalBoard": "cpu_back_left:ピグミィ HP3 Lv2 A/F<br>cpu_back_right:ピグミィ HP3 Lv1 A<br>cpu_front_left:ヤンバル HP3 Lv1 A<br>cpu_front_right:ヤンバル HP3 Lv2 A<br>player_front_left:ポリスピナー HP3 Lv1 P<br>player_front_right:ユニフォーン HP5 Lv1 P<br>player_back_left:empty<br>player_back_right:empty"
+          },
+          "noShieldResponse": {
+            "targetPresentAtHandoff": true,
+            "targetPresentAfterResponse": false,
+            "targetRemovedDuringResponse": true,
+            "targetDamagedDuringResponse": false,
+            "targetContacted": true,
+            "masterDamageTaken": 0,
+            "actions": [
+              "master:earth_anger->master:player",
+              "end_turn"
+            ],
+            "contactActions": [
+              "master:earth_anger->master:player"
+            ],
+            "truncated": false,
+            "finalState": "turn 10 cpu HP7/S8 player HP7/S0 current cpu",
+            "finalBoard": "cpu_back_left:empty<br>cpu_back_right:ピグミィ HP3 Lv1 A<br>cpu_front_left:ピグミィ HP2 Lv2 A<br>cpu_front_right:ヤンバル HP1 Lv2 A<br>player_front_left:empty<br>player_front_right:empty<br>player_back_left:empty<br>player_back_right:empty"
+          },
+          "boardBefore": "cpu_back_left:ピグミィ HP3 Lv2 A/F<br>cpu_back_right:ピグミィ HP3 Lv1 P<br>cpu_front_left:ヤンバル HP3 Lv1 A<br>cpu_front_right:ヤンバル HP3 Lv2 A<br>player_front_left:empty<br>player_front_right:empty<br>player_back_left:empty<br>player_back_right:empty",
+          "stateBefore": "turn 9 cpu HP7/S8 player HP7/S3 current cpu"
+        }
+      ]
+    }
+  ],
+  "totals": {
+    "games": 8,
+    "shieldEvents": 35,
+    "ignoredBoth": 9,
+    "deterrent": 15,
+    "anomaly": 2,
+    "absorbed": 9,
+    "withShieldContacts": 11,
+    "noShieldContacts": 24,
+    "withShieldTargetRemoved": 2,
+    "noShieldTargetRemoved": 16,
+    "shieldSavedTarget": 14,
+    "withShieldMasterDamageMore": 3,
+    "withShieldMasterDamageLess": 1,
+    "noShieldTargetMissingAtHandoff": 0,
+    "withShieldTargetMissingAtHandoff": 0,
+    "ownBranchTruncated": 0,
+    "responseTruncated": 0
+  },
+  "conclusion": [
+    "盾応答の内訳は ignored_both 25.7% / deterrent 42.9% / absorbed 25.7%。",
+    "まずは `ignored_both` を優先監査する。相手がそもそも殴らない対象への盾なので、候補化前の threat/target-quality gate に戻す価値が高い。",
+    "最も ignored_both が濃い組み合わせは current_white_baseline vs black_1375_pressure (cpu) の 50%。"
+  ]
+}
