@@ -256,8 +256,8 @@ const CPU_AI_PROFILE_CONFIG: Record<CpuAiProfile, CpuAiProfileConfig> = {
     sameTurnTerminalPlanWidth: 2,
     sameTurnTerminalPlanWeight: 2,
     sameTurnOpponentTerminalPlanDepth: 2,
-    sameTurnOpponentTerminalPlanWidth: 1,
-    sameTurnOpponentTerminalPlanWeight: 0.35,
+    sameTurnOpponentTerminalPlanWidth: 2,
+    sameTurnOpponentTerminalPlanWeight: 0.5,
     beamScoreThreshold: 8,
     weights: AI_EVALUATION_WEIGHTS.white,
     tuning: WHITE_AI_BASE_TUNING,
@@ -4220,7 +4220,52 @@ function whiteFrontChipResponseDecisionPenalty(
   if (!targetAfter) {
     return 0;
   }
+  if (
+    decision.type === "attack" &&
+    isWhiteMirrorSafeBacklineFocusStripFrontChip(before, after, decision.action, targetSlotKey, targetAfter)
+  ) {
+    return 0;
+  }
   return whiteMirrorNonConvertingFrontThreatChipPenalty(before, after, targetSlotKey, targetAfter, value);
+}
+
+function isWhiteMirrorSafeBacklineFocusStripFrontChip(
+  state: GameState,
+  after: GameState,
+  action: CommandAction,
+  targetSlotKey: SlotKey,
+  targetAfter: MonsterState,
+): boolean {
+  const perspective = state.currentPlayer;
+  const targetBefore = state.slots[targetSlotKey].monster;
+  const attackerBefore = state.slots[action.attackerSlotKey].monster;
+  const attackerAfter = after.slots[action.attackerSlotKey].monster;
+  if (
+    !isWhiteMirrorState(state, perspective) ||
+    state.slots[action.attackerSlotKey].row !== "back" ||
+    state.slots[targetSlotKey].row !== "front" ||
+    !targetBefore ||
+    !attackerBefore ||
+    !attackerAfter ||
+    targetBefore.owner !== opponentOf(perspective) ||
+    targetAfter.owner !== targetBefore.owner ||
+    targetAfter.instanceId !== targetBefore.instanceId ||
+    attackerBefore.owner !== perspective ||
+    attackerAfter.owner !== perspective ||
+    attackerAfter.instanceId !== attackerBefore.instanceId ||
+    targetAfter.hp >= targetBefore.hp ||
+    !targetBefore.focused ||
+    targetAfter.focused
+  ) {
+    return false;
+  }
+
+  if (whiteMirrorUnsafeMasterResponseScore(after, targetSlotKey, perspective) > 0) {
+    return false;
+  }
+
+  // Backline chip is acceptable when it only strips focus and does not leave a kill response.
+  return enemyFrontChipResponseBoardThreatScore(after, targetSlotKey, perspective) < 620;
 }
 
 function whiteFrontThreatFocusCounterDecisionBonus(
@@ -4712,7 +4757,7 @@ function levelUpHpTimingBonus(state: GameState, after: GameState, attackerSlotKe
     return Math.min(130, 30 + missingHp * 28 + Math.max(0, current.hp - before.hp) * 4);
   }
 
-  return -26 * (current.level - before.level);
+  return 0;
 }
 
 function whiteMirrorExposedLevelUpPenalty(

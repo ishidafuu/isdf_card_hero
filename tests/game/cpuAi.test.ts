@@ -41,6 +41,27 @@ describe("cpu ai", () => {
     }
   });
 
+  it("does not discount full-hp white level-up kills", () => {
+    const scoreLevelUpKill = (masterId: "white" | "black") => {
+      const game = createCpuGame();
+      game.players.cpu.masterId = masterId;
+      game.players.player.masterId = "black";
+      game.players.cpu.hand = [];
+      game.slots.cpu_front_left.monster = createActiveMonster("takokke", "cpu");
+      game.slots.player_front_left.monster = createActiveMonster("takokke", "player", { hp: 2 });
+
+      return listCpuDecisions(game).find(
+        (decision) =>
+          decision.type === "attack" &&
+          decision.action.attackerSlotKey === "cpu_front_left" &&
+          decision.action.target.kind === "monster" &&
+          decision.action.target.slotKey === "player_front_left",
+      )?.score;
+    };
+
+    expect(scoreLevelUpKill("white")).toBeCloseTo(scoreLevelUpKill("black") ?? 0);
+  });
+
   it("prioritizes direct master damage over non-lethal monster damage when behind in the HP race", () => {
     const game = createCpuGame();
     game.players.cpu.hand = [];
@@ -534,6 +555,41 @@ describe("cpu ai", () => {
     expect(disabled).toBeDefined();
     expect(defaultWhite).toBeDefined();
     expect(defaultWhite?.totalScore).toBeLessThan((disabled?.totalScore ?? 0) - 80);
+  });
+
+  it("does not penalize safe white mirror backline chips that strip front focus", () => {
+    const game = createCpuGame();
+    game.players.cpu.masterId = "white";
+    game.players.player.masterId = "white";
+    game.players.cpu.hand = [];
+    game.players.cpu.stones = 0;
+    game.slots.cpu_back_left.monster = createActiveMonster("card_051", "cpu");
+    game.slots.cpu_front_left.monster = createActiveMonster("takokke", "cpu");
+    game.slots.player_front_left.monster = createActiveMonster("takokke", "player", {
+      hp: 5,
+      focused: true,
+    });
+
+    const findBacklineAttack = (options = {}) =>
+      inspectCpuDecisionEvaluations(game, {
+        profile: "white",
+        search: { sameTurnSearchDepth: 0 },
+        ...options,
+      }).find(
+        (evaluation) =>
+          evaluation.decision.type === "attack" &&
+          evaluation.decision.action.attackerSlotKey === "cpu_back_left" &&
+          evaluation.decision.action.target.kind === "monster" &&
+          evaluation.decision.action.target.slotKey === "player_front_left",
+      );
+    const disabled = findBacklineAttack({
+      tunings: { cpu: { situationalBias: { whiteFrontChipResponsePenalty: 0 } } },
+    });
+    const defaultWhite = findBacklineAttack();
+
+    expect(disabled).toBeDefined();
+    expect(defaultWhite).toBeDefined();
+    expect(defaultWhite?.totalScore).toBeCloseTo(disabled?.totalScore ?? 0);
   });
 
   it("does not penalize white mirror front chips that can be finished by master attack", () => {

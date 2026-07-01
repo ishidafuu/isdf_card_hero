@@ -1,0 +1,1872 @@
+{
+  "generatedAt": "2026-07-01T08:50:49.359Z",
+  "deckA": "master-lab-white-1377-death-sheep3",
+  "deckB": "master-lab-white-1377-death-sheep3",
+  "seedStart": 962000,
+  "maxSeeds": 4,
+  "search": {
+    "sameTurnSearchDepth": 4,
+    "sameTurnSearchWidth": 4,
+    "detailedWidth": 4,
+    "sameTurnTerminalPlanDepth": 6,
+    "sameTurnTerminalPlanWidth": 2,
+    "sameTurnTerminalPlanWeight": 2,
+    "sameTurnOpponentTerminalPlanDepth": 2,
+    "sameTurnOpponentTerminalPlanWidth": 2,
+    "sameTurnOpponentTerminalPlanWeight": 0.5
+  },
+  "beamWidth": 2,
+  "maxActions": 6,
+  "responseRankLimit": 8,
+  "scenarios": [
+    {
+      "seed": 962000,
+      "step": 37,
+      "turnNumber": 5,
+      "player": "player",
+      "state": "turn 5 / current player / HP player/cpu 10/10 / stones player/cpu 3/4 / hand player/cpu 6/5",
+      "board": "cpu_back_left:CB:ボムゾウ Lv1 HP6 act0/1 focus | cpu_back_right:CB:ヤンバル Lv1 HP3 act0/1 focus | cpu_front_left:CF:デスシープ Lv1 HP6 act1/1 focus | cpu_front_right:CF:デスシープ Lv1 HP1 act0/1 focus | player_front_left:PF:ドノマンティス Lv1 HP5 act0/1 | player_front_right:PF:ピグミィ Lv1 HP3 act0/2 | player_back_left:PB:ヤンバル Lv1 HP3 act0/1",
+      "initialScore": -193,
+      "selectedPlan": {
+        "sequenceKey": "attack:player_back_left:wild_claw->monster:cpu_front_right > focus:player_front_left > attack:player_front_right:スパイクボール->monster:cpu_front_left > move:player_front_right->player_back_right > summon:player_card_047_2->player_front_right > end_turn",
+        "actions": [
+          {
+            "key": "attack:player_back_left:wild_claw->monster:cpu_front_right",
+            "label": "ヤンバル wild_claw -> デスシープ",
+            "score": 586.1,
+            "reason": "敵モンスターを撃破できるため攻撃 / 見送り: ためるは16点差で見送り、ためるは172点差で見送り"
+          },
+          {
+            "key": "focus:player_front_left",
+            "label": "focus ドノマンティス",
+            "score": 349.6,
+            "reason": "有効攻撃がないためためる / 見送り: 攻撃は58点差で見送り、召喚は172点差で見送り"
+          },
+          {
+            "key": "attack:player_front_right:スパイクボール->monster:cpu_front_left",
+            "label": "ピグミィ スパイクボール -> デスシープ",
+            "score": 206.3,
+            "reason": "デスシープを削れるため攻撃 / 見送り: 召喚は123点差で見送り、移動は144点差で見送り"
+          },
+          {
+            "key": "move:player_front_right->player_back_right",
+            "label": "move ピグミィ player_front_right->player_back_right",
+            "score": 172.7,
+            "reason": "後衛カードを後列へ戻して射程を活かすため移動 / 見送り: 召喚は131点差で見送り、ためるは136点差で見送り"
+          },
+          {
+            "key": "summon:player_card_047_2->player_front_right",
+            "label": "summon 真勇者ダイン -> player_front_right",
+            "score": 150.8,
+            "reason": "前衛カードを前列右へ召喚 / 見送り: マスター特技は345点差で見送り"
+          },
+          {
+            "key": "end_turn",
+            "label": "end turn",
+            "score": -45.5,
+            "reason": "有効な行動がないためターン終了"
+          }
+        ],
+        "guideScoreTotal": 1420,
+        "terminalScore": 79.8,
+        "terminalScoreDelta": 272.8,
+        "finalState": "turn 5 / current cpu / HP player/cpu 10/10 / stones player/cpu 1/8 / hand player/cpu 5/6",
+        "finalBoard": "cpu_back_left:CB:ボムゾウ Lv1 HP6 act0/1 focus | cpu_front_left:CF:デスシープ Lv1 HP6 act0/1 | cpu_front_right:CF:ヤンバル Lv1 HP3 act0/1 focus | player_front_left:PF:ドノマンティス Lv1 HP5 act1/1 focus | player_front_right:PF:真勇者ダイン Lv1 HP6 prep | player_back_left:PB:ヤンバル Lv2 HP3 act1/1 | player_back_right:PB:ピグミィ Lv1 HP3 act2/2",
+        "finalMetrics": {
+          "ownHp": 10,
+          "enemyHp": 10,
+          "ownStones": 1,
+          "enemyStones": 8,
+          "ownBoardValue": 670,
+          "enemyBoardValue": 450,
+          "ownReadyActions": 0,
+          "enemyReadyActions": 3,
+          "ownShielded": 0,
+          "enemyShielded": 0,
+          "ownLevel2Plus": 1,
+          "enemyLevel2Plus": 0
+        },
+        "truncated": false,
+        "responseAdjustedScore": 162,
+        "responseAdjustedScoreDelta": 82.2,
+        "opponentResponse": {
+          "actions": [
+            {
+              "key": "focus:cpu_front_left",
+              "label": "focus デスシープ",
+              "score": 234.7,
+              "reason": "有効攻撃がないためためる / 見送り: 召喚は80点差で見送り、移動は101点差で見送り"
+            },
+            {
+              "key": "summon:cpu_polyspinner_1->cpu_back_right",
+              "label": "summon ポリスピナー -> cpu_back_right",
+              "score": 80,
+              "reason": "カードを後列右へ召喚 / 見送り: 召喚は1点差で見送り、召喚は14点差で見送り"
+            },
+            {
+              "key": "attack:cpu_front_right:wild_claw->monster:player_back_right",
+              "label": "ヤンバル wild_claw -> ピグミィ",
+              "score": 44.4,
+              "reason": "ピグミィを削れるため攻撃 / 見送り: 攻撃は89点差で見送り、移動は200点差で見送り"
+            },
+            {
+              "key": "attack:cpu_back_left:storm_bomb->monster:player_front_left",
+              "label": "ボムゾウ storm_bomb -> ドノマンティス",
+              "score": -180.1,
+              "reason": "ドノマンティスを削れるため攻撃"
+            },
+            {
+              "key": "master:master_attack->monster:player_front_left",
+              "label": "master master_attack -> ドノマンティス@player_front_left",
+              "score": -299.4,
+              "reason": "ストーンに余裕があり敵を削れるためマスターアタック"
+            },
+            {
+              "key": "master:shield->monster:cpu_front_right",
+              "label": "master shield -> ヤンバル@cpu_front_right",
+              "score": -63.4,
+              "reason": "致死圏の味方を守れるためシールド / 見送り: マスター特技は109点差で見送り、マスター特技は189点差で見送り"
+            },
+            {
+              "key": "end_turn",
+              "label": "end turn",
+              "score": -393.4,
+              "reason": "有効な行動がないためターン終了"
+            }
+          ],
+          "terminalScore": 162,
+          "terminalScoreDelta": 82.2,
+          "finalState": "turn 6 / current player / HP player/cpu 10/10 / stones player/cpu 4/2 / hand player/cpu 6/5",
+          "finalBoard": "cpu_back_left:CB:ボムゾウ Lv1 HP6 act1/1 | cpu_back_right:CB:ポリスピナー Lv1 HP3 prep | cpu_front_left:CF:デスシープ Lv1 HP6 act1/1 focus | cpu_front_right:CF:ヤンバル Lv1 HP3 act1/1 shield | player_front_left:PF:ドノマンティス Lv1 HP3 act0/1 | player_front_right:PF:真勇者ダイン Lv1 HP6 act0/1 | player_back_left:PB:ヤンバル Lv2 HP3 act0/1 | player_back_right:PB:ピグミィ Lv1 HP1 act0/2",
+          "finalMetrics": {
+            "ownHp": 10,
+            "enemyHp": 10,
+            "ownStones": 4,
+            "enemyStones": 2,
+            "ownBoardValue": 630,
+            "enemyBoardValue": 600,
+            "ownReadyActions": 4,
+            "enemyReadyActions": 0,
+            "ownShielded": 0,
+            "enemyShielded": 1,
+            "ownLevel2Plus": 1,
+            "enemyLevel2Plus": 0
+          },
+          "truncated": true
+        }
+      },
+      "selectedTerminalRank": 12,
+      "selectedResponseRank": 1,
+      "terminalGapToBest": 35.2,
+      "responseGapToBest": 0,
+      "topTerminalPlans": [
+        {
+          "sequenceKey": "focus:player_back_left > move:player_front_right->player_back_right > summon:player_card_047_2->player_front_right > master:wake_up->monster:player_front_right > attack:player_front_right:ダイン斬り->monster:cpu_front_right > end_turn",
+          "actions": [
+            {
+              "key": "focus:player_back_left",
+              "label": "focus ヤンバル",
+              "score": 570.2,
+              "reason": "有効攻撃がないためためる"
+            },
+            {
+              "key": "move:player_front_right->player_back_right",
+              "label": "move ピグミィ player_front_right->player_back_right",
+              "score": 482.1,
+              "reason": "後衛カードを後列へ戻して射程を活かすため移動"
+            },
+            {
+              "key": "summon:player_card_047_2->player_front_right",
+              "label": "summon 真勇者ダイン -> player_front_right",
+              "score": 555.7,
+              "reason": "前衛カードを前列右へ召喚"
+            },
+            {
+              "key": "master:wake_up->monster:player_front_right",
+              "label": "master wake_up -> 真勇者ダイン@player_front_right",
+              "score": 670.7,
+              "reason": "準備中の味方を起こして敵を撃破できるためウェイクアップ"
+            },
+            {
+              "key": "attack:player_front_right:ダイン斬り->monster:cpu_front_right",
+              "label": "真勇者ダイン ダイン斬り -> デスシープ",
+              "score": 709.8,
+              "reason": "敵モンスターを撃破できるため攻撃"
+            },
+            {
+              "key": "end_turn",
+              "label": "end turn",
+              "score": 59.9,
+              "reason": "有効な行動がないためターン終了"
+            }
+          ],
+          "guideScoreTotal": 3048.5,
+          "terminalScore": 115,
+          "terminalScoreDelta": 308,
+          "finalState": "turn 5 / current cpu / HP player/cpu 10/10 / stones player/cpu 0/8 / hand player/cpu 5/6",
+          "finalBoard": "cpu_back_left:CB:ボムゾウ Lv1 HP6 act0/1 focus | cpu_front_left:CF:デスシープ Lv1 HP6 act0/1 focus | cpu_front_right:CF:ヤンバル Lv1 HP3 act0/1 focus | player_front_left:PF:ドノマンティス Lv1 HP5 act0/1 focus | player_front_right:PF:真勇者ダイン Lv1 HP6 act1/1 | player_back_left:PB:ヤンバル Lv1 HP3 act1/1 focus | player_back_right:PB:ピグミィ Lv1 HP3 act1/2 focus",
+          "finalMetrics": {
+            "ownHp": 10,
+            "enemyHp": 10,
+            "ownStones": 0,
+            "enemyStones": 8,
+            "ownBoardValue": 570,
+            "enemyBoardValue": 450,
+            "ownReadyActions": 2,
+            "enemyReadyActions": 3,
+            "ownShielded": 0,
+            "enemyShielded": 0,
+            "ownLevel2Plus": 0,
+            "enemyLevel2Plus": 0
+          },
+          "truncated": false,
+          "responseAdjustedScore": -117,
+          "responseAdjustedScoreDelta": -232,
+          "opponentResponse": {
+            "actions": [
+              {
+                "key": "summon:cpu_card_051_3->cpu_back_right",
+                "label": "summon ピグミィ -> cpu_back_right",
+                "score": 242.4,
+                "reason": "後衛カードを後列右へ召喚 / 見送り: 召喚は14点差で見送り、移動は79点差で見送り"
+              },
+              {
+                "key": "attack:cpu_front_left:attack->monster:player_front_left",
+                "label": "デスシープ attack -> ドノマンティス",
+                "score": 313.5,
+                "reason": "ドノマンティスを削れるため攻撃 / 見送り: 攻撃は9点差で見送り、攻撃は346点差で見送り"
+              },
+              {
+                "key": "attack:cpu_front_right:wild_claw->monster:player_front_left",
+                "label": "ヤンバル wild_claw -> ドノマンティス",
+                "score": 521.2,
+                "reason": "ドノマンティスを削れるため攻撃 / 見送り: 攻撃は179点差で見送り、移動は198点差で見送り"
+              },
+              {
+                "key": "master:wake_up->monster:cpu_back_right",
+                "label": "master wake_up -> ピグミィ@cpu_back_right",
+                "score": 698.7,
+                "reason": "準備中の味方を起こして敵を撃破できるためウェイクアップ / 見送り: 攻撃は250点差で見送り、攻撃は424点差で見送り"
+              },
+              {
+                "key": "attack:cpu_back_right:スパイクボール->monster:player_front_left",
+                "label": "ピグミィ スパイクボール -> ドノマンティス",
+                "score": 608.4,
+                "reason": "敵モンスターを撃破できるため攻撃 / 見送り: 攻撃は84点差で見送り、ためるは114点差で見送り"
+              },
+              {
+                "key": "focus:cpu_back_right",
+                "label": "focus ピグミィ",
+                "score": -40.4,
+                "reason": "有効攻撃がないためためる / 見送り: 攻撃は107点差で見送り、攻撃は121点差で見送り"
+              },
+              {
+                "key": "end_turn",
+                "label": "end turn",
+                "score": -132.5,
+                "reason": "有効な行動がないためターン終了"
+              }
+            ],
+            "terminalScore": -117,
+            "terminalScoreDelta": -232,
+            "finalState": "turn 6 / current player / HP player/cpu 10/10 / stones player/cpu 4/4 / hand player/cpu 6/5",
+            "finalBoard": "cpu_back_left:CB:ボムゾウ Lv1 HP6 act0/1 focus | cpu_back_right:CB:ピグミィ Lv2 HP3 act2/2 focus | cpu_front_left:CF:デスシープ Lv1 HP6 act1/1 | cpu_front_right:CF:ヤンバル Lv1 HP3 act1/1 | player_front_left:PF:ヤンバル Lv1 HP3 act0/1 focus | player_front_right:PF:真勇者ダイン Lv1 HP6 act0/1 | player_back_right:PB:ピグミィ Lv1 HP3 act0/2 focus",
+            "finalMetrics": {
+              "ownHp": 10,
+              "enemyHp": 10,
+              "ownStones": 4,
+              "enemyStones": 4,
+              "ownBoardValue": 420,
+              "enemyBoardValue": 680,
+              "ownReadyActions": 3,
+              "enemyReadyActions": 1,
+              "ownShielded": 0,
+              "enemyShielded": 0,
+              "ownLevel2Plus": 0,
+              "enemyLevel2Plus": 1
+            },
+            "truncated": true
+          }
+        },
+        {
+          "sequenceKey": "focus:player_back_left > focus:player_front_left > move:player_front_right->player_back_right > summon:player_card_047_2->player_front_right > master:wake_up->monster:player_front_right > attack:player_front_right:ダイン斬り->monster:cpu_front_right > end_turn",
+          "actions": [
+            {
+              "key": "focus:player_back_left",
+              "label": "focus ヤンバル",
+              "score": 570.2,
+              "reason": "有効攻撃がないためためる"
+            },
+            {
+              "key": "focus:player_front_left",
+              "label": "focus ドノマンティス",
+              "score": 581.4,
+              "reason": "有効攻撃がないためためる"
+            },
+            {
+              "key": "move:player_front_right->player_back_right",
+              "label": "move ピグミィ player_front_right->player_back_right",
+              "score": 451.8,
+              "reason": "後衛カードを後列へ戻して射程を活かすため移動"
+            },
+            {
+              "key": "summon:player_card_047_2->player_front_right",
+              "label": "summon 真勇者ダイン -> player_front_right",
+              "score": 514.6,
+              "reason": "前衛カードを前列右へ召喚"
+            },
+            {
+              "key": "master:wake_up->monster:player_front_right",
+              "label": "master wake_up -> 真勇者ダイン@player_front_right",
+              "score": 620.7,
+              "reason": "準備中の味方を起こして敵を撃破できるためウェイクアップ"
+            },
+            {
+              "key": "attack:player_front_right:ダイン斬り->monster:cpu_front_right",
+              "label": "真勇者ダイン ダイン斬り -> デスシープ",
+              "score": 624.3,
+              "reason": "敵モンスターを撃破できるため攻撃"
+            },
+            {
+              "key": "end_turn",
+              "label": "end turn",
+              "score": -61.9,
+              "reason": "有効な行動がないためターン終了"
+            }
+          ],
+          "guideScoreTotal": 3301.1,
+          "terminalScore": 103,
+          "terminalScoreDelta": 296,
+          "finalState": "turn 5 / current cpu / HP player/cpu 10/10 / stones player/cpu 0/8 / hand player/cpu 5/6",
+          "finalBoard": "cpu_back_left:CB:ボムゾウ Lv1 HP6 act0/1 focus | cpu_front_left:CF:デスシープ Lv1 HP6 act0/1 focus | cpu_front_right:CF:ヤンバル Lv1 HP3 act0/1 focus | player_front_left:PF:ドノマンティス Lv1 HP5 act1/1 focus | player_front_right:PF:真勇者ダイン Lv1 HP6 act1/1 | player_back_left:PB:ヤンバル Lv1 HP3 act1/1 focus | player_back_right:PB:ピグミィ Lv1 HP3 act1/2 focus",
+          "finalMetrics": {
+            "ownHp": 10,
+            "enemyHp": 10,
+            "ownStones": 0,
+            "enemyStones": 8,
+            "ownBoardValue": 570,
+            "enemyBoardValue": 450,
+            "ownReadyActions": 1,
+            "enemyReadyActions": 3,
+            "ownShielded": 0,
+            "enemyShielded": 0,
+            "ownLevel2Plus": 0,
+            "enemyLevel2Plus": 0
+          },
+          "truncated": true,
+          "responseAdjustedScore": -114,
+          "responseAdjustedScoreDelta": -217,
+          "opponentResponse": {
+            "actions": [
+              {
+                "key": "summon:cpu_card_051_3->cpu_back_right",
+                "label": "summon ピグミィ -> cpu_back_right",
+                "score": 231.6,
+                "reason": "後衛カードを後列右へ召喚 / 見送り: 召喚は14点差で見送り、移動は69点差で見送り"
+              },
+              {
+                "key": "attack:cpu_back_left:storm_bomb->monster:player_front_left",
+                "label": "ボムゾウ storm_bomb -> ドノマンティス",
+                "score": 383.6,
+                "reason": "ドノマンティスを削れるため攻撃 / 見送り: 攻撃は163点差で見送り、移動は423点差で見送り"
+              },
+              {
+                "key": "attack:cpu_front_right:wild_claw->monster:player_front_left",
+                "label": "ヤンバル wild_claw -> ドノマンティス",
+                "score": 485.2,
+                "reason": "ドノマンティスを削れるため攻撃 / 見送り: マスター特技は105点差で見送り、攻撃は280点差で見送り"
+              },
+              {
+                "key": "master:master_attack->monster:player_front_left",
+                "label": "master master_attack -> ドノマンティス@player_front_left",
+                "score": 411.8,
+                "reason": "ストーンに余裕があり敵を削れるためマスターアタック / 見送り: 攻撃は2点差で見送り、マスター特技は404点差で見送り"
+              },
+              {
+                "key": "master:wake_up->monster:cpu_back_right",
+                "label": "master wake_up -> ピグミィ@cpu_back_right",
+                "score": 709.1,
+                "reason": "準備中の味方を起こして敵を撃破できるためウェイクアップ / 見送り: 攻撃は349点差で見送り、マスター特技は508点差で見送り"
+              },
+              {
+                "key": "attack:cpu_back_right:スパイクボール->monster:player_front_left",
+                "label": "ピグミィ スパイクボール -> ドノマンティス",
+                "score": 659.2,
+                "reason": "敵モンスターを撃破できるため攻撃 / 見送り: 攻撃は260点差で見送り、ためるは404点差で見送り"
+              },
+              {
+                "key": "end_turn",
+                "label": "end turn",
+                "score": -157,
+                "reason": "有効な行動がないためターン終了"
+              }
+            ],
+            "terminalScore": -114,
+            "terminalScoreDelta": -217,
+            "finalState": "turn 6 / current player / HP player/cpu 10/10 / stones player/cpu 4/1 / hand player/cpu 6/5",
+            "finalBoard": "cpu_back_left:CB:ボムゾウ Lv1 HP6 act1/1 | cpu_back_right:CB:ピグミィ Lv2 HP3 act1/2 focus | cpu_front_left:CF:デスシープ Lv1 HP6 act0/1 focus | cpu_front_right:CF:ヤンバル Lv1 HP3 act1/1 | player_front_left:PF:ヤンバル Lv1 HP3 act0/1 focus | player_front_right:PF:真勇者ダイン Lv1 HP6 act0/1 | player_back_right:PB:ピグミィ Lv1 HP3 act0/2 focus",
+            "finalMetrics": {
+              "ownHp": 10,
+              "enemyHp": 10,
+              "ownStones": 4,
+              "enemyStones": 1,
+              "ownBoardValue": 420,
+              "enemyBoardValue": 680,
+              "ownReadyActions": 3,
+              "enemyReadyActions": 2,
+              "ownShielded": 0,
+              "enemyShielded": 0,
+              "ownLevel2Plus": 0,
+              "enemyLevel2Plus": 1
+            },
+            "truncated": true
+          }
+        },
+        {
+          "sequenceKey": "focus:player_back_left > move:player_front_right->player_back_right > focus:player_front_left > summon:player_card_047_2->player_front_right > master:wake_up->monster:player_front_right > attack:player_front_right:ダイン斬り->monster:cpu_front_right > end_turn",
+          "actions": [
+            {
+              "key": "focus:player_back_left",
+              "label": "focus ヤンバル",
+              "score": 570.2,
+              "reason": "有効攻撃がないためためる"
+            },
+            {
+              "key": "move:player_front_right->player_back_right",
+              "label": "move ピグミィ player_front_right->player_back_right",
+              "score": 482.1,
+              "reason": "後衛カードを後列へ戻して射程を活かすため移動"
+            },
+            {
+              "key": "focus:player_front_left",
+              "label": "focus ドノマンティス",
+              "score": 541.2,
+              "reason": "有効攻撃がないためためる"
+            },
+            {
+              "key": "summon:player_card_047_2->player_front_right",
+              "label": "summon 真勇者ダイン -> player_front_right",
+              "score": 514.6,
+              "reason": "前衛カードを前列右へ召喚"
+            },
+            {
+              "key": "master:wake_up->monster:player_front_right",
+              "label": "master wake_up -> 真勇者ダイン@player_front_right",
+              "score": 620.7,
+              "reason": "準備中の味方を起こして敵を撃破できるためウェイクアップ"
+            },
+            {
+              "key": "attack:player_front_right:ダイン斬り->monster:cpu_front_right",
+              "label": "真勇者ダイン ダイン斬り -> デスシープ",
+              "score": 624.3,
+              "reason": "敵モンスターを撃破できるため攻撃"
+            },
+            {
+              "key": "end_turn",
+              "label": "end turn",
+              "score": -61.9,
+              "reason": "有効な行動がないためターン終了"
+            }
+          ],
+          "guideScoreTotal": 3291.2,
+          "terminalScore": 103,
+          "terminalScoreDelta": 296,
+          "finalState": "turn 5 / current cpu / HP player/cpu 10/10 / stones player/cpu 0/8 / hand player/cpu 5/6",
+          "finalBoard": "cpu_back_left:CB:ボムゾウ Lv1 HP6 act0/1 focus | cpu_front_left:CF:デスシープ Lv1 HP6 act0/1 focus | cpu_front_right:CF:ヤンバル Lv1 HP3 act0/1 focus | player_front_left:PF:ドノマンティス Lv1 HP5 act1/1 focus | player_front_right:PF:真勇者ダイン Lv1 HP6 act1/1 | player_back_left:PB:ヤンバル Lv1 HP3 act1/1 focus | player_back_right:PB:ピグミィ Lv1 HP3 act1/2 focus",
+          "finalMetrics": {
+            "ownHp": 10,
+            "enemyHp": 10,
+            "ownStones": 0,
+            "enemyStones": 8,
+            "ownBoardValue": 570,
+            "enemyBoardValue": 450,
+            "ownReadyActions": 1,
+            "enemyReadyActions": 3,
+            "ownShielded": 0,
+            "enemyShielded": 0,
+            "ownLevel2Plus": 0,
+            "enemyLevel2Plus": 0
+          },
+          "truncated": true,
+          "responseAdjustedScore": -114,
+          "responseAdjustedScoreDelta": -217,
+          "opponentResponse": {
+            "actions": [
+              {
+                "key": "summon:cpu_card_051_3->cpu_back_right",
+                "label": "summon ピグミィ -> cpu_back_right",
+                "score": 231.6,
+                "reason": "後衛カードを後列右へ召喚 / 見送り: 召喚は14点差で見送り、移動は69点差で見送り"
+              },
+              {
+                "key": "attack:cpu_back_left:storm_bomb->monster:player_front_left",
+                "label": "ボムゾウ storm_bomb -> ドノマンティス",
+                "score": 383.6,
+                "reason": "ドノマンティスを削れるため攻撃 / 見送り: 攻撃は163点差で見送り、移動は423点差で見送り"
+              },
+              {
+                "key": "attack:cpu_front_right:wild_claw->monster:player_front_left",
+                "label": "ヤンバル wild_claw -> ドノマンティス",
+                "score": 485.2,
+                "reason": "ドノマンティスを削れるため攻撃 / 見送り: マスター特技は105点差で見送り、攻撃は280点差で見送り"
+              },
+              {
+                "key": "master:master_attack->monster:player_front_left",
+                "label": "master master_attack -> ドノマンティス@player_front_left",
+                "score": 411.8,
+                "reason": "ストーンに余裕があり敵を削れるためマスターアタック / 見送り: 攻撃は2点差で見送り、マスター特技は404点差で見送り"
+              },
+              {
+                "key": "master:wake_up->monster:cpu_back_right",
+                "label": "master wake_up -> ピグミィ@cpu_back_right",
+                "score": 709.1,
+                "reason": "準備中の味方を起こして敵を撃破できるためウェイクアップ / 見送り: 攻撃は349点差で見送り、マスター特技は508点差で見送り"
+              },
+              {
+                "key": "attack:cpu_back_right:スパイクボール->monster:player_front_left",
+                "label": "ピグミィ スパイクボール -> ドノマンティス",
+                "score": 659.2,
+                "reason": "敵モンスターを撃破できるため攻撃 / 見送り: 攻撃は260点差で見送り、ためるは404点差で見送り"
+              },
+              {
+                "key": "end_turn",
+                "label": "end turn",
+                "score": -157,
+                "reason": "有効な行動がないためターン終了"
+              }
+            ],
+            "terminalScore": -114,
+            "terminalScoreDelta": -217,
+            "finalState": "turn 6 / current player / HP player/cpu 10/10 / stones player/cpu 4/1 / hand player/cpu 6/5",
+            "finalBoard": "cpu_back_left:CB:ボムゾウ Lv1 HP6 act1/1 | cpu_back_right:CB:ピグミィ Lv2 HP3 act1/2 focus | cpu_front_left:CF:デスシープ Lv1 HP6 act0/1 focus | cpu_front_right:CF:ヤンバル Lv1 HP3 act1/1 | player_front_left:PF:ヤンバル Lv1 HP3 act0/1 focus | player_front_right:PF:真勇者ダイン Lv1 HP6 act0/1 | player_back_right:PB:ピグミィ Lv1 HP3 act0/2 focus",
+            "finalMetrics": {
+              "ownHp": 10,
+              "enemyHp": 10,
+              "ownStones": 4,
+              "enemyStones": 1,
+              "ownBoardValue": 420,
+              "enemyBoardValue": 680,
+              "ownReadyActions": 3,
+              "enemyReadyActions": 2,
+              "ownShielded": 0,
+              "enemyShielded": 0,
+              "ownLevel2Plus": 0,
+              "enemyLevel2Plus": 1
+            },
+            "truncated": true
+          }
+        }
+      ],
+      "topResponsePlans": [
+        {
+          "sequenceKey": "attack:player_back_left:wild_claw->monster:cpu_front_right > focus:player_front_left > attack:player_front_right:スパイクボール->monster:cpu_front_left > move:player_front_right->player_back_right > summon:player_card_047_2->player_front_right > end_turn",
+          "actions": [
+            {
+              "key": "attack:player_back_left:wild_claw->monster:cpu_front_right",
+              "label": "ヤンバル wild_claw -> デスシープ",
+              "score": 586.1,
+              "reason": "敵モンスターを撃破できるため攻撃 / 見送り: ためるは16点差で見送り、ためるは172点差で見送り"
+            },
+            {
+              "key": "focus:player_front_left",
+              "label": "focus ドノマンティス",
+              "score": 349.6,
+              "reason": "有効攻撃がないためためる / 見送り: 攻撃は58点差で見送り、召喚は172点差で見送り"
+            },
+            {
+              "key": "attack:player_front_right:スパイクボール->monster:cpu_front_left",
+              "label": "ピグミィ スパイクボール -> デスシープ",
+              "score": 206.3,
+              "reason": "デスシープを削れるため攻撃 / 見送り: 召喚は123点差で見送り、移動は144点差で見送り"
+            },
+            {
+              "key": "move:player_front_right->player_back_right",
+              "label": "move ピグミィ player_front_right->player_back_right",
+              "score": 172.7,
+              "reason": "後衛カードを後列へ戻して射程を活かすため移動 / 見送り: 召喚は131点差で見送り、ためるは136点差で見送り"
+            },
+            {
+              "key": "summon:player_card_047_2->player_front_right",
+              "label": "summon 真勇者ダイン -> player_front_right",
+              "score": 150.8,
+              "reason": "前衛カードを前列右へ召喚 / 見送り: マスター特技は345点差で見送り"
+            },
+            {
+              "key": "end_turn",
+              "label": "end turn",
+              "score": -45.5,
+              "reason": "有効な行動がないためターン終了"
+            }
+          ],
+          "guideScoreTotal": 1420,
+          "terminalScore": 79.8,
+          "terminalScoreDelta": 272.8,
+          "finalState": "turn 5 / current cpu / HP player/cpu 10/10 / stones player/cpu 1/8 / hand player/cpu 5/6",
+          "finalBoard": "cpu_back_left:CB:ボムゾウ Lv1 HP6 act0/1 focus | cpu_front_left:CF:デスシープ Lv1 HP6 act0/1 | cpu_front_right:CF:ヤンバル Lv1 HP3 act0/1 focus | player_front_left:PF:ドノマンティス Lv1 HP5 act1/1 focus | player_front_right:PF:真勇者ダイン Lv1 HP6 prep | player_back_left:PB:ヤンバル Lv2 HP3 act1/1 | player_back_right:PB:ピグミィ Lv1 HP3 act2/2",
+          "finalMetrics": {
+            "ownHp": 10,
+            "enemyHp": 10,
+            "ownStones": 1,
+            "enemyStones": 8,
+            "ownBoardValue": 670,
+            "enemyBoardValue": 450,
+            "ownReadyActions": 0,
+            "enemyReadyActions": 3,
+            "ownShielded": 0,
+            "enemyShielded": 0,
+            "ownLevel2Plus": 1,
+            "enemyLevel2Plus": 0
+          },
+          "truncated": false,
+          "responseAdjustedScore": 162,
+          "responseAdjustedScoreDelta": 82.2,
+          "opponentResponse": {
+            "actions": [
+              {
+                "key": "focus:cpu_front_left",
+                "label": "focus デスシープ",
+                "score": 234.7,
+                "reason": "有効攻撃がないためためる / 見送り: 召喚は80点差で見送り、移動は101点差で見送り"
+              },
+              {
+                "key": "summon:cpu_polyspinner_1->cpu_back_right",
+                "label": "summon ポリスピナー -> cpu_back_right",
+                "score": 80,
+                "reason": "カードを後列右へ召喚 / 見送り: 召喚は1点差で見送り、召喚は14点差で見送り"
+              },
+              {
+                "key": "attack:cpu_front_right:wild_claw->monster:player_back_right",
+                "label": "ヤンバル wild_claw -> ピグミィ",
+                "score": 44.4,
+                "reason": "ピグミィを削れるため攻撃 / 見送り: 攻撃は89点差で見送り、移動は200点差で見送り"
+              },
+              {
+                "key": "attack:cpu_back_left:storm_bomb->monster:player_front_left",
+                "label": "ボムゾウ storm_bomb -> ドノマンティス",
+                "score": -180.1,
+                "reason": "ドノマンティスを削れるため攻撃"
+              },
+              {
+                "key": "master:master_attack->monster:player_front_left",
+                "label": "master master_attack -> ドノマンティス@player_front_left",
+                "score": -299.4,
+                "reason": "ストーンに余裕があり敵を削れるためマスターアタック"
+              },
+              {
+                "key": "master:shield->monster:cpu_front_right",
+                "label": "master shield -> ヤンバル@cpu_front_right",
+                "score": -63.4,
+                "reason": "致死圏の味方を守れるためシールド / 見送り: マスター特技は109点差で見送り、マスター特技は189点差で見送り"
+              },
+              {
+                "key": "end_turn",
+                "label": "end turn",
+                "score": -393.4,
+                "reason": "有効な行動がないためターン終了"
+              }
+            ],
+            "terminalScore": 162,
+            "terminalScoreDelta": 82.2,
+            "finalState": "turn 6 / current player / HP player/cpu 10/10 / stones player/cpu 4/2 / hand player/cpu 6/5",
+            "finalBoard": "cpu_back_left:CB:ボムゾウ Lv1 HP6 act1/1 | cpu_back_right:CB:ポリスピナー Lv1 HP3 prep | cpu_front_left:CF:デスシープ Lv1 HP6 act1/1 focus | cpu_front_right:CF:ヤンバル Lv1 HP3 act1/1 shield | player_front_left:PF:ドノマンティス Lv1 HP3 act0/1 | player_front_right:PF:真勇者ダイン Lv1 HP6 act0/1 | player_back_left:PB:ヤンバル Lv2 HP3 act0/1 | player_back_right:PB:ピグミィ Lv1 HP1 act0/2",
+            "finalMetrics": {
+              "ownHp": 10,
+              "enemyHp": 10,
+              "ownStones": 4,
+              "enemyStones": 2,
+              "ownBoardValue": 630,
+              "enemyBoardValue": 600,
+              "ownReadyActions": 4,
+              "enemyReadyActions": 0,
+              "ownShielded": 0,
+              "enemyShielded": 1,
+              "ownLevel2Plus": 1,
+              "enemyLevel2Plus": 0
+            },
+            "truncated": true
+          }
+        },
+        {
+          "sequenceKey": "attack:player_back_left:wild_claw->monster:cpu_front_right > attack:player_front_right:スパイクボール->monster:cpu_front_left > move:player_front_right->player_back_right > summon:player_card_047_2->player_front_right > end_turn",
+          "actions": [
+            {
+              "key": "attack:player_back_left:wild_claw->monster:cpu_front_right",
+              "label": "ヤンバル wild_claw -> デスシープ",
+              "score": 586.1,
+              "reason": "敵モンスターを撃破できるため攻撃"
+            },
+            {
+              "key": "attack:player_front_right:スパイクボール->monster:cpu_front_left",
+              "label": "ピグミィ スパイクボール -> デスシープ",
+              "score": 291.6,
+              "reason": "デスシープを削れるため攻撃"
+            },
+            {
+              "key": "move:player_front_right->player_back_right",
+              "label": "move ピグミィ player_front_right->player_back_right",
+              "score": 231.5,
+              "reason": "後衛カードを後列へ戻して射程を活かすため移動"
+            },
+            {
+              "key": "summon:player_card_047_2->player_front_right",
+              "label": "summon 真勇者ダイン -> player_front_right",
+              "score": 256,
+              "reason": "前衛カードを前列右へ召喚"
+            },
+            {
+              "key": "end_turn",
+              "label": "end turn",
+              "score": 37.1,
+              "reason": "有効な行動がないためターン終了"
+            }
+          ],
+          "guideScoreTotal": 1402.3,
+          "terminalScore": 91.8,
+          "terminalScoreDelta": 284.8,
+          "finalState": "turn 5 / current cpu / HP player/cpu 10/10 / stones player/cpu 1/8 / hand player/cpu 5/6",
+          "finalBoard": "cpu_back_left:CB:ボムゾウ Lv1 HP6 act0/1 focus | cpu_front_left:CF:デスシープ Lv1 HP6 act0/1 | cpu_front_right:CF:ヤンバル Lv1 HP3 act0/1 focus | player_front_left:PF:ドノマンティス Lv1 HP5 act0/1 focus | player_front_right:PF:真勇者ダイン Lv1 HP6 prep | player_back_left:PB:ヤンバル Lv2 HP3 act1/1 | player_back_right:PB:ピグミィ Lv1 HP3 act2/2",
+          "finalMetrics": {
+            "ownHp": 10,
+            "enemyHp": 10,
+            "ownStones": 1,
+            "enemyStones": 8,
+            "ownBoardValue": 670,
+            "enemyBoardValue": 450,
+            "ownReadyActions": 1,
+            "enemyReadyActions": 3,
+            "ownShielded": 0,
+            "enemyShielded": 0,
+            "ownLevel2Plus": 1,
+            "enemyLevel2Plus": 0
+          },
+          "truncated": false,
+          "responseAdjustedScore": 141.6,
+          "responseAdjustedScoreDelta": 49.8,
+          "opponentResponse": {
+            "actions": [
+              {
+                "key": "focus:cpu_front_left",
+                "label": "focus デスシープ",
+                "score": 258.7,
+                "reason": "有効攻撃がないためためる / 見送り: 召喚は80点差で見送り、移動は101点差で見送り"
+              },
+              {
+                "key": "summon:cpu_card_051_3->cpu_back_right",
+                "label": "summon ピグミィ -> cpu_back_right",
+                "score": 90,
+                "reason": "後衛カードを後列右へ召喚 / 見送り: 移動は7点差で見送り、召喚は10点差で見送り"
+              },
+              {
+                "key": "attack:cpu_front_right:wild_claw->monster:player_back_right",
+                "label": "ヤンバル wild_claw -> ピグミィ",
+                "score": 44.4,
+                "reason": "ピグミィを削れるため攻撃 / 見送り: 攻撃は79点差で見送り、移動は162点差で見送り"
+              },
+              {
+                "key": "attack:cpu_back_left:storm_bomb->monster:player_front_left",
+                "label": "ボムゾウ storm_bomb -> ドノマンティス",
+                "score": -184.2,
+                "reason": "ドノマンティスを削れるため攻撃"
+              },
+              {
+                "key": "master:master_attack->monster:player_front_left",
+                "label": "master master_attack -> ドノマンティス@player_front_left",
+                "score": -272.6,
+                "reason": "ストーンに余裕があり敵を削れるためマスターアタック"
+              },
+              {
+                "key": "master:shield->monster:cpu_front_right",
+                "label": "master shield -> ヤンバル@cpu_front_right",
+                "score": -25.8,
+                "reason": "致死圏の味方を守れるためシールド / 見送り: マスター特技は145点差で見送り、マスター特技は233点差で見送り"
+              },
+              {
+                "key": "end_turn",
+                "label": "end turn",
+                "score": -346.8,
+                "reason": "有効な行動がないためターン終了"
+              }
+            ],
+            "terminalScore": 141.6,
+            "terminalScoreDelta": 49.8,
+            "finalState": "turn 6 / current player / HP player/cpu 10/10 / stones player/cpu 4/2 / hand player/cpu 6/5",
+            "finalBoard": "cpu_back_left:CB:ボムゾウ Lv1 HP6 act1/1 | cpu_back_right:CB:ピグミィ Lv1 HP3 prep | cpu_front_left:CF:デスシープ Lv1 HP6 act1/1 focus | cpu_front_right:CF:ヤンバル Lv1 HP3 act1/1 shield | player_front_left:PF:ドノマンティス Lv1 HP3 act0/1 | player_front_right:PF:真勇者ダイン Lv1 HP6 act0/1 | player_back_left:PB:ヤンバル Lv2 HP3 act0/1 | player_back_right:PB:ピグミィ Lv1 HP1 act0/2",
+            "finalMetrics": {
+              "ownHp": 10,
+              "enemyHp": 10,
+              "ownStones": 4,
+              "enemyStones": 2,
+              "ownBoardValue": 630,
+              "enemyBoardValue": 600,
+              "ownReadyActions": 4,
+              "enemyReadyActions": 0,
+              "ownShielded": 0,
+              "enemyShielded": 1,
+              "ownLevel2Plus": 1,
+              "enemyLevel2Plus": 0
+            },
+            "truncated": true
+          }
+        },
+        {
+          "sequenceKey": "focus:player_back_left > move:player_front_right->player_back_right > summon:player_card_047_2->player_front_right > master:wake_up->monster:player_front_right > attack:player_front_right:ダイン斬り->monster:cpu_front_right > attack:player_back_right:スパイクボール->monster:cpu_front_left > end_turn",
+          "actions": [
+            {
+              "key": "focus:player_back_left",
+              "label": "focus ヤンバル",
+              "score": 570.2,
+              "reason": "有効攻撃がないためためる"
+            },
+            {
+              "key": "move:player_front_right->player_back_right",
+              "label": "move ピグミィ player_front_right->player_back_right",
+              "score": 482.1,
+              "reason": "後衛カードを後列へ戻して射程を活かすため移動"
+            },
+            {
+              "key": "summon:player_card_047_2->player_front_right",
+              "label": "summon 真勇者ダイン -> player_front_right",
+              "score": 555.7,
+              "reason": "前衛カードを前列右へ召喚"
+            },
+            {
+              "key": "master:wake_up->monster:player_front_right",
+              "label": "master wake_up -> 真勇者ダイン@player_front_right",
+              "score": 670.7,
+              "reason": "準備中の味方を起こして敵を撃破できるためウェイクアップ"
+            },
+            {
+              "key": "attack:player_front_right:ダイン斬り->monster:cpu_front_right",
+              "label": "真勇者ダイン ダイン斬り -> デスシープ",
+              "score": 709.8,
+              "reason": "敵モンスターを撃破できるため攻撃"
+            },
+            {
+              "key": "attack:player_back_right:スパイクボール->monster:cpu_front_left",
+              "label": "ピグミィ スパイクボール -> デスシープ",
+              "score": 232.3,
+              "reason": "デスシープを削れるため攻撃"
+            },
+            {
+              "key": "end_turn",
+              "label": "end turn",
+              "score": 27.2,
+              "reason": "有効な行動がないためターン終了"
+            }
+          ],
+          "guideScoreTotal": 3248,
+          "terminalScore": 103,
+          "terminalScoreDelta": 296,
+          "finalState": "turn 5 / current cpu / HP player/cpu 10/10 / stones player/cpu 0/8 / hand player/cpu 5/6",
+          "finalBoard": "cpu_back_left:CB:ボムゾウ Lv1 HP6 act0/1 focus | cpu_front_left:CF:デスシープ Lv1 HP6 act0/1 | cpu_front_right:CF:ヤンバル Lv1 HP3 act0/1 focus | player_front_left:PF:ドノマンティス Lv1 HP5 act0/1 focus | player_front_right:PF:真勇者ダイン Lv1 HP6 act1/1 | player_back_left:PB:ヤンバル Lv1 HP3 act1/1 focus | player_back_right:PB:ピグミィ Lv1 HP3 act2/2",
+          "finalMetrics": {
+            "ownHp": 10,
+            "enemyHp": 10,
+            "ownStones": 0,
+            "enemyStones": 8,
+            "ownBoardValue": 570,
+            "enemyBoardValue": 450,
+            "ownReadyActions": 1,
+            "enemyReadyActions": 3,
+            "ownShielded": 0,
+            "enemyShielded": 0,
+            "ownLevel2Plus": 0,
+            "enemyLevel2Plus": 0
+          },
+          "truncated": true,
+          "responseAdjustedScore": 54,
+          "responseAdjustedScoreDelta": -49,
+          "opponentResponse": {
+            "actions": [
+              {
+                "key": "focus:cpu_front_left",
+                "label": "focus デスシープ",
+                "score": 327.7,
+                "reason": "有効攻撃がないためためる / 見送り: 召喚は80点差で見送り、移動は100点差で見送り"
+              },
+              {
+                "key": "summon:cpu_card_051_3->cpu_back_right",
+                "label": "summon ピグミィ -> cpu_back_right",
+                "score": 175.4,
+                "reason": "後衛カードを後列右へ召喚 / 見送り: 移動は8点差で見送り、移動は26点差で見送り"
+              },
+              {
+                "key": "attack:cpu_back_left:storm_bomb->monster:player_front_left",
+                "label": "ボムゾウ storm_bomb -> ドノマンティス",
+                "score": 37.6,
+                "reason": "ドノマンティスを削れるため攻撃 / 見送り: 移動は54点差で見送り、攻撃は70点差で見送り"
+              },
+              {
+                "key": "attack:cpu_front_right:wild_claw->monster:player_front_left",
+                "label": "ヤンバル wild_claw -> ドノマンティス",
+                "score": 246.8,
+                "reason": "ドノマンティスを削れるため攻撃 / 見送り: マスター特技は46点差で見送り、マスター特技は388点差で見送り"
+              },
+              {
+                "key": "master:master_attack->monster:player_front_left",
+                "label": "master master_attack -> ドノマンティス@player_front_left",
+                "score": 422,
+                "reason": "ストーンに余裕があり敵を削れるためマスターアタック / 見送り: マスター特技は886点差で見送り"
+              },
+              {
+                "key": "master:wake_up->monster:cpu_back_right",
+                "label": "master wake_up -> ピグミィ@cpu_back_right",
+                "score": 690.3,
+                "reason": "準備中の味方を起こして敵を撃破できるためウェイクアップ / 見送り: マスター特技は543点差で見送り、マスター特技は1246点差で見送り"
+              },
+              {
+                "key": "end_turn",
+                "label": "end turn",
+                "score": -353.9,
+                "reason": "有効な行動がないためターン終了"
+              }
+            ],
+            "terminalScore": 54,
+            "terminalScoreDelta": -49,
+            "finalState": "turn 6 / current player / HP player/cpu 10/10 / stones player/cpu 3/2 / hand player/cpu 6/5",
+            "finalBoard": "cpu_back_left:CB:ボムゾウ Lv1 HP6 act1/1 | cpu_back_right:CB:ピグミィ Lv1 HP3 act0/2 focus | cpu_front_left:CF:デスシープ Lv1 HP6 act1/1 focus | cpu_front_right:CF:ヤンバル Lv1 HP3 act1/1 | player_front_left:PF:ドノマンティス Lv1 HP1 act0/1 | player_front_right:PF:真勇者ダイン Lv1 HP6 act0/1 | player_back_left:PB:ヤンバル Lv1 HP3 act0/1 focus | player_back_right:PB:ピグミィ Lv1 HP3 act0/2",
+            "finalMetrics": {
+              "ownHp": 10,
+              "enemyHp": 10,
+              "ownStones": 3,
+              "enemyStones": 2,
+              "ownBoardValue": 530,
+              "enemyBoardValue": 580,
+              "ownReadyActions": 4,
+              "enemyReadyActions": 1,
+              "ownShielded": 0,
+              "enemyShielded": 0,
+              "ownLevel2Plus": 0,
+              "enemyLevel2Plus": 0
+            },
+            "truncated": true
+          }
+        }
+      ]
+    },
+    {
+      "seed": 962001,
+      "step": 44,
+      "turnNumber": 5,
+      "player": "player",
+      "state": "turn 5 / current player / HP player/cpu 10/10 / stones player/cpu 5/0 / hand player/cpu 4/3",
+      "board": "cpu_back_left:CB:ヤンバル Lv1 HP3 act1/1 | cpu_back_right:CB:ヤンバル Lv1 HP3 act1/1 | cpu_front_left:CF:真勇者ダイン Lv1 HP6 prep | cpu_front_right:CF:デスシープ Lv2 HP6 act1/1 | player_front_left:PF:デスシープ Lv1 HP4 act0/1 | player_front_right:PF:ポリスピナー Lv1 HP3 act0/2 | player_back_left:PB:デスシープ Lv1 HP6 act0/1 focus",
+      "initialScore": -82.80000000000001,
+      "selectedPlan": {
+        "sequenceKey": "focus:player_front_right > focus:player_front_left > summon:player_card_051_3->player_back_right > move:player_back_left->player_front_right > master:shield->monster:player_front_left > end_turn",
+        "actions": [
+          {
+            "key": "focus:player_front_right",
+            "label": "focus ポリスピナー",
+            "score": 333.8,
+            "reason": "有効攻撃がないためためる / 見送り: 召喚は225点差で見送り、ためるは232点差で見送り"
+          },
+          {
+            "key": "focus:player_front_left",
+            "label": "focus デスシープ",
+            "score": -46,
+            "reason": "上の技の打点を伸ばしてマスター攻撃につなげるためためる / 見送り: 召喚は16点差で見送り、召喚は60点差で見送り"
+          },
+          {
+            "key": "summon:player_card_051_3->player_back_right",
+            "label": "summon ピグミィ -> player_back_right",
+            "score": -80.3,
+            "reason": "後衛カードを後列右へ召喚 / 見送り: 召喚は50点差で見送り、マスター特技は112点差で見送り"
+          },
+          {
+            "key": "move:player_back_left->player_front_right",
+            "label": "move デスシープ player_back_left->player_front_right",
+            "score": -428.6,
+            "reason": "前衛カードを前列へ出して攻撃しやすくするため移動 / 見送り: マスター特技は101点差で見送り、攻撃は117点差で見送り"
+          },
+          {
+            "key": "master:shield->monster:player_front_left",
+            "label": "master shield -> デスシープ@player_front_left",
+            "score": -178.6,
+            "reason": "高価値の味方を守るためシールド / 見送り: マスター特技は8点差で見送り、マスター特技は283点差で見送り"
+          },
+          {
+            "key": "end_turn",
+            "label": "end turn",
+            "score": -345.5,
+            "reason": "有効な行動がないためターン終了 / 見送り: マスター特技は147点差で見送り"
+          }
+        ],
+        "guideScoreTotal": -745.3,
+        "terminalScore": -153.6,
+        "terminalScoreDelta": -70.8,
+        "finalState": "turn 5 / current cpu / HP player/cpu 10/10 / stones player/cpu 2/3 / hand player/cpu 3/4",
+        "finalBoard": "cpu_back_left:CB:ヤンバル Lv1 HP3 act0/1 | cpu_back_right:CB:ヤンバル Lv1 HP3 act0/1 | cpu_front_left:CF:真勇者ダイン Lv1 HP6 act0/1 | cpu_front_right:CF:デスシープ Lv2 HP6 act0/1 | player_front_left:PF:デスシープ Lv1 HP4 act1/1 shield,focus | player_front_right:PF:デスシープ Lv1 HP6 act1/1 | player_back_left:PB:ポリスピナー Lv1 HP3 act2/2 | player_back_right:PB:ピグミィ Lv1 HP3 prep",
+        "finalMetrics": {
+          "ownHp": 10,
+          "enemyHp": 10,
+          "ownStones": 2,
+          "enemyStones": 3,
+          "ownBoardValue": 580,
+          "enemyBoardValue": 680,
+          "ownReadyActions": 0,
+          "enemyReadyActions": 4,
+          "ownShielded": 1,
+          "enemyShielded": 0,
+          "ownLevel2Plus": 0,
+          "enemyLevel2Plus": 1
+        },
+        "truncated": false,
+        "responseAdjustedScore": -237,
+        "responseAdjustedScoreDelta": -83.4,
+        "opponentResponse": {
+          "actions": [
+            {
+              "key": "attack:cpu_front_right:attack->monster:player_front_right",
+              "label": "デスシープ attack -> デスシープ",
+              "score": 315.1,
+              "reason": "デスシープを削れるため攻撃 / 見送り: 攻撃は30点差で見送り、攻撃は135点差で見送り"
+            },
+            {
+              "key": "attack:cpu_back_left:wild_claw->monster:player_front_right",
+              "label": "ヤンバル wild_claw -> デスシープ",
+              "score": 514.3,
+              "reason": "デスシープを削れるため攻撃 / 見送り: 攻撃は1点差で見送り、攻撃は202点差で見送り"
+            },
+            {
+              "key": "attack:cpu_back_right:wild_claw->monster:player_front_right",
+              "label": "ヤンバル wild_claw -> デスシープ",
+              "score": 659.2,
+              "reason": "敵モンスターを撃破できるため攻撃 / 見送り: 攻撃は185点差で見送り、ためるは247点差で見送り"
+            },
+            {
+              "key": "attack:cpu_front_left:ダイン斬り->monster:player_front_left",
+              "label": "真勇者ダイン ダイン斬り -> デスシープ",
+              "score": 10.5,
+              "reason": "デスシープを削れるため攻撃 / 見送り: ためるは57点差で見送り"
+            },
+            {
+              "key": "master:shield->monster:cpu_front_right",
+              "label": "master shield -> デスシープ@cpu_front_right",
+              "score": -93.8,
+              "reason": "高価値の味方を守るためシールド / 見送り: マスター特技は4点差で見送り"
+            },
+            {
+              "key": "end_turn",
+              "label": "end turn",
+              "score": -172.4,
+              "reason": "有効な行動がないためターン終了"
+            }
+          ],
+          "terminalScore": -237,
+          "terminalScoreDelta": -83.4,
+          "finalState": "turn 6 / current player / HP player/cpu 10/10 / stones player/cpu 6/0 / hand player/cpu 4/4",
+          "finalBoard": "cpu_back_left:CB:ヤンバル Lv1 HP3 act1/1 | cpu_back_right:CB:ヤンバル Lv2 HP3 act1/1 | cpu_front_left:CF:真勇者ダイン Lv1 HP6 act1/1 | cpu_front_right:CF:デスシープ Lv2 HP6 act1/1 shield | player_front_left:PF:デスシープ Lv1 HP4 act0/1 | player_front_right:PF:ピグミィ Lv1 HP3 act0/2 | player_back_left:PB:ポリスピナー Lv1 HP3 act0/2",
+          "finalMetrics": {
+            "ownHp": 10,
+            "enemyHp": 10,
+            "ownStones": 6,
+            "enemyStones": 0,
+            "ownBoardValue": 400,
+            "enemyBoardValue": 800,
+            "ownReadyActions": 3,
+            "enemyReadyActions": 0,
+            "ownShielded": 0,
+            "enemyShielded": 1,
+            "ownLevel2Plus": 0,
+            "enemyLevel2Plus": 2
+          },
+          "truncated": false
+        }
+      },
+      "selectedTerminalRank": 61,
+      "selectedResponseRank": 9,
+      "terminalGapToBest": 255,
+      "responseGapToBest": 89,
+      "topTerminalPlans": [
+        {
+          "sequenceKey": "summon:player_card_051_3->player_back_right > focus:player_front_left > attack:player_front_right:attack->monster:cpu_front_right > master:master_attack->monster:cpu_front_right > attack:player_front_right:attack->monster:cpu_front_right > end_turn",
+          "actions": [
+            {
+              "key": "summon:player_card_051_3->player_back_right",
+              "label": "summon ピグミィ -> player_back_right",
+              "score": 108.3,
+              "reason": "後衛カードを後列右へ召喚"
+            },
+            {
+              "key": "focus:player_front_left",
+              "label": "focus デスシープ",
+              "score": -76.8,
+              "reason": "有効攻撃がないためためる"
+            },
+            {
+              "key": "attack:player_front_right:attack->monster:cpu_front_right",
+              "label": "ポリスピナー attack -> デスシープ",
+              "score": 32.9,
+              "reason": "デスシープを削れるため攻撃"
+            },
+            {
+              "key": "master:master_attack->monster:cpu_front_right",
+              "label": "master master_attack -> デスシープ@cpu_front_right",
+              "score": 362.7,
+              "reason": "ストーンに余裕があり敵を削れるためマスターアタック"
+            },
+            {
+              "key": "attack:player_front_right:attack->monster:cpu_front_right",
+              "label": "ポリスピナー attack -> デスシープ",
+              "score": 678.7,
+              "reason": "敵モンスターを撃破できるため攻撃"
+            },
+            {
+              "key": "end_turn",
+              "label": "end turn",
+              "score": -256.6,
+              "reason": "有効な行動がないためターン終了"
+            }
+          ],
+          "guideScoreTotal": 849,
+          "terminalScore": 101.4,
+          "terminalScoreDelta": 184.2,
+          "finalState": "turn 5 / current cpu / HP player/cpu 10/10 / stones player/cpu 0/5 / hand player/cpu 3/4",
+          "finalBoard": "cpu_back_left:CB:ヤンバル Lv1 HP3 act0/1 | cpu_front_left:CF:真勇者ダイン Lv1 HP6 act0/1 | cpu_front_right:CF:ヤンバル Lv1 HP3 act0/1 | player_front_left:PF:デスシープ Lv1 HP4 act1/1 focus | player_front_right:PF:ポリスピナー Lv2 HP3 act2/2 | player_back_left:PB:デスシープ Lv1 HP6 act0/1 focus | player_back_right:PB:ピグミィ Lv1 HP3 prep",
+          "finalMetrics": {
+            "ownHp": 10,
+            "enemyHp": 10,
+            "ownStones": 0,
+            "enemyStones": 5,
+            "ownBoardValue": 660,
+            "enemyBoardValue": 420,
+            "ownReadyActions": 1,
+            "enemyReadyActions": 3,
+            "ownShielded": 0,
+            "enemyShielded": 0,
+            "ownLevel2Plus": 1,
+            "enemyLevel2Plus": 0
+          },
+          "truncated": false,
+          "responseAdjustedScore": -153,
+          "responseAdjustedScoreDelta": -254.4,
+          "opponentResponse": {
+            "actions": [
+              {
+                "key": "attack:cpu_back_left:wild_claw->monster:player_front_right",
+                "label": "ヤンバル wild_claw -> ポリスピナー",
+                "score": 478.8,
+                "reason": "ポリスピナーを削れるため攻撃 / 見送り: ためるは26点差で見送り、召喚は37点差で見送り"
+              },
+              {
+                "key": "summon:cpu_card_051_2->cpu_back_right",
+                "label": "summon ピグミィ -> cpu_back_right",
+                "score": 587.9,
+                "reason": "後衛カードを後列右へ召喚 / 見送り: マスター特技は52点差で見送り、ためるは171点差で見送り"
+              },
+              {
+                "key": "master:wake_up->monster:cpu_back_right",
+                "label": "master wake_up -> ピグミィ@cpu_back_right",
+                "score": 811.6,
+                "reason": "準備中の味方を起こして敵を撃破できるためウェイクアップ / 見送り: ためるは252点差で見送り、マスター特技は305点差で見送り"
+              },
+              {
+                "key": "attack:cpu_back_right:スパイクボール->monster:player_front_right",
+                "label": "ピグミィ スパイクボール -> ポリスピナー",
+                "score": 1192.1,
+                "reason": "敵モンスターを撃破できるため攻撃 / 見送り: 攻撃は358点差で見送り、ためるは641点差で見送り"
+              },
+              {
+                "key": "attack:cpu_back_right:スパイクボール->monster:player_front_left",
+                "label": "ピグミィ スパイクボール -> デスシープ",
+                "score": 401.8,
+                "reason": "デスシープを削れるため攻撃 / 見送り: ためるは286点差で見送り、移動は384点差で見送り"
+              },
+              {
+                "key": "attack:cpu_front_left:ダイン斬り->monster:player_front_left",
+                "label": "真勇者ダイン ダイン斬り -> デスシープ",
+                "score": 532.6,
+                "reason": "デスシープを削れるため攻撃 / 見送り: 攻撃は1点差で見送り、ためるは571点差で見送り"
+              },
+              {
+                "key": "end_turn",
+                "label": "end turn",
+                "score": -222.9,
+                "reason": "有効な行動がないためターン終了"
+              }
+            ],
+            "terminalScore": -153,
+            "terminalScoreDelta": -254.4,
+            "finalState": "turn 6 / current player / HP player/cpu 10/10 / stones player/cpu 5/1 / hand player/cpu 4/3",
+            "finalBoard": "cpu_back_left:CB:ヤンバル Lv1 HP3 act1/1 | cpu_back_right:CB:ピグミィ Lv2 HP3 act2/2 | cpu_front_left:CF:真勇者ダイン Lv1 HP6 act1/1 | cpu_front_right:CF:ヤンバル Lv1 HP3 act0/1 focus | player_front_left:PF:デスシープ Lv1 HP2 act0/1 | player_front_right:PF:ピグミィ Lv1 HP3 act0/2 | player_back_left:PB:デスシープ Lv1 HP6 act0/1 focus",
+            "finalMetrics": {
+              "ownHp": 10,
+              "enemyHp": 10,
+              "ownStones": 5,
+              "enemyStones": 1,
+              "ownBoardValue": 410,
+              "enemyBoardValue": 650,
+              "ownReadyActions": 3,
+              "enemyReadyActions": 1,
+              "ownShielded": 0,
+              "enemyShielded": 0,
+              "ownLevel2Plus": 0,
+              "enemyLevel2Plus": 1
+            },
+            "truncated": true
+          }
+        },
+        {
+          "sequenceKey": "summon:player_card_051_3->player_back_right > focus:player_front_left > master:master_attack->monster:cpu_front_right > attack:player_front_right:attack->monster:cpu_front_right > attack:player_front_right:attack->monster:cpu_front_right > end_turn",
+          "actions": [
+            {
+              "key": "summon:player_card_051_3->player_back_right",
+              "label": "summon ピグミィ -> player_back_right",
+              "score": 108.3,
+              "reason": "後衛カードを後列右へ召喚"
+            },
+            {
+              "key": "focus:player_front_left",
+              "label": "focus デスシープ",
+              "score": -76.8,
+              "reason": "有効攻撃がないためためる"
+            },
+            {
+              "key": "master:master_attack->monster:cpu_front_right",
+              "label": "master master_attack -> デスシープ@cpu_front_right",
+              "score": -76.1,
+              "reason": "ストーンに余裕があり敵を削れるためマスターアタック"
+            },
+            {
+              "key": "attack:player_front_right:attack->monster:cpu_front_right",
+              "label": "ポリスピナー attack -> デスシープ",
+              "score": 520.8,
+              "reason": "デスシープを削れるため攻撃"
+            },
+            {
+              "key": "attack:player_front_right:attack->monster:cpu_front_right",
+              "label": "ポリスピナー attack -> デスシープ",
+              "score": 678.7,
+              "reason": "敵モンスターを撃破できるため攻撃"
+            },
+            {
+              "key": "end_turn",
+              "label": "end turn",
+              "score": -256.6,
+              "reason": "有効な行動がないためターン終了"
+            }
+          ],
+          "guideScoreTotal": 898.2,
+          "terminalScore": 101.4,
+          "terminalScoreDelta": 184.2,
+          "finalState": "turn 5 / current cpu / HP player/cpu 10/10 / stones player/cpu 0/5 / hand player/cpu 3/4",
+          "finalBoard": "cpu_back_left:CB:ヤンバル Lv1 HP3 act0/1 | cpu_front_left:CF:真勇者ダイン Lv1 HP6 act0/1 | cpu_front_right:CF:ヤンバル Lv1 HP3 act0/1 | player_front_left:PF:デスシープ Lv1 HP4 act1/1 focus | player_front_right:PF:ポリスピナー Lv2 HP3 act2/2 | player_back_left:PB:デスシープ Lv1 HP6 act0/1 focus | player_back_right:PB:ピグミィ Lv1 HP3 prep",
+          "finalMetrics": {
+            "ownHp": 10,
+            "enemyHp": 10,
+            "ownStones": 0,
+            "enemyStones": 5,
+            "ownBoardValue": 660,
+            "enemyBoardValue": 420,
+            "ownReadyActions": 1,
+            "enemyReadyActions": 3,
+            "ownShielded": 0,
+            "enemyShielded": 0,
+            "ownLevel2Plus": 1,
+            "enemyLevel2Plus": 0
+          },
+          "truncated": false,
+          "responseAdjustedScore": -153,
+          "responseAdjustedScoreDelta": -254.4,
+          "opponentResponse": {
+            "actions": [
+              {
+                "key": "attack:cpu_back_left:wild_claw->monster:player_front_right",
+                "label": "ヤンバル wild_claw -> ポリスピナー",
+                "score": 478.8,
+                "reason": "ポリスピナーを削れるため攻撃 / 見送り: ためるは26点差で見送り、召喚は37点差で見送り"
+              },
+              {
+                "key": "summon:cpu_card_051_2->cpu_back_right",
+                "label": "summon ピグミィ -> cpu_back_right",
+                "score": 587.9,
+                "reason": "後衛カードを後列右へ召喚 / 見送り: マスター特技は52点差で見送り、ためるは171点差で見送り"
+              },
+              {
+                "key": "master:wake_up->monster:cpu_back_right",
+                "label": "master wake_up -> ピグミィ@cpu_back_right",
+                "score": 811.6,
+                "reason": "準備中の味方を起こして敵を撃破できるためウェイクアップ / 見送り: ためるは252点差で見送り、マスター特技は305点差で見送り"
+              },
+              {
+                "key": "attack:cpu_back_right:スパイクボール->monster:player_front_right",
+                "label": "ピグミィ スパイクボール -> ポリスピナー",
+                "score": 1192.1,
+                "reason": "敵モンスターを撃破できるため攻撃 / 見送り: 攻撃は358点差で見送り、ためるは641点差で見送り"
+              },
+              {
+                "key": "attack:cpu_back_right:スパイクボール->monster:player_front_left",
+                "label": "ピグミィ スパイクボール -> デスシープ",
+                "score": 401.8,
+                "reason": "デスシープを削れるため攻撃 / 見送り: ためるは286点差で見送り、移動は384点差で見送り"
+              },
+              {
+                "key": "attack:cpu_front_left:ダイン斬り->monster:player_front_left",
+                "label": "真勇者ダイン ダイン斬り -> デスシープ",
+                "score": 532.6,
+                "reason": "デスシープを削れるため攻撃 / 見送り: 攻撃は1点差で見送り、ためるは571点差で見送り"
+              },
+              {
+                "key": "end_turn",
+                "label": "end turn",
+                "score": -222.9,
+                "reason": "有効な行動がないためターン終了"
+              }
+            ],
+            "terminalScore": -153,
+            "terminalScoreDelta": -254.4,
+            "finalState": "turn 6 / current player / HP player/cpu 10/10 / stones player/cpu 5/1 / hand player/cpu 4/3",
+            "finalBoard": "cpu_back_left:CB:ヤンバル Lv1 HP3 act1/1 | cpu_back_right:CB:ピグミィ Lv2 HP3 act2/2 | cpu_front_left:CF:真勇者ダイン Lv1 HP6 act1/1 | cpu_front_right:CF:ヤンバル Lv1 HP3 act0/1 focus | player_front_left:PF:デスシープ Lv1 HP2 act0/1 | player_front_right:PF:ピグミィ Lv1 HP3 act0/2 | player_back_left:PB:デスシープ Lv1 HP6 act0/1 focus",
+            "finalMetrics": {
+              "ownHp": 10,
+              "enemyHp": 10,
+              "ownStones": 5,
+              "enemyStones": 1,
+              "ownBoardValue": 410,
+              "enemyBoardValue": 650,
+              "ownReadyActions": 3,
+              "enemyReadyActions": 1,
+              "ownShielded": 0,
+              "enemyShielded": 0,
+              "ownLevel2Plus": 0,
+              "enemyLevel2Plus": 1
+            },
+            "truncated": true
+          }
+        },
+        {
+          "sequenceKey": "summon:player_card_051_3->player_back_right > focus:player_front_left > attack:player_front_right:attack->monster:cpu_front_right > attack:player_front_right:attack->monster:cpu_front_right > master:master_attack->monster:cpu_front_right > end_turn",
+          "actions": [
+            {
+              "key": "summon:player_card_051_3->player_back_right",
+              "label": "summon ピグミィ -> player_back_right",
+              "score": 108.3,
+              "reason": "後衛カードを後列右へ召喚"
+            },
+            {
+              "key": "focus:player_front_left",
+              "label": "focus デスシープ",
+              "score": -76.8,
+              "reason": "有効攻撃がないためためる"
+            },
+            {
+              "key": "attack:player_front_right:attack->monster:cpu_front_right",
+              "label": "ポリスピナー attack -> デスシープ",
+              "score": 32.9,
+              "reason": "デスシープを削れるため攻撃"
+            },
+            {
+              "key": "attack:player_front_right:attack->monster:cpu_front_right",
+              "label": "ポリスピナー attack -> デスシープ",
+              "score": 248.3,
+              "reason": "デスシープを削れるため攻撃"
+            },
+            {
+              "key": "master:master_attack->monster:cpu_front_right",
+              "label": "master master_attack -> デスシープ@cpu_front_right",
+              "score": 542.6,
+              "reason": "マスターアタックで敵モンスターを撃破できるため使用"
+            },
+            {
+              "key": "end_turn",
+              "label": "end turn",
+              "score": -288.8,
+              "reason": "有効な行動がないためターン終了"
+            }
+          ],
+          "guideScoreTotal": 566.4,
+          "terminalScore": 63.4,
+          "terminalScoreDelta": 146.2,
+          "finalState": "turn 5 / current cpu / HP player/cpu 10/10 / stones player/cpu 1/5 / hand player/cpu 3/4",
+          "finalBoard": "cpu_back_left:CB:ヤンバル Lv1 HP3 act0/1 | cpu_front_left:CF:真勇者ダイン Lv1 HP6 act0/1 | cpu_front_right:CF:ヤンバル Lv1 HP3 act0/1 | player_front_left:PF:デスシープ Lv1 HP4 act1/1 focus | player_front_right:PF:ポリスピナー Lv1 HP3 act2/2 | player_back_left:PB:デスシープ Lv1 HP6 act0/1 focus | player_back_right:PB:ピグミィ Lv1 HP3 prep",
+          "finalMetrics": {
+            "ownHp": 10,
+            "enemyHp": 10,
+            "ownStones": 1,
+            "enemyStones": 5,
+            "ownBoardValue": 560,
+            "enemyBoardValue": 420,
+            "ownReadyActions": 1,
+            "enemyReadyActions": 3,
+            "ownShielded": 0,
+            "enemyShielded": 0,
+            "ownLevel2Plus": 0,
+            "enemyLevel2Plus": 0
+          },
+          "truncated": false,
+          "responseAdjustedScore": -153,
+          "responseAdjustedScoreDelta": -216.4,
+          "opponentResponse": {
+            "actions": [
+              {
+                "key": "attack:cpu_back_left:wild_claw->monster:player_front_right",
+                "label": "ヤンバル wild_claw -> ポリスピナー",
+                "score": 434.1,
+                "reason": "ポリスピナーを削れるため攻撃 / 見送り: ためるは5点差で見送り、召喚は14点差で見送り"
+              },
+              {
+                "key": "summon:cpu_card_051_2->cpu_back_right",
+                "label": "summon ピグミィ -> cpu_back_right",
+                "score": 549.1,
+                "reason": "後衛カードを後列右へ召喚 / 見送り: ためるは226点差で見送り、ためるは237点差で見送り"
+              },
+              {
+                "key": "master:wake_up->monster:cpu_back_right",
+                "label": "master wake_up -> ピグミィ@cpu_back_right",
+                "score": 743.2,
+                "reason": "準備中の味方を起こして敵を撃破できるためウェイクアップ / 見送り: ためるは295点差で見送り、ためるは299点差で見送り"
+              },
+              {
+                "key": "attack:cpu_back_right:スパイクボール->monster:player_front_right",
+                "label": "ピグミィ スパイクボール -> ポリスピナー",
+                "score": 789.1,
+                "reason": "敵モンスターを撃破できるため攻撃 / 見送り: 攻撃は173点差で見送り、ためるは350点差で見送り"
+              },
+              {
+                "key": "attack:cpu_back_right:スパイクボール->monster:player_front_left",
+                "label": "ピグミィ スパイクボール -> デスシープ",
+                "score": 401.8,
+                "reason": "デスシープを削れるため攻撃 / 見送り: ためるは286点差で見送り、移動は384点差で見送り"
+              },
+              {
+                "key": "attack:cpu_front_left:ダイン斬り->monster:player_front_left",
+                "label": "真勇者ダイン ダイン斬り -> デスシープ",
+                "score": 532.6,
+                "reason": "デスシープを削れるため攻撃 / 見送り: 攻撃は1点差で見送り、ためるは571点差で見送り"
+              },
+              {
+                "key": "end_turn",
+                "label": "end turn",
+                "score": -222.9,
+                "reason": "有効な行動がないためターン終了"
+              }
+            ],
+            "terminalScore": -153,
+            "terminalScoreDelta": -216.4,
+            "finalState": "turn 6 / current player / HP player/cpu 10/10 / stones player/cpu 5/1 / hand player/cpu 4/3",
+            "finalBoard": "cpu_back_left:CB:ヤンバル Lv1 HP3 act1/1 | cpu_back_right:CB:ピグミィ Lv2 HP3 act2/2 | cpu_front_left:CF:真勇者ダイン Lv1 HP6 act1/1 | cpu_front_right:CF:ヤンバル Lv1 HP3 act0/1 focus | player_front_left:PF:デスシープ Lv1 HP2 act0/1 | player_front_right:PF:ピグミィ Lv1 HP3 act0/2 | player_back_left:PB:デスシープ Lv1 HP6 act0/1 focus",
+            "finalMetrics": {
+              "ownHp": 10,
+              "enemyHp": 10,
+              "ownStones": 5,
+              "enemyStones": 1,
+              "ownBoardValue": 410,
+              "enemyBoardValue": 650,
+              "ownReadyActions": 3,
+              "enemyReadyActions": 1,
+              "ownShielded": 0,
+              "enemyShielded": 0,
+              "ownLevel2Plus": 0,
+              "enemyLevel2Plus": 1
+            },
+            "truncated": true
+          }
+        }
+      ],
+      "topResponsePlans": [
+        {
+          "sequenceKey": "focus:player_front_right > summon:player_card_051_3->player_back_right > attack:player_front_right:attack->master:cpu > focus:player_front_left > master:shield->monster:player_front_left > master:shield->monster:player_front_right > end_turn",
+          "actions": [
+            {
+              "key": "focus:player_front_right",
+              "label": "focus ポリスピナー",
+              "score": 333.8,
+              "reason": "有効攻撃がないためためる"
+            },
+            {
+              "key": "summon:player_card_051_3->player_back_right",
+              "label": "summon ピグミィ -> player_back_right",
+              "score": -62.3,
+              "reason": "後衛カードを後列右へ召喚"
+            },
+            {
+              "key": "attack:player_front_right:attack->master:cpu",
+              "label": "ポリスピナー attack -> cpu master",
+              "score": -336.7,
+              "reason": "相手マスターへ実ダメージを与えられるため攻撃"
+            },
+            {
+              "key": "focus:player_front_left",
+              "label": "focus デスシープ",
+              "score": -79.8,
+              "reason": "有効攻撃がないためためる"
+            },
+            {
+              "key": "master:shield->monster:player_front_left",
+              "label": "master shield -> デスシープ@player_front_left",
+              "score": -257.6,
+              "reason": "高価値の味方を守るためシールド"
+            },
+            {
+              "key": "master:shield->monster:player_front_right",
+              "label": "master shield -> ポリスピナー@player_front_right",
+              "score": -370.5,
+              "reason": "致死圏の味方を守れるためシールド"
+            },
+            {
+              "key": "end_turn",
+              "label": "end turn",
+              "score": -390.5,
+              "reason": "有効な行動がないためターン終了"
+            }
+          ],
+          "guideScoreTotal": -1163.6,
+          "terminalScore": -40.6,
+          "terminalScoreDelta": 42.2,
+          "finalState": "turn 5 / current cpu / HP player/cpu 10/9 / stones player/cpu 0/4 / hand player/cpu 3/4",
+          "finalBoard": "cpu_back_left:CB:ヤンバル Lv1 HP3 act0/1 | cpu_back_right:CB:ヤンバル Lv1 HP3 act0/1 | cpu_front_left:CF:真勇者ダイン Lv1 HP6 act0/1 | cpu_front_right:CF:デスシープ Lv2 HP6 act0/1 | player_front_left:PF:デスシープ Lv1 HP4 act1/1 shield,focus | player_front_right:PF:ポリスピナー Lv1 HP3 act2/2 shield | player_back_left:PB:デスシープ Lv1 HP6 act0/1 focus | player_back_right:PB:ピグミィ Lv1 HP3 prep",
+          "finalMetrics": {
+            "ownHp": 10,
+            "enemyHp": 9,
+            "ownStones": 0,
+            "enemyStones": 4,
+            "ownBoardValue": 600,
+            "enemyBoardValue": 680,
+            "ownReadyActions": 1,
+            "enemyReadyActions": 4,
+            "ownShielded": 2,
+            "enemyShielded": 0,
+            "ownLevel2Plus": 0,
+            "enemyLevel2Plus": 1
+          },
+          "truncated": true,
+          "responseAdjustedScore": -148,
+          "responseAdjustedScoreDelta": -107.4,
+          "opponentResponse": {
+            "actions": [
+              {
+                "key": "attack:cpu_front_right:attack->monster:player_front_right",
+                "label": "デスシープ attack -> ポリスピナー",
+                "score": 126.2,
+                "reason": "ポリスピナーを削れるため攻撃 / 見送り: 攻撃は44点差で見送り、攻撃は44点差で見送り"
+              },
+              {
+                "key": "attack:cpu_back_left:wild_claw->monster:player_front_right",
+                "label": "ヤンバル wild_claw -> ポリスピナー",
+                "score": 745.4,
+                "reason": "敵モンスターを撃破できるため攻撃 / 見送り: 攻撃は1点差で見送り、攻撃は215点差で見送り"
+              },
+              {
+                "key": "attack:cpu_back_right:wild_claw->monster:player_front_left",
+                "label": "ヤンバル wild_claw -> デスシープ",
+                "score": 159,
+                "reason": "デスシープを削れるため攻撃 / 見送り: 攻撃は79点差で見送り、ためるは122点差で見送り"
+              },
+              {
+                "key": "focus:cpu_front_left",
+                "label": "focus 真勇者ダイン",
+                "score": 161.9,
+                "reason": "有効攻撃がないためためる / 見送り: 攻撃は287点差で見送り"
+              },
+              {
+                "key": "master:shield->monster:cpu_front_right",
+                "label": "master shield -> デスシープ@cpu_front_right",
+                "score": -51,
+                "reason": "高価値の味方を守るためシールド / 見送り: マスター特技は6点差で見送り"
+              },
+              {
+                "key": "end_turn",
+                "label": "end turn",
+                "score": -138.6,
+                "reason": "有効な行動がないためターン終了"
+              }
+            ],
+            "terminalScore": -148,
+            "terminalScoreDelta": -107.4,
+            "finalState": "turn 6 / current player / HP player/cpu 10/9 / stones player/cpu 4/1 / hand player/cpu 4/4",
+            "finalBoard": "cpu_back_left:CB:ヤンバル Lv2 HP3 act1/1 | cpu_back_right:CB:ヤンバル Lv1 HP3 act1/1 | cpu_front_left:CF:真勇者ダイン Lv1 HP6 act1/1 focus | cpu_front_right:CF:デスシープ Lv2 HP6 act1/1 shield | player_front_left:PF:デスシープ Lv1 HP4 act0/1 | player_front_right:PF:ピグミィ Lv1 HP3 act0/2 | player_back_left:PB:デスシープ Lv1 HP6 act0/1 focus",
+            "finalMetrics": {
+              "ownHp": 10,
+              "enemyHp": 9,
+              "ownStones": 4,
+              "enemyStones": 1,
+              "ownBoardValue": 430,
+              "enemyBoardValue": 800,
+              "ownReadyActions": 3,
+              "enemyReadyActions": 0,
+              "ownShielded": 0,
+              "enemyShielded": 1,
+              "ownLevel2Plus": 0,
+              "enemyLevel2Plus": 2
+            },
+            "truncated": false
+          }
+        },
+        {
+          "sequenceKey": "focus:player_front_right > summon:player_card_051_3->player_back_right > attack:player_front_right:attack->master:cpu > focus:player_front_left > master:shield->monster:player_front_right > master:shield->monster:player_front_left > end_turn",
+          "actions": [
+            {
+              "key": "focus:player_front_right",
+              "label": "focus ポリスピナー",
+              "score": 333.8,
+              "reason": "有効攻撃がないためためる"
+            },
+            {
+              "key": "summon:player_card_051_3->player_back_right",
+              "label": "summon ピグミィ -> player_back_right",
+              "score": -62.3,
+              "reason": "後衛カードを後列右へ召喚"
+            },
+            {
+              "key": "attack:player_front_right:attack->master:cpu",
+              "label": "ポリスピナー attack -> cpu master",
+              "score": -336.7,
+              "reason": "相手マスターへ実ダメージを与えられるため攻撃"
+            },
+            {
+              "key": "focus:player_front_left",
+              "label": "focus デスシープ",
+              "score": -79.8,
+              "reason": "有効攻撃がないためためる"
+            },
+            {
+              "key": "master:shield->monster:player_front_right",
+              "label": "master shield -> ポリスピナー@player_front_right",
+              "score": -64.6,
+              "reason": "致死圏の味方を守れるためシールド"
+            },
+            {
+              "key": "master:shield->monster:player_front_left",
+              "label": "master shield -> デスシープ@player_front_left",
+              "score": -496.5,
+              "reason": "高価値の味方を守るためシールド"
+            },
+            {
+              "key": "end_turn",
+              "label": "end turn",
+              "score": -390.5,
+              "reason": "有効な行動がないためターン終了"
+            }
+          ],
+          "guideScoreTotal": -1096.6,
+          "terminalScore": -40.6,
+          "terminalScoreDelta": 42.2,
+          "finalState": "turn 5 / current cpu / HP player/cpu 10/9 / stones player/cpu 0/4 / hand player/cpu 3/4",
+          "finalBoard": "cpu_back_left:CB:ヤンバル Lv1 HP3 act0/1 | cpu_back_right:CB:ヤンバル Lv1 HP3 act0/1 | cpu_front_left:CF:真勇者ダイン Lv1 HP6 act0/1 | cpu_front_right:CF:デスシープ Lv2 HP6 act0/1 | player_front_left:PF:デスシープ Lv1 HP4 act1/1 shield,focus | player_front_right:PF:ポリスピナー Lv1 HP3 act2/2 shield | player_back_left:PB:デスシープ Lv1 HP6 act0/1 focus | player_back_right:PB:ピグミィ Lv1 HP3 prep",
+          "finalMetrics": {
+            "ownHp": 10,
+            "enemyHp": 9,
+            "ownStones": 0,
+            "enemyStones": 4,
+            "ownBoardValue": 600,
+            "enemyBoardValue": 680,
+            "ownReadyActions": 1,
+            "enemyReadyActions": 4,
+            "ownShielded": 2,
+            "enemyShielded": 0,
+            "ownLevel2Plus": 0,
+            "enemyLevel2Plus": 1
+          },
+          "truncated": true,
+          "responseAdjustedScore": -148,
+          "responseAdjustedScoreDelta": -107.4,
+          "opponentResponse": {
+            "actions": [
+              {
+                "key": "attack:cpu_front_right:attack->monster:player_front_right",
+                "label": "デスシープ attack -> ポリスピナー",
+                "score": 126.2,
+                "reason": "ポリスピナーを削れるため攻撃 / 見送り: 攻撃は44点差で見送り、攻撃は44点差で見送り"
+              },
+              {
+                "key": "attack:cpu_back_left:wild_claw->monster:player_front_right",
+                "label": "ヤンバル wild_claw -> ポリスピナー",
+                "score": 745.4,
+                "reason": "敵モンスターを撃破できるため攻撃 / 見送り: 攻撃は1点差で見送り、攻撃は215点差で見送り"
+              },
+              {
+                "key": "attack:cpu_back_right:wild_claw->monster:player_front_left",
+                "label": "ヤンバル wild_claw -> デスシープ",
+                "score": 159,
+                "reason": "デスシープを削れるため攻撃 / 見送り: 攻撃は79点差で見送り、ためるは122点差で見送り"
+              },
+              {
+                "key": "focus:cpu_front_left",
+                "label": "focus 真勇者ダイン",
+                "score": 161.9,
+                "reason": "有効攻撃がないためためる / 見送り: 攻撃は287点差で見送り"
+              },
+              {
+                "key": "master:shield->monster:cpu_front_right",
+                "label": "master shield -> デスシープ@cpu_front_right",
+                "score": -51,
+                "reason": "高価値の味方を守るためシールド / 見送り: マスター特技は6点差で見送り"
+              },
+              {
+                "key": "end_turn",
+                "label": "end turn",
+                "score": -138.6,
+                "reason": "有効な行動がないためターン終了"
+              }
+            ],
+            "terminalScore": -148,
+            "terminalScoreDelta": -107.4,
+            "finalState": "turn 6 / current player / HP player/cpu 10/9 / stones player/cpu 4/1 / hand player/cpu 4/4",
+            "finalBoard": "cpu_back_left:CB:ヤンバル Lv2 HP3 act1/1 | cpu_back_right:CB:ヤンバル Lv1 HP3 act1/1 | cpu_front_left:CF:真勇者ダイン Lv1 HP6 act1/1 focus | cpu_front_right:CF:デスシープ Lv2 HP6 act1/1 shield | player_front_left:PF:デスシープ Lv1 HP4 act0/1 | player_front_right:PF:ピグミィ Lv1 HP3 act0/2 | player_back_left:PB:デスシープ Lv1 HP6 act0/1 focus",
+            "finalMetrics": {
+              "ownHp": 10,
+              "enemyHp": 9,
+              "ownStones": 4,
+              "enemyStones": 1,
+              "ownBoardValue": 430,
+              "enemyBoardValue": 800,
+              "ownReadyActions": 3,
+              "enemyReadyActions": 0,
+              "ownShielded": 0,
+              "enemyShielded": 1,
+              "ownLevel2Plus": 0,
+              "enemyLevel2Plus": 2
+            },
+            "truncated": false
+          }
+        },
+        {
+          "sequenceKey": "summon:player_card_051_3->player_back_right > focus:player_front_right > attack:player_front_right:attack->master:cpu > focus:player_front_left > master:shield->monster:player_front_left > master:shield->monster:player_front_right > end_turn",
+          "actions": [
+            {
+              "key": "summon:player_card_051_3->player_back_right",
+              "label": "summon ピグミィ -> player_back_right",
+              "score": 108.3,
+              "reason": "後衛カードを後列右へ召喚"
+            },
+            {
+              "key": "focus:player_front_right",
+              "label": "focus ポリスピナー",
+              "score": 121.3,
+              "reason": "有効攻撃がないためためる"
+            },
+            {
+              "key": "attack:player_front_right:attack->master:cpu",
+              "label": "ポリスピナー attack -> cpu master",
+              "score": -336.7,
+              "reason": "相手マスターへ実ダメージを与えられるため攻撃"
+            },
+            {
+              "key": "focus:player_front_left",
+              "label": "focus デスシープ",
+              "score": -79.8,
+              "reason": "有効攻撃がないためためる"
+            },
+            {
+              "key": "master:shield->monster:player_front_left",
+              "label": "master shield -> デスシープ@player_front_left",
+              "score": -257.6,
+              "reason": "高価値の味方を守るためシールド"
+            },
+            {
+              "key": "master:shield->monster:player_front_right",
+              "label": "master shield -> ポリスピナー@player_front_right",
+              "score": -370.5,
+              "reason": "致死圏の味方を守れるためシールド"
+            },
+            {
+              "key": "end_turn",
+              "label": "end turn",
+              "score": -390.5,
+              "reason": "有効な行動がないためターン終了"
+            }
+          ],
+          "guideScoreTotal": -1205.5,
+          "terminalScore": -40.6,
+          "terminalScoreDelta": 42.2,
+          "finalState": "turn 5 / current cpu / HP player/cpu 10/9 / stones player/cpu 0/4 / hand player/cpu 3/4",
+          "finalBoard": "cpu_back_left:CB:ヤンバル Lv1 HP3 act0/1 | cpu_back_right:CB:ヤンバル Lv1 HP3 act0/1 | cpu_front_left:CF:真勇者ダイン Lv1 HP6 act0/1 | cpu_front_right:CF:デスシープ Lv2 HP6 act0/1 | player_front_left:PF:デスシープ Lv1 HP4 act1/1 shield,focus | player_front_right:PF:ポリスピナー Lv1 HP3 act2/2 shield | player_back_left:PB:デスシープ Lv1 HP6 act0/1 focus | player_back_right:PB:ピグミィ Lv1 HP3 prep",
+          "finalMetrics": {
+            "ownHp": 10,
+            "enemyHp": 9,
+            "ownStones": 0,
+            "enemyStones": 4,
+            "ownBoardValue": 600,
+            "enemyBoardValue": 680,
+            "ownReadyActions": 1,
+            "enemyReadyActions": 4,
+            "ownShielded": 2,
+            "enemyShielded": 0,
+            "ownLevel2Plus": 0,
+            "enemyLevel2Plus": 1
+          },
+          "truncated": true,
+          "responseAdjustedScore": -148,
+          "responseAdjustedScoreDelta": -107.4,
+          "opponentResponse": {
+            "actions": [
+              {
+                "key": "attack:cpu_front_right:attack->monster:player_front_right",
+                "label": "デスシープ attack -> ポリスピナー",
+                "score": 126.2,
+                "reason": "ポリスピナーを削れるため攻撃 / 見送り: 攻撃は44点差で見送り、攻撃は44点差で見送り"
+              },
+              {
+                "key": "attack:cpu_back_left:wild_claw->monster:player_front_right",
+                "label": "ヤンバル wild_claw -> ポリスピナー",
+                "score": 745.4,
+                "reason": "敵モンスターを撃破できるため攻撃 / 見送り: 攻撃は1点差で見送り、攻撃は215点差で見送り"
+              },
+              {
+                "key": "attack:cpu_back_right:wild_claw->monster:player_front_left",
+                "label": "ヤンバル wild_claw -> デスシープ",
+                "score": 159,
+                "reason": "デスシープを削れるため攻撃 / 見送り: 攻撃は79点差で見送り、ためるは122点差で見送り"
+              },
+              {
+                "key": "focus:cpu_front_left",
+                "label": "focus 真勇者ダイン",
+                "score": 161.9,
+                "reason": "有効攻撃がないためためる / 見送り: 攻撃は287点差で見送り"
+              },
+              {
+                "key": "master:shield->monster:cpu_front_right",
+                "label": "master shield -> デスシープ@cpu_front_right",
+                "score": -51,
+                "reason": "高価値の味方を守るためシールド / 見送り: マスター特技は6点差で見送り"
+              },
+              {
+                "key": "end_turn",
+                "label": "end turn",
+                "score": -138.6,
+                "reason": "有効な行動がないためターン終了"
+              }
+            ],
+            "terminalScore": -148,
+            "terminalScoreDelta": -107.4,
+            "finalState": "turn 6 / current player / HP player/cpu 10/9 / stones player/cpu 4/1 / hand player/cpu 4/4",
+            "finalBoard": "cpu_back_left:CB:ヤンバル Lv2 HP3 act1/1 | cpu_back_right:CB:ヤンバル Lv1 HP3 act1/1 | cpu_front_left:CF:真勇者ダイン Lv1 HP6 act1/1 focus | cpu_front_right:CF:デスシープ Lv2 HP6 act1/1 shield | player_front_left:PF:デスシープ Lv1 HP4 act0/1 | player_front_right:PF:ピグミィ Lv1 HP3 act0/2 | player_back_left:PB:デスシープ Lv1 HP6 act0/1 focus",
+            "finalMetrics": {
+              "ownHp": 10,
+              "enemyHp": 9,
+              "ownStones": 4,
+              "enemyStones": 1,
+              "ownBoardValue": 430,
+              "enemyBoardValue": 800,
+              "ownReadyActions": 3,
+              "enemyReadyActions": 0,
+              "ownShielded": 0,
+              "enemyShielded": 1,
+              "ownLevel2Plus": 0,
+              "enemyLevel2Plus": 2
+            },
+            "truncated": false
+          }
+        }
+      ]
+    }
+  ],
+  "summary": {
+    "selectedTop1": 0,
+    "selectedAverageRank": 36.5,
+    "averageGapToBest": 145.1,
+    "maxGapToBest": 255,
+    "selectedResponseTop1": 1,
+    "selectedAverageResponseRank": 5,
+    "averageResponseGapToBest": 44.5,
+    "maxResponseGapToBest": 89
+  },
+  "conclusion": [
+    "現行AIの選択手順が終端盤面1位だった局面は 0/2。",
+    "平均ギャップは 145.1 点。80点以上のズレは 1/2。",
+    "相手応答後1位だった局面は 1/2。応答後平均ギャップは 44.5 点。80点以上のズレは 1/2。",
+    "現行選択はシールド 1/2、フォーカス 2/2 を含む。終端1位はシールド 0/2、フォーカス 2/2。応答後1位はシールド 1/2、フォーカス 2/2。",
+    "勝率ベンチを増やす前に、ズレが大きい局面の手順評価を読み、追加行動の局所加点より終端盤面の石・行動済み・レベルアップ成果を優先する候補を作る。"
+  ]
+}
