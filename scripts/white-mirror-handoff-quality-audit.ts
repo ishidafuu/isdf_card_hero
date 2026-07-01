@@ -48,12 +48,16 @@ interface HandoffQualityMetrics {
   lowStoneShieldNoHitNoWorkPunished: number;
   lowStoneAfterMonsterNoKill: number;
   lowStoneAfterMonsterNoKillPunished: number;
+  lowStoneAfterDanglingMonsterChip: number;
+  lowStoneAfterDanglingMonsterChipPunished: number;
   lowStoneAfterFocus: number;
   lowStoneAfterFocusPunished: number;
   lowStoneAfterNoActionEnd: number;
   lowStoneAfterNoActionEndPunished: number;
   monsterAttacksNoKill: number;
   monsterAttacksNoKillPunished: number;
+  danglingMonsterChips: number;
+  danglingMonsterChipsPunished: number;
   averageLowStoneOwnBoardSwing: number;
   averageLowStoneHpSwing: number;
 }
@@ -73,6 +77,7 @@ type SampleKind =
   | "shield_low_stone_punished"
   | "shield_absorbed_low_stone"
   | "shield_ignored_low_stone"
+  | "dangling_monster_chip_low_stone_punished"
   | "monster_no_kill_low_stone_punished"
   | "focus_low_stone_punished"
   | "no_action_end_low_stone_punished"
@@ -94,6 +99,7 @@ interface HandoffQualitySample {
   ownMasterDamageTaken: number;
   nonLethalFaceDamage: number;
   monsterNoKill: number;
+  danglingMonsterChip: number;
   shieldTargets: number;
   shieldTargetsAttacked: number;
   shieldTargetsWorkedNextTurn: number;
@@ -133,6 +139,7 @@ interface TurnAnalysis {
   shieldTargetsWorkedNextTurn: number;
   shieldTargetsIgnoredAndNoWork: number;
   monsterNoKillCount: number;
+  danglingMonsterChipCount: number;
   focusCount: number;
   noActionEnd: boolean;
 }
@@ -257,6 +264,7 @@ function analyzeTurn(turn: TurnRecord): TurnAnalysis {
   const shieldTargetsWorkedNextTurn = shieldTargetResults.filter((result) => result.workedNextTurn).length;
   const shieldTargetsIgnoredAndNoWork = shieldTargetResults.filter((result) => !result.attacked && !result.workedNextTurn).length;
   const monsterNoKillCount = turn.events.filter((event) => isMonsterAttackNoKill(event, turn.seat)).length;
+  const danglingMonsterChipCount = danglingMonsterChipCountAtHandoff(turn);
   const focusCount = turn.events.filter((event) => event.decision.startsWith("focus:")).length;
   const noActionEnd = turn.events.every((event) => event.decision === "end_turn");
 
@@ -278,6 +286,7 @@ function analyzeTurn(turn: TurnRecord): TurnAnalysis {
     shieldTargetsWorkedNextTurn,
     shieldTargetsIgnoredAndNoWork,
     monsterNoKillCount,
+    danglingMonsterChipCount,
     focusCount,
     noActionEnd,
   };
@@ -335,6 +344,14 @@ function accumulateMetrics(metrics: HandoffQualityMetrics, analysis: TurnAnalysi
     if (analysis.punished) {
       metrics.lowStoneAfterMonsterNoKillPunished += 1;
       metrics.monsterAttacksNoKillPunished += analysis.monsterNoKillCount;
+    }
+  }
+  if (analysis.danglingMonsterChipCount > 0) {
+    metrics.lowStoneAfterDanglingMonsterChip += 1;
+    metrics.danglingMonsterChips += analysis.danglingMonsterChipCount;
+    if (analysis.punished) {
+      metrics.lowStoneAfterDanglingMonsterChipPunished += 1;
+      metrics.danglingMonsterChipsPunished += analysis.danglingMonsterChipCount;
     }
   }
   if (analysis.focusCount > 0) {
@@ -492,6 +509,9 @@ function sampleKindFor(analysis: TurnAnalysis): SampleKind {
   if (analysis.shieldTargets.length > 0 && analysis.shieldTargetsAttacked === 0) {
     return analysis.punished ? "shield_low_stone_punished" : "shield_ignored_low_stone";
   }
+  if (analysis.punished && analysis.danglingMonsterChipCount > 0) {
+    return "dangling_monster_chip_low_stone_punished";
+  }
   if (analysis.punished && analysis.monsterNoKillCount > 0) {
     return "monster_no_kill_low_stone_punished";
   }
@@ -520,6 +540,7 @@ function sampleFor(turn: TurnRecord, analysis: TurnAnalysis, kind: SampleKind): 
     ownMasterDamageTaken: analysis.ownMasterDamageTaken,
     nonLethalFaceDamage: analysis.nonLethalFaceDamage,
     monsterNoKill: analysis.monsterNoKillCount,
+    danglingMonsterChip: analysis.danglingMonsterChipCount,
     shieldTargets: analysis.shieldTargets.length,
     shieldTargetsAttacked: analysis.shieldTargetsAttacked,
     shieldTargetsWorkedNextTurn: analysis.shieldTargetsWorkedNextTurn,
@@ -557,6 +578,43 @@ function isMonsterAttackNoKill(event: MasterLabDecisionEvent, seat: PlayerId): b
   const before = slotSummary(event.before, targetSlotKey);
   const after = slotSummary(event.after, targetSlotKey);
   return !!before?.card && before.owner === opponentOf(seat) && !!after?.card && after.owner === before.owner && (after.hp ?? 0) < (before.hp ?? 0);
+}
+
+function danglingMonsterChipCountAtHandoff(turn: TurnRecord): number {
+  const targets = new Map<string, { instanceCard: string; beforeHp: number; afterHp: number }>();
+  for (const event of turn.events) {
+    if (!isMonsterAttackNoKill(event, turn.seat)) {
+      continue;
+    }
+    const targetSlotKey = targetSlotKeyForDecision(event.decision);
+    if (!targetSlotKey) {
+      continue;
+    }
+    const before = slotSummary(event.before, targetSlotKey);
+    const after = slotSummary(event.after, targetSlotKey);
+    if (!before?.card || !after?.card || before.owner !== opponentOf(turn.seat) || after.owner !== before.owner) {
+      continue;
+    }
+    targets.set(targetSlotKey, {
+      instanceCard: before.card,
+      beforeHp: before.hp ?? 0,
+      afterHp: after.hp ?? 0,
+    });
+  }
+
+  let count = 0;
+  for (const [slotKey, target] of targets) {
+    const handoff = slotSummary(turn.handoff, slotKey);
+    if (
+      handoff?.card === target.instanceCard &&
+      handoff.owner === opponentOf(turn.seat) &&
+      (handoff.hp ?? 0) > 0 &&
+      (handoff.hp ?? 0) <= target.afterHp
+    ) {
+      count += 1;
+    }
+  }
+  return count;
 }
 
 function wasTargetedByOpponentWhileShielded(turn: TurnRecord, slotKey: string): boolean {
@@ -697,12 +755,16 @@ function emptyMetrics(): HandoffQualityMetrics {
     lowStoneShieldNoHitNoWorkPunished: 0,
     lowStoneAfterMonsterNoKill: 0,
     lowStoneAfterMonsterNoKillPunished: 0,
+    lowStoneAfterDanglingMonsterChip: 0,
+    lowStoneAfterDanglingMonsterChipPunished: 0,
     lowStoneAfterFocus: 0,
     lowStoneAfterFocusPunished: 0,
     lowStoneAfterNoActionEnd: 0,
     lowStoneAfterNoActionEndPunished: 0,
     monsterAttacksNoKill: 0,
     monsterAttacksNoKillPunished: 0,
+    danglingMonsterChips: 0,
+    danglingMonsterChipsPunished: 0,
     averageLowStoneOwnBoardSwing: 0,
     averageLowStoneHpSwing: 0,
   };
@@ -725,6 +787,7 @@ function buildConclusion(metrics: HandoffQualityMetrics): string[] {
   );
   lines.push(
     `低石かつ未撃破モンスター攻撃は ${metrics.lowStoneAfterMonsterNoKill}、罰あり ${metrics.lowStoneAfterMonsterNoKillPunished}。` +
+      `そのうちハンドオフ時点でも残った未変換削りは ${metrics.lowStoneAfterDanglingMonsterChip}、罰あり ${metrics.lowStoneAfterDanglingMonsterChipPunished}。` +
       `低石focusは ${metrics.lowStoneAfterFocus}、罰あり ${metrics.lowStoneAfterFocusPunished}。`,
   );
   if (metrics.lowStoneAfterNonLethalFaceDamagePunished > 0) {
@@ -738,8 +801,8 @@ function buildConclusion(metrics: HandoffQualityMetrics): string[] {
   } else if (metrics.lowStoneAfterShieldPunished > 0) {
     lines.push("低石盾の罰ありは出ているが、盾対象が攻撃を吸うか次ターン仕事化する例も多い。雑な盾抑制は避ける。");
   }
-  if (metrics.lowStoneAfterMonsterNoKillPunished > 0) {
-    lines.push("倒しきれないモンスター攻撃から低石で渡す局面は、気合ためとの比較対象として切り出せる。");
+  if (metrics.lowStoneAfterDanglingMonsterChipPunished > 0) {
+    lines.push("倒しきれない攻撃のうち、同ターンで回収できず敵を残した削りだけが気合ためとの比較対象。後続撃破に繋がる削りは抑制対象から外す。");
   }
   return lines;
 }
@@ -759,8 +822,8 @@ function buildNextAuditTargets(metrics: HandoffQualityMetrics): string[] {
       score: metrics.lowStoneShieldTargetsIgnoredAndNoWork + metrics.lowStoneShieldNoHitNoWorkPunished,
     },
     {
-      label: "倒しきれないモンスター攻撃後の低石ハンドオフ",
-      score: metrics.lowStoneAfterMonsterNoKillPunished,
+      label: "同ターンで回収できず敵を残した未変換削り後の低石ハンドオフ",
+      score: metrics.lowStoneAfterDanglingMonsterChipPunished,
     },
     {
       label: "低石focus後の相手ターン被害",
@@ -800,6 +863,7 @@ function formatMarkdown(report: HandoffQualityReport): string {
   lines.push(triggerRow("summon", m.lowStoneAfterSummon, m.lowStoneAfterSummonPunished));
   lines.push(triggerRow("shield", m.lowStoneAfterShield, m.lowStoneAfterShieldPunished));
   lines.push(triggerRow("monster attack no kill", m.lowStoneAfterMonsterNoKill, m.lowStoneAfterMonsterNoKillPunished));
+  lines.push(triggerRow("dangling monster chip", m.lowStoneAfterDanglingMonsterChip, m.lowStoneAfterDanglingMonsterChipPunished));
   lines.push(triggerRow("focus", m.lowStoneAfterFocus, m.lowStoneAfterFocusPunished));
   lines.push(triggerRow("no-action end", m.lowStoneAfterNoActionEnd, m.lowStoneAfterNoActionEndPunished));
   lines.push("");
@@ -838,14 +902,14 @@ function formatMarkdown(report: HandoffQualityReport): string {
   lines.push("## Samples");
   lines.push("");
   lines.push(
-    "| kind | seed | seat | turn | S | last | ownBoard | board | hp | lost | oppLv+ | dmgTaken | face | noKill | shield | shieldHit | shieldWork | shieldNoWork | decisions | opponent response | handoff | next own turn |",
+    "| kind | seed | seat | turn | S | last | ownBoard | board | hp | lost | oppLv+ | dmgTaken | face | noKill | dangling | shield | shieldHit | shieldWork | shieldNoWork | decisions | opponent response | handoff | next own turn |",
   );
-  lines.push("|---|---:|---|---:|---:|---|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---|---|---|---|");
+  lines.push("|---|---:|---|---:|---:|---|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---|---|---|---|");
   for (const sample of report.samples) {
     lines.push(
       `| ${sample.kind} | ${sample.seed} | ${sample.seat} | ${sample.turnNumber} | ${sample.finalStones} | ` +
         `${sample.lastActionKind} | ${sample.ownBoardSwing} | ${sample.boardSwing} | ${sample.hpSwing} | ${sample.ownLost} | ` +
-        `${sample.opponentLevelGain} | ${sample.ownMasterDamageTaken} | ${sample.nonLethalFaceDamage} | ${sample.monsterNoKill} | ` +
+        `${sample.opponentLevelGain} | ${sample.ownMasterDamageTaken} | ${sample.nonLethalFaceDamage} | ${sample.monsterNoKill} | ${sample.danglingMonsterChip} | ` +
         `${sample.shieldTargets} | ${sample.shieldTargetsAttacked} | ${sample.shieldTargetsWorkedNextTurn} | ${sample.shieldTargetsIgnoredAndNoWork} | ` +
         `${escapeMarkdownTableCell(sample.decisions)} | ${escapeMarkdownTableCell(sample.opponentResponse)} | ` +
         `${escapeMarkdownTableCell(sample.handoff)} | ${escapeMarkdownTableCell(sample.nextOwnTurn)} |`,

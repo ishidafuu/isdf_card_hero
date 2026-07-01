@@ -1054,6 +1054,15 @@ function decisionSituationalBonus(
       bias.whiteLowStoneFocusMissedAttackPenalty,
     );
   }
+  if (bias.whiteLowStoneNonLethalFacePenalty) {
+    bonus -= whiteLowStoneNonLethalFaceDecisionPenalty(
+      before,
+      after,
+      decision,
+      perspective,
+      bias.whiteLowStoneNonLethalFacePenalty,
+    );
+  }
   if (bias.whiteThreatSourceAttackBonus) {
     bonus += whiteThreatSourceAttackDecisionBonus(before, after, decision, perspective, bias.whiteThreatSourceAttackBonus);
   }
@@ -2813,6 +2822,41 @@ function whiteLowStoneFocusMissedAttackDecisionPenalty(
     return 0;
   }
   return bestAttackOpportunityScoreForPlayer(before, perspective) > 0 ? value : 0;
+}
+
+function whiteLowStoneNonLethalFaceDecisionPenalty(
+  before: GameState,
+  after: GameState,
+  decision: CpuDecision,
+  perspective: PlayerId,
+  value: number,
+): number {
+  if (
+    value <= 0 ||
+    !isWhiteMirrorState(before, perspective) ||
+    after.players[perspective].stones > 1 ||
+    after.winner === perspective ||
+    masterDamageFromTransition(before, after, perspective) <= 0 ||
+    after.players[opponentOf(perspective)].masterHp <= 3
+  ) {
+    return 0;
+  }
+  const faceAttack =
+    (decision.type === "attack" && decision.action.target.kind === "master") ||
+    (decision.type === "master_action" && decision.actionId === "master_attack" && decision.target.kind === "master");
+  if (!faceAttack) {
+    return 0;
+  }
+
+  const responsePressure =
+    threatenedMonsterValueForPlayer(after, perspective) +
+    nextTurnLevelUpPotentialForPlayer(after, opponentOf(perspective)) +
+    Math.max(0, buildThreatModel(after, opponentOf(perspective)).masterDamage[perspective]) * 80;
+  if (responsePressure <= 0 && !hasEnemyFrontThreatSource(after, perspective)) {
+    return 0;
+  }
+
+  return value + Math.min(160, responsePressure * 0.18);
 }
 
 function nextTurnWorkPotential(state: GameState, slotKey: SlotKey, perspective: PlayerId): number {

@@ -59,6 +59,7 @@ export interface CpuAiTuning {
     whiteLowStoneFocusConversionBonus?: number;
     whiteWakeSafeWorkBonus?: number;
     whiteLowStoneFocusMissedAttackPenalty?: number;
+    whiteLowStoneNonLethalFacePenalty?: number;
     whiteThreatSourceAttackBonus?: number;
     whiteSetupAfterThreatReductionBonus?: number;
     whiteRedirectMarkedAttackPenalty?: number;

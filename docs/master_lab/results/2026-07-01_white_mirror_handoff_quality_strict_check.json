@@ -1,0 +1,101 @@
+{
+  "generatedAt": "2026-07-01T11:32:43.303Z",
+  "deckPreset": "master-lab-white-1377-death-sheep3",
+  "screen": {
+    "gamesPerMatchup": 1,
+    "totalGames": 4,
+    "standings": [
+      {
+        "rank": 1,
+        "variantId": "current_white_baseline",
+        "label": "現行: デスシープ3 / white",
+        "score": -10,
+        "wins": 0,
+        "losses": 1,
+        "draws": 1,
+        "overall": 0.25,
+        "vsBlack": 0,
+        "vsDecoy": 0,
+        "vsWhite": 0.25,
+        "averageTurns": 15,
+        "issues": "1F/0W",
+        "notes": [
+          "failure 1"
+        ]
+      },
+      {
+        "rank": 2,
+        "variantId": "current_mirror_handoff_quality_strict",
+        "label": "候補: 白ミラー低石ハンドオフ品質 強",
+        "score": -26,
+        "wins": 0,
+        "losses": 0,
+        "draws": 2,
+        "overall": 0.5,
+        "vsBlack": 0,
+        "vsDecoy": 0,
+        "vsWhite": 0.5,
+        "averageTurns": 18,
+        "issues": "2F/0W",
+        "notes": [
+          "failure 2"
+        ]
+      }
+    ]
+  },
+  "confirm": {
+    "gamesPerMatchup": 1,
+    "totalGames": 4,
+    "standings": [
+      {
+        "rank": 1,
+        "variantId": "current_mirror_handoff_quality_strict",
+        "label": "候補: 白ミラー低石ハンドオフ品質 強",
+        "score": 6,
+        "wins": 0,
+        "losses": 2,
+        "draws": 0,
+        "overall": 0,
+        "vsBlack": 0,
+        "vsDecoy": 0,
+        "vsWhite": 0,
+        "averageTurns": 16.5,
+        "issues": "0F/0W",
+        "notes": [
+          "シールド偏重"
+        ]
+      },
+      {
+        "rank": 2,
+        "variantId": "current_white_baseline",
+        "label": "現行: デスシープ3 / white",
+        "score": -10,
+        "wins": 0,
+        "losses": 1,
+        "draws": 1,
+        "overall": 0.25,
+        "vsBlack": 0,
+        "vsDecoy": 0,
+        "vsWhite": 0.25,
+        "averageTurns": 19,
+        "issues": "1F/0W",
+        "notes": [
+          "failure 1",
+          "シールド偏重"
+        ]
+      }
+    ]
+  },
+  "adopted": {
+    "variantId": "current_mirror_handoff_quality_strict",
+    "label": "候補: 白ミラー低石ハンドオフ品質 強",
+    "recommendation": "hold",
+    "reason": "baseline比 score +16, overall -25%, vsBlack +0%, vsWhite -25%, issues 0F/0W。"
+  },
+  "nextSteps": [
+    "今回の確認では即採用せず、ベースラインを維持する。",
+    "次は `current_mirror_handoff_quality_strict` と `current_white_baseline` を games-per-matchup 3-4 で再確認し、seed差を潰す。",
+    "対黒がまだ不安定。負けseedから、デスシープが前に出た後の盾/ウェイク/攻撃順を重点監査する。",
+    "デッキ側はデスシープ3を固定し、次ループはAIだけを触る。元1377は比較対象として残す。"
+  ]
+}

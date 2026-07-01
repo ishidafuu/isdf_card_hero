@@ -155,6 +155,38 @@ function buildVariants(): WhiteAiTuningVariant[] {
     variant("current_threat_left_low_stone_guard", "候補: 脅威残り低石布石抑制", {
       situationalBias: { whiteThreatLeftLowStoneSetupPenalty: 6 },
     }, "脅威が残ったまま石1以下へ落とす盾/起動/召喚/集中を軽く抑える。"),
+    variant("current_mirror_handoff_quality_light", "候補: 白ミラー低石ハンドオフ品質 軽量", {
+      situationalBias: {
+        whiteThreatLeftLowStoneSetupPenalty: 12,
+        whiteFrontChipResponsePenalty: 108,
+        whiteBoardControlMasterAttackPenalty: 360,
+        whiteLowStoneFocusConversionBonus: 10,
+      },
+    }, "白ミラーで、低石のまま脅威を残す布石・倒しきれない前衛削り・非リーサル顔打点を軽く抑える。"),
+    variant("current_mirror_handoff_quality_mid", "候補: 白ミラー低石ハンドオフ品質 中", {
+      situationalBias: {
+        whiteThreatLeftLowStoneSetupPenalty: 18,
+        whiteFrontChipResponsePenalty: 124,
+        whiteBoardControlMasterAttackPenalty: 400,
+        whiteLowStoneFocusConversionBonus: 14,
+        whiteLowStoneFocusMissedAttackPenalty: 10,
+      },
+    }, "低石で返す前の未撃破攻撃・低石focus・非リーサル顔打点を中程度に抑え、focusは次ターン仕事化を条件に寄せる。"),
+    variant("current_mirror_handoff_quality_strict", "候補: 白ミラー低石ハンドオフ品質 強", {
+      situationalBias: {
+        whiteThreatLeftLowStoneSetupPenalty: 24,
+        whiteFrontChipResponsePenalty: 148,
+        whiteBoardControlMasterAttackPenalty: 440,
+        whiteDisadvantagedSummonOvercommitPenalty: 320,
+        whiteLowStoneFocusConversionBonus: 16,
+        whiteLowStoneFocusMissedAttackPenalty: 16,
+      },
+    }, "白ミラーで石0/1のまま返す前に、召喚・未撃破攻撃・顔打点・仕事化しないfocusを強めに抑える上限候補。"),
+    variant("current_mirror_low_stone_face_guard", "候補: 白ミラー低石非リーサル顔抑制", {
+      situationalBias: {
+        whiteLowStoneNonLethalFacePenalty: 80,
+      },
+    }, "白ミラーで石0/1かつ相手の返し圧が残る非リーサル顔打点だけを抑え、盤面制圧を優先させる。"),
     variant("current_wake_safe_work4", "候補: 安全ウェイク仕事 4", {
       situationalBias: { whiteWakeSafeWorkBonus: 4 },
     }, "味方ウェイクアップを、即仕事または次ターン仕事へ変換できる場面だけ軽く押す。"),

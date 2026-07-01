@@ -2629,6 +2629,38 @@ describe("cpu ai", () => {
     }
   });
 
+  it("penalizes low-stone white mirror non-lethal face damage while response pressure remains", () => {
+    const game = createCpuGame([]);
+    game.players.cpu.masterId = "white";
+    game.players.player.masterId = "white";
+    game.players.cpu.stones = 1;
+    game.players.player.masterHp = 8;
+    game.slots.cpu_back_left.monster = createActiveMonster("morgan", "cpu", {
+      hp: 4,
+      level: 2,
+    });
+    game.slots.cpu_front_left.monster = createActiveMonster("takokke", "cpu", { hp: 2 });
+    game.slots.player_front_left.monster = createActiveMonster("morgan", "player", {
+      hp: 4,
+      level: 2,
+    });
+
+    const findFaceDamage = (options = {}) =>
+      inspectCpuDecisionEvaluations(game, options).find(
+        (evaluation) =>
+          evaluation.decision.type === "attack" &&
+          evaluation.decision.action.target.kind === "master",
+      );
+    const baseline = findFaceDamage();
+    const tuned = findFaceDamage({
+      tunings: { cpu: { situationalBias: { whiteLowStoneNonLethalFacePenalty: 80 } } },
+    });
+
+    expect(baseline).toBeDefined();
+    expect(tuned).toBeDefined();
+    expect(tuned?.totalScore).toBeLessThan((baseline?.totalScore ?? 0) - 70);
+  });
+
   it("wakes up an enemy prepared monster when it can be defeated immediately", () => {
     const game = createCpuGame([]);
     game.players.cpu.stones = 5;
