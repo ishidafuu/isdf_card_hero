@@ -1064,6 +1064,28 @@ describe("cpu ai", () => {
     expect(shield).toBeUndefined();
   });
 
+  it("does not list white mirror shields for unthreatened next-turn work targets", () => {
+    const game = createCpuGame([]);
+    game.players.cpu.masterId = "white";
+    game.players.player.masterId = "white";
+    game.players.cpu.stones = 5;
+    game.players.player.stones = 0;
+    for (const slot of Object.values(game.slots)) {
+      delete slot.monster;
+    }
+    game.slots.cpu_front_left.monster = createActiveMonster("polyspinner", "cpu", { level: 2, actionCount: 2 });
+
+    const shield = listCpuDecisions(game).find(
+      (decision) =>
+        decision.type === "master_action" &&
+        decision.actionId === "shield" &&
+        decision.target.kind === "monster" &&
+        decision.target.slotKey === "cpu_front_left",
+    );
+
+    expect(shield).toBeUndefined();
+  });
+
   it("keeps white mirror shield candidates when they reduce incoming damage", () => {
     const game = createCpuGame([]);
     game.players.cpu.masterId = "white";

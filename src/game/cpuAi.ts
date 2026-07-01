@@ -5140,6 +5140,9 @@ function shouldSkipWhiteMirrorIdleShield(
   if (!isWhiteMirrorState(state, state.currentPlayer)) {
     return false;
   }
+  if ((!threat.threatened || maxIncomingThreatDamage(threat) <= 0) && levelUpPotential <= 0) {
+    return true;
+  }
   if (preventsLethal || isLethalIncomingThreat(threat) || reducesDamage || levelUpPotential > 0) {
     return false;
   }
