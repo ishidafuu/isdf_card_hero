@@ -35,7 +35,11 @@ export interface MasterLabMagicOpportunityOptions {
   candidateOnly?: boolean;
 }
 
-export type MasterLabCpuDecisionEvaluationMode = boolean | "selected_blocked_backline_summon";
+export type MasterLabCpuDecisionEvaluationMode =
+  | boolean
+  | "selected_blocked_backline_summon"
+  | "selected_focus_summon"
+  | "selected_white_mirror_bad_action";
 
 export interface MasterLabAutoPlayOptions {
   seedStart?: number;
@@ -781,6 +785,12 @@ function shouldTraceCpuDecision(
   if (mode === "selected_blocked_backline_summon") {
     return isSelectedBlockedBacklineSummon(game, decision);
   }
+  if (mode === "selected_focus_summon") {
+    return decision.type === "focus" || decision.type === "summon";
+  }
+  if (mode === "selected_white_mirror_bad_action") {
+    return isSelectedWhiteMirrorBadActionCandidate(game, decision);
+  }
   return false;
 }
 
@@ -795,6 +805,64 @@ function isSelectedBlockedBacklineSummon(game: GameState, decision: CpuDecision)
   const frontSlotKey = frontSlotKeyFor(decision.slotKey);
   const frontMonster = game.slots[frontSlotKey].monster;
   return frontMonster?.owner === game.currentPlayer;
+}
+
+function isSelectedWhiteMirrorBadActionCandidate(game: GameState, decision: CpuDecision): boolean {
+  if (decision.type === "focus" || decision.type === "summon") {
+    return true;
+  }
+  if (decision.type === "attack" && decision.action.target.kind === "monster") {
+    return selectedMonsterAttackLeavesTargetAlive(game, decision);
+  }
+  if (decision.type === "attack" && decision.action.target.kind === "master") {
+    return selectedFaceAttackIsNonLethalWithEnemyFront(game, decision.action.target.playerId, decision);
+  }
+  if (decision.type === "master_action" && decision.actionId === "master_attack" && decision.target.kind === "master") {
+    return selectedFaceAttackIsNonLethalWithEnemyFront(game, decision.target.playerId, decision);
+  }
+  return false;
+}
+
+function selectedMonsterAttackLeavesTargetAlive(
+  game: GameState,
+  decision: Extract<CpuDecision, { type: "attack" }>,
+): boolean {
+  const target = decision.action.target;
+  if (target.kind !== "monster") {
+    return false;
+  }
+  const beforeTarget = game.slots[target.slotKey].monster;
+  if (!beforeTarget || beforeTarget.owner === game.currentPlayer) {
+    return false;
+  }
+  try {
+    const after = applyCpuDecision(game, decision);
+    const afterTarget = after.slots[target.slotKey].monster;
+    return !!afterTarget && afterTarget.owner === beforeTarget.owner && afterTarget.cardId === beforeTarget.cardId;
+  } catch {
+    return false;
+  }
+}
+
+function selectedFaceAttackIsNonLethalWithEnemyFront(
+  game: GameState,
+  targetPlayer: PlayerId,
+  decision: CpuDecision,
+): boolean {
+  if (targetPlayer === game.currentPlayer || enemyFrontMonsterCount(game, game.currentPlayer) === 0) {
+    return false;
+  }
+  try {
+    const after = applyCpuDecision(game, decision);
+    return !after.winner;
+  } catch {
+    return false;
+  }
+}
+
+function enemyFrontMonsterCount(game: GameState, playerId: PlayerId): number {
+  const opponent = playerId === "player" ? "cpu" : "player";
+  return Object.values(game.slots).filter((slot) => slot.owner === opponent && slot.row === "front" && slot.monster).length;
 }
 
 function cpuDecisionEvaluationTrace(

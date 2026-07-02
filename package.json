@@ -46,6 +46,7 @@
     "audit:white-mirror-risk": "vite-node scripts/white-mirror-risk-audit.ts",
     "audit:white-mirror-handoff-quality": "vite-node scripts/white-mirror-handoff-quality-audit.ts",
     "audit:white-mirror-focus-summon": "vite-node scripts/white-mirror-focus-summon-audit.ts",
+    "audit:white-mirror-decision-alternatives": "vite-node scripts/white-mirror-decision-alternative-audit.ts",
     "lab:masters:select": "vite-node scripts/master-lab-selection-loop.ts",
     "audit:deck-submissions": "vite-node scripts/deck-submission-audit.ts",
     "import:deck-submissions": "node scripts/import-cardhero-bu-decks.mjs",
