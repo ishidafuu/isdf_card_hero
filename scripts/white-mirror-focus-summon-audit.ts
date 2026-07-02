@@ -1,7 +1,7 @@
 import { getCardName, getMonsterDef } from "../src/game/cards";
 import { createCurrentWhiteAiVariant, CURRENT_WHITE_AI_MIRROR_OPPONENT } from "../src/game/currentWhiteAiFixtures";
 import type { MasterLabDecisionEvent, MasterLabGameStateSummary, MasterLabHandCardSummary } from "../src/game/masterLabAutoPlay";
-import { runWhiteAiTuningLoop, type WhiteAiTuningLoopOptions } from "../src/game/whiteAiTuningLoop";
+import { runWhiteAiTuningLoop, type WhiteAiTuningLoopOptions, type WhiteAiTuningVariant } from "../src/game/whiteAiTuningLoop";
 import type { CommandDef, PlayerId, SlotKey } from "../src/game/types";
 import { escapeMarkdownTableCell, formatPercent, readInteger, readString, round, writeReport } from "./lib/cli";
 
@@ -11,10 +11,13 @@ interface CliOptions extends WhiteAiTuningLoopOptions {
   markdownPath?: string;
   jsonPath?: string;
   maxSamples: number;
+  variantId: string;
 }
 
 interface FocusSummonAuditReport {
   generatedAt: string;
+  variantId: string;
+  variantLabel: string;
   gamesPerMatchup: number;
   seedStart: number;
   games: number;
@@ -211,7 +214,7 @@ if (options.jsonPath) {
   await writeReport(options.jsonPath, JSON.stringify(report, null, 2));
 }
 
-console.log(`White mirror focus/summon audit: ${report.games} games, ${report.metrics.turns} turns`);
+console.log(`White mirror focus/summon audit: ${report.variantId}, ${report.games} games, ${report.metrics.turns} turns`);
 console.log(
   `lowStone ${report.metrics.lowStoneHandoffs}, ` +
     `focus ${report.metrics.lowStoneFocusTurns}/${report.metrics.lowStoneFocusPunished}, ` +
@@ -225,12 +228,7 @@ if (options.jsonPath) {
 }
 
 function runAudit(options: CliOptions): FocusSummonAuditReport {
-  const variant = createCurrentWhiteAiVariant(
-    "current_white_baseline",
-    "現行: 暫定白最強 / white",
-    undefined,
-    "白ミラーで低石focusと低石召喚の返しを監査する。",
-  );
+  const variant = auditVariantFor(options.variantId);
   const loopReport = runWhiteAiTuningLoop({
     ...options,
     variants: [variant],
@@ -295,6 +293,8 @@ function runAudit(options: CliOptions): FocusSummonAuditReport {
 
   return {
     generatedAt: loopReport.generatedAt,
+    variantId: variant.id,
+    variantLabel: variant.label,
     gamesPerMatchup: loopReport.gamesPerMatchup,
     seedStart: options.seedStart ?? 0,
     games,
@@ -308,6 +308,67 @@ function runAudit(options: CliOptions): FocusSummonAuditReport {
     conclusion: buildConclusion(metrics),
     nextLoopProposal: buildNextLoopProposal(metrics),
   };
+}
+
+function auditVariantFor(id: string): WhiteAiTuningVariant {
+  switch (id) {
+    case "current_white_baseline":
+      return createCurrentWhiteAiVariant(
+        "current_white_baseline",
+        "現行: 暫定白最強 / white",
+        undefined,
+        "白ミラーで低石focusと低石召喚の返しを監査する。",
+      );
+    case "current_mirror_focus_quality_mid":
+      return createCurrentWhiteAiVariant(
+        "current_mirror_focus_quality_mid",
+        "候補: 白ミラーfocus品質 中",
+        {
+          situationalBias: {
+            whiteLowStoneFocusConversionBonus: 14,
+            whiteLowStoneFocusMissedAttackPenalty: 10,
+          },
+        },
+        "focus/summon監査で多かった、次自ターン仕事化しない低石focusの副作用を中程度に見る。",
+      );
+    case "current_mirror_blocked_backline_no_work80":
+      return createCurrentWhiteAiVariant(
+        "current_mirror_blocked_backline_no_work80",
+        "候補: 白ミラー詰まり後列仕事なし 80",
+        {
+          situationalBias: {
+            whiteBlockedBacklineNoWorkSummonPenalty: 80,
+          },
+        },
+        "前列味方で塞がれ、後列から仕事できない召喚だけを白ミラーでも中程度に抑える。",
+      );
+    case "current_mirror_blocked_backline_no_work120":
+      return createCurrentWhiteAiVariant(
+        "current_mirror_blocked_backline_no_work120",
+        "候補: 白ミラー詰まり後列仕事なし 120",
+        {
+          situationalBias: {
+            whiteBlockedBacklineNoWorkSummonPenalty: 120,
+          },
+        },
+        "詰まり後列仕事なし召喚を強めに抑え、盤面制圧を落とさず違和感が減るかを見る。",
+      );
+    case "current_mirror_focus_backline_quality":
+      return createCurrentWhiteAiVariant(
+        "current_mirror_focus_backline_quality",
+        "候補: 白ミラーfocus+後列品質",
+        {
+          situationalBias: {
+            whiteLowStoneFocusConversionBonus: 14,
+            whiteLowStoneFocusMissedAttackPenalty: 10,
+            whiteBlockedBacklineNoWorkSummonPenalty: 80,
+          },
+        },
+        "仕事化しない低石focusと、塞がる後列仕事なし召喚の両方を狭く抑える複合候補。",
+      );
+    default:
+      throw new Error(`Unknown audit variant: ${id}`);
+  }
 }
 
 function analyzeTurn(turn: TurnRecord): TurnAnalysis {
@@ -860,6 +921,7 @@ function formatMarkdown(report: FocusSummonAuditReport): string {
   lines.push("# White Mirror Focus/Summon Audit");
   lines.push("");
   lines.push(`生成: ${report.generatedAt}`);
+  lines.push(`variant: ${report.variantId} / ${report.variantLabel}`);
   lines.push(`gamesPerMatchup: ${report.gamesPerMatchup}, seedStart: ${report.seedStart}`);
   lines.push(`games: ${report.games}, W-L-D: ${report.wins}-${report.losses}-${report.draws}`);
   lines.push("");
@@ -1306,6 +1368,7 @@ function parseArgs(args: string[]): CliOptions {
     maxSteps: 220,
     maxTurns: 70,
     maxSamples: 48,
+    variantId: "current_white_baseline",
   };
 
   for (let index = 0; index < args.length; index += 1) {
@@ -1325,6 +1388,9 @@ function parseArgs(args: string[]): CliOptions {
         break;
       case "--max-samples":
         options.maxSamples = readInteger(arg, args[++index]);
+        break;
+      case "--variant":
+        options.variantId = readString(arg, args[++index]);
         break;
       case "--markdown":
         options.markdownPath = readString(arg, args[++index]);
@@ -1352,6 +1418,7 @@ Options:
   --max-steps <n>          Max steps per game. Default: 220
   --max-turns <n>          Max turns per game. Default: 70
   --max-samples <n>        Sample rows. Default: 48
+  --variant <id>           Variant to audit. Default: current_white_baseline
   --markdown <path>        Write Markdown report.
   --json <path>            Write JSON report.
 `);

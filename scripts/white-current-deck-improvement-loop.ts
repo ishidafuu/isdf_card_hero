@@ -187,6 +187,35 @@ function buildVariants(): WhiteAiTuningVariant[] {
         whiteLowStoneNonLethalFacePenalty: 80,
       },
     }, "白ミラーで石0/1かつ相手の返し圧が残る非リーサル顔打点だけを抑え、盤面制圧を優先させる。"),
+    variant("current_mirror_focus_quality_light", "候補: 白ミラーfocus品質 軽量", {
+      situationalBias: {
+        whiteLowStoneFocusConversionBonus: 10,
+        whiteLowStoneFocusMissedAttackPenalty: 6,
+      },
+    }, "低石focusを、次ターン仕事化する対象は残し、同ターン攻撃が残るfocusだけ軽く抑える。"),
+    variant("current_mirror_focus_quality_mid", "候補: 白ミラーfocus品質 中", {
+      situationalBias: {
+        whiteLowStoneFocusConversionBonus: 14,
+        whiteLowStoneFocusMissedAttackPenalty: 10,
+      },
+    }, "focus/summon監査で多かった、次自ターン仕事化しない低石focusの副作用を中程度に見る。"),
+    variant("current_mirror_blocked_backline_no_work80", "候補: 白ミラー詰まり後列仕事なし 80", {
+      situationalBias: {
+        whiteBlockedBacklineNoWorkSummonPenalty: 80,
+      },
+    }, "前列味方で塞がれ、後列から仕事できない召喚だけを白ミラーでも中程度に抑える。"),
+    variant("current_mirror_blocked_backline_no_work120", "候補: 白ミラー詰まり後列仕事なし 120", {
+      situationalBias: {
+        whiteBlockedBacklineNoWorkSummonPenalty: 120,
+      },
+    }, "詰まり後列仕事なし召喚を強めに抑え、盤面制圧を落とさず違和感が減るかを見る。"),
+    variant("current_mirror_focus_backline_quality", "候補: 白ミラーfocus+後列品質", {
+      situationalBias: {
+        whiteLowStoneFocusConversionBonus: 14,
+        whiteLowStoneFocusMissedAttackPenalty: 10,
+        whiteBlockedBacklineNoWorkSummonPenalty: 80,
+      },
+    }, "仕事化しない低石focusと、塞がる後列仕事なし召喚の両方を狭く抑える複合候補。"),
     variant("current_wake_safe_work4", "候補: 安全ウェイク仕事 4", {
       situationalBias: { whiteWakeSafeWorkBonus: 4 },
     }, "味方ウェイクアップを、即仕事または次ターン仕事へ変換できる場面だけ軽く押す。"),
