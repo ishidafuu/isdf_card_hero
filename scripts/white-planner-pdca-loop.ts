@@ -28,6 +28,7 @@ interface CliOptions {
   deckPreset: DeckPresetId;
   directions: Direction[];
   candidates: Candidate[];
+  streamProgress: boolean;
   markdownPath?: string;
   jsonPath?: string;
 }
@@ -140,6 +141,40 @@ const DEFAULT_CANDIDATES = [
       terminalPlanRootGapPenaltyWeight: 0.8,
     },
   },
+  {
+    id: "response2_width2",
+    note: "相手応答を深さ2・幅2で読み、現行採用ゲートは維持する",
+    search: {
+      sameTurnOpponentTerminalPlanDepth: 2,
+      sameTurnOpponentTerminalPlanWidth: 2,
+    },
+  },
+  {
+    id: "response2_width3",
+    note: "相手応答を深さ2・幅3で読み、終盤の返し候補漏れを減らす",
+    search: {
+      sameTurnOpponentTerminalPlanDepth: 2,
+      sameTurnOpponentTerminalPlanWidth: 3,
+    },
+  },
+  {
+    id: "response2_width2_weight075",
+    note: "深さ2・幅2の相手応答をやや強く反映する",
+    search: {
+      sameTurnOpponentTerminalPlanDepth: 2,
+      sameTurnOpponentTerminalPlanWidth: 2,
+      sameTurnOpponentTerminalPlanWeight: 0.75,
+    },
+  },
+  {
+    id: "terminal6_response2_width2",
+    note: "自ターン終端深さ6と相手応答2x2で最終盤面比較を厚くする",
+    search: {
+      sameTurnTerminalPlanDepth: 6,
+      sameTurnOpponentTerminalPlanDepth: 2,
+      sameTurnOpponentTerminalPlanWidth: 2,
+    },
+  },
 ] as const satisfies readonly Candidate[];
 
 const DEFAULT_OPTIONS: CliOptions = {
@@ -150,6 +185,7 @@ const DEFAULT_OPTIONS: CliOptions = {
   deckPreset: "master-lab-white-1377-death-sheep3",
   directions: ["challenger-as-cpu", "challenger-as-player"],
   candidates: [...DEFAULT_CANDIDATES],
+  streamProgress: false,
 };
 
 const options = parseArgs(process.argv.slice(2));
@@ -170,7 +206,11 @@ function runReport(options: CliOptions): PdcaReport {
   for (const candidate of options.candidates) {
     for (const direction of options.directions) {
       for (let index = 0; index < options.gamesPerDirection; index += 1) {
-        games.push(runGame(options.seedStart + index, direction, candidate, options));
+        const game = runGame(options.seedStart + index, direction, candidate, options);
+        games.push(game);
+        if (options.streamProgress) {
+          console.log(formatGameProgress(games.length, game));
+        }
       }
     }
   }
@@ -235,6 +275,15 @@ function runGame(seed: number, direction: Direction, candidate: Candidate, optio
     issue,
     decisionStats,
   };
+}
+
+function formatGameProgress(index: number, game: GameResult): string {
+  const issue = game.issue ? `, issue ${game.issue}` : "";
+  return (
+    `[game ${index}] ${game.candidateId} ${game.direction} seed ${game.seed}: ` +
+    `${game.winnerProfile ?? "draw"} (${game.steps} steps / ${game.turns} turns, ` +
+    `HP P${game.playerHp}/C${game.cpuHp})${issue}`
+  );
 }
 
 function createWhiteMirrorGame(seed: number, deckPreset: DeckPresetId): GameState {
@@ -420,6 +469,8 @@ function parseArgs(args: string[]): CliOptions {
     } else if (arg === "--candidate") {
       parsed.candidates = readCandidates(readString(arg, next));
       index += 1;
+    } else if (arg === "--stream-progress") {
+      parsed.streamProgress = true;
     } else if (arg === "--markdown") {
       parsed.markdownPath = readString(arg, next);
       index += 1;
@@ -480,6 +531,7 @@ Options:
   --games-per-direction <n>     Games per direction. Default: ${DEFAULT_OPTIONS.gamesPerDirection}
   --direction <value>           both, challenger-as-cpu, challenger-as-player. Default: both
   --candidate <ids>             Comma-separated candidate ids or all. Default: all
+  --stream-progress             Print one line after each completed game.
   --deck-preset <id>            Deck preset. Default: ${DEFAULT_OPTIONS.deckPreset}
   --max-steps <n>               Max auto steps. Default: ${DEFAULT_OPTIONS.maxSteps}
   --max-turns <n>               Max turns. Default: ${DEFAULT_OPTIONS.maxTurns}

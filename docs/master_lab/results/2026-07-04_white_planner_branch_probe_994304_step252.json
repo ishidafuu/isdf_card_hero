@@ -1,0 +1,88 @@
+{
+  "generatedAt": "2026-07-03T18:18:44.580Z",
+  "deckPreset": "master-lab-white-1377-death-sheep3",
+  "maxReplaySteps": 30,
+  "candidates": [
+    {
+      "id": "current",
+      "note": "現行 white_planner",
+      "search": {}
+    }
+  ],
+  "samples": [
+    {
+      "seed": 994304,
+      "direction": "challenger-as-cpu",
+      "step": 252,
+      "plannerSide": "cpu",
+      "currentPlayer": "cpu",
+      "turnNumber": 27,
+      "plannerTurn": true,
+      "state": "turn 27 / current cpu / HP cpu/player 1/5 / stones cpu/player 22/18 / deck cpu/player 0/0 / hand cpu/player 5/5",
+      "board": "player_front_left:PF:ドノマンティス Lv1 HP5 act1/1 | player_front_right:PF:デスシープ Lv1 HP6 act1/1 | player_back_left:PB:ピグミィ Lv1 HP3 act0/2 focus | player_back_right:PB:ピグミィ Lv2 HP3 act0/2 focus | cpu_front_left:CF:真勇者ダイン Lv1 HP6 act0/1 focus | cpu_back_left:CB:ヤンバル Lv1 HP3 act0/1 focus",
+      "candidates": [
+        {
+          "candidateId": "current",
+          "decision": "end_turn",
+          "reason": "有効な行動がないためターン終了 / 見送り: 攻撃は220点差で見送り、攻撃は308点差で見送り",
+          "elapsedMs": 54.3,
+          "rootRank": 1,
+          "rootScore": 44.1,
+          "branch": {
+            "winner": "player",
+            "steps": 1,
+            "score": -1000000,
+            "state": "turn 28 / current cpu / HP cpu/player 0/4 / stones cpu/player 26/22 / deck cpu/player 0/0 / hand cpu/player 5/5",
+            "board": "player_front_left:PF:ドノマンティス Lv1 HP5 act0/1 focus | player_front_right:PF:デスシープ Lv1 HP6 act0/1 focus | player_back_left:PB:ピグミィ Lv1 HP3 act0/2 focus | player_back_right:PB:ピグミィ Lv2 HP3 act0/2 focus | cpu_front_left:CF:真勇者ダイン Lv1 HP6 act0/1 focus | cpu_back_left:CB:ヤンバル Lv1 HP3 act0/1 focus"
+          },
+          "alternatives": [
+            {
+              "decision": "attack:真勇者ダイン:ダイン斬り->ドノマンティス",
+              "rootScore": 30.7,
+              "branch": {
+                "winner": "player",
+                "steps": 3,
+                "score": -1000000,
+                "state": "turn 28 / current cpu / HP cpu/player 0/4 / stones cpu/player 25/23 / deck cpu/player 0/0 / hand cpu/player 5/5",
+                "board": "player_front_left:PF:ピグミィ Lv1 HP3 act0/2 focus | player_front_right:PF:デスシープ Lv1 HP6 act0/1 focus | player_back_right:PB:ピグミィ Lv2 HP3 act0/2 focus | cpu_front_left:CF:真勇者ダイン Lv1 HP6 act0/1 | cpu_back_left:CB:ヤンバル Lv2 HP3 act0/1"
+              }
+            },
+            {
+              "decision": "attack:真勇者ダイン:ダイン斬り->player master",
+              "rootScore": -289.8,
+              "branch": {
+                "winner": "player",
+                "steps": 2,
+                "score": -1000000,
+                "state": "turn 28 / current cpu / HP cpu/player 0/3 / stones cpu/player 26/23 / deck cpu/player 0/0 / hand cpu/player 5/5",
+                "board": "player_front_left:PF:ドノマンティス Lv1 HP5 act0/1 focus | player_front_right:PF:デスシープ Lv1 HP6 act0/1 focus | player_back_left:PB:ピグミィ Lv1 HP3 act0/2 focus | player_back_right:PB:ピグミィ Lv2 HP3 act0/2 focus | cpu_front_left:CF:真勇者ダイン Lv1 HP6 act0/1 | cpu_back_left:CB:ヤンバル Lv1 HP3 act0/1 focus"
+              }
+            }
+          ],
+          "topEvaluations": [
+            "44.1 end_turn",
+            "30.7 attack:真勇者ダイン:ダイン斬り->ドノマンティス",
+            "-289.8 attack:真勇者ダイン:ダイン斬り->player master"
+          ]
+        }
+      ]
+    }
+  ],
+  "summary": [
+    {
+      "candidateId": "current",
+      "samples": 1,
+      "changedDecision": 0,
+      "wins": 0,
+      "losses": 1,
+      "averageScore": -1000000,
+      "averageElapsedMs": 54.3,
+      "maxElapsedMs": 54.3
+    }
+  ],
+  "conclusion": [
+    "終盤局面の軽量分岐では best=current、W-L 0-1、平均score -1000000。",
+    "今回の局面では現行設定を上回る応答幅候補は見えない。幅拡張のデフォルト採用は見送り、局面抽出を増やす。"
+  ]
+}
+

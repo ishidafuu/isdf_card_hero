@@ -1,0 +1,196 @@
+{
+  "generatedAt": "2026-07-03T18:13:37.656Z",
+  "deckPreset": "master-lab-white-1377-death-sheep3",
+  "maxReplaySteps": 30,
+  "candidates": [
+    {
+      "id": "current",
+      "note": "現行 white_planner",
+      "search": {}
+    },
+    {
+      "id": "response2_width2",
+      "note": "相手応答を深さ2・幅2で読む",
+      "search": {
+        "sameTurnOpponentTerminalPlanDepth": 2,
+        "sameTurnOpponentTerminalPlanWidth": 2
+      }
+    }
+  ],
+  "samples": [
+    {
+      "seed": 994302,
+      "direction": "challenger-as-player",
+      "step": 238,
+      "plannerSide": "player",
+      "currentPlayer": "player",
+      "turnNumber": 23,
+      "plannerTurn": true,
+      "state": "turn 23 / current player / HP player/cpu 3/7 / stones player/cpu 11/5 / deck player/cpu 3/3 / hand player/cpu 6/5",
+      "board": "player_front_left:PF:ピグミィ Lv1 HP3 act0/2 focus | player_front_right:PF:デスシープ Lv2 HP6 act0/1 | player_back_right:PB:ヤンバル Lv1 HP3 act0/1 focus | cpu_front_left:CF:デスシープ Lv1 HP6 act1/1 | cpu_front_right:CF:ヤンバル Lv2 HP3 act0/1 focus,shield | cpu_back_left:CB:ピグミィ Lv2 HP3 act1/2 focus",
+      "candidates": [
+        {
+          "candidateId": "current",
+          "decision": "end_turn",
+          "reason": "有効な行動がないためターン終了 / ターンプラン探索: 返し込み最終盤面135点",
+          "elapsedMs": 54.3,
+          "rootRank": 1,
+          "rootScore": 122.7,
+          "branch": {
+            "steps": 5,
+            "score": -481,
+            "state": "turn 24 / current player / HP player/cpu 3/7 / stones player/cpu 15/2 / deck player/cpu 2/2 / hand player/cpu 6/5",
+            "board": "player_front_right:PF:ヤンバル Lv1 HP3 act0/1 focus | player_back_right:PB:デスシープ Lv2 HP6 act0/1 focus | cpu_front_left:CF:デスシープ Lv2 HP6 act1/1 | cpu_front_right:CF:ヤンバル Lv2 HP3 act1/1 shield | cpu_back_left:CB:ピグミィ Lv2 HP3 act0/2 focus"
+          },
+          "topEvaluations": [
+            "122.7 end_turn",
+            "-173.6 attack:デスシープ:attack->cpu master"
+          ]
+        },
+        {
+          "candidateId": "response2_width2",
+          "decision": "end_turn",
+          "reason": "有効な行動がないためターン終了 / ターンプラン探索: 返し込み最終盤面114点",
+          "elapsedMs": 59.5,
+          "rootRank": 1,
+          "rootScore": 122.7,
+          "branch": {
+            "steps": 5,
+            "score": -481,
+            "state": "turn 24 / current player / HP player/cpu 3/7 / stones player/cpu 15/2 / deck player/cpu 2/2 / hand player/cpu 6/5",
+            "board": "player_front_right:PF:ヤンバル Lv1 HP3 act0/1 focus | player_back_right:PB:デスシープ Lv2 HP6 act0/1 focus | cpu_front_left:CF:デスシープ Lv2 HP6 act1/1 | cpu_front_right:CF:ヤンバル Lv2 HP3 act1/1 shield | cpu_back_left:CB:ピグミィ Lv2 HP3 act0/2 focus"
+          },
+          "topEvaluations": [
+            "122.7 end_turn",
+            "-173.6 attack:デスシープ:attack->cpu master"
+          ]
+        }
+      ]
+    },
+    {
+      "seed": 994302,
+      "direction": "challenger-as-player",
+      "step": 244,
+      "plannerSide": "player",
+      "currentPlayer": "player",
+      "turnNumber": 24,
+      "plannerTurn": true,
+      "state": "turn 24 / current player / HP player/cpu 3/7 / stones player/cpu 15/2 / deck player/cpu 2/2 / hand player/cpu 6/5",
+      "board": "player_front_right:PF:ヤンバル Lv1 HP3 act0/1 focus | player_back_right:PB:デスシープ Lv2 HP6 act0/1 focus | cpu_front_left:CF:デスシープ Lv2 HP6 act1/1 | cpu_front_right:CF:ヤンバル Lv2 HP3 act1/1 shield | cpu_back_left:CB:ピグミィ Lv2 HP3 act0/2 focus",
+      "candidates": [
+        {
+          "candidateId": "current",
+          "decision": "move:player_back_right->player_front_left",
+          "reason": "移動後に強い攻撃筋を作れるため移動 / 見送り: 移動は79点差で見送り",
+          "elapsedMs": 65.7,
+          "rootRank": 1,
+          "rootScore": 132.2,
+          "branch": {
+            "steps": 5,
+            "score": -635,
+            "state": "turn 25 / current player / HP player/cpu 3/7 / stones player/cpu 20/3 / deck player/cpu 1/1 / hand player/cpu 6/5",
+            "board": "player_front_right:PF:ヤンバル Lv1 HP3 act0/1 focus | cpu_front_left:CF:デスシープ Lv2 HP6 act1/1 | cpu_front_right:CF:ヤンバル Lv2 HP3 act1/1 shield | cpu_back_left:CB:ピグミィ Lv2 HP3 act0/2 focus"
+          },
+          "topEvaluations": [
+            "132.2 move:player_back_right->player_front_left",
+            "18 move:player_back_right->player_back_left",
+            "3.9 end_turn"
+          ]
+        },
+        {
+          "candidateId": "response2_width2",
+          "decision": "move:player_back_right->player_front_left",
+          "reason": "移動後に強い攻撃筋を作れるため移動 / 見送り: 移動は79点差で見送り",
+          "elapsedMs": 73.4,
+          "rootRank": 1,
+          "rootScore": 132.2,
+          "branch": {
+            "steps": 5,
+            "score": -635,
+            "state": "turn 25 / current player / HP player/cpu 3/7 / stones player/cpu 20/3 / deck player/cpu 1/1 / hand player/cpu 6/5",
+            "board": "player_front_right:PF:ヤンバル Lv1 HP3 act0/1 focus | cpu_front_left:CF:デスシープ Lv2 HP6 act1/1 | cpu_front_right:CF:ヤンバル Lv2 HP3 act1/1 shield | cpu_back_left:CB:ピグミィ Lv2 HP3 act0/2 focus"
+          },
+          "topEvaluations": [
+            "132.2 move:player_back_right->player_front_left",
+            "18 move:player_back_right->player_back_left",
+            "3.9 end_turn"
+          ]
+        }
+      ]
+    },
+    {
+      "seed": 994302,
+      "direction": "challenger-as-player",
+      "step": 250,
+      "plannerSide": "player",
+      "currentPlayer": "player",
+      "turnNumber": 25,
+      "plannerTurn": true,
+      "state": "turn 25 / current player / HP player/cpu 3/7 / stones player/cpu 20/3 / deck player/cpu 1/1 / hand player/cpu 6/5",
+      "board": "player_front_right:PF:ヤンバル Lv1 HP3 act0/1 focus | cpu_front_left:CF:デスシープ Lv2 HP6 act1/1 | cpu_front_right:CF:ヤンバル Lv2 HP3 act1/1 shield | cpu_back_left:CB:ピグミィ Lv2 HP3 act0/2 focus",
+      "candidates": [
+        {
+          "candidateId": "current",
+          "decision": "end_turn",
+          "reason": "有効な行動がないためターン終了 / ターンプラン探索: 返し込み最終盤面-30点",
+          "elapsedMs": 13.2,
+          "rootRank": 1,
+          "rootScore": 12.5,
+          "branch": {
+            "steps": 2,
+            "score": -734,
+            "state": "turn 26 / current player / HP player/cpu 2/7 / stones player/cpu 24/6 / deck player/cpu 0/0 / hand player/cpu 6/5",
+            "board": "player_front_right:PF:ヤンバル Lv1 HP3 act0/1 focus | cpu_front_left:CF:デスシープ Lv2 HP6 act1/1 | cpu_front_right:CF:ヤンバル Lv2 HP3 act0/1 focus | cpu_back_left:CB:ピグミィ Lv2 HP3 act0/2 focus"
+          },
+          "topEvaluations": [
+            "12.5 end_turn"
+          ]
+        },
+        {
+          "candidateId": "response2_width2",
+          "decision": "end_turn",
+          "reason": "有効な行動がないためターン終了 / ターンプラン探索: 返し込み最終盤面-30点",
+          "elapsedMs": 11.2,
+          "rootRank": 1,
+          "rootScore": 12.5,
+          "branch": {
+            "steps": 2,
+            "score": -734,
+            "state": "turn 26 / current player / HP player/cpu 2/7 / stones player/cpu 24/6 / deck player/cpu 0/0 / hand player/cpu 6/5",
+            "board": "player_front_right:PF:ヤンバル Lv1 HP3 act0/1 focus | cpu_front_left:CF:デスシープ Lv2 HP6 act1/1 | cpu_front_right:CF:ヤンバル Lv2 HP3 act0/1 focus | cpu_back_left:CB:ピグミィ Lv2 HP3 act0/2 focus"
+          },
+          "topEvaluations": [
+            "12.5 end_turn"
+          ]
+        }
+      ]
+    }
+  ],
+  "summary": [
+    {
+      "candidateId": "current",
+      "samples": 3,
+      "changedDecision": 0,
+      "wins": 0,
+      "losses": 0,
+      "averageScore": -616.7,
+      "averageElapsedMs": 44.4,
+      "maxElapsedMs": 65.7
+    },
+    {
+      "candidateId": "response2_width2",
+      "samples": 3,
+      "changedDecision": 0,
+      "wins": 0,
+      "losses": 0,
+      "averageScore": -616.7,
+      "averageElapsedMs": 48,
+      "maxElapsedMs": 73.4
+    }
+  ],
+  "conclusion": [
+    "終盤局面の軽量分岐では best=current、W-L 0-0、平均score -616.7。",
+    "今回の局面では現行設定を上回る応答幅候補は見えない。幅拡張のデフォルト採用は見送り、局面抽出を増やす。"
+  ]
+}
+
