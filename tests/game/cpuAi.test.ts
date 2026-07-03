@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { getMonsterDef } from "../../src/game/cards";
-import { applyCpuDecision, chooseCpuDecision, inspectCpuDecisionEvaluations, listCpuDecisions } from "../../src/game/cpuAi";
+import { applyCpuDecision, chooseCpuDecision, CPU_AI_PROFILES, inspectCpuDecisionEvaluations, listCpuDecisions } from "../../src/game/cpuAi";
 import { buildDeckPresetCardIds, deckPresetAllowsSpecial } from "../../src/game/deckPresets";
 import { attackWithCommand, createInitialGame, endTurn, runAutoStep, runCpuStep } from "../../src/game/rules";
 import type { CardInstance, GameState, MonsterState, PlayerId } from "../../src/game/types";
@@ -108,6 +108,17 @@ describe("cpu ai", () => {
     if (decision.type === "attack") {
       expect(decision.action.target).toEqual({ kind: "monster", slotKey: "player_front_left" });
     }
+  });
+
+  it("exposes white planner as a separate turn-plan profile", () => {
+    const game = createCpuGame([{ cardId: "takokke", instanceId: "cpu_planner_takokke" }]);
+    game.players.cpu.masterId = "white";
+    game.players.player.masterId = "white";
+
+    const decision = chooseCpuDecision(game, { profile: "white_planner" });
+
+    expect(CPU_AI_PROFILES).toContain("white_planner");
+    expect(decision.reason).toContain("ターンプラン探索");
   });
 
   it("does not spend an action focusing when direct master damage is already available", () => {

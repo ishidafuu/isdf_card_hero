@@ -1,7 +1,7 @@
 import type { AiEvaluationWeights } from "./aiWeights";
 import type { CommandAction, MagicAction, MasterActionId, PlayerId, SlotKey, Target } from "./types";
 
-export const CPU_AI_PROFILES = ["stable", "strong", "pressure", "defensive", "white", "omniscient"] as const;
+export const CPU_AI_PROFILES = ["stable", "strong", "pressure", "defensive", "white", "white_planner", "omniscient"] as const;
 
 export type CpuAiProfile = (typeof CPU_AI_PROFILES)[number];
 export type CpuAiProfiles = Record<PlayerId, CpuAiProfile>;

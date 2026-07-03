@@ -90,6 +90,12 @@ const ALL_FIELD_ORDER: SlotKey[] = [...FIELD_ORDER_BY_PLAYER.cpu, ...FIELD_ORDER
 
 type EvaluatedDecision = { decision: CpuDecision; totalScore: number; index: number; after: GameState };
 type TerminalPlanOutcome = { delta: number; handoffState: GameState };
+type TerminalPlanSelection = {
+  candidate: EvaluatedDecision;
+  outcome: TerminalPlanOutcome;
+  plannerScore: number;
+  runnerUpScore?: number;
+};
 type TerminalPlanEvaluationContext = {
   baselineScore: number;
   ownOutcomeCache: Map<string, TerminalPlanOutcome>;
@@ -137,6 +143,7 @@ type CpuAiProfileConfig = {
   weights: AiEvaluationWeights;
   tuning?: CpuAiTuning;
   omniscient?: OmniscientAiConfig;
+  selectTerminalPlan?: boolean;
 };
 
 const NO_THREAT: IncomingThreat = {
@@ -262,6 +269,22 @@ const CPU_AI_PROFILE_CONFIG: Record<CpuAiProfile, CpuAiProfileConfig> = {
     weights: AI_EVALUATION_WEIGHTS.white,
     tuning: WHITE_AI_BASE_TUNING,
   },
+  white_planner: {
+    detailedWidth: 4,
+    sameTurnSearchDepth: 2,
+    sameTurnSearchWidth: 3,
+    sameTurnSearchDiscount: 0.54,
+    sameTurnTerminalPlanDepth: 5,
+    sameTurnTerminalPlanWidth: 2,
+    sameTurnTerminalPlanWeight: 1,
+    sameTurnOpponentTerminalPlanDepth: 1,
+    sameTurnOpponentTerminalPlanWidth: 1,
+    sameTurnOpponentTerminalPlanWeight: 0.5,
+    beamScoreThreshold: 8,
+    weights: AI_EVALUATION_WEIGHTS.white,
+    tuning: WHITE_AI_BASE_TUNING,
+    selectTerminalPlan: true,
+  },
   omniscient: {
     detailedWidth: 6,
     sameTurnSearchDepth: 3,
@@ -310,6 +333,12 @@ export function chooseCpuDecision(state: GameState, options: CpuAiOptions = {}):
   const masterDamagePlan = findMasterDamagePlan(state, perspective, config.weights);
   if (shouldForceMasterDamagePlan(state, perspective, masterDamagePlan)) {
     return withMasterDamagePlanReason(masterDamagePlan.firstDecision, masterDamagePlan);
+  }
+  if (shouldSelectTerminalPlanRoot(state, perspective, config)) {
+    const selection = selectTerminalPlanRootDecision(state, perspective, config);
+    if (selection) {
+      return withTerminalPlanReason(selection.candidate.decision, selection);
+    }
   }
   let best: EvaluatedDecision | undefined;
   const evaluated = evaluateCpuDecisions(state, perspective, config);
@@ -577,14 +606,14 @@ function resolveCpuAiMatchupTuning(state: GameState, profile: CpuAiProfile): Cpu
   const perspective = state.currentPlayer;
   const opponent = opponentOf(perspective);
   if (
-    (profile === "white" || profile === "omniscient") &&
+    (profile === "white" || profile === "white_planner" || profile === "omniscient") &&
     state.players[perspective].masterId === "white" &&
     state.players[opponent].masterId === "black"
   ) {
     return WHITE_VS_BLACK_MATCHUP_TUNING;
   }
   if (
-    (profile === "white" || profile === "omniscient") &&
+    (profile === "white" || profile === "white_planner" || profile === "omniscient") &&
     state.players[perspective].masterId === "white" &&
     state.players[opponent].masterId === "white"
   ) {
@@ -721,6 +750,98 @@ function shouldUseTerminalPlanEvaluation(
     config.sameTurnTerminalPlanDepth > 0 &&
     config.sameTurnTerminalPlanWidth > 0
   );
+}
+
+function shouldSelectTerminalPlanRoot(
+  state: GameState,
+  perspective: PlayerId,
+  config: CpuAiProfileConfig,
+): boolean {
+  return (
+    !!config.selectTerminalPlan &&
+    shouldUseTerminalPlanEvaluation(state, perspective, config) &&
+    !state.winner &&
+    !state.pendingLevelUp &&
+    state.currentPlayer === perspective
+  );
+}
+
+function selectTerminalPlanRootDecision(
+  state: GameState,
+  perspective: PlayerId,
+  config: CpuAiProfileConfig,
+): TerminalPlanSelection | undefined {
+  const baselineScore = evaluateState(state, perspective, config.weights);
+  const context = createTerminalPlanEvaluationContext(baselineScore);
+  const candidates = terminalPlanRootCandidates(state, perspective, config, context);
+  if (candidates.length === 0) {
+    return undefined;
+  }
+
+  const selections = candidates.map((candidate): TerminalPlanSelection => {
+    const outcome = candidate.decision.type === "end_turn"
+      ? {
+          delta: evaluateState(candidate.after, perspective, config.weights) - baselineScore,
+          handoffState: candidate.after,
+        }
+      : evaluateSameTurnTerminalPlanOutcome(
+          candidate.after,
+          perspective,
+          config.sameTurnTerminalPlanDepth - 1,
+          config,
+          context,
+        );
+    return {
+      candidate,
+      outcome,
+      plannerScore: evaluateTerminalPlanOutcomeWithOpponentResponse(outcome, perspective, config, context),
+    };
+  });
+
+  const ranked = selections.sort((a, b) =>
+    b.plannerScore - a.plannerScore ||
+    b.candidate.totalScore - a.candidate.totalScore ||
+    compareTieBreak(a.candidate.decision, b.candidate.decision, a.candidate.index, b.candidate.index),
+  );
+  const best = ranked[0];
+  if (!best) {
+    return undefined;
+  }
+  const runnerUp = ranked.find((candidate) => candidate.candidate.index !== best.candidate.index);
+  return runnerUp ? { ...best, runnerUpScore: runnerUp.plannerScore } : best;
+}
+
+function terminalPlanRootCandidates(
+  state: GameState,
+  perspective: PlayerId,
+  config: CpuAiProfileConfig,
+  context: TerminalPlanEvaluationContext,
+): EvaluatedDecision[] {
+  const evaluated = evaluateImmediateCpuDecisionsCached(state, perspective, config, context);
+  const width = Math.max(config.detailedWidth, config.sameTurnTerminalPlanWidth);
+  const candidates = evaluated
+    .filter((candidate) => candidate.decision.type !== "end_turn" && candidate.totalScore > config.beamScoreThreshold)
+    .sort(
+      (a, b) =>
+        b.totalScore - a.totalScore || compareTieBreak(a.decision, b.decision, a.index, b.index),
+    )
+    .slice(0, width);
+  const endTurn = evaluated.find((candidate) => candidate.decision.type === "end_turn");
+  if (endTurn && !candidates.some((candidate) => candidate.index === endTurn.index)) {
+    candidates.push(endTurn);
+  }
+  return candidates;
+}
+
+function withTerminalPlanReason(decision: CpuDecision, selection: TerminalPlanSelection): CpuDecision {
+  const scoreText = Math.round(selection.plannerScore);
+  const runnerUpText = selection.runnerUpScore === undefined
+    ? ""
+    : `、次点と${Math.max(0, Math.round(selection.plannerScore - selection.runnerUpScore))}点差`;
+  return {
+    ...decision,
+    reason: `${decision.reason} / ターンプラン探索: 返し込み最終盤面${scoreText}点${runnerUpText}`,
+  } as CpuDecision;
 }
 
 function evaluateTerminalPlanDeltas(
