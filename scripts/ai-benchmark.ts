@@ -1,3 +1,4 @@
+import { mkdirSync, writeFileSync } from "node:fs";
 import { mkdir, writeFile } from "node:fs/promises";
 import { join } from "node:path";
 import {
@@ -8,6 +9,7 @@ import {
   type AiBenchmarkOptions,
   type AiBenchmarkResult,
 } from "../src/game/aiBenchmark";
+import type { AutoPlayIssue } from "../src/game/autoPlayValidation";
 import { CPU_AI_PROFILES, type CpuAiProfile } from "../src/game/cpuAi";
 import { DECK_PRESET_IDS, type DeckPresetId } from "../src/game/deckPresets";
 import { MASTER_IDS } from "../src/game/masters";
@@ -18,17 +20,24 @@ const BENCHMARK_DIRECTIONS: AiBenchmarkDirection[] = ["challenger-as-cpu", "chal
 interface CliOptions extends AiBenchmarkOptions {
   outDir: string;
   writeArtifacts: boolean;
+  writeGameArtifacts: boolean;
+  streamProgress: boolean;
 }
 
 const options = parseArgs(process.argv.slice(2));
-if (options.writeArtifacts) {
+if (options.writeArtifacts || options.writeGameArtifacts) {
   options.includeGameHistory = true;
 }
-const result = benchmarkAiProfiles(options);
+const result = benchmarkAiProfiles({
+  ...options,
+  onGameOutcome: createGameOutcomeHandler(options),
+});
 console.log(formatAiBenchmarkSummary(result));
 
 if (options.writeArtifacts) {
   await writeArtifacts(options.outDir, result);
+  console.log(`Artifacts: ${options.outDir}`);
+} else if (options.writeGameArtifacts) {
   console.log(`Artifacts: ${options.outDir}`);
 }
 
@@ -40,6 +49,8 @@ function parseArgs(args: string[]): CliOptions {
   const parsed: CliOptions = {
     outDir: defaultOutDir(),
     writeArtifacts: false,
+    writeGameArtifacts: false,
+    streamProgress: false,
   };
 
   for (let i = 0; i < args.length; i += 1) {
@@ -98,6 +109,10 @@ function parseArgs(args: string[]): CliOptions {
       i += 1;
     } else if (arg === "--write-artifacts") {
       parsed.writeArtifacts = true;
+    } else if (arg === "--write-game-artifacts") {
+      parsed.writeGameArtifacts = true;
+    } else if (arg === "--stream-progress") {
+      parsed.streamProgress = true;
     } else if (arg === "--fail-on-warnings") {
       parsed.failOnWarnings = true;
     } else if (arg === "--help" || arg === "-h") {
@@ -109,6 +124,43 @@ function parseArgs(args: string[]): CliOptions {
   }
 
   return parsed;
+}
+
+function createGameOutcomeHandler(
+  options: CliOptions,
+): ((outcome: AiBenchmarkGameOutcome, issues: AutoPlayIssue[]) => void) | undefined {
+  if (!options.streamProgress && !options.writeGameArtifacts) {
+    return undefined;
+  }
+  let completedGames = 0;
+  if (options.writeGameArtifacts) {
+    mkdirSync(options.outDir, { recursive: true });
+  }
+  return (outcome, issues) => {
+    completedGames += 1;
+    if (options.streamProgress) {
+      console.log(formatGameProgress(completedGames, outcome, issues));
+    }
+    if (options.writeGameArtifacts) {
+      const filename = `${String(completedGames).padStart(3, "0")}_seed-${outcome.seed}_${outcome.direction}.json`;
+      writeFileSync(
+        join(options.outDir, filename),
+        JSON.stringify(gameOutcomeDetail(outcome, issues), null, 2),
+      );
+    }
+  };
+}
+
+function formatGameProgress(
+  index: number,
+  outcome: AiBenchmarkGameOutcome,
+  issues: readonly AutoPlayIssue[],
+): string {
+  const result = outcome.winnerProfile ? `${outcome.winnerProfile}/${outcome.winner}` : "undecided";
+  const issueText = issues.length > 0
+    ? `, issues ${issues.filter((issue) => issue.severity === "failure").length}F/${issues.filter((issue) => issue.severity === "warning").length}W`
+    : "";
+  return `[game ${index}] seed ${outcome.seed} ${outcome.direction}: ${result}, ${outcome.steps} steps / ${outcome.turns} turns${issueText}`;
 }
 
 async function writeArtifacts(outDir: string, result: AiBenchmarkResult): Promise<void> {
@@ -164,6 +216,23 @@ function outcomeDetail(outcome: AiBenchmarkGameOutcome): object {
     finalState: outcome.stateSummary,
     logTail: outcome.logTail,
     history: outcome.history,
+  };
+}
+
+function gameOutcomeDetail(outcome: AiBenchmarkGameOutcome, issues: readonly AutoPlayIssue[]): object {
+  return {
+    ...outcomeDetail(outcome),
+    issues: issues.map((issue) => ({
+      kind: issue.kind,
+      severity: issue.severity,
+      seed: issue.seed,
+      step: issue.step,
+      turnNumber: issue.turnNumber,
+      message: issue.message,
+      logTail: issue.logTail,
+      stateSummary: issue.stateSummary,
+      history: issue.history,
+    })),
   };
 }
 
@@ -249,6 +318,8 @@ Options:
   --direction <id>        Direction. Default: both. Values: both, ${BENCHMARK_DIRECTIONS.join(", ")}
   --out-dir <path>        Artifact output directory.
   --write-artifacts       Write benchmark summary and challenger-loss histories.
+  --write-game-artifacts  Write each completed game immediately.
+  --stream-progress       Print one line after each completed game.
   --fail-on-warnings      Exit non-zero when warnings are detected.
 `);
 }

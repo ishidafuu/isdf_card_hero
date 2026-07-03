@@ -40,10 +40,11 @@ export interface AutoPlayValidationOptions {
   aiProfile?: CpuAiProfile;
   aiProfiles?: Partial<CpuAiProfiles>;
   includeGameHistory?: boolean;
+  onGameResult?: (game: AutoPlayGameResult, issues: AutoPlayIssue[]) => void;
 }
 
 type ResolvedAutoPlayValidationOptions = Required<
-  Omit<AutoPlayValidationOptions, "seedEnd" | "failOnWarnings" | "masterIds" | "aiProfiles">
+  Omit<AutoPlayValidationOptions, "seedEnd" | "failOnWarnings" | "masterIds" | "aiProfiles" | "onGameResult">
 > & {
   seedEnd: number;
   failOnWarnings: boolean;
@@ -171,6 +172,7 @@ export function validateAutoPlay(options: AutoPlayValidationOptions = {}): AutoP
     const gameResult = runAutoPlayGame(seed, resolved);
     games.push(gameResult.result);
     issues.push(...gameResult.issues);
+    options.onGameResult?.(gameResult.result, gameResult.issues);
   }
 
   const warnings = issues.filter((issue) => issue.severity === "warning").length;

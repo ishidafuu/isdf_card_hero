@@ -1,6 +1,8 @@
 import {
   validateAutoPlay,
   type AutoPlayDecisionEvent,
+  type AutoPlayGameResult,
+  type AutoPlayIssue,
   type AutoPlayValidationOptions,
   type AutoPlayValidationResult,
   type GameStateSummary,
@@ -10,10 +12,11 @@ import type { MasterId, PlayerId } from "./types";
 
 export type AiBenchmarkDirection = "challenger-as-cpu" | "challenger-as-player";
 
-export interface AiBenchmarkOptions extends Omit<AutoPlayValidationOptions, "aiProfile" | "aiProfiles"> {
+export interface AiBenchmarkOptions extends Omit<AutoPlayValidationOptions, "aiProfile" | "aiProfiles" | "onGameResult"> {
   baselineProfile?: CpuAiProfile;
   challengerProfile?: CpuAiProfile;
   directions?: AiBenchmarkDirection[];
+  onGameOutcome?: (outcome: AiBenchmarkGameOutcome, issues: AutoPlayIssue[]) => void;
 }
 
 export interface AiBenchmarkGameOutcome {
@@ -81,6 +84,7 @@ export function benchmarkAiProfiles(options: AiBenchmarkOptions = {}): AiBenchma
     baselineProfile = "stable",
     challengerProfile = "strong",
     directions = DEFAULT_DIRECTIONS,
+    onGameOutcome,
     ...validationInput
   } = options;
 
@@ -96,7 +100,7 @@ export function benchmarkAiProfiles(options: AiBenchmarkOptions = {}): AiBenchma
     count: validationInput.count ?? DEFAULT_BENCHMARK_COUNT,
   };
   const runs = directions.map((direction) =>
-    runBenchmarkDirection(direction, baselineProfile, challengerProfile, validationOptions),
+    runBenchmarkDirection(direction, baselineProfile, challengerProfile, validationOptions, onGameOutcome),
   );
   const firstOptions = runs[0].result.options;
   const outcomes = runs.flatMap((run) => run.outcomes);
@@ -186,31 +190,31 @@ function runBenchmarkDirection(
   baselineProfile: CpuAiProfile,
   challengerProfile: CpuAiProfile,
   options: AutoPlayValidationOptions,
+  onGameOutcome?: (outcome: AiBenchmarkGameOutcome, issues: AutoPlayIssue[]) => void,
 ): AiBenchmarkRun {
   const profiles = profilesForDirection(direction, baselineProfile, challengerProfile);
-  const result = validateAutoPlay({ ...options, aiProfiles: profiles });
+  const result = validateAutoPlay({
+    ...options,
+    aiProfiles: profiles,
+    onGameResult: onGameOutcome
+      ? (game, issues) => onGameOutcome(gameResultToOutcome(game, direction, profiles), issues)
+      : undefined,
+  });
   const profileWins = emptyProfileCounts();
   let undecided = 0;
   const outcomes = result.games.map((game): AiBenchmarkGameOutcome => {
-    const winnerProfile = game.winner ? profiles[game.winner] : undefined;
+    const outcome = gameResultToOutcome(
+      game,
+      direction,
+      profiles,
+    );
+    const winnerProfile = outcome.winnerProfile;
     if (winnerProfile) {
       profileWins[winnerProfile] += 1;
     } else {
       undecided += 1;
     }
-    return {
-      direction,
-      seed: game.seed,
-      winner: game.winner,
-      winnerProfile,
-      steps: game.steps,
-      turns: game.turns,
-      issueCount: game.issueCount,
-      warningCount: game.warningCount,
-      logTail: game.logTail,
-      stateSummary: game.stateSummary,
-      history: game.history,
-    };
+    return outcome;
   });
 
   return {
@@ -223,6 +227,27 @@ function runBenchmarkDirection(
     averageSteps: average(outcomes.map((outcome) => outcome.steps)),
     averageTurns: average(outcomes.map((outcome) => outcome.turns)),
     outcomes,
+  };
+}
+
+function gameResultToOutcome(
+  game: AutoPlayGameResult,
+  direction: AiBenchmarkDirection,
+  profiles: CpuAiProfiles,
+): AiBenchmarkGameOutcome {
+  const winnerProfile = game.winner ? profiles[game.winner] : undefined;
+  return {
+    direction,
+    seed: game.seed,
+    winner: game.winner,
+    winnerProfile,
+    steps: game.steps,
+    turns: game.turns,
+    issueCount: game.issueCount,
+    warningCount: game.warningCount,
+    logTail: game.logTail,
+    stateSummary: game.stateSummary,
+    history: game.history,
   };
 }
 

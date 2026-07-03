@@ -113,6 +113,24 @@ describe("auto play validation", () => {
     expect(result.games).toHaveLength(1);
   }, AUTO_PLAY_TEST_TIMEOUT_MS);
 
+  it("calls the game result callback after each completed seed", () => {
+    const completedSeeds: number[] = [];
+    const result = validateAutoPlay({
+      seedStart: 430,
+      count: 2,
+      aiProfile: "stable",
+      maxSteps: 1,
+      maxTurns: 140,
+      onGameResult: (game, issues) => {
+        completedSeeds.push(game.seed);
+        expect(issues.every((issue) => issue.seed === game.seed)).toBe(true);
+      },
+    });
+
+    expect(result.games.map((game) => game.seed)).toEqual([430, 431]);
+    expect(completedSeeds).toEqual([430, 431]);
+  }, AUTO_PLAY_TEST_TIMEOUT_MS);
+
   it("does not warn on end turn when strong raw candidates were rejected by full AI evaluation", () => {
     const result = validateAutoPlay({
       seedStart: 430,
