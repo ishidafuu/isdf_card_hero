@@ -356,7 +356,7 @@ export function chooseCpuDecision(state: GameState, options: CpuAiOptions = {}):
   const profile = resolveCpuAiProfile(state, options);
   const config = resolveCpuAiConfigForProfile(state, options, profile);
   const masterDamagePlan = findMasterDamagePlan(state, perspective, config.weights);
-  if (shouldForceMasterDamagePlan(state, perspective, masterDamagePlan)) {
+  if (shouldForceMasterDamagePlan(state, perspective, masterDamagePlan, config)) {
     return withMasterDamagePlanReason(masterDamagePlan.firstDecision, masterDamagePlan);
   }
   let best: EvaluatedDecision | undefined;
@@ -503,6 +503,7 @@ function shouldForceMasterDamagePlan(
   state: GameState,
   perspective: PlayerId,
   plan: MasterDamagePlan,
+  config: CpuAiProfileConfig,
 ): plan is MasterDamagePlan & { firstDecision: CpuDecision } {
   if (!plan.firstDecision || plan.damage <= 0) {
     return false;
@@ -518,11 +519,30 @@ function shouldForceMasterDamagePlan(
   const opponentHp = state.players[opponent].masterHp;
   const remainingHp = opponentHp - plan.damage;
   if (opponentHp > MASTER_DAMAGE_PLAN_CLOSEOUT_HP || remainingHp > 2 || plan.damage < 2) {
-    return false;
+    return shouldForceWhiteMirrorDeckRaceDamage(state, perspective, plan, config);
   }
 
   const opponentMasterDamage = buildThreatModel(state, opponent).masterDamage[perspective];
   return opponentMasterDamage < state.players[perspective].masterHp;
+}
+
+function shouldForceWhiteMirrorDeckRaceDamage(
+  state: GameState,
+  perspective: PlayerId,
+  plan: MasterDamagePlan,
+  config: CpuAiProfileConfig,
+): boolean {
+  if (!config.selectTerminalPlan || !isWhiteMirrorState(state, perspective) || plan.damage <= 0) {
+    return false;
+  }
+  const opponent = opponentOf(perspective);
+  const own = state.players[perspective];
+  const enemy = state.players[opponent];
+  if (own.deck.length > 4 || enemy.deck.length > 4 || own.masterHp > 4 || own.masterHp >= enemy.masterHp) {
+    return false;
+  }
+  const opponentMasterDamage = buildThreatModel(state, opponent).masterDamage[perspective];
+  return opponentMasterDamage < own.masterHp;
 }
 
 function withMasterDamagePlanReason(
@@ -6169,7 +6189,7 @@ function whiteMirrorCloseoutBackToFrontMovePenalty(
   fromSlotKey: SlotKey,
   toSlotKey: SlotKey,
 ): number {
-  if (!isWhiteMirrorCloseout(state)) {
+  if (!isWhiteMirrorCloseout(state) || state.players[state.currentPlayer].masterHp > 4) {
     return 0;
   }
   let penalty = 0;
@@ -6182,12 +6202,24 @@ function whiteMirrorCloseoutBackToFrontMovePenalty(
     if (!afterSlotKey || after.slots[afterSlotKey].row !== "front") {
       continue;
     }
-    if (bestAttackOpportunityScore(after, afterSlotKey) >= 260 || directMasterDamageFromSlot(after, afterSlotKey, state.currentPlayer) > 0) {
+    if (bestAttackOpportunityScore(after, afterSlotKey) >= 260 || hasSafeNextTurnDirectMasterDamage(after, afterSlotKey, state.currentPlayer)) {
       continue;
     }
     penalty += 160 + (monster.level >= 2 ? 60 : 0) + (monster.hp <= 2 ? 30 : 0);
   }
   return penalty;
+}
+
+function hasSafeNextTurnDirectMasterDamage(state: GameState, slotKey: SlotKey, attackerId: PlayerId): boolean {
+  const damage = directMasterDamageFromSlot(state, slotKey, attackerId);
+  if (damage <= 0) {
+    return false;
+  }
+  const monster = state.slots[slotKey].monster;
+  if (!monster || monster.owner !== attackerId) {
+    return false;
+  }
+  return availableOpponentMonsterDamageToSlot(state, slotKey) < monster.hp;
 }
 
 function repeatedMovePenalty(state: GameState, fromSlotKey: SlotKey, toSlotKey: SlotKey, moverInstanceId: string): number {

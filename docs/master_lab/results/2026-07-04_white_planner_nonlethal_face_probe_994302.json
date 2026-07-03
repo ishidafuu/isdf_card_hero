@@ -1,0 +1,757 @@
+{
+  "generatedAt": "2026-07-03T20:08:39.813Z",
+  "deckPreset": "master-lab-white-1377-death-sheep3",
+  "maxReplaySteps": 90,
+  "candidates": [
+    {
+      "id": "current",
+      "note": "現行 white_planner",
+      "search": {}
+    },
+    {
+      "id": "response2_width2",
+      "note": "相手応答を深さ2・幅2で読む",
+      "search": {
+        "sameTurnOpponentTerminalPlanDepth": 2,
+        "sameTurnOpponentTerminalPlanWidth": 2
+      }
+    },
+    {
+      "id": "response2_width3",
+      "note": "相手応答を深さ2・幅3で読む",
+      "search": {
+        "sameTurnOpponentTerminalPlanDepth": 2,
+        "sameTurnOpponentTerminalPlanWidth": 3
+      }
+    },
+    {
+      "id": "response2_width2_weight075",
+      "note": "相手応答2x2をやや強く反映する",
+      "search": {
+        "sameTurnOpponentTerminalPlanDepth": 2,
+        "sameTurnOpponentTerminalPlanWidth": 2,
+        "sameTurnOpponentTerminalPlanWeight": 0.75
+      }
+    },
+    {
+      "id": "terminal6_response2_width2",
+      "note": "自ターン終端深さ6 + 相手応答2x2",
+      "search": {
+        "sameTurnTerminalPlanDepth": 6,
+        "sameTurnOpponentTerminalPlanDepth": 2,
+        "sameTurnOpponentTerminalPlanWidth": 2
+      }
+    },
+    {
+      "id": "deckout_loose_override",
+      "note": "終盤検証用にターンプラン採用ゲートを緩める",
+      "search": {
+        "terminalPlanRejectEndTurnOverAction": 0,
+        "terminalPlanRejectSetupOverTacticalAction": 0,
+        "terminalPlanRequireCompatibleFallbackAction": 0,
+        "terminalPlanAdoptionMinMargin": 8
+      }
+    },
+    {
+      "id": "terminal_compare1",
+      "note": "終端盤面差を局所評価へ弱めに戻す",
+      "search": {
+        "sameTurnTerminalPlanComparisonWeight": 1
+      }
+    },
+    {
+      "id": "terminal_compare1_loose",
+      "note": "終端盤面差を局所評価へ戻し、採用ゲートも緩める",
+      "search": {
+        "sameTurnTerminalPlanComparisonWeight": 1,
+        "terminalPlanRejectEndTurnOverAction": 0,
+        "terminalPlanRejectSetupOverTacticalAction": 0,
+        "terminalPlanRequireCompatibleFallbackAction": 0,
+        "terminalPlanAdoptionMinMargin": 8
+      }
+    }
+  ],
+  "samples": [
+    {
+      "seed": 994302,
+      "direction": "challenger-as-player",
+      "step": 233,
+      "plannerSide": "player",
+      "currentPlayer": "player",
+      "turnNumber": 22,
+      "plannerTurn": true,
+      "state": "turn 22 / current player / HP player/cpu 4/7 / stones player/cpu 7/4 / deck player/cpu 4/4 / hand player/cpu 6/5",
+      "board": "player_front_left:PF:ピグミィ Lv1 HP3 act0/2 focus | player_front_right:PF:デスシープ Lv2 HP6 act0/1 | player_back_right:PB:ヤンバル Lv1 HP3 act0/1 | cpu_front_left:CF:デスシープ Lv1 HP6 act0/1 focus | cpu_front_right:CF:ヤンバル Lv2 HP3 act0/1 focus,shield | cpu_back_left:CB:ピグミィ Lv2 HP3 act0/2 focus",
+      "candidates": [
+        {
+          "candidateId": "current",
+          "decision": "end_turn",
+          "reason": "有効な行動がないためターン終了 / ターンプラン探索: 返し込み最終盤面178点、次点と3点差",
+          "elapsedMs": 132.5,
+          "rootRank": 1,
+          "rootScore": 152.2,
+          "branch": {
+            "steps": 4,
+            "score": -354,
+            "state": "turn 23 / current player / HP player/cpu 3/7 / stones player/cpu 11/5 / deck player/cpu 3/3 / hand player/cpu 6/5",
+            "board": "player_front_left:PF:ピグミィ Lv1 HP3 act0/2 focus | player_front_right:PF:デスシープ Lv2 HP6 act0/1 | player_back_right:PB:ヤンバル Lv1 HP3 act0/1 focus | cpu_front_left:CF:デスシープ Lv1 HP6 act1/1 | cpu_front_right:CF:ヤンバル Lv2 HP3 act0/1 focus,shield | cpu_back_left:CB:ピグミィ Lv2 HP3 act1/2 focus"
+          },
+          "alternatives": [
+            {
+              "decision": "attack:ピグミィ:attack->デスシープ",
+              "rootScore": -6.8,
+              "branch": {
+                "steps": 4,
+                "score": -303,
+                "state": "turn 23 / current player / HP player/cpu 4/7 / stones player/cpu 10/5 / deck player/cpu 3/3 / hand player/cpu 6/5",
+                "board": "player_front_left:PF:ピグミィ Lv1 HP3 act0/2 focus | player_front_right:PF:デスシープ Lv2 HP6 act0/1 | player_back_right:PB:ヤンバル Lv1 HP3 act0/1 focus | cpu_front_left:CF:デスシープ Lv1 HP6 act0/1 focus | cpu_front_right:CF:ヤンバル Lv2 HP3 act0/1 focus,shield | cpu_back_left:CB:ピグミィ Lv2 HP3 act1/2 focus"
+              }
+            },
+            {
+              "decision": "attack:デスシープ:attack->cpu master",
+              "rootScore": -112.3,
+              "branch": {
+                "steps": 5,
+                "score": -232,
+                "state": "turn 23 / current player / HP player/cpu 4/6 / stones player/cpu 8/6 / deck player/cpu 3/3 / hand player/cpu 6/5",
+                "board": "player_front_left:PF:ピグミィ Lv1 HP3 act0/2 focus | player_front_right:PF:デスシープ Lv2 HP6 act0/1 | player_back_right:PB:ヤンバル Lv1 HP3 act0/1 focus | cpu_front_left:CF:デスシープ Lv1 HP6 act0/1 focus | cpu_front_right:CF:ヤンバル Lv2 HP3 act0/1 focus,shield | cpu_back_left:CB:ピグミィ Lv2 HP3 act0/2 focus"
+              }
+            }
+          ],
+          "topEvaluations": [
+            "152.2 end_turn",
+            "-6.8 attack:ピグミィ:attack->デスシープ",
+            "-112.3 attack:デスシープ:attack->cpu master"
+          ]
+        },
+        {
+          "candidateId": "response2_width2",
+          "decision": "end_turn",
+          "reason": "有効な行動がないためターン終了 / 見送り: 攻撃は65点差で見送り、攻撃は92点差で見送り",
+          "elapsedMs": 154.2,
+          "rootRank": 1,
+          "rootScore": 152.2,
+          "branch": {
+            "steps": 4,
+            "score": -354,
+            "state": "turn 23 / current player / HP player/cpu 3/7 / stones player/cpu 11/5 / deck player/cpu 3/3 / hand player/cpu 6/5",
+            "board": "player_front_left:PF:ピグミィ Lv1 HP3 act0/2 focus | player_front_right:PF:デスシープ Lv2 HP6 act0/1 | player_back_right:PB:ヤンバル Lv1 HP3 act0/1 focus | cpu_front_left:CF:デスシープ Lv1 HP6 act1/1 | cpu_front_right:CF:ヤンバル Lv2 HP3 act0/1 focus,shield | cpu_back_left:CB:ピグミィ Lv2 HP3 act1/2 focus"
+          },
+          "alternatives": [
+            {
+              "decision": "attack:ピグミィ:attack->デスシープ",
+              "rootScore": -6.8,
+              "branch": {
+                "steps": 4,
+                "score": -303,
+                "state": "turn 23 / current player / HP player/cpu 4/7 / stones player/cpu 10/5 / deck player/cpu 3/3 / hand player/cpu 6/5",
+                "board": "player_front_left:PF:ピグミィ Lv1 HP3 act0/2 focus | player_front_right:PF:デスシープ Lv2 HP6 act0/1 | player_back_right:PB:ヤンバル Lv1 HP3 act0/1 focus | cpu_front_left:CF:デスシープ Lv1 HP6 act0/1 focus | cpu_front_right:CF:ヤンバル Lv2 HP3 act0/1 focus,shield | cpu_back_left:CB:ピグミィ Lv2 HP3 act1/2 focus"
+              }
+            },
+            {
+              "decision": "attack:デスシープ:attack->cpu master",
+              "rootScore": -112.3,
+              "branch": {
+                "steps": 5,
+                "score": -232,
+                "state": "turn 23 / current player / HP player/cpu 4/6 / stones player/cpu 8/6 / deck player/cpu 3/3 / hand player/cpu 6/5",
+                "board": "player_front_left:PF:ピグミィ Lv1 HP3 act0/2 focus | player_front_right:PF:デスシープ Lv2 HP6 act0/1 | player_back_right:PB:ヤンバル Lv1 HP3 act0/1 focus | cpu_front_left:CF:デスシープ Lv1 HP6 act0/1 focus | cpu_front_right:CF:ヤンバル Lv2 HP3 act0/1 focus,shield | cpu_back_left:CB:ピグミィ Lv2 HP3 act0/2 focus"
+              }
+            }
+          ],
+          "topEvaluations": [
+            "152.2 end_turn",
+            "-6.8 attack:ピグミィ:attack->デスシープ",
+            "-112.3 attack:デスシープ:attack->cpu master"
+          ]
+        },
+        {
+          "candidateId": "response2_width3",
+          "decision": "end_turn",
+          "reason": "有効な行動がないためターン終了 / 見送り: 攻撃は60点差で見送り、攻撃は87点差で見送り",
+          "elapsedMs": 180.5,
+          "rootRank": 1,
+          "rootScore": 152.2,
+          "branch": {
+            "steps": 4,
+            "score": -354,
+            "state": "turn 23 / current player / HP player/cpu 3/7 / stones player/cpu 11/5 / deck player/cpu 3/3 / hand player/cpu 6/5",
+            "board": "player_front_left:PF:ピグミィ Lv1 HP3 act0/2 focus | player_front_right:PF:デスシープ Lv2 HP6 act0/1 | player_back_right:PB:ヤンバル Lv1 HP3 act0/1 focus | cpu_front_left:CF:デスシープ Lv1 HP6 act1/1 | cpu_front_right:CF:ヤンバル Lv2 HP3 act0/1 focus,shield | cpu_back_left:CB:ピグミィ Lv2 HP3 act1/2 focus"
+          },
+          "alternatives": [
+            {
+              "decision": "attack:ピグミィ:attack->デスシープ",
+              "rootScore": -6.8,
+              "branch": {
+                "steps": 4,
+                "score": -303,
+                "state": "turn 23 / current player / HP player/cpu 4/7 / stones player/cpu 10/5 / deck player/cpu 3/3 / hand player/cpu 6/5",
+                "board": "player_front_left:PF:ピグミィ Lv1 HP3 act0/2 focus | player_front_right:PF:デスシープ Lv2 HP6 act0/1 | player_back_right:PB:ヤンバル Lv1 HP3 act0/1 focus | cpu_front_left:CF:デスシープ Lv1 HP6 act0/1 focus | cpu_front_right:CF:ヤンバル Lv2 HP3 act0/1 focus,shield | cpu_back_left:CB:ピグミィ Lv2 HP3 act1/2 focus"
+              }
+            },
+            {
+              "decision": "attack:デスシープ:attack->cpu master",
+              "rootScore": -112.3,
+              "branch": {
+                "steps": 5,
+                "score": -232,
+                "state": "turn 23 / current player / HP player/cpu 4/6 / stones player/cpu 8/6 / deck player/cpu 3/3 / hand player/cpu 6/5",
+                "board": "player_front_left:PF:ピグミィ Lv1 HP3 act0/2 focus | player_front_right:PF:デスシープ Lv2 HP6 act0/1 | player_back_right:PB:ヤンバル Lv1 HP3 act0/1 focus | cpu_front_left:CF:デスシープ Lv1 HP6 act0/1 focus | cpu_front_right:CF:ヤンバル Lv2 HP3 act0/1 focus,shield | cpu_back_left:CB:ピグミィ Lv2 HP3 act0/2 focus"
+              }
+            }
+          ],
+          "topEvaluations": [
+            "152.2 end_turn",
+            "-6.8 attack:ピグミィ:attack->デスシープ",
+            "-112.3 attack:デスシープ:attack->cpu master"
+          ]
+        },
+        {
+          "candidateId": "response2_width2_weight075",
+          "decision": "end_turn",
+          "reason": "有効な行動がないためターン終了 / 見送り: 攻撃は35点差で見送り、攻撃は76点差で見送り",
+          "elapsedMs": 155.5,
+          "rootRank": 1,
+          "rootScore": 152.2,
+          "branch": {
+            "steps": 4,
+            "score": -354,
+            "state": "turn 23 / current player / HP player/cpu 3/7 / stones player/cpu 11/5 / deck player/cpu 3/3 / hand player/cpu 6/5",
+            "board": "player_front_left:PF:ピグミィ Lv1 HP3 act0/2 focus | player_front_right:PF:デスシープ Lv2 HP6 act0/1 | player_back_right:PB:ヤンバル Lv1 HP3 act0/1 focus | cpu_front_left:CF:デスシープ Lv1 HP6 act1/1 | cpu_front_right:CF:ヤンバル Lv2 HP3 act0/1 focus,shield | cpu_back_left:CB:ピグミィ Lv2 HP3 act1/2 focus"
+          },
+          "alternatives": [
+            {
+              "decision": "attack:ピグミィ:attack->デスシープ",
+              "rootScore": -6.8,
+              "branch": {
+                "steps": 4,
+                "score": -303,
+                "state": "turn 23 / current player / HP player/cpu 4/7 / stones player/cpu 10/5 / deck player/cpu 3/3 / hand player/cpu 6/5",
+                "board": "player_front_left:PF:ピグミィ Lv1 HP3 act0/2 focus | player_front_right:PF:デスシープ Lv2 HP6 act0/1 | player_back_right:PB:ヤンバル Lv1 HP3 act0/1 focus | cpu_front_left:CF:デスシープ Lv1 HP6 act0/1 focus | cpu_front_right:CF:ヤンバル Lv2 HP3 act0/1 focus,shield | cpu_back_left:CB:ピグミィ Lv2 HP3 act1/2 focus"
+              }
+            },
+            {
+              "decision": "attack:デスシープ:attack->cpu master",
+              "rootScore": -112.3,
+              "branch": {
+                "steps": 5,
+                "score": -232,
+                "state": "turn 23 / current player / HP player/cpu 4/6 / stones player/cpu 8/6 / deck player/cpu 3/3 / hand player/cpu 6/5",
+                "board": "player_front_left:PF:ピグミィ Lv1 HP3 act0/2 focus | player_front_right:PF:デスシープ Lv2 HP6 act0/1 | player_back_right:PB:ヤンバル Lv1 HP3 act0/1 focus | cpu_front_left:CF:デスシープ Lv1 HP6 act0/1 focus | cpu_front_right:CF:ヤンバル Lv2 HP3 act0/1 focus,shield | cpu_back_left:CB:ピグミィ Lv2 HP3 act0/2 focus"
+              }
+            }
+          ],
+          "topEvaluations": [
+            "152.2 end_turn",
+            "-6.8 attack:ピグミィ:attack->デスシープ",
+            "-112.3 attack:デスシープ:attack->cpu master"
+          ]
+        },
+        {
+          "candidateId": "terminal6_response2_width2",
+          "decision": "end_turn",
+          "reason": "有効な行動がないためターン終了 / 見送り: 攻撃は65点差で見送り、攻撃は92点差で見送り",
+          "elapsedMs": 153.9,
+          "rootRank": 1,
+          "rootScore": 152.2,
+          "branch": {
+            "steps": 4,
+            "score": -354,
+            "state": "turn 23 / current player / HP player/cpu 3/7 / stones player/cpu 11/5 / deck player/cpu 3/3 / hand player/cpu 6/5",
+            "board": "player_front_left:PF:ピグミィ Lv1 HP3 act0/2 focus | player_front_right:PF:デスシープ Lv2 HP6 act0/1 | player_back_right:PB:ヤンバル Lv1 HP3 act0/1 focus | cpu_front_left:CF:デスシープ Lv1 HP6 act1/1 | cpu_front_right:CF:ヤンバル Lv2 HP3 act0/1 focus,shield | cpu_back_left:CB:ピグミィ Lv2 HP3 act1/2 focus"
+          },
+          "alternatives": [
+            {
+              "decision": "attack:ピグミィ:attack->デスシープ",
+              "rootScore": -6.8,
+              "branch": {
+                "steps": 4,
+                "score": -303,
+                "state": "turn 23 / current player / HP player/cpu 4/7 / stones player/cpu 10/5 / deck player/cpu 3/3 / hand player/cpu 6/5",
+                "board": "player_front_left:PF:ピグミィ Lv1 HP3 act0/2 focus | player_front_right:PF:デスシープ Lv2 HP6 act0/1 | player_back_right:PB:ヤンバル Lv1 HP3 act0/1 focus | cpu_front_left:CF:デスシープ Lv1 HP6 act0/1 focus | cpu_front_right:CF:ヤンバル Lv2 HP3 act0/1 focus,shield | cpu_back_left:CB:ピグミィ Lv2 HP3 act1/2 focus"
+              }
+            },
+            {
+              "decision": "attack:デスシープ:attack->cpu master",
+              "rootScore": -112.3,
+              "branch": {
+                "steps": 5,
+                "score": -232,
+                "state": "turn 23 / current player / HP player/cpu 4/6 / stones player/cpu 8/6 / deck player/cpu 3/3 / hand player/cpu 6/5",
+                "board": "player_front_left:PF:ピグミィ Lv1 HP3 act0/2 focus | player_front_right:PF:デスシープ Lv2 HP6 act0/1 | player_back_right:PB:ヤンバル Lv1 HP3 act0/1 focus | cpu_front_left:CF:デスシープ Lv1 HP6 act0/1 focus | cpu_front_right:CF:ヤンバル Lv2 HP3 act0/1 focus,shield | cpu_back_left:CB:ピグミィ Lv2 HP3 act0/2 focus"
+              }
+            }
+          ],
+          "topEvaluations": [
+            "152.2 end_turn",
+            "-6.8 attack:ピグミィ:attack->デスシープ",
+            "-112.3 attack:デスシープ:attack->cpu master"
+          ]
+        },
+        {
+          "candidateId": "deckout_loose_override",
+          "decision": "end_turn",
+          "reason": "有効な行動がないためターン終了 / ターンプラン探索: 返し込み最終盤面178点、次点と3点差",
+          "elapsedMs": 133.4,
+          "rootRank": 1,
+          "rootScore": 152.2,
+          "branch": {
+            "steps": 4,
+            "score": -354,
+            "state": "turn 23 / current player / HP player/cpu 3/7 / stones player/cpu 11/5 / deck player/cpu 3/3 / hand player/cpu 6/5",
+            "board": "player_front_left:PF:ピグミィ Lv1 HP3 act0/2 focus | player_front_right:PF:デスシープ Lv2 HP6 act0/1 | player_back_right:PB:ヤンバル Lv1 HP3 act0/1 focus | cpu_front_left:CF:デスシープ Lv1 HP6 act1/1 | cpu_front_right:CF:ヤンバル Lv2 HP3 act0/1 focus,shield | cpu_back_left:CB:ピグミィ Lv2 HP3 act1/2 focus"
+          },
+          "alternatives": [
+            {
+              "decision": "attack:ピグミィ:attack->デスシープ",
+              "rootScore": -6.8,
+              "branch": {
+                "steps": 4,
+                "score": -303,
+                "state": "turn 23 / current player / HP player/cpu 4/7 / stones player/cpu 10/5 / deck player/cpu 3/3 / hand player/cpu 6/5",
+                "board": "player_front_left:PF:ピグミィ Lv1 HP3 act0/2 focus | player_front_right:PF:デスシープ Lv2 HP6 act0/1 | player_back_right:PB:ヤンバル Lv1 HP3 act0/1 focus | cpu_front_left:CF:デスシープ Lv1 HP6 act0/1 focus | cpu_front_right:CF:ヤンバル Lv2 HP3 act0/1 focus,shield | cpu_back_left:CB:ピグミィ Lv2 HP3 act1/2 focus"
+              }
+            },
+            {
+              "decision": "attack:デスシープ:attack->cpu master",
+              "rootScore": -112.3,
+              "branch": {
+                "steps": 5,
+                "score": -232,
+                "state": "turn 23 / current player / HP player/cpu 4/6 / stones player/cpu 8/6 / deck player/cpu 3/3 / hand player/cpu 6/5",
+                "board": "player_front_left:PF:ピグミィ Lv1 HP3 act0/2 focus | player_front_right:PF:デスシープ Lv2 HP6 act0/1 | player_back_right:PB:ヤンバル Lv1 HP3 act0/1 focus | cpu_front_left:CF:デスシープ Lv1 HP6 act0/1 focus | cpu_front_right:CF:ヤンバル Lv2 HP3 act0/1 focus,shield | cpu_back_left:CB:ピグミィ Lv2 HP3 act0/2 focus"
+              }
+            }
+          ],
+          "topEvaluations": [
+            "152.2 end_turn",
+            "-6.8 attack:ピグミィ:attack->デスシープ",
+            "-112.3 attack:デスシープ:attack->cpu master"
+          ]
+        },
+        {
+          "candidateId": "terminal_compare1",
+          "decision": "end_turn",
+          "reason": "有効な行動がないためターン終了 / ターンプラン探索: 返し込み最終盤面178点、次点と3点差",
+          "elapsedMs": 131.7,
+          "rootRank": 1,
+          "rootScore": 121.7,
+          "branch": {
+            "steps": 4,
+            "score": -354,
+            "state": "turn 23 / current player / HP player/cpu 3/7 / stones player/cpu 11/5 / deck player/cpu 3/3 / hand player/cpu 6/5",
+            "board": "player_front_left:PF:ピグミィ Lv1 HP3 act0/2 focus | player_front_right:PF:デスシープ Lv2 HP6 act0/1 | player_back_right:PB:ヤンバル Lv1 HP3 act0/1 focus | cpu_front_left:CF:デスシープ Lv1 HP6 act1/1 | cpu_front_right:CF:ヤンバル Lv2 HP3 act0/1 focus,shield | cpu_back_left:CB:ピグミィ Lv2 HP3 act1/2 focus"
+          },
+          "alternatives": [
+            {
+              "decision": "attack:ピグミィ:attack->デスシープ",
+              "rootScore": -41.8,
+              "branch": {
+                "steps": 4,
+                "score": -303,
+                "state": "turn 23 / current player / HP player/cpu 4/7 / stones player/cpu 10/5 / deck player/cpu 3/3 / hand player/cpu 6/5",
+                "board": "player_front_left:PF:ピグミィ Lv1 HP3 act0/2 focus | player_front_right:PF:デスシープ Lv2 HP6 act0/1 | player_back_right:PB:ヤンバル Lv1 HP3 act0/1 focus | cpu_front_left:CF:デスシープ Lv1 HP6 act0/1 focus | cpu_front_right:CF:ヤンバル Lv2 HP3 act0/1 focus,shield | cpu_back_left:CB:ピグミィ Lv2 HP3 act1/2 focus"
+              }
+            },
+            {
+              "decision": "attack:デスシープ:attack->cpu master",
+              "rootScore": -112.3,
+              "branch": {
+                "steps": 5,
+                "score": -232,
+                "state": "turn 23 / current player / HP player/cpu 4/6 / stones player/cpu 8/6 / deck player/cpu 3/3 / hand player/cpu 6/5",
+                "board": "player_front_left:PF:ピグミィ Lv1 HP3 act0/2 focus | player_front_right:PF:デスシープ Lv2 HP6 act0/1 | player_back_right:PB:ヤンバル Lv1 HP3 act0/1 focus | cpu_front_left:CF:デスシープ Lv1 HP6 act0/1 focus | cpu_front_right:CF:ヤンバル Lv2 HP3 act0/1 focus,shield | cpu_back_left:CB:ピグミィ Lv2 HP3 act0/2 focus"
+              }
+            }
+          ],
+          "topEvaluations": [
+            "121.7 end_turn",
+            "-41.8 attack:ピグミィ:attack->デスシープ",
+            "-112.3 attack:デスシープ:attack->cpu master"
+          ]
+        },
+        {
+          "candidateId": "terminal_compare1_loose",
+          "decision": "end_turn",
+          "reason": "有効な行動がないためターン終了 / ターンプラン探索: 返し込み最終盤面178点、次点と3点差",
+          "elapsedMs": 136.8,
+          "rootRank": 1,
+          "rootScore": 121.7,
+          "branch": {
+            "steps": 4,
+            "score": -354,
+            "state": "turn 23 / current player / HP player/cpu 3/7 / stones player/cpu 11/5 / deck player/cpu 3/3 / hand player/cpu 6/5",
+            "board": "player_front_left:PF:ピグミィ Lv1 HP3 act0/2 focus | player_front_right:PF:デスシープ Lv2 HP6 act0/1 | player_back_right:PB:ヤンバル Lv1 HP3 act0/1 focus | cpu_front_left:CF:デスシープ Lv1 HP6 act1/1 | cpu_front_right:CF:ヤンバル Lv2 HP3 act0/1 focus,shield | cpu_back_left:CB:ピグミィ Lv2 HP3 act1/2 focus"
+          },
+          "alternatives": [
+            {
+              "decision": "attack:ピグミィ:attack->デスシープ",
+              "rootScore": -41.8,
+              "branch": {
+                "steps": 4,
+                "score": -303,
+                "state": "turn 23 / current player / HP player/cpu 4/7 / stones player/cpu 10/5 / deck player/cpu 3/3 / hand player/cpu 6/5",
+                "board": "player_front_left:PF:ピグミィ Lv1 HP3 act0/2 focus | player_front_right:PF:デスシープ Lv2 HP6 act0/1 | player_back_right:PB:ヤンバル Lv1 HP3 act0/1 focus | cpu_front_left:CF:デスシープ Lv1 HP6 act0/1 focus | cpu_front_right:CF:ヤンバル Lv2 HP3 act0/1 focus,shield | cpu_back_left:CB:ピグミィ Lv2 HP3 act1/2 focus"
+              }
+            },
+            {
+              "decision": "attack:デスシープ:attack->cpu master",
+              "rootScore": -112.3,
+              "branch": {
+                "steps": 5,
+                "score": -232,
+                "state": "turn 23 / current player / HP player/cpu 4/6 / stones player/cpu 8/6 / deck player/cpu 3/3 / hand player/cpu 6/5",
+                "board": "player_front_left:PF:ピグミィ Lv1 HP3 act0/2 focus | player_front_right:PF:デスシープ Lv2 HP6 act0/1 | player_back_right:PB:ヤンバル Lv1 HP3 act0/1 focus | cpu_front_left:CF:デスシープ Lv1 HP6 act0/1 focus | cpu_front_right:CF:ヤンバル Lv2 HP3 act0/1 focus,shield | cpu_back_left:CB:ピグミィ Lv2 HP3 act0/2 focus"
+              }
+            }
+          ],
+          "topEvaluations": [
+            "121.7 end_turn",
+            "-41.8 attack:ピグミィ:attack->デスシープ",
+            "-112.3 attack:デスシープ:attack->cpu master"
+          ]
+        }
+      ]
+    },
+    {
+      "seed": 994302,
+      "direction": "challenger-as-player",
+      "step": 238,
+      "plannerSide": "player",
+      "currentPlayer": "player",
+      "turnNumber": 23,
+      "plannerTurn": true,
+      "state": "turn 23 / current player / HP player/cpu 3/7 / stones player/cpu 11/5 / deck player/cpu 3/3 / hand player/cpu 6/5",
+      "board": "player_front_left:PF:ピグミィ Lv1 HP3 act0/2 focus | player_front_right:PF:デスシープ Lv2 HP6 act0/1 | player_back_right:PB:ヤンバル Lv1 HP3 act0/1 focus | cpu_front_left:CF:デスシープ Lv1 HP6 act1/1 | cpu_front_right:CF:ヤンバル Lv2 HP3 act0/1 focus,shield | cpu_back_left:CB:ピグミィ Lv2 HP3 act1/2 focus",
+      "candidates": [
+        {
+          "candidateId": "current",
+          "decision": "end_turn",
+          "reason": "有効な行動がないためターン終了 / ターンプラン探索: 返し込み最終盤面135点",
+          "elapsedMs": 62.2,
+          "rootRank": 1,
+          "rootScore": 122.7,
+          "branch": {
+            "steps": 5,
+            "score": -481,
+            "state": "turn 24 / current player / HP player/cpu 3/7 / stones player/cpu 15/2 / deck player/cpu 2/2 / hand player/cpu 6/5",
+            "board": "player_front_right:PF:ヤンバル Lv1 HP3 act0/1 focus | player_back_right:PB:デスシープ Lv2 HP6 act0/1 focus | cpu_front_left:CF:デスシープ Lv2 HP6 act1/1 | cpu_front_right:CF:ヤンバル Lv2 HP3 act1/1 shield | cpu_back_left:CB:ピグミィ Lv2 HP3 act0/2 focus"
+          },
+          "alternatives": [
+            {
+              "decision": "attack:デスシープ:attack->cpu master",
+              "rootScore": -173.6,
+              "branch": {
+                "steps": 6,
+                "score": -418,
+                "state": "turn 24 / current player / HP player/cpu 3/6 / stones player/cpu 15/3 / deck player/cpu 2/2 / hand player/cpu 6/5",
+                "board": "player_front_right:PF:ヤンバル Lv1 HP3 act0/1 focus | player_back_right:PB:デスシープ Lv2 HP6 act0/1 | cpu_front_left:CF:デスシープ Lv2 HP6 act1/1 | cpu_front_right:CF:ヤンバル Lv2 HP3 act1/1 shield | cpu_back_left:CB:ピグミィ Lv2 HP3 act0/2 focus"
+              }
+            }
+          ],
+          "topEvaluations": [
+            "122.7 end_turn",
+            "-173.6 attack:デスシープ:attack->cpu master"
+          ]
+        },
+        {
+          "candidateId": "response2_width2",
+          "decision": "end_turn",
+          "reason": "有効な行動がないためターン終了 / ターンプラン探索: 返し込み最終盤面114点",
+          "elapsedMs": 62.9,
+          "rootRank": 1,
+          "rootScore": 122.7,
+          "branch": {
+            "steps": 5,
+            "score": -481,
+            "state": "turn 24 / current player / HP player/cpu 3/7 / stones player/cpu 15/2 / deck player/cpu 2/2 / hand player/cpu 6/5",
+            "board": "player_front_right:PF:ヤンバル Lv1 HP3 act0/1 focus | player_back_right:PB:デスシープ Lv2 HP6 act0/1 focus | cpu_front_left:CF:デスシープ Lv2 HP6 act1/1 | cpu_front_right:CF:ヤンバル Lv2 HP3 act1/1 shield | cpu_back_left:CB:ピグミィ Lv2 HP3 act0/2 focus"
+          },
+          "alternatives": [
+            {
+              "decision": "attack:デスシープ:attack->cpu master",
+              "rootScore": -173.6,
+              "branch": {
+                "steps": 6,
+                "score": -418,
+                "state": "turn 24 / current player / HP player/cpu 3/6 / stones player/cpu 15/3 / deck player/cpu 2/2 / hand player/cpu 6/5",
+                "board": "player_front_right:PF:ヤンバル Lv1 HP3 act0/1 focus | player_back_right:PB:デスシープ Lv2 HP6 act0/1 | cpu_front_left:CF:デスシープ Lv2 HP6 act1/1 | cpu_front_right:CF:ヤンバル Lv2 HP3 act1/1 shield | cpu_back_left:CB:ピグミィ Lv2 HP3 act0/2 focus"
+              }
+            }
+          ],
+          "topEvaluations": [
+            "122.7 end_turn",
+            "-173.6 attack:デスシープ:attack->cpu master"
+          ]
+        },
+        {
+          "candidateId": "response2_width3",
+          "decision": "end_turn",
+          "reason": "有効な行動がないためターン終了 / ターンプラン探索: 返し込み最終盤面94点",
+          "elapsedMs": 94.6,
+          "rootRank": 1,
+          "rootScore": 122.7,
+          "branch": {
+            "steps": 5,
+            "score": -481,
+            "state": "turn 24 / current player / HP player/cpu 3/7 / stones player/cpu 15/2 / deck player/cpu 2/2 / hand player/cpu 6/5",
+            "board": "player_front_right:PF:ヤンバル Lv1 HP3 act0/1 focus | player_back_right:PB:デスシープ Lv2 HP6 act0/1 focus | cpu_front_left:CF:デスシープ Lv2 HP6 act1/1 | cpu_front_right:CF:ヤンバル Lv2 HP3 act1/1 shield | cpu_back_left:CB:ピグミィ Lv2 HP3 act0/2 focus"
+          },
+          "alternatives": [
+            {
+              "decision": "attack:デスシープ:attack->cpu master",
+              "rootScore": -173.6,
+              "branch": {
+                "steps": 6,
+                "score": -418,
+                "state": "turn 24 / current player / HP player/cpu 3/6 / stones player/cpu 15/3 / deck player/cpu 2/2 / hand player/cpu 6/5",
+                "board": "player_front_right:PF:ヤンバル Lv1 HP3 act0/1 focus | player_back_right:PB:デスシープ Lv2 HP6 act0/1 | cpu_front_left:CF:デスシープ Lv2 HP6 act1/1 | cpu_front_right:CF:ヤンバル Lv2 HP3 act1/1 shield | cpu_back_left:CB:ピグミィ Lv2 HP3 act0/2 focus"
+              }
+            }
+          ],
+          "topEvaluations": [
+            "122.7 end_turn",
+            "-173.6 attack:デスシープ:attack->cpu master"
+          ]
+        },
+        {
+          "candidateId": "response2_width2_weight075",
+          "decision": "end_turn",
+          "reason": "有効な行動がないためターン終了 / ターンプラン探索: 返し込み最終盤面91点",
+          "elapsedMs": 62.3,
+          "rootRank": 1,
+          "rootScore": 122.7,
+          "branch": {
+            "steps": 5,
+            "score": -481,
+            "state": "turn 24 / current player / HP player/cpu 3/7 / stones player/cpu 15/2 / deck player/cpu 2/2 / hand player/cpu 6/5",
+            "board": "player_front_right:PF:ヤンバル Lv1 HP3 act0/1 focus | player_back_right:PB:デスシープ Lv2 HP6 act0/1 focus | cpu_front_left:CF:デスシープ Lv2 HP6 act1/1 | cpu_front_right:CF:ヤンバル Lv2 HP3 act1/1 shield | cpu_back_left:CB:ピグミィ Lv2 HP3 act0/2 focus"
+          },
+          "alternatives": [
+            {
+              "decision": "attack:デスシープ:attack->cpu master",
+              "rootScore": -173.6,
+              "branch": {
+                "steps": 6,
+                "score": -418,
+                "state": "turn 24 / current player / HP player/cpu 3/6 / stones player/cpu 15/3 / deck player/cpu 2/2 / hand player/cpu 6/5",
+                "board": "player_front_right:PF:ヤンバル Lv1 HP3 act0/1 focus | player_back_right:PB:デスシープ Lv2 HP6 act0/1 | cpu_front_left:CF:デスシープ Lv2 HP6 act1/1 | cpu_front_right:CF:ヤンバル Lv2 HP3 act1/1 shield | cpu_back_left:CB:ピグミィ Lv2 HP3 act0/2 focus"
+              }
+            }
+          ],
+          "topEvaluations": [
+            "122.7 end_turn",
+            "-173.6 attack:デスシープ:attack->cpu master"
+          ]
+        },
+        {
+          "candidateId": "terminal6_response2_width2",
+          "decision": "end_turn",
+          "reason": "有効な行動がないためターン終了 / ターンプラン探索: 返し込み最終盤面114点",
+          "elapsedMs": 62.6,
+          "rootRank": 1,
+          "rootScore": 122.7,
+          "branch": {
+            "steps": 5,
+            "score": -481,
+            "state": "turn 24 / current player / HP player/cpu 3/7 / stones player/cpu 15/2 / deck player/cpu 2/2 / hand player/cpu 6/5",
+            "board": "player_front_right:PF:ヤンバル Lv1 HP3 act0/1 focus | player_back_right:PB:デスシープ Lv2 HP6 act0/1 focus | cpu_front_left:CF:デスシープ Lv2 HP6 act1/1 | cpu_front_right:CF:ヤンバル Lv2 HP3 act1/1 shield | cpu_back_left:CB:ピグミィ Lv2 HP3 act0/2 focus"
+          },
+          "alternatives": [
+            {
+              "decision": "attack:デスシープ:attack->cpu master",
+              "rootScore": -173.6,
+              "branch": {
+                "steps": 6,
+                "score": -418,
+                "state": "turn 24 / current player / HP player/cpu 3/6 / stones player/cpu 15/3 / deck player/cpu 2/2 / hand player/cpu 6/5",
+                "board": "player_front_right:PF:ヤンバル Lv1 HP3 act0/1 focus | player_back_right:PB:デスシープ Lv2 HP6 act0/1 | cpu_front_left:CF:デスシープ Lv2 HP6 act1/1 | cpu_front_right:CF:ヤンバル Lv2 HP3 act1/1 shield | cpu_back_left:CB:ピグミィ Lv2 HP3 act0/2 focus"
+              }
+            }
+          ],
+          "topEvaluations": [
+            "122.7 end_turn",
+            "-173.6 attack:デスシープ:attack->cpu master"
+          ]
+        },
+        {
+          "candidateId": "deckout_loose_override",
+          "decision": "end_turn",
+          "reason": "有効な行動がないためターン終了 / ターンプラン探索: 返し込み最終盤面135点",
+          "elapsedMs": 56.6,
+          "rootRank": 1,
+          "rootScore": 122.7,
+          "branch": {
+            "steps": 5,
+            "score": -481,
+            "state": "turn 24 / current player / HP player/cpu 3/7 / stones player/cpu 15/2 / deck player/cpu 2/2 / hand player/cpu 6/5",
+            "board": "player_front_right:PF:ヤンバル Lv1 HP3 act0/1 focus | player_back_right:PB:デスシープ Lv2 HP6 act0/1 focus | cpu_front_left:CF:デスシープ Lv2 HP6 act1/1 | cpu_front_right:CF:ヤンバル Lv2 HP3 act1/1 shield | cpu_back_left:CB:ピグミィ Lv2 HP3 act0/2 focus"
+          },
+          "alternatives": [
+            {
+              "decision": "attack:デスシープ:attack->cpu master",
+              "rootScore": -173.6,
+              "branch": {
+                "steps": 6,
+                "score": -418,
+                "state": "turn 24 / current player / HP player/cpu 3/6 / stones player/cpu 15/3 / deck player/cpu 2/2 / hand player/cpu 6/5",
+                "board": "player_front_right:PF:ヤンバル Lv1 HP3 act0/1 focus | player_back_right:PB:デスシープ Lv2 HP6 act0/1 | cpu_front_left:CF:デスシープ Lv2 HP6 act1/1 | cpu_front_right:CF:ヤンバル Lv2 HP3 act1/1 shield | cpu_back_left:CB:ピグミィ Lv2 HP3 act0/2 focus"
+              }
+            }
+          ],
+          "topEvaluations": [
+            "122.7 end_turn",
+            "-173.6 attack:デスシープ:attack->cpu master"
+          ]
+        },
+        {
+          "candidateId": "terminal_compare1",
+          "decision": "end_turn",
+          "reason": "有効な行動がないためターン終了 / ターンプラン探索: 返し込み最終盤面135点",
+          "elapsedMs": 58.1,
+          "rootRank": 1,
+          "rootScore": 122.7,
+          "branch": {
+            "steps": 5,
+            "score": -481,
+            "state": "turn 24 / current player / HP player/cpu 3/7 / stones player/cpu 15/2 / deck player/cpu 2/2 / hand player/cpu 6/5",
+            "board": "player_front_right:PF:ヤンバル Lv1 HP3 act0/1 focus | player_back_right:PB:デスシープ Lv2 HP6 act0/1 focus | cpu_front_left:CF:デスシープ Lv2 HP6 act1/1 | cpu_front_right:CF:ヤンバル Lv2 HP3 act1/1 shield | cpu_back_left:CB:ピグミィ Lv2 HP3 act0/2 focus"
+          },
+          "alternatives": [
+            {
+              "decision": "attack:デスシープ:attack->cpu master",
+              "rootScore": -176.6,
+              "branch": {
+                "steps": 6,
+                "score": -418,
+                "state": "turn 24 / current player / HP player/cpu 3/6 / stones player/cpu 15/3 / deck player/cpu 2/2 / hand player/cpu 6/5",
+                "board": "player_front_right:PF:ヤンバル Lv1 HP3 act0/1 focus | player_back_right:PB:デスシープ Lv2 HP6 act0/1 | cpu_front_left:CF:デスシープ Lv2 HP6 act1/1 | cpu_front_right:CF:ヤンバル Lv2 HP3 act1/1 shield | cpu_back_left:CB:ピグミィ Lv2 HP3 act0/2 focus"
+              }
+            }
+          ],
+          "topEvaluations": [
+            "122.7 end_turn",
+            "-176.6 attack:デスシープ:attack->cpu master"
+          ]
+        },
+        {
+          "candidateId": "terminal_compare1_loose",
+          "decision": "end_turn",
+          "reason": "有効な行動がないためターン終了 / ターンプラン探索: 返し込み最終盤面135点",
+          "elapsedMs": 56.7,
+          "rootRank": 1,
+          "rootScore": 122.7,
+          "branch": {
+            "steps": 5,
+            "score": -481,
+            "state": "turn 24 / current player / HP player/cpu 3/7 / stones player/cpu 15/2 / deck player/cpu 2/2 / hand player/cpu 6/5",
+            "board": "player_front_right:PF:ヤンバル Lv1 HP3 act0/1 focus | player_back_right:PB:デスシープ Lv2 HP6 act0/1 focus | cpu_front_left:CF:デスシープ Lv2 HP6 act1/1 | cpu_front_right:CF:ヤンバル Lv2 HP3 act1/1 shield | cpu_back_left:CB:ピグミィ Lv2 HP3 act0/2 focus"
+          },
+          "alternatives": [
+            {
+              "decision": "attack:デスシープ:attack->cpu master",
+              "rootScore": -176.6,
+              "branch": {
+                "steps": 6,
+                "score": -418,
+                "state": "turn 24 / current player / HP player/cpu 3/6 / stones player/cpu 15/3 / deck player/cpu 2/2 / hand player/cpu 6/5",
+                "board": "player_front_right:PF:ヤンバル Lv1 HP3 act0/1 focus | player_back_right:PB:デスシープ Lv2 HP6 act0/1 | cpu_front_left:CF:デスシープ Lv2 HP6 act1/1 | cpu_front_right:CF:ヤンバル Lv2 HP3 act1/1 shield | cpu_back_left:CB:ピグミィ Lv2 HP3 act0/2 focus"
+              }
+            }
+          ],
+          "topEvaluations": [
+            "122.7 end_turn",
+            "-176.6 attack:デスシープ:attack->cpu master"
+          ]
+        }
+      ]
+    }
+  ],
+  "summary": [
+    {
+      "candidateId": "current",
+      "samples": 2,
+      "changedDecision": 0,
+      "wins": 0,
+      "losses": 0,
+      "averageScore": -417.5,
+      "averageElapsedMs": 97.4,
+      "maxElapsedMs": 132.5
+    },
+    {
+      "candidateId": "response2_width2",
+      "samples": 2,
+      "changedDecision": 0,
+      "wins": 0,
+      "losses": 0,
+      "averageScore": -417.5,
+      "averageElapsedMs": 108.6,
+      "maxElapsedMs": 154.2
+    },
+    {
+      "candidateId": "response2_width3",
+      "samples": 2,
+      "changedDecision": 0,
+      "wins": 0,
+      "losses": 0,
+      "averageScore": -417.5,
+      "averageElapsedMs": 137.6,
+      "maxElapsedMs": 180.5
+    },
+    {
+      "candidateId": "response2_width2_weight075",
+      "samples": 2,
+      "changedDecision": 0,
+      "wins": 0,
+      "losses": 0,
+      "averageScore": -417.5,
+      "averageElapsedMs": 108.9,
+      "maxElapsedMs": 155.5
+    },
+    {
+      "candidateId": "terminal6_response2_width2",
+      "samples": 2,
+      "changedDecision": 0,
+      "wins": 0,
+      "losses": 0,
+      "averageScore": -417.5,
+      "averageElapsedMs": 108.3,
+      "maxElapsedMs": 153.9
+    },
+    {
+      "candidateId": "deckout_loose_override",
+      "samples": 2,
+      "changedDecision": 0,
+      "wins": 0,
+      "losses": 0,
+      "averageScore": -417.5,
+      "averageElapsedMs": 95,
+      "maxElapsedMs": 133.4
+    },
+    {
+      "candidateId": "terminal_compare1",
+      "samples": 2,
+      "changedDecision": 0,
+      "wins": 0,
+      "losses": 0,
+      "averageScore": -417.5,
+      "averageElapsedMs": 94.9,
+      "maxElapsedMs": 131.7
+    },
+    {
+      "candidateId": "terminal_compare1_loose",
+      "samples": 2,
+      "changedDecision": 0,
+      "wins": 0,
+      "losses": 0,
+      "averageScore": -417.5,
+      "averageElapsedMs": 96.8,
+      "maxElapsedMs": 136.8
+    }
+  ],
+  "conclusion": [
+    "終盤局面の軽量分岐では best=current、W-L 0-0、平均score -417.5。",
+    "今回の局面では現行設定を上回る応答幅候補は見えない。幅拡張のデフォルト採用は見送り、局面抽出を増やす。"
+  ]
+}
+
