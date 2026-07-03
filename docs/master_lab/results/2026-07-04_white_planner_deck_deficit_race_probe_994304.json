@@ -1,0 +1,73 @@
+{
+  "generatedAt": "2026-07-03T22:27:31.874Z",
+  "deckPreset": "master-lab-white-1377-death-sheep3",
+  "maxReplaySteps": 120,
+  "candidates": [
+    {
+      "id": "current",
+      "note": "現行 white_planner",
+      "search": {}
+    }
+  ],
+  "samples": [
+    {
+      "seed": 994304,
+      "direction": "challenger-as-cpu",
+      "step": 242,
+      "plannerSide": "cpu",
+      "currentPlayer": "cpu",
+      "turnNumber": 24,
+      "plannerTurn": true,
+      "state": "turn 24 / current cpu / HP cpu/player 6/6 / stones cpu/player 8/8 / deck cpu/player 1/2 / hand cpu/player 6/5",
+      "board": "player_front_left:PF:ドノマンティス Lv1 HP5 act0/1 focus | player_front_right:PF:デスシープ Lv1 HP6 act0/1 focus | player_back_left:PB:ピグミィ Lv1 HP3 act0/2 focus | player_back_right:PB:ピグミィ Lv2 HP3 act0/2 focus | cpu_front_left:CF:真勇者ダイン Lv1 HP6 act0/1 focus | cpu_back_left:CB:ヤンバル Lv1 HP3 act0/1 focus",
+      "candidates": [
+        {
+          "candidateId": "current",
+          "decision": "attack:真勇者ダイン:ダイン斬り->player master",
+          "reason": "ターン開始時の最大打点1点で詰めろを作れるため攻撃",
+          "elapsedMs": 1.2,
+          "rootRank": 2,
+          "rootScore": -375.7,
+          "branch": {
+            "steps": 3,
+            "score": -321,
+            "state": "turn 25 / current cpu / HP cpu/player 5/5 / stones cpu/player 12/12 / deck cpu/player 0/1 / hand cpu/player 6/5",
+            "board": "player_front_left:PF:ドノマンティス Lv1 HP5 act0/1 focus | player_front_right:PF:デスシープ Lv1 HP6 act1/1 | player_back_left:PB:ピグミィ Lv1 HP3 act0/2 focus | player_back_right:PB:ピグミィ Lv2 HP3 act0/2 focus | cpu_front_left:CF:真勇者ダイン Lv1 HP6 act0/1 | cpu_back_left:CB:ヤンバル Lv1 HP3 act0/1 focus"
+          },
+          "alternatives": [
+            {
+              "decision": "end_turn",
+              "rootScore": 0,
+              "branch": {
+                "steps": 3,
+                "score": -402,
+                "state": "turn 25 / current cpu / HP cpu/player 5/6 / stones cpu/player 12/11 / deck cpu/player 0/1 / hand cpu/player 6/5",
+                "board": "player_front_left:PF:ドノマンティス Lv1 HP5 act0/1 focus | player_front_right:PF:デスシープ Lv1 HP6 act1/1 | player_back_left:PB:ピグミィ Lv1 HP3 act1/2 focus | player_back_right:PB:ピグミィ Lv2 HP3 act0/2 focus | cpu_front_left:CF:真勇者ダイン Lv1 HP6 act0/1 | cpu_back_left:CB:ヤンバル Lv1 HP3 act0/1 focus"
+              }
+            }
+          ],
+          "topEvaluations": [
+            "0 end_turn",
+            "-375.7 attack:真勇者ダイン:ダイン斬り->player master"
+          ]
+        }
+      ]
+    }
+  ],
+  "summary": [
+    {
+      "candidateId": "current",
+      "samples": 1,
+      "changedDecision": 0,
+      "wins": 0,
+      "losses": 0,
+      "averageScore": -321,
+      "averageElapsedMs": 1.2,
+      "maxElapsedMs": 1.2
+    }
+  ],
+  "conclusion": [
+    "終盤局面の軽量分岐では best=current、W-L 0-0、平均score -321。",
+    "今回の局面では現行設定を上回る応答幅候補は見えない。幅拡張のデフォルト採用は見送り、局面抽出を増やす。"
+  ]
+}

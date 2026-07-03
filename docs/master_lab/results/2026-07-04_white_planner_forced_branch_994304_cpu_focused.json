@@ -1,0 +1,195 @@
+{
+  "generatedAt": "2026-07-03T23:08:34.789Z",
+  "seed": 994304,
+  "direction": "challenger-as-cpu",
+  "deckPreset": "master-lab-white-1377-death-sheep3",
+  "branchTop": 4,
+  "maxReplaySteps": 340,
+  "samples": [
+    {
+      "step": 230,
+      "turnNumber": 22,
+      "plannerSide": "cpu",
+      "currentPlayer": "cpu",
+      "state": "turn 22 / current cpu / HP cpu/player 6/6 / stones cpu/player 6/4 / deck cpu/player 3/4 / hand cpu/player 6/5",
+      "board": "player_front_left:PF:ボムゾウ Lv2 HP1 act1/1 shield | player_front_right:PF:ピグミィ Lv1 HP3 act2/2 | player_back_left:PB:ピグミィ Lv2 HP3 act2/2 | player_back_right:PB:ドノマンティス Lv1 HP5 prep | cpu_front_left:CF:真勇者ダイン Lv1 HP6 act1/1",
+      "branches": [
+        {
+          "rank": 1,
+          "decision": "master:master_attack->monster:player_front_left",
+          "rootScore": 545.2,
+          "selected": true,
+          "applied": true,
+          "winner": "player",
+          "winnerProfile": "white",
+          "replaySteps": 25,
+          "finalTurn": 28,
+          "branchScore": -1000000,
+          "finalState": "turn 28 / current cpu / HP cpu/player 0/2 / stones cpu/player 26/24 / deck cpu/player 0/0 / hand cpu/player 5/5",
+          "finalBoard": "player_front_left:PF:ドノマンティス Lv1 HP5 act0/1 focus | player_front_right:PF:デスシープ Lv1 HP6 act0/1 focus | player_back_left:PB:ピグミィ Lv1 HP3 act0/2 focus | player_back_right:PB:ピグミィ Lv2 HP3 act0/2 focus | cpu_front_left:CF:真勇者ダイン Lv1 HP6 act0/1 focus | cpu_back_left:CB:ヤンバル Lv1 HP3 act0/1 focus"
+        },
+        {
+          "rank": 2,
+          "decision": "summon:ヤンバル->cpu_back_left",
+          "rootScore": 537.3,
+          "selected": false,
+          "applied": true,
+          "winner": "player",
+          "winnerProfile": "white",
+          "replaySteps": 29,
+          "finalTurn": 28,
+          "branchScore": -1000000,
+          "finalState": "turn 28 / current cpu / HP cpu/player 0/3 / stones cpu/player 25/19 / deck cpu/player 0/0 / hand cpu/player 5/5",
+          "finalBoard": "player_front_left:PF:ドノマンティス Lv1 HP5 act0/1 focus | player_front_right:PF:デスシープ Lv1 HP6 act0/1 focus | player_back_left:PB:ピグミィ Lv2 HP3 act0/2 focus | player_back_right:PB:ピグミィ Lv2 HP3 act0/2 focus | cpu_front_left:CF:真勇者ダイン Lv1 HP6 act0/1 focus"
+        },
+        {
+          "rank": 3,
+          "decision": "summon:ヤンバル->cpu_front_right",
+          "rootScore": 479,
+          "selected": false,
+          "applied": true,
+          "winner": "player",
+          "winnerProfile": "white",
+          "replaySteps": 32,
+          "finalTurn": 29,
+          "branchScore": -1000000,
+          "finalState": "turn 29 / current cpu / HP cpu/player 0/1 / stones cpu/player 25/27 / deck cpu/player 0/0 / hand cpu/player 5/5",
+          "finalBoard": "player_front_left:PF:ドノマンティス Lv1 HP5 act0/1 focus | player_front_right:PF:デスシープ Lv1 HP6 act0/1 focus | player_back_left:PB:ピグミィ Lv2 HP3 act0/2 focus | player_back_right:PB:ピグミィ Lv2 HP1 act0/2 focus | cpu_front_left:CF:真勇者ダイン Lv1 HP6 act0/1 focus"
+        },
+        {
+          "rank": 4,
+          "decision": "summon:ヤンバル->cpu_back_right",
+          "rootScore": 477.9,
+          "selected": false,
+          "applied": true,
+          "winner": "player",
+          "winnerProfile": "white",
+          "replaySteps": 34,
+          "finalTurn": 29,
+          "branchScore": -1000000,
+          "finalState": "turn 29 / current cpu / HP cpu/player 0/1 / stones cpu/player 24/29 / deck cpu/player 0/0 / hand cpu/player 5/5",
+          "finalBoard": "player_front_left:PF:ドノマンティス Lv1 HP5 act0/1 focus | player_front_right:PF:デスシープ Lv1 HP6 act0/1 focus | player_back_right:PB:ピグミィ Lv2 HP3 act0/2 focus | cpu_front_left:CF:真勇者ダイン Lv1 HP6 act0/1 focus"
+        }
+      ],
+      "bestDecision": "master:master_attack->monster:player_front_left",
+      "selectedDecision": "master:master_attack->monster:player_front_left",
+      "selectedRank": 1,
+      "bestVsSelectedScoreDelta": 0
+    },
+    {
+      "step": 231,
+      "turnNumber": 22,
+      "plannerSide": "cpu",
+      "currentPlayer": "cpu",
+      "state": "turn 22 / current cpu / HP cpu/player 6/6 / stones cpu/player 3/6 / deck cpu/player 3/4 / hand cpu/player 6/5",
+      "board": "player_front_right:PF:ピグミィ Lv1 HP3 act2/2 | player_back_left:PB:ピグミィ Lv2 HP3 act2/2 | player_back_right:PB:ドノマンティス Lv1 HP5 prep | cpu_front_left:CF:真勇者ダイン Lv1 HP6 act1/1",
+      "branches": [
+        {
+          "rank": 1,
+          "decision": "summon:ヤンバル->cpu_back_left",
+          "rootScore": 146.4,
+          "selected": true,
+          "applied": true,
+          "winner": "player",
+          "winnerProfile": "white",
+          "replaySteps": 24,
+          "finalTurn": 28,
+          "branchScore": -1000000,
+          "finalState": "turn 28 / current cpu / HP cpu/player 0/2 / stones cpu/player 26/24 / deck cpu/player 0/0 / hand cpu/player 5/5",
+          "finalBoard": "player_front_left:PF:ドノマンティス Lv1 HP5 act0/1 focus | player_front_right:PF:デスシープ Lv1 HP6 act0/1 focus | player_back_left:PB:ピグミィ Lv1 HP3 act0/2 focus | player_back_right:PB:ピグミィ Lv2 HP3 act0/2 focus | cpu_front_left:CF:真勇者ダイン Lv1 HP6 act0/1 focus | cpu_back_left:CB:ヤンバル Lv1 HP3 act0/1 focus"
+        },
+        {
+          "rank": 2,
+          "decision": "summon:ヤンバル->cpu_back_right",
+          "rootScore": 93.2,
+          "selected": false,
+          "applied": true,
+          "winner": "player",
+          "winnerProfile": "white",
+          "replaySteps": 31,
+          "finalTurn": 29,
+          "branchScore": -1000000,
+          "finalState": "turn 29 / current cpu / HP cpu/player 0/1 / stones cpu/player 26/27 / deck cpu/player 0/0 / hand cpu/player 5/5",
+          "finalBoard": "player_front_left:PF:ドノマンティス Lv1 HP5 act0/1 focus | player_front_right:PF:デスシープ Lv1 HP6 act0/1 focus | player_back_left:PB:ピグミィ Lv2 HP3 act0/2 focus | player_back_right:PB:ピグミィ Lv2 HP3 act0/2 focus | cpu_front_left:CF:真勇者ダイン Lv1 HP6 act0/1 focus"
+        },
+        {
+          "rank": 3,
+          "decision": "summon:ヤンバル->cpu_front_right",
+          "rootScore": 55.4,
+          "selected": false,
+          "applied": true,
+          "winner": "player",
+          "winnerProfile": "white",
+          "replaySteps": 31,
+          "finalTurn": 29,
+          "branchScore": -1000000,
+          "finalState": "turn 29 / current cpu / HP cpu/player 0/1 / stones cpu/player 26/27 / deck cpu/player 0/0 / hand cpu/player 5/5",
+          "finalBoard": "player_front_left:PF:ドノマンティス Lv1 HP5 act0/1 focus | player_front_right:PF:デスシープ Lv1 HP6 act0/1 focus | player_back_left:PB:ピグミィ Lv2 HP3 act0/2 focus | player_back_right:PB:ピグミィ Lv2 HP3 act0/2 focus | cpu_front_left:CF:真勇者ダイン Lv1 HP6 act0/1 focus"
+        },
+        {
+          "rank": 4,
+          "decision": "master:master_attack->monster:player_front_right",
+          "rootScore": -9.5,
+          "selected": false,
+          "applied": true,
+          "winner": "player",
+          "winnerProfile": "white",
+          "replaySteps": 25,
+          "finalTurn": 28,
+          "branchScore": -1000000,
+          "finalState": "turn 28 / current cpu / HP cpu/player 0/3 / stones cpu/player 24/23 / deck cpu/player 0/0 / hand cpu/player 5/5",
+          "finalBoard": "player_front_left:PF:ドノマンティス Lv1 HP5 act0/1 focus | player_front_right:PF:デスシープ Lv1 HP6 act0/1 focus | player_back_left:PB:ピグミィ Lv1 HP1 act0/2 focus | player_back_right:PB:ピグミィ Lv2 HP3 act0/2 focus | cpu_front_left:CF:真勇者ダイン Lv1 HP6 act0/1 focus"
+        }
+      ],
+      "bestDecision": "summon:ヤンバル->cpu_back_left",
+      "selectedDecision": "summon:ヤンバル->cpu_back_left",
+      "selectedRank": 1,
+      "bestVsSelectedScoreDelta": 0
+    },
+    {
+      "step": 242,
+      "turnNumber": 24,
+      "plannerSide": "cpu",
+      "currentPlayer": "cpu",
+      "state": "turn 24 / current cpu / HP cpu/player 6/6 / stones cpu/player 8/8 / deck cpu/player 1/2 / hand cpu/player 6/5",
+      "board": "player_front_left:PF:ドノマンティス Lv1 HP5 act0/1 focus | player_front_right:PF:デスシープ Lv1 HP6 act0/1 focus | player_back_left:PB:ピグミィ Lv1 HP3 act0/2 focus | player_back_right:PB:ピグミィ Lv2 HP3 act0/2 focus | cpu_front_left:CF:真勇者ダイン Lv1 HP6 act0/1 focus | cpu_back_left:CB:ヤンバル Lv1 HP3 act0/1 focus",
+      "branches": [
+        {
+          "rank": 1,
+          "decision": "end_turn",
+          "rootScore": 0,
+          "selected": false,
+          "applied": true,
+          "winner": "player",
+          "winnerProfile": "white",
+          "replaySteps": 13,
+          "finalTurn": 28,
+          "branchScore": -1000000,
+          "finalState": "turn 28 / current cpu / HP cpu/player 0/3 / stones cpu/player 26/23 / deck cpu/player 0/0 / hand cpu/player 5/5",
+          "finalBoard": "player_front_left:PF:ドノマンティス Lv1 HP5 act0/1 focus | player_front_right:PF:デスシープ Lv1 HP6 act0/1 focus | player_back_left:PB:ピグミィ Lv1 HP3 act0/2 focus | player_back_right:PB:ピグミィ Lv2 HP3 act0/2 focus | cpu_front_left:CF:真勇者ダイン Lv1 HP6 act0/1 focus | cpu_back_left:CB:ヤンバル Lv1 HP3 act0/1 focus"
+        },
+        {
+          "rank": 2,
+          "decision": "attack:真勇者ダイン:ダイン斬り->player master",
+          "rootScore": -375.7,
+          "selected": true,
+          "applied": true,
+          "winner": "player",
+          "winnerProfile": "white",
+          "replaySteps": 13,
+          "finalTurn": 28,
+          "branchScore": -1000000,
+          "finalState": "turn 28 / current cpu / HP cpu/player 0/2 / stones cpu/player 26/24 / deck cpu/player 0/0 / hand cpu/player 5/5",
+          "finalBoard": "player_front_left:PF:ドノマンティス Lv1 HP5 act0/1 focus | player_front_right:PF:デスシープ Lv1 HP6 act0/1 focus | player_back_left:PB:ピグミィ Lv1 HP3 act0/2 focus | player_back_right:PB:ピグミィ Lv2 HP3 act0/2 focus | cpu_front_left:CF:真勇者ダイン Lv1 HP6 act0/1 focus | cpu_back_left:CB:ヤンバル Lv1 HP3 act0/1 focus"
+        }
+      ],
+      "bestDecision": "end_turn",
+      "selectedDecision": "attack:真勇者ダイン:ダイン斬り->player master",
+      "selectedRank": 2,
+      "bestVsSelectedScoreDelta": 0
+    }
+  ],
+  "conclusion": [
+    "強制分岐の範囲では、選択手を最終勝敗まで明確に上回る代替は見つからない。"
+  ]
+}

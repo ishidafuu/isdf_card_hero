@@ -1,0 +1,84 @@
+{
+  "generatedAt": "2026-07-03T23:31:44.059Z",
+  "deckPreset": "master-lab-white-1377-death-sheep3",
+  "maxReplaySteps": 60,
+  "candidates": [
+    {
+      "id": "current",
+      "note": "現行 white_planner",
+      "search": {}
+    }
+  ],
+  "samples": [
+    {
+      "seed": 994306,
+      "direction": "challenger-as-player",
+      "step": 83,
+      "plannerSide": "player",
+      "currentPlayer": "player",
+      "turnNumber": 8,
+      "plannerTurn": true,
+      "state": "turn 8 / current player / HP player/cpu 9/10 / stones player/cpu 3/2 / deck player/cpu 18/18 / hand player/cpu 3/5",
+      "board": "player_front_left:PF:ピグミィ Lv1 HP3 act1/2 focus | player_front_right:PF:ボムゾウ Lv1 HP6 act0/1 focus | player_back_left:PB:ドノマンティス Lv1 HP5 prep | player_back_right:PB:ヤンバル Lv2 HP2 act1/1 | cpu_front_left:CF:デスシープ Lv2 HP6 act1/1 shield | cpu_front_right:CF:デスシープ Lv2 HP5 act1/1 shield | cpu_back_left:CB:ヤンバル Lv1 HP3 prep | cpu_back_right:CB:ヤンバル Lv2 HP3 act1/1",
+      "candidates": [
+        {
+          "candidateId": "current",
+          "decision": "end_turn",
+          "reason": "有効な行動がないためターン終了 / ターンプラン探索: 返し込み最終盤面-29点",
+          "elapsedMs": 338.1,
+          "rootRank": 1,
+          "rootScore": -84.4,
+          "branch": {
+            "steps": 6,
+            "score": -441,
+            "state": "turn 9 / current player / HP player/cpu 9/10 / stones player/cpu 8/1 / deck player/cpu 17/17 / hand player/cpu 4/5",
+            "board": "player_front_left:PF:ドノマンティス Lv1 HP5 act0/1 | player_front_right:PF:ヤンバル Lv2 HP2 act0/1 | cpu_front_left:CF:デスシープ Lv2 HP6 act1/1 | cpu_front_right:CF:デスシープ Lv2 HP5 act1/1 | cpu_back_left:CB:ヤンバル Lv2 HP3 act1/1 | cpu_back_right:CB:ヤンバル Lv2 HP3 act1/1"
+          },
+          "alternatives": [
+            {
+              "decision": "attack:ボムゾウ:self_bomb->デスシープ",
+              "rootScore": -227.8,
+              "branch": {
+                "steps": 7,
+                "score": -475,
+                "state": "turn 9 / current player / HP player/cpu 8/10 / stones player/cpu 6/4 / deck player/cpu 17/17 / hand player/cpu 4/5",
+                "board": "player_front_left:PF:ピグミィ Lv1 HP2 act0/2 | player_front_right:PF:ヤンバル Lv2 HP2 act0/1 | player_back_left:PB:ドノマンティス Lv1 HP5 act0/1 | cpu_front_left:CF:デスシープ Lv2 HP6 act1/1 | cpu_front_right:CF:デスシープ Lv2 HP3 act1/1 | cpu_back_left:CB:ヤンバル Lv2 HP3 act1/1 | cpu_back_right:CB:ヤンバル Lv2 HP3 act1/1"
+              }
+            },
+            {
+              "decision": "attack:ボムゾウ:self_bomb->cpu master",
+              "rootScore": -351.8,
+              "branch": {
+                "steps": 8,
+                "score": -408,
+                "state": "turn 9 / current player / HP player/cpu 8/9 / stones player/cpu 6/3 / deck player/cpu 17/17 / hand player/cpu 4/5",
+                "board": "player_front_left:PF:ピグミィ Lv1 HP2 act0/2 | player_front_right:PF:ヤンバル Lv2 HP2 act0/1 | player_back_left:PB:ドノマンティス Lv1 HP5 act0/1 | cpu_front_left:CF:デスシープ Lv2 HP6 act1/1 | cpu_front_right:CF:デスシープ Lv2 HP5 act1/1 shield | cpu_back_left:CB:ヤンバル Lv2 HP3 act1/1 | cpu_back_right:CB:ヤンバル Lv2 HP3 act1/1"
+              }
+            }
+          ],
+          "topEvaluations": [
+            "-84.4 end_turn",
+            "-227.8 attack:ボムゾウ:self_bomb->デスシープ",
+            "-351.8 attack:ボムゾウ:self_bomb->cpu master"
+          ]
+        }
+      ]
+    }
+  ],
+  "summary": [
+    {
+      "candidateId": "current",
+      "samples": 1,
+      "changedDecision": 0,
+      "wins": 0,
+      "losses": 0,
+      "averageScore": -441,
+      "averageElapsedMs": 338.1,
+      "maxElapsedMs": 338.1
+    }
+  ],
+  "conclusion": [
+    "終盤局面の軽量分岐では best=current、W-L 0-0、平均score -441。",
+    "今回の局面では現行設定を上回る応答幅候補は見えない。幅拡張のデフォルト採用は見送り、局面抽出を増やす。"
+  ]
+}

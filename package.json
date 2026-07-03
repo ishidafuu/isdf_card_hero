@@ -36,6 +36,7 @@
     "lab:masters:white-planner-pdca": "vite-node scripts/white-planner-pdca-loop.ts",
     "audit:white-planner-deckout": "vite-node scripts/white-planner-deckout-race-audit.ts",
     "audit:white-planner-response-probe": "vite-node scripts/white-planner-response-probe.ts",
+    "audit:white-planner-forced-branch": "vite-node scripts/white-planner-forced-branch-probe.ts",
     "lab:masters:shield-audit": "vite-node scripts/shield-usage-audit-loop.ts",
     "lab:masters:white-shield-followup-loss": "vite-node scripts/white-shield-followup-loss-audit.ts",
     "lab:masters:white-shield-response-matrix": "vite-node scripts/white-shield-response-matrix-audit.ts",
