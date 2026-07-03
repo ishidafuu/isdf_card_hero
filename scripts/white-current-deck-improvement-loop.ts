@@ -209,6 +209,16 @@ function buildVariants(): WhiteAiTuningVariant[] {
         whiteBlockedBacklineNoWorkSummonPenalty: 120,
       },
     }, "詰まり後列仕事なし召喚を強めに抑え、盤面制圧を落とさず違和感が減るかを見る。"),
+    variant("current_mirror_blocked_exposed45", "候補: 白ミラー露出後列召喚 45", {
+      situationalBias: {
+        whiteBlockedBacklineExposedSummonPenalty: 45,
+      },
+    }, "後列から働けない召喚のうち、返しで脅かされ、既存アクティブ駒の敵前衛処理がある局面だけ軽く抑える。"),
+    variant("current_mirror_blocked_exposed70", "候補: 白ミラー露出後列召喚 70", {
+      situationalBias: {
+        whiteBlockedBacklineExposedSummonPenalty: 70,
+      },
+    }, "再現比較で攻撃代替が勝った露出後列召喚を中程度に抑え、副作用が出るかを見る。"),
     variant("current_mirror_focus_backline_quality", "候補: 白ミラーfocus+後列品質", {
       situationalBias: {
         whiteLowStoneFocusConversionBonus: 14,

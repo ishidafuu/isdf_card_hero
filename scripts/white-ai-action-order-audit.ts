@@ -146,6 +146,9 @@ const CURRENT_ACTION_ORDER_VARIANTS = [
   currentVariant("current_threat_left_low_stone_guard", "順序候補: 脅威残り低石布石抑制", {
     situationalBias: { whiteThreatLeftLowStoneSetupPenalty: 6 },
   }, "攻撃で脅威を減らす前に低石の盾/起動/召喚へ入る順序を抑える。"),
+  currentVariant("current_mirror_blocked_exposed45", "順序候補: 白ミラー露出後列召喚 45", {
+    situationalBias: { whiteBlockedBacklineExposedSummonPenalty: 45 },
+  }, "白ミラーで露出した詰まり後列召喚を軽く抑え、攻撃/起動先行へ寄るかを見る。"),
   currentVariant("current_black_front_threat16", "順序候補: 黒前衛脅威+16", {
     situationalBias: { whiteBlackFrontThreatBonus: 16 },
   }, "黒の打点源処理を強め、盾より攻撃が先に出るか見る。"),

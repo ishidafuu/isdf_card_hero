@@ -207,6 +207,9 @@ const ALL_VARIANTS = [
   currentVariant("current_threat_then_setup", "候補: 脅威処理後布石", {
     situationalBias: { whiteThreatSourceAttackBonus: 6, whiteSetupAfterThreatReductionBonus: 6 },
   }, "このターンの脅威処理を済ませてから、次ターンの布石へ入る順序を押す。"),
+  currentVariant("current_mirror_blocked_exposed45", "候補: 白ミラー露出後列召喚 45", {
+    situationalBias: { whiteBlockedBacklineExposedSummonPenalty: 45 },
+  }, "白ミラーで露出した詰まり後列召喚を軽く抑え、盾後接続の副作用が出ないか見る。"),
   currentVariant("current_shield_no_pressure4_wake4", "参考: ノープレッシャー盾抑制 4 / 安全ウェイク 4", {
     situationalBias: { whiteShieldNoPressurePenalty: 4, whiteWakeSafeWorkBonus: 4 },
   }, "前回候補との比較用。今回の主目的は盾を減らすことではなく、盾後接続の観察。"),

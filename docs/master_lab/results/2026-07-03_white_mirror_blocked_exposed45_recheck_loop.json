@@ -1,0 +1,104 @@
+{
+  "generatedAt": "2026-07-03T09:10:47.226Z",
+  "deckPreset": "master-lab-white-1377-death-sheep3",
+  "screen": {
+    "gamesPerMatchup": 4,
+    "totalGames": 16,
+    "standings": [
+      {
+        "rank": 1,
+        "variantId": "current_white_baseline",
+        "label": "現行: デスシープ3 / white",
+        "score": -26,
+        "wins": 3,
+        "losses": 3,
+        "draws": 2,
+        "overall": 0.5,
+        "vsBlack": 0,
+        "vsDecoy": 0,
+        "vsWhite": 0.5,
+        "averageTurns": 17.1,
+        "issues": "2F/0W",
+        "notes": [
+          "failure 2",
+          "シールド偏重"
+        ]
+      },
+      {
+        "rank": 2,
+        "variantId": "current_mirror_blocked_exposed45",
+        "label": "候補: 白ミラー露出後列召喚 45",
+        "score": -48,
+        "wins": 3,
+        "losses": 2,
+        "draws": 3,
+        "overall": 0.563,
+        "vsBlack": 0,
+        "vsDecoy": 0,
+        "vsWhite": 0.563,
+        "averageTurns": 17,
+        "issues": "3F/0W",
+        "notes": [
+          "failure 3",
+          "シールド偏重"
+        ]
+      }
+    ]
+  },
+  "confirm": {
+    "gamesPerMatchup": 4,
+    "totalGames": 16,
+    "standings": [
+      {
+        "rank": 1,
+        "variantId": "current_mirror_blocked_exposed45",
+        "label": "候補: 白ミラー露出後列召喚 45",
+        "score": -74,
+        "wins": 2,
+        "losses": 2,
+        "draws": 4,
+        "overall": 0.5,
+        "vsBlack": 0,
+        "vsDecoy": 0,
+        "vsWhite": 0.5,
+        "averageTurns": 16.4,
+        "issues": "4F/0W",
+        "notes": [
+          "failure 4",
+          "シールド偏重"
+        ]
+      },
+      {
+        "rank": 2,
+        "variantId": "current_white_baseline",
+        "label": "現行: デスシープ3 / white",
+        "score": -100,
+        "wins": 1,
+        "losses": 2,
+        "draws": 5,
+        "overall": 0.438,
+        "vsBlack": 0,
+        "vsDecoy": 0,
+        "vsWhite": 0.438,
+        "averageTurns": 18.4,
+        "issues": "5F/0W",
+        "notes": [
+          "failure 5",
+          "シールド偏重"
+        ]
+      }
+    ]
+  },
+  "adopted": {
+    "variantId": "current_mirror_blocked_exposed45",
+    "label": "候補: 白ミラー露出後列召喚 45",
+    "recommendation": "hold",
+    "reason": "baseline比 score +26, overall +6.2%, vsBlack +0%, vsWhite +6.2%, issues 4F/0W。"
+  },
+  "nextSteps": [
+    "今回の確認では即採用せず、ベースラインを維持する。",
+    "次は `current_mirror_blocked_exposed45` と `current_white_baseline` を games-per-matchup 3-4 で再確認し、seed差を潰す。",
+    "対黒がまだ不安定。負けseedから、デスシープが前に出た後の盾/ウェイク/攻撃順を重点監査する。",
+    "デッキ側はデスシープ3を固定し、次ループはAIだけを触る。元1377は比較対象として残す。"
+  ]
+}

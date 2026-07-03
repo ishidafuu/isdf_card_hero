@@ -1120,6 +1120,15 @@ function decisionSituationalBonus(
       bias.whiteBlockedBacklineNoWorkSummonPenalty,
     );
   }
+  if (bias.whiteBlockedBacklineExposedSummonPenalty) {
+    bonus -= whiteBlockedBacklineExposedSummonDecisionPenalty(
+      before,
+      after,
+      decision,
+      perspective,
+      bias.whiteBlockedBacklineExposedSummonPenalty,
+    );
+  }
   if (bias.whiteBackSlotFutureValuePenalty) {
     bonus -= whiteBackSlotFutureValueDecisionPenalty(
       before,
@@ -1759,6 +1768,64 @@ function whiteBlockedBacklineNoWorkSummonDecisionPenalty(
   const durableFrontBlockerPenalty = frontMonster.hp >= 3 ? 40 : 0;
   const lowResourcePenalty = after.players[perspective].stones <= 1 ? 30 : 0;
   return value + durableFrontBlockerPenalty + lowResourcePenalty;
+}
+
+function whiteBlockedBacklineExposedSummonDecisionPenalty(
+  before: GameState,
+  after: GameState,
+  decision: CpuDecision,
+  perspective: PlayerId,
+  value: number,
+): number {
+  if (
+    value <= 0 ||
+    before.players[perspective].masterId !== "white" ||
+    decision.type !== "summon" ||
+    after.winner === perspective ||
+    summonWakeCreatesImmediateWork(before, decision.handInstanceId, decision.slotKey)
+  ) {
+    return 0;
+  }
+
+  const slot = after.slots[decision.slotKey];
+  const summoned = slot.monster;
+  if (!summoned || summoned.owner !== perspective || slot.row !== "back" || monsterHasBacklineAttackPattern(summoned.cardId)) {
+    return 0;
+  }
+
+  const frontMonster = after.slots[frontSlotFor(slot)].monster;
+  if (!frontMonster || frontMonster.owner !== perspective) {
+    return 0;
+  }
+
+  const readyState = readyPlayerForTacticalEvaluation(after, perspective);
+  if (bestAttackOpportunityScore(readyState, decision.slotKey) > 0) {
+    return 0;
+  }
+
+  const fillsLastBackSlot = emptyBackSlotCountForPlayer(before, perspective) > 0 &&
+    emptyBackSlotCountForPlayer(after, perspective) === 0;
+  const lowStone = after.players[perspective].stones <= 2;
+  if (!fillsLastBackSlot && !lowStone) {
+    return 0;
+  }
+
+  const existingAttackScore = bestAttackOpportunityScore(before);
+  if (existingAttackScore < 80) {
+    return 0;
+  }
+
+  const opponent = opponentOf(perspective);
+  const summonedThreat = buildThreatModel(after, opponent).monsterThreats[decision.slotKey] ?? NO_THREAT;
+  if (!summonedThreat.threatened) {
+    return 0;
+  }
+
+  const lethalPenalty = isLethalIncomingThreat(summonedThreat) ? value * 0.65 : 0;
+  const lastBackSlotPenalty = fillsLastBackSlot ? Math.min(35, value * 0.35) : 0;
+  const lowStonePenalty = lowStone ? Math.min(25, value * 0.25) : 0;
+  const attackOpportunityPenalty = Math.min(55, existingAttackScore * 0.12);
+  return value + lethalPenalty + lastBackSlotPenalty + lowStonePenalty + attackOpportunityPenalty;
 }
 
 function whiteBackSlotFutureValueDecisionPenalty(

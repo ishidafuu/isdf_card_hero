@@ -69,6 +69,7 @@ export interface CpuAiTuning {
     whiteReadyBacklineRetreatPenalty?: number;
     whiteDisadvantagedSummonOvercommitPenalty?: number;
     whiteBlockedBacklineNoWorkSummonPenalty?: number;
+    whiteBlockedBacklineExposedSummonPenalty?: number;
     whiteBackSlotFutureValuePenalty?: number;
     whiteBackSlotReservationPlanBonus?: number;
     whiteLowStoneBackSlotAlternativeBonus?: number;
