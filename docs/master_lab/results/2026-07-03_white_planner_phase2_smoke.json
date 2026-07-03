@@ -1,0 +1,183 @@
+{
+  "generatedAt": "2026-07-03T13:35:17.530Z",
+  "options": {
+    "seedStart": 994100,
+    "count": 1,
+    "maxSteps": 30,
+    "maxTurns": 20,
+    "deckPreset": "master-lab-white-1377-death-sheep3",
+    "directions": [
+      "challenger-as-cpu"
+    ],
+    "maxDiffSamples": 6,
+    "markdownPath": "docs/master_lab/results/2026-07-03_white_planner_phase2_smoke.md",
+    "jsonPath": "docs/master_lab/results/2026-07-03_white_planner_phase2_smoke.json"
+  },
+  "games": [
+    {
+      "direction": "challenger-as-cpu",
+      "seed": 994100,
+      "profiles": {
+        "player": "white",
+        "cpu": "white_planner"
+      },
+      "steps": 30,
+      "turns": 4,
+      "issue": "winner was not decided within 30 auto steps",
+      "playerHp": 10,
+      "cpuHp": 10,
+      "timings": [
+        {
+          "profile": "white",
+          "decisions": 28,
+          "elapsedMs": 16087.776373000002,
+          "maxDecisionMs": 3094.4405830000014
+        },
+        {
+          "profile": "white_planner",
+          "decisions": 28,
+          "elapsedMs": 5141.624414999996,
+          "maxDecisionMs": 924.2403329999979
+        }
+      ],
+      "diffCount": 13,
+      "plannerSelectedDiffCount": 4,
+      "diffSamples": [
+        {
+          "direction": "challenger-as-cpu",
+          "seed": 994100,
+          "step": 6,
+          "turn": 1,
+          "currentPlayer": "cpu",
+          "activeProfile": "white_planner",
+          "board": "player_front_left:player:真勇者ダイン L1 HP6 prep / player_front_right:player:ボムゾウ L1 HP6 prep / player_back_left:player:ヤンバル L1 HP3 prep / cpu_front_left:cpu:デスシープ L1 HP6 prep / cpu_back_left:cpu:デスシープ L1 HP6 prep",
+          "whiteDecision": "summon:cpu_bomuzo_1->cpu_back_right",
+          "whitePlannerDecision": "summon:cpu_bomuzo_1->cpu_front_right",
+          "selectedProfile": "white_planner",
+          "selectedDecision": "summon:cpu_bomuzo_1->cpu_front_right",
+          "whiteReason": "カードを後列右へ召喚 / 見送り: 召喚は1点差で見送り、召喚は3点差で見送り",
+          "whitePlannerReason": "前衛カードを前列右へ召喚 / ターンプラン探索: 返し込み最終盤面-81点、次点と0点差",
+          "whiteMs": 75.3,
+          "whitePlannerMs": 41.9
+        },
+        {
+          "direction": "challenger-as-cpu",
+          "seed": 994100,
+          "step": 8,
+          "turn": 2,
+          "currentPlayer": "player",
+          "activeProfile": "white",
+          "board": "player_front_left:player:真勇者ダイン L1 HP6 act / player_front_right:player:ボムゾウ L1 HP6 act / player_back_left:player:ヤンバル L1 HP3 act / cpu_front_left:cpu:デスシープ L1 HP6 prep / cpu_front_right:cpu:ボムゾウ L1 HP6 prep / cpu_back_left:cpu:デスシープ L1 HP6 prep",
+          "whiteDecision": "focus:player_front_left",
+          "whitePlannerDecision": "summon:player_card_051_3->player_back_right",
+          "selectedProfile": "white",
+          "selectedDecision": "focus:player_front_left",
+          "whiteReason": "有効攻撃がないためためる / 見送り: ためるは1点差で見送り、召喚は2点差で見送り",
+          "whitePlannerReason": "後衛カードを後列右へ召喚 / ターンプラン探索: 返し込み最終盤面-68点、次点と6点差",
+          "whiteMs": 577.2,
+          "whitePlannerMs": 238.4
+        },
+        {
+          "direction": "challenger-as-cpu",
+          "seed": 994100,
+          "step": 10,
+          "turn": 2,
+          "currentPlayer": "player",
+          "activeProfile": "white",
+          "board": "player_front_left:player:真勇者ダイン L1 HP6 act / player_front_right:player:ボムゾウ L1 HP6 act / player_back_left:player:ヤンバル L1 HP3 act / player_back_right:player:ピグミィ L1 HP3 prep / cpu_front_left:cpu:デスシープ L1 HP6 prep / cpu_front_right:cpu:ボムゾウ L1 HP6 prep / cpu_back_left:cpu:デスシープ L1 HP6 prep",
+          "whiteDecision": "focus:player_front_right",
+          "whitePlannerDecision": "end_turn",
+          "selectedProfile": "white",
+          "selectedDecision": "focus:player_front_right",
+          "whiteReason": "有効攻撃がないためためる / 見送り: ためるは47点差で見送り",
+          "whitePlannerReason": "有効な行動がないためターン終了 / ターンプラン探索: 返し込み最終盤面-149点、次点と6点差",
+          "whiteMs": 282.3,
+          "whitePlannerMs": 113
+        },
+        {
+          "direction": "challenger-as-cpu",
+          "seed": 994100,
+          "step": 11,
+          "turn": 2,
+          "currentPlayer": "player",
+          "activeProfile": "white",
+          "board": "player_front_left:player:真勇者ダイン L1 HP6 act / player_front_right:player:ボムゾウ L1 HP6 act / player_back_left:player:ヤンバル L1 HP3 act / player_back_right:player:ピグミィ L1 HP3 prep / cpu_front_left:cpu:デスシープ L1 HP6 prep / cpu_front_right:cpu:ボムゾウ L1 HP6 prep / cpu_back_left:cpu:デスシープ L1 HP6 prep",
+          "whiteDecision": "focus:player_back_left",
+          "whitePlannerDecision": "end_turn",
+          "selectedProfile": "white",
+          "selectedDecision": "focus:player_back_left",
+          "whiteReason": "有効攻撃がないためためる",
+          "whitePlannerReason": "有効な行動がないためターン終了 / ターンプラン探索: 返し込み最終盤面-161点、次点と6点差",
+          "whiteMs": 174.6,
+          "whitePlannerMs": 72.5
+        },
+        {
+          "direction": "challenger-as-cpu",
+          "seed": 994100,
+          "step": 12,
+          "turn": 2,
+          "currentPlayer": "player",
+          "activeProfile": "white",
+          "board": "player_front_left:player:真勇者ダイン L1 HP6 act / player_front_right:player:ボムゾウ L1 HP6 act / player_back_left:player:ヤンバル L1 HP3 act / player_back_right:player:ピグミィ L1 HP3 prep / cpu_front_left:cpu:デスシープ L1 HP6 prep / cpu_front_right:cpu:ボムゾウ L1 HP6 prep / cpu_back_left:cpu:デスシープ L1 HP6 prep",
+          "whiteDecision": "master:shield->monster:player_front_left",
+          "whitePlannerDecision": "end_turn",
+          "selectedProfile": "white",
+          "selectedDecision": "master:shield->monster:player_front_left",
+          "whiteReason": "高価値の味方を守るためシールド / 見送り: マスター特技は1点差で見送り",
+          "whitePlannerReason": "有効な行動がないためターン終了 / ターンプラン探索: 返し込み最終盤面-173点、次点と4点差",
+          "whiteMs": 128.5,
+          "whitePlannerMs": 52.8
+        },
+        {
+          "direction": "challenger-as-cpu",
+          "seed": 994100,
+          "step": 14,
+          "turn": 2,
+          "currentPlayer": "cpu",
+          "activeProfile": "white_planner",
+          "board": "player_front_left:player:真勇者ダイン L1 HP6 act shield / player_front_right:player:ボムゾウ L1 HP6 act / player_back_left:player:ヤンバル L1 HP3 act / player_back_right:player:ピグミィ L1 HP3 prep / cpu_front_left:cpu:デスシープ L1 HP6 act / cpu_front_right:cpu:ボムゾウ L1 HP6 act / cpu_back_left:cpu:デスシープ L1 HP6 act",
+          "whiteDecision": "focus:cpu_front_right",
+          "whitePlannerDecision": "summon:cpu_bomuzo_3->cpu_back_right",
+          "selectedProfile": "white_planner",
+          "selectedDecision": "summon:cpu_bomuzo_3->cpu_back_right",
+          "whiteReason": "有効攻撃がないためためる / 見送り: 召喚は100点差で見送り、召喚は112点差で見送り",
+          "whitePlannerReason": "カードを後列右へ召喚 / ターンプラン探索: 返し込み最終盤面18点、次点と5点差",
+          "whiteMs": 2036.6,
+          "whitePlannerMs": 698.5
+        }
+      ]
+    }
+  ],
+  "summary": {
+    "games": 1,
+    "wins": {},
+    "draws": 1,
+    "issues": 1,
+    "diffCount": 13,
+    "plannerSelectedDiffCount": 4,
+    "timings": [
+      {
+        "profile": "white",
+        "decisions": 28,
+        "elapsedMs": 16087.776373000002,
+        "maxDecisionMs": 3094.4405830000014
+      },
+      {
+        "profile": "white_planner",
+        "decisions": 28,
+        "elapsedMs": 5141.624414999996,
+        "maxDecisionMs": 924.2403329999979
+      }
+    ]
+  },
+  "reading": [
+    "white_planner average decision 183.6ms, max 924.2ms.",
+    "white_planner diverged from white 13 times; inspect samples before changing search depth.",
+    "Some games hit the step/turn cap. Treat W-L-D as incomplete and use this run mainly for timing and decision-diff inspection."
+  ],
+  "nextSteps": [
+    "Review decision diff samples and classify good/bad planner divergences.",
+    "If planner average decision time stays practical, run both directions with count 3-5.",
+    "Try opponentTerminalPlanDepth 2 as a v2 candidate."
+  ]
+}
