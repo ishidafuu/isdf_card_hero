@@ -1,0 +1,493 @@
+import { performance } from "node:perf_hooks";
+import {
+  applyCpuDecision,
+  chooseCpuDecision,
+  type CpuAiOptions,
+  type CpuAiProfile,
+  type CpuAiSearchOptions,
+  type CpuDecision,
+} from "../src/game/cpuAi";
+import { buildDeckPresetCardIds, deckPresetAllowsSpecial, type DeckPresetId } from "../src/game/deckPresets";
+import { createInitialGame, runAutoStep } from "../src/game/rules";
+import type { GameState, PlayerId } from "../src/game/types";
+import { average, escapeMarkdownTableCell, formatPercent, readInteger, readString, round, writeReport } from "./lib/cli";
+
+type Direction = "challenger-as-cpu" | "challenger-as-player";
+
+interface Candidate {
+  id: string;
+  note: string;
+  search: CpuAiSearchOptions;
+}
+
+interface CliOptions {
+  seedStart: number;
+  gamesPerDirection: number;
+  maxSteps: number;
+  maxTurns: number;
+  deckPreset: DeckPresetId;
+  directions: Direction[];
+  candidates: Candidate[];
+  markdownPath?: string;
+  jsonPath?: string;
+}
+
+interface DecisionStats {
+  decisions: number;
+  elapsedMs: number;
+  maxDecisionMs: number;
+  actionCounts: Record<string, number>;
+}
+
+interface GameResult {
+  candidateId: string;
+  direction: Direction;
+  seed: number;
+  profiles: Record<PlayerId, CpuAiProfile>;
+  winner?: PlayerId;
+  winnerProfile?: CpuAiProfile;
+  steps: number;
+  turns: number;
+  playerHp: number;
+  cpuHp: number;
+  challengerHp: number;
+  baselineHp: number;
+  issue?: string;
+  decisionStats: Record<PlayerId, DecisionStats>;
+}
+
+interface CandidateSummary {
+  candidateId: string;
+  note: string;
+  games: number;
+  challengerWins: number;
+  baselineWins: number;
+  draws: number;
+  winPointRate: number;
+  averageHpMargin: number;
+  averageSteps: number;
+  averageTurns: number;
+  averageDecisionMs: number;
+  maxDecisionMs: number;
+  issues: number;
+  actionCounts: Record<string, number>;
+}
+
+interface PdcaReport {
+  generatedAt: string;
+  options: Omit<CliOptions, "candidates"> & { candidates: Array<Pick<Candidate, "id" | "note" | "search">> };
+  games: GameResult[];
+  summaries: CandidateSummary[];
+  conclusion: string[];
+}
+
+const DEFAULT_CANDIDATES = [
+  {
+    id: "current",
+    note: "現行 white_planner",
+    search: {},
+  },
+  {
+    id: "conservative32_gap45",
+    note: "採用をやや厳しくし、通常評価から離れすぎる手を抑える",
+    search: {
+      terminalPlanAdoptionMinMargin: 32,
+      terminalPlanAdoptionMaxRootScoreGap: 45,
+      terminalPlanRootDecisionWeight: 0.16,
+      terminalPlanRootGapPenaltyWeight: 0.65,
+    },
+  },
+  {
+    id: "conservative48_gap25",
+    note: "採用を強めに絞り、planner の過剰介入を抑える",
+    search: {
+      terminalPlanAdoptionMinMargin: 48,
+      terminalPlanAdoptionMaxRootScoreGap: 25,
+      terminalPlanRootDecisionWeight: 0.12,
+      terminalPlanRootGapPenaltyWeight: 0.8,
+    },
+  },
+  {
+    id: "strict80_gap0",
+    note: "通常評価と同等以上の候補だけ planner 採用する安全寄り",
+    search: {
+      terminalPlanAdoptionMinMargin: 80,
+      terminalPlanAdoptionMaxRootScoreGap: 0,
+      terminalPlanRootDecisionWeight: 0.05,
+      terminalPlanRootGapPenaltyWeight: 1.2,
+    },
+  },
+  {
+    id: "low_focus_conservative",
+    note: "focus 終端価値を抑え、削り放棄を減らす",
+    search: {
+      terminalPlanFocusHandoffValue: 24,
+      terminalPlanShieldHandoffValue: 10,
+      terminalPlanAdoptionMinMargin: 40,
+      terminalPlanAdoptionMaxRootScoreGap: 35,
+      terminalPlanRootDecisionWeight: 0.12,
+      terminalPlanRootGapPenaltyWeight: 0.8,
+    },
+  },
+  {
+    id: "response2_conservative",
+    note: "相手応答を少し深く読み、採用は保守的にする",
+    search: {
+      sameTurnOpponentTerminalPlanDepth: 2,
+      terminalPlanAdoptionMinMargin: 48,
+      terminalPlanAdoptionMaxRootScoreGap: 25,
+      terminalPlanRootDecisionWeight: 0.12,
+      terminalPlanRootGapPenaltyWeight: 0.8,
+    },
+  },
+] as const satisfies readonly Candidate[];
+
+const DEFAULT_OPTIONS: CliOptions = {
+  seedStart: 994300,
+  gamesPerDirection: 1,
+  maxSteps: 500,
+  maxTurns: 120,
+  deckPreset: "master-lab-white-1377-death-sheep3",
+  directions: ["challenger-as-cpu", "challenger-as-player"],
+  candidates: [...DEFAULT_CANDIDATES],
+};
+
+const options = parseArgs(process.argv.slice(2));
+const report = runReport(options);
+const markdown = formatMarkdown(report);
+
+if (options.markdownPath) {
+  await writeReport(options.markdownPath, markdown);
+}
+if (options.jsonPath) {
+  await writeReport(options.jsonPath, JSON.stringify(report, null, 2));
+}
+
+console.log(markdown);
+
+function runReport(options: CliOptions): PdcaReport {
+  const games: GameResult[] = [];
+  for (const candidate of options.candidates) {
+    for (const direction of options.directions) {
+      for (let index = 0; index < options.gamesPerDirection; index += 1) {
+        games.push(runGame(options.seedStart + index, direction, candidate, options));
+      }
+    }
+  }
+
+  const summaries = summarizeCandidates(games, options.candidates);
+  return {
+    generatedAt: new Date().toISOString(),
+    options: {
+      ...options,
+      candidates: options.candidates.map(({ id, note, search }) => ({ id, note, search })),
+    },
+    games,
+    summaries,
+    conclusion: buildConclusion(summaries),
+  };
+}
+
+function runGame(seed: number, direction: Direction, candidate: Candidate, options: CliOptions): GameResult {
+  let game = createWhiteMirrorGame(seed, options.deckPreset);
+  const profiles = profilesForDirection(direction);
+  const aiOptions = aiOptionsFor(direction, candidate.search);
+  const decisionStats = createDecisionStats();
+  let issue: string | undefined;
+  let steps = 0;
+
+  for (; steps < options.maxSteps && !game.winner; steps += 1) {
+    if (game.turnNumber > options.maxTurns) {
+      issue = `turn ${game.turnNumber} exceeded limit ${options.maxTurns}`;
+      break;
+    }
+    if (game.pendingLevelUp) {
+      game = runAutoStep(game, aiOptions);
+      continue;
+    }
+
+    const currentPlayer = game.currentPlayer;
+    const startedAt = performance.now();
+    const decision = chooseCpuDecision(game, aiOptions);
+    addDecisionStats(decisionStats[currentPlayer], decision, performance.now() - startedAt);
+    game = applyCpuDecision(game, decision);
+  }
+
+  if (!game.winner && !issue) {
+    issue = `winner was not decided within ${options.maxSteps} auto steps`;
+  }
+
+  const challenger = challengerPlayer(direction);
+  const baseline = opponentOfPlayer(challenger);
+  return {
+    candidateId: candidate.id,
+    direction,
+    seed,
+    profiles,
+    winner: game.winner,
+    winnerProfile: game.winner ? profiles[game.winner] : undefined,
+    steps,
+    turns: game.turnNumber,
+    playerHp: game.players.player.masterHp,
+    cpuHp: game.players.cpu.masterHp,
+    challengerHp: game.players[challenger].masterHp,
+    baselineHp: game.players[baseline].masterHp,
+    issue,
+    decisionStats,
+  };
+}
+
+function createWhiteMirrorGame(seed: number, deckPreset: DeckPresetId): GameState {
+  const deck = buildDeckPresetCardIds(deckPreset);
+  const allowSpecial = deckPresetAllowsSpecial(deckPreset);
+  return createInitialGame(seed, {
+    masterIds: { player: "white", cpu: "white" },
+    playerDeckCardIds: deck,
+    cpuDeckCardIds: deck,
+    allowSpecialDecks: { player: allowSpecial, cpu: allowSpecial },
+  });
+}
+
+function profilesForDirection(direction: Direction): Record<PlayerId, CpuAiProfile> {
+  return direction === "challenger-as-cpu"
+    ? { player: "white", cpu: "white_planner" }
+    : { player: "white_planner", cpu: "white" };
+}
+
+function aiOptionsFor(direction: Direction, search: CpuAiSearchOptions): CpuAiOptions {
+  if (direction === "challenger-as-cpu") {
+    return {
+      profiles: { player: "white", cpu: "white_planner" },
+      searches: { cpu: search },
+    };
+  }
+  return {
+    profiles: { player: "white_planner", cpu: "white" },
+    searches: { player: search },
+  };
+}
+
+function createDecisionStats(): Record<PlayerId, DecisionStats> {
+  return {
+    player: { decisions: 0, elapsedMs: 0, maxDecisionMs: 0, actionCounts: {} },
+    cpu: { decisions: 0, elapsedMs: 0, maxDecisionMs: 0, actionCounts: {} },
+  };
+}
+
+function addDecisionStats(stats: DecisionStats, decision: CpuDecision, elapsedMs: number): void {
+  stats.decisions += 1;
+  stats.elapsedMs += elapsedMs;
+  stats.maxDecisionMs = Math.max(stats.maxDecisionMs, elapsedMs);
+  const key = decisionActionKey(decision);
+  stats.actionCounts[key] = (stats.actionCounts[key] ?? 0) + 1;
+}
+
+function decisionActionKey(decision: CpuDecision): string {
+  if (decision.type === "master_action") {
+    return `master:${decision.actionId}`;
+  }
+  return decision.type;
+}
+
+function summarizeCandidates(games: readonly GameResult[], candidates: readonly Candidate[]): CandidateSummary[] {
+  return candidates.map((candidate) => {
+    const scoped = games.filter((game) => game.candidateId === candidate.id);
+    const challengerWins = scoped.filter((game) => game.winnerProfile === "white_planner").length;
+    const baselineWins = scoped.filter((game) => game.winnerProfile === "white").length;
+    const draws = scoped.filter((game) => !game.winnerProfile).length;
+    const challengerStats = scoped.map((game) => game.decisionStats[challengerPlayer(game.direction)]);
+    return {
+      candidateId: candidate.id,
+      note: candidate.note,
+      games: scoped.length,
+      challengerWins,
+      baselineWins,
+      draws,
+      winPointRate: scoped.length > 0 ? (challengerWins + draws * 0.5) / scoped.length : 0,
+      averageHpMargin: average(scoped.map((game) => game.challengerHp - game.baselineHp)),
+      averageSteps: average(scoped.map((game) => game.steps)),
+      averageTurns: average(scoped.map((game) => game.turns)),
+      averageDecisionMs: average(challengerStats.map((stats) => stats.elapsedMs / Math.max(1, stats.decisions))),
+      maxDecisionMs: Math.max(0, ...challengerStats.map((stats) => stats.maxDecisionMs)),
+      issues: scoped.filter((game) => game.issue).length,
+      actionCounts: mergeActionCounts(challengerStats.map((stats) => stats.actionCounts)),
+    };
+  }).sort((a, b) =>
+    b.winPointRate - a.winPointRate ||
+    b.averageHpMargin - a.averageHpMargin ||
+    a.averageDecisionMs - b.averageDecisionMs ||
+    a.candidateId.localeCompare(b.candidateId),
+  );
+}
+
+function mergeActionCounts(counts: Array<Record<string, number>>): Record<string, number> {
+  const merged: Record<string, number> = {};
+  for (const count of counts) {
+    for (const [key, value] of Object.entries(count)) {
+      merged[key] = (merged[key] ?? 0) + value;
+    }
+  }
+  return Object.fromEntries(Object.entries(merged).sort(([a], [b]) => a.localeCompare(b)));
+}
+
+function buildConclusion(summaries: readonly CandidateSummary[]): string[] {
+  const best = summaries[0];
+  if (!best) {
+    return ["No candidate was evaluated."];
+  }
+  const lines = [
+    `best candidate: ${best.candidateId} (${best.challengerWins}-${best.baselineWins}-${best.draws}, WPR ${formatPercent(best.winPointRate)}, avg HP margin ${round(best.averageHpMargin, 2)})`,
+  ];
+  if (best.winPointRate < 0.5) {
+    lines.push("No candidate beat the current white baseline in this sample. Keep white_planner experimental and tighten adoption around clearly winning planner differences.");
+  } else if (best.winPointRate === 0.5) {
+    lines.push("The best candidate reached parity in this sample. Increase games per direction before adopting it as default.");
+  } else {
+    lines.push("The best candidate beat the current white baseline in this sample. Re-run with more seeds before adopting.");
+  }
+  return lines;
+}
+
+function formatMarkdown(report: PdcaReport): string {
+  const lines = [
+    "# White Planner PDCA Loop",
+    "",
+    `生成: ${report.generatedAt}`,
+    `deck: \`${report.options.deckPreset}\``,
+    `seeds: ${report.options.seedStart}-${report.options.seedStart + report.options.gamesPerDirection - 1}`,
+    `directions: ${report.options.directions.join(", ")}`,
+    "",
+    "## Summary",
+    "",
+    "| rank | candidate | W-L-D | WPR | avg HP margin | avg steps | avg turns | avg decision ms | max decision ms | issues | note |",
+    "| ---: | --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | --- |",
+  ];
+  report.summaries.forEach((summary, index) => {
+    lines.push(
+      `| ${index + 1} | ${summary.candidateId} | ${summary.challengerWins}-${summary.baselineWins}-${summary.draws} | ` +
+      `${formatPercent(summary.winPointRate)} | ${round(summary.averageHpMargin, 2)} | ${round(summary.averageSteps, 1)} | ` +
+      `${round(summary.averageTurns, 1)} | ${round(summary.averageDecisionMs, 1)} | ${round(summary.maxDecisionMs, 1)} | ` +
+      `${summary.issues} | ${escapeMarkdownTableCell(summary.note)} |`,
+    );
+  });
+
+  lines.push("", "## Action Counts", "");
+  for (const summary of report.summaries) {
+    lines.push(`- ${summary.candidateId}: ${formatActionCounts(summary.actionCounts)}`);
+  }
+
+  lines.push("", "## Games", "", "| candidate | direction | seed | result | steps | turns | HP | issue |");
+  lines.push("| --- | --- | ---: | --- | ---: | ---: | --- | --- |");
+  for (const game of report.games) {
+    lines.push(
+      `| ${game.candidateId} | ${game.direction} | ${game.seed} | ${game.winnerProfile ?? "draw"} | ` +
+      `${game.steps} | ${game.turns} | P${game.playerHp}/C${game.cpuHp} | ${escapeMarkdownTableCell(game.issue ?? "-")} |`,
+    );
+  }
+
+  lines.push("", "## Conclusion", "");
+  report.conclusion.forEach((line) => lines.push(`- ${line}`));
+  return lines.join("\n");
+}
+
+function formatActionCounts(counts: Record<string, number>): string {
+  return Object.entries(counts).map(([key, value]) => `${key} ${value}`).join(", ") || "-";
+}
+
+function parseArgs(args: string[]): CliOptions {
+  const parsed: CliOptions = { ...DEFAULT_OPTIONS, directions: [...DEFAULT_OPTIONS.directions], candidates: [...DEFAULT_OPTIONS.candidates] };
+  for (let index = 0; index < args.length; index += 1) {
+    const arg = args[index];
+    const next = args[index + 1];
+    if (arg === "--seed-start") {
+      parsed.seedStart = readInteger(arg, next);
+      index += 1;
+    } else if (arg === "--games-per-direction") {
+      parsed.gamesPerDirection = readInteger(arg, next);
+      index += 1;
+    } else if (arg === "--max-steps") {
+      parsed.maxSteps = readInteger(arg, next);
+      index += 1;
+    } else if (arg === "--max-turns") {
+      parsed.maxTurns = readInteger(arg, next);
+      index += 1;
+    } else if (arg === "--deck-preset") {
+      parsed.deckPreset = readString(arg, next) as DeckPresetId;
+      index += 1;
+    } else if (arg === "--direction") {
+      parsed.directions = readDirections(readString(arg, next));
+      index += 1;
+    } else if (arg === "--candidate") {
+      parsed.candidates = readCandidates(readString(arg, next));
+      index += 1;
+    } else if (arg === "--markdown") {
+      parsed.markdownPath = readString(arg, next);
+      index += 1;
+    } else if (arg === "--json") {
+      parsed.jsonPath = readString(arg, next);
+      index += 1;
+    } else if (arg === "--help" || arg === "-h") {
+      printHelpAndExit();
+    } else {
+      throw new Error(`Unknown option: ${arg}`);
+    }
+  }
+  return parsed;
+}
+
+function readDirections(value: string): Direction[] {
+  if (value === "both") {
+    return ["challenger-as-cpu", "challenger-as-player"];
+  }
+  if (value === "challenger-as-cpu" || value === "challenger-as-player") {
+    return [value];
+  }
+  throw new Error("--direction must be one of: both, challenger-as-cpu, challenger-as-player");
+}
+
+function readCandidates(value: string): Candidate[] {
+  if (value === "all") {
+    return [...DEFAULT_CANDIDATES];
+  }
+  const ids = value.split(",").map((id) => id.trim()).filter(Boolean);
+  const candidates = ids.map((id) => {
+    const candidate = DEFAULT_CANDIDATES.find((item) => item.id === id);
+    if (!candidate) {
+      throw new Error(`Unknown candidate: ${id}`);
+    }
+    return candidate;
+  });
+  if (candidates.length === 0) {
+    throw new Error("--candidate requires at least one candidate id");
+  }
+  return candidates;
+}
+
+function challengerPlayer(direction: Direction): PlayerId {
+  return direction === "challenger-as-cpu" ? "cpu" : "player";
+}
+
+function opponentOfPlayer(player: PlayerId): PlayerId {
+  return player === "player" ? "cpu" : "player";
+}
+
+function printHelpAndExit(): never {
+  console.log(`Usage:
+  npm run lab:masters:white-planner-pdca -- [options]
+
+Options:
+  --seed-start <n>              First seed. Default: ${DEFAULT_OPTIONS.seedStart}
+  --games-per-direction <n>     Games per direction. Default: ${DEFAULT_OPTIONS.gamesPerDirection}
+  --direction <value>           both, challenger-as-cpu, challenger-as-player. Default: both
+  --candidate <ids>             Comma-separated candidate ids or all. Default: all
+  --deck-preset <id>            Deck preset. Default: ${DEFAULT_OPTIONS.deckPreset}
+  --max-steps <n>               Max auto steps. Default: ${DEFAULT_OPTIONS.maxSteps}
+  --max-turns <n>               Max turns. Default: ${DEFAULT_OPTIONS.maxTurns}
+  --markdown <path>             Write Markdown report.
+  --json <path>                 Write JSON report.
+
+Candidates:
+${DEFAULT_CANDIDATES.map((candidate) => `  - ${candidate.id}: ${candidate.note}`).join("\n")}
+`);
+  process.exit(0);
+}

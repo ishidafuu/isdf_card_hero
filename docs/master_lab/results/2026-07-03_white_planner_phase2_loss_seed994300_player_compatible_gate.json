@@ -1,0 +1,100 @@
+{
+  "generatedAt": "2026-07-03T14:56:30.974Z",
+  "options": {
+    "seedStart": 994300,
+    "count": 1,
+    "maxSteps": 220,
+    "maxTurns": 50,
+    "deckPreset": "master-lab-white-1377-death-sheep3",
+    "directions": [
+      "challenger-as-player"
+    ],
+    "maxDiffSamples": 80,
+    "markdownPath": "docs/master_lab/results/2026-07-03_white_planner_phase2_loss_seed994300_player_compatible_gate.md",
+    "jsonPath": "docs/master_lab/results/2026-07-03_white_planner_phase2_loss_seed994300_player_compatible_gate.json"
+  },
+  "games": [
+    {
+      "direction": "challenger-as-player",
+      "seed": 994300,
+      "profiles": {
+        "player": "white_planner",
+        "cpu": "white"
+      },
+      "winner": "player",
+      "winnerProfile": "white_planner",
+      "steps": 220,
+      "turns": 26,
+      "playerHp": 2,
+      "cpuHp": 0,
+      "timings": [
+        {
+          "profile": "white",
+          "decisions": 212,
+          "elapsedMs": 46948.41358599988,
+          "maxDecisionMs": 1214.0169160000005
+        },
+        {
+          "profile": "white_planner",
+          "decisions": 212,
+          "elapsedMs": 62404.54587100002,
+          "maxDecisionMs": 1932.0275000000001
+        }
+      ],
+      "diffCount": 1,
+      "plannerSelectedDiffCount": 0,
+      "diffSamples": [
+        {
+          "direction": "challenger-as-player",
+          "seed": 994300,
+          "step": 98,
+          "turn": 9,
+          "currentPlayer": "cpu",
+          "activeProfile": "white",
+          "board": "player_front_left:player:ヤンバル L1 HP3 act / player_front_right:player:真勇者ダイン L3 HP6 act / player_back_left:player:真勇者ダイン L1 HP6 prep / player_back_right:player:ポリスピナー L1 HP3 act focus / cpu_front_left:cpu:真勇者ダイン L3 HP6 act / cpu_front_right:cpu:ヤンバル L1 HP3 act / cpu_back_left:cpu:ポリスピナー L1 HP3 act focus",
+          "whiteDecision": "attack:cpu_front_right:wild_claw->monster:player_front_left",
+          "whitePlannerDecision": "attack:cpu_front_left:ダイン斬り->monster:player_front_left",
+          "selectedProfile": "white",
+          "selectedDecision": "attack:cpu_front_right:wild_claw->monster:player_front_left",
+          "whiteReason": "ヤンバルを削れるため攻撃 / 見送り: 攻撃は46点差で見送り、移動は197点差で見送り",
+          "whitePlannerReason": "敵モンスターを撃破できるため攻撃 / ターンプラン探索: 返し込み最終盤面53点、次点と95点差",
+          "whiteMs": 551,
+          "whitePlannerMs": 784.3
+        }
+      ]
+    }
+  ],
+  "summary": {
+    "games": 1,
+    "wins": {
+      "white_planner": 1
+    },
+    "draws": 0,
+    "issues": 0,
+    "diffCount": 1,
+    "plannerSelectedDiffCount": 0,
+    "timings": [
+      {
+        "profile": "white",
+        "decisions": 212,
+        "elapsedMs": 46948.41358599988,
+        "maxDecisionMs": 1214.0169160000005
+      },
+      {
+        "profile": "white_planner",
+        "decisions": 212,
+        "elapsedMs": 62404.54587100002,
+        "maxDecisionMs": 1932.0275000000001
+      }
+    ]
+  },
+  "reading": [
+    "white_planner average decision 294.4ms, max 1932ms.",
+    "white_planner diverged from white 1 times; inspect samples before changing search depth."
+  ],
+  "nextSteps": [
+    "Review decision diff samples and classify good/bad planner divergences.",
+    "If planner average decision time stays practical, run both directions with count 3-5.",
+    "Try opponentTerminalPlanDepth 2 as a v2 candidate."
+  ]
+}

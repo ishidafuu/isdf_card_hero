@@ -13,9 +13,21 @@ export interface CpuAiSearchOptions {
   sameTurnTerminalPlanDepth?: number;
   sameTurnTerminalPlanWidth?: number;
   sameTurnTerminalPlanWeight?: number;
+  sameTurnTerminalPlanComparisonWeight?: number;
   sameTurnOpponentTerminalPlanDepth?: number;
   sameTurnOpponentTerminalPlanWidth?: number;
   sameTurnOpponentTerminalPlanWeight?: number;
+  terminalPlanFocusHandoffValue?: number;
+  terminalPlanShieldHandoffValue?: number;
+  terminalPlanRootDecisionWeight?: number;
+  terminalPlanRootGapFreeMargin?: number;
+  terminalPlanRootGapPenaltyWeight?: number;
+  terminalPlanAdoptionMinMargin?: number;
+  terminalPlanAdoptionMaxRootScoreGap?: number;
+  terminalPlanRejectNonLethalFaceDamage?: number;
+  terminalPlanRejectEndTurnOverAction?: number;
+  terminalPlanRejectSetupOverTacticalAction?: number;
+  terminalPlanRequireCompatibleFallbackAction?: number;
   beamScoreThreshold?: number;
 }
 

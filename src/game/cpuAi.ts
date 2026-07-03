@@ -152,6 +152,10 @@ type CpuAiProfileConfig = {
   terminalPlanRootGapPenaltyWeight?: number;
   terminalPlanAdoptionMinMargin?: number;
   terminalPlanAdoptionMaxRootScoreGap?: number;
+  terminalPlanRejectNonLethalFaceDamage?: number;
+  terminalPlanRejectEndTurnOverAction?: number;
+  terminalPlanRejectSetupOverTacticalAction?: number;
+  terminalPlanRequireCompatibleFallbackAction?: number;
 };
 
 const NO_THREAT: IncomingThreat = {
@@ -279,8 +283,8 @@ const CPU_AI_PROFILE_CONFIG: Record<CpuAiProfile, CpuAiProfileConfig> = {
   },
   white_planner: {
     detailedWidth: 4,
-    sameTurnSearchDepth: 2,
-    sameTurnSearchWidth: 3,
+    sameTurnSearchDepth: 3,
+    sameTurnSearchWidth: 4,
     sameTurnSearchDiscount: 0.54,
     sameTurnTerminalPlanDepth: 5,
     sameTurnTerminalPlanWidth: 2,
@@ -300,6 +304,10 @@ const CPU_AI_PROFILE_CONFIG: Record<CpuAiProfile, CpuAiProfileConfig> = {
     terminalPlanRootGapPenaltyWeight: 0.5,
     terminalPlanAdoptionMinMargin: 16,
     terminalPlanAdoptionMaxRootScoreGap: 70,
+    terminalPlanRejectNonLethalFaceDamage: 1,
+    terminalPlanRejectEndTurnOverAction: 1,
+    terminalPlanRejectSetupOverTacticalAction: 1,
+    terminalPlanRequireCompatibleFallbackAction: 1,
   },
   omniscient: {
     detailedWidth: 6,
@@ -345,13 +353,17 @@ export function runCpuDecisionStep(state: GameState, options: CpuAiOptions = {})
 
 export function chooseCpuDecision(state: GameState, options: CpuAiOptions = {}): CpuDecision {
   const perspective = state.currentPlayer;
-  const config = resolveCpuAiConfig(state, options);
+  const profile = resolveCpuAiProfile(state, options);
+  const config = resolveCpuAiConfigForProfile(state, options, profile);
   const masterDamagePlan = findMasterDamagePlan(state, perspective, config.weights);
   if (shouldForceMasterDamagePlan(state, perspective, masterDamagePlan)) {
     return withMasterDamagePlanReason(masterDamagePlan.firstDecision, masterDamagePlan);
   }
   let best: EvaluatedDecision | undefined;
-  const evaluated = evaluateCpuDecisions(state, perspective, config);
+  const fallbackConfig = profile === "white_planner"
+    ? resolveCpuAiConfigForProfile(state, options, "white")
+    : config;
+  const evaluated = evaluateCpuDecisions(state, perspective, fallbackConfig);
 
   evaluated.forEach((candidate) => {
     if (
@@ -366,7 +378,7 @@ export function chooseCpuDecision(state: GameState, options: CpuAiOptions = {}):
 
   if (shouldSelectTerminalPlanRoot(state, perspective, config)) {
     const selection = selectTerminalPlanRootDecision(state, perspective, config);
-    if (selection && shouldAdoptTerminalPlanRootSelection(selection, best, config)) {
+    if (selection && shouldAdoptTerminalPlanRootSelection(state, perspective, selection, best, config)) {
       return withTerminalPlanReason(selection.candidate.decision, selection);
     }
   }
@@ -557,6 +569,14 @@ function resolveCpuAiProfile(state: GameState, options: CpuAiOptions): CpuAiProf
 
 function resolveCpuAiConfig(state: GameState, options: CpuAiOptions): CpuAiProfileConfig {
   const profile = resolveCpuAiProfile(state, options);
+  return resolveCpuAiConfigForProfile(state, options, profile);
+}
+
+function resolveCpuAiConfigForProfile(
+  state: GameState,
+  options: CpuAiOptions,
+  profile: CpuAiProfile,
+): CpuAiProfileConfig {
   const base = CPU_AI_PROFILE_CONFIG[profile];
   const baseWithSearch = applyCpuAiSearchOptions(base, options.searches?.[state.currentPlayer] ?? options.search);
   const matchupTuning = resolveCpuAiMatchupTuning(state, profile);
@@ -589,6 +609,10 @@ function applyCpuAiSearchOptions(
     sameTurnTerminalPlanDepth: normalizedSearchInteger(search.sameTurnTerminalPlanDepth, base.sameTurnTerminalPlanDepth),
     sameTurnTerminalPlanWidth: normalizedSearchInteger(search.sameTurnTerminalPlanWidth, base.sameTurnTerminalPlanWidth),
     sameTurnTerminalPlanWeight: normalizedSearchNumber(search.sameTurnTerminalPlanWeight, base.sameTurnTerminalPlanWeight),
+    sameTurnTerminalPlanComparisonWeight: normalizedOptionalSearchNumber(
+      search.sameTurnTerminalPlanComparisonWeight,
+      base.sameTurnTerminalPlanComparisonWeight,
+    ),
     sameTurnOpponentTerminalPlanDepth: normalizedSearchInteger(
       search.sameTurnOpponentTerminalPlanDepth,
       base.sameTurnOpponentTerminalPlanDepth,
@@ -600,6 +624,50 @@ function applyCpuAiSearchOptions(
     sameTurnOpponentTerminalPlanWeight: normalizedSearchNumber(
       search.sameTurnOpponentTerminalPlanWeight,
       base.sameTurnOpponentTerminalPlanWeight,
+    ),
+    terminalPlanFocusHandoffValue: normalizedOptionalSearchNumber(
+      search.terminalPlanFocusHandoffValue,
+      base.terminalPlanFocusHandoffValue,
+    ),
+    terminalPlanShieldHandoffValue: normalizedOptionalSearchNumber(
+      search.terminalPlanShieldHandoffValue,
+      base.terminalPlanShieldHandoffValue,
+    ),
+    terminalPlanRootDecisionWeight: normalizedOptionalSearchNumber(
+      search.terminalPlanRootDecisionWeight,
+      base.terminalPlanRootDecisionWeight,
+    ),
+    terminalPlanRootGapFreeMargin: normalizedOptionalSearchNumber(
+      search.terminalPlanRootGapFreeMargin,
+      base.terminalPlanRootGapFreeMargin,
+    ),
+    terminalPlanRootGapPenaltyWeight: normalizedOptionalSearchNumber(
+      search.terminalPlanRootGapPenaltyWeight,
+      base.terminalPlanRootGapPenaltyWeight,
+    ),
+    terminalPlanAdoptionMinMargin: normalizedOptionalSearchNumber(
+      search.terminalPlanAdoptionMinMargin,
+      base.terminalPlanAdoptionMinMargin,
+    ),
+    terminalPlanAdoptionMaxRootScoreGap: normalizedOptionalSearchNumber(
+      search.terminalPlanAdoptionMaxRootScoreGap,
+      base.terminalPlanAdoptionMaxRootScoreGap,
+    ),
+    terminalPlanRejectNonLethalFaceDamage: normalizedOptionalSearchNumber(
+      search.terminalPlanRejectNonLethalFaceDamage,
+      base.terminalPlanRejectNonLethalFaceDamage,
+    ),
+    terminalPlanRejectEndTurnOverAction: normalizedOptionalSearchNumber(
+      search.terminalPlanRejectEndTurnOverAction,
+      base.terminalPlanRejectEndTurnOverAction,
+    ),
+    terminalPlanRejectSetupOverTacticalAction: normalizedOptionalSearchNumber(
+      search.terminalPlanRejectSetupOverTacticalAction,
+      base.terminalPlanRejectSetupOverTacticalAction,
+    ),
+    terminalPlanRequireCompatibleFallbackAction: normalizedOptionalSearchNumber(
+      search.terminalPlanRequireCompatibleFallbackAction,
+      base.terminalPlanRequireCompatibleFallbackAction,
     ),
     beamScoreThreshold: normalizedSearchInteger(search.beamScoreThreshold, base.beamScoreThreshold),
   };
@@ -613,6 +681,13 @@ function normalizedSearchInteger(value: number | undefined, fallback: number): n
 }
 
 function normalizedSearchNumber(value: number | undefined, fallback: number): number {
+  if (value === undefined || !Number.isFinite(value)) {
+    return fallback;
+  }
+  return Math.max(0, value);
+}
+
+function normalizedOptionalSearchNumber(value: number | undefined, fallback: number | undefined): number | undefined {
   if (value === undefined || !Number.isFinite(value)) {
     return fallback;
   }
@@ -870,6 +945,8 @@ function withTerminalPlanReason(decision: CpuDecision, selection: TerminalPlanSe
 }
 
 function shouldAdoptTerminalPlanRootSelection(
+  state: GameState,
+  perspective: PlayerId,
   selection: TerminalPlanSelection,
   fallback: EvaluatedDecision | undefined,
   config: CpuAiProfileConfig,
@@ -889,11 +966,73 @@ function shouldAdoptTerminalPlanRootSelection(
   if (selection.candidate.decision.type === "end_turn" && fallback.decision.type !== "end_turn" && rootScoreGap > 10) {
     return false;
   }
+  if (
+    config.terminalPlanRejectEndTurnOverAction &&
+    selection.candidate.decision.type === "end_turn" &&
+    fallback.decision.type !== "end_turn"
+  ) {
+    return false;
+  }
+  if (
+    config.terminalPlanRejectSetupOverTacticalAction &&
+    isPlannerSetupDecision(selection.candidate.decision) &&
+    isTacticalProgressDecision(fallback.decision)
+  ) {
+    return false;
+  }
+  if (
+    config.terminalPlanRequireCompatibleFallbackAction &&
+    !isCompatiblePlannerOverride(selection.candidate.decision, fallback.decision)
+  ) {
+    return false;
+  }
+  if (
+    config.terminalPlanRejectNonLethalFaceDamage &&
+    isWhiteMirrorState(state, perspective) &&
+    isNonLethalFaceDamageRoot(state, selection.candidate, perspective) &&
+    !isNonLethalFaceDamageRoot(state, fallback, perspective)
+  ) {
+    return false;
+  }
 
   const plannerMargin = selection.runnerUpScore === undefined
     ? Number.POSITIVE_INFINITY
     : selection.plannerScore - selection.runnerUpScore;
   return plannerMargin >= (config.terminalPlanAdoptionMinMargin ?? 0) || rootScoreGap <= 0;
+}
+
+function isPlannerSetupDecision(decision: CpuDecision): boolean {
+  return decision.type === "summon" || decision.type === "focus" || decision.type === "move";
+}
+
+function isTacticalProgressDecision(decision: CpuDecision): boolean {
+  return decision.type === "attack" || decision.type === "magic" || decision.type === "master_action";
+}
+
+function isCompatiblePlannerOverride(plannerDecision: CpuDecision, fallbackDecision: CpuDecision): boolean {
+  if (plannerDecision.type === fallbackDecision.type) {
+    if (plannerDecision.type !== "master_action" || fallbackDecision.type !== "master_action") {
+      return plannerDecision.type === "attack" || plannerDecision.type === "magic";
+    }
+    return plannerDecision.actionId === fallbackDecision.actionId && plannerDecision.actionId !== "shield";
+  }
+  return false;
+}
+
+function isNonLethalFaceDamageRoot(
+  state: GameState,
+  candidate: EvaluatedDecision | undefined,
+  perspective: PlayerId,
+): boolean {
+  if (!candidate) {
+    return false;
+  }
+  const opponent = opponentOf(perspective);
+  const damage = state.players[opponent].masterHp - candidate.after.players[opponent].masterHp;
+  if (damage <= 0 || candidate.after.winner === perspective) {
+    return false;
+  }
+  return state.players[opponent].masterHp > 4;
 }
 
 function terminalPlanRootPlannerScore(

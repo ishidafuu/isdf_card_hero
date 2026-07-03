@@ -1,0 +1,202 @@
+{
+  "generatedAt": "2026-07-03T14:53:23.109Z",
+  "options": {
+    "seedStart": 994300,
+    "count": 1,
+    "maxSteps": 170,
+    "maxTurns": 40,
+    "deckPreset": "master-lab-white-1377-death-sheep3",
+    "directions": [
+      "challenger-as-player"
+    ],
+    "maxDiffSamples": 80,
+    "markdownPath": "docs/master_lab/results/2026-07-03_white_planner_phase2_loss_seed994300_player_strict_gate.md",
+    "jsonPath": "docs/master_lab/results/2026-07-03_white_planner_phase2_loss_seed994300_player_strict_gate.json"
+  },
+  "games": [
+    {
+      "direction": "challenger-as-player",
+      "seed": 994300,
+      "profiles": {
+        "player": "white_planner",
+        "cpu": "white"
+      },
+      "winner": "cpu",
+      "winnerProfile": "white",
+      "steps": 168,
+      "turns": 14,
+      "playerHp": 0,
+      "cpuHp": 9,
+      "timings": [
+        {
+          "profile": "white",
+          "decisions": 163,
+          "elapsedMs": 69781.07641999985,
+          "maxDecisionMs": 2574.241374999998
+        },
+        {
+          "profile": "white_planner",
+          "decisions": 163,
+          "elapsedMs": 96930.40284000013,
+          "maxDecisionMs": 4266.431499999999
+        }
+      ],
+      "diffCount": 7,
+      "plannerSelectedDiffCount": 6,
+      "diffSamples": [
+        {
+          "direction": "challenger-as-player",
+          "seed": 994300,
+          "step": 8,
+          "turn": 2,
+          "currentPlayer": "player",
+          "activeProfile": "white_planner",
+          "board": "player_front_left:player:ドノマンティス L1 HP5 act / player_front_right:player:ポリスピナー L1 HP3 act / player_back_left:player:ボムゾウ L1 HP6 act / cpu_front_right:cpu:デスシープ L1 HP6 prep / cpu_back_left:cpu:真勇者ダイン L1 HP6 prep / cpu_back_right:cpu:ヤンバル L1 HP3 prep",
+          "whiteDecision": "move:player_back_left->player_front_right",
+          "whitePlannerDecision": "focus:player_front_right",
+          "selectedProfile": "white_planner",
+          "selectedDecision": "focus:player_front_right",
+          "whiteReason": "前衛カードを前列へ出して攻撃しやすくするため移動 / 見送り: ためるは8点差で見送り、ためるは89点差で見送り",
+          "whitePlannerReason": "有効攻撃がないためためる / ターンプラン探索: 返し込み最終盤面14点、次点と10点差",
+          "whiteMs": 386.3,
+          "whitePlannerMs": 588.2
+        },
+        {
+          "direction": "challenger-as-player",
+          "seed": 994300,
+          "step": 12,
+          "turn": 2,
+          "currentPlayer": "player",
+          "activeProfile": "white_planner",
+          "board": "player_front_left:player:ドノマンティス L1 HP5 act focus / player_front_right:player:ポリスピナー L1 HP3 act / player_back_left:player:ボムゾウ L1 HP6 act focus / cpu_front_right:cpu:デスシープ L1 HP6 prep / cpu_back_left:cpu:真勇者ダイン L1 HP6 prep / cpu_back_right:cpu:ヤンバル L1 HP3 prep",
+          "whiteDecision": "master:shield->monster:player_front_left",
+          "whitePlannerDecision": "master:shield->monster:player_front_right",
+          "selectedProfile": "white_planner",
+          "selectedDecision": "master:shield->monster:player_front_right",
+          "whiteReason": "高価値の味方を守るためシールド / 見送り: マスター特技は9点差で見送り",
+          "whitePlannerReason": "高価値の味方を守るためシールド / ターンプラン探索: 返し込み最終盤面-82点、次点と5点差",
+          "whiteMs": 94.5,
+          "whitePlannerMs": 142.8
+        },
+        {
+          "direction": "challenger-as-player",
+          "seed": 994300,
+          "step": 22,
+          "turn": 3,
+          "currentPlayer": "player",
+          "activeProfile": "white_planner",
+          "board": "player_front_left:player:ボムゾウ L1 HP6 act focus / player_front_right:player:ポリスピナー L1 HP3 act focus / player_back_left:player:ピグミィ L1 HP3 prep / cpu_front_left:cpu:真勇者ダイン L1 HP6 act / cpu_front_right:cpu:デスシープ L1 HP6 act focus / cpu_back_left:cpu:ドノマンティス L1 HP5 prep / cpu_back_right:cpu:ヤンバル L1 HP3 act",
+          "whiteDecision": "master:master_attack->monster:cpu_front_left",
+          "whitePlannerDecision": "attack:player_front_left:storm_bomb->monster:cpu_front_right",
+          "selectedProfile": "white_planner",
+          "selectedDecision": "attack:player_front_left:storm_bomb->monster:cpu_front_right",
+          "whiteReason": "ストーンに余裕があり敵を削れるためマスターアタック / 見送り: 攻撃は51点差で見送り、攻撃は80点差で見送り",
+          "whitePlannerReason": "デスシープを削れるため攻撃 / ターンプラン探索: 返し込み最終盤面-59点、次点と1点差",
+          "whiteMs": 293.9,
+          "whitePlannerMs": 336.6
+        },
+        {
+          "direction": "challenger-as-player",
+          "seed": 994300,
+          "step": 24,
+          "turn": 3,
+          "currentPlayer": "player",
+          "activeProfile": "white_planner",
+          "board": "player_front_left:player:ボムゾウ L1 HP6 act / player_front_right:player:ポリスピナー L1 HP3 act / player_back_left:player:ピグミィ L1 HP3 prep / cpu_front_left:cpu:真勇者ダイン L1 HP6 act / cpu_front_right:cpu:デスシープ L1 HP3 act / cpu_back_left:cpu:ドノマンティス L1 HP5 prep / cpu_back_right:cpu:ヤンバル L1 HP3 act",
+          "whiteDecision": "master:master_attack->monster:cpu_front_right",
+          "whitePlannerDecision": "master:shield->monster:player_front_left",
+          "selectedProfile": "white_planner",
+          "selectedDecision": "master:shield->monster:player_front_left",
+          "whiteReason": "ストーンに余裕があり敵を削れるためマスターアタック / 見送り: マスター特技は18点差で見送り、マスター特技は21点差で見送り",
+          "whitePlannerReason": "高価値の味方を守るためシールド / ターンプラン探索: 返し込み最終盤面-71点、次点と1点差",
+          "whiteMs": 234,
+          "whitePlannerMs": 325.3
+        },
+        {
+          "direction": "challenger-as-player",
+          "seed": 994300,
+          "step": 30,
+          "turn": 3,
+          "currentPlayer": "cpu",
+          "activeProfile": "white",
+          "board": "player_front_left:player:ボムゾウ L1 HP6 act shield / player_back_left:player:ピグミィ L1 HP3 prep / cpu_front_left:cpu:真勇者ダイン L1 HP6 act focus / cpu_front_right:cpu:デスシープ L2 HP6 act / cpu_back_left:cpu:ドノマンティス L1 HP5 act focus / cpu_back_right:cpu:ヤンバル L1 HP3 act",
+          "whiteDecision": "master:shield->monster:cpu_front_left",
+          "whitePlannerDecision": "master:shield->monster:cpu_front_right",
+          "selectedProfile": "white",
+          "selectedDecision": "master:shield->monster:cpu_front_left",
+          "whiteReason": "高価値の味方を守るためシールド / 見送り: マスター特技は15点差で見送り、マスター特技は22点差で見送り",
+          "whitePlannerReason": "高価値の味方を守るためシールド / ターンプラン探索: 返し込み最終盤面47点、次点と8点差",
+          "whiteMs": 170.4,
+          "whitePlannerMs": 224.9
+        },
+        {
+          "direction": "challenger-as-player",
+          "seed": 994300,
+          "step": 58,
+          "turn": 6,
+          "currentPlayer": "player",
+          "activeProfile": "white_planner",
+          "board": "player_front_left:player:真勇者ダイン L1 HP6 act focus / player_front_right:player:デスシープ L1 HP2 act focus / player_back_right:player:ピグミィ L1 HP3 act / cpu_front_left:cpu:真勇者ダイン L1 HP6 act / cpu_front_right:cpu:ドノマンティス L1 HP5 act / cpu_back_left:cpu:ヤンバル L1 HP3 act / cpu_back_right:cpu:ヤンバル L1 HP3 prep",
+          "whiteDecision": "focus:player_back_right",
+          "whitePlannerDecision": "summon:player_polyspinner_3->player_back_left",
+          "selectedProfile": "white_planner",
+          "selectedDecision": "summon:player_polyspinner_3->player_back_left",
+          "whiteReason": "有効攻撃がないためためる / 見送り: 攻撃は115点差で見送り、攻撃は120点差で見送り",
+          "whitePlannerReason": "ポリスピナーを空き枠へ召喚 / ターンプラン探索: 返し込み最終盤面111点、次点と13点差",
+          "whiteMs": 608.2,
+          "whitePlannerMs": 723.2
+        },
+        {
+          "direction": "challenger-as-player",
+          "seed": 994300,
+          "step": 60,
+          "turn": 6,
+          "currentPlayer": "player",
+          "activeProfile": "white_planner",
+          "board": "player_front_left:player:真勇者ダイン L1 HP6 act focus / player_front_right:player:デスシープ L1 HP2 act focus / player_back_left:player:ポリスピナー L1 HP3 prep / player_back_right:player:ピグミィ L1 HP3 act focus / cpu_front_left:cpu:真勇者ダイン L1 HP6 act / cpu_front_right:cpu:ドノマンティス L1 HP5 act / cpu_back_left:cpu:ヤンバル L1 HP3 act / cpu_back_right:cpu:ヤンバル L1 HP3 prep",
+          "whiteDecision": "master:shield->monster:player_front_right",
+          "whitePlannerDecision": "master:shield->monster:player_front_left",
+          "selectedProfile": "white_planner",
+          "selectedDecision": "master:shield->monster:player_front_left",
+          "whiteReason": "高価値の味方を守るためシールド / 見送り: マスター特技は184点差で見送り",
+          "whitePlannerReason": "高価値の味方を守るためシールド / ターンプラン探索: 返し込み最終盤面49点、次点と8点差",
+          "whiteMs": 152.2,
+          "whitePlannerMs": 217.6
+        }
+      ]
+    }
+  ],
+  "summary": {
+    "games": 1,
+    "wins": {
+      "white": 1
+    },
+    "draws": 0,
+    "issues": 0,
+    "diffCount": 7,
+    "plannerSelectedDiffCount": 6,
+    "timings": [
+      {
+        "profile": "white",
+        "decisions": 163,
+        "elapsedMs": 69781.07641999985,
+        "maxDecisionMs": 2574.241374999998
+      },
+      {
+        "profile": "white_planner",
+        "decisions": 163,
+        "elapsedMs": 96930.40284000013,
+        "maxDecisionMs": 4266.431499999999
+      }
+    ]
+  },
+  "reading": [
+    "white_planner average decision 594.7ms, max 4266.4ms.",
+    "white_planner diverged from white 7 times; inspect samples before changing search depth."
+  ],
+  "nextSteps": [
+    "Review decision diff samples and classify good/bad planner divergences.",
+    "If planner average decision time stays practical, run both directions with count 3-5.",
+    "Try opponentTerminalPlanDepth 2 as a v2 candidate."
+  ]
+}
