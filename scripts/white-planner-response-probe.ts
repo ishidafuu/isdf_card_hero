@@ -142,6 +142,34 @@ const DEFAULT_CANDIDATES = [
       sameTurnOpponentTerminalPlanWidth: 2,
     },
   },
+  {
+    id: "deckout_loose_override",
+    note: "終盤検証用にターンプラン採用ゲートを緩める",
+    search: {
+      terminalPlanRejectEndTurnOverAction: 0,
+      terminalPlanRejectSetupOverTacticalAction: 0,
+      terminalPlanRequireCompatibleFallbackAction: 0,
+      terminalPlanAdoptionMinMargin: 8,
+    },
+  },
+  {
+    id: "terminal_compare1",
+    note: "終端盤面差を局所評価へ弱めに戻す",
+    search: {
+      sameTurnTerminalPlanComparisonWeight: 1,
+    },
+  },
+  {
+    id: "terminal_compare1_loose",
+    note: "終端盤面差を局所評価へ戻し、採用ゲートも緩める",
+    search: {
+      sameTurnTerminalPlanComparisonWeight: 1,
+      terminalPlanRejectEndTurnOverAction: 0,
+      terminalPlanRejectSetupOverTacticalAction: 0,
+      terminalPlanRequireCompatibleFallbackAction: 0,
+      terminalPlanAdoptionMinMargin: 8,
+    },
+  },
 ] as const satisfies readonly Candidate[];
 
 const DEFAULT_SAMPLES: ProbeSampleInput[] = [

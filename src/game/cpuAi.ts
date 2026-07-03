@@ -6148,6 +6148,7 @@ function scoreMoveDecision(state: GameState, after: GameState, fromSlotKey: Slot
   const beforeBestAttack = bestAttackOpportunityScore(state);
   const afterBestAttack = bestAttackOpportunityScore(after);
   const afterMoverAttack = bestAttackOpportunityScore(after, moverAfterSlot);
+  score -= whiteMirrorCloseoutBackToFrontMovePenalty(state, after, fromSlotKey, toSlotKey);
   if (shouldPruneCloseoutMove(state, after, beforeBestAttack, afterBestAttack, afterMoverAttack)) {
     return -100;
   }
@@ -6160,6 +6161,33 @@ function scoreMoveDecision(state: GameState, after: GameState, fromSlotKey: Slot
     score -= 28;
   }
   return score;
+}
+
+function whiteMirrorCloseoutBackToFrontMovePenalty(
+  state: GameState,
+  after: GameState,
+  fromSlotKey: SlotKey,
+  toSlotKey: SlotKey,
+): number {
+  if (!isWhiteMirrorCloseout(state)) {
+    return 0;
+  }
+  let penalty = 0;
+  for (const beforeSlotKey of [fromSlotKey, toSlotKey]) {
+    const monster = state.slots[beforeSlotKey].monster;
+    if (!monster || monster.owner !== state.currentPlayer || state.slots[beforeSlotKey].row !== "back") {
+      continue;
+    }
+    const afterSlotKey = findMonsterSlot(after, monster.instanceId);
+    if (!afterSlotKey || after.slots[afterSlotKey].row !== "front") {
+      continue;
+    }
+    if (bestAttackOpportunityScore(after, afterSlotKey) >= 260 || directMasterDamageFromSlot(after, afterSlotKey, state.currentPlayer) > 0) {
+      continue;
+    }
+    penalty += 160 + (monster.level >= 2 ? 60 : 0) + (monster.hp <= 2 ? 30 : 0);
+  }
+  return penalty;
 }
 
 function repeatedMovePenalty(state: GameState, fromSlotKey: SlotKey, toSlotKey: SlotKey, moverInstanceId: string): number {
