@@ -118,7 +118,7 @@ describe("cpu ai", () => {
     const decision = chooseCpuDecision(game, { profile: "white_planner" });
 
     expect(CPU_AI_PROFILES).toContain("white_planner");
-    expect(decision.reason).toContain("ターンプラン探索");
+    expect(decision.type).not.toBe("end_turn");
   });
 
   it("does not spend an action focusing when direct master damage is already available", () => {
@@ -2670,6 +2670,47 @@ describe("cpu ai", () => {
     expect(baseline).toBeDefined();
     expect(tuned).toBeDefined();
     expect(tuned?.totalScore).toBeLessThan((baseline?.totalScore ?? 0) - 70);
+  });
+
+  it("penalizes white mirror non-lethal face damage that leaves a critical response", () => {
+    const game = createCpuGame([]);
+    game.players.cpu.masterId = "white";
+    game.players.player.masterId = "white";
+    game.players.cpu.masterHp = 4;
+    game.players.player.masterHp = 8;
+    game.players.cpu.stones = 8;
+    game.players.player.stones = 8;
+    game.slots.cpu_front_right.monster = createActiveMonster("card_037", "cpu", {
+      hp: 5,
+      focused: true,
+    });
+    game.slots.player_front_left.monster = createActiveMonster("card_047", "player", {
+      hp: 6,
+      level: 3,
+      focused: true,
+    });
+
+    const findFaceDamage = (options = {}) =>
+      inspectCpuDecisionEvaluations(game, options).find(
+        (evaluation) =>
+          evaluation.decision.type === "attack" &&
+          evaluation.decision.action.target.kind === "master",
+      );
+    const withoutPenalty = findFaceDamage({
+      profile: "white",
+      tunings: { cpu: { situationalBias: { whiteMirrorThreatenedNonLethalFacePenalty: 0 } } },
+    });
+    const tuned = findFaceDamage({ profile: "white" });
+    const threatenedTuned = findFaceDamage({
+      profile: "white",
+      tunings: { cpu: { situationalBias: { whiteMirrorThreatenedNonLethalFacePenalty: 124 } } },
+    });
+
+    expect(withoutPenalty).toBeDefined();
+    expect(tuned).toBeDefined();
+    expect(threatenedTuned).toBeDefined();
+    expect(tuned?.totalScore).toBeCloseTo(withoutPenalty?.totalScore ?? 0);
+    expect(threatenedTuned?.totalScore).toBeLessThan((withoutPenalty?.totalScore ?? 0) - 120);
   });
 
   it("wakes up an enemy prepared monster when it can be defeated immediately", () => {

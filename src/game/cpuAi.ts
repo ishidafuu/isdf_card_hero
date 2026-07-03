@@ -1399,6 +1399,15 @@ function decisionSituationalBonus(
       bias.whiteLowStoneNonLethalFacePenalty,
     );
   }
+  if (bias.whiteMirrorThreatenedNonLethalFacePenalty) {
+    bonus -= whiteMirrorThreatenedNonLethalFaceDecisionPenalty(
+      before,
+      after,
+      decision,
+      perspective,
+      bias.whiteMirrorThreatenedNonLethalFacePenalty,
+    );
+  }
   if (bias.whiteThreatSourceAttackBonus) {
     bonus += whiteThreatSourceAttackDecisionBonus(before, after, decision, perspective, bias.whiteThreatSourceAttackBonus);
   }
@@ -3260,6 +3269,49 @@ function whiteLowStoneNonLethalFaceDecisionPenalty(
   }
 
   return value + Math.min(160, responsePressure * 0.18);
+}
+
+function whiteMirrorThreatenedNonLethalFaceDecisionPenalty(
+  before: GameState,
+  after: GameState,
+  decision: CpuDecision,
+  perspective: PlayerId,
+  value: number,
+): number {
+  if (
+    value <= 0 ||
+    !isWhiteMirrorState(before, perspective) ||
+    after.winner === perspective ||
+    masterDamageFromTransition(before, after, perspective) <= 0 ||
+    after.players[opponentOf(perspective)].masterHp <= 3 ||
+    !isFaceDamageDecision(decision)
+  ) {
+    return 0;
+  }
+
+  const opponent = opponentOf(perspective);
+  const threatModel = buildThreatModel(after, opponent);
+  const responseMasterDamage = threatModel.masterDamage[perspective];
+  const responseLeavesCriticalHp = after.players[perspective].masterHp - responseMasterDamage <= 1;
+  const responsePressure =
+    responseMasterDamage * 80 +
+    nextTurnLevelUpPotentialForPlayer(after, opponent) +
+    (hasEnemyFrontThreatSource(after, perspective) ? 90 : 0) +
+    threatenedMonsterValueForPlayer(after, perspective, threatModel) * 0.25;
+  if (!responseLeavesCriticalHp && responsePressure < 180) {
+    return 0;
+  }
+
+  const criticalPenalty = responseLeavesCriticalHp ? value * 0.9 : 0;
+  return value + criticalPenalty + Math.min(220, responsePressure * 0.28);
+}
+
+function isFaceDamageDecision(decision: CpuDecision): boolean {
+  return (
+    (decision.type === "attack" && decision.action.target.kind === "master") ||
+    (decision.type === "master_action" && decision.actionId === "master_attack" && decision.target.kind === "master") ||
+    (decision.type === "magic" && decision.action.target.kind === "master")
+  );
 }
 
 function nextTurnWorkPotential(state: GameState, slotKey: SlotKey, perspective: PlayerId): number {
