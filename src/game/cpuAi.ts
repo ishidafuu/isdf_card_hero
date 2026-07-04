@@ -104,6 +104,31 @@ type TerminalPlanEvaluationContext = {
   immediateDecisionCache: Map<string, EvaluatedDecision[]>;
 };
 type TerminalPlanRootOutcome = { candidate: EvaluatedDecision; outcome: TerminalPlanOutcome };
+export type CpuTerminalPlanCandidateInspection = {
+  decision: CpuDecision;
+  index: number;
+  rootScore: number;
+  ownDelta: number;
+  opponentDelta: number;
+  responseScore: number;
+  plannerScore: number;
+  afterRootState: GameState;
+  ownHandoffState: GameState;
+  opponentHandoffState: GameState;
+};
+export type CpuTerminalPlanInspection = {
+  enabled: boolean;
+  perspective: PlayerId;
+  profile: CpuAiProfile;
+  fallbackDecision?: CpuDecision;
+  fallbackScore?: number;
+  selectedDecision?: CpuDecision;
+  selectedPlannerScore?: number;
+  runnerUpPlannerScore?: number;
+  adopted: boolean;
+  rejectedReason?: string;
+  candidates: CpuTerminalPlanCandidateInspection[];
+};
 type MasterDamagePlan = {
   damage: number;
   firstDecision?: CpuDecision;
@@ -397,6 +422,136 @@ export function inspectCpuDecisionEvaluations(
     totalScore,
     index,
   }));
+}
+
+export function inspectCpuTerminalPlan(
+  state: GameState,
+  options: CpuAiOptions = {},
+): CpuTerminalPlanInspection {
+  const perspective = state.currentPlayer;
+  const profile = resolveCpuAiProfile(state, options);
+  const config = resolveCpuAiConfigForProfile(state, options, profile);
+  const fallbackConfig = profile === "white_planner"
+    ? resolveCpuAiConfigForProfile(state, options, "white")
+    : config;
+  const fallback = bestEvaluatedDecision(evaluateCpuDecisions(state, perspective, fallbackConfig));
+  const base = {
+    perspective,
+    profile,
+    ...(fallback ? { fallbackDecision: fallback.decision, fallbackScore: fallback.totalScore } : {}),
+  };
+
+  if (!shouldSelectTerminalPlanRoot(state, perspective, config)) {
+    return {
+      ...base,
+      enabled: false,
+      adopted: false,
+      rejectedReason: "terminal plan root selection is disabled for this state",
+      candidates: [],
+    };
+  }
+
+  const baselineScore = evaluateState(state, perspective, config.weights);
+  const context = createTerminalPlanEvaluationContext(baselineScore);
+  const rootCandidates = terminalPlanRootCandidates(state, perspective, config, context);
+  const bestRootTotalScore = Math.max(
+    0,
+    ...rootCandidates
+      .filter((candidate) => candidate.decision.type !== "end_turn")
+      .map((candidate) => candidate.totalScore),
+  );
+  const rows = rootCandidates.map((candidate) => {
+    const outcome = candidate.decision.type === "end_turn"
+      ? {
+          delta: terminalPlanStateDelta(candidate.after, perspective, config, context),
+          handoffState: candidate.after,
+        }
+      : evaluateSameTurnTerminalPlanOutcome(
+          candidate.after,
+          perspective,
+          config.sameTurnTerminalPlanDepth - 1,
+          config,
+          context,
+        );
+    const opponentOutcome = shouldUseOpponentTerminalPlanEvaluation(outcome.handoffState, perspective, config)
+      ? evaluateOpponentTerminalPlanOutcomeForInspection(
+          outcome.handoffState,
+          perspective,
+          config.sameTurnOpponentTerminalPlanDepth,
+          config,
+          context,
+        )
+      : outcome;
+    const responseScore = evaluateTerminalPlanOutcomeWithOpponentResponse(outcome, perspective, config, context);
+    return {
+      candidate,
+      outcome,
+      opponentOutcome,
+      responseScore,
+      plannerScore: terminalPlanRootPlannerScore(
+        candidate,
+        outcome,
+        bestRootTotalScore,
+        perspective,
+        config,
+        context,
+      ),
+    };
+  });
+  const ranked = [...rows].sort((a, b) =>
+    b.plannerScore - a.plannerScore ||
+    b.candidate.totalScore - a.candidate.totalScore ||
+    compareTieBreak(a.candidate.decision, b.candidate.decision, a.candidate.index, b.candidate.index),
+  );
+  const selected = ranked[0];
+  const runnerUp = selected
+    ? ranked.find((row) => row.candidate.index !== selected.candidate.index)
+    : undefined;
+  const selection = selected
+    ? {
+        candidate: selected.candidate,
+        outcome: selected.outcome,
+        plannerScore: selected.plannerScore,
+        ...(runnerUp ? { runnerUpScore: runnerUp.plannerScore } : {}),
+      }
+    : undefined;
+  const adopted = !!selection && shouldAdoptTerminalPlanRootSelection(state, perspective, selection, fallback, config);
+
+  return {
+    ...base,
+    enabled: true,
+    ...(selected ? { selectedDecision: selected.candidate.decision, selectedPlannerScore: selected.plannerScore } : {}),
+    ...(runnerUp ? { runnerUpPlannerScore: runnerUp.plannerScore } : {}),
+    adopted,
+    ...(!adopted && selected ? { rejectedReason: "terminal plan candidate did not pass adoption gate" } : {}),
+    candidates: rows.map((row) => ({
+      decision: row.candidate.decision,
+      index: row.candidate.index,
+      rootScore: row.candidate.totalScore,
+      ownDelta: row.outcome.delta,
+      opponentDelta: row.opponentOutcome.delta,
+      responseScore: row.responseScore,
+      plannerScore: row.plannerScore,
+      afterRootState: row.candidate.after,
+      ownHandoffState: row.outcome.handoffState,
+      opponentHandoffState: row.opponentOutcome.handoffState,
+    })),
+  };
+}
+
+function bestEvaluatedDecision(candidates: readonly EvaluatedDecision[]): EvaluatedDecision | undefined {
+  let best: EvaluatedDecision | undefined;
+  for (const candidate of candidates) {
+    if (
+      !best ||
+      candidate.totalScore > best.totalScore ||
+      (candidate.totalScore === best.totalScore &&
+        compareTieBreak(candidate.decision, best.decision, candidate.index, best.index) < 0)
+    ) {
+      best = candidate;
+    }
+  }
+  return best;
 }
 
 function findMasterDamagePlan(
@@ -3760,6 +3915,41 @@ function evaluateOpponentTerminalPlanDelta(
   }
   context.opponentDeltaCache.set(cacheKey, delta);
   return delta;
+}
+
+function evaluateOpponentTerminalPlanOutcomeForInspection(
+  state: GameState,
+  perspective: PlayerId,
+  depth: number,
+  config: CpuAiProfileConfig,
+  context: TerminalPlanEvaluationContext,
+): TerminalPlanOutcome {
+  const opponent = opponentOf(perspective);
+  if (state.winner || state.pendingLevelUp || state.currentPlayer !== opponent) {
+    return { delta: terminalPlanStateDelta(state, perspective, config, context), handoffState: state };
+  }
+
+  let worst: TerminalPlanOutcome = {
+    delta: evaluateOpponentHandoffDelta(state, perspective, config, context),
+    handoffState: terminalHandoffState(state, opponent, config, context),
+  };
+  if (depth <= 0) {
+    return worst;
+  }
+
+  for (const candidate of opponentTerminalPlanCandidates(state, perspective, config, context)) {
+    const outcome = evaluateOpponentTerminalPlanOutcomeForInspection(
+      candidate.after,
+      perspective,
+      depth - 1,
+      config,
+      context,
+    );
+    if (outcome.delta < worst.delta) {
+      worst = outcome;
+    }
+  }
+  return worst;
 }
 
 function evaluateOpponentHandoffDelta(
