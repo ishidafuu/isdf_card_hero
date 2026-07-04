@@ -210,6 +210,8 @@ type CpuAiProfileConfig = {
   terminalPlanRolloutTurnFrom?: number;
   terminalPlanRolloutTurnTo?: number;
   terminalPlanRolloutMaxOpponentStones?: number;
+  terminalPlanRolloutRequireFallbackMove?: number;
+  terminalPlanRolloutRequirePlannerSummon?: number;
 };
 
 const NO_THREAT: IncomingThreat = {
@@ -399,6 +401,8 @@ const CPU_AI_PROFILE_CONFIG: Record<CpuAiProfile, CpuAiProfileConfig> = {
     terminalPlanRolloutTurnFrom: 6,
     terminalPlanRolloutTurnTo: 10,
     terminalPlanRolloutMaxOpponentStones: 1,
+    terminalPlanRolloutRequireFallbackMove: 1,
+    terminalPlanRolloutRequirePlannerSummon: 1,
   },
   omniscient: {
     detailedWidth: 6,
@@ -958,6 +962,14 @@ function applyCpuAiSearchOptions(
       search.terminalPlanRolloutMaxOpponentStones,
       base.terminalPlanRolloutMaxOpponentStones,
     ),
+    terminalPlanRolloutRequireFallbackMove: normalizedOptionalSearchNumber(
+      search.terminalPlanRolloutRequireFallbackMove,
+      base.terminalPlanRolloutRequireFallbackMove,
+    ),
+    terminalPlanRolloutRequirePlannerSummon: normalizedOptionalSearchNumber(
+      search.terminalPlanRolloutRequirePlannerSummon,
+      base.terminalPlanRolloutRequirePlannerSummon,
+    ),
     beamScoreThreshold: normalizedSearchInteger(search.beamScoreThreshold, base.beamScoreThreshold),
   };
 }
@@ -1323,6 +1335,12 @@ function shouldTriggerTerminalPlanRollout(
     return false;
   }
   if (cpuDecisionKey(best.candidate.decision) === cpuDecisionKey(fallback.decision)) {
+    return false;
+  }
+  if (config.terminalPlanRolloutRequireFallbackMove && fallback.decision.type !== "move") {
+    return false;
+  }
+  if (config.terminalPlanRolloutRequirePlannerSummon && best.candidate.decision.type !== "summon") {
     return false;
   }
   const rootScoreGap = fallback.totalScore - best.candidate.totalScore;

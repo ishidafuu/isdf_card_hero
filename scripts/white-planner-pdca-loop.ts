@@ -188,6 +188,8 @@ const DEFAULT_CANDIDATES = [
       terminalPlanRolloutTurnFrom: 6,
       terminalPlanRolloutTurnTo: 10,
       terminalPlanRolloutMaxOpponentStones: 1,
+      terminalPlanRolloutRequireFallbackMove: 1,
+      terminalPlanRolloutRequirePlannerSummon: 1,
     },
   },
   {
@@ -203,6 +205,8 @@ const DEFAULT_CANDIDATES = [
       terminalPlanRolloutTurnFrom: 6,
       terminalPlanRolloutTurnTo: 10,
       terminalPlanRolloutMaxOpponentStones: 1,
+      terminalPlanRolloutRequireFallbackMove: 1,
+      terminalPlanRolloutRequirePlannerSummon: 1,
     },
   },
   {
@@ -218,6 +222,8 @@ const DEFAULT_CANDIDATES = [
       terminalPlanRolloutTurnFrom: 6,
       terminalPlanRolloutTurnTo: 10,
       terminalPlanRolloutMaxOpponentStones: 1,
+      terminalPlanRolloutRequireFallbackMove: 1,
+      terminalPlanRolloutRequirePlannerSummon: 1,
     },
   },
   {
@@ -233,6 +239,8 @@ const DEFAULT_CANDIDATES = [
       terminalPlanRolloutTurnFrom: 6,
       terminalPlanRolloutTurnTo: 10,
       terminalPlanRolloutMaxOpponentStones: 1,
+      terminalPlanRolloutRequireFallbackMove: 1,
+      terminalPlanRolloutRequirePlannerSummon: 1,
     },
   },
 ] as const satisfies readonly Candidate[];

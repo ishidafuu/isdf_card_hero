@@ -520,6 +520,12 @@ function parseArgs(args: string[]): CliOptions {
     } else if (arg === "--planner-rollout-max-opponent-stones") {
       parsed.search = { ...parsed.search, terminalPlanRolloutMaxOpponentStones: readNumber(arg, next) };
       index += 1;
+    } else if (arg === "--planner-rollout-require-fallback-move") {
+      parsed.search = { ...parsed.search, terminalPlanRolloutRequireFallbackMove: readNumber(arg, next) };
+      index += 1;
+    } else if (arg === "--planner-rollout-require-planner-summon") {
+      parsed.search = { ...parsed.search, terminalPlanRolloutRequirePlannerSummon: readNumber(arg, next) };
+      index += 1;
     } else if (arg === "--replay-with-search") {
       parsed.replayWithSearch = true;
     } else if (arg === "--candidate-limit") {
@@ -627,6 +633,10 @@ Options:
   --planner-rollout-turn-to <n>   Roll out only through turn N.
   --planner-rollout-max-opponent-stones <n>
                                   Roll out only when opponent stones are at most N.
+  --planner-rollout-require-fallback-move <n>
+                                  Roll out only when fallback decision is move if nonzero.
+  --planner-rollout-require-planner-summon <n>
+                                  Roll out only when planner candidate is summon if nonzero.
   --replay-with-search            Apply search override during replay to the target step.
   --candidate-limit <n>           Keep only top N terminal-plan candidates in the report/rollout. Default: all
   --rollout-steps <n>             Force each candidate and run up to N auto steps. Default: 0
