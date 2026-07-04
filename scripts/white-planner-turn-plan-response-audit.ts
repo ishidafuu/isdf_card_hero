@@ -3,6 +3,7 @@ import {
   evaluateState,
   inspectCpuTerminalPlan,
   type CpuAiOptions,
+  type CpuAiProfile,
   type CpuAiSearchOptions,
   type CpuDecision,
 } from "../src/game/cpuAi";
@@ -77,9 +78,10 @@ interface TurnPlanResponseCandidate {
   opponentHandoffState: string;
   opponentHandoffBoard: string;
   rolloutWinner?: PlayerId;
-  rolloutWinnerProfile?: "white" | "white_planner";
+  rolloutWinnerProfile?: CpuAiProfile;
   rolloutSteps?: number;
   rolloutScore?: number;
+  rolloutScoreGapToFallback?: number;
   rolloutFinalState?: string;
   rolloutFinalBoard?: string;
 }
@@ -182,6 +184,13 @@ function auditStep(options: CliOptions, step: number): TurnPlanResponseSample {
         opponentDelta: round(candidate.opponentDelta, 1),
         responseScore: round(candidate.responseScore, 1),
         plannerScore: round(candidate.plannerScore, 1),
+        ...(candidate.rolloutScore !== undefined ? { rolloutScore: round(candidate.rolloutScore, 1) } : {}),
+        ...(candidate.rolloutScoreGapToFallback !== undefined
+          ? { rolloutScoreGapToFallback: round(candidate.rolloutScoreGapToFallback, 1) }
+          : {}),
+        ...(candidate.rolloutSteps !== undefined ? { rolloutSteps: candidate.rolloutSteps } : {}),
+        ...(candidate.rolloutWinner ? { rolloutWinner: candidate.rolloutWinner } : {}),
+        ...(candidate.rolloutWinnerProfile ? { rolloutWinnerProfile: candidate.rolloutWinnerProfile } : {}),
         afterRootState: stateLine(candidate.afterRootState, plannerSide),
         afterRootBoard: boardLine(candidate.afterRootState),
         ownHandoffState: stateLine(candidate.ownHandoffState, plannerSide),
@@ -367,7 +376,7 @@ function buildConclusion(samples: readonly TurnPlanResponseSample[]): string[] {
     if (!candidate.rolloutWinner) {
       return false;
     }
-    return candidate.rolloutWinnerProfile === "white_planner";
+    return candidate.rolloutWinnerProfile === "white_planner" || candidate.rolloutWinnerProfile === "white_rollout";
   }).length;
   return [
     `${samples.length} samples. terminal plan enabled ${enabled}件、adopted ${adopted}件。`,
@@ -413,8 +422,8 @@ function formatMarkdown(report: TurnPlanResponseReport): string {
       continue;
     }
     lines.push(
-      "| rank | planner | cpu | fallback | decision | root | own | opp | response | planner score | rollout | rollout score |",
-      "| ---: | --- | --- | --- | --- | ---: | ---: | ---: | ---: | ---: | --- | ---: |",
+      "| rank | planner | cpu | fallback | decision | root | own | opp | response | planner score | rollout | rollout score | rollout gap |",
+      "| ---: | --- | --- | --- | --- | ---: | ---: | ---: | ---: | ---: | --- | ---: | ---: |",
     );
     for (const candidate of sample.candidates) {
       const rollout = candidate.rolloutWinnerProfile ?? candidate.rolloutWinner ?? "-";
@@ -422,7 +431,8 @@ function formatMarkdown(report: TurnPlanResponseReport): string {
         `| ${candidate.rank} | ${candidate.selectedByPlanner ? "Y" : ""} | ${candidate.selectedByCpu ? "Y" : ""} | ` +
           `${candidate.fallback ? "Y" : ""} | ${escapeMarkdownTableCell(candidate.decision)} | ` +
           `${candidate.rootScore} | ${candidate.ownDelta} | ${candidate.opponentDelta} | ` +
-          `${candidate.responseScore} | ${candidate.plannerScore} | ${rollout} | ${candidate.rolloutScore ?? "-"} |`,
+          `${candidate.responseScore} | ${candidate.plannerScore} | ${rollout} | ${candidate.rolloutScore ?? "-"} | ` +
+          `${candidate.rolloutScoreGapToFallback ?? "-"} |`,
       );
     }
     lines.push("", "#### Candidate Boards", "");
@@ -482,6 +492,33 @@ function parseArgs(args: string[]): CliOptions {
       index += 1;
     } else if (arg === "--search") {
       parsed.search = readSearchOptions(arg, next);
+      index += 1;
+    } else if (arg === "--planner-rollout-steps") {
+      parsed.search = { ...parsed.search, terminalPlanRolloutSteps: readInteger(arg, next) };
+      index += 1;
+    } else if (arg === "--planner-rollout-candidate-limit") {
+      parsed.search = { ...parsed.search, terminalPlanRolloutCandidateLimit: readInteger(arg, next) };
+      index += 1;
+    } else if (arg === "--planner-rollout-weight") {
+      parsed.search = { ...parsed.search, terminalPlanRolloutWeight: readNumber(arg, next) };
+      index += 1;
+    } else if (arg === "--planner-rollout-adoption-gap") {
+      parsed.search = { ...parsed.search, terminalPlanRolloutAdoptionMinScoreGap: readNumber(arg, next) };
+      index += 1;
+    } else if (arg === "--planner-rollout-trigger-root-gap") {
+      parsed.search = { ...parsed.search, terminalPlanRolloutTriggerMinRootScoreGap: readNumber(arg, next) };
+      index += 1;
+    } else if (arg === "--planner-rollout-trigger-margin") {
+      parsed.search = { ...parsed.search, terminalPlanRolloutTriggerMaxPlannerMargin: readNumber(arg, next) };
+      index += 1;
+    } else if (arg === "--planner-rollout-turn-from") {
+      parsed.search = { ...parsed.search, terminalPlanRolloutTurnFrom: readNumber(arg, next) };
+      index += 1;
+    } else if (arg === "--planner-rollout-turn-to") {
+      parsed.search = { ...parsed.search, terminalPlanRolloutTurnTo: readNumber(arg, next) };
+      index += 1;
+    } else if (arg === "--planner-rollout-max-opponent-stones") {
+      parsed.search = { ...parsed.search, terminalPlanRolloutMaxOpponentStones: readNumber(arg, next) };
       index += 1;
     } else if (arg === "--replay-with-search") {
       parsed.replayWithSearch = true;
@@ -548,6 +585,14 @@ function readSearchOptions(name: string, value: string | undefined): CpuAiSearch
   return search;
 }
 
+function readNumber(name: string, value: string | undefined): number {
+  const number = Number(readString(name, value));
+  if (!Number.isFinite(number)) {
+    throw new Error(`${name} must be a number`);
+  }
+  return number;
+}
+
 function readDirection(value: string | undefined): Direction {
   const direction = readString("--direction", value);
   if (direction !== "challenger-as-cpu" && direction !== "challenger-as-player") {
@@ -568,6 +613,20 @@ Options:
   --add-step <n>                 Add another target step.
   --search <d:w[:dw[:td:tw:twgt[:od:ow:owgt]]]>
                                   Search override for planner side.
+  --planner-rollout-steps <n>     Enable planner rollout scoring for terminal-plan selection.
+  --planner-rollout-candidate-limit <n>
+                                  Roll out only top N terminal-plan candidates.
+  --planner-rollout-weight <n>    Add clamped rollout score * weight to planner score.
+  --planner-rollout-adoption-gap <n>
+                                  Allow rollout-confirmed candidates over fallback when score gap reaches N.
+  --planner-rollout-trigger-root-gap <n>
+                                  Roll out only when fallback root score exceeds planner root score by N.
+  --planner-rollout-trigger-margin <n>
+                                  Roll out only when planner score is within N of fallback candidate.
+  --planner-rollout-turn-from <n> Roll out only from turn N.
+  --planner-rollout-turn-to <n>   Roll out only through turn N.
+  --planner-rollout-max-opponent-stones <n>
+                                  Roll out only when opponent stones are at most N.
   --replay-with-search            Apply search override during replay to the target step.
   --candidate-limit <n>           Keep only top N terminal-plan candidates in the report/rollout. Default: all
   --rollout-steps <n>             Force each candidate and run up to N auto steps. Default: 0

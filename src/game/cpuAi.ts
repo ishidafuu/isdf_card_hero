@@ -21,6 +21,7 @@ import {
   opponentOf,
   playMagic,
   resolveLevelUp,
+  runAutoStep,
   summonMonster,
   useMasterAction,
 } from "./rules";
@@ -94,7 +95,13 @@ type TerminalPlanSelection = {
   candidate: EvaluatedDecision;
   outcome: TerminalPlanOutcome;
   plannerScore: number;
+  terminalPlannerScore?: number;
   runnerUpScore?: number;
+  rolloutScore?: number;
+  rolloutScoreGapToFallback?: number;
+  rolloutSteps?: number;
+  rolloutWinner?: PlayerId;
+  rolloutWinnerProfile?: CpuAiProfile;
 };
 type TerminalPlanEvaluationContext = {
   baselineScore: number;
@@ -112,6 +119,11 @@ export type CpuTerminalPlanCandidateInspection = {
   opponentDelta: number;
   responseScore: number;
   plannerScore: number;
+  rolloutScore?: number;
+  rolloutScoreGapToFallback?: number;
+  rolloutSteps?: number;
+  rolloutWinner?: PlayerId;
+  rolloutWinnerProfile?: CpuAiProfile;
   afterRootState: GameState;
   ownHandoffState: GameState;
   opponentHandoffState: GameState;
@@ -125,9 +137,17 @@ export type CpuTerminalPlanInspection = {
   selectedDecision?: CpuDecision;
   selectedPlannerScore?: number;
   runnerUpPlannerScore?: number;
+  selectedRolloutScore?: number;
+  selectedRolloutScoreGapToFallback?: number;
   adopted: boolean;
   rejectedReason?: string;
   candidates: CpuTerminalPlanCandidateInspection[];
+};
+type TerminalPlanRolloutResult = {
+  score: number;
+  steps: number;
+  winner?: PlayerId;
+  winnerProfile?: CpuAiProfile;
 };
 type MasterDamagePlan = {
   damage: number;
@@ -181,6 +201,15 @@ type CpuAiProfileConfig = {
   terminalPlanRejectEndTurnOverAction?: number;
   terminalPlanRejectSetupOverTacticalAction?: number;
   terminalPlanRequireCompatibleFallbackAction?: number;
+  terminalPlanRolloutSteps?: number;
+  terminalPlanRolloutCandidateLimit?: number;
+  terminalPlanRolloutWeight?: number;
+  terminalPlanRolloutAdoptionMinScoreGap?: number;
+  terminalPlanRolloutTriggerMinRootScoreGap?: number;
+  terminalPlanRolloutTriggerMaxPlannerMargin?: number;
+  terminalPlanRolloutTurnFrom?: number;
+  terminalPlanRolloutTurnTo?: number;
+  terminalPlanRolloutMaxOpponentStones?: number;
 };
 
 const NO_THREAT: IncomingThreat = {
@@ -334,6 +363,43 @@ const CPU_AI_PROFILE_CONFIG: Record<CpuAiProfile, CpuAiProfileConfig> = {
     terminalPlanRejectSetupOverTacticalAction: 1,
     terminalPlanRequireCompatibleFallbackAction: 1,
   },
+  white_rollout: {
+    detailedWidth: 4,
+    sameTurnSearchDepth: 3,
+    sameTurnSearchWidth: 4,
+    sameTurnSearchDiscount: 0.54,
+    sameTurnTerminalPlanDepth: 5,
+    sameTurnTerminalPlanWidth: 2,
+    sameTurnTerminalPlanWeight: 1,
+    sameTurnTerminalPlanComparisonWeight: 0,
+    sameTurnOpponentTerminalPlanDepth: 1,
+    sameTurnOpponentTerminalPlanWidth: 1,
+    sameTurnOpponentTerminalPlanWeight: 0.5,
+    beamScoreThreshold: 8,
+    weights: AI_EVALUATION_WEIGHTS.white,
+    tuning: WHITE_AI_BASE_TUNING,
+    selectTerminalPlan: true,
+    terminalPlanFocusHandoffValue: 42,
+    terminalPlanShieldHandoffValue: 14,
+    terminalPlanRootDecisionWeight: 0.22,
+    terminalPlanRootGapFreeMargin: 80,
+    terminalPlanRootGapPenaltyWeight: 0.5,
+    terminalPlanAdoptionMinMargin: 16,
+    terminalPlanAdoptionMaxRootScoreGap: 70,
+    terminalPlanRejectNonLethalFaceDamage: 1,
+    terminalPlanRejectEndTurnOverAction: 1,
+    terminalPlanRejectSetupOverTacticalAction: 1,
+    terminalPlanRequireCompatibleFallbackAction: 1,
+    terminalPlanRolloutSteps: 60,
+    terminalPlanRolloutCandidateLimit: 3,
+    terminalPlanRolloutWeight: 0.15,
+    terminalPlanRolloutAdoptionMinScoreGap: 200,
+    terminalPlanRolloutTriggerMinRootScoreGap: 120,
+    terminalPlanRolloutTriggerMaxPlannerMargin: 40,
+    terminalPlanRolloutTurnFrom: 6,
+    terminalPlanRolloutTurnTo: 10,
+    terminalPlanRolloutMaxOpponentStones: 1,
+  },
   omniscient: {
     detailedWidth: 6,
     sameTurnSearchDepth: 3,
@@ -385,7 +451,7 @@ export function chooseCpuDecision(state: GameState, options: CpuAiOptions = {}):
     return withMasterDamagePlanReason(masterDamagePlan.firstDecision, masterDamagePlan);
   }
   let best: EvaluatedDecision | undefined;
-  const fallbackConfig = profile === "white_planner"
+  const fallbackConfig = profile === "white_planner" || profile === "white_rollout"
     ? resolveCpuAiConfigForProfile(state, options, "white")
     : config;
   const evaluated = evaluateCpuDecisions(state, perspective, fallbackConfig);
@@ -402,7 +468,7 @@ export function chooseCpuDecision(state: GameState, options: CpuAiOptions = {}):
   });
 
   if (shouldSelectTerminalPlanRoot(state, perspective, config)) {
-    const selection = selectTerminalPlanRootDecision(state, perspective, config);
+    const selection = selectTerminalPlanRootDecision(state, perspective, config, options, best);
     if (selection && shouldAdoptTerminalPlanRootSelection(state, perspective, selection, best, config)) {
       return withTerminalPlanReason(selection.candidate.decision, selection);
     }
@@ -431,7 +497,7 @@ export function inspectCpuTerminalPlan(
   const perspective = state.currentPlayer;
   const profile = resolveCpuAiProfile(state, options);
   const config = resolveCpuAiConfigForProfile(state, options, profile);
-  const fallbackConfig = profile === "white_planner"
+  const fallbackConfig = profile === "white_planner" || profile === "white_rollout"
     ? resolveCpuAiConfigForProfile(state, options, "white")
     : config;
   const fallback = bestEvaluatedDecision(evaluateCpuDecisions(state, perspective, fallbackConfig));
@@ -460,19 +526,17 @@ export function inspectCpuTerminalPlan(
       .filter((candidate) => candidate.decision.type !== "end_turn")
       .map((candidate) => candidate.totalScore),
   );
-  const rows = rootCandidates.map((candidate) => {
-    const outcome = candidate.decision.type === "end_turn"
-      ? {
-          delta: terminalPlanStateDelta(candidate.after, perspective, config, context),
-          handoffState: candidate.after,
-        }
-      : evaluateSameTurnTerminalPlanOutcome(
-          candidate.after,
-          perspective,
-          config.sameTurnTerminalPlanDepth - 1,
-          config,
-          context,
-        );
+  const rows = evaluateTerminalPlanRootSelections(
+    rootCandidates,
+    bestRootTotalScore,
+    state,
+    perspective,
+    config,
+    context,
+    options,
+    fallback,
+  ).map((selection) => {
+    const outcome = selection.outcome;
     const opponentOutcome = shouldUseOpponentTerminalPlanEvaluation(outcome.handoffState, perspective, config)
       ? evaluateOpponentTerminalPlanOutcomeForInspection(
           outcome.handoffState,
@@ -484,18 +548,16 @@ export function inspectCpuTerminalPlan(
       : outcome;
     const responseScore = evaluateTerminalPlanOutcomeWithOpponentResponse(outcome, perspective, config, context);
     return {
-      candidate,
+      candidate: selection.candidate,
       outcome,
       opponentOutcome,
       responseScore,
-      plannerScore: terminalPlanRootPlannerScore(
-        candidate,
-        outcome,
-        bestRootTotalScore,
-        perspective,
-        config,
-        context,
-      ),
+      plannerScore: selection.plannerScore,
+      rolloutScore: selection.rolloutScore,
+      rolloutScoreGapToFallback: selection.rolloutScoreGapToFallback,
+      rolloutSteps: selection.rolloutSteps,
+      rolloutWinner: selection.rolloutWinner,
+      rolloutWinnerProfile: selection.rolloutWinnerProfile,
     };
   });
   const ranked = [...rows].sort((a, b) =>
@@ -513,6 +575,13 @@ export function inspectCpuTerminalPlan(
         outcome: selected.outcome,
         plannerScore: selected.plannerScore,
         ...(runnerUp ? { runnerUpScore: runnerUp.plannerScore } : {}),
+        ...(selected.rolloutScore !== undefined ? { rolloutScore: selected.rolloutScore } : {}),
+        ...(selected.rolloutScoreGapToFallback !== undefined
+          ? { rolloutScoreGapToFallback: selected.rolloutScoreGapToFallback }
+          : {}),
+        ...(selected.rolloutSteps !== undefined ? { rolloutSteps: selected.rolloutSteps } : {}),
+        ...(selected.rolloutWinner ? { rolloutWinner: selected.rolloutWinner } : {}),
+        ...(selected.rolloutWinnerProfile ? { rolloutWinnerProfile: selected.rolloutWinnerProfile } : {}),
       }
     : undefined;
   const adopted = !!selection && shouldAdoptTerminalPlanRootSelection(state, perspective, selection, fallback, config);
@@ -522,6 +591,10 @@ export function inspectCpuTerminalPlan(
     enabled: true,
     ...(selected ? { selectedDecision: selected.candidate.decision, selectedPlannerScore: selected.plannerScore } : {}),
     ...(runnerUp ? { runnerUpPlannerScore: runnerUp.plannerScore } : {}),
+    ...(selected?.rolloutScore !== undefined ? { selectedRolloutScore: selected.rolloutScore } : {}),
+    ...(selected?.rolloutScoreGapToFallback !== undefined
+      ? { selectedRolloutScoreGapToFallback: selected.rolloutScoreGapToFallback }
+      : {}),
     adopted,
     ...(!adopted && selected ? { rejectedReason: "terminal plan candidate did not pass adoption gate" } : {}),
     candidates: rows.map((row) => ({
@@ -532,6 +605,11 @@ export function inspectCpuTerminalPlan(
       opponentDelta: row.opponentOutcome.delta,
       responseScore: row.responseScore,
       plannerScore: row.plannerScore,
+      ...(row.rolloutScore !== undefined ? { rolloutScore: row.rolloutScore } : {}),
+      ...(row.rolloutScoreGapToFallback !== undefined ? { rolloutScoreGapToFallback: row.rolloutScoreGapToFallback } : {}),
+      ...(row.rolloutSteps !== undefined ? { rolloutSteps: row.rolloutSteps } : {}),
+      ...(row.rolloutWinner ? { rolloutWinner: row.rolloutWinner } : {}),
+      ...(row.rolloutWinnerProfile ? { rolloutWinnerProfile: row.rolloutWinnerProfile } : {}),
       afterRootState: row.candidate.after,
       ownHandoffState: row.outcome.handoffState,
       opponentHandoffState: row.opponentOutcome.handoffState,
@@ -844,6 +922,42 @@ function applyCpuAiSearchOptions(
       search.terminalPlanRequireCompatibleFallbackAction,
       base.terminalPlanRequireCompatibleFallbackAction,
     ),
+    terminalPlanRolloutSteps: normalizedOptionalSearchNumber(
+      search.terminalPlanRolloutSteps,
+      base.terminalPlanRolloutSteps,
+    ),
+    terminalPlanRolloutCandidateLimit: normalizedOptionalSearchNumber(
+      search.terminalPlanRolloutCandidateLimit,
+      base.terminalPlanRolloutCandidateLimit,
+    ),
+    terminalPlanRolloutWeight: normalizedOptionalSearchNumber(
+      search.terminalPlanRolloutWeight,
+      base.terminalPlanRolloutWeight,
+    ),
+    terminalPlanRolloutAdoptionMinScoreGap: normalizedOptionalSearchNumber(
+      search.terminalPlanRolloutAdoptionMinScoreGap,
+      base.terminalPlanRolloutAdoptionMinScoreGap,
+    ),
+    terminalPlanRolloutTriggerMinRootScoreGap: normalizedOptionalSearchNumber(
+      search.terminalPlanRolloutTriggerMinRootScoreGap,
+      base.terminalPlanRolloutTriggerMinRootScoreGap,
+    ),
+    terminalPlanRolloutTriggerMaxPlannerMargin: normalizedOptionalSearchNumber(
+      search.terminalPlanRolloutTriggerMaxPlannerMargin,
+      base.terminalPlanRolloutTriggerMaxPlannerMargin,
+    ),
+    terminalPlanRolloutTurnFrom: normalizedOptionalSearchNumber(
+      search.terminalPlanRolloutTurnFrom,
+      base.terminalPlanRolloutTurnFrom,
+    ),
+    terminalPlanRolloutTurnTo: normalizedOptionalSearchNumber(
+      search.terminalPlanRolloutTurnTo,
+      base.terminalPlanRolloutTurnTo,
+    ),
+    terminalPlanRolloutMaxOpponentStones: normalizedOptionalSearchNumber(
+      search.terminalPlanRolloutMaxOpponentStones,
+      base.terminalPlanRolloutMaxOpponentStones,
+    ),
     beamScoreThreshold: normalizedSearchInteger(search.beamScoreThreshold, base.beamScoreThreshold),
   };
 }
@@ -873,14 +987,14 @@ function resolveCpuAiMatchupTuning(state: GameState, profile: CpuAiProfile): Cpu
   const perspective = state.currentPlayer;
   const opponent = opponentOf(perspective);
   if (
-    (profile === "white" || profile === "white_planner" || profile === "omniscient") &&
+    (profile === "white" || profile === "white_planner" || profile === "white_rollout" || profile === "omniscient") &&
     state.players[perspective].masterId === "white" &&
     state.players[opponent].masterId === "black"
   ) {
     return WHITE_VS_BLACK_MATCHUP_TUNING;
   }
   if (
-    (profile === "white" || profile === "white_planner" || profile === "omniscient") &&
+    (profile === "white" || profile === "white_planner" || profile === "white_rollout" || profile === "omniscient") &&
     state.players[perspective].masterId === "white" &&
     state.players[opponent].masterId === "white"
   ) {
@@ -1038,6 +1152,8 @@ function selectTerminalPlanRootDecision(
   state: GameState,
   perspective: PlayerId,
   config: CpuAiProfileConfig,
+  options: CpuAiOptions,
+  fallback: EvaluatedDecision | undefined,
 ): TerminalPlanSelection | undefined {
   const baselineScore = evaluateState(state, perspective, config.weights);
   const context = createTerminalPlanEvaluationContext(baselineScore);
@@ -1052,6 +1168,34 @@ function selectTerminalPlanRootDecision(
       .map((candidate) => candidate.totalScore),
   );
 
+  const ranked = evaluateTerminalPlanRootSelections(
+    candidates,
+    bestRootTotalScore,
+    state,
+    perspective,
+    config,
+    context,
+    options,
+    fallback,
+  ).sort(compareTerminalPlanSelections);
+  const best = ranked[0];
+  if (!best) {
+    return undefined;
+  }
+  const runnerUp = ranked.find((candidate) => candidate.candidate.index !== best.candidate.index);
+  return runnerUp ? { ...best, runnerUpScore: runnerUp.plannerScore } : best;
+}
+
+function evaluateTerminalPlanRootSelections(
+  candidates: readonly EvaluatedDecision[],
+  bestRootTotalScore: number,
+  rootState: GameState,
+  perspective: PlayerId,
+  config: CpuAiProfileConfig,
+  context: TerminalPlanEvaluationContext,
+  options: CpuAiOptions,
+  fallback: EvaluatedDecision | undefined,
+): TerminalPlanSelection[] {
   const selections = candidates.map((candidate): TerminalPlanSelection => {
     const outcome = candidate.decision.type === "end_turn"
       ? {
@@ -1065,24 +1209,185 @@ function selectTerminalPlanRootDecision(
           config,
           context,
         );
+    const plannerScore = terminalPlanRootPlannerScore(candidate, outcome, bestRootTotalScore, perspective, config, context);
     return {
       candidate,
       outcome,
-      plannerScore: terminalPlanRootPlannerScore(candidate, outcome, bestRootTotalScore, perspective, config, context),
+      plannerScore,
+      terminalPlannerScore: plannerScore,
     };
   });
+  return applyTerminalPlanRolloutScores(selections, rootState, perspective, config, options, fallback);
+}
 
-  const ranked = selections.sort((a, b) =>
+function compareTerminalPlanSelections(a: TerminalPlanSelection, b: TerminalPlanSelection): number {
+  return (
     b.plannerScore - a.plannerScore ||
     b.candidate.totalScore - a.candidate.totalScore ||
-    compareTieBreak(a.candidate.decision, b.candidate.decision, a.candidate.index, b.candidate.index),
+    compareTieBreak(a.candidate.decision, b.candidate.decision, a.candidate.index, b.candidate.index)
   );
-  const best = ranked[0];
-  if (!best) {
-    return undefined;
+}
+
+function applyTerminalPlanRolloutScores(
+  selections: readonly TerminalPlanSelection[],
+  rootState: GameState,
+  perspective: PlayerId,
+  config: CpuAiProfileConfig,
+  options: CpuAiOptions,
+  fallback: EvaluatedDecision | undefined,
+): TerminalPlanSelection[] {
+  const rolloutSteps = Math.trunc(config.terminalPlanRolloutSteps ?? 0);
+  const rolloutWeight = config.terminalPlanRolloutWeight ?? 0;
+  if (rolloutSteps <= 0 || rolloutWeight <= 0 || selections.length === 0) {
+    return [...selections];
   }
-  const runnerUp = ranked.find((candidate) => candidate.candidate.index !== best.candidate.index);
-  return runnerUp ? { ...best, runnerUpScore: runnerUp.plannerScore } : best;
+
+  const fallbackKey = fallback ? cpuDecisionKey(fallback.decision) : undefined;
+  const terminalRanked = [...selections].sort(compareTerminalPlanSelections);
+  const fallbackSelection = fallbackKey
+    ? terminalRanked.find((selection) => cpuDecisionKey(selection.candidate.decision) === fallbackKey)
+    : undefined;
+  if (!shouldTriggerTerminalPlanRollout(rootState, perspective, terminalRanked, fallbackSelection, fallback, config)) {
+    return [...selections];
+  }
+
+  const candidateLimit = Math.trunc(config.terminalPlanRolloutCandidateLimit ?? terminalRanked.length);
+  const rolloutKeys = new Set<string>();
+  terminalRanked.slice(0, Math.max(1, candidateLimit)).forEach((selection) => {
+    rolloutKeys.add(cpuDecisionKey(selection.candidate.decision));
+  });
+  if (fallbackKey && terminalRanked.some((selection) => cpuDecisionKey(selection.candidate.decision) === fallbackKey)) {
+    rolloutKeys.add(fallbackKey);
+  }
+
+  const rolloutCache = new Map<string, TerminalPlanRolloutResult>();
+  const rolloutOptions = withoutTerminalPlanRolloutOptions(options);
+  const rolloutFor = (selection: TerminalPlanSelection): TerminalPlanRolloutResult | undefined => {
+    const key = cpuDecisionKey(selection.candidate.decision);
+    if (!rolloutKeys.has(key)) {
+      return undefined;
+    }
+    const cached = rolloutCache.get(key);
+    if (cached) {
+      return cached;
+    }
+    const result = evaluateTerminalPlanRollout(selection.candidate.after, perspective, rolloutSteps, rolloutOptions, config);
+    rolloutCache.set(key, result);
+    return result;
+  };
+
+  const fallbackRolloutScore = fallbackSelection ? rolloutFor(fallbackSelection)?.score : undefined;
+
+  return selections.filter((selection) => rolloutKeys.has(cpuDecisionKey(selection.candidate.decision))).map((selection) => {
+    const rollout = rolloutFor(selection);
+    if (!rollout) {
+      return selection;
+    }
+    const normalizedRolloutScore = clampNumber(rollout.score, -1_000, 1_000);
+    const rolloutBonus = normalizedRolloutScore * rolloutWeight;
+    const rolloutScoreGapToFallback = fallbackRolloutScore === undefined ? undefined : rollout.score - fallbackRolloutScore;
+    return {
+      ...selection,
+      plannerScore: selection.plannerScore + rolloutBonus,
+      rolloutScore: rollout.score,
+      ...(rolloutScoreGapToFallback !== undefined ? { rolloutScoreGapToFallback } : {}),
+      rolloutSteps: rollout.steps,
+      ...(rollout.winner ? { rolloutWinner: rollout.winner } : {}),
+      ...(rollout.winnerProfile ? { rolloutWinnerProfile: rollout.winnerProfile } : {}),
+    };
+  });
+}
+
+function shouldTriggerTerminalPlanRollout(
+  state: GameState,
+  perspective: PlayerId,
+  terminalRanked: readonly TerminalPlanSelection[],
+  fallbackSelection: TerminalPlanSelection | undefined,
+  fallback: EvaluatedDecision | undefined,
+  config: CpuAiProfileConfig,
+): boolean {
+  if (config.terminalPlanRolloutTurnFrom !== undefined && state.turnNumber < config.terminalPlanRolloutTurnFrom) {
+    return false;
+  }
+  if (config.terminalPlanRolloutTurnTo !== undefined && state.turnNumber > config.terminalPlanRolloutTurnTo) {
+    return false;
+  }
+  if (
+    config.terminalPlanRolloutMaxOpponentStones !== undefined &&
+    state.players[opponentOf(perspective)].stones > config.terminalPlanRolloutMaxOpponentStones
+  ) {
+    return false;
+  }
+  const best = terminalRanked[0];
+  if (!best || !fallback || !fallbackSelection) {
+    return false;
+  }
+  if (cpuDecisionKey(best.candidate.decision) === cpuDecisionKey(fallback.decision)) {
+    return false;
+  }
+  const rootScoreGap = fallback.totalScore - best.candidate.totalScore;
+  const minRootScoreGap = config.terminalPlanRolloutTriggerMinRootScoreGap ?? 120;
+  if (rootScoreGap < minRootScoreGap) {
+    return false;
+  }
+  const plannerMargin = best.plannerScore - fallbackSelection.plannerScore;
+  const maxPlannerMargin = config.terminalPlanRolloutTriggerMaxPlannerMargin ?? 40;
+  return plannerMargin <= maxPlannerMargin;
+}
+
+function evaluateTerminalPlanRollout(
+  state: GameState,
+  perspective: PlayerId,
+  maxSteps: number,
+  options: CpuAiOptions,
+  config: CpuAiProfileConfig,
+): TerminalPlanRolloutResult {
+  let current = state;
+  let steps = 1;
+  while (!current.winner && steps < maxSteps && current.turnNumber < 120) {
+    current = runAutoStep(current, options);
+    steps += 1;
+  }
+  const opponent = opponentOf(perspective);
+  const score = current.winner === perspective
+    ? 1_000_000
+    : current.winner === opponent
+      ? -1_000_000
+      : evaluateState(current, perspective, config.weights);
+  return {
+    score,
+    steps,
+    ...(current.winner ? { winner: current.winner } : {}),
+    ...(current.winner ? { winnerProfile: resolveRolloutWinnerProfile(current.winner, options) } : {}),
+  };
+}
+
+function withoutTerminalPlanRolloutOptions(options: CpuAiOptions): CpuAiOptions {
+  const stripSearch = (search: CpuAiSearchOptions | undefined): CpuAiSearchOptions | undefined => {
+    if (!search) {
+      return search;
+    }
+    return {
+      ...search,
+      terminalPlanRolloutSteps: 0,
+      terminalPlanRolloutWeight: 0,
+      terminalPlanRolloutAdoptionMinScoreGap: undefined,
+    };
+  };
+  return {
+    ...options,
+    search: stripSearch(options.search),
+    searches: options.searches
+      ? {
+          player: stripSearch(options.searches.player),
+          cpu: stripSearch(options.searches.cpu),
+        }
+      : undefined,
+  };
+}
+
+function resolveRolloutWinnerProfile(winner: PlayerId, options: CpuAiOptions): CpuAiProfile | undefined {
+  return options.profiles?.[winner] ?? options.profile;
 }
 
 function terminalPlanRootCandidates(
@@ -1113,9 +1418,12 @@ function withTerminalPlanReason(decision: CpuDecision, selection: TerminalPlanSe
   const runnerUpText = selection.runnerUpScore === undefined
     ? ""
     : `、次点と${Math.max(0, Math.round(selection.plannerScore - selection.runnerUpScore))}点差`;
+  const rolloutText = selection.rolloutScore === undefined
+    ? ""
+    : `、rollout ${Math.round(selection.rolloutScore)}点`;
   return {
     ...decision,
-    reason: `${decision.reason} / ターンプラン探索: 返し込み最終盤面${scoreText}点${runnerUpText}`,
+    reason: `${decision.reason} / ターンプラン探索: 返し込み最終盤面${scoreText}点${runnerUpText}${rolloutText}`,
   } as CpuDecision;
 }
 
@@ -1134,6 +1442,9 @@ function shouldAdoptTerminalPlanRootSelection(
   }
 
   const rootScoreGap = fallback.totalScore - selection.candidate.totalScore;
+  if (isRolloutConfirmedTerminalPlanSelection(selection, config)) {
+    return true;
+  }
   const maxRootScoreGap = config.terminalPlanAdoptionMaxRootScoreGap ?? Number.POSITIVE_INFINITY;
   if (rootScoreGap > maxRootScoreGap) {
     return false;
@@ -1174,6 +1485,18 @@ function shouldAdoptTerminalPlanRootSelection(
     ? Number.POSITIVE_INFINITY
     : selection.plannerScore - selection.runnerUpScore;
   return plannerMargin >= (config.terminalPlanAdoptionMinMargin ?? 0) || rootScoreGap <= 0;
+}
+
+function isRolloutConfirmedTerminalPlanSelection(
+  selection: TerminalPlanSelection,
+  config: CpuAiProfileConfig,
+): boolean {
+  const minScoreGap = config.terminalPlanRolloutAdoptionMinScoreGap;
+  return (
+    minScoreGap !== undefined &&
+    selection.rolloutScoreGapToFallback !== undefined &&
+    selection.rolloutScoreGapToFallback >= minScoreGap
+  );
 }
 
 function isPlannerSetupDecision(decision: CpuDecision): boolean {

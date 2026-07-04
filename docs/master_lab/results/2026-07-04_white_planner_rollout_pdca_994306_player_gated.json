@@ -1,0 +1,114 @@
+{
+  "generatedAt": "2026-07-04T02:44:52.749Z",
+  "options": {
+    "seedStart": 994306,
+    "gamesPerDirection": 1,
+    "maxSteps": 360,
+    "maxTurns": 90,
+    "deckPreset": "master-lab-white-1377-death-sheep3",
+    "directions": [
+      "challenger-as-player"
+    ],
+    "candidates": [
+      {
+        "id": "rollout3_80_w015_gap200",
+        "note": "terminal上位3候補を80手rolloutし、fallbackを大きく上回る時だけ採用する",
+        "search": {
+          "terminalPlanRolloutSteps": 80,
+          "terminalPlanRolloutCandidateLimit": 3,
+          "terminalPlanRolloutWeight": 0.15,
+          "terminalPlanRolloutAdoptionMinScoreGap": 200,
+          "terminalPlanRolloutTriggerMinRootScoreGap": 120,
+          "terminalPlanRolloutTriggerMaxPlannerMargin": 40
+        }
+      }
+    ],
+    "streamProgress": true,
+    "markdownPath": "docs/master_lab/results/2026-07-04_white_planner_rollout_pdca_994306_player_gated.md",
+    "jsonPath": "docs/master_lab/results/2026-07-04_white_planner_rollout_pdca_994306_player_gated.json"
+  },
+  "games": [
+    {
+      "candidateId": "rollout3_80_w015_gap200",
+      "direction": "challenger-as-player",
+      "seed": 994306,
+      "profiles": {
+        "player": "white_planner",
+        "cpu": "white"
+      },
+      "winner": "player",
+      "winnerProfile": "white_planner",
+      "steps": 242,
+      "turns": 22,
+      "playerHp": 3,
+      "cpuHp": 0,
+      "challengerHp": 3,
+      "baselineHp": 0,
+      "decisionStats": {
+        "player": {
+          "decisions": 119,
+          "elapsedMs": 516102.22696300066,
+          "maxDecisionMs": 157767.926083,
+          "actionCounts": {
+            "summon": 18,
+            "end_turn": 21,
+            "focus": 15,
+            "master:shield": 15,
+            "attack": 32,
+            "master:master_attack": 3,
+            "move": 7,
+            "master:wake_up": 7,
+            "magic": 1
+          }
+        },
+        "cpu": {
+          "decisions": 116,
+          "elapsedMs": 47407.70221000004,
+          "maxDecisionMs": 3158.889749999973,
+          "actionCounts": {
+            "summon": 16,
+            "end_turn": 21,
+            "focus": 13,
+            "attack": 38,
+            "master:shield": 10,
+            "master:master_attack": 7,
+            "move": 6,
+            "master:wake_up": 5
+          }
+        }
+      }
+    }
+  ],
+  "summaries": [
+    {
+      "candidateId": "rollout3_80_w015_gap200",
+      "note": "terminal上位3候補を80手rolloutし、fallbackを大きく上回る時だけ採用する",
+      "games": 1,
+      "challengerWins": 1,
+      "baselineWins": 0,
+      "draws": 0,
+      "winPointRate": 1,
+      "averageHpMargin": 3,
+      "averageSteps": 242,
+      "averageTurns": 22,
+      "averageDecisionMs": 4336.9935038907615,
+      "maxDecisionMs": 157767.926083,
+      "issues": 0,
+      "actionCounts": {
+        "attack": 32,
+        "end_turn": 21,
+        "focus": 15,
+        "magic": 1,
+        "master:master_attack": 3,
+        "master:shield": 15,
+        "master:wake_up": 7,
+        "move": 7,
+        "summon": 18
+      }
+    }
+  ],
+  "conclusion": [
+    "best candidate: rollout3_80_w015_gap200 (1-0-0, WPR 100%, avg HP margin 3)",
+    "The best candidate beat the current white baseline in this sample. Re-run with more seeds before adopting."
+  ]
+}

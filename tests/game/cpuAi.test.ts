@@ -118,6 +118,7 @@ describe("cpu ai", () => {
     const decision = chooseCpuDecision(game, { profile: "white_planner" });
 
     expect(CPU_AI_PROFILES).toContain("white_planner");
+    expect(CPU_AI_PROFILES).toContain("white_rollout");
     expect(decision.type).not.toBe("end_turn");
   });
 

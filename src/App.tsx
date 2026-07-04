@@ -427,6 +427,9 @@ function aiProfileLabel(profile: CpuAiProfile): string {
   if (profile === "white_planner") {
     return "White Planner";
   }
+  if (profile === "white_rollout") {
+    return "White Rollout";
+  }
   return "Omniscient";
 }
 

@@ -1,7 +1,16 @@
 import type { AiEvaluationWeights } from "./aiWeights";
 import type { CommandAction, MagicAction, MasterActionId, PlayerId, SlotKey, Target } from "./types";
 
-export const CPU_AI_PROFILES = ["stable", "strong", "pressure", "defensive", "white", "white_planner", "omniscient"] as const;
+export const CPU_AI_PROFILES = [
+  "stable",
+  "strong",
+  "pressure",
+  "defensive",
+  "white",
+  "white_planner",
+  "white_rollout",
+  "omniscient",
+] as const;
 
 export type CpuAiProfile = (typeof CPU_AI_PROFILES)[number];
 export type CpuAiProfiles = Record<PlayerId, CpuAiProfile>;
@@ -28,6 +37,15 @@ export interface CpuAiSearchOptions {
   terminalPlanRejectEndTurnOverAction?: number;
   terminalPlanRejectSetupOverTacticalAction?: number;
   terminalPlanRequireCompatibleFallbackAction?: number;
+  terminalPlanRolloutSteps?: number;
+  terminalPlanRolloutCandidateLimit?: number;
+  terminalPlanRolloutWeight?: number;
+  terminalPlanRolloutAdoptionMinScoreGap?: number;
+  terminalPlanRolloutTriggerMinRootScoreGap?: number;
+  terminalPlanRolloutTriggerMaxPlannerMargin?: number;
+  terminalPlanRolloutTurnFrom?: number;
+  terminalPlanRolloutTurnTo?: number;
+  terminalPlanRolloutMaxOpponentStones?: number;
   beamScoreThreshold?: number;
 }
 
