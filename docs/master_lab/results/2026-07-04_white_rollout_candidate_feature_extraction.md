@@ -47,18 +47,33 @@
 
 ## 994303-994306 追加監査
 
-`994303-994306` を両方向で回し、同じ `features` 列を確認した。
+`994303-994306` を `white_planner` baseline の両方向で回し、同じ `features` 列を確認した。
 
 結果:
 
 - 8 games
 - inspected decisions: 24
 - rollout-triggered decisions: 1
-- challenger wins: 7/8
-- 最大 decision: 78688.4ms
+- challenger wins: 5/8
+- paired classification: challenger profile sweep 1/4, baseline profile sweep 0/4, seat-bias 3/4
+- 最大 decision: 96284.7ms
 
 発火した rollout は 994306 / challenger-as-player / step 83 の1件だけだった。
 そのため、今回の形は「既知負けを救った局所的な手掛かり」ではあるが、「複数seedに出た安定パターン」とはまだ言えない。
+994305 は `white_rollout` が cpu席で勝ち、`white_planner` が cpu席で勝つ cpu seat sweep だったため、rollout固有の改善とは扱わない。
+
+## 994307-994312 追加 paired
+
+特徴監査より軽い paired benchmark を 994307-994312 に広げた。
+
+結果:
+
+- challenger profile sweep: 0/6
+- baseline profile sweep: 0/6
+- seat-bias: 6/6
+
+この範囲では、`white_rollout` の追加発火や候補特徴へ落とすべきAI差は見えなかった。
+したがって、`white_rollout` の条件を広げるより、`white_planner` 本体の別の負け筋を探す方が収穫が大きい。
 
 次に試すなら、候補は次のように絞る。
 

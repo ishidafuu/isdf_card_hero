@@ -1,0 +1,150 @@
+{
+  "generatedAt": "2026-07-04T08:16:19.881Z",
+  "options": {
+    "seedStart": 994307,
+    "count": 6,
+    "deckPreset": "master-lab-white-1377-death-sheep3",
+    "masterIds": {
+      "player": "white",
+      "cpu": "white"
+    },
+    "maxSteps": 420,
+    "maxTurns": 100,
+    "baselineProfile": "white_planner",
+    "challengerProfile": "white_rollout"
+  },
+  "pairs": [
+    {
+      "seed": 994307,
+      "classification": "player_seat_sweep",
+      "challengerAsCpu": {
+        "winner": "player",
+        "winnerProfile": "white_planner",
+        "steps": 255,
+        "turns": 27,
+        "issueCount": 0,
+        "warningCount": 0
+      },
+      "challengerAsPlayer": {
+        "winner": "player",
+        "winnerProfile": "white_rollout",
+        "steps": 255,
+        "turns": 27,
+        "issueCount": 0,
+        "warningCount": 0
+      }
+    },
+    {
+      "seed": 994308,
+      "classification": "player_seat_sweep",
+      "challengerAsCpu": {
+        "winner": "player",
+        "winnerProfile": "white_planner",
+        "steps": 245,
+        "turns": 22,
+        "issueCount": 0,
+        "warningCount": 0
+      },
+      "challengerAsPlayer": {
+        "winner": "player",
+        "winnerProfile": "white_rollout",
+        "steps": 245,
+        "turns": 22,
+        "issueCount": 0,
+        "warningCount": 0
+      }
+    },
+    {
+      "seed": 994309,
+      "classification": "player_seat_sweep",
+      "challengerAsCpu": {
+        "winner": "player",
+        "winnerProfile": "white_planner",
+        "steps": 307,
+        "turns": 28,
+        "issueCount": 0,
+        "warningCount": 1
+      },
+      "challengerAsPlayer": {
+        "winner": "player",
+        "winnerProfile": "white_rollout",
+        "steps": 307,
+        "turns": 28,
+        "issueCount": 0,
+        "warningCount": 1
+      }
+    },
+    {
+      "seed": 994310,
+      "classification": "player_seat_sweep",
+      "challengerAsCpu": {
+        "winner": "player",
+        "winnerProfile": "white_planner",
+        "steps": 275,
+        "turns": 25,
+        "issueCount": 0,
+        "warningCount": 0
+      },
+      "challengerAsPlayer": {
+        "winner": "player",
+        "winnerProfile": "white_rollout",
+        "steps": 275,
+        "turns": 25,
+        "issueCount": 0,
+        "warningCount": 0
+      }
+    },
+    {
+      "seed": 994311,
+      "classification": "cpu_seat_sweep",
+      "challengerAsCpu": {
+        "winner": "cpu",
+        "winnerProfile": "white_rollout",
+        "steps": 229,
+        "turns": 22,
+        "issueCount": 0,
+        "warningCount": 0
+      },
+      "challengerAsPlayer": {
+        "winner": "cpu",
+        "winnerProfile": "white_planner",
+        "steps": 229,
+        "turns": 22,
+        "issueCount": 0,
+        "warningCount": 0
+      }
+    },
+    {
+      "seed": 994312,
+      "classification": "player_seat_sweep",
+      "challengerAsCpu": {
+        "winner": "player",
+        "winnerProfile": "white_planner",
+        "steps": 296,
+        "turns": 29,
+        "issueCount": 0,
+        "warningCount": 0
+      },
+      "challengerAsPlayer": {
+        "winner": "player",
+        "winnerProfile": "white_rollout",
+        "steps": 296,
+        "turns": 29,
+        "issueCount": 0,
+        "warningCount": 0
+      }
+    }
+  ],
+  "summary": {
+    "challenger_profile_sweep": 0,
+    "baseline_profile_sweep": 0,
+    "player_seat_sweep": 5,
+    "cpu_seat_sweep": 1,
+    "split_or_draw": 0,
+    "seeds": 6,
+    "challengerPairedScore": 0,
+    "baselinePairedScore": 0,
+    "seatBiasSeeds": 6,
+    "splitOrDraw": 0
+  }
+}

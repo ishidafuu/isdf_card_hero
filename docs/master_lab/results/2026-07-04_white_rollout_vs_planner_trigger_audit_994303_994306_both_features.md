@@ -1,16 +1,16 @@
 # White Rollout Trigger Audit
 
-生成: 2026-07-04T07:09:10.360Z
+生成: 2026-07-04T07:45:07.845Z
 deck: `master-lab-white-1377-death-sheep3`
 seeds: 994303-994306
 directions: challenger-as-cpu, challenger-as-player
-baseline: `white`, challenger: `white_rollout`
+baseline: `white_planner`, challenger: `white_rollout`
 inspectThresholdMs: 3000
 
 ## Conclusion
 
-- 8 games. challenger wins 7, inspected decisions 24, rollout-triggered decisions 1.
-- max challenger decision 78688.4ms, avg challenger decision 704.6ms.
+- 8 games. challenger wins 5, inspected decisions 24, rollout-triggered decisions 1.
+- max challenger decision 96284.7ms, avg challenger decision 707.5ms.
 - rollout adopted 1/1; avg selected rollout gap 278.2.
 - Only one rollout-triggered decision was captured. Treat it as a local clue until the same feature repeats across seeds.
 
@@ -18,20 +18,20 @@ inspectThresholdMs: 3000
 
 | seed | direction | result | steps | turns | HP | decisions | avg ms | max ms | events | issue |
 | ---: | --- | --- | ---: | ---: | --- | ---: | ---: | ---: | ---: | --- |
-| 994303 | challenger-as-cpu | white_rollout | 222 | 19 | P0/C6 | 117 | 703.4 | 4968.3 | 4 | - |
-| 994304 | challenger-as-cpu | white | 255 | 28 | P3/C0 | 108 | 612.9 | 4070.8 | 2 | - |
-| 994305 | challenger-as-cpu | white_rollout | 312 | 32 | P0/C1 | 153 | 991 | 5362.4 | 11 | - |
-| 994306 | challenger-as-cpu | white_rollout | 175 | 22 | P0/C6 | 84 | 583.4 | 4701.9 | 2 | - |
-| 994303 | challenger-as-player | white_rollout | 242 | 23 | P7/C0 | 118 | 567.9 | 3293.2 | 1 | - |
-| 994304 | challenger-as-player | white_rollout | 254 | 28 | P4/C0 | 142 | 428.6 | 2690.3 | 0 | - |
-| 994305 | challenger-as-player | white_rollout | 310 | 27 | P4/C0 | 151 | 717.3 | 3419 | 3 | - |
-| 994306 | challenger-as-player | white_rollout | 281 | 27 | P5/C0 | 137 | 1031.9 | 78688.4 | 1 | - |
+| 994303 | challenger-as-cpu | white_planner | 242 | 23 | P7/C0 | 117 | 625.2 | 4520.7 | 3 | - |
+| 994304 | challenger-as-cpu | white_planner | 255 | 28 | P3/C0 | 108 | 603.1 | 3987.4 | 2 | - |
+| 994305 | challenger-as-cpu | white_rollout | 307 | 28 | P0/C5 | 153 | 958.6 | 5360.2 | 10 | - |
+| 994306 | challenger-as-cpu | white_rollout | 175 | 22 | P0/C6 | 84 | 580.5 | 4631.9 | 2 | - |
+| 994303 | challenger-as-player | white_rollout | 242 | 23 | P7/C0 | 118 | 565.6 | 3267.6 | 1 | - |
+| 994304 | challenger-as-player | white_rollout | 255 | 28 | P3/C0 | 142 | 426.4 | 2672.2 | 0 | - |
+| 994305 | challenger-as-player | white_planner | 307 | 28 | P0/C5 | 148 | 744.5 | 5576.2 | 5 | - |
+| 994306 | challenger-as-player | white_rollout | 281 | 27 | P5/C0 | 137 | 1156.6 | 96284.7 | 1 | - |
 
 ## Events
 
 ### seed 994303 / challenger-as-cpu / step 65 / turn 6
 
-- elapsed: 4596.1ms / inspection 4558.7ms
+- elapsed: 4520.7ms / inspection 4510ms
 - state: turn 6 / current cpu / HP cpu/player 9/10 / stones cpu/player 5/0 / deck cpu/player 19/20 / hand cpu/player 5/4
 - board: player_front_left:PF:真勇者ダイン Lv1 HP6 act1/1 focus | player_front_right:PF:真勇者ダイン Lv2 HP6 act1/1 | player_back_left:PB:ピグミィ Lv2 HP1 act2/2 focus,shield | player_back_right:PB:ヤンバル Lv1 HP3 act1/1 | cpu_front_left:CF:ヤンバル Lv1 HP3 act0/1 | cpu_front_right:CF:真勇者ダイン Lv1 HP6 act0/1 | cpu_back_left:CB:ヤンバル Lv1 HP3 act0/1
 - rolloutTriggered: false, adopted: false
@@ -50,7 +50,7 @@ inspectThresholdMs: 3000
 
 ### seed 994303 / challenger-as-cpu / step 67 / turn 6
 
-- elapsed: 3136.8ms / inspection 3107.8ms
+- elapsed: 3086.9ms / inspection 3121.1ms
 - state: turn 6 / current cpu / HP cpu/player 9/10 / stones cpu/player 5/0 / deck cpu/player 19/20 / hand cpu/player 5/4
 - board: player_front_left:PF:真勇者ダイン Lv1 HP5 act1/1 | player_front_right:PF:真勇者ダイン Lv2 HP6 act1/1 | player_back_left:PB:ピグミィ Lv2 HP1 act2/2 focus,shield | player_back_right:PB:ヤンバル Lv1 HP3 act1/1 | cpu_front_left:CF:ヤンバル Lv1 HP3 act0/1 | cpu_front_right:CF:真勇者ダイン Lv1 HP6 act1/1 focus | cpu_back_left:CB:ヤンバル Lv1 HP3 act1/1
 - rolloutTriggered: false, adopted: false
@@ -67,47 +67,28 @@ inspectThresholdMs: 3000
 | 3 | Y |  | Y | move:cpu_front_left->cpu_back_right | move:cpu-front-left->cpu-back-right; mover:ヤンバルLv1HP3(act0/1); fallbackMove:cpu-front-left->cpu-back-right:keepsTo | 86 | 127.3 | 108.4 | 120.8 | 96 | - | - | - |
 | 4 |  |  |  | summon:ポリスピナー->cpu_back_right | summon:ポリスピナー->back-right; noBacklineReach; behindOwnFront:真勇者ダインLv1HP6(act1/1,focus); sameLaneEnemyFront:真勇者ダインLv2HP6(act1/1); after:prepared; fallbackMove:cpu-front-left->cpu-back-right:blocksTo | 80 | 120.6 | 103 | 116 | 90 | - | - | - |
 
-### seed 994303 / challenger-as-cpu / step 145 / turn 12
+### seed 994303 / challenger-as-cpu / step 157 / turn 13
 
-- elapsed: 4968.3ms / inspection 4935.8ms
-- state: turn 12 / current cpu / HP cpu/player 8/8 / stones cpu/player 6/3 / deck cpu/player 13/14 / hand cpu/player 4/4
-- board: player_front_left:PF:真勇者ダイン Lv1 HP6 act0/1 focus | player_front_right:PF:デスシープ Lv1 HP6 prep | player_back_left:PB:ドノマンティス Lv1 HP5 act0/1 focus | player_back_right:PB:ピグミィ Lv1 HP3 act2/2 | cpu_front_left:CF:真勇者ダイン Lv1 HP6 act0/1 | cpu_front_right:CF:ボムゾウ Lv1 HP6 act0/1 | cpu_back_left:CB:ヤンバル Lv1 HP3 act0/1 | cpu_back_right:CB:ピグミィ Lv2 HP3 act0/2
+- elapsed: 3304.9ms / inspection 3313.1ms
+- state: turn 13 / current cpu / HP cpu/player 8/9 / stones cpu/player 5/0 / deck cpu/player 12/13 / hand cpu/player 5/4
+- board: player_front_left:PF:真勇者ダイン Lv3 HP6 act1/1 | player_front_right:PF:デスシープ Lv1 HP6 prep | player_back_left:PB:デスシープ Lv1 HP6 prep | player_back_right:PB:ピグミィ Lv2 HP3 act2/2 | cpu_front_left:CF:ピグミィ Lv1 HP3 act0/2 | cpu_front_right:CF:ヤンバル Lv1 HP2 act0/1 | cpu_back_right:CB:ボムゾウ Lv1 HP6 act0/1
 - rolloutTriggered: false, adopted: true
-- decision: focus:真勇者ダイン
-- fallback: focus:真勇者ダイン (316.1)
-- planner selected: focus:真勇者ダイン (203.9)
-- root gap to fallback: 129.9
+- decision: attack:ヤンバル:wild_claw->ピグミィ
+- fallback: attack:ヤンバル:wild_claw->ピグミィ (470.1)
+- planner selected: attack:ヤンバル:wild_claw->ピグミィ (202)
+- root gap to fallback: 352.4
 - planner margin to fallback: 0
 
 | rank | cpu | planner | fallback | decision | features | root | planner score | response | own | opp | rollout | score | gap |
 | ---: | --- | --- | --- | --- | --- | ---: | ---: | ---: | ---: | ---: | --- | ---: | ---: |
-| 1 | Y | Y | Y | focus:真勇者ダイン | - | 186.2 | 203.9 | 164.3 | 215.8 | 112.8 | - | - | - |
-| 2 |  |  |  | attack:ピグミィ:スパイクボール->真勇者ダイン | attackTarget:player-front-left:真勇者ダインLv1HP6(act0/1,focus) | 92.9 | 184.1 | 170.3 | 227.8 | 112.8 | - | - | - |
-| 3 |  |  |  | focus:ピグミィ | - | 44 | 153.4 | 174.8 | 209.8 | 139.8 | - | - | - |
-| 4 |  |  |  | attack:ヤンバル:wild_claw->真勇者ダイン | attackTarget:player-front-left:真勇者ダインLv1HP6(act0/1,focus) | 123.4 | 129.4 | 102.3 | 153.8 | 50.8 | - | - | - |
-
-### seed 994303 / challenger-as-cpu / step 146 / turn 12
-
-- elapsed: 3322.8ms / inspection 3325.4ms
-- state: turn 12 / current cpu / HP cpu/player 8/8 / stones cpu/player 6/3 / deck cpu/player 13/14 / hand cpu/player 4/4
-- board: player_front_left:PF:真勇者ダイン Lv1 HP6 act0/1 focus | player_front_right:PF:デスシープ Lv1 HP6 prep | player_back_left:PB:ドノマンティス Lv1 HP5 act0/1 focus | player_back_right:PB:ピグミィ Lv1 HP3 act2/2 | cpu_front_left:CF:真勇者ダイン Lv1 HP6 act1/1 focus | cpu_front_right:CF:ボムゾウ Lv1 HP6 act0/1 | cpu_back_left:CB:ヤンバル Lv1 HP3 act0/1 | cpu_back_right:CB:ピグミィ Lv2 HP3 act0/2
-- rolloutTriggered: false, adopted: false
-- decision: attack:ヤンバル:wild_claw->真勇者ダイン
-- fallback: attack:ヤンバル:wild_claw->真勇者ダイン (189.5)
-- planner selected: attack:ピグミィ:スパイクボール->真勇者ダイン (179.6)
-- root gap to fallback: 92.6
-- planner margin to fallback: 61.7
-
-| rank | cpu | planner | fallback | decision | features | root | planner score | response | own | opp | rollout | score | gap |
-| ---: | --- | --- | --- | --- | --- | ---: | ---: | ---: | ---: | ---: | --- | ---: | ---: |
-| 1 |  | Y |  | attack:ピグミィ:スパイクボール->真勇者ダイン | attackTarget:player-front-left:真勇者ダインLv1HP6(act0/1,focus) | 96.9 | 179.6 | 158.3 | 209.8 | 106.8 | - | - | - |
-| 2 |  |  |  | focus:ピグミィ | - | 44 | 171.8 | 162.8 | 191.8 | 133.8 | - | - | - |
-| 3 |  |  |  | focus:ボムゾウ | - | 44 | 161.3 | 152.3 | 197.8 | 106.8 | - | - | - |
-| 4 |  |  |  | end_turn | - | -20 | 125.7 | 162.8 | 191.8 | 133.8 | - | - | - |
+| 1 | Y | Y | Y | attack:ヤンバル:wild_claw->ピグミィ | attackTarget:player-back-right:ピグミィLv2HP3(act2/2) | 117.7 | 202 | 176.1 | 235.6 | 116.6 | - | - | - |
+| 2 |  |  |  | focus:ボムゾウ | - | 44 | 179.8 | 170.1 | 223.6 | 116.6 | - | - | - |
+| 3 |  |  |  | move:cpu_front_right->cpu_back_left | move:cpu-front-right->cpu-back-left; mover:ヤンバルLv1HP2(act0/1) | 110 | 43.1 | 18.9 | 85.6 | -43.4 | - | - | - |
+| 4 |  |  |  | move:cpu_back_right->cpu_front_right | move:cpu-back-right->cpu-front-right; mover:ボムゾウLv1HP6(act0/1) | 120 | -27.7 | -54.1 | 9.6 | -115.4 | - | - | - |
 
 ### seed 994304 / challenger-as-cpu / step 51 / turn 5
 
-- elapsed: 4070.8ms / inspection 4091.8ms
+- elapsed: 3987.4ms / inspection 3982.5ms
 - state: turn 5 / current cpu / HP cpu/player 10/10 / stones cpu/player 3/1 / deck cpu/player 20/21 / hand cpu/player 4/3
 - board: player_front_left:PF:ドノマンティス Lv1 HP5 act1/1 focus | player_front_right:PF:デスシープ Lv1 HP6 act1/1 focus,shield | player_back_left:PB:ヤンバル Lv1 HP3 prep | player_back_right:PB:ピグミィ Lv2 HP3 act2/2 | cpu_front_left:CF:真勇者ダイン Lv2 HP6 act0/1 | cpu_front_right:CF:デスシープ Lv1 HP6 act0/1 | cpu_back_left:CB:ピグミィ Lv1 HP1 act0/2
 - rolloutTriggered: false, adopted: true
@@ -126,7 +107,7 @@ inspectThresholdMs: 3000
 
 ### seed 994304 / challenger-as-cpu / step 52 / turn 5
 
-- elapsed: 3954.5ms / inspection 3973.6ms
+- elapsed: 3881.5ms / inspection 3896.5ms
 - state: turn 5 / current cpu / HP cpu/player 10/10 / stones cpu/player 3/1 / deck cpu/player 20/21 / hand cpu/player 4/3
 - board: player_front_left:PF:ドノマンティス Lv1 HP5 act1/1 | player_front_right:PF:デスシープ Lv1 HP6 act1/1 focus,shield | player_back_left:PB:ヤンバル Lv1 HP3 prep | player_back_right:PB:ピグミィ Lv2 HP3 act2/2 | cpu_front_left:CF:真勇者ダイン Lv2 HP6 act0/1 | cpu_front_right:CF:デスシープ Lv1 HP6 act0/1 | cpu_back_left:CB:ピグミィ Lv1 HP1 act1/2
 - rolloutTriggered: false, adopted: true
@@ -145,7 +126,7 @@ inspectThresholdMs: 3000
 
 ### seed 994305 / challenger-as-cpu / step 49 / turn 5
 
-- elapsed: 4714.7ms / inspection 4714.8ms
+- elapsed: 4695ms / inspection 4685.2ms
 - state: turn 5 / current cpu / HP cpu/player 9/10 / stones cpu/player 5/1 / deck cpu/player 20/21 / hand cpu/player 5/3
 - board: player_front_left:PF:真勇者ダイン Lv1 HP6 act1/1 | player_front_right:PF:デスシープ Lv1 HP6 act1/1 focus,shield | player_back_left:PB:デスシープ Lv1 HP6 act0/1 focus | player_back_right:PB:ピグミィ Lv2 HP3 act2/2 focus | cpu_front_left:CF:ボムゾウ Lv1 HP6 act0/1 | cpu_front_right:CF:真勇者ダイン Lv1 HP6 act0/1 | cpu_back_left:CB:ピグミィ Lv1 HP2 act0/2 | cpu_back_right:CB:ヤンバル Lv2 HP3 act0/1
 - rolloutTriggered: false, adopted: true
@@ -164,7 +145,7 @@ inspectThresholdMs: 3000
 
 ### seed 994305 / challenger-as-cpu / step 50 / turn 5
 
-- elapsed: 4425.3ms / inspection 4531.8ms
+- elapsed: 4450ms / inspection 4470.7ms
 - state: turn 5 / current cpu / HP cpu/player 9/10 / stones cpu/player 5/1 / deck cpu/player 20/21 / hand cpu/player 5/3
 - board: player_front_left:PF:真勇者ダイン Lv1 HP3 act1/1 | player_front_right:PF:デスシープ Lv1 HP6 act1/1 focus,shield | player_back_left:PB:デスシープ Lv1 HP6 act0/1 focus | player_back_right:PB:ピグミィ Lv2 HP3 act2/2 focus | cpu_front_left:CF:ボムゾウ Lv1 HP6 act0/1 | cpu_front_right:CF:真勇者ダイン Lv1 HP6 act0/1 | cpu_back_left:CB:ピグミィ Lv1 HP2 act0/2 | cpu_back_right:CB:ヤンバル Lv2 HP3 act1/1
 - rolloutTriggered: false, adopted: true
@@ -183,7 +164,7 @@ inspectThresholdMs: 3000
 
 ### seed 994305 / challenger-as-cpu / step 51 / turn 5
 
-- elapsed: 3211ms / inspection 3162.6ms
+- elapsed: 3169.5ms / inspection 3193.3ms
 - state: turn 5 / current cpu / HP cpu/player 9/10 / stones cpu/player 5/1 / deck cpu/player 20/21 / hand cpu/player 5/3
 - board: player_front_left:PF:真勇者ダイン Lv1 HP2 act1/1 | player_front_right:PF:デスシープ Lv1 HP6 act1/1 focus,shield | player_back_left:PB:デスシープ Lv1 HP6 act0/1 focus | player_back_right:PB:ピグミィ Lv2 HP3 act2/2 focus | cpu_front_left:CF:ボムゾウ Lv1 HP6 act0/1 | cpu_front_right:CF:真勇者ダイン Lv1 HP6 act0/1 | cpu_back_left:CB:ピグミィ Lv1 HP2 act1/2 | cpu_back_right:CB:ヤンバル Lv2 HP3 act1/1
 - rolloutTriggered: false, adopted: true
@@ -202,7 +183,7 @@ inspectThresholdMs: 3000
 
 ### seed 994305 / challenger-as-cpu / step 59 / turn 6
 
-- elapsed: 3072.6ms / inspection 3046.7ms
+- elapsed: 3048ms / inspection 3039.2ms
 - state: turn 6 / current cpu / HP cpu/player 9/10 / stones cpu/player 3/4 / deck cpu/player 19/20 / hand cpu/player 6/3
 - board: player_front_left:PF:デスシープ Lv1 HP6 act0/1 focus | player_front_right:PF:デスシープ Lv1 HP6 act0/1 focus | player_back_left:PB:ボムゾウ Lv1 HP6 prep | player_back_right:PB:ピグミィ Lv2 HP3 act0/2 focus | cpu_front_left:CF:ボムゾウ Lv2 HP5 act0/1 | cpu_front_right:CF:真勇者ダイン Lv1 HP6 act0/1 | cpu_back_left:CB:ピグミィ Lv1 HP2 act0/2 focus | cpu_back_right:CB:ヤンバル Lv2 HP3 act0/1
 - rolloutTriggered: false, adopted: true
@@ -221,7 +202,7 @@ inspectThresholdMs: 3000
 
 ### seed 994305 / challenger-as-cpu / step 96 / turn 9
 
-- elapsed: 4718.8ms / inspection 4665.1ms
+- elapsed: 4663.8ms / inspection 4667.6ms
 - state: turn 9 / current cpu / HP cpu/player 9/10 / stones cpu/player 6/0 / deck cpu/player 16/17 / hand cpu/player 6/3
 - board: player_front_left:PF:ボムゾウ Lv1 HP3 act1/1 focus | player_front_right:PF:ドノマンティス Lv1 HP5 act1/1 | player_back_left:PB:ボムゾウ Lv1 HP6 act1/1 | player_back_right:PB:デスシープ Lv1 HP6 prep | cpu_front_left:CF:ピグミィ Lv1 HP2 act0/2 focus | cpu_front_right:CF:ヤンバル Lv2 HP3 act0/1
 - rolloutTriggered: false, adopted: false
@@ -240,7 +221,7 @@ inspectThresholdMs: 3000
 
 ### seed 994305 / challenger-as-cpu / step 97 / turn 9
 
-- elapsed: 3136.7ms / inspection 3113.2ms
+- elapsed: 3103.8ms / inspection 3099.4ms
 - state: turn 9 / current cpu / HP cpu/player 9/10 / stones cpu/player 6/0 / deck cpu/player 16/17 / hand cpu/player 6/3
 - board: player_front_left:PF:ボムゾウ Lv1 HP1 act1/1 | player_front_right:PF:ドノマンティス Lv1 HP5 act1/1 | player_back_left:PB:ボムゾウ Lv1 HP6 act1/1 | player_back_right:PB:デスシープ Lv1 HP6 prep | cpu_front_left:CF:ピグミィ Lv1 HP2 act0/2 focus | cpu_front_right:CF:ヤンバル Lv2 HP3 act1/1
 - rolloutTriggered: false, adopted: true
@@ -259,7 +240,7 @@ inspectThresholdMs: 3000
 
 ### seed 994305 / challenger-as-cpu / step 150 / turn 13
 
-- elapsed: 4559.5ms / inspection 4502.8ms
+- elapsed: 4524ms / inspection 4502.5ms
 - state: turn 13 / current cpu / HP cpu/player 8/10 / stones cpu/player 3/5 / deck cpu/player 12/13 / hand cpu/player 6/4
 - board: player_front_left:PF:ポリスピナー Lv1 HP3 act2/2 | player_front_right:PF:デスシープ Lv1 HP6 act1/1 focus | player_back_right:PB:ピグミィ Lv2 HP3 act2/2 | cpu_front_left:CF:デスシープ Lv1 HP6 act0/1 | cpu_front_right:CF:ヤンバル Lv2 HP3 act0/1 focus | cpu_back_left:CB:ヤンバル Lv1 HP3 act0/1 | cpu_back_right:CB:ピグミィ Lv2 HP3 act0/2 focus
 - rolloutTriggered: false, adopted: false
@@ -278,7 +259,7 @@ inspectThresholdMs: 3000
 
 ### seed 994305 / challenger-as-cpu / step 213 / turn 18
 
-- elapsed: 3713.7ms / inspection 3666.8ms
+- elapsed: 3651.8ms / inspection 3661ms
 - state: turn 18 / current cpu / HP cpu/player 8/8 / stones cpu/player 5/1 / deck cpu/player 7/8 / hand cpu/player 5/5
 - board: player_front_right:PF:ボムゾウ Lv1 HP6 prep | player_back_left:PB:ピグミィ Lv1 HP3 act2/2 | player_back_right:PB:ピグミィ Lv2 HP3 act2/2 shield | cpu_front_left:CF:デスシープ Lv1 HP4 act0/1 | cpu_front_right:CF:ポリスピナー Lv1 HP3 act0/2 | cpu_back_left:CB:ピグミィ Lv2 HP3 act0/2 | cpu_back_right:CB:真勇者ダイン Lv1 HP6 act0/1
 - rolloutTriggered: false, adopted: true
@@ -297,7 +278,7 @@ inspectThresholdMs: 3000
 
 ### seed 994305 / challenger-as-cpu / step 214 / turn 18
 
-- elapsed: 5362.4ms / inspection 5366.6ms
+- elapsed: 5360.2ms / inspection 5366ms
 - state: turn 18 / current cpu / HP cpu/player 8/8 / stones cpu/player 5/1 / deck cpu/player 7/8 / hand cpu/player 5/5
 - board: player_front_right:PF:ボムゾウ Lv1 HP6 prep | player_back_left:PB:ピグミィ Lv1 HP3 act2/2 | player_back_right:PB:ピグミィ Lv2 HP3 act2/2 shield | cpu_front_left:CF:デスシープ Lv1 HP4 act0/1 | cpu_front_right:CF:ポリスピナー Lv1 HP3 act1/2 focus | cpu_back_left:CB:ピグミィ Lv2 HP3 act0/2 | cpu_back_right:CB:真勇者ダイン Lv1 HP6 act0/1
 - rolloutTriggered: false, adopted: true
@@ -313,47 +294,28 @@ inspectThresholdMs: 3000
 | 2 |  |  |  | attack:ピグミィ:スパイクボール->ピグミィ | attackTarget:player-back-left:ピグミィLv1HP3(act2/2) | 31 | 169.6 | 177.2 | 223.8 | 130.6 | - | - | - |
 | 3 |  |  |  | end_turn | - | 27.1 | 160.8 | 171.2 | 217.8 | 124.6 | - | - | - |
 
-### seed 994305 / challenger-as-cpu / step 255 / turn 21
+### seed 994305 / challenger-as-cpu / step 254 / turn 21
 
-- elapsed: 4178.9ms / inspection 4156.4ms
-- state: turn 21 / current cpu / HP cpu/player 8/7 / stones cpu/player 4/4 / deck cpu/player 4/5 / hand cpu/player 6/5
-- board: player_front_left:PF:ドノマンティス Lv1 HP5 act1/1 focus | player_front_right:PF:ポリスピナー Lv1 HP3 prep | player_back_left:PB:ピグミィ Lv2 HP3 act2/2 | player_back_right:PB:ピグミィ Lv2 HP3 act2/2 focus | cpu_front_left:CF:真勇者ダイン Lv1 HP6 act0/1 | cpu_front_right:CF:デスシープ Lv1 HP6 act0/1 | cpu_back_left:CB:ピグミィ Lv2 HP3 act0/2 | cpu_back_right:CB:ピグミィ Lv1 HP3 act0/2
+- elapsed: 3866ms / inspection 3864.4ms
+- state: turn 21 / current cpu / HP cpu/player 8/7 / stones cpu/player 7/5 / deck cpu/player 4/5 / hand cpu/player 6/5
+- board: player_front_left:PF:ドノマンティス Lv1 HP5 act1/1 focus | player_front_right:PF:ポリスピナー Lv1 HP3 prep | player_back_left:PB:ピグミィ Lv2 HP1 act2/2 focus | player_back_right:PB:ピグミィ Lv2 HP3 act2/2 focus | cpu_front_left:CF:真勇者ダイン Lv1 HP6 act0/1 | cpu_front_right:CF:デスシープ Lv1 HP6 act0/1 | cpu_back_left:CB:ピグミィ Lv2 HP3 act0/2 | cpu_back_right:CB:ピグミィ Lv1 HP3 act0/2
 - rolloutTriggered: false, adopted: true
 - decision: focus:真勇者ダイン
-- fallback: focus:真勇者ダイン (187.7)
-- planner selected: focus:真勇者ダイン (182.4)
-- root gap to fallback: 8.7
+- fallback: focus:真勇者ダイン (197.8)
+- planner selected: focus:真勇者ダイン (190.9)
+- root gap to fallback: 20.8
 - planner margin to fallback: 0
 
 | rank | cpu | planner | fallback | decision | features | root | planner score | response | own | opp | rollout | score | gap |
 | ---: | --- | --- | --- | --- | --- | ---: | ---: | ---: | ---: | ---: | --- | ---: | ---: |
-| 1 | Y | Y | Y | focus:真勇者ダイン | - | 179 | 182.4 | 143 | 196 | 90 | - | - | - |
-| 2 |  |  |  | attack:ピグミィ:スパイクボール->ドノマンティス | attackTarget:player-front-left:ドノマンティスLv1HP5(act1/1,focus) | 86.5 | 161.8 | 149 | 208 | 90 | - | - | - |
-| 3 |  |  |  | attack:ピグミィ:スパイクボール->ドノマンティス | attackTarget:player-front-left:ドノマンティスLv1HP5(act1/1,focus) | 86.5 | 161.8 | 149 | 208 | 90 | - | - | - |
-| 4 |  |  |  | focus:ピグミィ | - | 44 | 131.2 | 149 | 208 | 90 | - | - | - |
-
-### seed 994305 / challenger-as-cpu / step 256 / turn 21
-
-- elapsed: 3735.2ms / inspection 3710.4ms
-- state: turn 21 / current cpu / HP cpu/player 8/7 / stones cpu/player 4/4 / deck cpu/player 4/5 / hand cpu/player 6/5
-- board: player_front_left:PF:ドノマンティス Lv1 HP5 act1/1 focus | player_front_right:PF:ポリスピナー Lv1 HP3 prep | player_back_left:PB:ピグミィ Lv2 HP3 act2/2 | player_back_right:PB:ピグミィ Lv2 HP3 act2/2 focus | cpu_front_left:CF:真勇者ダイン Lv1 HP6 act1/1 focus | cpu_front_right:CF:デスシープ Lv1 HP6 act0/1 | cpu_back_left:CB:ピグミィ Lv2 HP3 act0/2 | cpu_back_right:CB:ピグミィ Lv1 HP3 act0/2
-- rolloutTriggered: false, adopted: true
-- decision: attack:ピグミィ:スパイクボール->ドノマンティス
-- fallback: attack:ピグミィ:スパイクボール->ドノマンティス (64.4)
-- planner selected: attack:ピグミィ:スパイクボール->ドノマンティス (155.6)
-- root gap to fallback: -20.1
-- planner margin to fallback: 0
-
-| rank | cpu | planner | fallback | decision | features | root | planner score | response | own | opp | rollout | score | gap |
-| ---: | --- | --- | --- | --- | --- | ---: | ---: | ---: | ---: | ---: | --- | ---: | ---: |
-| 1 | Y | Y | Y | attack:ピグミィ:スパイクボール->ドノマンティス | attackTarget:player-front-left:ドノマンティスLv1HP5(act1/1,focus) | 84.5 | 155.6 | 137 | 190 | 84 | - | - | - |
-| 2 |  |  |  | attack:ピグミィ:スパイクボール->ドノマンティス | attackTarget:player-front-left:ドノマンティスLv1HP5(act1/1,focus) | 84.5 | 155.6 | 137 | 190 | 84 | - | - | - |
-| 3 |  |  |  | focus:ピグミィ | - | 44 | 146.7 | 137 | 190 | 84 | - | - | - |
-| 4 |  |  |  | focus:ピグミィ | - | 44 | 146.7 | 137 | 190 | 84 | - | - | - |
+| 1 | Y | Y | Y | focus:真勇者ダイン | - | 177 | 190.9 | 152 | 196 | 108 | - | - | - |
+| 2 |  |  |  | attack:ピグミィ:スパイクボール->ドノマンティス | attackTarget:player-front-left:ドノマンティスLv1HP5(act1/1,focus) | 86.5 | 171.8 | 158 | 208 | 108 | - | - | - |
+| 3 |  |  |  | attack:ピグミィ:スパイクボール->ドノマンティス | attackTarget:player-front-left:ドノマンティスLv1HP5(act1/1,focus) | 86.5 | 171.8 | 158 | 208 | 108 | - | - | - |
+| 4 |  |  |  | focus:ピグミィ | - | 44 | 141.2 | 158 | 208 | 108 | - | - | - |
 
 ### seed 994306 / challenger-as-cpu / step 76 / turn 7
 
-- elapsed: 4701.9ms / inspection 4802.7ms
+- elapsed: 4631.9ms / inspection 4651.5ms
 - state: turn 7 / current cpu / HP cpu/player 10/9 / stones cpu/player 7/1 / deck cpu/player 18/19 / hand cpu/player 6/4
 - board: player_front_left:PF:ボムゾウ Lv2 HP2 act1/1 shield | player_front_right:PF:ピグミィ Lv1 HP3 prep | player_back_left:PB:ヤンバル Lv1 HP3 act1/1 | player_back_right:PB:ヤンバル Lv2 HP3 act1/1 | cpu_front_left:CF:ドノマンティス Lv1 HP5 act0/1 | cpu_front_right:CF:デスシープ Lv2 HP6 act0/1 | cpu_back_right:CB:ヤンバル Lv1 HP3 act0/1
 - rolloutTriggered: false, adopted: false
@@ -372,7 +334,7 @@ inspectThresholdMs: 3000
 
 ### seed 994306 / challenger-as-cpu / step 91 / turn 8
 
-- elapsed: 3780.8ms / inspection 3737ms
+- elapsed: 3720ms / inspection 3695.6ms
 - state: turn 8 / current cpu / HP cpu/player 10/9 / stones cpu/player 6/0 / deck cpu/player 17/18 / hand cpu/player 6/4
 - board: player_front_left:PF:ヤンバル Lv1 HP3 act1/1 | player_front_right:PF:ボムゾウ Lv2 HP5 act1/1 | player_back_left:PB:ヤンバル Lv2 HP3 act1/1 | cpu_front_left:CF:ドノマンティス Lv2 HP5 act0/1 | cpu_front_right:CF:ヤンバル Lv1 HP3 act0/1 | cpu_back_left:CB:ヤンバル Lv1 HP3 act0/1
 - rolloutTriggered: false, adopted: false
@@ -391,7 +353,7 @@ inspectThresholdMs: 3000
 
 ### seed 994303 / challenger-as-player / step 44 / turn 5
 
-- elapsed: 3293.2ms / inspection 3310.7ms
+- elapsed: 3267.6ms / inspection 3271.9ms
 - state: turn 5 / current player / HP player/cpu 10/9 / stones player/cpu 7/0 / deck player/cpu 21/21 / hand player/cpu 5/4
 - board: player_front_left:PF:真勇者ダイン Lv1 HP6 act0/1 | player_front_right:PF:ヤンバル Lv1 HP3 act0/1 | player_back_left:PB:ピグミィ Lv2 HP3 act0/2 | cpu_front_left:CF:真勇者ダイン Lv1 HP6 act0/1 focus | cpu_front_right:CF:デスシープ Lv1 HP6 act1/1 focus | cpu_back_left:CB:ピグミィ Lv1 HP3 act1/2 focus | cpu_back_right:CB:ヤンバル Lv1 HP3 act1/1
 - rolloutTriggered: false, adopted: true
@@ -410,7 +372,7 @@ inspectThresholdMs: 3000
 
 ### seed 994305 / challenger-as-player / step 77 / turn 8
 
-- elapsed: 3353.3ms / inspection 3372.7ms
+- elapsed: 3334.4ms / inspection 3343.5ms
 - state: turn 8 / current player / HP player/cpu 10/9 / stones player/cpu 11/0 / deck player/cpu 18/18 / hand player/cpu 4/5
 - board: player_front_left:PF:ピグミィ Lv2 HP3 act0/2 | player_front_right:PF:ボムゾウ Lv1 HP6 act0/1 | player_back_right:PB:ボムゾウ Lv1 HP6 act0/1 | cpu_front_left:CF:ボムゾウ Lv2 HP2 act1/1 | cpu_front_right:CF:真勇者ダイン Lv1 HP6 act1/1 focus | cpu_back_left:CB:ピグミィ Lv1 HP2 act2/2 focus | cpu_back_right:CB:ヤンバル Lv2 HP3 act1/1 focus
 - rolloutTriggered: false, adopted: true
@@ -429,7 +391,7 @@ inspectThresholdMs: 3000
 
 ### seed 994305 / challenger-as-player / step 103 / turn 10
 
-- elapsed: 3419ms / inspection 3417.9ms
+- elapsed: 3431.4ms / inspection 3416.6ms
 - state: turn 10 / current player / HP player/cpu 10/9 / stones player/cpu 4/1 / deck player/cpu 16/16 / hand player/cpu 4/4
 - board: player_front_left:PF:ボムゾウ Lv1 HP6 act0/1 | player_front_right:PF:ドノマンティス Lv1 HP5 act0/1 | player_back_right:PB:デスシープ Lv1 HP6 act0/1 | cpu_front_left:CF:デスシープ Lv1 HP6 prep | cpu_front_right:CF:ヤンバル Lv2 HP3 act1/1 shield | cpu_back_left:CB:ヤンバル Lv1 HP3 prep | cpu_back_right:CB:ピグミィ Lv2 HP3 act2/2
 - rolloutTriggered: false, adopted: true
@@ -446,28 +408,66 @@ inspectThresholdMs: 3000
 | 3 |  |  |  | summon:ポリスピナー->player_back_left | summon:ポリスピナー->back-left; noBacklineReach; behindOwnFront:ボムゾウLv1HP6(act0/1); sameLaneEnemyFront:デスシープLv1HP6(prep); after:prepared | 75 | 105.3 | 101.7 | 149.2 | 54.2 | - | - | - |
 | 4 |  |  |  | focus:デスシープ | - | 44 | 77 | 95.7 | 137.2 | 54.2 | - | - | - |
 
-### seed 994305 / challenger-as-player / step 266 / turn 22
+### seed 994305 / challenger-as-player / step 206 / turn 18
 
-- elapsed: 3160.3ms / inspection 2918.1ms
-- state: turn 22 / current player / HP player/cpu 5/8 / stones player/cpu 5/4 / deck player/cpu 4/4 / hand player/cpu 6/5
-- board: player_front_left:PF:ドノマンティス Lv2 HP5 act0/1 | player_front_right:PF:ピグミィ Lv2 HP3 act0/2 | player_back_left:PB:ピグミィ Lv2 HP1 act0/2 | cpu_front_left:CF:デスシープ Lv1 HP5 act1/1 focus | cpu_front_right:CF:デスシープ Lv2 HP3 act1/1 | cpu_back_left:CB:ピグミィ Lv1 HP3 act2/2 focus | cpu_back_right:CB:ピグミィ Lv2 HP3 act2/2
+- elapsed: 5042.2ms / inspection 4993.7ms
+- state: turn 18 / current player / HP player/cpu 8/8 / stones player/cpu 4/2 / deck player/cpu 8/8 / hand player/cpu 6/4
+- board: player_front_left:PF:ピグミィ Lv2 HP3 act0/2 | player_front_right:PF:ピグミィ Lv1 HP3 act0/2 | cpu_front_left:CF:デスシープ Lv1 HP5 act1/1 focus | cpu_front_right:CF:ポリスピナー Lv1 HP3 act2/2 shield | cpu_back_left:CB:ピグミィ Lv2 HP3 act2/2 shield | cpu_back_right:CB:真勇者ダイン Lv1 HP6 prep
 - rolloutTriggered: false, adopted: false
-- decision: focus:ドノマンティス
-- fallback: focus:ドノマンティス (347.9)
-- planner selected: move:player_front_right->player_back_right (428.6)
-- root gap to fallback: 275.4
-- planner margin to fallback: 16.8
+- decision: attack:ピグミィ:スパイクボール->デスシープ
+- fallback: attack:ピグミィ:スパイクボール->デスシープ (330.1)
+- planner selected: move:player_front_right->player_back_left (185.5)
+- root gap to fallback: 206.1
+- planner margin to fallback: 14.1
 
 | rank | cpu | planner | fallback | decision | features | root | planner score | response | own | opp | rollout | score | gap |
 | ---: | --- | --- | --- | --- | --- | ---: | ---: | ---: | ---: | ---: | --- | ---: | ---: |
-| 1 |  | Y |  | move:player_front_right->player_back_right | move:player-front-right->player-back-right; mover:ピグミィLv2HP3(act0/2) | 72.5 | 428.6 | 425.9 | 417.8 | 434 | - | - | - |
-| 2 | Y |  | Y | focus:ドノマンティス | - | 179 | 411.8 | 372.4 | 377.8 | 367 | - | - | - |
-| 3 |  |  |  | attack:ピグミィ:スパイクボール->デスシープ | attackTarget:cpu-front-right:デスシープLv2HP3(act1/1) | 109 | 402.4 | 378.4 | 389.8 | 367 | - | - | - |
-| 4 |  |  |  | attack:ピグミィ:スパイクボール->デスシープ | attackTarget:cpu-front-left:デスシープLv1HP5(act1/1,focus) | 86.5 | 123 | 110.2 | 309.8 | 201 | - | - | - |
+| 1 |  | Y |  | move:player_front_right->player_back_left | move:player-front-right->player-back-left; mover:ピグミィLv1HP3(act0/2) | 124 | 185.5 | 158.2 | 187.6 | 128.8 | - | - | - |
+| 2 |  |  |  | move:player_front_left->player_back_right | move:player-front-left->player-back-right; mover:ピグミィLv2HP3(act0/2) | 145.3 | 179.7 | 147.7 | 181.6 | 113.8 | - | - | - |
+| 3 | Y |  | Y | attack:ピグミィ:スパイクボール->デスシープ | attackTarget:cpu-front-left:デスシープLv1HP5(act1/1,focus) | 107.8 | 171.4 | 147.7 | 181.6 | 113.8 | - | - | - |
+| 4 |  |  |  | summon:ボムゾウ->player_back_left | summon:ボムゾウ->back-left; backlineReach; behindOwnFront:ピグミィLv2HP3(act0/2); sameLaneEnemyFront:デスシープLv1HP5(act1/1,focus); after:prepared | 87.8 | 161 | 141.7 | 169.6 | 113.8 | - | - | - |
+
+### seed 994305 / challenger-as-player / step 207 / turn 18
+
+- elapsed: 5576.2ms / inspection 5528.9ms
+- state: turn 18 / current player / HP player/cpu 8/8 / stones player/cpu 4/2 / deck player/cpu 8/8 / hand player/cpu 6/4
+- board: player_front_left:PF:ピグミィ Lv2 HP3 act0/2 | player_front_right:PF:ピグミィ Lv1 HP3 act1/2 | cpu_front_left:CF:デスシープ Lv1 HP5 act1/1 | cpu_front_right:CF:ポリスピナー Lv1 HP3 act2/2 shield | cpu_back_left:CB:ピグミィ Lv2 HP3 act2/2 shield | cpu_back_right:CB:真勇者ダイン Lv1 HP6 prep
+- rolloutTriggered: false, adopted: false
+- decision: move:player_front_right->player_back_left
+- fallback: move:player_front_right->player_back_left (213.5)
+- planner selected: move:player_front_left->player_back_right (160.2)
+- root gap to fallback: 75
+- planner margin to fallback: 31.3
+
+| rank | cpu | planner | fallback | decision | features | root | planner score | response | own | opp | rollout | score | gap |
+| ---: | --- | --- | --- | --- | --- | ---: | ---: | ---: | ---: | ---: | --- | ---: | ---: |
+| 1 |  | Y |  | move:player_front_left->player_back_right | move:player-front-left->player-back-right; mover:ピグミィLv2HP3(act0/2); fallbackMove:player-front-right->player-back-left:keepsTo | 138.5 | 160.2 | 129.7 | 163.6 | 95.8 | - | - | - |
+| 2 |  |  |  | summon:ボムゾウ->player_back_left | summon:ボムゾウ->back-left; backlineReach; behindOwnFront:ピグミィLv2HP3(act0/2); sameLaneEnemyFront:デスシープLv1HP5(act1/1); after:prepared; fallbackMove:player-front-right->player-back-left:blocksTo | 87.8 | 143 | 123.7 | 151.6 | 95.8 | - | - | - |
+| 3 | Y |  | Y | move:player_front_right->player_back_left | move:player-front-right->player-back-left; mover:ピグミィLv1HP3(act1/2); fallbackMove:player-front-right->player-back-left:keepsTo | 110 | 128.9 | 104.7 | 107.6 | 101.8 | - | - | - |
+| 4 |  |  |  | summon:ボムゾウ->player_back_right | summon:ボムゾウ->back-right; backlineReach; behindOwnFront:ピグミィLv1HP3(act1/2); sameLaneEnemyFront:ポリスピナーLv1HP3(act2/2,shield); after:prepared; fallbackMove:player-front-right->player-back-left:keepsTo | 87.8 | 99 | 79.7 | 129.6 | 29.8 | - | - | - |
+
+### seed 994305 / challenger-as-player / step 219 / turn 19
+
+- elapsed: 3968.4ms / inspection 3957.6ms
+- state: turn 19 / current player / HP player/cpu 7/8 / stones player/cpu 5/3 / deck player/cpu 7/7 / hand player/cpu 6/5
+- board: player_front_left:PF:ピグミィ Lv1 HP3 act0/2 | player_front_right:PF:ボムゾウ Lv1 HP6 act0/1 | player_back_right:PB:ピグミィ Lv2 HP3 act0/2 | cpu_front_left:CF:真勇者ダイン Lv1 HP6 act1/1 shield | cpu_front_right:CF:ポリスピナー Lv1 HP3 act2/2 | cpu_back_left:CB:ピグミィ Lv2 HP3 act1/2 focus | cpu_back_right:CB:デスシープ Lv1 HP4 act1/1
+- rolloutTriggered: false, adopted: true
+- decision: attack:ピグミィ:スパイクボール->ポリスピナー
+- fallback: attack:ピグミィ:スパイクボール->ポリスピナー (542)
+- planner selected: attack:ピグミィ:スパイクボール->ポリスピナー (379.8)
+- root gap to fallback: 309.2
+- planner margin to fallback: 0
+
+| rank | cpu | planner | fallback | decision | features | root | planner score | response | own | opp | rollout | score | gap |
+| ---: | --- | --- | --- | --- | --- | ---: | ---: | ---: | ---: | ---: | --- | ---: | ---: |
+| 1 | Y | Y | Y | attack:ピグミィ:スパイクボール->ポリスピナー | attackTarget:cpu-front-right:ポリスピナーLv1HP3(act2/2) | 232.9 | 379.8 | 340.2 | 354.2 | 326.2 | - | - | - |
+| 2 |  |  |  | attack:ピグミィ:スパイクボール->ポリスピナー | attackTarget:cpu-front-right:ポリスピナーLv1HP3(act2/2) | 152.9 | 311.8 | 278.2 | 296.2 | 260.2 | - | - | - |
+| 3 |  |  |  | focus:ボムゾウ | - | 58.3 | 299.8 | 334.2 | 342.2 | 326.2 | - | - | - |
+| 4 |  |  |  | attack:ボムゾウ:self_bomb->ポリスピナー | attackTarget:cpu-front-right:ポリスピナーLv1HP3(act2/2) | 175 | 297.7 | 259.2 | 267.2 | 251.2 | - | - | - |
 
 ### seed 994306 / challenger-as-player / step 83 / turn 8
 
-- elapsed: 78688.4ms / inspection 77595ms
+- elapsed: 96284.7ms / inspection 94879ms
 - state: turn 8 / current player / HP player/cpu 9/10 / stones player/cpu 7/1 / deck player/cpu 18/18 / hand player/cpu 5/5
 - board: player_front_left:PF:ヤンバル Lv1 HP3 act0/1 | player_front_right:PF:ヤンバル Lv2 HP3 act0/1 | cpu_front_left:CF:ドノマンティス Lv2 HP5 act1/1 shield | cpu_front_right:CF:デスシープ Lv2 HP6 act1/1 | cpu_back_left:CB:ヤンバル Lv1 HP3 prep | cpu_back_right:CB:ヤンバル Lv1 HP3 act1/1
 - rolloutTriggered: true, adopted: true
@@ -483,4 +483,5 @@ inspectThresholdMs: 3000
 | 1 | Y | Y |  | summon:ボムゾウ->player_back_right | summon:ボムゾウ->back-right; backlineReach; behindOwnFront:ヤンバルLv2HP3(act0/1); sameLaneEnemyFront:デスシープLv2HP6(act1/1); after:prepared; fallbackMove:player-front-right->player-back-left:keepsTo | 87.8 | 115.6 | 97.9 | 143.4 | 52.4 | - | -10.8 | 278.2 |
 | 2 |  |  |  | summon:ボムゾウ->player_back_left | summon:ボムゾウ->back-left; backlineReach; behindOwnFront:ヤンバルLv1HP3(act0/1); sameLaneEnemyFront:ドノマンティスLv2HP5(act1/1,shield); after:prepared; fallbackMove:player-front-right->player-back-left:blocksTo | 87.8 | 78.8 | 97.9 | 143.4 | 52.4 | - | -255.8 | 33.2 |
 | 3 |  |  | Y | move:player_front_right->player_back_left | move:player-front-right->player-back-left; mover:ヤンバルLv2HP3(act0/1); fallbackMove:player-front-right->player-back-left:keepsTo | 112 | 72 | 90.7 | 125 | 56.4 | - | -289 | 0 |
+
 

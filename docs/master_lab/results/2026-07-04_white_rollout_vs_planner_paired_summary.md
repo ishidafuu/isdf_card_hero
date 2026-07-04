@@ -62,6 +62,27 @@ seedごとに両方向を1ペアとして分類する。
 
 `white_rollout` は 994306 の既知負けを拾えるが、`white_planner` 直接比較では、座席差を除いた profile sweep で強いとはまだ言えない。
 
+## 追加確認 994307-994312
+
+994307-994312 の6 seedを追加で paired benchmark した。
+
+- challenger profile sweep: 0/6
+- baseline profile sweep: 0/6
+- seat-bias seeds: 6/6
+- split/draw seeds: 0/6
+
+内訳:
+
+- 994307: `player_seat_sweep`
+- 994308: `player_seat_sweep`
+- 994309: `player_seat_sweep`
+- 994310: `player_seat_sweep`
+- 994311: `cpu_seat_sweep`
+- 994312: `player_seat_sweep`
+
+この追加範囲では `white_rollout` / `white_planner` のAI差ではなく、座席差だけが出た。
+したがって、現状の `white_rollout` は「994306 の既知負け局面を救う高思考プロファイル」ではあるが、広い範囲で `white_planner` を明確に上回るプロファイルとはまだ言えない。
+
 次の改善ループは、単純勝率ではなく paired classification を使う。
 
 - profile sweep が出る seed: AI差として採用判断に使う。
@@ -69,4 +90,11 @@ seedごとに両方向を1ペアとして分類する。
 - split/draw seed: HP差、終盤手順、rollout発火有無を追加監査する。
 - profile sweep が出ても、rollout-triggered decision がどちらの方向で発火したかを確認する。
 
-次の実装候補は、残る初回 rollout の近似より先に、`white_planner` と `white_rollout` の差分手が paired profile sweep かつ rollout-triggered decision に変換されるかを見る監査。
+次の実装候補は、`white_rollout` の発火条件や後列召喚ヒューリスティックを広げることではない。
+994307-994312 では追加の profile sweep が出なかったため、次は `white_planner` 本体の弱点抽出へ戻す。
+
+優先する監査:
+
+- `white_planner` が負ける seed の終盤で、盤面制圧とHP差のどちらを誤評価しているか。
+- seat sweep seed のうち、同じ座席が同じ手順で勝つならAI改善対象から外す。
+- `split_or_draw` または profile sweep が出るまで seed 範囲を広げ、その局面だけを branch replay / terminal plan audit にかける。

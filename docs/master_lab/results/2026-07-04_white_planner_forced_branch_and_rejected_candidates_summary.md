@@ -23,6 +23,7 @@
 - `2026-07-04_white_planner_deck_deficit_race_followup_probe_994304.md`
 - `2026-07-04_white_planner_forced_branch_994304_cpu_focused.md`（`deckDeficitRace` 候補中の証跡）
 - `2026-07-04_white_planner_forced_branch_994304_cpu_step242_current.md`
+- `2026-07-04_white_planner_forced_branch_scan_994304_t6_t18.md`
 
 結果:
 
@@ -30,12 +31,18 @@
 - ただし、強制分岐で最後まで流すと `end_turn` も `ダイン斬り` も最終的に白側勝ちになった。
 - step 230 / 231 の上位候補も、最終勝敗を覆すものは見つからなかった。
 - AI 本体を戻した現在版の step 242 短縮 forced branch では、選択手は `end_turn`。代替 `ダイン斬り` も同じく最終的に白側勝ち。
+- T6-T18 の広めの forced branch scan では、turn 9 に勝敗反転候補が2件見つかった。
+  - step 101: `attack:ポリスピナー:attack->ボムゾウ` ではなく `summon:デスシープ->cpu_back_left`
+  - step 103: `focus:ドノマンティス` ではなく `summon:デスシープ->cpu_back_left`
+- どちらも、後列左へデスシープを先に置くと最終勝敗が `white_planner` 勝ちへ反転した。
 
 判断:
 
 - `deckDeficitRace` のように山札枚数差だけで顔打点を強制する案は不採用。
 - 局所スコアは改善しても、6ゲーム確認では勝ち数が増えなかった。
-- 994304 は T24 の一手ではなく、もっと前から「勝てる盤面を作れていない」可能性が高い。
+- 994304 は T24 の一手ではなく、T9前後から「勝てる盤面を作れていない」可能性が高い。
+- ただし、単純なデスシープ後列召喚ボーナスは単体実戦を反転できなかったため、mainline には入れない。
+- 次は `デスシープ->cpu_back_left` が勝てる理由を、「行動消費前に盤面を固める」「相手石0-1で高耐久レーンを封じる」「後続のポリスピナー配置へ接続する」のどれかへ分解してから実装する。
 
 ## 994306 challenger-as-player
 
@@ -85,3 +92,4 @@
 - 今回は AI 挙動の mainline 変更なし。
 - forced branch 監査は有用なので残す。
 - 局所的な `deckDeficitRace` と `passive front guard retreat prune` は不採用。
+- 994304 のT9デスシープ後列左召喚は、次の実装候補として追加監査対象にする。

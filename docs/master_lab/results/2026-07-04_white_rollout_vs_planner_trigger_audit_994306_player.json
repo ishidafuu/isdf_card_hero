@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-07-04T06:45:07.056Z",
+  "generatedAt": "2026-07-04T07:18:37.087Z",
   "options": {
     "seedStart": 994306,
     "count": 1,
@@ -9,7 +9,7 @@
     "deckPreset": "master-lab-white-1377-death-sheep3",
     "maxSteps": 360,
     "maxTurns": 90,
-    "baselineProfile": "white",
+    "baselineProfile": "white_planner",
     "challengerProfile": "white_rollout",
     "inspectThresholdMs": 3000,
     "candidateLimit": 4,
@@ -23,7 +23,7 @@
       "direction": "challenger-as-player",
       "profiles": {
         "player": "white_rollout",
-        "cpu": "white"
+        "cpu": "white_planner"
       },
       "winner": "player",
       "winnerProfile": "white_rollout",
@@ -33,8 +33,8 @@
       "cpuHp": 0,
       "challengerStats": {
         "decisions": 137,
-        "elapsedMs": 141489.33240999983,
-        "maxDecisionMs": 79290.142625
+        "elapsedMs": 158796.28045200004,
+        "maxDecisionMs": 96631.094125
       },
       "events": [
         {
@@ -43,8 +43,8 @@
           "step": 83,
           "turnNumber": 8,
           "side": "player",
-          "elapsedMs": 79290.1,
-          "inspectionElapsedMs": 77272.2,
+          "elapsedMs": 96631.1,
+          "inspectionElapsedMs": 95285.6,
           "rolloutTriggered": true,
           "adopted": true,
           "decision": "summon:ボムゾウ->player_back_right",
@@ -120,8 +120,8 @@
       "step": 83,
       "turnNumber": 8,
       "side": "player",
-      "elapsedMs": 79290.1,
-      "inspectionElapsedMs": 77272.2,
+      "elapsedMs": 96631.1,
+      "inspectionElapsedMs": 95285.6,
       "rolloutTriggered": true,
       "adopted": true,
       "decision": "summon:ボムゾウ->player_back_right",
@@ -190,8 +190,9 @@
   ],
   "conclusion": [
     "1 games. challenger wins 1, inspected decisions 1, rollout-triggered decisions 1.",
-    "max challenger decision 79290.1ms, avg challenger decision 1032.8ms.",
+    "max challenger decision 96631.1ms, avg challenger decision 1159.1ms.",
     "rollout adopted 1/1; avg selected rollout gap 278.2.",
     "Only one rollout-triggered decision was captured. Treat it as a local clue until the same feature repeats across seeds."
   ]
 }
+
