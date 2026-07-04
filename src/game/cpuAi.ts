@@ -1363,26 +1363,22 @@ function evaluateTerminalPlanRollout(
 }
 
 function withoutTerminalPlanRolloutOptions(options: CpuAiOptions): CpuAiOptions {
-  const stripSearch = (search: CpuAiSearchOptions | undefined): CpuAiSearchOptions | undefined => {
-    if (!search) {
-      return search;
-    }
+  const stripSearch = (search: CpuAiSearchOptions | undefined): CpuAiSearchOptions => {
     return {
-      ...search,
+      ...(search ?? {}),
       terminalPlanRolloutSteps: 0,
       terminalPlanRolloutWeight: 0,
       terminalPlanRolloutAdoptionMinScoreGap: undefined,
     };
   };
+  const baseSearch = stripSearch(options.search);
   return {
     ...options,
-    search: stripSearch(options.search),
-    searches: options.searches
-      ? {
-          player: stripSearch(options.searches.player),
-          cpu: stripSearch(options.searches.cpu),
-        }
-      : undefined,
+    search: baseSearch,
+    searches: {
+      player: stripSearch(options.searches?.player ?? options.search),
+      cpu: stripSearch(options.searches?.cpu ?? options.search),
+    },
   };
 }
 
