@@ -87,6 +87,7 @@ export interface CpuAiTuning {
     whiteShieldThreatConversionBonus?: number;
     whiteShieldBreakthroughPenalty?: number;
     whiteShieldNoPressurePenalty?: number;
+    whiteShieldFrontAceBonus?: number;
     whiteWakeImmediateWorkBonus?: number;
     whiteWakeLevelUpSetupBonus?: number;
     whiteCloseoutAfterShieldBonus?: number;

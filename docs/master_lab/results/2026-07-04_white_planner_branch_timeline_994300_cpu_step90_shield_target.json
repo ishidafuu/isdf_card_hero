@@ -1,0 +1,346 @@
+{
+  "generatedAt": "2026-07-04T12:27:39.269Z",
+  "options": {
+    "seed": 994300,
+    "direction": "challenger-as-cpu",
+    "deckPreset": "master-lab-white-1377-death-sheep3",
+    "step": 90,
+    "branches": [
+      "selected",
+      "shield->monster:cpu_front_left"
+    ],
+    "search": {},
+    "maxReplaySteps": 180,
+    "maxCheckpoints": 16,
+    "markdownPath": "docs/master_lab/results/2026-07-04_white_planner_branch_timeline_994300_cpu_step90_shield_target.md",
+    "jsonPath": "docs/master_lab/results/2026-07-04_white_planner_branch_timeline_994300_cpu_step90_shield_target.json"
+  },
+  "plannerSide": "cpu",
+  "startState": "turn 8 / current cpu / HP cpu/player 10/10 / stones cpu/player 2/7 / deck cpu/player 17/18 / hand cpu/player 4/4",
+  "startBoard": "player_front_right:PF:真勇者ダイン Lv1 HP6 act1/1 focus | player_back_left:PB:ヤンバル Lv1 HP3 prep | player_back_right:PB:ポリスピナー Lv1 HP3 act2/2 | cpu_front_left:CF:真勇者ダイン Lv3 HP6 act1/1 | cpu_front_right:CF:ヤンバル Lv2 HP3 act1/1 | cpu_back_left:CB:ポリスピナー Lv1 HP3 act0/2 focus | cpu_back_right:CB:ヤンバル Lv1 HP3 prep",
+  "selectedDecision": "master:shield->monster:cpu_front_right",
+  "timelines": [
+    {
+      "branch": "selected",
+      "matchedDecision": "master:shield->monster:cpu_front_right",
+      "rootScore": 158.4,
+      "applied": true,
+      "winner": "player",
+      "winnerProfile": "white",
+      "finalScore": -1000000,
+      "replaySteps": 166,
+      "finalState": "turn 23 / current player / HP cpu/player 0/5 / stones cpu/player 12/9 / deck cpu/player 3/3 / hand cpu/player 5/6",
+      "finalBoard": "player_front_left:PF:ヤンバル Lv2 HP3 act0/1 focus | player_front_right:PF:真勇者ダイン Lv3 HP4 act1/1 | player_back_right:PB:ピグミィ Lv2 HP3 act0/2 focus | cpu_front_left:CF:デスシープ Lv2 HP6 act1/1 | cpu_front_right:CF:真勇者ダイン Lv1 HP6 act0/1 focus,shield | cpu_back_left:CB:ボムゾウ Lv2 HP5 act0/1 focus | cpu_back_right:CB:ピグミィ Lv2 HP3 act0/2 focus",
+      "checkpoints": [
+        {
+          "replayStep": 1,
+          "label": "after forced decision",
+          "state": "turn 8 / current cpu / HP cpu/player 10/10 / stones cpu/player 0/7 / deck cpu/player 17/18 / hand cpu/player 4/4",
+          "board": "player_front_right:PF:真勇者ダイン Lv1 HP6 act1/1 focus | player_back_left:PB:ヤンバル Lv1 HP3 prep | player_back_right:PB:ポリスピナー Lv1 HP3 act2/2 | cpu_front_left:CF:真勇者ダイン Lv3 HP6 act1/1 | cpu_front_right:CF:ヤンバル Lv2 HP3 act1/1 shield | cpu_back_left:CB:ポリスピナー Lv1 HP3 act0/2 focus | cpu_back_right:CB:ヤンバル Lv1 HP3 prep",
+          "nextDecision": "end_turn",
+          "score": 209.2,
+          "recentLog": "CPUはカードを準備中で召喚した / CPU判断: 倒されそうな高価値味方を守るためシールド / ターンプラン探索: 返し込み最終盤面22点、次点と53点差 / CPUはヤンバル Lv2にシールドを張った"
+        },
+        {
+          "replayStep": 1,
+          "label": "planner decision",
+          "state": "turn 8 / current cpu / HP cpu/player 10/10 / stones cpu/player 0/7 / deck cpu/player 17/18 / hand cpu/player 4/4",
+          "board": "player_front_right:PF:真勇者ダイン Lv1 HP6 act1/1 focus | player_back_left:PB:ヤンバル Lv1 HP3 prep | player_back_right:PB:ポリスピナー Lv1 HP3 act2/2 | cpu_front_left:CF:真勇者ダイン Lv3 HP6 act1/1 | cpu_front_right:CF:ヤンバル Lv2 HP3 act1/1 shield | cpu_back_left:CB:ポリスピナー Lv1 HP3 act0/2 focus | cpu_back_right:CB:ヤンバル Lv1 HP3 prep",
+          "nextDecision": "end_turn",
+          "score": 209.2,
+          "recentLog": "CPUはカードを準備中で召喚した / CPU判断: 倒されそうな高価値味方を守るためシールド / ターンプラン探索: 返し込み最終盤面22点、次点と53点差 / CPUはヤンバル Lv2にシールドを張った"
+        },
+        {
+          "replayStep": 8,
+          "label": "planner decision",
+          "state": "turn 9 / current cpu / HP cpu/player 10/10 / stones cpu/player 5/7 / deck cpu/player 16/17 / hand cpu/player 5/4",
+          "board": "player_front_left:PF:ヤンバル Lv1 HP3 act1/1 | player_front_right:PF:真勇者ダイン Lv3 HP6 act1/1 | player_back_left:PB:真勇者ダイン Lv1 HP6 prep | player_back_right:PB:ポリスピナー Lv1 HP3 act1/2 focus | cpu_front_left:CF:真勇者ダイン Lv3 HP6 act0/1 | cpu_front_right:CF:ヤンバル Lv1 HP3 act0/1 | cpu_back_left:CB:ポリスピナー Lv1 HP3 act0/2 focus",
+          "nextDecision": "attack:真勇者ダイン:ダイン斬り->ヤンバル",
+          "score": -51.8,
+          "recentLog": "ヤンバル Lv1が前衛へ自動移動した / CPUはストーンを3個得た / CPUはカードを引いた"
+        },
+        {
+          "replayStep": 9,
+          "label": "planner decision",
+          "state": "turn 9 / current cpu / HP cpu/player 10/10 / stones cpu/player 5/8 / deck cpu/player 16/17 / hand cpu/player 5/4",
+          "board": "player_front_right:PF:真勇者ダイン Lv3 HP6 act1/1 | player_back_left:PB:真勇者ダイン Lv1 HP6 prep | player_back_right:PB:ポリスピナー Lv1 HP3 act1/2 focus | cpu_front_left:CF:真勇者ダイン Lv3 HP6 act1/1 | cpu_front_right:CF:ヤンバル Lv1 HP3 act0/1 | cpu_back_left:CB:ポリスピナー Lv1 HP3 act0/2 focus",
+          "nextDecision": "move:cpu_front_right->cpu_back_right",
+          "score": 10.2,
+          "recentLog": "CPUの真勇者ダイン Lv3: ダイン斬り 4P / ダイン斬りでヤンバル Lv1に4ダメージ / ヤンバル Lv1は倒れ、プレイヤーにストーン1個が戻った"
+        },
+        {
+          "replayStep": 10,
+          "label": "planner decision",
+          "state": "turn 9 / current cpu / HP cpu/player 10/10 / stones cpu/player 5/8 / deck cpu/player 16/17 / hand cpu/player 5/4",
+          "board": "player_front_right:PF:真勇者ダイン Lv3 HP6 act1/1 | player_back_left:PB:真勇者ダイン Lv1 HP6 prep | player_back_right:PB:ポリスピナー Lv1 HP3 act1/2 focus | cpu_front_left:CF:真勇者ダイン Lv3 HP6 act1/1 | cpu_back_left:CB:ポリスピナー Lv1 HP3 act0/2 focus | cpu_back_right:CB:ヤンバル Lv1 HP3 act1/1",
+          "nextDecision": "master:master_attack->monster:player_front_right",
+          "score": 14.2,
+          "recentLog": "ヤンバル Lv1は倒れ、プレイヤーにストーン1個が戻った / CPU判断: 後衛カードを後列へ戻して射程を活かすため移動 / ターンプラン探索: 返し込み最終盤面-44点、次点と1点差 / ヤンバル Lv1を移動した"
+        },
+        {
+          "replayStep": 11,
+          "label": "planner decision",
+          "state": "turn 9 / current cpu / HP cpu/player 10/10 / stones cpu/player 2/8 / deck cpu/player 16/17 / hand cpu/player 5/4",
+          "board": "player_front_right:PF:真勇者ダイン Lv3 HP4 act1/1 | player_back_left:PB:真勇者ダイン Lv1 HP6 prep | player_back_right:PB:ポリスピナー Lv1 HP3 act1/2 focus | cpu_front_left:CF:真勇者ダイン Lv3 HP6 act1/1 | cpu_back_left:CB:ポリスピナー Lv1 HP3 act0/2 focus | cpu_back_right:CB:ヤンバル Lv1 HP3 act1/1",
+          "nextDecision": "move:cpu_back_left->cpu_front_right",
+          "score": 11.2,
+          "recentLog": "CPU判断: ストーンに余裕があり敵を削れるためマスターアタック / 見送り: 移動は27点差で見送り / CPUのマスターアタック / マスターアタックで真勇者ダイン Lv3に2ダメージ"
+        },
+        {
+          "replayStep": 12,
+          "label": "planner decision",
+          "state": "turn 9 / current cpu / HP cpu/player 10/10 / stones cpu/player 2/8 / deck cpu/player 16/17 / hand cpu/player 5/4",
+          "board": "player_front_right:PF:真勇者ダイン Lv3 HP4 act1/1 | player_back_left:PB:真勇者ダイン Lv1 HP6 prep | player_back_right:PB:ポリスピナー Lv1 HP3 act1/2 focus | cpu_front_left:CF:真勇者ダイン Lv3 HP6 act1/1 | cpu_front_right:CF:ポリスピナー Lv1 HP3 act1/2 | cpu_back_right:CB:ヤンバル Lv1 HP3 act1/1",
+          "nextDecision": "focus:ポリスピナー",
+          "score": 35.2,
+          "recentLog": "マスターアタックで真勇者ダイン Lv3に2ダメージ / CPU判断: 移動後に強い攻撃筋を作れるため移動 / ターンプラン探索: 返し込み最終盤面-39点、次点と160点差 / ポリスピナー Lv1を移動した"
+        },
+        {
+          "replayStep": 13,
+          "label": "planner decision",
+          "state": "turn 9 / current cpu / HP cpu/player 10/10 / stones cpu/player 2/8 / deck cpu/player 16/17 / hand cpu/player 5/4",
+          "board": "player_front_right:PF:真勇者ダイン Lv3 HP4 act1/1 | player_back_left:PB:真勇者ダイン Lv1 HP6 prep | player_back_right:PB:ポリスピナー Lv1 HP3 act1/2 focus | cpu_front_left:CF:真勇者ダイン Lv3 HP6 act1/1 | cpu_front_right:CF:ポリスピナー Lv1 HP3 act2/2 focus | cpu_back_right:CB:ヤンバル Lv1 HP3 act1/1",
+          "nextDecision": "master:shield->monster:cpu_front_right",
+          "score": 41.2,
+          "recentLog": "ポリスピナー Lv1を移動した / CPU判断: 有効攻撃がないためためる / ターンプラン探索: 返し込み最終盤面-77点、次点と85点差 / ポリスピナー Lv1はためた"
+        },
+        {
+          "replayStep": 14,
+          "label": "planner decision",
+          "state": "turn 9 / current cpu / HP cpu/player 10/10 / stones cpu/player 0/8 / deck cpu/player 16/17 / hand cpu/player 5/4",
+          "board": "player_front_right:PF:真勇者ダイン Lv3 HP4 act1/1 | player_back_left:PB:真勇者ダイン Lv1 HP6 prep | player_back_right:PB:ポリスピナー Lv1 HP3 act1/2 focus | cpu_front_left:CF:真勇者ダイン Lv3 HP6 act1/1 | cpu_front_right:CF:ポリスピナー Lv1 HP3 act2/2 focus,shield | cpu_back_right:CB:ヤンバル Lv1 HP3 act1/1",
+          "nextDecision": "end_turn",
+          "score": 43.2,
+          "recentLog": "ポリスピナー Lv1はためた / CPU判断: 致死圏の味方を守れるためシールド / ターンプラン探索: 返し込み最終盤面-95点、次点と11点差 / CPUはポリスピナー Lv1にシールドを張った"
+        },
+        {
+          "replayStep": 20,
+          "label": "planner decision",
+          "state": "turn 10 / current cpu / HP cpu/player 10/10 / stones cpu/player 4/7 / deck cpu/player 15/16 / hand cpu/player 6/4",
+          "board": "player_front_left:PF:真勇者ダイン Lv1 HP6 act1/1 focus | player_front_right:PF:真勇者ダイン Lv3 HP4 act1/1 | player_back_left:PB:ボムゾウ Lv1 HP6 prep | player_back_right:PB:ポリスピナー Lv1 HP3 act0/2 focus | cpu_front_left:CF:真勇者ダイン Lv3 HP6 act0/1 | cpu_front_right:CF:ヤンバル Lv1 HP3 act0/1",
+          "nextDecision": "attack:真勇者ダイン:ダイン斬り->真勇者ダイン",
+          "score": -214.8,
+          "recentLog": "ヤンバル Lv1が前衛へ自動移動した / CPUはストーンを3個得た / CPUはカードを引いた"
+        },
+        {
+          "replayStep": 21,
+          "label": "planner decision",
+          "state": "turn 10 / current cpu / HP cpu/player 10/10 / stones cpu/player 4/7 / deck cpu/player 15/16 / hand cpu/player 6/4",
+          "board": "player_front_left:PF:真勇者ダイン Lv1 HP3 act1/1 | player_front_right:PF:真勇者ダイン Lv3 HP4 act1/1 | player_back_left:PB:ボムゾウ Lv1 HP6 prep | player_back_right:PB:ポリスピナー Lv1 HP3 act0/2 focus | cpu_front_left:CF:真勇者ダイン Lv3 HP6 act1/1 | cpu_front_right:CF:ヤンバル Lv1 HP3 act0/1",
+          "nextDecision": "attack:ヤンバル:wild_claw->真勇者ダイン",
+          "score": -190.8,
+          "recentLog": "CPUの真勇者ダイン Lv3: ダイン斬り 4P / 真勇者ダイン Lv1は気合いで1ダメージ軽減した / ダイン斬りで真勇者ダイン Lv1に3ダメージ"
+        },
+        {
+          "replayStep": 22,
+          "label": "planner decision",
+          "state": "turn 10 / current cpu / HP cpu/player 10/10 / stones cpu/player 4/7 / deck cpu/player 15/16 / hand cpu/player 6/4",
+          "board": "player_front_left:PF:真勇者ダイン Lv1 HP1 act1/1 | player_front_right:PF:真勇者ダイン Lv3 HP4 act1/1 | player_back_left:PB:ボムゾウ Lv1 HP6 prep | player_back_right:PB:ポリスピナー Lv1 HP3 act0/2 focus | cpu_front_left:CF:真勇者ダイン Lv3 HP6 act1/1 | cpu_front_right:CF:ヤンバル Lv1 HP3 act1/1",
+          "nextDecision": "master:master_attack->monster:player_front_left",
+          "score": -190.8,
+          "recentLog": "CPU判断: 真勇者ダインを削れるため攻撃 / ターンプラン探索: 返し込み最終盤面26点、次点と11点差 / CPUのヤンバル Lv1: ワイルドクロウ 2P / ワイルドクロウで真勇者ダイン Lv1に2ダメージ"
+        },
+        {
+          "replayStep": 23,
+          "label": "planner decision",
+          "state": "turn 10 / current cpu / HP cpu/player 10/10 / stones cpu/player 1/8 / deck cpu/player 15/16 / hand cpu/player 6/4",
+          "board": "player_front_right:PF:真勇者ダイン Lv3 HP4 act1/1 | player_back_left:PB:ボムゾウ Lv1 HP6 prep | player_back_right:PB:ポリスピナー Lv1 HP3 act0/2 focus | cpu_front_left:CF:真勇者ダイン Lv3 HP6 act1/1 | cpu_front_right:CF:ヤンバル Lv1 HP3 act1/1",
+          "nextDecision": "summon:デスシープ->cpu_back_left",
+          "score": -119.8,
+          "recentLog": "CPUのマスターアタック / マスターアタックで真勇者ダイン Lv1に2ダメージ / 真勇者ダイン Lv1は倒れ、プレイヤーにストーン1個が戻った"
+        },
+        {
+          "replayStep": 24,
+          "label": "planner decision",
+          "state": "turn 10 / current cpu / HP cpu/player 10/10 / stones cpu/player 0/8 / deck cpu/player 15/16 / hand cpu/player 5/4",
+          "board": "player_front_right:PF:真勇者ダイン Lv3 HP4 act1/1 | player_back_left:PB:ボムゾウ Lv1 HP6 prep | player_back_right:PB:ポリスピナー Lv1 HP3 act0/2 focus | cpu_front_left:CF:真勇者ダイン Lv3 HP6 act1/1 | cpu_front_right:CF:ヤンバル Lv1 HP3 act1/1 | cpu_back_left:CB:デスシープ Lv1 HP6 prep",
+          "nextDecision": "end_turn",
+          "score": -60,
+          "recentLog": "真勇者ダイン Lv1は倒れ、プレイヤーにストーン1個が戻った / CPU判断: カードを後列左へ召喚 / ターンプラン探索: 返し込み最終盤面-58点、次点と226点差 / CPUはカードを準備中で召喚した"
+        },
+        {
+          "replayStep": 30,
+          "label": "planner decision",
+          "state": "turn 11 / current cpu / HP cpu/player 8/10 / stones cpu/player 6/7 / deck cpu/player 14/15 / hand cpu/player 6/4",
+          "board": "player_front_left:PF:ボムゾウ Lv1 HP6 act1/1 | player_front_right:PF:真勇者ダイン Lv3 HP4 act1/1 | player_back_left:PB:ドノマンティス Lv1 HP5 prep | player_back_right:PB:ポリスピナー Lv1 HP3 act0/2 focus | cpu_front_left:CF:真勇者ダイン Lv3 HP6 act0/1 | cpu_back_left:CB:デスシープ Lv1 HP6 act0/1",
+          "nextDecision": "master:master_attack->monster:player_front_right",
+          "score": -333.2,
+          "recentLog": "デスシープ Lv1が登場した / CPUはストーンを3個得た / CPUはカードを引いた"
+        },
+        {
+          "replayStep": 31,
+          "label": "planner decision",
+          "state": "turn 11 / current cpu / HP cpu/player 8/10 / stones cpu/player 3/7 / deck cpu/player 14/15 / hand cpu/player 6/4",
+          "board": "player_front_left:PF:ボムゾウ Lv1 HP6 act1/1 | player_front_right:PF:真勇者ダイン Lv3 HP2 act1/1 | player_back_left:PB:ドノマンティス Lv1 HP5 prep | player_back_right:PB:ポリスピナー Lv1 HP3 act0/2 focus | cpu_front_left:CF:真勇者ダイン Lv3 HP6 act0/1 | cpu_back_left:CB:デスシープ Lv1 HP6 act0/1",
+          "nextDecision": "master:master_attack->monster:player_front_right",
+          "score": -336.2,
+          "recentLog": "CPU判断: ストーンに余裕があり敵を削れるためマスターアタック / 見送り: マスター特技は220点差で見送り、移動は241点差で見送り / CPUのマスターアタック / マスターアタックで真勇者ダイン Lv3に2ダメージ"
+        }
+      ]
+    },
+    {
+      "branch": "shield->monster:cpu_front_left",
+      "matchedDecision": "master:shield->monster:cpu_front_left",
+      "rootScore": 78.7,
+      "applied": true,
+      "winner": "cpu",
+      "winnerProfile": "white_planner",
+      "finalScore": 1000000,
+      "replaySteps": 126,
+      "finalState": "turn 28 / current player / HP cpu/player 2/0 / stones cpu/player 45/40 / deck cpu/player 0/0 / hand cpu/player 5/5",
+      "finalBoard": "player_front_right:PF:真勇者ダイン Lv1 HP6 act0/1 focus | player_back_right:PB:ピグミィ Lv2 HP3 act0/2 focus | cpu_front_left:CF:ボムゾウ Lv1 HP2 act1/1",
+      "checkpoints": [
+        {
+          "replayStep": 1,
+          "label": "after forced decision",
+          "state": "turn 8 / current cpu / HP cpu/player 10/10 / stones cpu/player 0/7 / deck cpu/player 17/18 / hand cpu/player 4/4",
+          "board": "player_front_right:PF:真勇者ダイン Lv1 HP6 act1/1 focus | player_back_left:PB:ヤンバル Lv1 HP3 prep | player_back_right:PB:ポリスピナー Lv1 HP3 act2/2 | cpu_front_left:CF:真勇者ダイン Lv3 HP6 act1/1 shield | cpu_front_right:CF:ヤンバル Lv2 HP3 act1/1 | cpu_back_left:CB:ポリスピナー Lv1 HP3 act0/2 focus | cpu_back_right:CB:ヤンバル Lv1 HP3 prep",
+          "nextDecision": "end_turn",
+          "score": 209.2,
+          "recentLog": "CPUはカードを準備中で召喚した / CPU判断: 高価値の味方を守るためシールド / CPUは真勇者ダイン Lv3にシールドを張った"
+        },
+        {
+          "replayStep": 1,
+          "label": "planner decision",
+          "state": "turn 8 / current cpu / HP cpu/player 10/10 / stones cpu/player 0/7 / deck cpu/player 17/18 / hand cpu/player 4/4",
+          "board": "player_front_right:PF:真勇者ダイン Lv1 HP6 act1/1 focus | player_back_left:PB:ヤンバル Lv1 HP3 prep | player_back_right:PB:ポリスピナー Lv1 HP3 act2/2 | cpu_front_left:CF:真勇者ダイン Lv3 HP6 act1/1 shield | cpu_front_right:CF:ヤンバル Lv2 HP3 act1/1 | cpu_back_left:CB:ポリスピナー Lv1 HP3 act0/2 focus | cpu_back_right:CB:ヤンバル Lv1 HP3 prep",
+          "nextDecision": "end_turn",
+          "score": 209.2,
+          "recentLog": "CPUはカードを準備中で召喚した / CPU判断: 高価値の味方を守るためシールド / CPUは真勇者ダイン Lv3にシールドを張った"
+        },
+        {
+          "replayStep": 9,
+          "label": "planner decision",
+          "state": "turn 9 / current cpu / HP cpu/player 10/10 / stones cpu/player 5/3 / deck cpu/player 16/17 / hand cpu/player 5/4",
+          "board": "player_front_left:PF:ポリスピナー Lv1 HP3 act2/2 shield | player_front_right:PF:真勇者ダイン Lv3 HP6 act1/1 shield | player_back_left:PB:真勇者ダイン Lv1 HP6 prep | player_back_right:PB:ヤンバル Lv1 HP3 act1/1 | cpu_front_left:CF:真勇者ダイン Lv3 HP6 act0/1 | cpu_front_right:CF:ヤンバル Lv1 HP3 act0/1 | cpu_back_left:CB:ポリスピナー Lv1 HP3 act0/2 focus",
+          "nextDecision": "attack:真勇者ダイン:ダイン斬り->ポリスピナー",
+          "score": -83.8,
+          "recentLog": "CPUはストーンを3個得た / 真勇者ダイン Lv3の防御効果が切れた / CPUはカードを引いた"
+        },
+        {
+          "replayStep": 10,
+          "label": "planner decision",
+          "state": "turn 9 / current cpu / HP cpu/player 10/10 / stones cpu/player 5/4 / deck cpu/player 16/17 / hand cpu/player 5/4",
+          "board": "player_front_right:PF:真勇者ダイン Lv3 HP6 act1/1 shield | player_back_left:PB:真勇者ダイン Lv1 HP6 prep | player_back_right:PB:ヤンバル Lv1 HP3 act1/1 | cpu_front_left:CF:真勇者ダイン Lv3 HP6 act1/1 | cpu_front_right:CF:ヤンバル Lv1 HP3 act0/1 | cpu_back_left:CB:ポリスピナー Lv1 HP3 act0/2 focus",
+          "nextDecision": "move:cpu_front_right->cpu_back_left",
+          "score": 14.2,
+          "recentLog": "CPUの真勇者ダイン Lv3: ダイン斬り 4P / ダイン斬りでポリスピナー Lv1に3ダメージ / ポリスピナー Lv1は倒れ、プレイヤーにストーン1個が戻った"
+        },
+        {
+          "replayStep": 11,
+          "label": "planner decision",
+          "state": "turn 9 / current cpu / HP cpu/player 10/10 / stones cpu/player 5/4 / deck cpu/player 16/17 / hand cpu/player 5/4",
+          "board": "player_front_right:PF:真勇者ダイン Lv3 HP6 act1/1 shield | player_back_left:PB:真勇者ダイン Lv1 HP6 prep | player_back_right:PB:ヤンバル Lv1 HP3 act1/1 | cpu_front_left:CF:真勇者ダイン Lv3 HP6 act1/1 | cpu_front_right:CF:ポリスピナー Lv1 HP3 act2/2 | cpu_back_left:CB:ヤンバル Lv1 HP3 act1/1",
+          "nextDecision": "master:shield->monster:cpu_front_left",
+          "score": 30.2,
+          "recentLog": "ポリスピナー Lv1は倒れ、プレイヤーにストーン1個が戻った / CPU判断: 移動後に強い攻撃筋を作れるため移動 / 見送り: 移動は65点差で見送り、移動は134点差で見送り / ヤンバル Lv1とポリスピナー Lv1の位置を入れ替えた"
+        },
+        {
+          "replayStep": 12,
+          "label": "planner decision",
+          "state": "turn 9 / current cpu / HP cpu/player 10/10 / stones cpu/player 3/4 / deck cpu/player 16/17 / hand cpu/player 5/4",
+          "board": "player_front_right:PF:真勇者ダイン Lv3 HP6 act1/1 shield | player_back_left:PB:真勇者ダイン Lv1 HP6 prep | player_back_right:PB:ヤンバル Lv1 HP3 act1/1 | cpu_front_left:CF:真勇者ダイン Lv3 HP6 act1/1 shield | cpu_front_right:CF:ポリスピナー Lv1 HP3 act2/2 | cpu_back_left:CB:ヤンバル Lv1 HP3 act1/1",
+          "nextDecision": "end_turn",
+          "score": 32.2,
+          "recentLog": "ヤンバル Lv1とポリスピナー Lv1の位置を入れ替えた / CPU判断: 高価値の味方を守るためシールド / 見送り: マスター特技は15点差で見送り / CPUは真勇者ダイン Lv3にシールドを張った"
+        },
+        {
+          "replayStep": 20,
+          "label": "planner decision",
+          "state": "turn 10 / current cpu / HP cpu/player 8/10 / stones cpu/player 9/1 / deck cpu/player 15/16 / hand cpu/player 6/4",
+          "board": "player_front_left:PF:真勇者ダイン Lv1 HP6 act1/1 focus | player_front_right:PF:真勇者ダイン Lv3 HP6 act1/1 shield | player_back_left:PB:ボムゾウ Lv1 HP6 prep | player_back_right:PB:ヤンバル Lv1 HP3 act1/1 | cpu_front_left:CF:真勇者ダイン Lv3 HP6 act0/1 | cpu_back_left:CB:ヤンバル Lv1 HP3 act0/1",
+          "nextDecision": "attack:ヤンバル:wild_claw->真勇者ダイン",
+          "score": -321.8,
+          "recentLog": "CPUはストーンを3個得た / 真勇者ダイン Lv3の防御効果が切れた / CPUはカードを引いた"
+        },
+        {
+          "replayStep": 21,
+          "label": "planner decision",
+          "state": "turn 10 / current cpu / HP cpu/player 8/10 / stones cpu/player 9/1 / deck cpu/player 15/16 / hand cpu/player 6/4",
+          "board": "player_front_left:PF:真勇者ダイン Lv1 HP5 act1/1 | player_front_right:PF:真勇者ダイン Lv3 HP6 act1/1 shield | player_back_left:PB:ボムゾウ Lv1 HP6 prep | player_back_right:PB:ヤンバル Lv1 HP3 act1/1 | cpu_front_left:CF:真勇者ダイン Lv3 HP6 act0/1 | cpu_back_left:CB:ヤンバル Lv1 HP3 act1/1",
+          "nextDecision": "attack:真勇者ダイン:ダイン斬り->player master",
+          "score": -309.8,
+          "recentLog": "CPUのヤンバル Lv1: ワイルドクロウ 2P / 真勇者ダイン Lv1は気合いで1ダメージ軽減した / ワイルドクロウで真勇者ダイン Lv1に1ダメージ"
+        },
+        {
+          "replayStep": 22,
+          "label": "planner decision",
+          "state": "turn 10 / current cpu / HP cpu/player 8/8 / stones cpu/player 9/3 / deck cpu/player 15/16 / hand cpu/player 6/4",
+          "board": "player_front_left:PF:真勇者ダイン Lv1 HP5 act1/1 | player_front_right:PF:真勇者ダイン Lv3 HP6 act1/1 shield | player_back_left:PB:ボムゾウ Lv1 HP6 prep | player_back_right:PB:ヤンバル Lv1 HP3 act1/1 | cpu_front_left:CF:真勇者ダイン Lv3 HP6 act1/1 | cpu_back_left:CB:ヤンバル Lv1 HP3 act1/1",
+          "nextDecision": "summon:デスシープ->cpu_front_right",
+          "score": -159.8,
+          "recentLog": "CPU判断: 相手マスターへ実ダメージを与えられるため攻撃 / 見送り: マスター特技は7点差で見送り、召喚は245点差で見送り / CPUの真勇者ダイン Lv3: ダイン斬り 4P / プレイヤーのマスターHPが2減った（ダイン斬り）。ストーン+2"
+        },
+        {
+          "replayStep": 23,
+          "label": "planner decision",
+          "state": "turn 10 / current cpu / HP cpu/player 8/8 / stones cpu/player 8/3 / deck cpu/player 15/16 / hand cpu/player 5/4",
+          "board": "player_front_left:PF:真勇者ダイン Lv1 HP5 act1/1 | player_front_right:PF:真勇者ダイン Lv3 HP6 act1/1 shield | player_back_left:PB:ボムゾウ Lv1 HP6 prep | player_back_right:PB:ヤンバル Lv1 HP3 act1/1 | cpu_front_left:CF:真勇者ダイン Lv3 HP6 act1/1 | cpu_front_right:CF:デスシープ Lv1 HP6 prep | cpu_back_left:CB:ヤンバル Lv1 HP3 act1/1",
+          "nextDecision": "end_turn",
+          "score": -88,
+          "recentLog": "プレイヤーのマスターHPが2減った（ダイン斬り）。ストーン+2 / CPU判断: 前衛カードを前列右へ召喚 / ターンプラン探索: 返し込み最終盤面-40点、次点と15点差 / CPUはカードを準備中で召喚した"
+        },
+        {
+          "replayStep": 31,
+          "label": "planner decision",
+          "state": "turn 11 / current cpu / HP cpu/player 6/8 / stones cpu/player 16/0 / deck cpu/player 14/15 / hand cpu/player 6/5",
+          "board": "player_front_left:PF:真勇者ダイン Lv1 HP5 act1/1 focus | player_front_right:PF:真勇者ダイン Lv3 HP6 act1/1 | player_back_left:PB:ボムゾウ Lv1 HP6 act1/1 focus | player_back_right:PB:ヤンバル Lv1 HP3 act1/1 | cpu_front_left:CF:ヤンバル Lv1 HP3 act0/1 | cpu_front_right:CF:デスシープ Lv1 HP6 act0/1",
+          "nextDecision": "focus:デスシープ",
+          "score": -442,
+          "recentLog": "ヤンバル Lv1が前衛へ自動移動した / CPUはストーンを3個得た / CPUはカードを引いた"
+        },
+        {
+          "replayStep": 32,
+          "label": "planner decision",
+          "state": "turn 11 / current cpu / HP cpu/player 6/8 / stones cpu/player 16/0 / deck cpu/player 14/15 / hand cpu/player 6/5",
+          "board": "player_front_left:PF:真勇者ダイン Lv1 HP5 act1/1 focus | player_front_right:PF:真勇者ダイン Lv3 HP6 act1/1 | player_back_left:PB:ボムゾウ Lv1 HP6 act1/1 focus | player_back_right:PB:ヤンバル Lv1 HP3 act1/1 | cpu_front_left:CF:ヤンバル Lv1 HP3 act0/1 | cpu_front_right:CF:デスシープ Lv1 HP6 act1/1 focus",
+          "nextDecision": "attack:ヤンバル:wild_claw->真勇者ダイン",
+          "score": -436,
+          "recentLog": "CPUはカードを引いた / CPU判断: 有効攻撃がないためためる / ターンプラン探索: 返し込み最終盤面-14点、次点と7点差 / デスシープ Lv1はためた"
+        },
+        {
+          "replayStep": 33,
+          "label": "planner decision",
+          "state": "turn 11 / current cpu / HP cpu/player 6/8 / stones cpu/player 16/0 / deck cpu/player 14/15 / hand cpu/player 6/5",
+          "board": "player_front_left:PF:真勇者ダイン Lv1 HP5 act1/1 focus | player_front_right:PF:真勇者ダイン Lv3 HP4 act1/1 | player_back_left:PB:ボムゾウ Lv1 HP6 act1/1 focus | player_back_right:PB:ヤンバル Lv1 HP3 act1/1 | cpu_front_left:CF:ヤンバル Lv1 HP3 act1/1 | cpu_front_right:CF:デスシープ Lv1 HP6 act1/1 focus",
+          "nextDecision": "master:master_attack->monster:player_front_right",
+          "score": -436,
+          "recentLog": "CPU判断: 真勇者ダインを削れるため攻撃 / 見送り: 移動は25点差で見送り、マスター特技は125点差で見送り / CPUのヤンバル Lv1: ワイルドクロウ 2P / ワイルドクロウで真勇者ダイン Lv3に2ダメージ"
+        },
+        {
+          "replayStep": 34,
+          "label": "planner decision",
+          "state": "turn 11 / current cpu / HP cpu/player 6/8 / stones cpu/player 13/0 / deck cpu/player 14/15 / hand cpu/player 6/5",
+          "board": "player_front_left:PF:真勇者ダイン Lv1 HP5 act1/1 focus | player_front_right:PF:真勇者ダイン Lv3 HP2 act1/1 | player_back_left:PB:ボムゾウ Lv1 HP6 act1/1 focus | player_back_right:PB:ヤンバル Lv1 HP3 act1/1 | cpu_front_left:CF:ヤンバル Lv1 HP3 act1/1 | cpu_front_right:CF:デスシープ Lv1 HP6 act1/1 focus",
+          "nextDecision": "master:master_attack->monster:player_front_right",
+          "score": -439,
+          "recentLog": "CPU判断: ストーンに余裕があり敵を削れるためマスターアタック / ターンプラン探索: 返し込み最終盤面182点、次点と332点差 / CPUのマスターアタック / マスターアタックで真勇者ダイン Lv3に2ダメージ"
+        },
+        {
+          "replayStep": 35,
+          "label": "planner decision",
+          "state": "turn 11 / current cpu / HP cpu/player 6/8 / stones cpu/player 10/3 / deck cpu/player 14/15 / hand cpu/player 6/5",
+          "board": "player_front_left:PF:真勇者ダイン Lv1 HP5 act1/1 focus | player_back_left:PB:ボムゾウ Lv1 HP6 act1/1 focus | player_back_right:PB:ヤンバル Lv1 HP3 act1/1 | cpu_front_left:CF:ヤンバル Lv1 HP3 act1/1 | cpu_front_right:CF:デスシープ Lv1 HP6 act1/1 focus",
+          "nextDecision": "end_turn",
+          "score": -264,
+          "recentLog": "CPUのマスターアタック / マスターアタックで真勇者ダイン Lv3に2ダメージ / 真勇者ダイン Lv3は倒れ、プレイヤーにストーン3個が戻った"
+        },
+        {
+          "replayStep": 43,
+          "label": "planner decision",
+          "state": "turn 12 / current cpu / HP cpu/player 5/8 / stones cpu/player 15/1 / deck cpu/player 13/14 / hand cpu/player 6/4",
+          "board": "player_front_left:PF:ボムゾウ Lv1 HP4 act1/1 | player_front_right:PF:真勇者ダイン Lv2 HP6 act1/1 | player_back_left:PB:ドノマンティス Lv1 HP5 prep | player_back_right:PB:ヤンバル Lv1 HP3 act1/1 focus | cpu_front_right:CF:デスシープ Lv1 HP6 act0/1 focus",
+          "nextDecision": "master:master_attack->monster:player_front_right",
+          "score": -504.2,
+          "recentLog": "デスシープ Lv1が前衛へ自動移動した / CPUはストーンを3個得た / CPUはカードを引いた"
+        }
+      ]
+    }
+  ],
+  "conclusion": [
+    "同一局面から候補を強制し、planner側の次手番ごとの状態差を追跡した。",
+    "selected: master:shield->monster:cpu_front_right -> white / score -1000000",
+    "shield->monster:cpu_front_left: master:shield->monster:cpu_front_left -> white_planner / score 1000000"
+  ]
+}
+

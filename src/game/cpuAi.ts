@@ -264,6 +264,7 @@ const WHITE_AI_BASE_TUNING = {
     whiteDisadvantagedSummonOvercommitPenalty: 260,
     whiteFrontChipResponsePenalty: 86,
     whiteFrontThreatFocusCounterBonus: 72,
+    whiteShieldFrontAceBonus: 120,
     whiteThreatSourceAttackBonus: 8,
     whiteDeathSheepSpecialLockPenalty: 90,
   },
@@ -1983,6 +1984,9 @@ function decisionSituationalBonus(
   if (bias.whiteShieldNoPressurePenalty) {
     bonus -= whiteShieldNoPressureDecisionPenalty(before, after, decision, perspective, bias.whiteShieldNoPressurePenalty);
   }
+  if (bias.whiteShieldFrontAceBonus) {
+    bonus += whiteShieldFrontAceDecisionBonus(before, after, decision, perspective, bias.whiteShieldFrontAceBonus);
+  }
   if (bias.whiteWakeImmediateWorkBonus) {
     bonus += whiteWakeImmediateWorkDecisionBonus(before, after, decision, perspective, bias.whiteWakeImmediateWorkBonus);
   }
@@ -3570,6 +3574,51 @@ function whiteShieldNoPressureDecisionPenalty(
     return 0;
   }
   return maxIncomingThreatDamage(incomingThreat(before, decision.target.slotKey)) <= 0 ? value : 0;
+}
+
+function whiteShieldFrontAceDecisionBonus(
+  before: GameState,
+  after: GameState,
+  decision: CpuDecision,
+  perspective: PlayerId,
+  value: number,
+): number {
+  if (
+    value <= 0 ||
+    !isWhiteMirrorState(before, perspective) ||
+    decision.type !== "master_action" ||
+    decision.actionId !== "shield" ||
+    decision.target.kind !== "monster" ||
+    currentTurnMasterActionCount(before, perspective, "shield") > 0
+  ) {
+    return 0;
+  }
+
+  const slotKey = decision.target.slotKey;
+  const slot = before.slots[slotKey];
+  const target = before.slots[slotKey].monster;
+  const targetAfter = after.slots[slotKey].monster;
+  if (
+    slot.row !== "front" ||
+    !target ||
+    target.owner !== perspective ||
+    !targetAfter ||
+    targetAfter.owner !== perspective ||
+    targetAfter.shielded !== true ||
+    getMonsterAiTrait(target.cardId).role !== "front" ||
+    target.level < 3
+  ) {
+    return 0;
+  }
+
+  const threat = incomingThreat(before, slotKey);
+  const canConvert =
+    nextTurnWorkPotential(after, slotKey, perspective) > 0 ||
+    directMasterDamageFromSlot(after, slotKey, perspective) > 0;
+  if (!threat.threatened && maxIncomingThreatDamage(threat) <= 0 && !canConvert) {
+    return 0;
+  }
+  return value;
 }
 
 function whiteWakeImmediateWorkDecisionBonus(

@@ -1530,6 +1530,69 @@ describe("cpu ai", () => {
     expect(tuned?.totalScore).toBeCloseTo(baseline?.totalScore ?? 0);
   });
 
+  it("prioritizes shielding a white mirror front ace over a lower-level side attacker", () => {
+    const game = createCpuGame();
+    game.players.cpu.masterId = "white";
+    game.players.player.masterId = "white";
+    game.players.cpu.hand = [];
+    game.players.cpu.stones = 2;
+    game.players.player.stones = 7;
+    Object.values(game.slots).forEach((slot) => {
+      delete slot.monster;
+    });
+    game.slots.cpu_front_left.monster = createActiveMonster("card_047", "cpu", {
+      level: 3,
+      hp: 6,
+      actionCount: 1,
+      investedStones: 3,
+    });
+    game.slots.cpu_front_right.monster = createActiveMonster("yanbaru", "cpu", {
+      level: 2,
+      hp: 3,
+      actionCount: 1,
+      investedStones: 2,
+    });
+    game.slots.cpu_back_left.monster = createActiveMonster("polyspinner", "cpu", {
+      actionCount: 2,
+      focused: true,
+    });
+    game.slots.player_front_right.monster = createActiveMonster("card_047", "player", {
+      level: 1,
+      hp: 6,
+      actionCount: 1,
+      focused: true,
+    });
+    game.slots.player_back_right.monster = createActiveMonster("polyspinner", "player", {
+      actionCount: 2,
+    });
+
+    const findShield = (slotKey: "cpu_front_left" | "cpu_front_right", options = {}) =>
+      inspectCpuDecisionEvaluations(game, options).find(
+        (evaluation) =>
+          evaluation.decision.type === "master_action" &&
+          evaluation.decision.actionId === "shield" &&
+          evaluation.decision.target.kind === "monster" &&
+          evaluation.decision.target.slotKey === slotKey,
+      );
+    const aceShield = findShield("cpu_front_left", { profiles: { cpu: "white_planner", player: "white" } });
+    const sideShield = findShield("cpu_front_right", { profiles: { cpu: "white_planner", player: "white" } });
+    const disabledAceShield = findShield("cpu_front_left", {
+      profiles: { cpu: "white_planner", player: "white" },
+      tunings: { cpu: { situationalBias: { whiteShieldFrontAceBonus: 0 } } },
+    });
+    const disabledSideShield = findShield("cpu_front_right", {
+      profiles: { cpu: "white_planner", player: "white" },
+      tunings: { cpu: { situationalBias: { whiteShieldFrontAceBonus: 0 } } },
+    });
+
+    expect(aceShield).toBeDefined();
+    expect(sideShield).toBeDefined();
+    expect(disabledAceShield).toBeDefined();
+    expect(disabledSideShield).toBeDefined();
+    expect(aceShield?.totalScore ?? 0).toBeGreaterThan(sideShield?.totalScore ?? 0);
+    expect(disabledAceShield?.totalScore ?? 0).toBeLessThan(disabledSideShield?.totalScore ?? 0);
+  });
+
   it("does not penalize a first current-turn shield just because a previous shield remains", () => {
     const game = createCpuGame();
     game.players.cpu.masterId = "white";

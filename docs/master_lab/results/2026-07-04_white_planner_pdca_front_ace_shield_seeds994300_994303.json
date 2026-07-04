@@ -1,0 +1,459 @@
+{
+  "generatedAt": "2026-07-04T12:43:55.139Z",
+  "options": {
+    "seedStart": 994300,
+    "gamesPerDirection": 4,
+    "maxSteps": 500,
+    "maxTurns": 120,
+    "deckPreset": "master-lab-white-1377-death-sheep3",
+    "directions": [
+      "challenger-as-cpu",
+      "challenger-as-player"
+    ],
+    "candidates": [
+      {
+        "id": "current",
+        "note": "現行 white_planner",
+        "search": {}
+      }
+    ],
+    "streamProgress": true,
+    "markdownPath": "docs/master_lab/results/2026-07-04_white_planner_pdca_front_ace_shield_seeds994300_994303.md",
+    "jsonPath": "docs/master_lab/results/2026-07-04_white_planner_pdca_front_ace_shield_seeds994300_994303.json"
+  },
+  "games": [
+    {
+      "candidateId": "current",
+      "direction": "challenger-as-cpu",
+      "seed": 994300,
+      "profiles": {
+        "player": "white",
+        "cpu": "white_planner"
+      },
+      "winner": "player",
+      "winnerProfile": "white",
+      "steps": 182,
+      "turns": 18,
+      "playerHp": 2,
+      "cpuHp": 0,
+      "challengerHp": 0,
+      "baselineHp": 2,
+      "decisionStats": {
+        "player": {
+          "decisions": 89,
+          "elapsedMs": 24989.21983099999,
+          "maxDecisionMs": 1231.6668329999993,
+          "actionCounts": {
+            "summon": 13,
+            "end_turn": 17,
+            "move": 4,
+            "focus": 11,
+            "master:shield": 11,
+            "attack": 26,
+            "master:master_attack": 6,
+            "magic": 1
+          }
+        },
+        "cpu": {
+          "decisions": 87,
+          "elapsedMs": 28220.217464999987,
+          "maxDecisionMs": 1900.5715840000012,
+          "actionCounts": {
+            "summon": 13,
+            "end_turn": 17,
+            "focus": 10,
+            "attack": 25,
+            "master:shield": 11,
+            "master:master_attack": 8,
+            "move": 2,
+            "magic": 1
+          }
+        }
+      }
+    },
+    {
+      "candidateId": "current",
+      "direction": "challenger-as-cpu",
+      "seed": 994301,
+      "profiles": {
+        "player": "white",
+        "cpu": "white_planner"
+      },
+      "winner": "cpu",
+      "winnerProfile": "white_planner",
+      "steps": 198,
+      "turns": 18,
+      "playerHp": 0,
+      "cpuHp": 6,
+      "challengerHp": 6,
+      "baselineHp": 0,
+      "decisionStats": {
+        "player": {
+          "decisions": 87,
+          "elapsedMs": 25275.820247999967,
+          "maxDecisionMs": 1685.3189589999965,
+          "actionCounts": {
+            "summon": 14,
+            "end_turn": 18,
+            "focus": 14,
+            "master:shield": 8,
+            "attack": 19,
+            "master:master_attack": 11,
+            "move": 1,
+            "master:wake_up": 1,
+            "magic": 1
+          }
+        },
+        "cpu": {
+          "decisions": 108,
+          "elapsedMs": 64825.508836000125,
+          "maxDecisionMs": 4493.3948329999985,
+          "actionCounts": {
+            "summon": 13,
+            "end_turn": 17,
+            "attack": 38,
+            "focus": 10,
+            "master:shield": 6,
+            "move": 11,
+            "magic": 1,
+            "master:master_attack": 7,
+            "master:wake_up": 5
+          }
+        }
+      }
+    },
+    {
+      "candidateId": "current",
+      "direction": "challenger-as-cpu",
+      "seed": 994302,
+      "profiles": {
+        "player": "white",
+        "cpu": "white_planner"
+      },
+      "winner": "cpu",
+      "winnerProfile": "white_planner",
+      "steps": 223,
+      "turns": 27,
+      "playerHp": 0,
+      "cpuHp": 7,
+      "challengerHp": 7,
+      "baselineHp": 0,
+      "decisionStats": {
+        "player": {
+          "decisions": 110,
+          "elapsedMs": 27185.19012500011,
+          "maxDecisionMs": 1487.1417500000098,
+          "actionCounts": {
+            "summon": 13,
+            "end_turn": 26,
+            "focus": 11,
+            "master:shield": 8,
+            "attack": 36,
+            "move": 6,
+            "master:master_attack": 7,
+            "magic": 1,
+            "master:wake_up": 2
+          }
+        },
+        "cpu": {
+          "decisions": 109,
+          "elapsedMs": 45488.82025000019,
+          "maxDecisionMs": 5046.715957999986,
+          "actionCounts": {
+            "summon": 12,
+            "end_turn": 26,
+            "attack": 37,
+            "focus": 15,
+            "master:shield": 7,
+            "master:wake_up": 1,
+            "move": 2,
+            "master:master_attack": 8,
+            "magic": 1
+          }
+        }
+      }
+    },
+    {
+      "candidateId": "current",
+      "direction": "challenger-as-cpu",
+      "seed": 994303,
+      "profiles": {
+        "player": "white",
+        "cpu": "white_planner"
+      },
+      "winner": "cpu",
+      "winnerProfile": "white_planner",
+      "steps": 222,
+      "turns": 19,
+      "playerHp": 0,
+      "cpuHp": 6,
+      "challengerHp": 6,
+      "baselineHp": 0,
+      "decisionStats": {
+        "player": {
+          "decisions": 100,
+          "elapsedMs": 47184.25233399987,
+          "maxDecisionMs": 2054.3547920000274,
+          "actionCounts": {
+            "summon": 14,
+            "end_turn": 19,
+            "focus": 13,
+            "master:shield": 7,
+            "attack": 30,
+            "magic": 1,
+            "master:master_attack": 11,
+            "move": 3,
+            "master:wake_up": 2
+          }
+        },
+        "cpu": {
+          "decisions": 117,
+          "elapsedMs": 81837.73895800006,
+          "maxDecisionMs": 4882.134833000018,
+          "actionCounts": {
+            "summon": 16,
+            "end_turn": 18,
+            "move": 10,
+            "attack": 41,
+            "focus": 13,
+            "master:shield": 9,
+            "master:master_attack": 6,
+            "master:wake_up": 4
+          }
+        }
+      }
+    },
+    {
+      "candidateId": "current",
+      "direction": "challenger-as-player",
+      "seed": 994300,
+      "profiles": {
+        "player": "white_planner",
+        "cpu": "white"
+      },
+      "winner": "player",
+      "winnerProfile": "white_planner",
+      "steps": 180,
+      "turns": 18,
+      "playerHp": 1,
+      "cpuHp": 0,
+      "challengerHp": 1,
+      "baselineHp": 0,
+      "decisionStats": {
+        "player": {
+          "decisions": 89,
+          "elapsedMs": 35310.06916699972,
+          "maxDecisionMs": 1999.7837910000235,
+          "actionCounts": {
+            "summon": 13,
+            "end_turn": 17,
+            "move": 4,
+            "focus": 11,
+            "master:shield": 11,
+            "attack": 26,
+            "master:master_attack": 6,
+            "magic": 1
+          }
+        },
+        "cpu": {
+          "decisions": 85,
+          "elapsedMs": 20603.26220899966,
+          "maxDecisionMs": 1194.8198339999653,
+          "actionCounts": {
+            "summon": 13,
+            "end_turn": 17,
+            "focus": 10,
+            "attack": 23,
+            "master:shield": 11,
+            "master:master_attack": 8,
+            "move": 2,
+            "magic": 1
+          }
+        }
+      }
+    },
+    {
+      "candidateId": "current",
+      "direction": "challenger-as-player",
+      "seed": 994301,
+      "profiles": {
+        "player": "white_planner",
+        "cpu": "white"
+      },
+      "winner": "player",
+      "winnerProfile": "white_planner",
+      "steps": 113,
+      "turns": 12,
+      "playerHp": 9,
+      "cpuHp": 0,
+      "challengerHp": 9,
+      "baselineHp": 0,
+      "decisionStats": {
+        "player": {
+          "decisions": 56,
+          "elapsedMs": 14969.43033599999,
+          "maxDecisionMs": 2454.8044590000063,
+          "actionCounts": {
+            "summon": 8,
+            "end_turn": 11,
+            "focus": 5,
+            "master:shield": 4,
+            "attack": 21,
+            "master:master_attack": 2,
+            "master:wake_up": 2,
+            "magic": 1,
+            "move": 2
+          }
+        },
+        "cpu": {
+          "decisions": 52,
+          "elapsedMs": 12020.617956999864,
+          "maxDecisionMs": 1323.0573749999749,
+          "actionCounts": {
+            "summon": 9,
+            "end_turn": 11,
+            "attack": 13,
+            "focus": 6,
+            "master:shield": 4,
+            "move": 2,
+            "magic": 1,
+            "master:master_attack": 5,
+            "master:wake_up": 1
+          }
+        }
+      }
+    },
+    {
+      "candidateId": "current",
+      "direction": "challenger-as-player",
+      "seed": 994302,
+      "profiles": {
+        "player": "white_planner",
+        "cpu": "white"
+      },
+      "winner": "player",
+      "winnerProfile": "white_planner",
+      "steps": 264,
+      "turns": 28,
+      "playerHp": 1,
+      "cpuHp": 0,
+      "challengerHp": 1,
+      "baselineHp": 0,
+      "decisionStats": {
+        "player": {
+          "decisions": 130,
+          "elapsedMs": 58253.89270699973,
+          "maxDecisionMs": 2286.4527499999967,
+          "actionCounts": {
+            "summon": 15,
+            "end_turn": 27,
+            "focus": 19,
+            "master:shield": 10,
+            "attack": 33,
+            "move": 10,
+            "master:master_attack": 14,
+            "magic": 2
+          }
+        },
+        "cpu": {
+          "decisions": 127,
+          "elapsedMs": 67031.88603899977,
+          "maxDecisionMs": 3316.7040419999976,
+          "actionCounts": {
+            "summon": 15,
+            "end_turn": 27,
+            "attack": 36,
+            "focus": 15,
+            "master:shield": 16,
+            "master:wake_up": 4,
+            "move": 6,
+            "master:master_attack": 6,
+            "magic": 2
+          }
+        }
+      }
+    },
+    {
+      "candidateId": "current",
+      "direction": "challenger-as-player",
+      "seed": 994303,
+      "profiles": {
+        "player": "white_planner",
+        "cpu": "white"
+      },
+      "winner": "player",
+      "winnerProfile": "white_planner",
+      "steps": 242,
+      "turns": 23,
+      "playerHp": 7,
+      "cpuHp": 0,
+      "challengerHp": 7,
+      "baselineHp": 0,
+      "decisionStats": {
+        "player": {
+          "decisions": 118,
+          "elapsedMs": 66907.58983000007,
+          "maxDecisionMs": 3287.5928330000024,
+          "actionCounts": {
+            "summon": 17,
+            "end_turn": 22,
+            "focus": 16,
+            "master:shield": 10,
+            "attack": 39,
+            "magic": 1,
+            "master:master_attack": 10,
+            "move": 3
+          }
+        },
+        "cpu": {
+          "decisions": 117,
+          "elapsedMs": 53331.76871199906,
+          "maxDecisionMs": 2698.810999999987,
+          "actionCounts": {
+            "summon": 19,
+            "end_turn": 22,
+            "move": 6,
+            "attack": 30,
+            "focus": 15,
+            "master:shield": 8,
+            "master:master_attack": 11,
+            "master:wake_up": 5,
+            "magic": 1
+          }
+        }
+      }
+    }
+  ],
+  "summaries": [
+    {
+      "candidateId": "current",
+      "note": "現行 white_planner",
+      "games": 8,
+      "challengerWins": 7,
+      "baselineWins": 1,
+      "draws": 0,
+      "winPointRate": 0.875,
+      "averageHpMargin": 4.375,
+      "averageSteps": 203,
+      "averageTurns": 20.375,
+      "averageDecisionMs": 465.07211692597207,
+      "maxDecisionMs": 5046.715957999986,
+      "issues": 0,
+      "actionCounts": {
+        "attack": 260,
+        "end_turn": 155,
+        "focus": 99,
+        "magic": 8,
+        "master:master_attack": 61,
+        "master:shield": 68,
+        "master:wake_up": 12,
+        "move": 44,
+        "summon": 107
+      }
+    }
+  ],
+  "conclusion": [
+    "best candidate: current (7-1-0, WPR 87.5%, avg HP margin 4.38)",
+    "The best candidate beat the current white baseline in this sample. Re-run with more seeds before adopting."
+  ]
+}
