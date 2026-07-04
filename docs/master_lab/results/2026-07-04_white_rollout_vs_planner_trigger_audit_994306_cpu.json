@@ -1,0 +1,334 @@
+{
+  "generatedAt": "2026-07-04T06:27:33.080Z",
+  "options": {
+    "seedStart": 994306,
+    "count": 1,
+    "directions": [
+      "challenger-as-cpu"
+    ],
+    "deckPreset": "master-lab-white-1377-death-sheep3",
+    "maxSteps": 360,
+    "maxTurns": 90,
+    "baselineProfile": "white_planner",
+    "challengerProfile": "white_rollout",
+    "inspectThresholdMs": 3000,
+    "candidateLimit": 4,
+    "streamProgress": true,
+    "markdownPath": "docs/master_lab/results/2026-07-04_white_rollout_vs_planner_trigger_audit_994306_cpu.md",
+    "jsonPath": "docs/master_lab/results/2026-07-04_white_rollout_vs_planner_trigger_audit_994306_cpu.json"
+  },
+  "games": [
+    {
+      "seed": 994306,
+      "direction": "challenger-as-cpu",
+      "profiles": {
+        "player": "white_planner",
+        "cpu": "white_rollout"
+      },
+      "winner": "cpu",
+      "winnerProfile": "white_rollout",
+      "steps": 175,
+      "turns": 22,
+      "playerHp": 0,
+      "cpuHp": 6,
+      "challengerStats": {
+        "decisions": 84,
+        "elapsedMs": 48482.99149100001,
+        "maxDecisionMs": 4663.992458000001
+      },
+      "events": [
+        {
+          "seed": 994306,
+          "direction": "challenger-as-cpu",
+          "step": 76,
+          "turnNumber": 7,
+          "side": "cpu",
+          "elapsedMs": 4664,
+          "inspectionElapsedMs": 4660.3,
+          "rolloutTriggered": false,
+          "adopted": false,
+          "decision": "attack:ヤンバル:wild_claw->ボムゾウ",
+          "fallbackDecision": "attack:ヤンバル:wild_claw->ボムゾウ",
+          "selectedDecision": "master:wake_up->monster:player_front_right",
+          "fallbackScore": 672.2,
+          "selectedPlannerScore": 363,
+          "runnerUpPlannerScore": 363,
+          "rootScoreGapToFallback": 394.8,
+          "plannerMarginToFallback": 0,
+          "state": "turn 7 / current cpu / HP cpu/player 10/9 / stones cpu/player 7/1 / deck cpu/player 18/19 / hand cpu/player 6/4",
+          "board": "player_front_left:PF:ボムゾウ Lv2 HP2 act1/1 shield | player_front_right:PF:ピグミィ Lv1 HP3 prep | player_back_left:PB:ヤンバル Lv1 HP3 act1/1 | player_back_right:PB:ヤンバル Lv2 HP3 act1/1 | cpu_front_left:CF:ドノマンティス Lv1 HP5 act0/1 | cpu_front_right:CF:デスシープ Lv2 HP6 act0/1 | cpu_back_right:CB:ヤンバル Lv1 HP3 act0/1",
+          "candidates": [
+            {
+              "rank": 1,
+              "selectedByCpu": false,
+              "selectedByPlanner": true,
+              "fallback": false,
+              "decision": "master:wake_up->monster:player_front_right",
+              "rootScore": 277.4,
+              "plannerScore": 363,
+              "responseScore": 323.4,
+              "ownDelta": 325,
+              "opponentDelta": 321.8
+            },
+            {
+              "rank": 2,
+              "selectedByCpu": true,
+              "selectedByPlanner": false,
+              "fallback": true,
+              "decision": "attack:ヤンバル:wild_claw->ボムゾウ",
+              "rootScore": 241.2,
+              "plannerScore": 363,
+              "responseScore": 323.4,
+              "ownDelta": 325,
+              "opponentDelta": 321.8
+            },
+            {
+              "rank": 3,
+              "selectedByCpu": false,
+              "selectedByPlanner": false,
+              "fallback": false,
+              "decision": "attack:ドノマンティス:attack->ボムゾウ",
+              "rootScore": 161.2,
+              "plannerScore": 330.8,
+              "responseScore": 313.4,
+              "ownDelta": 315,
+              "opponentDelta": 311.8
+            },
+            {
+              "rank": 4,
+              "selectedByCpu": false,
+              "selectedByPlanner": false,
+              "fallback": false,
+              "decision": "attack:デスシープ:attack->player master",
+              "rootScore": 157.8,
+              "plannerScore": 300.7,
+              "responseScore": 285.8,
+              "ownDelta": 292,
+              "opponentDelta": 279.6
+            }
+          ]
+        },
+        {
+          "seed": 994306,
+          "direction": "challenger-as-cpu",
+          "step": 91,
+          "turnNumber": 8,
+          "side": "cpu",
+          "elapsedMs": 3819.4,
+          "inspectionElapsedMs": 3725.9,
+          "rolloutTriggered": false,
+          "adopted": false,
+          "decision": "attack:ヤンバル:wild_claw->ヤンバル",
+          "fallbackDecision": "attack:ヤンバル:wild_claw->ヤンバル",
+          "selectedDecision": "attack:ドノマンティス:呪いの刃->ヤンバル",
+          "fallbackScore": 577.8,
+          "selectedPlannerScore": 270.6,
+          "runnerUpPlannerScore": 232.7,
+          "rootScoreGapToFallback": 73.1,
+          "plannerMarginToFallback": 37.9,
+          "state": "turn 8 / current cpu / HP cpu/player 10/9 / stones cpu/player 6/0 / deck cpu/player 17/18 / hand cpu/player 6/4",
+          "board": "player_front_left:PF:ヤンバル Lv1 HP3 act1/1 | player_front_right:PF:ボムゾウ Lv2 HP5 act1/1 | player_back_left:PB:ヤンバル Lv2 HP3 act1/1 | cpu_front_left:CF:ドノマンティス Lv2 HP5 act0/1 | cpu_front_right:CF:ヤンバル Lv1 HP3 act0/1 | cpu_back_left:CB:ヤンバル Lv1 HP3 act0/1",
+          "candidates": [
+            {
+              "rank": 1,
+              "selectedByCpu": false,
+              "selectedByPlanner": true,
+              "fallback": false,
+              "decision": "attack:ドノマンティス:呪いの刃->ヤンバル",
+              "rootScore": 504.7,
+              "plannerScore": 270.6,
+              "responseScore": 231,
+              "ownDelta": 241.8,
+              "opponentDelta": 220.2
+            },
+            {
+              "rank": 2,
+              "selectedByCpu": true,
+              "selectedByPlanner": false,
+              "fallback": true,
+              "decision": "attack:ヤンバル:wild_claw->ヤンバル",
+              "rootScore": 237.1,
+              "plannerScore": 232.7,
+              "responseScore": 286.9,
+              "ownDelta": 305.8,
+              "opponentDelta": 268
+            },
+            {
+              "rank": 3,
+              "selectedByCpu": false,
+              "selectedByPlanner": false,
+              "fallback": false,
+              "decision": "attack:ヤンバル:wild_claw->ヤンバル",
+              "rootScore": 157.1,
+              "plannerScore": 206.6,
+              "responseScore": 305.9,
+              "ownDelta": 305.8,
+              "opponentDelta": 306
+            },
+            {
+              "rank": 4,
+              "selectedByCpu": false,
+              "selectedByPlanner": false,
+              "fallback": false,
+              "decision": "attack:ドノマンティス:attack->ヤンバル",
+              "rootScore": 157.1,
+              "plannerScore": 110.7,
+              "responseScore": 210,
+              "ownDelta": 226.8,
+              "opponentDelta": 193.2
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "events": [
+    {
+      "seed": 994306,
+      "direction": "challenger-as-cpu",
+      "step": 76,
+      "turnNumber": 7,
+      "side": "cpu",
+      "elapsedMs": 4664,
+      "inspectionElapsedMs": 4660.3,
+      "rolloutTriggered": false,
+      "adopted": false,
+      "decision": "attack:ヤンバル:wild_claw->ボムゾウ",
+      "fallbackDecision": "attack:ヤンバル:wild_claw->ボムゾウ",
+      "selectedDecision": "master:wake_up->monster:player_front_right",
+      "fallbackScore": 672.2,
+      "selectedPlannerScore": 363,
+      "runnerUpPlannerScore": 363,
+      "rootScoreGapToFallback": 394.8,
+      "plannerMarginToFallback": 0,
+      "state": "turn 7 / current cpu / HP cpu/player 10/9 / stones cpu/player 7/1 / deck cpu/player 18/19 / hand cpu/player 6/4",
+      "board": "player_front_left:PF:ボムゾウ Lv2 HP2 act1/1 shield | player_front_right:PF:ピグミィ Lv1 HP3 prep | player_back_left:PB:ヤンバル Lv1 HP3 act1/1 | player_back_right:PB:ヤンバル Lv2 HP3 act1/1 | cpu_front_left:CF:ドノマンティス Lv1 HP5 act0/1 | cpu_front_right:CF:デスシープ Lv2 HP6 act0/1 | cpu_back_right:CB:ヤンバル Lv1 HP3 act0/1",
+      "candidates": [
+        {
+          "rank": 1,
+          "selectedByCpu": false,
+          "selectedByPlanner": true,
+          "fallback": false,
+          "decision": "master:wake_up->monster:player_front_right",
+          "rootScore": 277.4,
+          "plannerScore": 363,
+          "responseScore": 323.4,
+          "ownDelta": 325,
+          "opponentDelta": 321.8
+        },
+        {
+          "rank": 2,
+          "selectedByCpu": true,
+          "selectedByPlanner": false,
+          "fallback": true,
+          "decision": "attack:ヤンバル:wild_claw->ボムゾウ",
+          "rootScore": 241.2,
+          "plannerScore": 363,
+          "responseScore": 323.4,
+          "ownDelta": 325,
+          "opponentDelta": 321.8
+        },
+        {
+          "rank": 3,
+          "selectedByCpu": false,
+          "selectedByPlanner": false,
+          "fallback": false,
+          "decision": "attack:ドノマンティス:attack->ボムゾウ",
+          "rootScore": 161.2,
+          "plannerScore": 330.8,
+          "responseScore": 313.4,
+          "ownDelta": 315,
+          "opponentDelta": 311.8
+        },
+        {
+          "rank": 4,
+          "selectedByCpu": false,
+          "selectedByPlanner": false,
+          "fallback": false,
+          "decision": "attack:デスシープ:attack->player master",
+          "rootScore": 157.8,
+          "plannerScore": 300.7,
+          "responseScore": 285.8,
+          "ownDelta": 292,
+          "opponentDelta": 279.6
+        }
+      ]
+    },
+    {
+      "seed": 994306,
+      "direction": "challenger-as-cpu",
+      "step": 91,
+      "turnNumber": 8,
+      "side": "cpu",
+      "elapsedMs": 3819.4,
+      "inspectionElapsedMs": 3725.9,
+      "rolloutTriggered": false,
+      "adopted": false,
+      "decision": "attack:ヤンバル:wild_claw->ヤンバル",
+      "fallbackDecision": "attack:ヤンバル:wild_claw->ヤンバル",
+      "selectedDecision": "attack:ドノマンティス:呪いの刃->ヤンバル",
+      "fallbackScore": 577.8,
+      "selectedPlannerScore": 270.6,
+      "runnerUpPlannerScore": 232.7,
+      "rootScoreGapToFallback": 73.1,
+      "plannerMarginToFallback": 37.9,
+      "state": "turn 8 / current cpu / HP cpu/player 10/9 / stones cpu/player 6/0 / deck cpu/player 17/18 / hand cpu/player 6/4",
+      "board": "player_front_left:PF:ヤンバル Lv1 HP3 act1/1 | player_front_right:PF:ボムゾウ Lv2 HP5 act1/1 | player_back_left:PB:ヤンバル Lv2 HP3 act1/1 | cpu_front_left:CF:ドノマンティス Lv2 HP5 act0/1 | cpu_front_right:CF:ヤンバル Lv1 HP3 act0/1 | cpu_back_left:CB:ヤンバル Lv1 HP3 act0/1",
+      "candidates": [
+        {
+          "rank": 1,
+          "selectedByCpu": false,
+          "selectedByPlanner": true,
+          "fallback": false,
+          "decision": "attack:ドノマンティス:呪いの刃->ヤンバル",
+          "rootScore": 504.7,
+          "plannerScore": 270.6,
+          "responseScore": 231,
+          "ownDelta": 241.8,
+          "opponentDelta": 220.2
+        },
+        {
+          "rank": 2,
+          "selectedByCpu": true,
+          "selectedByPlanner": false,
+          "fallback": true,
+          "decision": "attack:ヤンバル:wild_claw->ヤンバル",
+          "rootScore": 237.1,
+          "plannerScore": 232.7,
+          "responseScore": 286.9,
+          "ownDelta": 305.8,
+          "opponentDelta": 268
+        },
+        {
+          "rank": 3,
+          "selectedByCpu": false,
+          "selectedByPlanner": false,
+          "fallback": false,
+          "decision": "attack:ヤンバル:wild_claw->ヤンバル",
+          "rootScore": 157.1,
+          "plannerScore": 206.6,
+          "responseScore": 305.9,
+          "ownDelta": 305.8,
+          "opponentDelta": 306
+        },
+        {
+          "rank": 4,
+          "selectedByCpu": false,
+          "selectedByPlanner": false,
+          "fallback": false,
+          "decision": "attack:ドノマンティス:attack->ヤンバル",
+          "rootScore": 157.1,
+          "plannerScore": 110.7,
+          "responseScore": 210,
+          "ownDelta": 226.8,
+          "opponentDelta": 193.2
+        }
+      ]
+    }
+  ],
+  "conclusion": [
+    "1 games. challenger wins 1, inspected decisions 2, rollout-triggered decisions 0.",
+    "max challenger decision 4664ms, avg challenger decision 577.2ms.",
+    "No rollout-triggered decision was captured. Lower --inspect-threshold-ms or expand seeds before tuning."
+  ]
+}

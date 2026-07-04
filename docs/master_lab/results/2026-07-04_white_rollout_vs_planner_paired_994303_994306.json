@@ -1,0 +1,110 @@
+{
+  "generatedAt": "2026-07-04T06:25:27.365Z",
+  "options": {
+    "seedStart": 994303,
+    "count": 4,
+    "deckPreset": "master-lab-white-1377-death-sheep3",
+    "masterIds": {
+      "player": "white",
+      "cpu": "white"
+    },
+    "maxSteps": 360,
+    "maxTurns": 90,
+    "baselineProfile": "white_planner",
+    "challengerProfile": "white_rollout"
+  },
+  "pairs": [
+    {
+      "seed": 994303,
+      "classification": "player_seat_sweep",
+      "challengerAsCpu": {
+        "winner": "player",
+        "winnerProfile": "white_planner",
+        "steps": 242,
+        "turns": 23,
+        "issueCount": 0,
+        "warningCount": 0
+      },
+      "challengerAsPlayer": {
+        "winner": "player",
+        "winnerProfile": "white_rollout",
+        "steps": 242,
+        "turns": 23,
+        "issueCount": 0,
+        "warningCount": 0
+      }
+    },
+    {
+      "seed": 994304,
+      "classification": "player_seat_sweep",
+      "challengerAsCpu": {
+        "winner": "player",
+        "winnerProfile": "white_planner",
+        "steps": 255,
+        "turns": 28,
+        "issueCount": 0,
+        "warningCount": 0
+      },
+      "challengerAsPlayer": {
+        "winner": "player",
+        "winnerProfile": "white_rollout",
+        "steps": 255,
+        "turns": 28,
+        "issueCount": 0,
+        "warningCount": 0
+      }
+    },
+    {
+      "seed": 994305,
+      "classification": "cpu_seat_sweep",
+      "challengerAsCpu": {
+        "winner": "cpu",
+        "winnerProfile": "white_rollout",
+        "steps": 307,
+        "turns": 28,
+        "issueCount": 0,
+        "warningCount": 1
+      },
+      "challengerAsPlayer": {
+        "winner": "cpu",
+        "winnerProfile": "white_planner",
+        "steps": 307,
+        "turns": 28,
+        "issueCount": 0,
+        "warningCount": 1
+      }
+    },
+    {
+      "seed": 994306,
+      "classification": "challenger_profile_sweep",
+      "challengerAsCpu": {
+        "winner": "cpu",
+        "winnerProfile": "white_rollout",
+        "steps": 175,
+        "turns": 22,
+        "issueCount": 0,
+        "warningCount": 0
+      },
+      "challengerAsPlayer": {
+        "winner": "player",
+        "winnerProfile": "white_rollout",
+        "steps": 281,
+        "turns": 27,
+        "issueCount": 0,
+        "warningCount": 0
+      }
+    }
+  ],
+  "summary": {
+    "challenger_profile_sweep": 1,
+    "baseline_profile_sweep": 0,
+    "player_seat_sweep": 2,
+    "cpu_seat_sweep": 1,
+    "split_or_draw": 0,
+    "seeds": 4,
+    "challengerPairedScore": 1,
+    "baselinePairedScore": 0,
+    "seatBiasSeeds": 3,
+    "splitOrDraw": 0
+  }
+}

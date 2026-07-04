@@ -38,6 +38,26 @@ seedごとに両方向を1ペアとして分類する。
 - challenger-as-cpu: `white_planner/player`, 238 steps / 22 turns
 - challenger-as-player: `white_rollout/player`, 238 steps / 22 turns
 
+## 追加確認
+
+994303-994306 の4 seedを paired benchmark した。
+
+- challenger profile sweep: 1/4
+- baseline profile sweep: 0/4
+- seat-bias seeds: 3/4
+- split/draw seeds: 0/4
+
+内訳:
+
+- 994303: `player_seat_sweep`
+- 994304: `player_seat_sweep`
+- 994305: `cpu_seat_sweep`
+- 994306: `challenger_profile_sweep`
+
+ただし、994306 の profile sweep はそのまま「両席で rollout が効いた」とは読めない。発火監査では、challenger-as-cpu 側は `white_rollout` が勝っているが rollout-triggered decisions は0件だった。一方、challenger-as-player 側では step 83 に1回 rollout が発火し、`move:player_front_right->player_back_left` ではなく `summon:ボムゾウ->player_back_right` を選んで勝ち筋を作っていた。
+
+つまり 994306 は「player側では rollout がAI差を作った」が、「cpu側の勝ちは rollout 固有差とは未確定」という扱いにする。
+
 ## 判断
 
 `white_rollout` は 994306 の既知負けを拾えるが、`white_planner` 直接比較では、座席差を除いた profile sweep で強いとはまだ言えない。
@@ -47,5 +67,6 @@ seedごとに両方向を1ペアとして分類する。
 - profile sweep が出る seed: AI差として採用判断に使う。
 - seat sweep が出る seed: AI差ではなく先後/座席差として分離する。
 - split/draw seed: HP差、終盤手順、rollout発火有無を追加監査する。
+- profile sweep が出ても、rollout-triggered decision がどちらの方向で発火したかを確認する。
 
-次の実装候補は、残る初回 rollout の近似より先に、`white_planner` と `white_rollout` の差分手が profile sweep に変換されるかを見る paired 監査。
+次の実装候補は、残る初回 rollout の近似より先に、`white_planner` と `white_rollout` の差分手が paired profile sweep かつ rollout-triggered decision に変換されるかを見る監査。

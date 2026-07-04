@@ -1,0 +1,191 @@
+{
+  "generatedAt": "2026-07-04T06:33:21.031Z",
+  "options": {
+    "seedStart": 994306,
+    "count": 1,
+    "directions": [
+      "challenger-as-player"
+    ],
+    "deckPreset": "master-lab-white-1377-death-sheep3",
+    "maxSteps": 360,
+    "maxTurns": 90,
+    "baselineProfile": "white_planner",
+    "challengerProfile": "white_rollout",
+    "inspectThresholdMs": 3000,
+    "candidateLimit": 4,
+    "streamProgress": true,
+    "markdownPath": "docs/master_lab/results/2026-07-04_white_rollout_vs_planner_trigger_audit_994306_player.md",
+    "jsonPath": "docs/master_lab/results/2026-07-04_white_rollout_vs_planner_trigger_audit_994306_player.json"
+  },
+  "games": [
+    {
+      "seed": 994306,
+      "direction": "challenger-as-player",
+      "profiles": {
+        "player": "white_rollout",
+        "cpu": "white_planner"
+      },
+      "winner": "player",
+      "winnerProfile": "white_rollout",
+      "steps": 281,
+      "turns": 27,
+      "playerHp": 5,
+      "cpuHp": 0,
+      "challengerStats": {
+        "decisions": 137,
+        "elapsedMs": 158054.09366299995,
+        "maxDecisionMs": 96165.236417
+      },
+      "events": [
+        {
+          "seed": 994306,
+          "direction": "challenger-as-player",
+          "step": 83,
+          "turnNumber": 8,
+          "side": "player",
+          "elapsedMs": 96165.2,
+          "inspectionElapsedMs": 94566.9,
+          "rolloutTriggered": true,
+          "adopted": true,
+          "decision": "summon:ボムゾウ->player_back_right",
+          "fallbackDecision": "move:player_front_right->player_back_left",
+          "selectedDecision": "summon:ボムゾウ->player_back_right",
+          "fallbackScore": 333.6,
+          "selectedPlannerScore": 115.6,
+          "runnerUpPlannerScore": 78.8,
+          "selectedRolloutScore": -10.8,
+          "selectedRolloutScoreGapToFallback": 278.2,
+          "rootScoreGapToFallback": 245.8,
+          "plannerMarginToFallback": 43.6,
+          "state": "turn 8 / current player / HP player/cpu 9/10 / stones player/cpu 7/1 / deck player/cpu 18/18 / hand player/cpu 5/5",
+          "board": "player_front_left:PF:ヤンバル Lv1 HP3 act0/1 | player_front_right:PF:ヤンバル Lv2 HP3 act0/1 | cpu_front_left:CF:ドノマンティス Lv2 HP5 act1/1 shield | cpu_front_right:CF:デスシープ Lv2 HP6 act1/1 | cpu_back_left:CB:ヤンバル Lv1 HP3 prep | cpu_back_right:CB:ヤンバル Lv1 HP3 act1/1",
+          "candidates": [
+            {
+              "rank": 1,
+              "selectedByCpu": true,
+              "selectedByPlanner": true,
+              "fallback": false,
+              "decision": "summon:ボムゾウ->player_back_right",
+              "rootScore": 87.8,
+              "plannerScore": 115.6,
+              "responseScore": 97.9,
+              "ownDelta": 143.4,
+              "opponentDelta": 52.4,
+              "rolloutScore": -10.8,
+              "rolloutScoreGapToFallback": 278.2,
+              "rolloutSteps": 60
+            },
+            {
+              "rank": 2,
+              "selectedByCpu": false,
+              "selectedByPlanner": false,
+              "fallback": false,
+              "decision": "summon:ボムゾウ->player_back_left",
+              "rootScore": 87.8,
+              "plannerScore": 78.8,
+              "responseScore": 97.9,
+              "ownDelta": 143.4,
+              "opponentDelta": 52.4,
+              "rolloutScore": -255.8,
+              "rolloutScoreGapToFallback": 33.2,
+              "rolloutSteps": 60
+            },
+            {
+              "rank": 3,
+              "selectedByCpu": false,
+              "selectedByPlanner": false,
+              "fallback": true,
+              "decision": "move:player_front_right->player_back_left",
+              "rootScore": 112,
+              "plannerScore": 72,
+              "responseScore": 90.7,
+              "ownDelta": 125,
+              "opponentDelta": 56.4,
+              "rolloutScore": -289,
+              "rolloutScoreGapToFallback": 0,
+              "rolloutSteps": 60
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "events": [
+    {
+      "seed": 994306,
+      "direction": "challenger-as-player",
+      "step": 83,
+      "turnNumber": 8,
+      "side": "player",
+      "elapsedMs": 96165.2,
+      "inspectionElapsedMs": 94566.9,
+      "rolloutTriggered": true,
+      "adopted": true,
+      "decision": "summon:ボムゾウ->player_back_right",
+      "fallbackDecision": "move:player_front_right->player_back_left",
+      "selectedDecision": "summon:ボムゾウ->player_back_right",
+      "fallbackScore": 333.6,
+      "selectedPlannerScore": 115.6,
+      "runnerUpPlannerScore": 78.8,
+      "selectedRolloutScore": -10.8,
+      "selectedRolloutScoreGapToFallback": 278.2,
+      "rootScoreGapToFallback": 245.8,
+      "plannerMarginToFallback": 43.6,
+      "state": "turn 8 / current player / HP player/cpu 9/10 / stones player/cpu 7/1 / deck player/cpu 18/18 / hand player/cpu 5/5",
+      "board": "player_front_left:PF:ヤンバル Lv1 HP3 act0/1 | player_front_right:PF:ヤンバル Lv2 HP3 act0/1 | cpu_front_left:CF:ドノマンティス Lv2 HP5 act1/1 shield | cpu_front_right:CF:デスシープ Lv2 HP6 act1/1 | cpu_back_left:CB:ヤンバル Lv1 HP3 prep | cpu_back_right:CB:ヤンバル Lv1 HP3 act1/1",
+      "candidates": [
+        {
+          "rank": 1,
+          "selectedByCpu": true,
+          "selectedByPlanner": true,
+          "fallback": false,
+          "decision": "summon:ボムゾウ->player_back_right",
+          "rootScore": 87.8,
+          "plannerScore": 115.6,
+          "responseScore": 97.9,
+          "ownDelta": 143.4,
+          "opponentDelta": 52.4,
+          "rolloutScore": -10.8,
+          "rolloutScoreGapToFallback": 278.2,
+          "rolloutSteps": 60
+        },
+        {
+          "rank": 2,
+          "selectedByCpu": false,
+          "selectedByPlanner": false,
+          "fallback": false,
+          "decision": "summon:ボムゾウ->player_back_left",
+          "rootScore": 87.8,
+          "plannerScore": 78.8,
+          "responseScore": 97.9,
+          "ownDelta": 143.4,
+          "opponentDelta": 52.4,
+          "rolloutScore": -255.8,
+          "rolloutScoreGapToFallback": 33.2,
+          "rolloutSteps": 60
+        },
+        {
+          "rank": 3,
+          "selectedByCpu": false,
+          "selectedByPlanner": false,
+          "fallback": true,
+          "decision": "move:player_front_right->player_back_left",
+          "rootScore": 112,
+          "plannerScore": 72,
+          "responseScore": 90.7,
+          "ownDelta": 125,
+          "opponentDelta": 56.4,
+          "rolloutScore": -289,
+          "rolloutScoreGapToFallback": 0,
+          "rolloutSteps": 60
+        }
+      ]
+    }
+  ],
+  "conclusion": [
+    "1 games. challenger wins 1, inspected decisions 1, rollout-triggered decisions 1.",
+    "max challenger decision 96165.2ms, avg challenger decision 1153.7ms.",
+    "rollout adopted 1/1; avg selected rollout gap 278.2.",
+    "Next implementation target is the repeated rollout-trigger shape, not a broad coefficient change."
+  ]
+}
