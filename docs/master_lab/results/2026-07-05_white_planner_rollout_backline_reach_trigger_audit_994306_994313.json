@@ -1,0 +1,498 @@
+{
+  "generatedAt": "2026-07-04T20:43:53.466Z",
+  "options": {
+    "seedStart": 994306,
+    "count": 8,
+    "directions": [
+      "challenger-as-cpu",
+      "challenger-as-player"
+    ],
+    "deckPreset": "master-lab-white-1377-death-sheep3",
+    "maxSteps": 360,
+    "maxTurns": 90,
+    "baselineProfile": "white",
+    "challengerProfile": "white_planner",
+    "inspectThresholdMs": 10000,
+    "candidateLimit": 6,
+    "streamProgress": true,
+    "markdownPath": "docs/master_lab/results/2026-07-05_white_planner_rollout_backline_reach_trigger_audit_994306_994313.md",
+    "jsonPath": "docs/master_lab/results/2026-07-05_white_planner_rollout_backline_reach_trigger_audit_994306_994313.json"
+  },
+  "games": [
+    {
+      "seed": 994306,
+      "direction": "challenger-as-cpu",
+      "profiles": {
+        "player": "white",
+        "cpu": "white_planner"
+      },
+      "winner": "cpu",
+      "winnerProfile": "white_planner",
+      "steps": 175,
+      "turns": 22,
+      "playerHp": 0,
+      "cpuHp": 6,
+      "challengerStats": {
+        "decisions": 84,
+        "elapsedMs": 48965.894083000036,
+        "maxDecisionMs": 4742.053915999997
+      },
+      "events": []
+    },
+    {
+      "seed": 994307,
+      "direction": "challenger-as-cpu",
+      "profiles": {
+        "player": "white",
+        "cpu": "white_planner"
+      },
+      "winner": "player",
+      "winnerProfile": "white",
+      "steps": 288,
+      "turns": 27,
+      "playerHp": 7,
+      "cpuHp": 0,
+      "challengerStats": {
+        "decisions": 158,
+        "elapsedMs": 104275.08645100002,
+        "maxDecisionMs": 3734.6591249999765
+      },
+      "events": []
+    },
+    {
+      "seed": 994308,
+      "direction": "challenger-as-cpu",
+      "profiles": {
+        "player": "white",
+        "cpu": "white_planner"
+      },
+      "winner": "cpu",
+      "winnerProfile": "white_planner",
+      "steps": 253,
+      "turns": 22,
+      "playerHp": 0,
+      "cpuHp": 7,
+      "challengerStats": {
+        "decisions": 126,
+        "elapsedMs": 82546.52154500014,
+        "maxDecisionMs": 3327.008542000025
+      },
+      "events": []
+    },
+    {
+      "seed": 994309,
+      "direction": "challenger-as-cpu",
+      "profiles": {
+        "player": "white",
+        "cpu": "white_planner"
+      },
+      "winner": "cpu",
+      "winnerProfile": "white_planner",
+      "steps": 248,
+      "turns": 22,
+      "playerHp": 0,
+      "cpuHp": 2,
+      "challengerStats": {
+        "decisions": 122,
+        "elapsedMs": 78172.806873,
+        "maxDecisionMs": 4646.229250000033
+      },
+      "events": []
+    },
+    {
+      "seed": 994310,
+      "direction": "challenger-as-cpu",
+      "profiles": {
+        "player": "white",
+        "cpu": "white_planner"
+      },
+      "winner": "player",
+      "winnerProfile": "white",
+      "steps": 204,
+      "turns": 21,
+      "playerHp": 10,
+      "cpuHp": 0,
+      "challengerStats": {
+        "decisions": 96,
+        "elapsedMs": 33328.87883099966,
+        "maxDecisionMs": 1627.9154169999529
+      },
+      "events": []
+    },
+    {
+      "seed": 994311,
+      "direction": "challenger-as-cpu",
+      "profiles": {
+        "player": "white",
+        "cpu": "white_planner"
+      },
+      "winner": "cpu",
+      "winnerProfile": "white_planner",
+      "steps": 217,
+      "turns": 26,
+      "playerHp": 0,
+      "cpuHp": 7,
+      "challengerStats": {
+        "decisions": 109,
+        "elapsedMs": 43370.72875399981,
+        "maxDecisionMs": 1905.955249999999
+      },
+      "events": []
+    },
+    {
+      "seed": 994312,
+      "direction": "challenger-as-cpu",
+      "profiles": {
+        "player": "white",
+        "cpu": "white_planner"
+      },
+      "winner": "cpu",
+      "winnerProfile": "white_planner",
+      "steps": 227,
+      "turns": 27,
+      "playerHp": 0,
+      "cpuHp": 9,
+      "challengerStats": {
+        "decisions": 90,
+        "elapsedMs": 53514.918914001086,
+        "maxDecisionMs": 3070.237167000072
+      },
+      "events": []
+    },
+    {
+      "seed": 994313,
+      "direction": "challenger-as-cpu",
+      "profiles": {
+        "player": "white",
+        "cpu": "white_planner"
+      },
+      "winner": "player",
+      "winnerProfile": "white",
+      "steps": 298,
+      "turns": 28,
+      "playerHp": 3,
+      "cpuHp": 0,
+      "challengerStats": {
+        "decisions": 138,
+        "elapsedMs": 104069.11254,
+        "maxDecisionMs": 3294.740583000006
+      },
+      "events": []
+    },
+    {
+      "seed": 994306,
+      "direction": "challenger-as-player",
+      "profiles": {
+        "player": "white_planner",
+        "cpu": "white"
+      },
+      "winner": "player",
+      "winnerProfile": "white_planner",
+      "steps": 281,
+      "turns": 27,
+      "playerHp": 5,
+      "cpuHp": 0,
+      "challengerStats": {
+        "decisions": 137,
+        "elapsedMs": 140708.3488709993,
+        "maxDecisionMs": 78533.09479100001
+      },
+      "events": [
+        {
+          "seed": 994306,
+          "direction": "challenger-as-player",
+          "step": 83,
+          "turnNumber": 8,
+          "side": "player",
+          "elapsedMs": 78533.1,
+          "inspectionElapsedMs": 77161.5,
+          "rolloutTriggered": true,
+          "adopted": true,
+          "decision": "summon:ボムゾウ->player_back_right",
+          "fallbackDecision": "move:player_front_right->player_back_left",
+          "selectedDecision": "summon:ボムゾウ->player_back_right",
+          "fallbackScore": 333.6,
+          "selectedPlannerScore": 115.6,
+          "runnerUpPlannerScore": 78.8,
+          "selectedRolloutScore": -10.8,
+          "selectedRolloutScoreGapToFallback": 278.2,
+          "rootScoreGapToFallback": 245.8,
+          "plannerMarginToFallback": 43.6,
+          "state": "turn 8 / current player / HP player/cpu 9/10 / stones player/cpu 7/1 / deck player/cpu 18/18 / hand player/cpu 5/5",
+          "board": "player_front_left:PF:ヤンバル Lv1 HP3 act0/1 | player_front_right:PF:ヤンバル Lv2 HP3 act0/1 | cpu_front_left:CF:ドノマンティス Lv2 HP5 act1/1 shield | cpu_front_right:CF:デスシープ Lv2 HP6 act1/1 | cpu_back_left:CB:ヤンバル Lv1 HP3 prep | cpu_back_right:CB:ヤンバル Lv1 HP3 act1/1",
+          "candidates": [
+            {
+              "rank": 1,
+              "selectedByCpu": true,
+              "selectedByPlanner": true,
+              "fallback": false,
+              "decision": "summon:ボムゾウ->player_back_right",
+              "features": "summon:ボムゾウ->back-right; backlineReach; behindOwnFront:ヤンバルLv2HP3(act0/1); sameLaneEnemyFront:デスシープLv2HP6(act1/1); after:prepared; fallbackMove:player-front-right->player-back-left:keepsTo",
+              "rootScore": 87.8,
+              "plannerScore": 115.6,
+              "responseScore": 97.9,
+              "ownDelta": 143.4,
+              "opponentDelta": 52.4,
+              "rolloutScore": -10.8,
+              "rolloutScoreGapToFallback": 278.2,
+              "rolloutSteps": 60
+            },
+            {
+              "rank": 2,
+              "selectedByCpu": false,
+              "selectedByPlanner": false,
+              "fallback": false,
+              "decision": "summon:ボムゾウ->player_back_left",
+              "features": "summon:ボムゾウ->back-left; backlineReach; behindOwnFront:ヤンバルLv1HP3(act0/1); sameLaneEnemyFront:ドノマンティスLv2HP5(act1/1,shield); after:prepared; fallbackMove:player-front-right->player-back-left:blocksTo",
+              "rootScore": 87.8,
+              "plannerScore": 78.8,
+              "responseScore": 97.9,
+              "ownDelta": 143.4,
+              "opponentDelta": 52.4,
+              "rolloutScore": -255.8,
+              "rolloutScoreGapToFallback": 33.2,
+              "rolloutSteps": 60
+            },
+            {
+              "rank": 3,
+              "selectedByCpu": false,
+              "selectedByPlanner": false,
+              "fallback": true,
+              "decision": "move:player_front_right->player_back_left",
+              "features": "move:player-front-right->player-back-left; mover:ヤンバルLv2HP3(act0/1); fallbackMove:player-front-right->player-back-left:keepsTo",
+              "rootScore": 112,
+              "plannerScore": 72,
+              "responseScore": 90.7,
+              "ownDelta": 125,
+              "opponentDelta": 56.4,
+              "rolloutScore": -289,
+              "rolloutScoreGapToFallback": 0,
+              "rolloutSteps": 60
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "seed": 994307,
+      "direction": "challenger-as-player",
+      "profiles": {
+        "player": "white_planner",
+        "cpu": "white"
+      },
+      "winner": "player",
+      "winnerProfile": "white_planner",
+      "steps": 292,
+      "turns": 27,
+      "playerHp": 7,
+      "cpuHp": 0,
+      "challengerStats": {
+        "decisions": 128,
+        "elapsedMs": 70448.55383400153,
+        "maxDecisionMs": 3009.6047499999404
+      },
+      "events": []
+    },
+    {
+      "seed": 994308,
+      "direction": "challenger-as-player",
+      "profiles": {
+        "player": "white_planner",
+        "cpu": "white"
+      },
+      "winner": "cpu",
+      "winnerProfile": "white",
+      "steps": 221,
+      "turns": 21,
+      "playerHp": 0,
+      "cpuHp": 4,
+      "challengerStats": {
+        "decisions": 114,
+        "elapsedMs": 80082.09607999795,
+        "maxDecisionMs": 4722.177916999906
+      },
+      "events": []
+    },
+    {
+      "seed": 994309,
+      "direction": "challenger-as-player",
+      "profiles": {
+        "player": "white_planner",
+        "cpu": "white"
+      },
+      "winner": "player",
+      "winnerProfile": "white_planner",
+      "steps": 205,
+      "turns": 18,
+      "playerHp": 6,
+      "cpuHp": 0,
+      "challengerStats": {
+        "decisions": 99,
+        "elapsedMs": 58776.105413000565,
+        "maxDecisionMs": 2478.9723330000415
+      },
+      "events": []
+    },
+    {
+      "seed": 994310,
+      "direction": "challenger-as-player",
+      "profiles": {
+        "player": "white_planner",
+        "cpu": "white"
+      },
+      "winner": "player",
+      "winnerProfile": "white_planner",
+      "steps": 204,
+      "turns": 21,
+      "playerHp": 10,
+      "cpuHp": 0,
+      "challengerStats": {
+        "decisions": 103,
+        "elapsedMs": 42127.45079299924,
+        "maxDecisionMs": 2501.7430000000168
+      },
+      "events": []
+    },
+    {
+      "seed": 994311,
+      "direction": "challenger-as-player",
+      "profiles": {
+        "player": "white_planner",
+        "cpu": "white"
+      },
+      "winner": "cpu",
+      "winnerProfile": "white",
+      "steps": 240,
+      "turns": 21,
+      "playerHp": 0,
+      "cpuHp": 10,
+      "challengerStats": {
+        "decisions": 110,
+        "elapsedMs": 52558.90874300082,
+        "maxDecisionMs": 2475.1810409999453
+      },
+      "events": []
+    },
+    {
+      "seed": 994312,
+      "direction": "challenger-as-player",
+      "profiles": {
+        "player": "white_planner",
+        "cpu": "white"
+      },
+      "winner": "cpu",
+      "winnerProfile": "white",
+      "steps": 305,
+      "turns": 29,
+      "playerHp": 0,
+      "cpuHp": 5,
+      "challengerStats": {
+        "decisions": 158,
+        "elapsedMs": 97683.26371300058,
+        "maxDecisionMs": 4667.575124999974
+      },
+      "events": []
+    },
+    {
+      "seed": 994313,
+      "direction": "challenger-as-player",
+      "profiles": {
+        "player": "white_planner",
+        "cpu": "white"
+      },
+      "winner": "player",
+      "winnerProfile": "white_planner",
+      "steps": 250,
+      "turns": 22,
+      "playerHp": 5,
+      "cpuHp": 0,
+      "challengerStats": {
+        "decisions": 123,
+        "elapsedMs": 103832.95533100027,
+        "maxDecisionMs": 3983.266832999885
+      },
+      "events": []
+    }
+  ],
+  "events": [
+    {
+      "seed": 994306,
+      "direction": "challenger-as-player",
+      "step": 83,
+      "turnNumber": 8,
+      "side": "player",
+      "elapsedMs": 78533.1,
+      "inspectionElapsedMs": 77161.5,
+      "rolloutTriggered": true,
+      "adopted": true,
+      "decision": "summon:ボムゾウ->player_back_right",
+      "fallbackDecision": "move:player_front_right->player_back_left",
+      "selectedDecision": "summon:ボムゾウ->player_back_right",
+      "fallbackScore": 333.6,
+      "selectedPlannerScore": 115.6,
+      "runnerUpPlannerScore": 78.8,
+      "selectedRolloutScore": -10.8,
+      "selectedRolloutScoreGapToFallback": 278.2,
+      "rootScoreGapToFallback": 245.8,
+      "plannerMarginToFallback": 43.6,
+      "state": "turn 8 / current player / HP player/cpu 9/10 / stones player/cpu 7/1 / deck player/cpu 18/18 / hand player/cpu 5/5",
+      "board": "player_front_left:PF:ヤンバル Lv1 HP3 act0/1 | player_front_right:PF:ヤンバル Lv2 HP3 act0/1 | cpu_front_left:CF:ドノマンティス Lv2 HP5 act1/1 shield | cpu_front_right:CF:デスシープ Lv2 HP6 act1/1 | cpu_back_left:CB:ヤンバル Lv1 HP3 prep | cpu_back_right:CB:ヤンバル Lv1 HP3 act1/1",
+      "candidates": [
+        {
+          "rank": 1,
+          "selectedByCpu": true,
+          "selectedByPlanner": true,
+          "fallback": false,
+          "decision": "summon:ボムゾウ->player_back_right",
+          "features": "summon:ボムゾウ->back-right; backlineReach; behindOwnFront:ヤンバルLv2HP3(act0/1); sameLaneEnemyFront:デスシープLv2HP6(act1/1); after:prepared; fallbackMove:player-front-right->player-back-left:keepsTo",
+          "rootScore": 87.8,
+          "plannerScore": 115.6,
+          "responseScore": 97.9,
+          "ownDelta": 143.4,
+          "opponentDelta": 52.4,
+          "rolloutScore": -10.8,
+          "rolloutScoreGapToFallback": 278.2,
+          "rolloutSteps": 60
+        },
+        {
+          "rank": 2,
+          "selectedByCpu": false,
+          "selectedByPlanner": false,
+          "fallback": false,
+          "decision": "summon:ボムゾウ->player_back_left",
+          "features": "summon:ボムゾウ->back-left; backlineReach; behindOwnFront:ヤンバルLv1HP3(act0/1); sameLaneEnemyFront:ドノマンティスLv2HP5(act1/1,shield); after:prepared; fallbackMove:player-front-right->player-back-left:blocksTo",
+          "rootScore": 87.8,
+          "plannerScore": 78.8,
+          "responseScore": 97.9,
+          "ownDelta": 143.4,
+          "opponentDelta": 52.4,
+          "rolloutScore": -255.8,
+          "rolloutScoreGapToFallback": 33.2,
+          "rolloutSteps": 60
+        },
+        {
+          "rank": 3,
+          "selectedByCpu": false,
+          "selectedByPlanner": false,
+          "fallback": true,
+          "decision": "move:player_front_right->player_back_left",
+          "features": "move:player-front-right->player-back-left; mover:ヤンバルLv2HP3(act0/1); fallbackMove:player-front-right->player-back-left:keepsTo",
+          "rootScore": 112,
+          "plannerScore": 72,
+          "responseScore": 90.7,
+          "ownDelta": 125,
+          "opponentDelta": 56.4,
+          "rolloutScore": -289,
+          "rolloutScoreGapToFallback": 0,
+          "rolloutSteps": 60
+        }
+      ]
+    }
+  ],
+  "conclusion": [
+    "16 games. challenger wins 10, inspected decisions 1, rollout-triggered decisions 1.",
+    "max challenger decision 78533.1ms, avg challenger decision 616ms.",
+    "rollout adopted 1/1; avg selected rollout gap 278.2.",
+    "Only one rollout-triggered decision was captured. Treat it as a local clue until the same feature repeats across seeds."
+  ]
+}

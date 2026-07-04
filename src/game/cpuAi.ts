@@ -215,6 +215,7 @@ type CpuAiProfileConfig = {
   terminalPlanRolloutMaxOpponentStones?: number;
   terminalPlanRolloutRequireFallbackMove?: number;
   terminalPlanRolloutRequirePlannerSummon?: number;
+  terminalPlanRolloutRequirePlannerSummonBacklineReach?: number;
   terminalPlanRolloutOncePerTurn?: number;
 };
 
@@ -384,6 +385,7 @@ const CPU_AI_PROFILE_CONFIG: Record<CpuAiProfile, CpuAiProfileConfig> = {
     terminalPlanRolloutMaxOpponentStones: 1,
     terminalPlanRolloutRequireFallbackMove: 1,
     terminalPlanRolloutRequirePlannerSummon: 1,
+    terminalPlanRolloutRequirePlannerSummonBacklineReach: 1,
     terminalPlanRolloutOncePerTurn: 1,
   },
   white_rollout: {
@@ -424,6 +426,7 @@ const CPU_AI_PROFILE_CONFIG: Record<CpuAiProfile, CpuAiProfileConfig> = {
     terminalPlanRolloutMaxOpponentStones: 1,
     terminalPlanRolloutRequireFallbackMove: 1,
     terminalPlanRolloutRequirePlannerSummon: 1,
+    terminalPlanRolloutRequirePlannerSummonBacklineReach: 1,
     terminalPlanRolloutOncePerTurn: 1,
   },
   omniscient: {
@@ -1004,6 +1007,10 @@ function applyCpuAiSearchOptions(
       search.terminalPlanRolloutRequirePlannerSummon,
       base.terminalPlanRolloutRequirePlannerSummon,
     ),
+    terminalPlanRolloutRequirePlannerSummonBacklineReach: normalizedOptionalSearchNumber(
+      search.terminalPlanRolloutRequirePlannerSummonBacklineReach,
+      base.terminalPlanRolloutRequirePlannerSummonBacklineReach,
+    ),
     terminalPlanRolloutOncePerTurn: normalizedOptionalSearchNumber(
       search.terminalPlanRolloutOncePerTurn,
       base.terminalPlanRolloutOncePerTurn,
@@ -1406,6 +1413,12 @@ function terminalPlanRolloutTriggerSelection(
   if (config.terminalPlanRolloutRequirePlannerSummon && rolloutChallenger.candidate.decision.type !== "summon") {
     return undefined;
   }
+  if (
+    config.terminalPlanRolloutRequirePlannerSummonBacklineReach &&
+    !isBacklineReachSummonDecision(state, rolloutChallenger.candidate.decision)
+  ) {
+    return undefined;
+  }
   const rootScoreGap = fallback.totalScore - rolloutChallenger.candidate.totalScore;
   const minRootScoreGap = config.terminalPlanRolloutTriggerMinRootScoreGap ?? 120;
   if (rootScoreGap < minRootScoreGap) {
@@ -1416,6 +1429,14 @@ function terminalPlanRolloutTriggerSelection(
     : best.plannerScore - fallbackSelection.plannerScore;
   const maxPlannerMargin = config.terminalPlanRolloutTriggerMaxPlannerMargin ?? 40;
   return plannerMargin <= maxPlannerMargin ? rolloutChallenger : undefined;
+}
+
+function isBacklineReachSummonDecision(state: GameState, decision: CpuDecision): boolean {
+  if (decision.type !== "summon") {
+    return false;
+  }
+  const card = state.players[state.currentPlayer].hand.find((handCard) => handCard.instanceId === decision.handInstanceId);
+  return !!card && monsterHasBacklineAttackPattern(card.cardId);
 }
 
 function evaluateTerminalPlanRollout(

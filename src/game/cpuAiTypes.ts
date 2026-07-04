@@ -51,6 +51,7 @@ export interface CpuAiSearchOptions {
   terminalPlanRolloutMaxOpponentStones?: number;
   terminalPlanRolloutRequireFallbackMove?: number;
   terminalPlanRolloutRequirePlannerSummon?: number;
+  terminalPlanRolloutRequirePlannerSummonBacklineReach?: number;
   terminalPlanRolloutOncePerTurn?: number;
   beamScoreThreshold?: number;
 }

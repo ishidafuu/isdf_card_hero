@@ -1,0 +1,792 @@
+{
+  "generatedAt": "2026-07-04T20:07:49.667Z",
+  "options": {
+    "seedStart": 994306,
+    "count": 8,
+    "directions": [
+      "challenger-as-cpu",
+      "challenger-as-player"
+    ],
+    "deckPreset": "master-lab-white-1377-death-sheep3",
+    "maxSteps": 360,
+    "maxTurns": 90,
+    "baselineProfile": "white",
+    "challengerProfile": "white_planner",
+    "inspectThresholdMs": 10000,
+    "candidateLimit": 6,
+    "streamProgress": true,
+    "markdownPath": "docs/master_lab/results/2026-07-05_white_planner_rollout_trigger_audit_994306_994313.md",
+    "jsonPath": "docs/master_lab/results/2026-07-05_white_planner_rollout_trigger_audit_994306_994313.json"
+  },
+  "games": [
+    {
+      "seed": 994306,
+      "direction": "challenger-as-cpu",
+      "profiles": {
+        "player": "white",
+        "cpu": "white_planner"
+      },
+      "winner": "cpu",
+      "winnerProfile": "white_planner",
+      "steps": 175,
+      "turns": 22,
+      "playerHp": 0,
+      "cpuHp": 6,
+      "challengerStats": {
+        "decisions": 84,
+        "elapsedMs": 48711.31154699998,
+        "maxDecisionMs": 4725.908917000001
+      },
+      "events": []
+    },
+    {
+      "seed": 994307,
+      "direction": "challenger-as-cpu",
+      "profiles": {
+        "player": "white",
+        "cpu": "white_planner"
+      },
+      "winner": "player",
+      "winnerProfile": "white",
+      "steps": 288,
+      "turns": 27,
+      "playerHp": 7,
+      "cpuHp": 0,
+      "challengerStats": {
+        "decisions": 158,
+        "elapsedMs": 103929.79387599995,
+        "maxDecisionMs": 3797.989124999993
+      },
+      "events": []
+    },
+    {
+      "seed": 994308,
+      "direction": "challenger-as-cpu",
+      "profiles": {
+        "player": "white",
+        "cpu": "white_planner"
+      },
+      "winner": "cpu",
+      "winnerProfile": "white_planner",
+      "steps": 253,
+      "turns": 22,
+      "playerHp": 0,
+      "cpuHp": 7,
+      "challengerStats": {
+        "decisions": 126,
+        "elapsedMs": 82243.34604299994,
+        "maxDecisionMs": 3303.095833999978
+      },
+      "events": []
+    },
+    {
+      "seed": 994309,
+      "direction": "challenger-as-cpu",
+      "profiles": {
+        "player": "white",
+        "cpu": "white_planner"
+      },
+      "winner": "cpu",
+      "winnerProfile": "white_planner",
+      "steps": 248,
+      "turns": 22,
+      "playerHp": 0,
+      "cpuHp": 2,
+      "challengerStats": {
+        "decisions": 122,
+        "elapsedMs": 77886.8985870002,
+        "maxDecisionMs": 4645.264291999978
+      },
+      "events": []
+    },
+    {
+      "seed": 994310,
+      "direction": "challenger-as-cpu",
+      "profiles": {
+        "player": "white",
+        "cpu": "white_planner"
+      },
+      "winner": "player",
+      "winnerProfile": "white",
+      "steps": 204,
+      "turns": 21,
+      "playerHp": 10,
+      "cpuHp": 0,
+      "challengerStats": {
+        "decisions": 96,
+        "elapsedMs": 33299.85558000079,
+        "maxDecisionMs": 1583.5022500000196
+      },
+      "events": []
+    },
+    {
+      "seed": 994311,
+      "direction": "challenger-as-cpu",
+      "profiles": {
+        "player": "white",
+        "cpu": "white_planner"
+      },
+      "winner": "cpu",
+      "winnerProfile": "white_planner",
+      "steps": 217,
+      "turns": 26,
+      "playerHp": 0,
+      "cpuHp": 7,
+      "challengerStats": {
+        "decisions": 109,
+        "elapsedMs": 43359.438578999485,
+        "maxDecisionMs": 1906.4486249999609
+      },
+      "events": []
+    },
+    {
+      "seed": 994312,
+      "direction": "challenger-as-cpu",
+      "profiles": {
+        "player": "white",
+        "cpu": "white_planner"
+      },
+      "winner": "cpu",
+      "winnerProfile": "white_planner",
+      "steps": 227,
+      "turns": 27,
+      "playerHp": 0,
+      "cpuHp": 9,
+      "challengerStats": {
+        "decisions": 90,
+        "elapsedMs": 53712.97617100016,
+        "maxDecisionMs": 3082.0997920000227
+      },
+      "events": []
+    },
+    {
+      "seed": 994313,
+      "direction": "challenger-as-cpu",
+      "profiles": {
+        "player": "white",
+        "cpu": "white_planner"
+      },
+      "winner": "player",
+      "winnerProfile": "white",
+      "steps": 298,
+      "turns": 28,
+      "playerHp": 3,
+      "cpuHp": 0,
+      "challengerStats": {
+        "decisions": 138,
+        "elapsedMs": 104906.30604700092,
+        "maxDecisionMs": 3295.4508749999804
+      },
+      "events": []
+    },
+    {
+      "seed": 994306,
+      "direction": "challenger-as-player",
+      "profiles": {
+        "player": "white_planner",
+        "cpu": "white"
+      },
+      "winner": "player",
+      "winnerProfile": "white_planner",
+      "steps": 281,
+      "turns": 27,
+      "playerHp": 5,
+      "cpuHp": 0,
+      "challengerStats": {
+        "decisions": 137,
+        "elapsedMs": 141285.58295500022,
+        "maxDecisionMs": 78643.98008399992
+      },
+      "events": [
+        {
+          "seed": 994306,
+          "direction": "challenger-as-player",
+          "step": 83,
+          "turnNumber": 8,
+          "side": "player",
+          "elapsedMs": 78644,
+          "inspectionElapsedMs": 77828.4,
+          "rolloutTriggered": true,
+          "adopted": true,
+          "decision": "summon:ボムゾウ->player_back_right",
+          "fallbackDecision": "move:player_front_right->player_back_left",
+          "selectedDecision": "summon:ボムゾウ->player_back_right",
+          "fallbackScore": 333.6,
+          "selectedPlannerScore": 115.6,
+          "runnerUpPlannerScore": 78.8,
+          "selectedRolloutScore": -10.8,
+          "selectedRolloutScoreGapToFallback": 278.2,
+          "rootScoreGapToFallback": 245.8,
+          "plannerMarginToFallback": 43.6,
+          "state": "turn 8 / current player / HP player/cpu 9/10 / stones player/cpu 7/1 / deck player/cpu 18/18 / hand player/cpu 5/5",
+          "board": "player_front_left:PF:ヤンバル Lv1 HP3 act0/1 | player_front_right:PF:ヤンバル Lv2 HP3 act0/1 | cpu_front_left:CF:ドノマンティス Lv2 HP5 act1/1 shield | cpu_front_right:CF:デスシープ Lv2 HP6 act1/1 | cpu_back_left:CB:ヤンバル Lv1 HP3 prep | cpu_back_right:CB:ヤンバル Lv1 HP3 act1/1",
+          "candidates": [
+            {
+              "rank": 1,
+              "selectedByCpu": true,
+              "selectedByPlanner": true,
+              "fallback": false,
+              "decision": "summon:ボムゾウ->player_back_right",
+              "features": "summon:ボムゾウ->back-right; backlineReach; behindOwnFront:ヤンバルLv2HP3(act0/1); sameLaneEnemyFront:デスシープLv2HP6(act1/1); after:prepared; fallbackMove:player-front-right->player-back-left:keepsTo",
+              "rootScore": 87.8,
+              "plannerScore": 115.6,
+              "responseScore": 97.9,
+              "ownDelta": 143.4,
+              "opponentDelta": 52.4,
+              "rolloutScore": -10.8,
+              "rolloutScoreGapToFallback": 278.2,
+              "rolloutSteps": 60
+            },
+            {
+              "rank": 2,
+              "selectedByCpu": false,
+              "selectedByPlanner": false,
+              "fallback": false,
+              "decision": "summon:ボムゾウ->player_back_left",
+              "features": "summon:ボムゾウ->back-left; backlineReach; behindOwnFront:ヤンバルLv1HP3(act0/1); sameLaneEnemyFront:ドノマンティスLv2HP5(act1/1,shield); after:prepared; fallbackMove:player-front-right->player-back-left:blocksTo",
+              "rootScore": 87.8,
+              "plannerScore": 78.8,
+              "responseScore": 97.9,
+              "ownDelta": 143.4,
+              "opponentDelta": 52.4,
+              "rolloutScore": -255.8,
+              "rolloutScoreGapToFallback": 33.2,
+              "rolloutSteps": 60
+            },
+            {
+              "rank": 3,
+              "selectedByCpu": false,
+              "selectedByPlanner": false,
+              "fallback": true,
+              "decision": "move:player_front_right->player_back_left",
+              "features": "move:player-front-right->player-back-left; mover:ヤンバルLv2HP3(act0/1); fallbackMove:player-front-right->player-back-left:keepsTo",
+              "rootScore": 112,
+              "plannerScore": 72,
+              "responseScore": 90.7,
+              "ownDelta": 125,
+              "opponentDelta": 56.4,
+              "rolloutScore": -289,
+              "rolloutScoreGapToFallback": 0,
+              "rolloutSteps": 60
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "seed": 994307,
+      "direction": "challenger-as-player",
+      "profiles": {
+        "player": "white_planner",
+        "cpu": "white"
+      },
+      "winner": "player",
+      "winnerProfile": "white_planner",
+      "steps": 292,
+      "turns": 27,
+      "playerHp": 7,
+      "cpuHp": 0,
+      "challengerStats": {
+        "decisions": 128,
+        "elapsedMs": 167179.65883900202,
+        "maxDecisionMs": 97374.79962499999
+      },
+      "events": [
+        {
+          "seed": 994307,
+          "direction": "challenger-as-player",
+          "step": 58,
+          "turnNumber": 6,
+          "side": "player",
+          "elapsedMs": 97374.8,
+          "inspectionElapsedMs": 97306.7,
+          "rolloutTriggered": true,
+          "adopted": true,
+          "decision": "move:player_front_right->player_back_left",
+          "fallbackDecision": "move:player_front_right->player_back_left",
+          "selectedDecision": "move:player_front_right->player_back_left",
+          "fallbackScore": 219.2,
+          "selectedPlannerScore": 215.3,
+          "runnerUpPlannerScore": 168.9,
+          "selectedRolloutScore": 200.4,
+          "selectedRolloutScoreGapToFallback": 0,
+          "rootScoreGapToFallback": 107.2,
+          "plannerMarginToFallback": 0,
+          "state": "turn 6 / current player / HP player/cpu 10/10 / stones player/cpu 5/1 / deck player/cpu 20/20 / hand player/cpu 6/4",
+          "board": "player_front_left:PF:真勇者ダイン Lv2 HP6 act0/1 | player_front_right:PF:ヤンバル Lv1 HP3 act0/1 | cpu_front_left:CF:デスシープ Lv1 HP6 act1/1 focus,shield | cpu_front_right:CF:デスシープ Lv1 HP6 act1/1 | cpu_back_left:CB:真勇者ダイン Lv1 HP6 prep | cpu_back_right:CB:ピグミィ Lv2 HP3 act2/2",
+          "candidates": [
+            {
+              "rank": 1,
+              "selectedByCpu": true,
+              "selectedByPlanner": true,
+              "fallback": true,
+              "decision": "move:player_front_right->player_back_left",
+              "features": "move:player-front-right->player-back-left; mover:ヤンバルLv1HP3(act0/1); fallbackMove:player-front-right->player-back-left:keepsTo",
+              "rootScore": 112,
+              "plannerScore": 215.3,
+              "responseScore": 160.6,
+              "ownDelta": 149.4,
+              "opponentDelta": 171.8,
+              "rolloutScore": 200.4,
+              "rolloutScoreGapToFallback": 0,
+              "rolloutSteps": 60
+            },
+            {
+              "rank": 2,
+              "selectedByCpu": false,
+              "selectedByPlanner": false,
+              "fallback": false,
+              "decision": "summon:デスシープ->player_back_left",
+              "features": "summon:デスシープ->back-left; noBacklineReach; behindOwnFront:真勇者ダインLv2HP6(act0/1); sameLaneEnemyFront:デスシープLv1HP6(act1/1,focus,shield); after:prepared; fallbackMove:player-front-right->player-back-left:blocksTo",
+              "rootScore": 89.8,
+              "plannerScore": 168.9,
+              "responseScore": 167.8,
+              "ownDelta": 167.8,
+              "opponentDelta": 167.8,
+              "rolloutScore": -124.6,
+              "rolloutScoreGapToFallback": -325,
+              "rolloutSteps": 60
+            },
+            {
+              "rank": 3,
+              "selectedByCpu": false,
+              "selectedByPlanner": false,
+              "fallback": false,
+              "decision": "summon:デスシープ->player_back_left",
+              "features": "summon:デスシープ->back-left; noBacklineReach; behindOwnFront:真勇者ダインLv2HP6(act0/1); sameLaneEnemyFront:デスシープLv1HP6(act1/1,focus,shield); after:prepared; fallbackMove:player-front-right->player-back-left:blocksTo",
+              "rootScore": 89.8,
+              "plannerScore": 168.9,
+              "responseScore": 167.8,
+              "ownDelta": 167.8,
+              "opponentDelta": 167.8,
+              "rolloutScore": -124.6,
+              "rolloutScoreGapToFallback": -325,
+              "rolloutSteps": 60
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "seed": 994308,
+      "direction": "challenger-as-player",
+      "profiles": {
+        "player": "white_planner",
+        "cpu": "white"
+      },
+      "winner": "cpu",
+      "winnerProfile": "white",
+      "steps": 221,
+      "turns": 21,
+      "playerHp": 0,
+      "cpuHp": 4,
+      "challengerStats": {
+        "decisions": 114,
+        "elapsedMs": 80179.97954199906,
+        "maxDecisionMs": 4742.366749999812
+      },
+      "events": []
+    },
+    {
+      "seed": 994309,
+      "direction": "challenger-as-player",
+      "profiles": {
+        "player": "white_planner",
+        "cpu": "white"
+      },
+      "winner": "player",
+      "winnerProfile": "white_planner",
+      "steps": 205,
+      "turns": 18,
+      "playerHp": 6,
+      "cpuHp": 0,
+      "challengerStats": {
+        "decisions": 99,
+        "elapsedMs": 58630.55679200031,
+        "maxDecisionMs": 2482.238082999829
+      },
+      "events": []
+    },
+    {
+      "seed": 994310,
+      "direction": "challenger-as-player",
+      "profiles": {
+        "player": "white_planner",
+        "cpu": "white"
+      },
+      "winner": "player",
+      "winnerProfile": "white_planner",
+      "steps": 204,
+      "turns": 21,
+      "playerHp": 10,
+      "cpuHp": 0,
+      "challengerStats": {
+        "decisions": 103,
+        "elapsedMs": 122811.99920800026,
+        "maxDecisionMs": 80602.65775000001
+      },
+      "events": [
+        {
+          "seed": 994310,
+          "direction": "challenger-as-player",
+          "step": 60,
+          "turnNumber": 6,
+          "side": "player",
+          "elapsedMs": 80602.7,
+          "inspectionElapsedMs": 81193.8,
+          "rolloutTriggered": true,
+          "adopted": true,
+          "decision": "move:player_front_right->player_back_left",
+          "fallbackDecision": "move:player_front_right->player_back_left",
+          "selectedDecision": "move:player_front_right->player_back_left",
+          "fallbackScore": 253,
+          "selectedPlannerScore": 341.8,
+          "runnerUpPlannerScore": 339.4,
+          "selectedRolloutScore": 183.8,
+          "selectedRolloutScoreGapToFallback": 0,
+          "rootScoreGapToFallback": 114.5,
+          "plannerMarginToFallback": 0,
+          "state": "turn 6 / current player / HP player/cpu 10/10 / stones player/cpu 4/0 / deck player/cpu 20/20 / hand player/cpu 5/3",
+          "board": "player_front_left:PF:デスシープ Lv2 HP6 act0/1 | player_front_right:PF:ピグミィ Lv2 HP3 act0/2 | cpu_front_left:CF:デスシープ Lv1 HP6 act1/1 focus | cpu_front_right:CF:デスシープ Lv1 HP6 act1/1",
+          "candidates": [
+            {
+              "rank": 1,
+              "selectedByCpu": true,
+              "selectedByPlanner": true,
+              "fallback": true,
+              "decision": "move:player_front_right->player_back_left",
+              "features": "move:player-front-right->player-back-left; mover:ピグミィLv2HP3(act0/2); fallbackMove:player-front-right->player-back-left:keepsTo",
+              "rootScore": 138.5,
+              "plannerScore": 341.8,
+              "responseScore": 283.8,
+              "ownDelta": 271,
+              "opponentDelta": 296.6,
+              "rolloutScore": 183.8,
+              "rolloutScoreGapToFallback": 0,
+              "rolloutSteps": 60
+            },
+            {
+              "rank": 2,
+              "selectedByCpu": false,
+              "selectedByPlanner": false,
+              "fallback": false,
+              "decision": "summon:ドノマンティス->player_back_left",
+              "features": "summon:ドノマンティス->back-left; noBacklineReach; behindOwnFront:デスシープLv2HP6(act0/1); sameLaneEnemyFront:デスシープLv1HP6(act1/1,focus); after:prepared; fallbackMove:player-front-right->player-back-left:blocksTo",
+              "rootScore": 85.2,
+              "plannerScore": 339.4,
+              "responseScore": 283.8,
+              "ownDelta": 271,
+              "opponentDelta": 296.6,
+              "rolloutScore": 245.8,
+              "rolloutScoreGapToFallback": 62,
+              "rolloutSteps": 60
+            },
+            {
+              "rank": 3,
+              "selectedByCpu": false,
+              "selectedByPlanner": false,
+              "fallback": false,
+              "decision": "summon:ドノマンティス->player_back_right",
+              "features": "summon:ドノマンティス->back-right; noBacklineReach; behindOwnFront:ピグミィLv2HP3(act0/2); sameLaneEnemyFront:デスシープLv1HP6(act1/1); after:prepared; fallbackMove:player-front-right->player-back-left:keepsTo",
+              "rootScore": 85.2,
+              "plannerScore": 330.1,
+              "responseScore": 283.8,
+              "ownDelta": 271,
+              "opponentDelta": 296.6,
+              "rolloutScore": 183.8,
+              "rolloutScoreGapToFallback": 0,
+              "rolloutSteps": 60
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "seed": 994311,
+      "direction": "challenger-as-player",
+      "profiles": {
+        "player": "white_planner",
+        "cpu": "white"
+      },
+      "winner": "cpu",
+      "winnerProfile": "white",
+      "steps": 240,
+      "turns": 21,
+      "playerHp": 0,
+      "cpuHp": 10,
+      "challengerStats": {
+        "decisions": 110,
+        "elapsedMs": 52828.97104300163,
+        "maxDecisionMs": 2446.7094580000266
+      },
+      "events": []
+    },
+    {
+      "seed": 994312,
+      "direction": "challenger-as-player",
+      "profiles": {
+        "player": "white_planner",
+        "cpu": "white"
+      },
+      "winner": "cpu",
+      "winnerProfile": "white",
+      "steps": 305,
+      "turns": 29,
+      "playerHp": 0,
+      "cpuHp": 5,
+      "challengerStats": {
+        "decisions": 158,
+        "elapsedMs": 97548.94778500032,
+        "maxDecisionMs": 4655.073584000114
+      },
+      "events": []
+    },
+    {
+      "seed": 994313,
+      "direction": "challenger-as-player",
+      "profiles": {
+        "player": "white_planner",
+        "cpu": "white"
+      },
+      "winner": "player",
+      "winnerProfile": "white_planner",
+      "steps": 250,
+      "turns": 22,
+      "playerHp": 5,
+      "cpuHp": 0,
+      "challengerStats": {
+        "decisions": 123,
+        "elapsedMs": 103378.21862899791,
+        "maxDecisionMs": 3953.7927919998765
+      },
+      "events": []
+    }
+  ],
+  "events": [
+    {
+      "seed": 994306,
+      "direction": "challenger-as-player",
+      "step": 83,
+      "turnNumber": 8,
+      "side": "player",
+      "elapsedMs": 78644,
+      "inspectionElapsedMs": 77828.4,
+      "rolloutTriggered": true,
+      "adopted": true,
+      "decision": "summon:ボムゾウ->player_back_right",
+      "fallbackDecision": "move:player_front_right->player_back_left",
+      "selectedDecision": "summon:ボムゾウ->player_back_right",
+      "fallbackScore": 333.6,
+      "selectedPlannerScore": 115.6,
+      "runnerUpPlannerScore": 78.8,
+      "selectedRolloutScore": -10.8,
+      "selectedRolloutScoreGapToFallback": 278.2,
+      "rootScoreGapToFallback": 245.8,
+      "plannerMarginToFallback": 43.6,
+      "state": "turn 8 / current player / HP player/cpu 9/10 / stones player/cpu 7/1 / deck player/cpu 18/18 / hand player/cpu 5/5",
+      "board": "player_front_left:PF:ヤンバル Lv1 HP3 act0/1 | player_front_right:PF:ヤンバル Lv2 HP3 act0/1 | cpu_front_left:CF:ドノマンティス Lv2 HP5 act1/1 shield | cpu_front_right:CF:デスシープ Lv2 HP6 act1/1 | cpu_back_left:CB:ヤンバル Lv1 HP3 prep | cpu_back_right:CB:ヤンバル Lv1 HP3 act1/1",
+      "candidates": [
+        {
+          "rank": 1,
+          "selectedByCpu": true,
+          "selectedByPlanner": true,
+          "fallback": false,
+          "decision": "summon:ボムゾウ->player_back_right",
+          "features": "summon:ボムゾウ->back-right; backlineReach; behindOwnFront:ヤンバルLv2HP3(act0/1); sameLaneEnemyFront:デスシープLv2HP6(act1/1); after:prepared; fallbackMove:player-front-right->player-back-left:keepsTo",
+          "rootScore": 87.8,
+          "plannerScore": 115.6,
+          "responseScore": 97.9,
+          "ownDelta": 143.4,
+          "opponentDelta": 52.4,
+          "rolloutScore": -10.8,
+          "rolloutScoreGapToFallback": 278.2,
+          "rolloutSteps": 60
+        },
+        {
+          "rank": 2,
+          "selectedByCpu": false,
+          "selectedByPlanner": false,
+          "fallback": false,
+          "decision": "summon:ボムゾウ->player_back_left",
+          "features": "summon:ボムゾウ->back-left; backlineReach; behindOwnFront:ヤンバルLv1HP3(act0/1); sameLaneEnemyFront:ドノマンティスLv2HP5(act1/1,shield); after:prepared; fallbackMove:player-front-right->player-back-left:blocksTo",
+          "rootScore": 87.8,
+          "plannerScore": 78.8,
+          "responseScore": 97.9,
+          "ownDelta": 143.4,
+          "opponentDelta": 52.4,
+          "rolloutScore": -255.8,
+          "rolloutScoreGapToFallback": 33.2,
+          "rolloutSteps": 60
+        },
+        {
+          "rank": 3,
+          "selectedByCpu": false,
+          "selectedByPlanner": false,
+          "fallback": true,
+          "decision": "move:player_front_right->player_back_left",
+          "features": "move:player-front-right->player-back-left; mover:ヤンバルLv2HP3(act0/1); fallbackMove:player-front-right->player-back-left:keepsTo",
+          "rootScore": 112,
+          "plannerScore": 72,
+          "responseScore": 90.7,
+          "ownDelta": 125,
+          "opponentDelta": 56.4,
+          "rolloutScore": -289,
+          "rolloutScoreGapToFallback": 0,
+          "rolloutSteps": 60
+        }
+      ]
+    },
+    {
+      "seed": 994307,
+      "direction": "challenger-as-player",
+      "step": 58,
+      "turnNumber": 6,
+      "side": "player",
+      "elapsedMs": 97374.8,
+      "inspectionElapsedMs": 97306.7,
+      "rolloutTriggered": true,
+      "adopted": true,
+      "decision": "move:player_front_right->player_back_left",
+      "fallbackDecision": "move:player_front_right->player_back_left",
+      "selectedDecision": "move:player_front_right->player_back_left",
+      "fallbackScore": 219.2,
+      "selectedPlannerScore": 215.3,
+      "runnerUpPlannerScore": 168.9,
+      "selectedRolloutScore": 200.4,
+      "selectedRolloutScoreGapToFallback": 0,
+      "rootScoreGapToFallback": 107.2,
+      "plannerMarginToFallback": 0,
+      "state": "turn 6 / current player / HP player/cpu 10/10 / stones player/cpu 5/1 / deck player/cpu 20/20 / hand player/cpu 6/4",
+      "board": "player_front_left:PF:真勇者ダイン Lv2 HP6 act0/1 | player_front_right:PF:ヤンバル Lv1 HP3 act0/1 | cpu_front_left:CF:デスシープ Lv1 HP6 act1/1 focus,shield | cpu_front_right:CF:デスシープ Lv1 HP6 act1/1 | cpu_back_left:CB:真勇者ダイン Lv1 HP6 prep | cpu_back_right:CB:ピグミィ Lv2 HP3 act2/2",
+      "candidates": [
+        {
+          "rank": 1,
+          "selectedByCpu": true,
+          "selectedByPlanner": true,
+          "fallback": true,
+          "decision": "move:player_front_right->player_back_left",
+          "features": "move:player-front-right->player-back-left; mover:ヤンバルLv1HP3(act0/1); fallbackMove:player-front-right->player-back-left:keepsTo",
+          "rootScore": 112,
+          "plannerScore": 215.3,
+          "responseScore": 160.6,
+          "ownDelta": 149.4,
+          "opponentDelta": 171.8,
+          "rolloutScore": 200.4,
+          "rolloutScoreGapToFallback": 0,
+          "rolloutSteps": 60
+        },
+        {
+          "rank": 2,
+          "selectedByCpu": false,
+          "selectedByPlanner": false,
+          "fallback": false,
+          "decision": "summon:デスシープ->player_back_left",
+          "features": "summon:デスシープ->back-left; noBacklineReach; behindOwnFront:真勇者ダインLv2HP6(act0/1); sameLaneEnemyFront:デスシープLv1HP6(act1/1,focus,shield); after:prepared; fallbackMove:player-front-right->player-back-left:blocksTo",
+          "rootScore": 89.8,
+          "plannerScore": 168.9,
+          "responseScore": 167.8,
+          "ownDelta": 167.8,
+          "opponentDelta": 167.8,
+          "rolloutScore": -124.6,
+          "rolloutScoreGapToFallback": -325,
+          "rolloutSteps": 60
+        },
+        {
+          "rank": 3,
+          "selectedByCpu": false,
+          "selectedByPlanner": false,
+          "fallback": false,
+          "decision": "summon:デスシープ->player_back_left",
+          "features": "summon:デスシープ->back-left; noBacklineReach; behindOwnFront:真勇者ダインLv2HP6(act0/1); sameLaneEnemyFront:デスシープLv1HP6(act1/1,focus,shield); after:prepared; fallbackMove:player-front-right->player-back-left:blocksTo",
+          "rootScore": 89.8,
+          "plannerScore": 168.9,
+          "responseScore": 167.8,
+          "ownDelta": 167.8,
+          "opponentDelta": 167.8,
+          "rolloutScore": -124.6,
+          "rolloutScoreGapToFallback": -325,
+          "rolloutSteps": 60
+        }
+      ]
+    },
+    {
+      "seed": 994310,
+      "direction": "challenger-as-player",
+      "step": 60,
+      "turnNumber": 6,
+      "side": "player",
+      "elapsedMs": 80602.7,
+      "inspectionElapsedMs": 81193.8,
+      "rolloutTriggered": true,
+      "adopted": true,
+      "decision": "move:player_front_right->player_back_left",
+      "fallbackDecision": "move:player_front_right->player_back_left",
+      "selectedDecision": "move:player_front_right->player_back_left",
+      "fallbackScore": 253,
+      "selectedPlannerScore": 341.8,
+      "runnerUpPlannerScore": 339.4,
+      "selectedRolloutScore": 183.8,
+      "selectedRolloutScoreGapToFallback": 0,
+      "rootScoreGapToFallback": 114.5,
+      "plannerMarginToFallback": 0,
+      "state": "turn 6 / current player / HP player/cpu 10/10 / stones player/cpu 4/0 / deck player/cpu 20/20 / hand player/cpu 5/3",
+      "board": "player_front_left:PF:デスシープ Lv2 HP6 act0/1 | player_front_right:PF:ピグミィ Lv2 HP3 act0/2 | cpu_front_left:CF:デスシープ Lv1 HP6 act1/1 focus | cpu_front_right:CF:デスシープ Lv1 HP6 act1/1",
+      "candidates": [
+        {
+          "rank": 1,
+          "selectedByCpu": true,
+          "selectedByPlanner": true,
+          "fallback": true,
+          "decision": "move:player_front_right->player_back_left",
+          "features": "move:player-front-right->player-back-left; mover:ピグミィLv2HP3(act0/2); fallbackMove:player-front-right->player-back-left:keepsTo",
+          "rootScore": 138.5,
+          "plannerScore": 341.8,
+          "responseScore": 283.8,
+          "ownDelta": 271,
+          "opponentDelta": 296.6,
+          "rolloutScore": 183.8,
+          "rolloutScoreGapToFallback": 0,
+          "rolloutSteps": 60
+        },
+        {
+          "rank": 2,
+          "selectedByCpu": false,
+          "selectedByPlanner": false,
+          "fallback": false,
+          "decision": "summon:ドノマンティス->player_back_left",
+          "features": "summon:ドノマンティス->back-left; noBacklineReach; behindOwnFront:デスシープLv2HP6(act0/1); sameLaneEnemyFront:デスシープLv1HP6(act1/1,focus); after:prepared; fallbackMove:player-front-right->player-back-left:blocksTo",
+          "rootScore": 85.2,
+          "plannerScore": 339.4,
+          "responseScore": 283.8,
+          "ownDelta": 271,
+          "opponentDelta": 296.6,
+          "rolloutScore": 245.8,
+          "rolloutScoreGapToFallback": 62,
+          "rolloutSteps": 60
+        },
+        {
+          "rank": 3,
+          "selectedByCpu": false,
+          "selectedByPlanner": false,
+          "fallback": false,
+          "decision": "summon:ドノマンティス->player_back_right",
+          "features": "summon:ドノマンティス->back-right; noBacklineReach; behindOwnFront:ピグミィLv2HP3(act0/2); sameLaneEnemyFront:デスシープLv1HP6(act1/1); after:prepared; fallbackMove:player-front-right->player-back-left:keepsTo",
+          "rootScore": 85.2,
+          "plannerScore": 330.1,
+          "responseScore": 283.8,
+          "ownDelta": 271,
+          "opponentDelta": 296.6,
+          "rolloutScore": 183.8,
+          "rolloutScoreGapToFallback": 0,
+          "rolloutSteps": 60
+        }
+      ]
+    }
+  ],
+  "conclusion": [
+    "16 games. challenger wins 10, inspected decisions 3, rollout-triggered decisions 3.",
+    "max challenger decision 97374.8ms, avg challenger decision 712.1ms.",
+    "rollout adopted 3/3; avg selected rollout gap 92.7.",
+    "Next implementation target is the repeated rollout-trigger shape, not a broad coefficient change."
+  ]
+}
