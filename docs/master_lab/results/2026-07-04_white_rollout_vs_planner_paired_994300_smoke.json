@@ -1,0 +1,50 @@
+{
+  "generatedAt": "2026-07-04T06:00:21.115Z",
+  "options": {
+    "seedStart": 994300,
+    "count": 1,
+    "deckPreset": "master-lab-white-1377-death-sheep3",
+    "masterIds": {
+      "player": "white",
+      "cpu": "white"
+    },
+    "maxSteps": 360,
+    "maxTurns": 90,
+    "baselineProfile": "white_planner",
+    "challengerProfile": "white_rollout"
+  },
+  "pairs": [
+    {
+      "seed": 994300,
+      "classification": "player_seat_sweep",
+      "challengerAsCpu": {
+        "winner": "player",
+        "winnerProfile": "white_planner",
+        "steps": 238,
+        "turns": 22,
+        "issueCount": 0,
+        "warningCount": 0
+      },
+      "challengerAsPlayer": {
+        "winner": "player",
+        "winnerProfile": "white_rollout",
+        "steps": 238,
+        "turns": 22,
+        "issueCount": 0,
+        "warningCount": 0
+      }
+    }
+  ],
+  "summary": {
+    "challenger_profile_sweep": 0,
+    "baseline_profile_sweep": 0,
+    "player_seat_sweep": 1,
+    "cpu_seat_sweep": 0,
+    "split_or_draw": 0,
+    "seeds": 1,
+    "challengerPairedScore": 0,
+    "baselinePairedScore": 0,
+    "seatBiasSeeds": 1,
+    "splitOrDraw": 0
+  }
+}

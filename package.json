@@ -60,6 +60,7 @@
     "audit:deck-submissions": "vite-node scripts/deck-submission-audit.ts",
     "import:deck-submissions": "node scripts/import-cardhero-bu-decks.mjs",
     "validate:auto-play": "vite-node scripts/auto-play-validation.ts",
+    "benchmark:ai-paired-seat": "vite-node scripts/ai-paired-seat-benchmark.ts",
     "evaluate:units": "vite-node scripts/unit-evaluation.ts"
   },
   "dependencies": {
