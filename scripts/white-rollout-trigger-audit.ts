@@ -8,10 +8,10 @@ import {
   type CpuAiProfiles,
   type CpuDecision,
 } from "../src/game/cpuAi";
-import { getCardName } from "../src/game/cards";
+import { getCardName, getMonsterDef } from "../src/game/cards";
 import { buildDeckPresetCardIds, deckPresetAllowsSpecial, type DeckPresetId } from "../src/game/deckPresets";
 import { createInitialGame, runAutoStep, targetToKey } from "../src/game/rules";
-import type { GameState, PlayerId, SlotKey } from "../src/game/types";
+import type { CommandDef, GameState, Lane, PlayerId, Row, SlotKey } from "../src/game/types";
 import { average, escapeMarkdownTableCell, readInteger, readString, round, writeReport } from "./lib/cli";
 
 type Direction = "challenger-as-cpu" | "challenger-as-player";
@@ -44,6 +44,7 @@ interface RolloutTriggerCandidate {
   selectedByPlanner: boolean;
   fallback: boolean;
   decision: string;
+  features: string;
   rootScore: number;
   plannerScore: number;
   responseScore: number;
@@ -274,6 +275,7 @@ function buildEvent(
         selectedByPlanner: key === selectedKey,
         fallback: key === fallbackKey,
         decision: decisionLabel(state, candidate.decision),
+        features: candidateFeatureSummary(state, candidate.decision, candidate.afterRootState, inspection.fallbackDecision),
         rootScore: round(candidate.rootScore, 1),
         plannerScore: round(candidate.plannerScore, 1),
         responseScore: round(candidate.responseScore, 1),
@@ -436,6 +438,100 @@ function monsterNameAt(state: GameState, slotKey: SlotKey): string | undefined {
   return monster ? getCardName(monster.cardId) : undefined;
 }
 
+function candidateFeatureSummary(
+  before: GameState,
+  decision: CpuDecision,
+  afterRoot: GameState,
+  fallbackDecision: CpuDecision | undefined,
+): string {
+  const pieces: string[] = [];
+  if (decision.type === "summon") {
+    const card = before.players[before.currentPlayer].hand.find((handCard) => handCard.instanceId === decision.handInstanceId);
+    const slot = before.slots[decision.slotKey];
+    const summonName = card ? getCardName(card.cardId) : decision.handInstanceId;
+    pieces.push(`summon:${summonName}->${slot.row}-${slot.lane}`);
+    if (card) {
+      pieces.push(monsterHasBacklineAttackPattern(card.cardId) ? "backlineReach" : "noBacklineReach");
+    }
+    const ownFront = before.slots[slotKey(before.currentPlayer, "front", slot.lane)].monster;
+    if (ownFront) {
+      pieces.push(`behindOwnFront:${monsterShort(before, slotKey(before.currentPlayer, "front", slot.lane))}`);
+    }
+    const enemyFrontSlotKey = slotKey(opponentOfLocal(before.currentPlayer), "front", slot.lane);
+    const enemyFront = before.slots[enemyFrontSlotKey].monster;
+    if (enemyFront) {
+      pieces.push(`sameLaneEnemyFront:${monsterShort(before, enemyFrontSlotKey)}`);
+    }
+    const summoned = afterRoot.slots[decision.slotKey].monster;
+    if (summoned) {
+      pieces.push(`after:${summoned.status}`);
+    }
+  } else if (decision.type === "move") {
+    pieces.push(`move:${slotCoord(before, decision.fromSlotKey)}->${slotCoord(before, decision.toSlotKey)}`);
+    pieces.push(`mover:${monsterShort(before, decision.fromSlotKey)}`);
+  } else if (decision.type === "attack" && decision.action.target.kind === "monster") {
+    pieces.push(`attackTarget:${slotCoord(before, decision.action.target.slotKey)}:${monsterShort(before, decision.action.target.slotKey)}`);
+  }
+
+  if (fallbackDecision?.type === "move") {
+    pieces.push(
+      decision.type === "summon" && decision.slotKey === fallbackDecision.toSlotKey
+        ? `fallbackMove:${slotCoord(before, fallbackDecision.fromSlotKey)}->${slotCoord(before, fallbackDecision.toSlotKey)}:blocksTo`
+        : `fallbackMove:${slotCoord(before, fallbackDecision.fromSlotKey)}->${slotCoord(before, fallbackDecision.toSlotKey)}:keepsTo`,
+    );
+  }
+
+  return pieces.join("; ") || "-";
+}
+
+function monsterHasBacklineAttackPattern(cardId: string): boolean {
+  const def = getMonsterDef(cardId);
+  return def.levels.some((level) => level.commands.some(commandHasBacklineAttackPattern));
+}
+
+function commandHasBacklineAttackPattern(command: CommandDef): boolean {
+  if (!command.implemented || command.power <= 0) {
+    return false;
+  }
+  if (command.rangeText === "前衛攻撃" || command.rangeText === "後衛攻撃" || command.rangeText === "桂馬飛び") {
+    return true;
+  }
+  return [
+    "one_skip",
+    "two_skip",
+    "straight",
+    "piercing",
+    "decreasing_straight",
+    "line",
+    "any_monster",
+    "any_target",
+    "master",
+  ].includes(command.range);
+}
+
+function monsterShort(state: GameState, key: SlotKey): string {
+  const monster = state.slots[key].monster;
+  if (!monster) {
+    return "empty";
+  }
+  const status = monster.status === "prepared" ? "prep" : `act${monster.actionCount}/${monster.actionLimit}`;
+  const flags = [monster.focused ? "focus" : "", monster.shielded ? "shield" : ""].filter(Boolean).join(",");
+  return `${getCardName(monster.cardId)}Lv${monster.level}HP${monster.hp}${flags ? `(${status},${flags})` : `(${status})`}`;
+}
+
+function slotCoord(state: GameState, key: SlotKey): string {
+  const slot = state.slots[key];
+  return `${slot.owner}-${slot.row}-${slot.lane}`;
+}
+
+function slotKey(playerId: PlayerId, row: Row, lane: Lane): SlotKey {
+  return `${playerId}_${row}_${lane}` as SlotKey;
+}
+
+function opponentOfLocal(playerId: PlayerId): PlayerId {
+  return playerId === "player" ? "cpu" : "player";
+}
+
 function buildConclusion(games: readonly RolloutTriggerGame[], events: readonly RolloutTriggerEvent[]): string[] {
   const rolloutEvents = events.filter((event) => event.rolloutTriggered);
   const wins = games.filter((game) => game.winnerProfile === game.profiles[challengerPlayer(game.direction)]).length;
@@ -452,7 +548,11 @@ function buildConclusion(games: readonly RolloutTriggerGame[], events: readonly 
       event.selectedRolloutScoreGapToFallback === undefined ? [] : [event.selectedRolloutScoreGapToFallback],
     ));
     lines.push(`rollout adopted ${adopted}/${rolloutEvents.length}; avg selected rollout gap ${round(avgGap, 1)}.`);
-    lines.push("Next implementation target is the repeated rollout-trigger shape, not a broad coefficient change.");
+    lines.push(
+      rolloutEvents.length >= 2
+        ? "Next implementation target is the repeated rollout-trigger shape, not a broad coefficient change."
+        : "Only one rollout-triggered decision was captured. Treat it as a local clue until the same feature repeats across seeds.",
+    );
   }
   return lines;
 }
@@ -508,15 +608,15 @@ function formatMarkdown(report: RolloutTriggerReport): string {
         ? []
         : [`- selected rollout gap to fallback: ${event.selectedRolloutScoreGapToFallback}`]),
       "",
-      "| rank | cpu | planner | fallback | decision | root | planner score | response | own | opp | rollout | score | gap |",
-      "| ---: | --- | --- | --- | --- | ---: | ---: | ---: | ---: | ---: | --- | ---: | ---: |",
+      "| rank | cpu | planner | fallback | decision | features | root | planner score | response | own | opp | rollout | score | gap |",
+      "| ---: | --- | --- | --- | --- | --- | ---: | ---: | ---: | ---: | ---: | --- | ---: | ---: |",
     );
     for (const candidate of event.candidates) {
       const rollout = candidate.rolloutWinnerProfile ?? candidate.rolloutWinner ?? "-";
       lines.push(
         `| ${candidate.rank} | ${candidate.selectedByCpu ? "Y" : ""} | ${candidate.selectedByPlanner ? "Y" : ""} | ` +
-          `${candidate.fallback ? "Y" : ""} | ${escapeMarkdownTableCell(candidate.decision)} | ${candidate.rootScore} | ` +
-          `${candidate.plannerScore} | ${candidate.responseScore} | ${candidate.ownDelta} | ${candidate.opponentDelta} | ` +
+          `${candidate.fallback ? "Y" : ""} | ${escapeMarkdownTableCell(candidate.decision)} | ${escapeMarkdownTableCell(candidate.features)} | ` +
+          `${candidate.rootScore} | ${candidate.plannerScore} | ${candidate.responseScore} | ${candidate.ownDelta} | ${candidate.opponentDelta} | ` +
           `${rollout} | ${candidate.rolloutScore ?? "-"} | ${candidate.rolloutScoreGapToFallback ?? "-"} |`,
       );
     }

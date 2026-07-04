@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-07-04T06:33:21.031Z",
+  "generatedAt": "2026-07-04T06:45:07.056Z",
   "options": {
     "seedStart": 994306,
     "count": 1,
@@ -9,11 +9,11 @@
     "deckPreset": "master-lab-white-1377-death-sheep3",
     "maxSteps": 360,
     "maxTurns": 90,
-    "baselineProfile": "white_planner",
+    "baselineProfile": "white",
     "challengerProfile": "white_rollout",
     "inspectThresholdMs": 3000,
     "candidateLimit": 4,
-    "streamProgress": true,
+    "streamProgress": false,
     "markdownPath": "docs/master_lab/results/2026-07-04_white_rollout_vs_planner_trigger_audit_994306_player.md",
     "jsonPath": "docs/master_lab/results/2026-07-04_white_rollout_vs_planner_trigger_audit_994306_player.json"
   },
@@ -23,7 +23,7 @@
       "direction": "challenger-as-player",
       "profiles": {
         "player": "white_rollout",
-        "cpu": "white_planner"
+        "cpu": "white"
       },
       "winner": "player",
       "winnerProfile": "white_rollout",
@@ -33,8 +33,8 @@
       "cpuHp": 0,
       "challengerStats": {
         "decisions": 137,
-        "elapsedMs": 158054.09366299995,
-        "maxDecisionMs": 96165.236417
+        "elapsedMs": 141489.33240999983,
+        "maxDecisionMs": 79290.142625
       },
       "events": [
         {
@@ -43,8 +43,8 @@
           "step": 83,
           "turnNumber": 8,
           "side": "player",
-          "elapsedMs": 96165.2,
-          "inspectionElapsedMs": 94566.9,
+          "elapsedMs": 79290.1,
+          "inspectionElapsedMs": 77272.2,
           "rolloutTriggered": true,
           "adopted": true,
           "decision": "summon:ボムゾウ->player_back_right",
@@ -66,6 +66,7 @@
               "selectedByPlanner": true,
               "fallback": false,
               "decision": "summon:ボムゾウ->player_back_right",
+              "features": "summon:ボムゾウ->back-right; backlineReach; behindOwnFront:ヤンバルLv2HP3(act0/1); sameLaneEnemyFront:デスシープLv2HP6(act1/1); after:prepared; fallbackMove:player-front-right->player-back-left:keepsTo",
               "rootScore": 87.8,
               "plannerScore": 115.6,
               "responseScore": 97.9,
@@ -81,6 +82,7 @@
               "selectedByPlanner": false,
               "fallback": false,
               "decision": "summon:ボムゾウ->player_back_left",
+              "features": "summon:ボムゾウ->back-left; backlineReach; behindOwnFront:ヤンバルLv1HP3(act0/1); sameLaneEnemyFront:ドノマンティスLv2HP5(act1/1,shield); after:prepared; fallbackMove:player-front-right->player-back-left:blocksTo",
               "rootScore": 87.8,
               "plannerScore": 78.8,
               "responseScore": 97.9,
@@ -96,6 +98,7 @@
               "selectedByPlanner": false,
               "fallback": true,
               "decision": "move:player_front_right->player_back_left",
+              "features": "move:player-front-right->player-back-left; mover:ヤンバルLv2HP3(act0/1); fallbackMove:player-front-right->player-back-left:keepsTo",
               "rootScore": 112,
               "plannerScore": 72,
               "responseScore": 90.7,
@@ -117,8 +120,8 @@
       "step": 83,
       "turnNumber": 8,
       "side": "player",
-      "elapsedMs": 96165.2,
-      "inspectionElapsedMs": 94566.9,
+      "elapsedMs": 79290.1,
+      "inspectionElapsedMs": 77272.2,
       "rolloutTriggered": true,
       "adopted": true,
       "decision": "summon:ボムゾウ->player_back_right",
@@ -140,6 +143,7 @@
           "selectedByPlanner": true,
           "fallback": false,
           "decision": "summon:ボムゾウ->player_back_right",
+          "features": "summon:ボムゾウ->back-right; backlineReach; behindOwnFront:ヤンバルLv2HP3(act0/1); sameLaneEnemyFront:デスシープLv2HP6(act1/1); after:prepared; fallbackMove:player-front-right->player-back-left:keepsTo",
           "rootScore": 87.8,
           "plannerScore": 115.6,
           "responseScore": 97.9,
@@ -155,6 +159,7 @@
           "selectedByPlanner": false,
           "fallback": false,
           "decision": "summon:ボムゾウ->player_back_left",
+          "features": "summon:ボムゾウ->back-left; backlineReach; behindOwnFront:ヤンバルLv1HP3(act0/1); sameLaneEnemyFront:ドノマンティスLv2HP5(act1/1,shield); after:prepared; fallbackMove:player-front-right->player-back-left:blocksTo",
           "rootScore": 87.8,
           "plannerScore": 78.8,
           "responseScore": 97.9,
@@ -170,6 +175,7 @@
           "selectedByPlanner": false,
           "fallback": true,
           "decision": "move:player_front_right->player_back_left",
+          "features": "move:player-front-right->player-back-left; mover:ヤンバルLv2HP3(act0/1); fallbackMove:player-front-right->player-back-left:keepsTo",
           "rootScore": 112,
           "plannerScore": 72,
           "responseScore": 90.7,
@@ -184,8 +190,8 @@
   ],
   "conclusion": [
     "1 games. challenger wins 1, inspected decisions 1, rollout-triggered decisions 1.",
-    "max challenger decision 96165.2ms, avg challenger decision 1153.7ms.",
+    "max challenger decision 79290.1ms, avg challenger decision 1032.8ms.",
     "rollout adopted 1/1; avg selected rollout gap 278.2.",
-    "Next implementation target is the repeated rollout-trigger shape, not a broad coefficient change."
+    "Only one rollout-triggered decision was captured. Treat it as a local clue until the same feature repeats across seeds."
   ]
 }
