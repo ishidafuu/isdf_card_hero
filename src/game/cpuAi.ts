@@ -265,6 +265,7 @@ const WHITE_AI_BASE_TUNING = {
     whiteFrontChipResponsePenalty: 86,
     whiteFrontThreatFocusCounterBonus: 72,
     whiteShieldFrontAceBonus: 120,
+    whiteBacklineMoveBeforeSummonPenalty: 120,
     whiteThreatSourceAttackBonus: 8,
     whiteDeathSheepSpecialLockPenalty: 90,
   },
@@ -2137,6 +2138,15 @@ function decisionSituationalBonus(
       bias.whiteLastBackSlotNoReachSummonGuardPenalty,
     );
   }
+  if (bias.whiteBacklineMoveBeforeSummonPenalty) {
+    bonus -= whiteBacklineMoveBeforeSummonDecisionPenalty(
+      before,
+      after,
+      decision,
+      perspective,
+      bias.whiteBacklineMoveBeforeSummonPenalty,
+    );
+  }
   if (bias.whiteLastBackSlotHoldPlanBonus) {
     bonus += whiteLastBackSlotHoldPlanDecisionBonus(
       before,
@@ -2969,6 +2979,119 @@ function whiteLastBackSlotNoReachSummonGuardDecisionPenalty(
   const durableFrontPenalty = afterFront.hp >= 3 ? Math.min(25, value * 0.25) : 0;
   const lowStonePenalty = after.players[perspective].stones <= 1 ? Math.min(30, value * 0.3) : 0;
   return value + handPressurePenalty + deckPressurePenalty + durableFrontPenalty + lowStonePenalty;
+}
+
+function whiteBacklineMoveBeforeSummonDecisionPenalty(
+  before: GameState,
+  after: GameState,
+  decision: CpuDecision,
+  perspective: PlayerId,
+  value: number,
+): number {
+  if (
+    value <= 0 ||
+    before.players[perspective].masterId !== "white" ||
+    before.players[opponentOf(perspective)].masterId !== "white" ||
+    decision.type !== "summon" ||
+    after.winner === perspective ||
+    summonWakeCreatesImmediateWork(before, decision.handInstanceId, decision.slotKey) ||
+    emptyBackSlotCountForPlayer(before, perspective) !== 1 ||
+    emptyBackSlotCountForPlayer(after, perspective) !== 0
+  ) {
+    return 0;
+  }
+
+  const summonSlot = after.slots[decision.slotKey];
+  const summoned = summonSlot.monster;
+  if (
+    !summoned ||
+    summoned.owner !== perspective ||
+    summonSlot.row !== "back"
+  ) {
+    return 0;
+  }
+
+  const currentSlotScore = backSummonSupportScore(before, decision.slotKey, perspective);
+  const createdSlotScore = bestBackSlotCreatedByActiveBacklineMoveScore(
+    before,
+    decision.handInstanceId,
+    decision.slotKey,
+    perspective,
+  );
+  if (createdSlotScore < currentSlotScore + 32) {
+    return 0;
+  }
+
+  const lowStonePenalty = after.players[perspective].stones <= 2 ? Math.min(30, value * 0.25) : 0;
+  const laneQualityPenalty = Math.min(70, (createdSlotScore - currentSlotScore) * 0.45);
+  return value + laneQualityPenalty + lowStonePenalty;
+}
+
+function bestBackSlotCreatedByActiveBacklineMoveScore(
+  state: GameState,
+  handInstanceId: string,
+  currentSummonSlotKey: SlotKey,
+  perspective: PlayerId,
+): number {
+  let bestScore = 0;
+  for (const fromSlotKey of FIELD_ORDER_BY_PLAYER[perspective]) {
+    const fromSlot = state.slots[fromSlotKey];
+    const mover = fromSlot.monster;
+    if (
+      fromSlot.row !== "back" ||
+      !mover ||
+      mover.owner !== perspective ||
+      mover.status !== "active" ||
+      mover.actionCount >= mover.actionLimit
+    ) {
+      continue;
+    }
+
+    for (const toSlotKey of getMovableTargets(state, fromSlotKey)) {
+      const toSlot = state.slots[toSlotKey];
+      if (toSlot.row !== "front" || toSlot.monster) {
+        continue;
+      }
+
+      let moved: GameState;
+      try {
+        moved = moveMonster(state, fromSlotKey, toSlotKey);
+      } catch {
+        continue;
+      }
+      const moverCanWorkAfterMove = getMonsterAiTrait(mover.cardId).role === "front" ||
+        mover.actionLimit > 1 ||
+        bestAttackOpportunityScore(moved, toSlotKey) > bestAttackOpportunityScore(state, fromSlotKey) + 20;
+      if (!moverCanWorkAfterMove) {
+        continue;
+      }
+      if (!canSummonTo(moved, handInstanceId, fromSlotKey) || fromSlotKey === currentSummonSlotKey) {
+        continue;
+      }
+
+      const score = backSummonSupportScore(moved, fromSlotKey, perspective);
+      bestScore = Math.max(bestScore, score);
+    }
+  }
+  return bestScore;
+}
+
+function backSummonSupportScore(state: GameState, slotKey: SlotKey, perspective: PlayerId): number {
+  const slot = state.slots[slotKey];
+  if (slot.owner !== perspective || slot.row !== "back") {
+    return 0;
+  }
+
+  const frontMonster = state.slots[frontSlotFor(slot)].monster;
+  if (!frontMonster || frontMonster.owner !== perspective) {
+    return 0;
+  }
+
+  const roleBonus = getMonsterAiTrait(frontMonster.cardId).role === "front" ? 34 : 0;
+  const activeBonus = frontMonster.status === "active" ? 10 : 0;
+  const levelBonus = frontMonster.level * 14;
+  const hpBonus = Math.min(18, frontMonster.hp * 3);
+  return 28 + roleBonus + activeBonus + levelBonus + hpBonus;
 }
 
 function whiteLastBackSlotHoldPlanDecisionBonus(

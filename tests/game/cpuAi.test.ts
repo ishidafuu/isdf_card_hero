@@ -2219,6 +2219,79 @@ describe("cpu ai", () => {
     expect(guarded?.totalScore).toBeLessThan((baseline?.totalScore ?? 0) - 80);
   });
 
+  it("moves an active backline attacker before filling the last back slot in a white mirror", () => {
+    const game = createCpuGame([{ cardId: "yanbaru", instanceId: "cpu_move_first_yanbaru" }]);
+    game.players.cpu.masterId = "white";
+    game.players.player.masterId = "white";
+    game.players.cpu.stones = 5;
+    game.players.player.stones = 2;
+    for (const slot of Object.values(game.slots)) {
+      delete slot.monster;
+    }
+    game.slots.cpu_front_left.monster = createActiveMonster("card_047", "cpu", {
+      instanceId: "cpu_move_first_dyne",
+      level: 3,
+      hp: 6,
+      investedStones: 3,
+      actionCount: 1,
+    });
+    game.slots.cpu_back_left.monster = createActiveMonster("polyspinner", "cpu", {
+      instanceId: "cpu_move_first_polyspinner",
+      hp: 3,
+      actionLimit: 2,
+      focused: true,
+    });
+    game.slots.player_front_right.monster = createActiveMonster("card_047", "player", {
+      instanceId: "player_move_first_dyne_front",
+      level: 2,
+      hp: 6,
+      investedStones: 2,
+      actionCount: 1,
+    });
+    game.slots.player_back_left.monster = createActiveMonster("card_047", "player", {
+      instanceId: "player_move_first_dyne_back",
+      status: "prepared",
+      hp: 6,
+    });
+    game.slots.player_back_right.monster = createActiveMonster("card_133", "player", {
+      instanceId: "player_move_first_death_sheep",
+      level: 2,
+      hp: 6,
+      actionCount: 0,
+      focused: true,
+    });
+
+    const whitePlannerOptions = { profiles: { cpu: "white_planner" as const, player: "white" as const } };
+    const findSummon = (options = {}) =>
+      inspectCpuDecisionEvaluations(game, { ...whitePlannerOptions, ...options }).find(
+        (evaluation) =>
+          evaluation.decision.type === "summon" &&
+          evaluation.decision.handInstanceId === "cpu_move_first_yanbaru" &&
+          evaluation.decision.slotKey === "cpu_back_right",
+      );
+    const findMove = (options = {}) =>
+      inspectCpuDecisionEvaluations(game, { ...whitePlannerOptions, ...options }).find(
+        (evaluation) =>
+          evaluation.decision.type === "move" &&
+          evaluation.decision.fromSlotKey === "cpu_back_left" &&
+          evaluation.decision.toSlotKey === "cpu_front_right",
+      );
+
+    const defaultSummon = findSummon();
+    const defaultMove = findMove();
+    const disabledSummon = findSummon({
+      tunings: { cpu: { situationalBias: { whiteBacklineMoveBeforeSummonPenalty: 0 } } },
+    });
+    const selected = chooseCpuDecision(game, whitePlannerOptions);
+
+    expect(defaultSummon).toBeDefined();
+    expect(defaultMove).toBeDefined();
+    expect(disabledSummon).toBeDefined();
+    expect(defaultSummon?.totalScore).toBeLessThan((disabledSummon?.totalScore ?? 0) - 100);
+    expect(defaultMove?.totalScore ?? 0).toBeGreaterThan(defaultSummon?.totalScore ?? 0);
+    expect(decisionTestSignature(selected)).toBe("move:cpu_back_left:cpu_front_right");
+  });
+
   it("uses the last back-slot no-reach guard only in the default white-vs-black matchup", () => {
     const createLastSlotGame = (opponentMasterId: "black" | "white") => {
       const game = createCpuGame([{ cardId: "card_047", instanceId: "cpu_last_slot_dyne" }]);

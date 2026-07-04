@@ -113,6 +113,7 @@ export interface CpuAiTuning {
     whiteLowStoneBackSlotAlternativeBonus?: number;
     whiteBackSlotFutureStateBonus?: number;
     whiteLastBackSlotNoReachSummonGuardPenalty?: number;
+    whiteBacklineMoveBeforeSummonPenalty?: number;
     whiteLastBackSlotHoldPlanBonus?: number;
     whiteDeathSheepSpecialLockPenalty?: number;
     whiteBlackUnsafeMasterAttackPenalty?: number;
