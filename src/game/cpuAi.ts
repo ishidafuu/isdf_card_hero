@@ -216,6 +216,9 @@ type CpuAiProfileConfig = {
   terminalPlanRolloutRequireFallbackMove?: number;
   terminalPlanRolloutRequirePlannerSummon?: number;
   terminalPlanRolloutRequirePlannerSummonBacklineReach?: number;
+  terminalPlanRolloutAllowFrontFocusStripAttack?: number;
+  terminalPlanRolloutFrontFocusStripAttackMaxRootScoreGap?: number;
+  terminalPlanRolloutFrontFocusStripAttackSteps?: number;
   terminalPlanRolloutOncePerTurn?: number;
 };
 
@@ -386,6 +389,9 @@ const CPU_AI_PROFILE_CONFIG: Record<CpuAiProfile, CpuAiProfileConfig> = {
     terminalPlanRolloutRequireFallbackMove: 1,
     terminalPlanRolloutRequirePlannerSummon: 1,
     terminalPlanRolloutRequirePlannerSummonBacklineReach: 1,
+    terminalPlanRolloutAllowFrontFocusStripAttack: 1,
+    terminalPlanRolloutFrontFocusStripAttackMaxRootScoreGap: 460,
+    terminalPlanRolloutFrontFocusStripAttackSteps: 28,
     terminalPlanRolloutOncePerTurn: 1,
   },
   white_rollout: {
@@ -427,6 +433,9 @@ const CPU_AI_PROFILE_CONFIG: Record<CpuAiProfile, CpuAiProfileConfig> = {
     terminalPlanRolloutRequireFallbackMove: 1,
     terminalPlanRolloutRequirePlannerSummon: 1,
     terminalPlanRolloutRequirePlannerSummonBacklineReach: 1,
+    terminalPlanRolloutAllowFrontFocusStripAttack: 1,
+    terminalPlanRolloutFrontFocusStripAttackMaxRootScoreGap: 460,
+    terminalPlanRolloutFrontFocusStripAttackSteps: 28,
     terminalPlanRolloutOncePerTurn: 1,
   },
   omniscient: {
@@ -1011,6 +1020,18 @@ function applyCpuAiSearchOptions(
       search.terminalPlanRolloutRequirePlannerSummonBacklineReach,
       base.terminalPlanRolloutRequirePlannerSummonBacklineReach,
     ),
+    terminalPlanRolloutAllowFrontFocusStripAttack: normalizedOptionalSearchNumber(
+      search.terminalPlanRolloutAllowFrontFocusStripAttack,
+      base.terminalPlanRolloutAllowFrontFocusStripAttack,
+    ),
+    terminalPlanRolloutFrontFocusStripAttackMaxRootScoreGap: normalizedOptionalSearchNumber(
+      search.terminalPlanRolloutFrontFocusStripAttackMaxRootScoreGap,
+      base.terminalPlanRolloutFrontFocusStripAttackMaxRootScoreGap,
+    ),
+    terminalPlanRolloutFrontFocusStripAttackSteps: normalizedOptionalSearchNumber(
+      search.terminalPlanRolloutFrontFocusStripAttackSteps,
+      base.terminalPlanRolloutFrontFocusStripAttackSteps,
+    ),
     terminalPlanRolloutOncePerTurn: normalizedOptionalSearchNumber(
       search.terminalPlanRolloutOncePerTurn,
       base.terminalPlanRolloutOncePerTurn,
@@ -1325,17 +1346,31 @@ function applyTerminalPlanRolloutScores(
     return [...selections];
   }
 
+  const isFrontFocusStripRolloutTrigger = isWhiteMirrorEnemyFrontFocusStripAttackSelection(rootState, rolloutTrigger.candidate);
+  const effectiveRolloutSteps = isFrontFocusStripRolloutTrigger
+    ? Math.trunc(config.terminalPlanRolloutFrontFocusStripAttackSteps ?? rolloutSteps)
+    : rolloutSteps;
+  if (effectiveRolloutSteps <= 0) {
+    return [...selections];
+  }
+
   const candidateLimit = Math.trunc(config.terminalPlanRolloutCandidateLimit ?? terminalRanked.length);
   const rolloutKeys = new Set<string>();
-  terminalRanked.slice(0, Math.max(1, candidateLimit)).forEach((selection) => {
-    rolloutKeys.add(cpuDecisionKey(selection.candidate.decision));
-  });
+  rolloutKeys.add(cpuDecisionKey(rolloutTrigger.candidate.decision));
+  if (!isFrontFocusStripRolloutTrigger) {
+    terminalRanked.slice(0, Math.max(1, candidateLimit)).forEach((selection) => {
+      rolloutKeys.add(cpuDecisionKey(selection.candidate.decision));
+    });
+  }
   if (fallbackKey && terminalRanked.some((selection) => cpuDecisionKey(selection.candidate.decision) === fallbackKey)) {
     rolloutKeys.add(fallbackKey);
   }
 
   const rolloutCache = new Map<string, TerminalPlanRolloutResult>();
-  const rolloutOptions = withoutTerminalPlanRolloutOptions(options);
+  const rolloutOptions = withoutTerminalPlanRolloutOptions(
+    options,
+    isFrontFocusStripRolloutTrigger ? "white" : undefined,
+  );
   const rolloutFor = (selection: TerminalPlanSelection): TerminalPlanRolloutResult | undefined => {
     const key = cpuDecisionKey(selection.candidate.decision);
     if (!rolloutKeys.has(key)) {
@@ -1345,7 +1380,13 @@ function applyTerminalPlanRolloutScores(
     if (cached) {
       return cached;
     }
-    const result = evaluateTerminalPlanRollout(selection.candidate.after, perspective, rolloutSteps, rolloutOptions, config);
+    const result = evaluateTerminalPlanRollout(
+      selection.candidate.after,
+      perspective,
+      effectiveRolloutSteps,
+      rolloutOptions,
+      config,
+    );
     rolloutCache.set(key, result);
     return result;
   };
@@ -1360,9 +1401,15 @@ function applyTerminalPlanRolloutScores(
     const normalizedRolloutScore = clampNumber(rollout.score, -1_000, 1_000);
     const rolloutBonus = normalizedRolloutScore * rolloutWeight;
     const rolloutScoreGapToFallback = fallbackRolloutScore === undefined ? undefined : rollout.score - fallbackRolloutScore;
+    const rolloutConfirmationBonus =
+      config.terminalPlanRolloutAdoptionMinScoreGap !== undefined &&
+      rolloutScoreGapToFallback !== undefined &&
+      rolloutScoreGapToFallback >= config.terminalPlanRolloutAdoptionMinScoreGap
+        ? Math.min(500, rolloutScoreGapToFallback)
+        : 0;
     return {
       ...selection,
-      plannerScore: selection.plannerScore + rolloutBonus,
+      plannerScore: selection.plannerScore + rolloutBonus + rolloutConfirmationBonus,
       rolloutScore: rollout.score,
       ...(rolloutScoreGapToFallback !== undefined ? { rolloutScoreGapToFallback } : {}),
       rolloutSteps: rollout.steps,
@@ -1386,17 +1433,26 @@ function terminalPlanRolloutTriggerSelection(
   if (config.terminalPlanRolloutTurnTo !== undefined && state.turnNumber > config.terminalPlanRolloutTurnTo) {
     return undefined;
   }
-  if (
-    config.terminalPlanRolloutMaxOpponentStones !== undefined &&
-    state.players[opponentOf(perspective)].stones > config.terminalPlanRolloutMaxOpponentStones
-  ) {
-    return undefined;
-  }
   if (config.terminalPlanRolloutOncePerTurn && hasAdoptedTerminalPlanRolloutThisTurn(state, perspective)) {
     return undefined;
   }
   const best = terminalRanked[0];
   if (!best || !fallback || !fallbackSelection) {
+    return undefined;
+  }
+  const frontFocusStripChallenger = terminalPlanFrontFocusStripAttackRolloutTriggerSelection(
+    state,
+    terminalRanked,
+    fallback,
+    config,
+  );
+  if (frontFocusStripChallenger) {
+    return frontFocusStripChallenger;
+  }
+  if (
+    config.terminalPlanRolloutMaxOpponentStones !== undefined &&
+    state.players[opponentOf(perspective)].stones > config.terminalPlanRolloutMaxOpponentStones
+  ) {
     return undefined;
   }
   const fallbackKey = cpuDecisionKey(fallback.decision);
@@ -1431,12 +1487,60 @@ function terminalPlanRolloutTriggerSelection(
   return plannerMargin <= maxPlannerMargin ? rolloutChallenger : undefined;
 }
 
+function terminalPlanFrontFocusStripAttackRolloutTriggerSelection(
+  state: GameState,
+  terminalRanked: readonly TerminalPlanSelection[],
+  fallback: EvaluatedDecision,
+  config: CpuAiProfileConfig,
+): TerminalPlanSelection | undefined {
+  if (!config.terminalPlanRolloutAllowFrontFocusStripAttack || fallback.decision.type !== "focus") {
+    return undefined;
+  }
+  const fallbackKey = cpuDecisionKey(fallback.decision);
+  const challenger = terminalRanked.find(
+    (selection) =>
+      cpuDecisionKey(selection.candidate.decision) !== fallbackKey &&
+      isWhiteMirrorEnemyFrontFocusStripAttackSelection(state, selection.candidate),
+  );
+  if (!challenger) {
+    return undefined;
+  }
+  const rootScoreGap = fallback.totalScore - challenger.candidate.totalScore;
+  const minRootScoreGap = config.terminalPlanRolloutTriggerMinRootScoreGap ?? 120;
+  const maxRootScoreGap = config.terminalPlanRolloutFrontFocusStripAttackMaxRootScoreGap ?? 320;
+  return rootScoreGap >= minRootScoreGap && rootScoreGap <= maxRootScoreGap ? challenger : undefined;
+}
+
 function isBacklineReachSummonDecision(state: GameState, decision: CpuDecision): boolean {
   if (decision.type !== "summon") {
     return false;
   }
   const card = state.players[state.currentPlayer].hand.find((handCard) => handCard.instanceId === decision.handInstanceId);
   return !!card && monsterHasBacklineAttackPattern(card.cardId);
+}
+
+function isWhiteMirrorEnemyFrontFocusStripAttackSelection(state: GameState, candidate: EvaluatedDecision): boolean {
+  const decision = candidate.decision;
+  if (
+    decision.type !== "attack" ||
+    decision.action.target.kind !== "monster" ||
+    !isWhiteMirrorState(state, state.currentPlayer) ||
+    state.slots[decision.action.target.slotKey].row !== "front"
+  ) {
+    return false;
+  }
+  const targetBefore = state.slots[decision.action.target.slotKey].monster;
+  const targetAfter = candidate.after.slots[decision.action.target.slotKey].monster;
+  return (
+    !!targetBefore &&
+    !!targetAfter &&
+    targetBefore.owner === opponentOf(state.currentPlayer) &&
+    targetAfter.owner === targetBefore.owner &&
+    targetAfter.instanceId === targetBefore.instanceId &&
+    targetAfter.hp < targetBefore.hp &&
+    targetBefore.focused &&
+    !targetAfter.focused
+  );
 }
 
 function evaluateTerminalPlanRollout(
@@ -1466,7 +1570,10 @@ function evaluateTerminalPlanRollout(
   };
 }
 
-function withoutTerminalPlanRolloutOptions(options: CpuAiOptions): CpuAiOptions {
+function withoutTerminalPlanRolloutOptions(
+  options: CpuAiOptions,
+  plannerProfileOverride?: CpuAiProfile,
+): CpuAiOptions {
   const stripSearch = (search: CpuAiSearchOptions | undefined): CpuAiSearchOptions => {
     return {
       ...(search ?? {}),
@@ -1475,9 +1582,27 @@ function withoutTerminalPlanRolloutOptions(options: CpuAiOptions): CpuAiOptions 
       terminalPlanRolloutAdoptionMinScoreGap: undefined,
     };
   };
+  const profileFor = (playerId: PlayerId): CpuAiProfile | undefined => {
+    const profile = options.profiles?.[playerId] ?? options.profile;
+    if (plannerProfileOverride && (profile === "white_planner" || profile === "white_rollout")) {
+      return plannerProfileOverride;
+    }
+    return profile;
+  };
   const baseSearch = stripSearch(options.search);
   return {
     ...options,
+    ...(plannerProfileOverride
+      ? {
+          profiles: {
+            player: profileFor("player") ?? "stable",
+            cpu: profileFor("cpu") ?? "stable",
+          },
+          profile: options.profile && (options.profile === "white_planner" || options.profile === "white_rollout")
+            ? plannerProfileOverride
+            : options.profile,
+        }
+      : {}),
     search: baseSearch,
     searches: {
       player: stripSearch(options.searches?.player ?? options.search),
@@ -1505,7 +1630,7 @@ function terminalPlanRootCandidates(
         b.totalScore - a.totalScore || compareTieBreak(a.decision, b.decision, a.index, b.index),
     )
     .slice(0, width);
-  const coveredCandidates = addTerminalPlanCoverageCandidates(candidates, evaluated, config);
+  const coveredCandidates = addTerminalPlanCoverageCandidates(state, candidates, evaluated, config);
   const endTurn = evaluated.find((candidate) => candidate.decision.type === "end_turn");
   if (endTurn && !coveredCandidates.some((candidate) => candidate.index === endTurn.index)) {
     coveredCandidates.push(endTurn);
@@ -4658,7 +4783,7 @@ function terminalPlanCandidates(
         b.totalScore - a.totalScore || compareTieBreak(a.decision, b.decision, a.index, b.index),
     )
     .slice(0, config.sameTurnTerminalPlanWidth);
-  const coveredCandidates = addTerminalPlanCoverageCandidates(candidates, evaluated, config);
+  const coveredCandidates = addTerminalPlanCoverageCandidates(state, candidates, evaluated, config);
   const endTurn = evaluated.find((candidate) => candidate.decision.type === "end_turn");
   if (endTurn && !coveredCandidates.some((candidate) => candidate.index === endTurn.index)) {
     coveredCandidates.push(endTurn);
@@ -4667,6 +4792,7 @@ function terminalPlanCandidates(
 }
 
 function addTerminalPlanCoverageCandidates(
+  state: GameState,
   candidates: EvaluatedDecision[],
   evaluated: readonly EvaluatedDecision[],
   config: CpuAiProfileConfig,
@@ -4695,6 +4821,9 @@ function addTerminalPlanCoverageCandidates(
     (candidate) => candidate.decision.type === "master_action" && candidate.decision.actionId === "shield",
     10,
   );
+  if (config.terminalPlanRolloutAllowFrontFocusStripAttack) {
+    appendBest((candidate) => isWhiteMirrorEnemyFrontFocusStripAttackSelection(state, candidate), -80);
+  }
   return covered;
 }
 
@@ -5867,7 +5996,6 @@ function whiteMirrorNonConvertingFrontThreatChipPenalty(
   if (canFinishEnemyMonsterThisTurn(after, targetSlotKey, perspective)) {
     return 0;
   }
-
   const riskScore = whiteMirrorNonConvertingFrontThreatChipRiskScore(state, after, targetSlotKey, targetAfter);
   if (riskScore <= 0) {
     return 0;
