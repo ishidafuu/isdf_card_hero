@@ -175,6 +175,11 @@ export interface MasterActionHistoryEntry {
   turnNumber: number;
 }
 
+export interface AiRolloutDecisionHistoryEntry {
+  playerId: PlayerId;
+  turnNumber: number;
+}
+
 export interface PendingLevelUp {
   playerId: PlayerId;
   attackerSlotKey: SlotKey;
@@ -201,6 +206,7 @@ export interface GameState {
   pendingLevelUp?: PendingLevelUp;
   turnMoveHistory?: MoveHistoryEntry[];
   turnMasterActionHistory?: MasterActionHistoryEntry[];
+  turnAiRolloutDecisionHistory?: AiRolloutDecisionHistoryEntry[];
   masterActionsExchangeExpiresOnStartOf?: PlayerId;
 }
 

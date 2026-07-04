@@ -122,6 +122,24 @@ describe("cpu ai", () => {
     expect(decision.type).not.toBe("end_turn");
   });
 
+  it("tracks rollout-confirmed decisions only for the current turn", () => {
+    const game = createCpuGame();
+    game.slots.cpu_front_left.monster = createActiveMonster("takokke", "cpu");
+
+    const afterDecision = applyCpuDecision(game, {
+      type: "focus",
+      slotKey: "cpu_front_left",
+      reason: "fixture / ターンプラン探索: rollout 100点",
+      score: 0,
+    });
+
+    expect(afterDecision.turnAiRolloutDecisionHistory).toEqual([{ playerId: "cpu", turnNumber: game.turnNumber }]);
+
+    const afterTurnChange = endTurn(afterDecision);
+
+    expect(afterTurnChange.turnAiRolloutDecisionHistory).toBeUndefined();
+  });
+
   it("does not spend an action focusing when direct master damage is already available", () => {
     const game = createCpuGame();
     game.players.cpu.hand = [];

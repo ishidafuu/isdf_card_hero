@@ -190,6 +190,7 @@ const DEFAULT_CANDIDATES = [
       terminalPlanRolloutMaxOpponentStones: 1,
       terminalPlanRolloutRequireFallbackMove: 1,
       terminalPlanRolloutRequirePlannerSummon: 1,
+      terminalPlanRolloutOncePerTurn: 1,
     },
   },
   {
@@ -207,6 +208,7 @@ const DEFAULT_CANDIDATES = [
       terminalPlanRolloutMaxOpponentStones: 1,
       terminalPlanRolloutRequireFallbackMove: 1,
       terminalPlanRolloutRequirePlannerSummon: 1,
+      terminalPlanRolloutOncePerTurn: 1,
     },
   },
   {
@@ -224,6 +226,7 @@ const DEFAULT_CANDIDATES = [
       terminalPlanRolloutMaxOpponentStones: 1,
       terminalPlanRolloutRequireFallbackMove: 1,
       terminalPlanRolloutRequirePlannerSummon: 1,
+      terminalPlanRolloutOncePerTurn: 1,
     },
   },
   {
@@ -241,6 +244,7 @@ const DEFAULT_CANDIDATES = [
       terminalPlanRolloutMaxOpponentStones: 1,
       terminalPlanRolloutRequireFallbackMove: 1,
       terminalPlanRolloutRequirePlannerSummon: 1,
+      terminalPlanRolloutOncePerTurn: 1,
     },
   },
 ] as const satisfies readonly Candidate[];

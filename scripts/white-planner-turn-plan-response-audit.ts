@@ -526,6 +526,9 @@ function parseArgs(args: string[]): CliOptions {
     } else if (arg === "--planner-rollout-require-planner-summon") {
       parsed.search = { ...parsed.search, terminalPlanRolloutRequirePlannerSummon: readNumber(arg, next) };
       index += 1;
+    } else if (arg === "--planner-rollout-once-per-turn") {
+      parsed.search = { ...parsed.search, terminalPlanRolloutOncePerTurn: readNumber(arg, next) };
+      index += 1;
     } else if (arg === "--replay-with-search") {
       parsed.replayWithSearch = true;
     } else if (arg === "--candidate-limit") {
@@ -637,6 +640,8 @@ Options:
                                   Roll out only when fallback decision is move if nonzero.
   --planner-rollout-require-planner-summon <n>
                                   Roll out only when planner candidate is summon if nonzero.
+  --planner-rollout-once-per-turn <n>
+                                  Roll out at most once per current-player turn if nonzero.
   --replay-with-search            Apply search override during replay to the target step.
   --candidate-limit <n>           Keep only top N terminal-plan candidates in the report/rollout. Default: all
   --rollout-steps <n>             Force each candidate and run up to N auto steps. Default: 0

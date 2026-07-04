@@ -212,6 +212,7 @@ type CpuAiProfileConfig = {
   terminalPlanRolloutMaxOpponentStones?: number;
   terminalPlanRolloutRequireFallbackMove?: number;
   terminalPlanRolloutRequirePlannerSummon?: number;
+  terminalPlanRolloutOncePerTurn?: number;
 };
 
 const NO_THREAT: IncomingThreat = {
@@ -403,6 +404,7 @@ const CPU_AI_PROFILE_CONFIG: Record<CpuAiProfile, CpuAiProfileConfig> = {
     terminalPlanRolloutMaxOpponentStones: 1,
     terminalPlanRolloutRequireFallbackMove: 1,
     terminalPlanRolloutRequirePlannerSummon: 1,
+    terminalPlanRolloutOncePerTurn: 1,
   },
   omniscient: {
     detailedWidth: 6,
@@ -970,6 +972,10 @@ function applyCpuAiSearchOptions(
       search.terminalPlanRolloutRequirePlannerSummon,
       base.terminalPlanRolloutRequirePlannerSummon,
     ),
+    terminalPlanRolloutOncePerTurn: normalizedOptionalSearchNumber(
+      search.terminalPlanRolloutOncePerTurn,
+      base.terminalPlanRolloutOncePerTurn,
+    ),
     beamScoreThreshold: normalizedSearchInteger(search.beamScoreThreshold, base.beamScoreThreshold),
   };
 }
@@ -1330,6 +1336,9 @@ function shouldTriggerTerminalPlanRollout(
   ) {
     return false;
   }
+  if (config.terminalPlanRolloutOncePerTurn && hasAdoptedTerminalPlanRolloutThisTurn(state, perspective)) {
+    return false;
+  }
   const best = terminalRanked[0];
   if (!best || !fallback || !fallbackSelection) {
     return false;
@@ -1510,6 +1519,12 @@ function isRolloutConfirmedTerminalPlanSelection(
     minScoreGap !== undefined &&
     selection.rolloutScoreGapToFallback !== undefined &&
     selection.rolloutScoreGapToFallback >= minScoreGap
+  );
+}
+
+function hasAdoptedTerminalPlanRolloutThisTurn(state: GameState, perspective: PlayerId): boolean {
+  return !!state.turnAiRolloutDecisionHistory?.some(
+    (entry) => entry.playerId === perspective && entry.turnNumber === state.turnNumber,
   );
 }
 
@@ -4769,6 +4784,12 @@ function appendDecisionReasonLog(state: GameState, decision: CpuDecision): GameS
   const next = structuredClone(state) as GameState;
   const actor = next.currentPlayer === "cpu" ? "CPU" : "プレイヤーAI";
   appendLog(next, `${actor}判断: ${decision.reason}`);
+  if (decision.reason.includes("ターンプラン探索") && decision.reason.includes("rollout")) {
+    next.turnAiRolloutDecisionHistory = [
+      ...(next.turnAiRolloutDecisionHistory ?? []),
+      { playerId: next.currentPlayer, turnNumber: next.turnNumber },
+    ];
+  }
   return next;
 }
 

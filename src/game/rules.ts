@@ -151,6 +151,7 @@ export function startTurn(state: GameState, playerId: PlayerId): GameState {
   if (playerId === next.firstPlayer) {
     next.turnNumber += 1;
   }
+  delete next.turnAiRolloutDecisionHistory;
 
   const player = next.players[playerId];
   appendLog(next, `${playerLabel(playerId)}のターン開始`);
