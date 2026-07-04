@@ -198,6 +198,15 @@ const DEFAULT_CANDIDATES = [
     },
   },
   {
+    id: "response_setup_over_focus_t9",
+    note: "turn9以降、fallbackがfocusの時だけsetup候補を応答評価で比較する",
+    search: {
+      terminalPlanSetupOverFocusRootNeutralTurnFrom: 9,
+      terminalPlanSetupOverFocusAdoptionMaxRootScoreGap: 260,
+      terminalPlanSetupOverFocusAdoptionMinMargin: 0,
+    },
+  },
+  {
     id: "rollout3_80_w015_gap200",
     note: "terminal上位3候補を80手rolloutし、fallbackを大きく上回る時だけ採用する",
     search: {

@@ -4,7 +4,7 @@ import { buildDeckPresetCardIds, deckPresetAllowsSpecial } from "../../src/game/
 import { createInitialGame, runAutoStep } from "../../src/game/rules";
 import type { GameState } from "../../src/game/types";
 
-const WHITE_VS_BLACK_FRONT_PRESSURE_SEED = 38004;
+const WHITE_VS_BLACK_FRONT_PRESSURE_SEED = 38005;
 
 describe("white black specialist scenarios", () => {
   it("keeps a seed-derived low-stone white turn on enemy-front pressure instead of setup", () => {
@@ -13,11 +13,11 @@ describe("white black specialist scenarios", () => {
     const disabledDecision = chooseCpuDecision(pressureState, withoutBlackMonsterPressure());
 
     expect(pressureState.currentPlayer).toBe("cpu");
-    expect(pressureState.players.cpu.stones).toBe(3);
+    expect(pressureState.players.cpu.stones).toBe(1);
     expect(decision.type).toBe("attack");
     if (decision.type === "attack") {
-      expect(decision.action.attackerSlotKey).toBe("cpu_front_left");
-      expect(decision.action.target).toEqual({ kind: "monster", slotKey: "player_front_left" });
+      expect(decision.action.attackerSlotKey).toBe("cpu_front_right");
+      expect(decision.action.target).toEqual({ kind: "monster", slotKey: "player_front_right" });
     }
     expect(disabledDecision.type).toBe("summon");
     if (disabledDecision.type === "summon") {

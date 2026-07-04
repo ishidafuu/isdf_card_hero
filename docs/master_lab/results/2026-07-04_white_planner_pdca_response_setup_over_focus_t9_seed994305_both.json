@@ -1,0 +1,164 @@
+{
+  "generatedAt": "2026-07-04T10:17:19.669Z",
+  "options": {
+    "seedStart": 994305,
+    "gamesPerDirection": 1,
+    "maxSteps": 340,
+    "maxTurns": 120,
+    "deckPreset": "master-lab-white-1377-death-sheep3",
+    "directions": [
+      "challenger-as-cpu",
+      "challenger-as-player"
+    ],
+    "candidates": [
+      {
+        "id": "response_setup_over_focus_t9",
+        "note": "turn9以降、fallbackがfocusの時だけsetup候補を応答評価で比較する",
+        "search": {
+          "terminalPlanSetupOverFocusRootNeutralTurnFrom": 9,
+          "terminalPlanSetupOverFocusAdoptionMaxRootScoreGap": 260,
+          "terminalPlanSetupOverFocusAdoptionMinMargin": 0
+        }
+      }
+    ],
+    "streamProgress": true,
+    "markdownPath": "docs/master_lab/results/2026-07-04_white_planner_pdca_response_setup_over_focus_t9_seed994305_both.md",
+    "jsonPath": "docs/master_lab/results/2026-07-04_white_planner_pdca_response_setup_over_focus_t9_seed994305_both.json"
+  },
+  "games": [
+    {
+      "candidateId": "response_setup_over_focus_t9",
+      "direction": "challenger-as-cpu",
+      "seed": 994305,
+      "profiles": {
+        "player": "white",
+        "cpu": "white_planner"
+      },
+      "winner": "cpu",
+      "winnerProfile": "white_planner",
+      "steps": 311,
+      "turns": 29,
+      "playerHp": 0,
+      "cpuHp": 2,
+      "challengerHp": 2,
+      "baselineHp": 0,
+      "decisionStats": {
+        "player": {
+          "decisions": 157,
+          "elapsedMs": 67026.7196319999,
+          "maxDecisionMs": 2326.8536669999994,
+          "actionCounts": {
+            "summon": 19,
+            "end_turn": 28,
+            "focus": 21,
+            "move": 17,
+            "master:shield": 9,
+            "magic": 2,
+            "attack": 44,
+            "master:wake_up": 5,
+            "master:master_attack": 12
+          }
+        },
+        "cpu": {
+          "decisions": 146,
+          "elapsedMs": 128493.50096299997,
+          "maxDecisionMs": 4672.483834000002,
+          "actionCounts": {
+            "summon": 16,
+            "end_turn": 28,
+            "focus": 22,
+            "attack": 47,
+            "master:shield": 10,
+            "move": 8,
+            "master:master_attack": 10,
+            "magic": 1,
+            "master:wake_up": 4
+          }
+        }
+      }
+    },
+    {
+      "candidateId": "response_setup_over_focus_t9",
+      "direction": "challenger-as-player",
+      "seed": 994305,
+      "profiles": {
+        "player": "white_planner",
+        "cpu": "white"
+      },
+      "winner": "cpu",
+      "winnerProfile": "white",
+      "steps": 262,
+      "turns": 26,
+      "playerHp": 0,
+      "cpuHp": 8,
+      "challengerHp": 0,
+      "baselineHp": 8,
+      "decisionStats": {
+        "player": {
+          "decisions": 128,
+          "elapsedMs": 77288.15570799983,
+          "maxDecisionMs": 3415.61599999998,
+          "actionCounts": {
+            "summon": 16,
+            "end_turn": 26,
+            "focus": 23,
+            "move": 10,
+            "master:shield": 12,
+            "magic": 2,
+            "attack": 27,
+            "master:wake_up": 4,
+            "master:master_attack": 8
+          }
+        },
+        "cpu": {
+          "decisions": 131,
+          "elapsedMs": 73955.62275299968,
+          "maxDecisionMs": 3502.267124999984,
+          "actionCounts": {
+            "summon": 13,
+            "end_turn": 25,
+            "focus": 16,
+            "attack": 46,
+            "master:shield": 15,
+            "move": 7,
+            "master:master_attack": 4,
+            "magic": 2,
+            "master:wake_up": 3
+          }
+        }
+      }
+    }
+  ],
+  "summaries": [
+    {
+      "candidateId": "response_setup_over_focus_t9",
+      "note": "turn9以降、fallbackがfocusの時だけsetup候補を応答評価で比較する",
+      "games": 2,
+      "challengerWins": 1,
+      "baselineWins": 1,
+      "draws": 0,
+      "winPointRate": 0.5,
+      "averageHpMargin": -3,
+      "averageSteps": 286.5,
+      "averageTurns": 27.5,
+      "averageDecisionMs": 741.9530944090318,
+      "maxDecisionMs": 4672.483834000002,
+      "issues": 0,
+      "actionCounts": {
+        "attack": 74,
+        "end_turn": 54,
+        "focus": 45,
+        "magic": 3,
+        "master:master_attack": 18,
+        "master:shield": 22,
+        "master:wake_up": 8,
+        "move": 18,
+        "summon": 32
+      }
+    }
+  ],
+  "conclusion": [
+    "best candidate: response_setup_over_focus_t9 (1-1-0, WPR 50%, avg HP margin -3)",
+    "The best candidate reached parity in this sample. Increase games per direction before adopting it as default."
+  ]
+}

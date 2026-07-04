@@ -195,6 +195,9 @@ type CpuAiProfileConfig = {
   terminalPlanRootDecisionWeight?: number;
   terminalPlanRootGapFreeMargin?: number;
   terminalPlanRootGapPenaltyWeight?: number;
+  terminalPlanSetupOverFocusRootNeutralTurnFrom?: number;
+  terminalPlanSetupOverFocusAdoptionMaxRootScoreGap?: number;
+  terminalPlanSetupOverFocusAdoptionMinMargin?: number;
   terminalPlanAdoptionMinMargin?: number;
   terminalPlanAdoptionMaxRootScoreGap?: number;
   terminalPlanRejectNonLethalFaceDamage?: number;
@@ -359,6 +362,9 @@ const CPU_AI_PROFILE_CONFIG: Record<CpuAiProfile, CpuAiProfileConfig> = {
     terminalPlanRootDecisionWeight: 0.22,
     terminalPlanRootGapFreeMargin: 80,
     terminalPlanRootGapPenaltyWeight: 0.5,
+    terminalPlanSetupOverFocusRootNeutralTurnFrom: 9,
+    terminalPlanSetupOverFocusAdoptionMaxRootScoreGap: 260,
+    terminalPlanSetupOverFocusAdoptionMinMargin: 0,
     terminalPlanAdoptionMinMargin: 16,
     terminalPlanAdoptionMaxRootScoreGap: 70,
     terminalPlanRejectNonLethalFaceDamage: 1,
@@ -904,6 +910,18 @@ function applyCpuAiSearchOptions(
       search.terminalPlanRootGapPenaltyWeight,
       base.terminalPlanRootGapPenaltyWeight,
     ),
+    terminalPlanSetupOverFocusRootNeutralTurnFrom: normalizedOptionalSearchNumber(
+      search.terminalPlanSetupOverFocusRootNeutralTurnFrom,
+      base.terminalPlanSetupOverFocusRootNeutralTurnFrom,
+    ),
+    terminalPlanSetupOverFocusAdoptionMaxRootScoreGap: normalizedOptionalSearchNumber(
+      search.terminalPlanSetupOverFocusAdoptionMaxRootScoreGap,
+      base.terminalPlanSetupOverFocusAdoptionMaxRootScoreGap,
+    ),
+    terminalPlanSetupOverFocusAdoptionMinMargin: normalizedOptionalSearchNumber(
+      search.terminalPlanSetupOverFocusAdoptionMinMargin,
+      base.terminalPlanSetupOverFocusAdoptionMinMargin,
+    ),
     terminalPlanAdoptionMinMargin: normalizedOptionalSearchNumber(
       search.terminalPlanAdoptionMinMargin,
       base.terminalPlanAdoptionMinMargin,
@@ -1227,7 +1245,16 @@ function evaluateTerminalPlanRootSelections(
           config,
           context,
         );
-    const plannerScore = terminalPlanRootPlannerScore(candidate, outcome, bestRootTotalScore, perspective, config, context);
+    const plannerScore = terminalPlanRootPlannerScore(
+      candidate,
+      outcome,
+      bestRootTotalScore,
+      rootState,
+      perspective,
+      config,
+      context,
+      fallback,
+    );
     return {
       candidate,
       outcome,
@@ -1483,6 +1510,9 @@ function shouldAdoptTerminalPlanRootSelection(
   if (isRolloutConfirmedTerminalPlanSelection(selection, config)) {
     return true;
   }
+  if (shouldAdoptSetupOverFocusRootSelection(state, perspective, selection, fallback, rootScoreGap, config)) {
+    return true;
+  }
   const maxRootScoreGap = config.terminalPlanAdoptionMaxRootScoreGap ?? Number.POSITIVE_INFINITY;
   if (rootScoreGap > maxRootScoreGap) {
     return false;
@@ -1523,6 +1553,27 @@ function shouldAdoptTerminalPlanRootSelection(
     ? Number.POSITIVE_INFINITY
     : selection.plannerScore - selection.runnerUpScore;
   return plannerMargin >= (config.terminalPlanAdoptionMinMargin ?? 0) || rootScoreGap <= 0;
+}
+
+function shouldAdoptSetupOverFocusRootSelection(
+  state: GameState,
+  perspective: PlayerId,
+  selection: TerminalPlanSelection,
+  fallback: EvaluatedDecision,
+  rootScoreGap: number,
+  config: CpuAiProfileConfig,
+): boolean {
+  if (!shouldNeutralizeSetupOverFocusRootScore(state, selection.candidate, fallback, perspective, config)) {
+    return false;
+  }
+  const maxRootScoreGap = config.terminalPlanSetupOverFocusAdoptionMaxRootScoreGap;
+  if (maxRootScoreGap === undefined || rootScoreGap > maxRootScoreGap) {
+    return false;
+  }
+  const plannerMargin = selection.runnerUpScore === undefined
+    ? Number.POSITIVE_INFINITY
+    : selection.plannerScore - selection.runnerUpScore;
+  return plannerMargin >= (config.terminalPlanSetupOverFocusAdoptionMinMargin ?? 0);
 }
 
 function isRolloutConfirmedTerminalPlanSelection(
@@ -1581,19 +1632,49 @@ function terminalPlanRootPlannerScore(
   candidate: EvaluatedDecision,
   outcome: TerminalPlanOutcome,
   bestRootTotalScore: number,
+  rootState: GameState,
   perspective: PlayerId,
   config: CpuAiProfileConfig,
   context: TerminalPlanEvaluationContext,
+  fallback: EvaluatedDecision | undefined,
 ): number {
   const terminalScore = evaluateTerminalPlanOutcomeWithOpponentResponse(outcome, perspective, config, context);
-  const rootWeight = config.terminalPlanRootDecisionWeight ?? 0;
-  const gapPenaltyWeight = config.terminalPlanRootGapPenaltyWeight ?? 0;
+  const neutralizeRootScore = shouldNeutralizeSetupOverFocusRootScore(rootState, candidate, fallback, perspective, config);
+  const rootWeight = neutralizeRootScore ? 0 : config.terminalPlanRootDecisionWeight ?? 0;
+  const gapPenaltyWeight = neutralizeRootScore ? 0 : config.terminalPlanRootGapPenaltyWeight ?? 0;
   const gapFreeMargin = config.terminalPlanRootGapFreeMargin ?? 0;
   const rootScoreBonus = rootWeight > 0 ? clampNumber(candidate.totalScore, -180, 180) * rootWeight : 0;
   const rootGapPenalty = gapPenaltyWeight > 0
     ? Math.max(0, bestRootTotalScore - candidate.totalScore - gapFreeMargin) * gapPenaltyWeight
     : 0;
   return terminalScore + rootScoreBonus - rootGapPenalty;
+}
+
+function shouldNeutralizeSetupOverFocusRootScore(
+  rootState: GameState,
+  candidate: EvaluatedDecision,
+  fallback: EvaluatedDecision | undefined,
+  perspective: PlayerId,
+  config: CpuAiProfileConfig,
+): boolean {
+  const turnFrom = config.terminalPlanSetupOverFocusRootNeutralTurnFrom;
+  if (turnFrom === undefined || rootState.turnNumber < turnFrom || !isWhiteMirrorState(rootState, perspective)) {
+    return false;
+  }
+  if (fallback?.decision.type !== "focus") {
+    return false;
+  }
+  if (ownBackRowOccupancy(rootState, perspective) > 0) {
+    return false;
+  }
+  return candidate.index === fallback.index || candidate.decision.type === "summon";
+}
+
+function ownBackRowOccupancy(state: GameState, perspective: PlayerId): number {
+  return FIELD_ORDER_BY_PLAYER[perspective].filter((slotKey) => {
+    const slot = state.slots[slotKey];
+    return slot.row === "back" && slot.monster?.owner === perspective;
+  }).length;
 }
 
 function evaluateTerminalPlanDeltas(

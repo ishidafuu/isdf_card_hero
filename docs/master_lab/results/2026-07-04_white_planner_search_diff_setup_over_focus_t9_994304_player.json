@@ -1,0 +1,175 @@
+{
+  "generatedAt": "2026-07-04T10:01:46.921Z",
+  "options": {
+    "seed": 994304,
+    "direction": "challenger-as-player",
+    "deckPreset": "master-lab-white-1377-death-sheep3",
+    "compareSearch": {
+      "terminalPlanSetupOverFocusRootNeutralTurnFrom": 9,
+      "terminalPlanAdoptionMaxRootScoreGap": 260,
+      "terminalPlanAdoptionMinMargin": 0,
+      "terminalPlanRequireCompatibleFallbackAction": 0
+    },
+    "maxSteps": 260,
+    "maxTurns": 60,
+    "maxDiffs": 12,
+    "markdownPath": "docs/master_lab/results/2026-07-04_white_planner_search_diff_setup_over_focus_t9_994304_player.md",
+    "jsonPath": "docs/master_lab/results/2026-07-04_white_planner_search_diff_setup_over_focus_t9_994304_player.json"
+  },
+  "plannerSide": "player",
+  "finalState": "turn 18 / current player / HP player/cpu 7/0 / stones player/cpu 21/7 / deck player/cpu 8/8 / hand player/cpu 6/5",
+  "winner": "player",
+  "winnerProfile": "white_planner",
+  "diffs": [
+    {
+      "step": 8,
+      "turnNumber": 2,
+      "side": "player",
+      "state": "turn 2 / current player / HP player/cpu 10/10 / stones player/cpu 3/0 / deck player/cpu 24/24 / hand player/cpu 3/3",
+      "board": "player_front_left:PF:真勇者ダイン Lv1 HP6 act0/1 | player_front_right:PF:デスシープ Lv1 HP6 act0/1 | player_back_right:PB:ヤンバル Lv1 HP3 act0/1 | cpu_front_left:CF:デスシープ Lv1 HP6 prep | cpu_back_left:CB:真勇者ダイン Lv1 HP6 prep | cpu_back_right:CB:ドノマンティス Lv1 HP5 prep",
+      "currentDecision": "focus:ヤンバル",
+      "currentReason": "有効攻撃がないためためる / 見送り: ためるは18点差で見送り、召喚は23点差で見送り",
+      "compareDecision": "summon:ピグミィ->player_back_left",
+      "compareReason": "後衛カードを後列左へ召喚 / ターンプラン探索: 返し込み最終盤面118点、次点と33点差",
+      "recentLog": "真勇者ダイン Lv1が前衛へ自動移動した / プレイヤーはストーンを3個得た / プレイヤーはピグミィを引いた"
+    },
+    {
+      "step": 22,
+      "turnNumber": 3,
+      "side": "player",
+      "state": "turn 3 / current player / HP player/cpu 10/10 / stones player/cpu 3/0 / deck player/cpu 23/23 / hand player/cpu 3/3",
+      "board": "player_front_left:PF:真勇者ダイン Lv1 HP6 act1/1 | player_front_right:PF:デスシープ Lv1 HP6 act0/1 focus | player_back_left:PB:ピグミィ Lv1 HP3 act0/2 | player_back_right:PB:ヤンバル Lv1 HP3 act1/1 | cpu_front_left:CF:デスシープ Lv1 HP2 act1/1 | cpu_front_right:CF:ドノマンティス Lv1 HP5 act1/1 focus,shield | cpu_back_left:CB:真勇者ダイン Lv1 HP6 act1/1 focus | cpu_back_right:CB:ピグミィ Lv1 HP3 prep",
+      "currentDecision": "attack:ピグミィ:スパイクボール->デスシープ",
+      "currentReason": "デスシープを削れるため攻撃 / 見送り: 攻撃は246点差で見送り、マスター特技は364点差で見送り",
+      "compareDecision": "master:master_attack->monster:cpu_front_left",
+      "compareReason": "マスターアタックで敵モンスターを撃破できるため使用 / ターンプラン探索: 返し込み最終盤面126点、次点と20点差",
+      "recentLog": "プレイヤーAI判断: デスシープを削れるため攻撃 / ターンプラン探索: 返し込み最終盤面153点、次点と108点差 / プレイヤーのヤンバル Lv1: ワイルドクロウ 2P / ワイルドクロウでデスシープ Lv1に2ダメージ"
+    },
+    {
+      "step": 31,
+      "turnNumber": 4,
+      "side": "player",
+      "state": "turn 4 / current player / HP player/cpu 10/10 / stones player/cpu 4/0 / deck player/cpu 22/22 / hand player/cpu 4/3",
+      "board": "player_front_left:PF:ピグミィ Lv1 HP3 act0/2 focus | player_front_right:PF:デスシープ Lv1 HP6 act0/1 | player_back_right:PB:真勇者ダイン Lv1 HP6 act0/1 | cpu_front_left:CF:真勇者ダイン Lv2 HP6 act1/1 | cpu_front_right:CF:ドノマンティス Lv1 HP4 act1/1 focus | cpu_back_right:CB:ピグミィ Lv1 HP3 act1/2 focus",
+      "currentDecision": "focus:デスシープ",
+      "currentReason": "有効攻撃がないためためる / 見送り: 移動は67点差で見送り、移動は85点差で見送り",
+      "compareDecision": "summon:ドノマンティス->player_back_left",
+      "compareReason": "ドノマンティスを空き枠へ召喚 / ターンプラン探索: 返し込み最終盤面285点、次点と26点差",
+      "recentLog": "ピグミィ Lv1が前衛へ自動移動した / プレイヤーはストーンを3個得た / プレイヤーは黄昏の風を引いた"
+    },
+    {
+      "step": 34,
+      "turnNumber": 4,
+      "side": "player",
+      "state": "turn 4 / current player / HP player/cpu 10/10 / stones player/cpu 3/0 / deck player/cpu 22/22 / hand player/cpu 3/3",
+      "board": "player_front_left:PF:ピグミィ Lv1 HP3 act1/2 | player_front_right:PF:デスシープ Lv1 HP6 act1/1 | player_back_left:PB:ドノマンティス Lv1 HP5 prep | player_back_right:PB:真勇者ダイン Lv1 HP6 act0/1 | cpu_front_left:CF:真勇者ダイン Lv2 HP6 act1/1 | cpu_front_right:CF:ドノマンティス Lv1 HP2 act1/1 | cpu_back_right:CB:ピグミィ Lv1 HP3 act1/2 focus",
+      "currentDecision": "move:player_back_right->player_front_left",
+      "currentReason": "移動後に強い攻撃筋を作れるため移動 / 見送り: マスター特技は42点差で見送り、攻撃は176点差で見送り",
+      "compareDecision": "master:master_attack->monster:cpu_front_right",
+      "compareReason": "マスターアタックで敵モンスターを撃破できるため使用 / ターンプラン探索: 返し込み最終盤面265点、次点と163点差",
+      "recentLog": "プレイヤーAI判断: ドノマンティスを削れるため攻撃 / ターンプラン探索: 返し込み最終盤面257点、次点と37点差 / プレイヤーのデスシープ Lv1: アタック 2P / アタックでドノマンティス Lv1に2ダメージ"
+    },
+    {
+      "step": 45,
+      "turnNumber": 5,
+      "side": "player",
+      "state": "turn 5 / current player / HP player/cpu 10/10 / stones player/cpu 3/0 / deck player/cpu 21/21 / hand player/cpu 3/3",
+      "board": "player_front_left:PF:ドノマンティス Lv1 HP5 act1/1 focus | player_front_right:PF:デスシープ Lv1 HP6 act0/1 | player_back_left:PB:ヤンバル Lv1 HP3 prep | player_back_right:PB:ピグミィ Lv1 HP3 act0/2 | cpu_front_left:CF:真勇者ダイン Lv2 HP6 act1/1 | cpu_front_right:CF:デスシープ Lv1 HP6 prep | cpu_back_left:CB:ピグミィ Lv1 HP3 act2/2",
+      "currentDecision": "focus:デスシープ",
+      "currentReason": "有効攻撃がないためためる / 見送り: ためるは37点差で見送り、攻撃は144点差で見送り",
+      "compareDecision": "focus:ピグミィ",
+      "compareReason": "有効攻撃がないためためる / ターンプラン探索: 返し込み最終盤面109点、次点と6点差",
+      "recentLog": "ドノマンティス Lv1はためた / プレイヤーAI判断: 後衛カードを後列左へ召喚 / ターンプラン探索: 返し込み最終盤面199点、次点と27点差 / プレイヤーはヤンバルを準備中で召喚した"
+    },
+    {
+      "step": 57,
+      "turnNumber": 6,
+      "side": "player",
+      "state": "turn 6 / current player / HP player/cpu 10/10 / stones player/cpu 7/0 / deck player/cpu 20/20 / hand player/cpu 4/3",
+      "board": "player_front_left:PF:ヤンバル Lv1 HP3 act0/1 | player_front_right:PF:デスシープ Lv1 HP6 act0/1 focus | player_back_right:PB:ピグミィ Lv1 HP3 act1/2 | cpu_front_left:CF:真勇者ダイン Lv2 HP6 act1/1 | cpu_front_right:CF:デスシープ Lv1 HP6 act1/1 | cpu_back_left:CB:ピグミィ Lv1 HP3 act2/2 | cpu_back_right:CB:ボムゾウ Lv1 HP6 act1/1",
+      "currentDecision": "move:player_front_left->player_back_left",
+      "currentReason": "後衛カードを後列へ戻して射程を活かすため移動 / 見送り: 召喚は139点差で見送り、攻撃は146点差で見送り",
+      "compareDecision": "summon:ヤンバル->player_back_left",
+      "compareReason": "後衛カードを後列左へ召喚 / ターンプラン探索: 返し込み最終盤面195点、次点と41点差",
+      "recentLog": "プレイヤーのピグミィ Lv1: スパイクボール 1P / デスシープ Lv1は気合いで1ダメージ軽減した / スパイクボールでデスシープ Lv1に0ダメージ"
+    },
+    {
+      "step": 69,
+      "turnNumber": 7,
+      "side": "player",
+      "state": "turn 7 / current player / HP player/cpu 10/10 / stones player/cpu 9/2 / deck player/cpu 19/19 / hand player/cpu 4/3",
+      "board": "player_front_left:PF:ヤンバル Lv1 HP3 act0/1 | player_front_right:PF:デスシープ Lv2 HP6 act0/1 | player_back_right:PB:ピグミィ Lv1 HP3 act1/2 | cpu_front_left:CF:真勇者ダイン Lv3 HP6 act1/1 | cpu_front_right:CF:ボムゾウ Lv1 HP6 act1/1 | cpu_back_left:CB:ピグミィ Lv1 HP3 act1/2 focus | cpu_back_right:CB:ボムゾウ Lv1 HP6 prep",
+      "currentDecision": "move:player_front_left->player_back_left",
+      "currentReason": "後衛カードを後列へ戻して射程を活かすため移動 / 見送り: 召喚は137点差で見送り、攻撃は161点差で見送り",
+      "compareDecision": "summon:ポリスピナー->player_back_left",
+      "compareReason": "ポリスピナーを空き枠へ召喚 / ターンプラン探索: 返し込み最終盤面199点、次点と53点差",
+      "recentLog": "プレイヤーのピグミィ Lv1: スパイクボール 1P / ボムゾウ Lv1は気合いで1ダメージ軽減した / スパイクボールでボムゾウ Lv1に0ダメージ"
+    },
+    {
+      "step": 71,
+      "turnNumber": 7,
+      "side": "player",
+      "state": "turn 7 / current player / HP player/cpu 10/10 / stones player/cpu 8/2 / deck player/cpu 19/19 / hand player/cpu 3/3",
+      "board": "player_front_left:PF:ヤンバル Lv1 HP3 act0/1 | player_front_right:PF:デスシープ Lv2 HP6 act1/1 | player_back_left:PB:ポリスピナー Lv1 HP3 prep | player_back_right:PB:ピグミィ Lv1 HP3 act1/2 | cpu_front_left:CF:真勇者ダイン Lv3 HP6 act1/1 | cpu_front_right:CF:ボムゾウ Lv1 HP3 act1/1 | cpu_back_left:CB:ピグミィ Lv1 HP3 act1/2 focus | cpu_back_right:CB:ボムゾウ Lv1 HP6 prep",
+      "currentDecision": "attack:ヤンバル:wild_claw->ボムゾウ",
+      "currentReason": "ボムゾウを削れるため攻撃 / 見送り: 攻撃は32点差で見送り、マスター特技は140点差で見送り",
+      "compareDecision": "attack:ピグミィ:スパイクボール->ボムゾウ",
+      "compareReason": "ボムゾウを削れるため攻撃 / ターンプラン探索: 返し込み最終盤面114点、次点と0点差",
+      "recentLog": "プレイヤーAI判断: ボムゾウを削れるため攻撃 / ターンプラン探索: 返し込み最終盤面139点、次点と122点差 / プレイヤーのデスシープ Lv2: アタック 3P / アタックでボムゾウ Lv1に3ダメージ"
+    },
+    {
+      "step": 83,
+      "turnNumber": 8,
+      "side": "player",
+      "state": "turn 8 / current player / HP player/cpu 8/10 / stones player/cpu 14/1 / deck player/cpu 18/18 / hand player/cpu 4/3",
+      "board": "player_front_left:PF:ポリスピナー Lv1 HP3 act0/2 | player_front_right:PF:デスシープ Lv2 HP6 act0/1 | player_back_right:PB:ピグミィ Lv1 HP3 act1/2 | cpu_front_left:CF:真勇者ダイン Lv3 HP6 act1/1 | cpu_front_right:CF:ボムゾウ Lv1 HP6 act1/1 | cpu_back_left:CB:ピグミィ Lv2 HP3 act2/2 focus | cpu_back_right:CB:ドノマンティス Lv1 HP5 prep",
+      "currentDecision": "focus:ピグミィ",
+      "currentReason": "上の技の打点を伸ばしてマスター攻撃につなげるためためる / 見送り: ためるは66点差で見送り、マスター特技は108点差で見送り",
+      "compareDecision": "attack:デスシープ:attack->ボムゾウ",
+      "compareReason": "ボムゾウを削れるため攻撃 / ターンプラン探索: 返し込み最終盤面141点、次点と154点差",
+      "recentLog": "プレイヤーのピグミィ Lv1: スパイクボール 1P / ボムゾウ Lv1は気合いで1ダメージ軽減した / スパイクボールでボムゾウ Lv1に0ダメージ"
+    },
+    {
+      "step": 84,
+      "turnNumber": 8,
+      "side": "player",
+      "state": "turn 8 / current player / HP player/cpu 8/10 / stones player/cpu 14/1 / deck player/cpu 18/18 / hand player/cpu 4/3",
+      "board": "player_front_left:PF:ポリスピナー Lv1 HP3 act0/2 | player_front_right:PF:デスシープ Lv2 HP6 act1/1 | player_back_right:PB:ピグミィ Lv1 HP3 act1/2 | cpu_front_left:CF:真勇者ダイン Lv3 HP6 act1/1 | cpu_front_right:CF:ボムゾウ Lv1 HP3 act1/1 | cpu_back_left:CB:ピグミィ Lv2 HP3 act2/2 focus | cpu_back_right:CB:ドノマンティス Lv1 HP5 prep",
+      "currentDecision": "focus:ピグミィ",
+      "currentReason": "有効攻撃がないためためる / 見送り: ためるは34点差で見送り、マスター特技は76点差で見送り",
+      "compareDecision": "master:master_attack->monster:cpu_front_right",
+      "compareReason": "ストーンに余裕があり敵を削れるためマスターアタック / ターンプラン探索: 返し込み最終盤面215点、次点と2点差",
+      "recentLog": "プレイヤーAI判断: ボムゾウを削れるため攻撃 / ターンプラン探索: 返し込み最終盤面141点、次点と154点差 / プレイヤーのデスシープ Lv2: アタック 3P / アタックでボムゾウ Lv1に3ダメージ"
+    },
+    {
+      "step": 103,
+      "turnNumber": 9,
+      "side": "player",
+      "state": "turn 9 / current player / HP player/cpu 8/8 / stones player/cpu 6/8 / deck player/cpu 17/17 / hand player/cpu 4/2",
+      "board": "player_front_left:PF:ポリスピナー Lv2 HP3 act2/2 | player_front_right:PF:デスシープ Lv2 HP6 act0/1 | player_back_left:PB:真勇者ダイン Lv1 HP6 act0/1 | player_back_right:PB:ピグミィ Lv2 HP3 act1/2 | cpu_front_left:CF:デスシープ Lv1 HP6 prep | cpu_front_right:CF:ドノマンティス Lv1 HP5 act1/1 | cpu_back_left:CB:ポリスピナー Lv1 HP3 prep | cpu_back_right:CB:ピグミィ Lv2 HP3 act2/2 focus",
+      "currentDecision": "master:master_attack->monster:cpu_front_right",
+      "currentReason": "ストーンに余裕があり敵を削れるためマスターアタック / 見送り: 攻撃は301点差で見送り、ためるは329点差で見送り",
+      "compareDecision": "attack:デスシープ:attack->ドノマンティス",
+      "compareReason": "ドノマンティスを削れるため攻撃 / ターンプラン探索: 返し込み最終盤面159点、次点と53点差",
+      "recentLog": "プレイヤーのピグミィ Lv2: スパイクボール 1P / ドノマンティス Lv1は気合いで1ダメージ軽減した / スパイクボールでドノマンティス Lv1に0ダメージ"
+    },
+    {
+      "step": 105,
+      "turnNumber": 9,
+      "side": "player",
+      "state": "turn 9 / current player / HP player/cpu 8/8 / stones player/cpu 3/9 / deck player/cpu 17/17 / hand player/cpu 4/2",
+      "board": "player_front_left:PF:ポリスピナー Lv2 HP3 act2/2 | player_front_right:PF:デスシープ Lv2 HP6 act1/1 | player_back_left:PB:真勇者ダイン Lv1 HP6 act0/1 | player_back_right:PB:ピグミィ Lv2 HP3 act1/2 | cpu_front_left:CF:デスシープ Lv1 HP6 prep | cpu_back_left:CB:ポリスピナー Lv1 HP3 prep | cpu_back_right:CB:ピグミィ Lv2 HP3 act2/2 focus",
+      "currentDecision": "focus:真勇者ダイン",
+      "currentReason": "有効攻撃がないためためる / ターンプラン探索: 返し込み最終盤面23点、次点と3点差",
+      "compareDecision": "focus:ピグミィ",
+      "compareReason": "有効攻撃がないためためる / ターンプラン探索: 返し込み最終盤面21点、次点と7点差",
+      "recentLog": "プレイヤーのマスターアタック / マスターアタックでドノマンティス Lv1に2ダメージ / ドノマンティス Lv1は倒れ、CPUにストーン1個が戻った"
+    }
+  ],
+  "conclusion": [
+    "12 same-state decision diffs on the compare-search path.",
+    "Final: player (planner); turn 18 / current player / HP player/cpu 7/0 / stones player/cpu 21/7 / deck player/cpu 8/8 / hand player/cpu 6/5.",
+    "Inspect the earliest diff first; later diffs may be downstream of that branch."
+  ]
+}
+

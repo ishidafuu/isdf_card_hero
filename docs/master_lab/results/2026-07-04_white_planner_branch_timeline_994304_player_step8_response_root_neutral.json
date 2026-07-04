@@ -1,0 +1,402 @@
+{
+  "generatedAt": "2026-07-04T09:57:25.292Z",
+  "options": {
+    "seed": 994304,
+    "direction": "challenger-as-player",
+    "deckPreset": "master-lab-white-1377-death-sheep3",
+    "step": 8,
+    "branches": [
+      "selected",
+      "summon:デスシープ->cpu_back_left",
+      "focus:ヤンバル"
+    ],
+    "search": {
+      "terminalPlanRootDecisionWeight": 0,
+      "terminalPlanRootGapPenaltyWeight": 0,
+      "terminalPlanAdoptionMaxRootScoreGap": 260,
+      "terminalPlanAdoptionMinMargin": 0,
+      "terminalPlanRequireCompatibleFallbackAction": 0
+    },
+    "maxReplaySteps": 260,
+    "maxCheckpoints": 18,
+    "markdownPath": "docs/master_lab/results/2026-07-04_white_planner_branch_timeline_994304_player_step8_response_root_neutral.md",
+    "jsonPath": "docs/master_lab/results/2026-07-04_white_planner_branch_timeline_994304_player_step8_response_root_neutral.json"
+  },
+  "plannerSide": "player",
+  "startState": "turn 2 / current player / HP player/cpu 10/10 / stones player/cpu 3/0 / deck player/cpu 24/24 / hand player/cpu 3/3",
+  "startBoard": "player_front_left:PF:真勇者ダイン Lv1 HP6 act0/1 | player_front_right:PF:デスシープ Lv1 HP6 act0/1 | player_back_right:PB:ヤンバル Lv1 HP3 act0/1 | cpu_front_left:CF:デスシープ Lv1 HP6 prep | cpu_back_left:CB:真勇者ダイン Lv1 HP6 prep | cpu_back_right:CB:ドノマンティス Lv1 HP5 prep",
+  "selectedDecision": "summon:ピグミィ->player_back_left",
+  "timelines": [
+    {
+      "branch": "selected",
+      "matchedDecision": "summon:ピグミィ->player_back_left",
+      "rootScore": 173,
+      "applied": true,
+      "winner": "cpu",
+      "winnerProfile": "white",
+      "finalScore": -1000000,
+      "replaySteps": 228,
+      "finalState": "turn 20 / current cpu / HP player/cpu 0/5 / stones player/cpu 9/8 / deck player/cpu 6/5 / hand player/cpu 5/6",
+      "finalBoard": "player_front_left:PF:ボムゾウ Lv1 HP2 act1/1 shield | player_back_left:PB:ピグミィ Lv1 HP3 act0/2 focus | cpu_front_left:CF:ボムゾウ Lv1 HP4 act0/1 | cpu_front_right:CF:ドノマンティス Lv2 HP5 act1/1 | cpu_back_left:CB:ピグミィ Lv2 HP3 act0/2 focus | cpu_back_right:CB:ピグミィ Lv2 HP3 act0/2 focus",
+      "checkpoints": [
+        {
+          "replayStep": 1,
+          "label": "after forced decision",
+          "state": "turn 2 / current player / HP player/cpu 10/10 / stones player/cpu 2/0 / deck player/cpu 24/24 / hand player/cpu 2/3",
+          "board": "player_front_left:PF:真勇者ダイン Lv1 HP6 act0/1 | player_front_right:PF:デスシープ Lv1 HP6 act0/1 | player_back_left:PB:ピグミィ Lv1 HP3 prep | player_back_right:PB:ヤンバル Lv1 HP3 act0/1 | cpu_front_left:CF:デスシープ Lv1 HP6 prep | cpu_back_left:CB:真勇者ダイン Lv1 HP6 prep | cpu_back_right:CB:ドノマンティス Lv1 HP5 prep",
+          "nextDecision": "focus:真勇者ダイン",
+          "score": 267.6,
+          "recentLog": "プレイヤーはピグミィを引いた / プレイヤーAI判断: 後衛カードを後列左へ召喚 / ターンプラン探索: 返し込み最終盤面88点、次点と6点差 / プレイヤーはピグミィを準備中で召喚した"
+        },
+        {
+          "replayStep": 1,
+          "label": "planner decision",
+          "state": "turn 2 / current player / HP player/cpu 10/10 / stones player/cpu 2/0 / deck player/cpu 24/24 / hand player/cpu 2/3",
+          "board": "player_front_left:PF:真勇者ダイン Lv1 HP6 act0/1 | player_front_right:PF:デスシープ Lv1 HP6 act0/1 | player_back_left:PB:ピグミィ Lv1 HP3 prep | player_back_right:PB:ヤンバル Lv1 HP3 act0/1 | cpu_front_left:CF:デスシープ Lv1 HP6 prep | cpu_back_left:CB:真勇者ダイン Lv1 HP6 prep | cpu_back_right:CB:ドノマンティス Lv1 HP5 prep",
+          "nextDecision": "focus:真勇者ダイン",
+          "score": 267.6,
+          "recentLog": "プレイヤーはピグミィを引いた / プレイヤーAI判断: 後衛カードを後列左へ召喚 / ターンプラン探索: 返し込み最終盤面88点、次点と6点差 / プレイヤーはピグミィを準備中で召喚した"
+        },
+        {
+          "replayStep": 2,
+          "label": "planner decision",
+          "state": "turn 2 / current player / HP player/cpu 10/10 / stones player/cpu 2/0 / deck player/cpu 24/24 / hand player/cpu 2/3",
+          "board": "player_front_left:PF:真勇者ダイン Lv1 HP6 act1/1 focus | player_front_right:PF:デスシープ Lv1 HP6 act0/1 | player_back_left:PB:ピグミィ Lv1 HP3 prep | player_back_right:PB:ヤンバル Lv1 HP3 act0/1 | cpu_front_left:CF:デスシープ Lv1 HP6 prep | cpu_back_left:CB:真勇者ダイン Lv1 HP6 prep | cpu_back_right:CB:ドノマンティス Lv1 HP5 prep",
+          "nextDecision": "focus:デスシープ",
+          "score": 273.6,
+          "recentLog": "プレイヤーはピグミィを準備中で召喚した / プレイヤーAI判断: 有効攻撃がないためためる / 見送り: ためるは9点差で見送り、ためるは69点差で見送り / 真勇者ダイン Lv1はためた"
+        },
+        {
+          "replayStep": 3,
+          "label": "planner decision",
+          "state": "turn 2 / current player / HP player/cpu 10/10 / stones player/cpu 2/0 / deck player/cpu 24/24 / hand player/cpu 2/3",
+          "board": "player_front_left:PF:真勇者ダイン Lv1 HP6 act1/1 focus | player_front_right:PF:デスシープ Lv1 HP6 act1/1 focus | player_back_left:PB:ピグミィ Lv1 HP3 prep | player_back_right:PB:ヤンバル Lv1 HP3 act0/1 | cpu_front_left:CF:デスシープ Lv1 HP6 prep | cpu_back_left:CB:真勇者ダイン Lv1 HP6 prep | cpu_back_right:CB:ドノマンティス Lv1 HP5 prep",
+          "nextDecision": "focus:ヤンバル",
+          "score": 279.6,
+          "recentLog": "真勇者ダイン Lv1はためた / プレイヤーAI判断: 有効攻撃がないためためる / 見送り: ためるは50点差で見送り / デスシープ Lv1はためた"
+        },
+        {
+          "replayStep": 4,
+          "label": "planner decision",
+          "state": "turn 2 / current player / HP player/cpu 10/10 / stones player/cpu 2/0 / deck player/cpu 24/24 / hand player/cpu 2/3",
+          "board": "player_front_left:PF:真勇者ダイン Lv1 HP6 act1/1 focus | player_front_right:PF:デスシープ Lv1 HP6 act1/1 focus | player_back_left:PB:ピグミィ Lv1 HP3 prep | player_back_right:PB:ヤンバル Lv1 HP3 act1/1 focus | cpu_front_left:CF:デスシープ Lv1 HP6 prep | cpu_back_left:CB:真勇者ダイン Lv1 HP6 prep | cpu_back_right:CB:ドノマンティス Lv1 HP5 prep",
+          "nextDecision": "master:shield->monster:player_front_left",
+          "score": 285.6,
+          "recentLog": "デスシープ Lv1はためた / プレイヤーAI判断: 有効攻撃がないためためる / ヤンバル Lv1はためた"
+        },
+        {
+          "replayStep": 5,
+          "label": "planner decision",
+          "state": "turn 2 / current player / HP player/cpu 10/10 / stones player/cpu 0/0 / deck player/cpu 24/24 / hand player/cpu 2/3",
+          "board": "player_front_left:PF:真勇者ダイン Lv1 HP6 act1/1 focus,shield | player_front_right:PF:デスシープ Lv1 HP6 act1/1 focus | player_back_left:PB:ピグミィ Lv1 HP3 prep | player_back_right:PB:ヤンバル Lv1 HP3 act1/1 focus | cpu_front_left:CF:デスシープ Lv1 HP6 prep | cpu_back_left:CB:真勇者ダイン Lv1 HP6 prep | cpu_back_right:CB:ドノマンティス Lv1 HP5 prep",
+          "nextDecision": "end_turn",
+          "score": 287.6,
+          "recentLog": "ヤンバル Lv1はためた / プレイヤーAI判断: 高価値の味方を守るためシールド / プレイヤーは真勇者ダイン Lv1にシールドを張った"
+        },
+        {
+          "replayStep": 12,
+          "label": "planner decision",
+          "state": "turn 3 / current player / HP player/cpu 10/10 / stones player/cpu 3/0 / deck player/cpu 23/23 / hand player/cpu 3/3",
+          "board": "player_front_left:PF:真勇者ダイン Lv1 HP6 act0/1 | player_front_right:PF:デスシープ Lv1 HP6 act0/1 focus | player_back_left:PB:ピグミィ Lv1 HP3 act0/2 | player_back_right:PB:ヤンバル Lv1 HP3 act0/1 focus | cpu_front_left:CF:デスシープ Lv1 HP6 act1/1 | cpu_front_right:CF:ドノマンティス Lv1 HP5 act1/1 focus,shield | cpu_back_left:CB:真勇者ダイン Lv1 HP6 act1/1 focus | cpu_back_right:CB:ピグミィ Lv1 HP3 prep",
+          "nextDecision": "attack:真勇者ダイン:ダイン斬り->デスシープ",
+          "score": 112.6,
+          "recentLog": "プレイヤーはストーンを3個得た / 真勇者ダイン Lv1の防御効果が切れた / プレイヤーはドノマンティスを引いた"
+        },
+        {
+          "replayStep": 13,
+          "label": "planner decision",
+          "state": "turn 3 / current player / HP player/cpu 10/10 / stones player/cpu 3/0 / deck player/cpu 23/23 / hand player/cpu 3/3",
+          "board": "player_front_left:PF:真勇者ダイン Lv1 HP6 act1/1 | player_front_right:PF:デスシープ Lv1 HP6 act0/1 focus | player_back_left:PB:ピグミィ Lv1 HP3 act0/2 | player_back_right:PB:ヤンバル Lv1 HP3 act0/1 focus | cpu_front_left:CF:デスシープ Lv1 HP4 act1/1 | cpu_front_right:CF:ドノマンティス Lv1 HP5 act1/1 focus,shield | cpu_back_left:CB:真勇者ダイン Lv1 HP6 act1/1 focus | cpu_back_right:CB:ピグミィ Lv1 HP3 prep",
+          "nextDecision": "attack:ヤンバル:wild_claw->デスシープ",
+          "score": 112.6,
+          "recentLog": "プレイヤーAI判断: デスシープを削れるため攻撃 / 見送り: 攻撃は213点差で見送り、攻撃は229点差で見送り / プレイヤーの真勇者ダイン Lv1: ダイン斬り 2P / ダイン斬りでデスシープ Lv1に2ダメージ"
+        },
+        {
+          "replayStep": 14,
+          "label": "planner decision",
+          "state": "turn 3 / current player / HP player/cpu 10/10 / stones player/cpu 3/0 / deck player/cpu 23/23 / hand player/cpu 3/3",
+          "board": "player_front_left:PF:真勇者ダイン Lv1 HP6 act1/1 | player_front_right:PF:デスシープ Lv1 HP6 act0/1 focus | player_back_left:PB:ピグミィ Lv1 HP3 act0/2 | player_back_right:PB:ヤンバル Lv1 HP3 act1/1 | cpu_front_left:CF:デスシープ Lv1 HP2 act1/1 | cpu_front_right:CF:ドノマンティス Lv1 HP5 act1/1 focus,shield | cpu_back_left:CB:真勇者ダイン Lv1 HP6 act1/1 focus | cpu_back_right:CB:ピグミィ Lv1 HP3 prep",
+          "nextDecision": "attack:ピグミィ:スパイクボール->デスシープ",
+          "score": 94.6,
+          "recentLog": "プレイヤーAI判断: デスシープを削れるため攻撃 / ターンプラン探索: 返し込み最終盤面122点、次点と63点差 / プレイヤーのヤンバル Lv1: ワイルドクロウ 2P / ワイルドクロウでデスシープ Lv1に2ダメージ"
+        },
+        {
+          "replayStep": 15,
+          "label": "planner decision",
+          "state": "turn 3 / current player / HP player/cpu 10/10 / stones player/cpu 3/0 / deck player/cpu 23/23 / hand player/cpu 3/3",
+          "board": "player_front_left:PF:真勇者ダイン Lv1 HP6 act1/1 | player_front_right:PF:デスシープ Lv1 HP6 act0/1 focus | player_back_left:PB:ピグミィ Lv1 HP3 act1/2 | player_back_right:PB:ヤンバル Lv1 HP3 act1/1 | cpu_front_left:CF:デスシープ Lv1 HP1 act1/1 | cpu_front_right:CF:ドノマンティス Lv1 HP5 act1/1 focus,shield | cpu_back_left:CB:真勇者ダイン Lv1 HP6 act1/1 focus | cpu_back_right:CB:ピグミィ Lv1 HP3 prep",
+          "nextDecision": "attack:ピグミィ:スパイクボール->デスシープ",
+          "score": 100.6,
+          "recentLog": "プレイヤーAI判断: デスシープを削れるため攻撃 / ターンプラン探索: 返し込み最終盤面140点、次点と54点差 / プレイヤーのピグミィ Lv1: スパイクボール 1P / スパイクボールでデスシープ Lv1に1ダメージ"
+        },
+        {
+          "replayStep": 16,
+          "label": "planner decision",
+          "state": "turn 3 / current player / HP player/cpu 10/10 / stones player/cpu 3/1 / deck player/cpu 23/23 / hand player/cpu 3/3",
+          "board": "player_front_left:PF:真勇者ダイン Lv1 HP6 act1/1 | player_front_right:PF:デスシープ Lv1 HP6 act0/1 focus | player_back_left:PB:ピグミィ Lv1 HP3 act2/2 | player_back_right:PB:ヤンバル Lv1 HP3 act1/1 | cpu_front_right:CF:ドノマンティス Lv1 HP5 act1/1 focus,shield | cpu_back_left:CB:真勇者ダイン Lv1 HP6 act1/1 focus | cpu_back_right:CB:ピグミィ Lv1 HP3 prep",
+          "nextDecision": "end_turn",
+          "score": 174.6,
+          "recentLog": "スパイクボールでデスシープ Lv1に1ダメージ / デスシープ Lv1は倒れ、CPUにストーン1個が戻った / ピグミィ Lv1は1レベルまで上げられる"
+        },
+        {
+          "replayStep": 17,
+          "label": "planner decision",
+          "state": "turn 3 / current player / HP player/cpu 10/10 / stones player/cpu 2/1 / deck player/cpu 23/23 / hand player/cpu 3/3",
+          "board": "player_front_left:PF:真勇者ダイン Lv1 HP6 act1/1 | player_front_right:PF:デスシープ Lv1 HP6 act0/1 focus | player_back_left:PB:ピグミィ Lv2 HP3 act2/2 | player_back_right:PB:ヤンバル Lv1 HP3 act1/1 | cpu_front_right:CF:ドノマンティス Lv1 HP5 act1/1 focus,shield | cpu_back_left:CB:真勇者ダイン Lv1 HP6 act1/1 focus | cpu_back_right:CB:ピグミィ Lv1 HP3 prep",
+          "nextDecision": "attack:デスシープ:attack->ドノマンティス",
+          "score": 212.6,
+          "recentLog": "デスシープ Lv1は倒れ、CPUにストーン1個が戻った / ピグミィ Lv1は1レベルまで上げられる / ピグミィ Lv2はLv2になり、HPが全回復した"
+        },
+        {
+          "replayStep": 18,
+          "label": "planner decision",
+          "state": "turn 3 / current player / HP player/cpu 10/10 / stones player/cpu 2/1 / deck player/cpu 23/23 / hand player/cpu 3/3",
+          "board": "player_front_left:PF:真勇者ダイン Lv1 HP6 act1/1 | player_front_right:PF:デスシープ Lv1 HP6 act1/1 | player_back_left:PB:ピグミィ Lv2 HP3 act2/2 | player_back_right:PB:ヤンバル Lv1 HP3 act1/1 | cpu_front_right:CF:ドノマンティス Lv1 HP4 act1/1 shield | cpu_back_left:CB:真勇者ダイン Lv1 HP6 act1/1 focus | cpu_back_right:CB:ピグミィ Lv1 HP3 prep",
+          "nextDecision": "master:shield->monster:player_front_left",
+          "score": 206.6,
+          "recentLog": "プレイヤーのデスシープ Lv1: アタック 3P / ドノマンティス Lv1は気合いで1ダメージ軽減した / アタックでドノマンティス Lv1に1ダメージ"
+        },
+        {
+          "replayStep": 19,
+          "label": "planner decision",
+          "state": "turn 3 / current player / HP player/cpu 10/10 / stones player/cpu 0/1 / deck player/cpu 23/23 / hand player/cpu 3/3",
+          "board": "player_front_left:PF:真勇者ダイン Lv1 HP6 act1/1 shield | player_front_right:PF:デスシープ Lv1 HP6 act1/1 | player_back_left:PB:ピグミィ Lv2 HP3 act2/2 | player_back_right:PB:ヤンバル Lv1 HP3 act1/1 | cpu_front_right:CF:ドノマンティス Lv1 HP4 act1/1 shield | cpu_back_left:CB:真勇者ダイン Lv1 HP6 act1/1 focus | cpu_back_right:CB:ピグミィ Lv1 HP3 prep",
+          "nextDecision": "end_turn",
+          "score": 208.6,
+          "recentLog": "アタックでドノマンティス Lv1に1ダメージ / プレイヤーAI判断: 高価値の味方を守るためシールド / ターンプラン探索: 返し込み最終盤面-113点、次点と0点差 / プレイヤーは真勇者ダイン Lv1にシールドを張った"
+        },
+        {
+          "replayStep": 24,
+          "label": "planner decision",
+          "state": "turn 4 / current player / HP player/cpu 10/10 / stones player/cpu 4/0 / deck player/cpu 22/22 / hand player/cpu 4/3",
+          "board": "player_front_left:PF:ピグミィ Lv2 HP3 act0/2 | player_front_right:PF:デスシープ Lv1 HP6 act0/1 | player_back_right:PB:真勇者ダイン Lv1 HP6 act0/1 | cpu_front_left:CF:真勇者ダイン Lv2 HP6 act1/1 | cpu_front_right:CF:ドノマンティス Lv1 HP4 act1/1 focus | cpu_back_right:CB:ピグミィ Lv1 HP3 act0/2 focus",
+          "nextDecision": "attack:ピグミィ:スパイクボール->ドノマンティス",
+          "score": -35,
+          "recentLog": "プレイヤーはストーンを3個得た / 真勇者ダイン Lv1の防御効果が切れた / プレイヤーは黄昏の風を引いた"
+        },
+        {
+          "replayStep": 25,
+          "label": "planner decision",
+          "state": "turn 4 / current player / HP player/cpu 10/10 / stones player/cpu 4/0 / deck player/cpu 22/22 / hand player/cpu 4/3",
+          "board": "player_front_left:PF:ピグミィ Lv2 HP3 act1/2 | player_front_right:PF:デスシープ Lv1 HP6 act0/1 | player_back_right:PB:真勇者ダイン Lv1 HP6 act0/1 | cpu_front_left:CF:真勇者ダイン Lv2 HP6 act1/1 | cpu_front_right:CF:ドノマンティス Lv1 HP4 act1/1 | cpu_back_right:CB:ピグミィ Lv1 HP3 act0/2 focus",
+          "nextDecision": "attack:デスシープ:attack->ドノマンティス",
+          "score": -17,
+          "recentLog": "プレイヤーのピグミィ Lv2: スパイクボール 1P / ドノマンティス Lv1は気合いで1ダメージ軽減した / スパイクボールでドノマンティス Lv1に0ダメージ"
+        },
+        {
+          "replayStep": 26,
+          "label": "planner decision",
+          "state": "turn 4 / current player / HP player/cpu 10/10 / stones player/cpu 4/0 / deck player/cpu 22/22 / hand player/cpu 4/3",
+          "board": "player_front_left:PF:ピグミィ Lv2 HP3 act1/2 | player_front_right:PF:デスシープ Lv1 HP6 act1/1 | player_back_right:PB:真勇者ダイン Lv1 HP6 act0/1 | cpu_front_left:CF:真勇者ダイン Lv2 HP6 act1/1 | cpu_front_right:CF:ドノマンティス Lv1 HP2 act1/1 | cpu_back_right:CB:ピグミィ Lv1 HP3 act0/2 focus",
+          "nextDecision": "master:master_attack->monster:cpu_front_right",
+          "score": -17,
+          "recentLog": "プレイヤーAI判断: ドノマンティスを削れるため攻撃 / ターンプラン探索: 返し込み最終盤面282点、次点と0点差 / プレイヤーのデスシープ Lv1: アタック 2P / アタックでドノマンティス Lv1に2ダメージ"
+        },
+        {
+          "replayStep": 27,
+          "label": "planner decision",
+          "state": "turn 4 / current player / HP player/cpu 10/10 / stones player/cpu 1/1 / deck player/cpu 22/22 / hand player/cpu 4/3",
+          "board": "player_front_left:PF:ピグミィ Lv2 HP3 act1/2 | player_front_right:PF:デスシープ Lv1 HP6 act1/1 | player_back_right:PB:真勇者ダイン Lv1 HP6 act0/1 | cpu_front_left:CF:真勇者ダイン Lv2 HP6 act1/1 | cpu_back_right:CB:ピグミィ Lv1 HP3 act0/2 focus",
+          "nextDecision": "summon:ドノマンティス->player_back_left",
+          "score": 82,
+          "recentLog": "プレイヤーのマスターアタック / マスターアタックでドノマンティス Lv1に2ダメージ / ドノマンティス Lv1は倒れ、CPUにストーン1個が戻った"
+        }
+      ]
+    },
+    {
+      "branch": "summon:デスシープ->cpu_back_left",
+      "matchedDecision": "-",
+      "rootScore": null,
+      "applied": false,
+      "error": "No branch matched: summon:デスシープ->cpu_back_left",
+      "finalScore": null,
+      "replaySteps": 0,
+      "finalState": "turn 2 / current player / HP player/cpu 10/10 / stones player/cpu 3/0 / deck player/cpu 24/24 / hand player/cpu 3/3",
+      "finalBoard": "player_front_left:PF:真勇者ダイン Lv1 HP6 act0/1 | player_front_right:PF:デスシープ Lv1 HP6 act0/1 | player_back_right:PB:ヤンバル Lv1 HP3 act0/1 | cpu_front_left:CF:デスシープ Lv1 HP6 prep | cpu_back_left:CB:真勇者ダイン Lv1 HP6 prep | cpu_back_right:CB:ドノマンティス Lv1 HP5 prep",
+      "checkpoints": []
+    },
+    {
+      "branch": "focus:ヤンバル",
+      "matchedDecision": "focus:ヤンバル",
+      "rootScore": 32,
+      "applied": true,
+      "winner": "cpu",
+      "winnerProfile": "white",
+      "finalScore": -1000000,
+      "replaySteps": 228,
+      "finalState": "turn 20 / current cpu / HP player/cpu 0/5 / stones player/cpu 9/8 / deck player/cpu 6/5 / hand player/cpu 5/6",
+      "finalBoard": "player_front_left:PF:ボムゾウ Lv1 HP2 act1/1 shield | player_back_left:PB:ピグミィ Lv1 HP3 act0/2 focus | cpu_front_left:CF:ボムゾウ Lv1 HP4 act0/1 | cpu_front_right:CF:ドノマンティス Lv2 HP5 act1/1 | cpu_back_left:CB:ピグミィ Lv2 HP3 act0/2 focus | cpu_back_right:CB:ピグミィ Lv2 HP3 act0/2 focus",
+      "checkpoints": [
+        {
+          "replayStep": 1,
+          "label": "after forced decision",
+          "state": "turn 2 / current player / HP player/cpu 10/10 / stones player/cpu 3/0 / deck player/cpu 24/24 / hand player/cpu 3/3",
+          "board": "player_front_left:PF:真勇者ダイン Lv1 HP6 act0/1 | player_front_right:PF:デスシープ Lv1 HP6 act0/1 | player_back_right:PB:ヤンバル Lv1 HP3 act1/1 focus | cpu_front_left:CF:デスシープ Lv1 HP6 prep | cpu_back_left:CB:真勇者ダイン Lv1 HP6 prep | cpu_back_right:CB:ドノマンティス Lv1 HP5 prep",
+          "nextDecision": "summon:ピグミィ->player_back_left",
+          "score": 204.2,
+          "recentLog": "プレイヤーはピグミィを引いた / プレイヤーAI判断: 有効攻撃がないためためる / ヤンバル Lv1はためた"
+        },
+        {
+          "replayStep": 1,
+          "label": "planner decision",
+          "state": "turn 2 / current player / HP player/cpu 10/10 / stones player/cpu 3/0 / deck player/cpu 24/24 / hand player/cpu 3/3",
+          "board": "player_front_left:PF:真勇者ダイン Lv1 HP6 act0/1 | player_front_right:PF:デスシープ Lv1 HP6 act0/1 | player_back_right:PB:ヤンバル Lv1 HP3 act1/1 focus | cpu_front_left:CF:デスシープ Lv1 HP6 prep | cpu_back_left:CB:真勇者ダイン Lv1 HP6 prep | cpu_back_right:CB:ドノマンティス Lv1 HP5 prep",
+          "nextDecision": "summon:ピグミィ->player_back_left",
+          "score": 204.2,
+          "recentLog": "プレイヤーはピグミィを引いた / プレイヤーAI判断: 有効攻撃がないためためる / ヤンバル Lv1はためた"
+        },
+        {
+          "replayStep": 2,
+          "label": "planner decision",
+          "state": "turn 2 / current player / HP player/cpu 10/10 / stones player/cpu 2/0 / deck player/cpu 24/24 / hand player/cpu 2/3",
+          "board": "player_front_left:PF:真勇者ダイン Lv1 HP6 act0/1 | player_front_right:PF:デスシープ Lv1 HP6 act0/1 | player_back_left:PB:ピグミィ Lv1 HP3 prep | player_back_right:PB:ヤンバル Lv1 HP3 act1/1 focus | cpu_front_left:CF:デスシープ Lv1 HP6 prep | cpu_back_left:CB:真勇者ダイン Lv1 HP6 prep | cpu_back_right:CB:ドノマンティス Lv1 HP5 prep",
+          "nextDecision": "focus:真勇者ダイン",
+          "score": 273.6,
+          "recentLog": "ヤンバル Lv1はためた / プレイヤーAI判断: 後衛カードを後列左へ召喚 / ターンプラン探索: 返し込み最終盤面76点、次点と6点差 / プレイヤーはピグミィを準備中で召喚した"
+        },
+        {
+          "replayStep": 3,
+          "label": "planner decision",
+          "state": "turn 2 / current player / HP player/cpu 10/10 / stones player/cpu 2/0 / deck player/cpu 24/24 / hand player/cpu 2/3",
+          "board": "player_front_left:PF:真勇者ダイン Lv1 HP6 act1/1 focus | player_front_right:PF:デスシープ Lv1 HP6 act0/1 | player_back_left:PB:ピグミィ Lv1 HP3 prep | player_back_right:PB:ヤンバル Lv1 HP3 act1/1 focus | cpu_front_left:CF:デスシープ Lv1 HP6 prep | cpu_back_left:CB:真勇者ダイン Lv1 HP6 prep | cpu_back_right:CB:ドノマンティス Lv1 HP5 prep",
+          "nextDecision": "focus:デスシープ",
+          "score": 279.6,
+          "recentLog": "プレイヤーはピグミィを準備中で召喚した / プレイヤーAI判断: 有効攻撃がないためためる / 見送り: ためるは9点差で見送り / 真勇者ダイン Lv1はためた"
+        },
+        {
+          "replayStep": 4,
+          "label": "planner decision",
+          "state": "turn 2 / current player / HP player/cpu 10/10 / stones player/cpu 2/0 / deck player/cpu 24/24 / hand player/cpu 2/3",
+          "board": "player_front_left:PF:真勇者ダイン Lv1 HP6 act1/1 focus | player_front_right:PF:デスシープ Lv1 HP6 act1/1 focus | player_back_left:PB:ピグミィ Lv1 HP3 prep | player_back_right:PB:ヤンバル Lv1 HP3 act1/1 focus | cpu_front_left:CF:デスシープ Lv1 HP6 prep | cpu_back_left:CB:真勇者ダイン Lv1 HP6 prep | cpu_back_right:CB:ドノマンティス Lv1 HP5 prep",
+          "nextDecision": "master:shield->monster:player_front_left",
+          "score": 285.6,
+          "recentLog": "真勇者ダイン Lv1はためた / プレイヤーAI判断: 有効攻撃がないためためる / デスシープ Lv1はためた"
+        },
+        {
+          "replayStep": 5,
+          "label": "planner decision",
+          "state": "turn 2 / current player / HP player/cpu 10/10 / stones player/cpu 0/0 / deck player/cpu 24/24 / hand player/cpu 2/3",
+          "board": "player_front_left:PF:真勇者ダイン Lv1 HP6 act1/1 focus,shield | player_front_right:PF:デスシープ Lv1 HP6 act1/1 focus | player_back_left:PB:ピグミィ Lv1 HP3 prep | player_back_right:PB:ヤンバル Lv1 HP3 act1/1 focus | cpu_front_left:CF:デスシープ Lv1 HP6 prep | cpu_back_left:CB:真勇者ダイン Lv1 HP6 prep | cpu_back_right:CB:ドノマンティス Lv1 HP5 prep",
+          "nextDecision": "end_turn",
+          "score": 287.6,
+          "recentLog": "デスシープ Lv1はためた / プレイヤーAI判断: 高価値の味方を守るためシールド / プレイヤーは真勇者ダイン Lv1にシールドを張った"
+        },
+        {
+          "replayStep": 12,
+          "label": "planner decision",
+          "state": "turn 3 / current player / HP player/cpu 10/10 / stones player/cpu 3/0 / deck player/cpu 23/23 / hand player/cpu 3/3",
+          "board": "player_front_left:PF:真勇者ダイン Lv1 HP6 act0/1 | player_front_right:PF:デスシープ Lv1 HP6 act0/1 focus | player_back_left:PB:ピグミィ Lv1 HP3 act0/2 | player_back_right:PB:ヤンバル Lv1 HP3 act0/1 focus | cpu_front_left:CF:デスシープ Lv1 HP6 act1/1 | cpu_front_right:CF:ドノマンティス Lv1 HP5 act1/1 focus,shield | cpu_back_left:CB:真勇者ダイン Lv1 HP6 act1/1 focus | cpu_back_right:CB:ピグミィ Lv1 HP3 prep",
+          "nextDecision": "attack:真勇者ダイン:ダイン斬り->デスシープ",
+          "score": 112.6,
+          "recentLog": "プレイヤーはストーンを3個得た / 真勇者ダイン Lv1の防御効果が切れた / プレイヤーはドノマンティスを引いた"
+        },
+        {
+          "replayStep": 13,
+          "label": "planner decision",
+          "state": "turn 3 / current player / HP player/cpu 10/10 / stones player/cpu 3/0 / deck player/cpu 23/23 / hand player/cpu 3/3",
+          "board": "player_front_left:PF:真勇者ダイン Lv1 HP6 act1/1 | player_front_right:PF:デスシープ Lv1 HP6 act0/1 focus | player_back_left:PB:ピグミィ Lv1 HP3 act0/2 | player_back_right:PB:ヤンバル Lv1 HP3 act0/1 focus | cpu_front_left:CF:デスシープ Lv1 HP4 act1/1 | cpu_front_right:CF:ドノマンティス Lv1 HP5 act1/1 focus,shield | cpu_back_left:CB:真勇者ダイン Lv1 HP6 act1/1 focus | cpu_back_right:CB:ピグミィ Lv1 HP3 prep",
+          "nextDecision": "attack:ヤンバル:wild_claw->デスシープ",
+          "score": 112.6,
+          "recentLog": "プレイヤーAI判断: デスシープを削れるため攻撃 / 見送り: 攻撃は213点差で見送り、攻撃は229点差で見送り / プレイヤーの真勇者ダイン Lv1: ダイン斬り 2P / ダイン斬りでデスシープ Lv1に2ダメージ"
+        },
+        {
+          "replayStep": 14,
+          "label": "planner decision",
+          "state": "turn 3 / current player / HP player/cpu 10/10 / stones player/cpu 3/0 / deck player/cpu 23/23 / hand player/cpu 3/3",
+          "board": "player_front_left:PF:真勇者ダイン Lv1 HP6 act1/1 | player_front_right:PF:デスシープ Lv1 HP6 act0/1 focus | player_back_left:PB:ピグミィ Lv1 HP3 act0/2 | player_back_right:PB:ヤンバル Lv1 HP3 act1/1 | cpu_front_left:CF:デスシープ Lv1 HP2 act1/1 | cpu_front_right:CF:ドノマンティス Lv1 HP5 act1/1 focus,shield | cpu_back_left:CB:真勇者ダイン Lv1 HP6 act1/1 focus | cpu_back_right:CB:ピグミィ Lv1 HP3 prep",
+          "nextDecision": "attack:ピグミィ:スパイクボール->デスシープ",
+          "score": 94.6,
+          "recentLog": "プレイヤーAI判断: デスシープを削れるため攻撃 / ターンプラン探索: 返し込み最終盤面122点、次点と63点差 / プレイヤーのヤンバル Lv1: ワイルドクロウ 2P / ワイルドクロウでデスシープ Lv1に2ダメージ"
+        },
+        {
+          "replayStep": 15,
+          "label": "planner decision",
+          "state": "turn 3 / current player / HP player/cpu 10/10 / stones player/cpu 3/0 / deck player/cpu 23/23 / hand player/cpu 3/3",
+          "board": "player_front_left:PF:真勇者ダイン Lv1 HP6 act1/1 | player_front_right:PF:デスシープ Lv1 HP6 act0/1 focus | player_back_left:PB:ピグミィ Lv1 HP3 act1/2 | player_back_right:PB:ヤンバル Lv1 HP3 act1/1 | cpu_front_left:CF:デスシープ Lv1 HP1 act1/1 | cpu_front_right:CF:ドノマンティス Lv1 HP5 act1/1 focus,shield | cpu_back_left:CB:真勇者ダイン Lv1 HP6 act1/1 focus | cpu_back_right:CB:ピグミィ Lv1 HP3 prep",
+          "nextDecision": "attack:ピグミィ:スパイクボール->デスシープ",
+          "score": 100.6,
+          "recentLog": "プレイヤーAI判断: デスシープを削れるため攻撃 / ターンプラン探索: 返し込み最終盤面140点、次点と54点差 / プレイヤーのピグミィ Lv1: スパイクボール 1P / スパイクボールでデスシープ Lv1に1ダメージ"
+        },
+        {
+          "replayStep": 16,
+          "label": "planner decision",
+          "state": "turn 3 / current player / HP player/cpu 10/10 / stones player/cpu 3/1 / deck player/cpu 23/23 / hand player/cpu 3/3",
+          "board": "player_front_left:PF:真勇者ダイン Lv1 HP6 act1/1 | player_front_right:PF:デスシープ Lv1 HP6 act0/1 focus | player_back_left:PB:ピグミィ Lv1 HP3 act2/2 | player_back_right:PB:ヤンバル Lv1 HP3 act1/1 | cpu_front_right:CF:ドノマンティス Lv1 HP5 act1/1 focus,shield | cpu_back_left:CB:真勇者ダイン Lv1 HP6 act1/1 focus | cpu_back_right:CB:ピグミィ Lv1 HP3 prep",
+          "nextDecision": "end_turn",
+          "score": 174.6,
+          "recentLog": "スパイクボールでデスシープ Lv1に1ダメージ / デスシープ Lv1は倒れ、CPUにストーン1個が戻った / ピグミィ Lv1は1レベルまで上げられる"
+        },
+        {
+          "replayStep": 17,
+          "label": "planner decision",
+          "state": "turn 3 / current player / HP player/cpu 10/10 / stones player/cpu 2/1 / deck player/cpu 23/23 / hand player/cpu 3/3",
+          "board": "player_front_left:PF:真勇者ダイン Lv1 HP6 act1/1 | player_front_right:PF:デスシープ Lv1 HP6 act0/1 focus | player_back_left:PB:ピグミィ Lv2 HP3 act2/2 | player_back_right:PB:ヤンバル Lv1 HP3 act1/1 | cpu_front_right:CF:ドノマンティス Lv1 HP5 act1/1 focus,shield | cpu_back_left:CB:真勇者ダイン Lv1 HP6 act1/1 focus | cpu_back_right:CB:ピグミィ Lv1 HP3 prep",
+          "nextDecision": "attack:デスシープ:attack->ドノマンティス",
+          "score": 212.6,
+          "recentLog": "デスシープ Lv1は倒れ、CPUにストーン1個が戻った / ピグミィ Lv1は1レベルまで上げられる / ピグミィ Lv2はLv2になり、HPが全回復した"
+        },
+        {
+          "replayStep": 18,
+          "label": "planner decision",
+          "state": "turn 3 / current player / HP player/cpu 10/10 / stones player/cpu 2/1 / deck player/cpu 23/23 / hand player/cpu 3/3",
+          "board": "player_front_left:PF:真勇者ダイン Lv1 HP6 act1/1 | player_front_right:PF:デスシープ Lv1 HP6 act1/1 | player_back_left:PB:ピグミィ Lv2 HP3 act2/2 | player_back_right:PB:ヤンバル Lv1 HP3 act1/1 | cpu_front_right:CF:ドノマンティス Lv1 HP4 act1/1 shield | cpu_back_left:CB:真勇者ダイン Lv1 HP6 act1/1 focus | cpu_back_right:CB:ピグミィ Lv1 HP3 prep",
+          "nextDecision": "master:shield->monster:player_front_left",
+          "score": 206.6,
+          "recentLog": "プレイヤーのデスシープ Lv1: アタック 3P / ドノマンティス Lv1は気合いで1ダメージ軽減した / アタックでドノマンティス Lv1に1ダメージ"
+        },
+        {
+          "replayStep": 19,
+          "label": "planner decision",
+          "state": "turn 3 / current player / HP player/cpu 10/10 / stones player/cpu 0/1 / deck player/cpu 23/23 / hand player/cpu 3/3",
+          "board": "player_front_left:PF:真勇者ダイン Lv1 HP6 act1/1 shield | player_front_right:PF:デスシープ Lv1 HP6 act1/1 | player_back_left:PB:ピグミィ Lv2 HP3 act2/2 | player_back_right:PB:ヤンバル Lv1 HP3 act1/1 | cpu_front_right:CF:ドノマンティス Lv1 HP4 act1/1 shield | cpu_back_left:CB:真勇者ダイン Lv1 HP6 act1/1 focus | cpu_back_right:CB:ピグミィ Lv1 HP3 prep",
+          "nextDecision": "end_turn",
+          "score": 208.6,
+          "recentLog": "アタックでドノマンティス Lv1に1ダメージ / プレイヤーAI判断: 高価値の味方を守るためシールド / ターンプラン探索: 返し込み最終盤面-113点、次点と0点差 / プレイヤーは真勇者ダイン Lv1にシールドを張った"
+        },
+        {
+          "replayStep": 24,
+          "label": "planner decision",
+          "state": "turn 4 / current player / HP player/cpu 10/10 / stones player/cpu 4/0 / deck player/cpu 22/22 / hand player/cpu 4/3",
+          "board": "player_front_left:PF:ピグミィ Lv2 HP3 act0/2 | player_front_right:PF:デスシープ Lv1 HP6 act0/1 | player_back_right:PB:真勇者ダイン Lv1 HP6 act0/1 | cpu_front_left:CF:真勇者ダイン Lv2 HP6 act1/1 | cpu_front_right:CF:ドノマンティス Lv1 HP4 act1/1 focus | cpu_back_right:CB:ピグミィ Lv1 HP3 act0/2 focus",
+          "nextDecision": "attack:ピグミィ:スパイクボール->ドノマンティス",
+          "score": -35,
+          "recentLog": "プレイヤーはストーンを3個得た / 真勇者ダイン Lv1の防御効果が切れた / プレイヤーは黄昏の風を引いた"
+        },
+        {
+          "replayStep": 25,
+          "label": "planner decision",
+          "state": "turn 4 / current player / HP player/cpu 10/10 / stones player/cpu 4/0 / deck player/cpu 22/22 / hand player/cpu 4/3",
+          "board": "player_front_left:PF:ピグミィ Lv2 HP3 act1/2 | player_front_right:PF:デスシープ Lv1 HP6 act0/1 | player_back_right:PB:真勇者ダイン Lv1 HP6 act0/1 | cpu_front_left:CF:真勇者ダイン Lv2 HP6 act1/1 | cpu_front_right:CF:ドノマンティス Lv1 HP4 act1/1 | cpu_back_right:CB:ピグミィ Lv1 HP3 act0/2 focus",
+          "nextDecision": "attack:デスシープ:attack->ドノマンティス",
+          "score": -17,
+          "recentLog": "プレイヤーのピグミィ Lv2: スパイクボール 1P / ドノマンティス Lv1は気合いで1ダメージ軽減した / スパイクボールでドノマンティス Lv1に0ダメージ"
+        },
+        {
+          "replayStep": 26,
+          "label": "planner decision",
+          "state": "turn 4 / current player / HP player/cpu 10/10 / stones player/cpu 4/0 / deck player/cpu 22/22 / hand player/cpu 4/3",
+          "board": "player_front_left:PF:ピグミィ Lv2 HP3 act1/2 | player_front_right:PF:デスシープ Lv1 HP6 act1/1 | player_back_right:PB:真勇者ダイン Lv1 HP6 act0/1 | cpu_front_left:CF:真勇者ダイン Lv2 HP6 act1/1 | cpu_front_right:CF:ドノマンティス Lv1 HP2 act1/1 | cpu_back_right:CB:ピグミィ Lv1 HP3 act0/2 focus",
+          "nextDecision": "master:master_attack->monster:cpu_front_right",
+          "score": -17,
+          "recentLog": "プレイヤーAI判断: ドノマンティスを削れるため攻撃 / ターンプラン探索: 返し込み最終盤面282点、次点と0点差 / プレイヤーのデスシープ Lv1: アタック 2P / アタックでドノマンティス Lv1に2ダメージ"
+        },
+        {
+          "replayStep": 27,
+          "label": "planner decision",
+          "state": "turn 4 / current player / HP player/cpu 10/10 / stones player/cpu 1/1 / deck player/cpu 22/22 / hand player/cpu 4/3",
+          "board": "player_front_left:PF:ピグミィ Lv2 HP3 act1/2 | player_front_right:PF:デスシープ Lv1 HP6 act1/1 | player_back_right:PB:真勇者ダイン Lv1 HP6 act0/1 | cpu_front_left:CF:真勇者ダイン Lv2 HP6 act1/1 | cpu_back_right:CB:ピグミィ Lv1 HP3 act0/2 focus",
+          "nextDecision": "summon:ドノマンティス->player_back_left",
+          "score": 82,
+          "recentLog": "プレイヤーのマスターアタック / マスターアタックでドノマンティス Lv1に2ダメージ / ドノマンティス Lv1は倒れ、CPUにストーン1個が戻った"
+        }
+      ]
+    }
+  ],
+  "conclusion": [
+    "同一局面から候補を強制し、planner側の次手番ごとの状態差を追跡した。",
+    "selected: summon:ピグミィ->player_back_left -> white / score -1000000",
+    "summon:デスシープ->cpu_back_left: - -> no winner / score -Infinity",
+    "focus:ヤンバル: focus:ヤンバル -> white / score -1000000"
+  ]
+}
+

@@ -31,6 +31,9 @@ export interface CpuAiSearchOptions {
   terminalPlanRootDecisionWeight?: number;
   terminalPlanRootGapFreeMargin?: number;
   terminalPlanRootGapPenaltyWeight?: number;
+  terminalPlanSetupOverFocusRootNeutralTurnFrom?: number;
+  terminalPlanSetupOverFocusAdoptionMaxRootScoreGap?: number;
+  terminalPlanSetupOverFocusAdoptionMinMargin?: number;
   terminalPlanAdoptionMinMargin?: number;
   terminalPlanAdoptionMaxRootScoreGap?: number;
   terminalPlanRejectNonLethalFaceDamage?: number;

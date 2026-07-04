@@ -5,6 +5,7 @@ import {
   inspectCpuDecisionEvaluations,
   type CpuAiOptions,
   type CpuAiProfile,
+  type CpuAiSearchOptions,
   type CpuDecision,
 } from "../src/game/cpuAi";
 import { AI_EVALUATION_WEIGHTS } from "../src/game/aiWeights";
@@ -22,6 +23,7 @@ interface CliOptions {
   deckPreset: DeckPresetId;
   step: number;
   branches: string[];
+  search: CpuAiSearchOptions;
   maxReplaySteps: number;
   maxCheckpoints: number;
   markdownPath?: string;
@@ -103,7 +105,7 @@ if (options.jsonPath) {
 function runReport(options: CliOptions): TimelineReport {
   const state = replayToStep(options);
   const plannerSide = plannerSideForDirection(options.direction);
-  const aiOptions = aiOptionsFor(options.direction);
+  const aiOptions = aiOptionsFor(options.direction, options.search);
   const selected = chooseCpuDecision(state, aiOptions);
   const selectedLabel = decisionLabel(state, selected);
   const evaluations = inspectCpuDecisionEvaluations(state, aiOptions)
@@ -163,7 +165,7 @@ function timelineBranch(
   rootScore: number,
   options: CliOptions,
 ): BranchTimeline {
-  const aiOptions = aiOptionsFor(options.direction);
+  const aiOptions = aiOptionsFor(options.direction, options.search);
   let state: GameState;
   try {
     state = applyCpuDecision(before, decision);
@@ -233,7 +235,7 @@ function checkpoint(
 
 function replayToStep(options: CliOptions): GameState {
   let state = createWhiteMirrorGame(options.seed, options.deckPreset);
-  const aiOptions = aiOptionsFor(options.direction);
+  const aiOptions = aiOptionsFor(options.direction, options.search);
   for (let step = 0; step < options.step && !state.winner; step += 1) {
     state = runAutoStep(state, aiOptions);
   }
@@ -251,8 +253,12 @@ function createWhiteMirrorGame(seed: number, deckPreset: DeckPresetId): GameStat
   });
 }
 
-function aiOptionsFor(direction: Direction): CpuAiOptions {
-  return { profiles: profilesForDirection(direction) };
+function aiOptionsFor(direction: Direction, search: CpuAiSearchOptions = {}): CpuAiOptions {
+  const plannerSide = plannerSideForDirection(direction);
+  return {
+    profiles: profilesForDirection(direction),
+    searches: { [plannerSide]: search },
+  };
 }
 
 function profilesForDirection(direction: Direction): Record<PlayerId, CpuAiProfile> {
@@ -378,6 +384,7 @@ function formatMarkdown(report: TimelineReport): string {
     `direction: ${report.options.direction}`,
     `step: ${report.options.step}`,
     `deck: \`${report.options.deckPreset}\``,
+    `search: \`${JSON.stringify(report.options.search)}\``,
     `plannerSide: ${report.plannerSide}`,
     "",
     "## Start",
@@ -424,6 +431,7 @@ function parseArgs(args: string[]): CliOptions {
     deckPreset: "master-lab-white-1377-death-sheep3",
     step: 101,
     branches: ["selected", "summon:デスシープ->cpu_back_left"],
+    search: {},
     maxReplaySteps: 220,
     maxCheckpoints: 18,
   };
@@ -458,6 +466,30 @@ function parseArgs(args: string[]): CliOptions {
     } else if (arg === "--max-checkpoints") {
       parsed.maxCheckpoints = readInteger(arg, next);
       index += 1;
+    } else if (arg === "--terminal-root-weight") {
+      parsed.search = { ...parsed.search, terminalPlanRootDecisionWeight: readNumber(arg, next) };
+      index += 1;
+    } else if (arg === "--terminal-root-gap-penalty") {
+      parsed.search = { ...parsed.search, terminalPlanRootGapPenaltyWeight: readNumber(arg, next) };
+      index += 1;
+    } else if (arg === "--terminal-setup-over-focus-root-neutral-turn-from") {
+      parsed.search = { ...parsed.search, terminalPlanSetupOverFocusRootNeutralTurnFrom: readNumber(arg, next) };
+      index += 1;
+    } else if (arg === "--terminal-setup-over-focus-adoption-max-root-gap") {
+      parsed.search = { ...parsed.search, terminalPlanSetupOverFocusAdoptionMaxRootScoreGap: readNumber(arg, next) };
+      index += 1;
+    } else if (arg === "--terminal-setup-over-focus-adoption-margin") {
+      parsed.search = { ...parsed.search, terminalPlanSetupOverFocusAdoptionMinMargin: readNumber(arg, next) };
+      index += 1;
+    } else if (arg === "--terminal-adoption-margin") {
+      parsed.search = { ...parsed.search, terminalPlanAdoptionMinMargin: readNumber(arg, next) };
+      index += 1;
+    } else if (arg === "--terminal-adoption-max-root-gap") {
+      parsed.search = { ...parsed.search, terminalPlanAdoptionMaxRootScoreGap: readNumber(arg, next) };
+      index += 1;
+    } else if (arg === "--terminal-require-compatible-fallback") {
+      parsed.search = { ...parsed.search, terminalPlanRequireCompatibleFallbackAction: readNumber(arg, next) };
+      index += 1;
     } else if (arg === "--markdown") {
       parsed.markdownPath = readString(arg, next);
       index += 1;
@@ -473,6 +505,14 @@ function parseArgs(args: string[]): CliOptions {
   return parsed;
 }
 
+function readNumber(name: string, value: string | undefined): number {
+  const number = Number(readString(name, value));
+  if (!Number.isFinite(number)) {
+    throw new Error(`${name} must be a number`);
+  }
+  return number;
+}
+
 function printHelpAndExit(): never {
   console.log(`Usage:
   npm run audit:white-planner-branch-timeline -- [options]
@@ -486,6 +526,21 @@ Options:
   --only-branch <text>       Replace default branches with one branch.
   --max-replay-steps <n>     Max auto steps after forced decision. Default: 220
   --max-checkpoints <n>      Max timeline checkpoints per branch. Default: 18
+  --terminal-root-weight <n> Override terminal root decision score weight.
+  --terminal-root-gap-penalty <n>
+                              Override root score gap penalty weight.
+  --terminal-setup-over-focus-root-neutral-turn-from <n>
+                              Neutralize root score for setup-over-focus comparison from turn N.
+  --terminal-setup-over-focus-adoption-max-root-gap <n>
+                              Override setup-over-focus max root score gap.
+  --terminal-setup-over-focus-adoption-margin <n>
+                              Override setup-over-focus adoption margin.
+  --terminal-adoption-margin <n>
+                              Override terminal plan adoption margin.
+  --terminal-adoption-max-root-gap <n>
+                              Override max root score gap for adoption.
+  --terminal-require-compatible-fallback <n>
+                              Require compatible fallback action if nonzero.
   --markdown <path>          Write Markdown report.
   --json <path>              Write JSON report.
 `);

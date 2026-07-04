@@ -538,6 +538,15 @@ function parseArgs(args: string[]): CliOptions {
     } else if (arg === "--terminal-root-gap-penalty") {
       parsed.search = { ...parsed.search, terminalPlanRootGapPenaltyWeight: readNumber(arg, next) };
       index += 1;
+    } else if (arg === "--terminal-setup-over-focus-root-neutral-turn-from") {
+      parsed.search = { ...parsed.search, terminalPlanSetupOverFocusRootNeutralTurnFrom: readNumber(arg, next) };
+      index += 1;
+    } else if (arg === "--terminal-setup-over-focus-adoption-max-root-gap") {
+      parsed.search = { ...parsed.search, terminalPlanSetupOverFocusAdoptionMaxRootScoreGap: readNumber(arg, next) };
+      index += 1;
+    } else if (arg === "--terminal-setup-over-focus-adoption-margin") {
+      parsed.search = { ...parsed.search, terminalPlanSetupOverFocusAdoptionMinMargin: readNumber(arg, next) };
+      index += 1;
     } else if (arg === "--terminal-adoption-margin") {
       parsed.search = { ...parsed.search, terminalPlanAdoptionMinMargin: readNumber(arg, next) };
       index += 1;
@@ -673,6 +682,12 @@ Options:
   --terminal-root-gap-free-margin <n>
                                   Override root score gap free margin.
   --terminal-root-gap-penalty <n> Override root score gap penalty weight.
+  --terminal-setup-over-focus-root-neutral-turn-from <n>
+                                  Neutralize root score for setup-over-focus comparison from turn N.
+  --terminal-setup-over-focus-adoption-max-root-gap <n>
+                                  Override setup-over-focus max root score gap.
+  --terminal-setup-over-focus-adoption-margin <n>
+                                  Override setup-over-focus adoption margin.
   --terminal-adoption-margin <n>  Override terminal plan adoption margin.
   --terminal-adoption-max-root-gap <n>
                                   Override max root score gap for adoption.

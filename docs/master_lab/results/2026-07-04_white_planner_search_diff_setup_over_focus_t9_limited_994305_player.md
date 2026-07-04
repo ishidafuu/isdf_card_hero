@@ -1,0 +1,24 @@
+# White Planner Search Diff Audit
+
+生成: 2026-07-04T10:26:20.957Z
+seed: 994305
+direction: challenger-as-player
+deck: `master-lab-white-1377-death-sheep3`
+compareSearch: `{"terminalPlanSetupOverFocusRootNeutralTurnFrom":9,"terminalPlanSetupOverFocusAdoptionMaxRootScoreGap":260,"terminalPlanSetupOverFocusAdoptionMinMargin":0}`
+plannerSide: player
+finalState: turn 26 / current cpu / HP player/cpu 0/8 / stones player/cpu 24/22 / deck player/cpu 0/0 / hand player/cpu 5/5
+winner: white
+
+## Conclusion
+
+- 2 same-state decision diffs on the compare-search path.
+- Final: cpu (baseline); turn 26 / current cpu / HP player/cpu 0/8 / stones player/cpu 24/22 / deck player/cpu 0/0 / hand player/cpu 5/5.
+- Inspect the earliest diff first; later diffs may be downstream of that branch.
+
+## Diffs
+
+| step | turn | state | current | compare | board | recent |
+| ---: | ---: | --- | --- | --- | --- | --- |
+| 90 | 9 | turn 9 / current player / HP player/cpu 10/9 / stones player/cpu 10/0 / deck player/cpu 17/17 / hand player/cpu 4/5 | focus:ボムゾウ<br>有効攻撃がないためためる / ターンプラン探索: 返し込み最終盤面95点、次点と41点差 | summon:デスシープ->player_back_right<br>デスシープを空き枠へ召喚 / ターンプラン探索: 返し込み最終盤面61点、次点と6点差 | player_front_left:PF:ボムゾウ Lv1 HP3 act0/1 \| player_front_right:PF:ドノマンティス Lv1 HP5 act1/1 \| player_back_left:PB:ボムゾウ Lv1 HP6 act1/1 \| cpu_front_right:CF:真勇者ダイン Lv3 HP6 act1/1 \| cpu_back_left:CB:ピグミィ Lv1 HP2 act2/2 focus \| cpu_back_right:CB:ヤンバル Lv2 HP3 act1/1 | プレイヤーはデスシープを引いた / プレイヤーAI判断: 前衛カードを前列へ出して攻撃しやすくするため移動 / 見送り: 召喚は6点差で見送り、ためるは11点差で見送り / ドノマンティス Lv1とボムゾウ Lv1の位置を入れ替えた |
+| 103 | 10 | turn 10 / current player / HP player/cpu 10/9 / stones player/cpu 4/1 / deck player/cpu 16/16 / hand player/cpu 4/4 | focus:ドノマンティス<br>有効攻撃がないためためる / ターンプラン探索: 返し込み最終盤面135点、次点と30点差 | summon:ポリスピナー->player_back_left<br>ポリスピナーを空き枠へ召喚 / ターンプラン探索: 返し込み最終盤面102点、次点と0点差 | player_front_left:PF:ボムゾウ Lv1 HP6 act0/1 \| player_front_right:PF:ドノマンティス Lv1 HP5 act0/1 \| player_back_right:PB:デスシープ Lv1 HP6 act0/1 \| cpu_front_left:CF:デスシープ Lv1 HP6 prep \| cpu_front_right:CF:ヤンバル Lv2 HP3 act1/1 shield \| cpu_back_left:CB:ヤンバル Lv1 HP3 prep \| cpu_back_right:CB:ピグミィ Lv2 HP3 act2/2 | ボムゾウ Lv1が前衛へ自動移動した / プレイヤーはストーンを3個得た / プレイヤーはポリスピナーを引いた |
+

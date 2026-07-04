@@ -1,0 +1,29 @@
+{
+  "generatedAt": "2026-07-04T10:07:04.537Z",
+  "options": {
+    "seed": 994304,
+    "direction": "challenger-as-player",
+    "deckPreset": "master-lab-white-1377-death-sheep3",
+    "compareSearch": {
+      "terminalPlanSetupOverFocusRootNeutralTurnFrom": 9,
+      "terminalPlanSetupOverFocusAdoptionMaxRootScoreGap": 260,
+      "terminalPlanSetupOverFocusAdoptionMinMargin": 0
+    },
+    "maxSteps": 260,
+    "maxTurns": 60,
+    "maxDiffs": 12,
+    "markdownPath": "docs/master_lab/results/2026-07-04_white_planner_search_diff_setup_over_focus_t9_limited_994304_player.md",
+    "jsonPath": "docs/master_lab/results/2026-07-04_white_planner_search_diff_setup_over_focus_t9_limited_994304_player.json"
+  },
+  "plannerSide": "player",
+  "finalState": "turn 28 / current cpu / HP player/cpu 4/0 / stones player/cpu 22/26 / deck player/cpu 0/0 / hand player/cpu 5/5",
+  "winner": "player",
+  "winnerProfile": "white_planner",
+  "diffs": [],
+  "conclusion": [
+    "0 same-state decision diffs on the compare-search path.",
+    "Final: player (planner); turn 28 / current cpu / HP player/cpu 4/0 / stones player/cpu 22/26 / deck player/cpu 0/0 / hand player/cpu 5/5.",
+    "No diff captured before the limit."
+  ]
+}
+
