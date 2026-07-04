@@ -1,0 +1,114 @@
+{
+  "generatedAt": "2026-07-04T09:44:59.354Z",
+  "options": {
+    "seedStart": 994304,
+    "gamesPerDirection": 1,
+    "maxSteps": 340,
+    "maxTurns": 120,
+    "deckPreset": "master-lab-white-1377-death-sheep3",
+    "directions": [
+      "challenger-as-player"
+    ],
+    "candidates": [
+      {
+        "id": "response_root_neutral_margin0",
+        "note": "root補正なし。応答評価が同点以上なら採用する対象局面追試候補",
+        "search": {
+          "terminalPlanRootDecisionWeight": 0,
+          "terminalPlanRootGapPenaltyWeight": 0,
+          "terminalPlanAdoptionMaxRootScoreGap": 260,
+          "terminalPlanAdoptionMinMargin": 0,
+          "terminalPlanRequireCompatibleFallbackAction": 0
+        }
+      }
+    ],
+    "streamProgress": true,
+    "markdownPath": "docs/master_lab/results/2026-07-04_white_planner_pdca_response_root_neutral_margin0_seed994304_player.md",
+    "jsonPath": "docs/master_lab/results/2026-07-04_white_planner_pdca_response_root_neutral_margin0_seed994304_player.json"
+  },
+  "games": [
+    {
+      "candidateId": "response_root_neutral_margin0",
+      "direction": "challenger-as-player",
+      "seed": 994304,
+      "profiles": {
+        "player": "white_planner",
+        "cpu": "white"
+      },
+      "winner": "cpu",
+      "winnerProfile": "white",
+      "steps": 236,
+      "turns": 20,
+      "playerHp": 0,
+      "cpuHp": 5,
+      "challengerHp": 0,
+      "baselineHp": 5,
+      "decisionStats": {
+        "player": {
+          "decisions": 117,
+          "elapsedMs": 50350.54704099994,
+          "maxDecisionMs": 2426.4840829999957,
+          "actionCounts": {
+            "summon": 18,
+            "end_turn": 20,
+            "focus": 18,
+            "master:shield": 9,
+            "attack": 34,
+            "master:master_attack": 9,
+            "move": 3,
+            "master:wake_up": 5,
+            "magic": 1
+          }
+        },
+        "cpu": {
+          "decisions": 112,
+          "elapsedMs": 53180.914088000085,
+          "maxDecisionMs": 2552.830500000011,
+          "actionCounts": {
+            "summon": 16,
+            "end_turn": 19,
+            "focus": 13,
+            "attack": 40,
+            "master:shield": 6,
+            "magic": 1,
+            "move": 5,
+            "master:master_attack": 9,
+            "master:wake_up": 3
+          }
+        }
+      }
+    }
+  ],
+  "summaries": [
+    {
+      "candidateId": "response_root_neutral_margin0",
+      "note": "root補正なし。応答評価が同点以上なら採用する対象局面追試候補",
+      "games": 1,
+      "challengerWins": 0,
+      "baselineWins": 1,
+      "draws": 0,
+      "winPointRate": 0,
+      "averageHpMargin": -5,
+      "averageSteps": 236,
+      "averageTurns": 20,
+      "averageDecisionMs": 430.34655590598237,
+      "maxDecisionMs": 2426.4840829999957,
+      "issues": 0,
+      "actionCounts": {
+        "attack": 34,
+        "end_turn": 20,
+        "focus": 18,
+        "magic": 1,
+        "master:master_attack": 9,
+        "master:shield": 9,
+        "master:wake_up": 5,
+        "move": 3,
+        "summon": 18
+      }
+    }
+  ],
+  "conclusion": [
+    "best candidate: response_root_neutral_margin0 (0-1-0, WPR 0%, avg HP margin -5)",
+    "No candidate beat the current white baseline in this sample. Keep white_planner experimental and tighten adoption around clearly winning planner differences."
+  ]
+}

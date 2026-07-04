@@ -1265,7 +1265,15 @@ function applyTerminalPlanRolloutScores(
   const fallbackSelection = fallbackKey
     ? terminalRanked.find((selection) => cpuDecisionKey(selection.candidate.decision) === fallbackKey)
     : undefined;
-  if (!shouldTriggerTerminalPlanRollout(rootState, perspective, terminalRanked, fallbackSelection, fallback, config)) {
+  const rolloutTrigger = terminalPlanRolloutTriggerSelection(
+    rootState,
+    perspective,
+    terminalRanked,
+    fallbackSelection,
+    fallback,
+    config,
+  );
+  if (!rolloutTrigger) {
     return [...selections];
   }
 
@@ -1316,50 +1324,57 @@ function applyTerminalPlanRolloutScores(
   });
 }
 
-function shouldTriggerTerminalPlanRollout(
+function terminalPlanRolloutTriggerSelection(
   state: GameState,
   perspective: PlayerId,
   terminalRanked: readonly TerminalPlanSelection[],
   fallbackSelection: TerminalPlanSelection | undefined,
   fallback: EvaluatedDecision | undefined,
   config: CpuAiProfileConfig,
-): boolean {
+): TerminalPlanSelection | undefined {
   if (config.terminalPlanRolloutTurnFrom !== undefined && state.turnNumber < config.terminalPlanRolloutTurnFrom) {
-    return false;
+    return undefined;
   }
   if (config.terminalPlanRolloutTurnTo !== undefined && state.turnNumber > config.terminalPlanRolloutTurnTo) {
-    return false;
+    return undefined;
   }
   if (
     config.terminalPlanRolloutMaxOpponentStones !== undefined &&
     state.players[opponentOf(perspective)].stones > config.terminalPlanRolloutMaxOpponentStones
   ) {
-    return false;
+    return undefined;
   }
   if (config.terminalPlanRolloutOncePerTurn && hasAdoptedTerminalPlanRolloutThisTurn(state, perspective)) {
-    return false;
+    return undefined;
   }
   const best = terminalRanked[0];
   if (!best || !fallback || !fallbackSelection) {
-    return false;
+    return undefined;
   }
-  if (cpuDecisionKey(best.candidate.decision) === cpuDecisionKey(fallback.decision)) {
-    return false;
+  const fallbackKey = cpuDecisionKey(fallback.decision);
+  const bestKey = cpuDecisionKey(best.candidate.decision);
+  const rolloutChallenger = bestKey === fallbackKey
+    ? terminalRanked.find((selection) => cpuDecisionKey(selection.candidate.decision) !== fallbackKey)
+    : best;
+  if (!rolloutChallenger) {
+    return undefined;
   }
   if (config.terminalPlanRolloutRequireFallbackMove && fallback.decision.type !== "move") {
-    return false;
+    return undefined;
   }
-  if (config.terminalPlanRolloutRequirePlannerSummon && best.candidate.decision.type !== "summon") {
-    return false;
+  if (config.terminalPlanRolloutRequirePlannerSummon && rolloutChallenger.candidate.decision.type !== "summon") {
+    return undefined;
   }
-  const rootScoreGap = fallback.totalScore - best.candidate.totalScore;
+  const rootScoreGap = fallback.totalScore - rolloutChallenger.candidate.totalScore;
   const minRootScoreGap = config.terminalPlanRolloutTriggerMinRootScoreGap ?? 120;
   if (rootScoreGap < minRootScoreGap) {
-    return false;
+    return undefined;
   }
-  const plannerMargin = best.plannerScore - fallbackSelection.plannerScore;
+  const plannerMargin = bestKey === fallbackKey
+    ? fallbackSelection.plannerScore - rolloutChallenger.plannerScore
+    : best.plannerScore - fallbackSelection.plannerScore;
   const maxPlannerMargin = config.terminalPlanRolloutTriggerMaxPlannerMargin ?? 40;
-  return plannerMargin <= maxPlannerMargin;
+  return plannerMargin <= maxPlannerMargin ? rolloutChallenger : undefined;
 }
 
 function evaluateTerminalPlanRollout(

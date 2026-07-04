@@ -38,6 +38,7 @@
     "audit:white-planner-response-probe": "vite-node scripts/white-planner-response-probe.ts",
     "audit:white-planner-forced-branch": "vite-node scripts/white-planner-forced-branch-probe.ts",
     "audit:white-planner-forced-branch-scan": "vite-node scripts/white-planner-forced-branch-scan.ts",
+    "audit:white-planner-branch-timeline": "vite-node scripts/white-planner-branch-timeline.ts",
     "audit:white-planner-turn-plan-response": "vite-node scripts/white-planner-turn-plan-response-audit.ts",
     "audit:white-rollout-triggers": "vite-node scripts/white-rollout-trigger-audit.ts",
     "lab:masters:shield-audit": "vite-node scripts/shield-usage-audit-loop.ts",

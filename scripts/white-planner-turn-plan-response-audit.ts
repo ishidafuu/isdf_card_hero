@@ -529,6 +529,33 @@ function parseArgs(args: string[]): CliOptions {
     } else if (arg === "--planner-rollout-once-per-turn") {
       parsed.search = { ...parsed.search, terminalPlanRolloutOncePerTurn: readNumber(arg, next) };
       index += 1;
+    } else if (arg === "--terminal-root-weight") {
+      parsed.search = { ...parsed.search, terminalPlanRootDecisionWeight: readNumber(arg, next) };
+      index += 1;
+    } else if (arg === "--terminal-root-gap-free-margin") {
+      parsed.search = { ...parsed.search, terminalPlanRootGapFreeMargin: readNumber(arg, next) };
+      index += 1;
+    } else if (arg === "--terminal-root-gap-penalty") {
+      parsed.search = { ...parsed.search, terminalPlanRootGapPenaltyWeight: readNumber(arg, next) };
+      index += 1;
+    } else if (arg === "--terminal-adoption-margin") {
+      parsed.search = { ...parsed.search, terminalPlanAdoptionMinMargin: readNumber(arg, next) };
+      index += 1;
+    } else if (arg === "--terminal-adoption-max-root-gap") {
+      parsed.search = { ...parsed.search, terminalPlanAdoptionMaxRootScoreGap: readNumber(arg, next) };
+      index += 1;
+    } else if (arg === "--terminal-reject-non-lethal-face") {
+      parsed.search = { ...parsed.search, terminalPlanRejectNonLethalFaceDamage: readNumber(arg, next) };
+      index += 1;
+    } else if (arg === "--terminal-reject-end-turn-over-action") {
+      parsed.search = { ...parsed.search, terminalPlanRejectEndTurnOverAction: readNumber(arg, next) };
+      index += 1;
+    } else if (arg === "--terminal-reject-setup-over-tactical") {
+      parsed.search = { ...parsed.search, terminalPlanRejectSetupOverTacticalAction: readNumber(arg, next) };
+      index += 1;
+    } else if (arg === "--terminal-require-compatible-fallback") {
+      parsed.search = { ...parsed.search, terminalPlanRequireCompatibleFallbackAction: readNumber(arg, next) };
+      index += 1;
     } else if (arg === "--replay-with-search") {
       parsed.replayWithSearch = true;
     } else if (arg === "--candidate-limit") {
@@ -642,6 +669,21 @@ Options:
                                   Roll out only when planner candidate is summon if nonzero.
   --planner-rollout-once-per-turn <n>
                                   Roll out at most once per current-player turn if nonzero.
+  --terminal-root-weight <n>      Override terminal root decision score weight.
+  --terminal-root-gap-free-margin <n>
+                                  Override root score gap free margin.
+  --terminal-root-gap-penalty <n> Override root score gap penalty weight.
+  --terminal-adoption-margin <n>  Override terminal plan adoption margin.
+  --terminal-adoption-max-root-gap <n>
+                                  Override max root score gap for adoption.
+  --terminal-reject-non-lethal-face <n>
+                                  Reject non-lethal face root over non-face fallback if nonzero.
+  --terminal-reject-end-turn-over-action <n>
+                                  Reject end-turn root over action fallback if nonzero.
+  --terminal-reject-setup-over-tactical <n>
+                                  Reject setup root over tactical fallback if nonzero.
+  --terminal-require-compatible-fallback <n>
+                                  Require compatible fallback action if nonzero.
   --replay-with-search            Apply search override during replay to the target step.
   --candidate-limit <n>           Keep only top N terminal-plan candidates in the report/rollout. Default: all
   --rollout-steps <n>             Force each candidate and run up to N auto steps. Default: 0
