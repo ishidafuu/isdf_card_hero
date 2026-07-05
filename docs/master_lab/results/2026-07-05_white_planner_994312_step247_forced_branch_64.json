@@ -1,0 +1,141 @@
+{
+  "generatedAt": "2026-07-05T13:31:36.667Z",
+  "seed": 994312,
+  "direction": "challenger-as-player",
+  "deckPreset": "master-lab-white-1377-death-sheep3",
+  "branchTop": 8,
+  "maxReplaySteps": 64,
+  "samples": [
+    {
+      "step": 247,
+      "turnNumber": 20,
+      "plannerSide": "player",
+      "currentPlayer": "player",
+      "state": "turn 20 / current player / HP player/cpu 6/10 / stones player/cpu 8/2 / deck player/cpu 6/6 / hand player/cpu 6/5",
+      "board": "player_front_left:PF:ドノマンティス Lv1 HP5 act0/1 focus | player_front_right:PF:ピグミィ Lv2 HP3 act0/2 | player_back_left:PB:真勇者ダイン Lv1 HP6 act0/1 focus | cpu_front_left:CF:ボムゾウ Lv2 HP5 act1/1 shield | cpu_front_right:CF:デスシープ Lv2 HP6 act1/1 shield | cpu_back_left:CB:ドノマンティス Lv1 HP5 act0/1 focus",
+      "branches": [
+        {
+          "rank": 1,
+          "decision": "magic:ローテーション->master:player",
+          "rootScore": 306.8,
+          "selected": true,
+          "applied": true,
+          "winner": "cpu",
+          "winnerProfile": "white",
+          "replaySteps": 62,
+          "finalTurn": 31,
+          "branchScore": -1000000,
+          "finalState": "turn 31 / current player / HP player/cpu 0/4 / stones player/cpu 27/30 / deck player/cpu 0/0 / hand player/cpu 5/4",
+          "finalBoard": "player_front_left:PF:ピグミィ Lv1 HP3 act0/2 focus | player_front_right:PF:真勇者ダイン Lv1 HP6 act0/1 focus | player_back_left:PB:ピグミィ Lv2 HP3 act0/2 focus | player_back_right:PB:ドノマンティス Lv1 HP5 act0/1 focus | cpu_front_left:CF:ポリスピナー Lv1 HP3 act0/2 focus"
+        },
+        {
+          "rank": 2,
+          "decision": "move:player_back_left->player_front_right",
+          "rootScore": 185.9,
+          "selected": false,
+          "applied": true,
+          "winner": "player",
+          "winnerProfile": "white_planner",
+          "replaySteps": 62,
+          "finalTurn": 27,
+          "branchScore": 1000000,
+          "finalState": "turn 27 / current player / HP player/cpu 4/0 / stones player/cpu 15/23 / deck player/cpu 0/0 / hand player/cpu 5/5",
+          "finalBoard": "player_front_left:PF:ドノマンティス Lv1 HP5 act1/1 | player_front_right:PF:真勇者ダイン Lv3 HP6 act1/1 | player_back_right:PB:ボムゾウ Lv2 HP5 act0/1 focus | cpu_front_left:CF:ポリスピナー Lv2 HP3 act2/2 shield"
+        },
+        {
+          "rank": 3,
+          "decision": "move:player_front_right->player_back_right",
+          "rootScore": 146.9,
+          "selected": false,
+          "applied": true,
+          "winner": "cpu",
+          "winnerProfile": "white",
+          "replaySteps": 48,
+          "finalTurn": 27,
+          "branchScore": -1000000,
+          "finalState": "turn 27 / current player / HP player/cpu 0/6 / stones player/cpu 15/20 / deck player/cpu 0/0 / hand player/cpu 5/5",
+          "finalBoard": "player_front_left:PF:ピグミィ Lv2 HP3 act0/2 focus | player_front_right:PF:真勇者ダイン Lv2 HP6 act0/1 | cpu_front_left:CF:ボムゾウ Lv1 HP4 act1/1"
+        },
+        {
+          "rank": 4,
+          "decision": "end_turn",
+          "rootScore": 80.3,
+          "selected": false,
+          "applied": true,
+          "winner": "cpu",
+          "winnerProfile": "white",
+          "replaySteps": 63,
+          "finalTurn": 31,
+          "branchScore": -1000000,
+          "finalState": "turn 31 / current player / HP player/cpu 0/1 / stones player/cpu 32/31 / deck player/cpu 0/0 / hand player/cpu 5/5",
+          "finalBoard": "player_front_left:PF:真勇者ダイン Lv1 HP6 act0/1 | player_front_right:PF:ピグミィ Lv2 HP3 act0/2 focus | cpu_front_right:CF:ボムゾウ Lv1 HP2 act1/1"
+        },
+        {
+          "rank": 5,
+          "decision": "focus:ピグミィ",
+          "rootScore": -46,
+          "selected": false,
+          "applied": true,
+          "winner": "cpu",
+          "winnerProfile": "white",
+          "replaySteps": 63,
+          "finalTurn": 31,
+          "branchScore": -1000000,
+          "finalState": "turn 31 / current player / HP player/cpu 0/4 / stones player/cpu 27/30 / deck player/cpu 0/0 / hand player/cpu 5/4",
+          "finalBoard": "player_front_left:PF:ピグミィ Lv1 HP3 act0/2 focus | player_front_right:PF:真勇者ダイン Lv1 HP6 act0/1 focus | player_back_left:PB:ピグミィ Lv2 HP3 act0/2 focus | player_back_right:PB:ドノマンティス Lv1 HP5 act0/1 focus | cpu_front_left:CF:ポリスピナー Lv1 HP3 act0/2 focus"
+        },
+        {
+          "rank": 6,
+          "decision": "move:player_front_right->player_back_left",
+          "rootScore": -58,
+          "selected": false,
+          "applied": true,
+          "winner": "player",
+          "winnerProfile": "white_planner",
+          "replaySteps": 62,
+          "finalTurn": 27,
+          "branchScore": 1000000,
+          "finalState": "turn 27 / current player / HP player/cpu 4/0 / stones player/cpu 15/23 / deck player/cpu 0/0 / hand player/cpu 5/5",
+          "finalBoard": "player_front_left:PF:ドノマンティス Lv1 HP5 act1/1 | player_front_right:PF:真勇者ダイン Lv3 HP6 act1/1 | player_back_right:PB:ボムゾウ Lv2 HP5 act0/1 focus | cpu_front_left:CF:ポリスピナー Lv2 HP3 act2/2 shield"
+        },
+        {
+          "rank": 7,
+          "decision": "move:player_back_left->player_front_left",
+          "rootScore": -81.2,
+          "selected": false,
+          "applied": true,
+          "winner": "cpu",
+          "winnerProfile": "white",
+          "replaySteps": 58,
+          "finalTurn": 27,
+          "branchScore": -1000000,
+          "finalState": "turn 27 / current cpu / HP player/cpu 0/8 / stones player/cpu 20/21 / deck player/cpu 0/0 / hand player/cpu 5/5",
+          "finalBoard": "player_front_left:PF:真勇者ダイン Lv3 HP6 act1/1 | player_back_left:PB:ピグミィ Lv1 HP3 act0/2 focus | cpu_front_right:CF:デスシープ Lv2 HP6 act1/1"
+        },
+        {
+          "rank": 8,
+          "decision": "attack:ドノマンティス:attack->ボムゾウ",
+          "rootScore": -193,
+          "selected": false,
+          "applied": true,
+          "winner": "cpu",
+          "winnerProfile": "white",
+          "replaySteps": 62,
+          "finalTurn": 28,
+          "branchScore": -1000000,
+          "finalState": "turn 28 / current cpu / HP player/cpu 0/2 / stones player/cpu 22/26 / deck player/cpu 0/0 / hand player/cpu 5/5",
+          "finalBoard": "player_front_right:PF:ドノマンティス Lv1 HP5 act0/1 focus | player_back_right:PB:真勇者ダイン Lv1 HP6 act0/1 focus | cpu_front_left:CF:ポリスピナー Lv2 HP3 act1/2"
+        }
+      ],
+      "bestDecision": "move:player_back_left->player_front_right",
+      "selectedDecision": "magic:ローテーション->master:player",
+      "selectedRank": 3,
+      "bestVsSelectedScoreDelta": 2000000
+    }
+  ],
+  "conclusion": [
+    "1/1 samples で選択手より最終scoreが高い代替がある。",
+    "root評価では低いが最終勝敗に効く候補だけを、局面条件へ還元して検証する。"
+  ]
+}
+

@@ -1390,6 +1390,11 @@ function applyTerminalPlanRolloutScores(
   }
 
   const isFrontFocusStripRolloutTrigger = isWhiteMirrorEnemyFrontFocusStripAttackSelection(rootState, rolloutTrigger.candidate);
+  const isLateDeckRepositionRolloutTrigger = isWhiteMirrorLateDeckRepositionMoveSelection(
+    rootState,
+    perspective,
+    rolloutTrigger.candidate,
+  );
   const isFrontPressureRolloutTrigger =
     isFrontFocusStripRolloutTrigger || isWhiteMirrorFrontPressureEscapeSelection(rootState, rolloutTrigger.candidate);
   const isShieldTargetTieRolloutTrigger = isWhiteMirrorShieldTargetTieRolloutTrigger(
@@ -1403,7 +1408,9 @@ function applyTerminalPlanRolloutScores(
     ? Math.trunc(config.terminalPlanRolloutFrontFocusStripAttackSteps ?? rolloutSteps)
     : isShieldTargetTieRolloutTrigger
       ? Math.trunc(config.terminalPlanRolloutShieldTargetTieSteps ?? rolloutSteps)
-    : rolloutSteps;
+      : isLateDeckRepositionRolloutTrigger
+        ? Math.max(64, rolloutSteps)
+        : rolloutSteps;
   if (effectiveRolloutSteps <= 0) {
     return [...selections];
   }
@@ -1509,17 +1516,26 @@ function terminalPlanRolloutTriggerSelection(
   fallback: EvaluatedDecision | undefined,
   config: CpuAiProfileConfig,
 ): TerminalPlanSelection | undefined {
-  if (config.terminalPlanRolloutTurnFrom !== undefined && state.turnNumber < config.terminalPlanRolloutTurnFrom) {
-    return undefined;
-  }
-  if (config.terminalPlanRolloutTurnTo !== undefined && state.turnNumber > config.terminalPlanRolloutTurnTo) {
-    return undefined;
-  }
   if (config.terminalPlanRolloutOncePerTurn && hasAdoptedTerminalPlanRolloutThisTurn(state, perspective)) {
     return undefined;
   }
   const best = terminalRanked[0];
   if (!best || !fallback || !fallbackSelection) {
+    return undefined;
+  }
+  const lateDeckReposition = terminalPlanLateDeckRepositionRolloutTriggerSelection(
+    state,
+    perspective,
+    terminalRanked,
+    fallback,
+  );
+  if (lateDeckReposition) {
+    return lateDeckReposition;
+  }
+  if (config.terminalPlanRolloutTurnFrom !== undefined && state.turnNumber < config.terminalPlanRolloutTurnFrom) {
+    return undefined;
+  }
+  if (config.terminalPlanRolloutTurnTo !== undefined && state.turnNumber > config.terminalPlanRolloutTurnTo) {
     return undefined;
   }
   const frontFocusStripChallenger = terminalPlanFrontFocusStripAttackRolloutTriggerSelection(
@@ -1576,6 +1592,27 @@ function terminalPlanRolloutTriggerSelection(
     : best.plannerScore - fallbackSelection.plannerScore;
   const maxPlannerMargin = config.terminalPlanRolloutTriggerMaxPlannerMargin ?? 40;
   return plannerMargin <= maxPlannerMargin ? rolloutChallenger : undefined;
+}
+
+function terminalPlanLateDeckRepositionRolloutTriggerSelection(
+  state: GameState,
+  perspective: PlayerId,
+  terminalRanked: readonly TerminalPlanSelection[],
+  fallback: EvaluatedDecision,
+): TerminalPlanSelection | undefined {
+  if (
+    !isWhiteMirrorState(state, perspective) ||
+    state.turnNumber < 18 ||
+    state.players[perspective].deck.length > 6 ||
+    state.players[opponentOf(perspective)].deck.length > 6 ||
+    !isRotationMagicDecision(state, perspective, fallback.decision)
+  ) {
+    return undefined;
+  }
+
+  return terminalRanked.find((selection) =>
+    isWhiteMirrorLateDeckRepositionMoveSelection(state, perspective, selection.candidate),
+  );
 }
 
 function terminalPlanFrontFocusStripAttackRolloutTriggerSelection(
@@ -5301,6 +5338,64 @@ function addTerminalPlanCoverageCandidates(
 
 function isWhiteMirrorFrontPressureEscapeSelection(state: GameState, candidate: EvaluatedDecision): boolean {
   return whiteMirrorFrontPressureEscapeScore(state, candidate) > 0;
+}
+
+function isWhiteMirrorLateDeckRepositionMoveSelection(
+  state: GameState,
+  perspective: PlayerId,
+  candidate: EvaluatedDecision,
+): boolean {
+  const decision = candidate.decision;
+  if (
+    decision.type !== "move" ||
+    !isWhiteMirrorState(state, perspective) ||
+    state.turnNumber < 18 ||
+    state.players[perspective].deck.length > 6 ||
+    state.players[opponentOf(perspective)].deck.length > 6
+  ) {
+    return false;
+  }
+
+  const fromSlot = state.slots[decision.fromSlotKey];
+  const toSlot = state.slots[decision.toSlotKey];
+  if (fromSlot.owner !== perspective || toSlot.owner !== perspective || fromSlot.row === toSlot.row) {
+    return false;
+  }
+
+  const frontSlotKey = fromSlot.row === "front" ? decision.fromSlotKey : decision.toSlotKey;
+  const backSlotKey = fromSlot.row === "back" ? decision.fromSlotKey : decision.toSlotKey;
+  const frontBefore = state.slots[frontSlotKey].monster;
+  const backBefore = state.slots[backSlotKey].monster;
+  const frontAfter = candidate.after.slots[frontSlotKey].monster;
+  const backAfter = candidate.after.slots[backSlotKey].monster;
+  if (
+    !frontBefore ||
+    !backBefore ||
+    !frontAfter ||
+    !backAfter ||
+    frontBefore.owner !== perspective ||
+    backBefore.owner !== perspective ||
+    frontAfter.instanceId !== backBefore.instanceId ||
+    backAfter.instanceId !== frontBefore.instanceId
+  ) {
+    return false;
+  }
+
+  const backTrait = getMonsterAiTrait(backBefore.cardId);
+  const frontTrait = getMonsterAiTrait(frontBefore.cardId);
+  const durableFront = backBefore.hp >= frontBefore.hp + 2 || backTrait.role === "front";
+  const preservesBacklineWork = frontTrait.role === "back" || frontBefore.actionLimit > 1;
+  return durableFront && preservesBacklineWork;
+}
+
+function isRotationMagicDecision(state: GameState, perspective: PlayerId, decision: CpuDecision): boolean {
+  if (decision.type !== "magic") {
+    return false;
+  }
+  const card = state.players[perspective].hand.find(
+    (handCard) => handCard.instanceId === decision.action.handInstanceId,
+  );
+  return !!card && getCardName(card.cardId) === "ローテーション";
 }
 
 function isWhiteMirrorFrontPressureHoldEndTurnSelection(
