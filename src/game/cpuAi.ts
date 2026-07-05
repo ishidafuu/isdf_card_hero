@@ -2029,7 +2029,7 @@ function shouldAdoptBacklineReserveSummonOverFocusSelection(
   if (
     fallback.decision.type !== "focus" ||
     rootScoreGap > 260 ||
-    backlineReserveSummonOverFocusPlannerBonus(state, selection.candidate, fallback, perspective) < 35
+    backlineReserveSummonOverFocusPlannerBonus(state, selection.candidate, fallback, perspective, selection.outcome) < 35
   ) {
     return false;
   }
@@ -2141,6 +2141,7 @@ function terminalPlanRootPlannerScore(
     candidate,
     fallback,
     perspective,
+    outcome,
   );
   return terminalScore + rootScoreBonus + frontPressureEscapeBonus + backlineReserveSummonBonus - rootGapPenalty;
 }
@@ -2170,11 +2171,12 @@ function backlineReserveSummonOverFocusPlannerBonus(
   candidate: EvaluatedDecision,
   fallback: EvaluatedDecision | undefined,
   perspective: PlayerId,
+  outcome?: TerminalPlanOutcome,
 ): number {
   const decision = candidate.decision;
   if (
     !isWhiteMirrorState(state, perspective) ||
-    state.turnNumber < 6 ||
+    state.turnNumber < 5 ||
     state.turnNumber > 8 ||
     state.players[opponentOf(perspective)].stones > 1 ||
     state.players[perspective].stones < 3 ||
@@ -2208,12 +2210,64 @@ function backlineReserveSummonOverFocusPlannerBonus(
     const slot = state.slots[slotKey];
     return slot.row === "front" && slot.monster?.owner === perspective;
   }).length;
-  if (ownFrontCount < 2) {
-    return 0;
-  }
   const handoffScore = evaluateState(candidate.after, perspective, AI_EVALUATION_WEIGHTS.white) -
     evaluateState(state, perspective, AI_EVALUATION_WEIGHTS.white);
-  return 42 + Math.max(0, levelOneHp - 5) * 8 + Math.max(0, handoffScore) * 0.05;
+  const establishedBoardBonus = state.turnNumber >= 6 && ownFrontCount >= 2
+    ? 42 + Math.max(0, levelOneHp - 5) * 8 + Math.max(0, handoffScore) * 0.05
+    : 0;
+  const preservedReserveBonus = preservedBacklineReserveSummonPlannerBonus(
+    state,
+    candidate,
+    outcome,
+    perspective,
+    decision.slotKey,
+    levelOneHp,
+    fallbackSlot.monster ? getMonsterDef(fallbackSlot.monster.cardId).maxLevel : 0,
+  );
+  return Math.max(establishedBoardBonus, preservedReserveBonus);
+}
+
+function preservedBacklineReserveSummonPlannerBonus(
+  state: GameState,
+  candidate: EvaluatedDecision,
+  outcome: TerminalPlanOutcome | undefined,
+  perspective: PlayerId,
+  summonSlotKey: SlotKey,
+  levelOneHp: number,
+  fallbackMaxLevel: number,
+): number {
+  if (!outcome || state.players[perspective].stones < 5) {
+    return 0;
+  }
+  const opponent = opponentOf(perspective);
+  const ownFrontCount = FIELD_ORDER_BY_PLAYER[perspective].filter((slotKey) => {
+    const slot = state.slots[slotKey];
+    return slot.row === "front" && slot.monster?.owner === perspective;
+  }).length;
+  const opponentFrontCount = FIELD_ORDER_BY_PLAYER[opponent].filter((slotKey) => {
+    const slot = state.slots[slotKey];
+    return slot.row === "front" && slot.monster?.owner === opponent;
+  }).length;
+  if (ownFrontCount !== 1 || opponentFrontCount < 2 || fallbackMaxLevel > 2) {
+    return 0;
+  }
+  const summoned = candidate.after.slots[summonSlotKey].monster;
+  const handoffMonster = outcome.handoffState.slots[summonSlotKey].monster;
+  if (
+    !summoned ||
+    !handoffMonster ||
+    summoned.owner !== perspective ||
+    handoffMonster.owner !== perspective ||
+    handoffMonster.instanceId !== summoned.instanceId
+  ) {
+    return 0;
+  }
+  const handoffSlot = outcome.handoffState.slots[summonSlotKey];
+  if (handoffSlot.row !== "back" || outcome.handoffState.players[perspective].stones < 4) {
+    return 0;
+  }
+  const preservedStones = outcome.handoffState.players[perspective].stones;
+  return 92 + Math.max(0, levelOneHp - 5) * 8 + Math.max(0, preservedStones - 4) * 10;
 }
 
 function ownBackRowOccupancy(state: GameState, perspective: PlayerId): number {

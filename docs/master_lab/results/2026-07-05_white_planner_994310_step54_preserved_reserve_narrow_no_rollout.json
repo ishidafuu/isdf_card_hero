@@ -1,0 +1,127 @@
+{
+  "generatedAt": "2026-07-05T10:24:41.507Z",
+  "seed": 994310,
+  "direction": "challenger-as-cpu",
+  "deckPreset": "master-lab-white-1377-death-sheep3",
+  "search": {
+    "terminalPlanRolloutSteps": 0,
+    "terminalPlanRolloutWeight": 0
+  },
+  "rolloutSteps": 0,
+  "samples": [
+    {
+      "step": 54,
+      "turnNumber": 5,
+      "plannerSide": "cpu",
+      "currentPlayer": "cpu",
+      "enabled": true,
+      "adopted": true,
+      "fallbackDecision": "focus:デスシープ",
+      "fallbackScore": 306.8,
+      "cpuDecision": "summon:デスシープ->cpu_back_right",
+      "selectedPlannerDecision": "summon:デスシープ->cpu_back_right",
+      "selectedPlannerScore": 188.9,
+      "runnerUpPlannerScore": 156,
+      "state": "turn 5 / current cpu / HP cpu/player 10/10 / stones cpu/player 6/0 / deck cpu/player 20/21 / hand cpu/player 4/4",
+      "board": "player_front_left:PF:デスシープ Lv2 HP6 act1/1 | player_front_right:PF:デスシープ Lv1 HP3 act1/1 | player_back_right:PB:ピグミィ Lv2 HP3 act2/2 | cpu_front_left:CF:デスシープ Lv1 HP6 act0/1",
+      "candidates": [
+        {
+          "rank": 1,
+          "selectedByPlanner": true,
+          "selectedByCpu": true,
+          "fallback": false,
+          "decision": "summon:デスシープ->cpu_back_right",
+          "rootScore": 84.8,
+          "ownDelta": 84.8,
+          "opponentDelta": 62,
+          "responseScore": 73.4,
+          "plannerScore": 188.9,
+          "afterRootState": "turn 5 / current cpu / HP cpu/player 10/10 / stones cpu/player 5/0 / deck cpu/player 20/21 / hand cpu/player 3/4",
+          "afterRootBoard": "player_front_left:PF:デスシープ Lv2 HP6 act1/1 | player_front_right:PF:デスシープ Lv1 HP3 act1/1 | player_back_right:PB:ピグミィ Lv2 HP3 act2/2 | cpu_front_left:CF:デスシープ Lv1 HP6 act0/1 | cpu_back_right:CB:デスシープ Lv1 HP6 prep",
+          "ownHandoffState": "turn 6 / current player / HP cpu/player 10/10 / stones cpu/player 5/3 / deck cpu/player 20/20 / hand cpu/player 3/5",
+          "ownHandoffBoard": "player_front_left:PF:デスシープ Lv2 HP6 act0/1 | player_front_right:PF:デスシープ Lv1 HP3 act0/1 | player_back_right:PB:ピグミィ Lv2 HP3 act0/2 | cpu_front_left:CF:デスシープ Lv1 HP6 act0/1 focus | cpu_back_right:CB:デスシープ Lv1 HP6 prep",
+          "opponentHandoffState": "turn 6 / current cpu / HP cpu/player 9/10 / stones cpu/player 9/3 / deck cpu/player 19/20 / hand cpu/player 4/5",
+          "opponentHandoffBoard": "player_front_left:PF:デスシープ Lv2 HP6 act1/1 | player_front_right:PF:デスシープ Lv1 HP3 act0/1 focus | player_back_right:PB:ピグミィ Lv2 HP3 act0/2 focus | cpu_front_left:CF:デスシープ Lv1 HP6 act0/1 focus | cpu_front_right:CF:デスシープ Lv1 HP6 act0/1"
+        },
+        {
+          "rank": 2,
+          "selectedByPlanner": false,
+          "selectedByCpu": false,
+          "fallback": true,
+          "decision": "focus:デスシープ",
+          "rootScore": 191.2,
+          "ownDelta": 140.8,
+          "opponentDelta": 92,
+          "responseScore": 116.4,
+          "plannerScore": 156,
+          "afterRootState": "turn 5 / current cpu / HP cpu/player 10/10 / stones cpu/player 6/0 / deck cpu/player 20/21 / hand cpu/player 4/4",
+          "afterRootBoard": "player_front_left:PF:デスシープ Lv2 HP6 act1/1 | player_front_right:PF:デスシープ Lv1 HP3 act1/1 | player_back_right:PB:ピグミィ Lv2 HP3 act2/2 | cpu_front_left:CF:デスシープ Lv1 HP6 act1/1 focus",
+          "ownHandoffState": "turn 6 / current player / HP cpu/player 10/10 / stones cpu/player 0/3 / deck cpu/player 20/20 / hand cpu/player 2/5",
+          "ownHandoffBoard": "player_front_left:PF:ピグミィ Lv2 HP3 act0/2 | player_front_right:PF:デスシープ Lv2 HP6 act0/1 | player_back_right:PB:デスシープ Lv1 HP3 act0/1 | cpu_front_left:CF:デスシープ Lv1 HP6 prep | cpu_front_right:CF:デスシープ Lv1 HP6 act1/1 focus,shield",
+          "opponentHandoffState": "turn 6 / current cpu / HP cpu/player 9/10 / stones cpu/player 4/3 / deck cpu/player 19/20 / hand cpu/player 3/5",
+          "opponentHandoffBoard": "player_front_left:PF:ピグミィ Lv2 HP3 act0/2 focus | player_front_right:PF:デスシープ Lv2 HP6 act1/1 | player_back_right:PB:デスシープ Lv1 HP3 act0/1 focus | cpu_front_left:CF:デスシープ Lv1 HP6 act0/1 | cpu_front_right:CF:デスシープ Lv1 HP6 act0/1 focus"
+        },
+        {
+          "rank": 3,
+          "selectedByPlanner": false,
+          "selectedByCpu": false,
+          "fallback": false,
+          "decision": "summon:デスシープ->cpu_back_left",
+          "rootScore": 84.8,
+          "ownDelta": 136.8,
+          "opponentDelta": 102,
+          "responseScore": 119.4,
+          "plannerScore": 124.9,
+          "afterRootState": "turn 5 / current cpu / HP cpu/player 10/10 / stones cpu/player 5/0 / deck cpu/player 20/21 / hand cpu/player 3/4",
+          "afterRootBoard": "player_front_left:PF:デスシープ Lv2 HP6 act1/1 | player_front_right:PF:デスシープ Lv1 HP3 act1/1 | player_back_right:PB:ピグミィ Lv2 HP3 act2/2 | cpu_front_left:CF:デスシープ Lv1 HP6 act0/1 | cpu_back_left:CB:デスシープ Lv1 HP6 prep",
+          "ownHandoffState": "turn 6 / current player / HP cpu/player 10/10 / stones cpu/player 2/3 / deck cpu/player 20/20 / hand cpu/player 2/5",
+          "ownHandoffBoard": "player_front_left:PF:ピグミィ Lv2 HP3 act0/2 | player_front_right:PF:デスシープ Lv2 HP6 act0/1 | player_back_right:PB:デスシープ Lv1 HP3 act0/1 | cpu_front_left:CF:デスシープ Lv1 HP6 prep | cpu_front_right:CF:デスシープ Lv1 HP6 act0/1 focus",
+          "opponentHandoffState": "turn 6 / current cpu / HP cpu/player 9/10 / stones cpu/player 6/3 / deck cpu/player 19/20 / hand cpu/player 3/5",
+          "opponentHandoffBoard": "player_front_left:PF:ピグミィ Lv2 HP3 act0/2 focus | player_front_right:PF:デスシープ Lv2 HP6 act1/1 | player_back_right:PB:デスシープ Lv1 HP3 act0/1 focus | cpu_front_left:CF:デスシープ Lv1 HP6 act0/1 | cpu_front_right:CF:デスシープ Lv1 HP6 act0/1 focus"
+        },
+        {
+          "rank": 4,
+          "selectedByPlanner": false,
+          "selectedByCpu": false,
+          "fallback": false,
+          "decision": "summon:デスシープ->cpu_front_right",
+          "rootScore": 126.8,
+          "ownDelta": 96.8,
+          "opponentDelta": 62,
+          "responseScore": 79.4,
+          "plannerScore": 107.3,
+          "afterRootState": "turn 5 / current cpu / HP cpu/player 10/10 / stones cpu/player 5/0 / deck cpu/player 20/21 / hand cpu/player 3/4",
+          "afterRootBoard": "player_front_left:PF:デスシープ Lv2 HP6 act1/1 | player_front_right:PF:デスシープ Lv1 HP3 act1/1 | player_back_right:PB:ピグミィ Lv2 HP3 act2/2 | cpu_front_left:CF:デスシープ Lv1 HP6 act0/1 | cpu_front_right:CF:デスシープ Lv1 HP6 prep",
+          "ownHandoffState": "turn 6 / current player / HP cpu/player 10/10 / stones cpu/player 5/3 / deck cpu/player 20/20 / hand cpu/player 3/5",
+          "ownHandoffBoard": "player_front_left:PF:デスシープ Lv2 HP6 act0/1 | player_front_right:PF:デスシープ Lv1 HP3 act0/1 | player_back_right:PB:ピグミィ Lv2 HP3 act0/2 | cpu_front_left:CF:デスシープ Lv1 HP6 act0/1 focus | cpu_front_right:CF:デスシープ Lv1 HP6 prep",
+          "opponentHandoffState": "turn 6 / current cpu / HP cpu/player 9/10 / stones cpu/player 9/3 / deck cpu/player 19/20 / hand cpu/player 4/5",
+          "opponentHandoffBoard": "player_front_left:PF:デスシープ Lv2 HP6 act1/1 | player_front_right:PF:デスシープ Lv1 HP3 act0/1 focus | player_back_right:PB:ピグミィ Lv2 HP3 act0/2 focus | cpu_front_left:CF:デスシープ Lv1 HP6 act0/1 focus | cpu_front_right:CF:デスシープ Lv1 HP6 act0/1"
+        },
+        {
+          "rank": 5,
+          "selectedByPlanner": false,
+          "selectedByCpu": false,
+          "fallback": false,
+          "decision": "end_turn",
+          "rootScore": -43.2,
+          "ownDelta": 25,
+          "opponentDelta": -63,
+          "responseScore": -19,
+          "plannerScore": -105.7,
+          "afterRootState": "turn 6 / current player / HP cpu/player 10/10 / stones cpu/player 6/3 / deck cpu/player 20/20 / hand cpu/player 4/5",
+          "afterRootBoard": "player_front_left:PF:デスシープ Lv2 HP6 act0/1 | player_front_right:PF:デスシープ Lv1 HP3 act0/1 | player_back_right:PB:ピグミィ Lv2 HP3 act0/2 | cpu_front_left:CF:デスシープ Lv1 HP6 act0/1 focus",
+          "ownHandoffState": "turn 6 / current player / HP cpu/player 10/10 / stones cpu/player 6/3 / deck cpu/player 20/20 / hand cpu/player 4/5",
+          "ownHandoffBoard": "player_front_left:PF:デスシープ Lv2 HP6 act0/1 | player_front_right:PF:デスシープ Lv1 HP3 act0/1 | player_back_right:PB:ピグミィ Lv2 HP3 act0/2 | cpu_front_left:CF:デスシープ Lv1 HP6 act0/1 focus",
+          "opponentHandoffState": "turn 6 / current cpu / HP cpu/player 9/10 / stones cpu/player 10/3 / deck cpu/player 19/20 / hand cpu/player 5/5",
+          "opponentHandoffBoard": "player_front_left:PF:デスシープ Lv2 HP6 act1/1 | player_front_right:PF:デスシープ Lv1 HP3 act0/1 focus | player_back_right:PB:ピグミィ Lv2 HP3 act0/2 focus | cpu_front_left:CF:デスシープ Lv1 HP6 act0/1 focus"
+        }
+      ]
+    }
+  ],
+  "conclusion": [
+    "1 samples. terminal plan enabled 1件、adopted 1件。",
+    "CPU選択がfallbackと異なる局面は1件。差分局面の own/opponent handoff board を実装候補にする。",
+    "rollout 勝ち候補は0件。terminal score と rollout score が割れる候補を次の実装候補にする。"
+  ]
+}
+
