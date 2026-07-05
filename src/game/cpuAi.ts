@@ -3585,13 +3585,25 @@ function whiteBoardControlMasterAttackDecisionPenalty(
 
   const opponent = opponentOf(perspective);
   const damage = before.players[opponent].masterHp - after.players[opponent].masterHp;
-  if (damage <= 0 || before.players[opponent].masterHp <= 4) {
+  if (damage <= 0) {
     return 0;
   }
 
   const boardControlScore = bestSameAttackerEnemyFrontControlScore(before, decision.action.attackerSlotKey, perspective);
   if (boardControlScore <= 0) {
     return 0;
+  }
+
+  if (before.players[opponent].masterHp <= 4) {
+    if (
+      !isWhiteMirrorState(before, perspective) ||
+      boardControlScore < 300 ||
+      !hasEnemyFrontThreatSource(after, perspective) ||
+      before.players[perspective].masterHp > before.players[opponent].masterHp + 3
+    ) {
+      return 0;
+    }
+    return value + Math.min(260, boardControlScore * 0.65) + 80;
   }
 
   return value + Math.min(180, boardControlScore * 0.45);

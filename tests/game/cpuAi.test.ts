@@ -110,6 +110,49 @@ describe("cpu ai", () => {
     }
   });
 
+  it("keeps white mirror closeout pressure from ignoring a level 3 front ace", () => {
+    const game = createCpuGame();
+    game.turnNumber = 10;
+    game.players.cpu.masterId = "white";
+    game.players.player.masterId = "white";
+    game.players.cpu.hand = [];
+    game.players.player.hand = [];
+    game.players.cpu.stones = 9;
+    game.players.player.stones = 3;
+    game.players.cpu.masterHp = 7;
+    game.players.player.masterHp = 4;
+    for (const slot of Object.values(game.slots)) {
+      delete slot.monster;
+    }
+    game.slots.player_front_left.monster = createActiveMonster("card_047", "player", {
+      level: 3,
+      hp: 6,
+      actionCount: 1,
+    });
+    game.slots.player_front_right.monster = createActiveMonster("card_133", "player", {
+      status: "prepared",
+      hp: 6,
+    });
+    game.slots.cpu_front_left.monster = createActiveMonster("polyspinner", "cpu", {
+      hp: 3,
+      focused: true,
+    });
+    game.slots.cpu_front_right.monster = createActiveMonster("card_037", "cpu", {
+      level: 2,
+      hp: 3,
+      actionCount: 1,
+    });
+    game.slots.cpu_back_right.monster = createActiveMonster("card_051", "cpu", {
+      level: 2,
+      hp: 3,
+      focused: true,
+    });
+
+    const decision = chooseCpuDecision(game, { profiles: { cpu: "white_planner", player: "white" } });
+
+    expect(decisionTestSignature(decision)).toBe("attack:cpu_front_left:player_front_left");
+  });
+
   it("exposes white planner as a separate turn-plan profile", () => {
     const game = createCpuGame([{ cardId: "takokke", instanceId: "cpu_planner_takokke" }]);
     game.players.cpu.masterId = "white";

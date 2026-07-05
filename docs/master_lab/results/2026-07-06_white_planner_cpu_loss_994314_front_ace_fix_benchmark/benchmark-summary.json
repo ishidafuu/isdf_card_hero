@@ -1,0 +1,66 @@
+{
+  "ok": true,
+  "options": {
+    "seedStart": 994314,
+    "seedEnd": 994314,
+    "count": 1,
+    "deckPreset": "master-lab-white-1377-death-sheep3",
+    "masterIds": {
+      "player": "white",
+      "cpu": "white"
+    },
+    "maxSteps": 360,
+    "maxTurns": 90,
+    "failOnWarnings": false,
+    "baselineProfile": "white",
+    "challengerProfile": "white_planner",
+    "directions": [
+      "challenger-as-cpu"
+    ]
+  },
+  "summary": {
+    "games": 1,
+    "profileWins": {
+      "stable": 0,
+      "strong": 0,
+      "pressure": 0,
+      "defensive": 0,
+      "white": 0,
+      "white_planner": 1,
+      "white_rollout": 0,
+      "omniscient": 0
+    },
+    "undecided": 0,
+    "failures": 0,
+    "warnings": 0,
+    "maxSteps": 169,
+    "maxTurns": 27,
+    "averageSteps": 169,
+    "averageTurns": 27,
+    "challengerLosses": [],
+    "issueSeeds": []
+  },
+  "runs": [
+    {
+      "direction": "challenger-as-cpu",
+      "label": "challenger as cpu",
+      "profiles": {
+        "player": "white",
+        "cpu": "white_planner"
+      },
+      "profileWins": {
+        "stable": 0,
+        "strong": 0,
+        "pressure": 0,
+        "defensive": 0,
+        "white": 0,
+        "white_planner": 1,
+        "white_rollout": 0,
+        "omniscient": 0
+      },
+      "undecided": 0,
+      "averageSteps": 169,
+      "averageTurns": 27
+    }
+  ]
+}
