@@ -220,6 +220,9 @@ type CpuAiProfileConfig = {
   terminalPlanRolloutFrontFocusStripAttackMinRootScoreGap?: number;
   terminalPlanRolloutFrontFocusStripAttackMaxRootScoreGap?: number;
   terminalPlanRolloutFrontFocusStripAttackSteps?: number;
+  terminalPlanRolloutAllowShieldTargetTie?: number;
+  terminalPlanRolloutShieldTargetTieMaxRootScoreGap?: number;
+  terminalPlanRolloutShieldTargetTieSteps?: number;
   terminalPlanRolloutOncePerTurn?: number;
 };
 
@@ -394,6 +397,9 @@ const CPU_AI_PROFILE_CONFIG: Record<CpuAiProfile, CpuAiProfileConfig> = {
     terminalPlanRolloutFrontFocusStripAttackMinRootScoreGap: 180,
     terminalPlanRolloutFrontFocusStripAttackMaxRootScoreGap: 460,
     terminalPlanRolloutFrontFocusStripAttackSteps: 28,
+    terminalPlanRolloutAllowShieldTargetTie: 1,
+    terminalPlanRolloutShieldTargetTieMaxRootScoreGap: 12,
+    terminalPlanRolloutShieldTargetTieSteps: 16,
     terminalPlanRolloutOncePerTurn: 1,
   },
   white_rollout: {
@@ -439,6 +445,9 @@ const CPU_AI_PROFILE_CONFIG: Record<CpuAiProfile, CpuAiProfileConfig> = {
     terminalPlanRolloutFrontFocusStripAttackMinRootScoreGap: 180,
     terminalPlanRolloutFrontFocusStripAttackMaxRootScoreGap: 460,
     terminalPlanRolloutFrontFocusStripAttackSteps: 28,
+    terminalPlanRolloutAllowShieldTargetTie: 1,
+    terminalPlanRolloutShieldTargetTieMaxRootScoreGap: 12,
+    terminalPlanRolloutShieldTargetTieSteps: 16,
     terminalPlanRolloutOncePerTurn: 1,
   },
   omniscient: {
@@ -513,6 +522,11 @@ export function chooseCpuDecision(state: GameState, options: CpuAiOptions = {}):
     if (selection && shouldAdoptTerminalPlanRootSelection(state, perspective, selection, best, config)) {
       return withTerminalPlanReason(selection.candidate.decision, selection);
     }
+  }
+
+  const shieldTargetTieDecision = selectShieldTargetTieRootDecision(state, perspective, config, options, best, evaluated);
+  if (shieldTargetTieDecision) {
+    return shieldTargetTieDecision;
   }
 
   return best ? attachDecisionTrace(best, evaluated) : createEndTurnDecision();
@@ -1039,6 +1053,18 @@ function applyCpuAiSearchOptions(
       search.terminalPlanRolloutFrontFocusStripAttackSteps,
       base.terminalPlanRolloutFrontFocusStripAttackSteps,
     ),
+    terminalPlanRolloutAllowShieldTargetTie: normalizedOptionalSearchNumber(
+      search.terminalPlanRolloutAllowShieldTargetTie,
+      base.terminalPlanRolloutAllowShieldTargetTie,
+    ),
+    terminalPlanRolloutShieldTargetTieMaxRootScoreGap: normalizedOptionalSearchNumber(
+      search.terminalPlanRolloutShieldTargetTieMaxRootScoreGap,
+      base.terminalPlanRolloutShieldTargetTieMaxRootScoreGap,
+    ),
+    terminalPlanRolloutShieldTargetTieSteps: normalizedOptionalSearchNumber(
+      search.terminalPlanRolloutShieldTargetTieSteps,
+      base.terminalPlanRolloutShieldTargetTieSteps,
+    ),
     terminalPlanRolloutOncePerTurn: normalizedOptionalSearchNumber(
       search.terminalPlanRolloutOncePerTurn,
       base.terminalPlanRolloutOncePerTurn,
@@ -1354,8 +1380,17 @@ function applyTerminalPlanRolloutScores(
   }
 
   const isFrontFocusStripRolloutTrigger = isWhiteMirrorEnemyFrontFocusStripAttackSelection(rootState, rolloutTrigger.candidate);
+  const isShieldTargetTieRolloutTrigger = isWhiteMirrorShieldTargetTieRolloutTrigger(
+    rootState,
+    perspective,
+    terminalRanked,
+    rolloutTrigger,
+    config,
+  );
   const effectiveRolloutSteps = isFrontFocusStripRolloutTrigger
     ? Math.trunc(config.terminalPlanRolloutFrontFocusStripAttackSteps ?? rolloutSteps)
+    : isShieldTargetTieRolloutTrigger
+      ? Math.trunc(config.terminalPlanRolloutShieldTargetTieSteps ?? rolloutSteps)
     : rolloutSteps;
   if (effectiveRolloutSteps <= 0) {
     return [...selections];
@@ -1387,13 +1422,22 @@ function applyTerminalPlanRolloutScores(
     if (cached) {
       return cached;
     }
-    const result = evaluateTerminalPlanRollout(
-      selection.candidate.after,
-      perspective,
-      effectiveRolloutSteps,
-      rolloutOptions,
-      config,
-    );
+    const result = isShieldTargetTieRolloutTrigger
+      ? evaluateTerminalPlanHandoffRollout(
+          selection.candidate.after,
+          rootState.turnNumber,
+          perspective,
+          effectiveRolloutSteps,
+          rolloutOptions,
+          config,
+        )
+      : evaluateTerminalPlanRollout(
+          selection.candidate.after,
+          perspective,
+          effectiveRolloutSteps,
+          rolloutOptions,
+          config,
+        );
     rolloutCache.set(key, result);
     return result;
   };
@@ -1455,6 +1499,15 @@ function terminalPlanRolloutTriggerSelection(
   );
   if (frontFocusStripChallenger) {
     return frontFocusStripChallenger;
+  }
+  const shieldTargetTie = terminalPlanShieldTargetTieRolloutTriggerSelection(
+    state,
+    perspective,
+    terminalRanked,
+    config,
+  );
+  if (shieldTargetTie) {
+    return shieldTargetTie;
   }
   if (
     config.terminalPlanRolloutMaxOpponentStones !== undefined &&
@@ -1521,6 +1574,158 @@ function terminalPlanFrontFocusStripAttackRolloutTriggerSelection(
   return rootScoreGap >= minRootScoreGap && rootScoreGap <= maxRootScoreGap ? challenger : undefined;
 }
 
+function terminalPlanShieldTargetTieRolloutTriggerSelection(
+  state: GameState,
+  perspective: PlayerId,
+  terminalRanked: readonly TerminalPlanSelection[],
+  config: CpuAiProfileConfig,
+): TerminalPlanSelection | undefined {
+  if (!isWhiteMirrorState(state, perspective) || !config.terminalPlanRolloutAllowShieldTargetTie) {
+    return undefined;
+  }
+  const best = terminalRanked[0];
+  if (!best || !isShieldDecision(best.candidate.decision)) {
+    return undefined;
+  }
+  return isWhiteMirrorShieldTargetTieRolloutTrigger(state, perspective, terminalRanked, best, config)
+    ? best
+    : undefined;
+}
+
+function isWhiteMirrorShieldTargetTieRolloutTrigger(
+  state: GameState,
+  perspective: PlayerId,
+  terminalRanked: readonly TerminalPlanSelection[],
+  trigger: TerminalPlanSelection,
+  config: CpuAiProfileConfig,
+): boolean {
+  if (!isWhiteMirrorState(state, perspective) || !config.terminalPlanRolloutAllowShieldTargetTie) {
+    return false;
+  }
+  const triggerDecision = trigger.candidate.decision;
+  if (!isShieldDecision(triggerDecision) || triggerDecision.target.kind !== "monster") {
+    return false;
+  }
+  if (trigger.candidate.after.players[perspective].stones > 1) {
+    return false;
+  }
+  const triggerTargetSlotKey = triggerDecision.target.slotKey;
+  const maxRootGap = config.terminalPlanRolloutShieldTargetTieMaxRootScoreGap ?? 12;
+  return terminalRanked.some((selection) => {
+    const decision = selection.candidate.decision;
+    return (
+      selection.candidate.index !== trigger.candidate.index &&
+      isShieldDecision(decision) &&
+      decision.target.kind === "monster" &&
+      decision.target.slotKey !== triggerTargetSlotKey &&
+      trigger.candidate.totalScore - selection.candidate.totalScore <= maxRootGap
+    );
+  });
+}
+
+function isShieldDecision(decision: CpuDecision): decision is Extract<CpuDecision, { type: "master_action" }> {
+  return decision.type === "master_action" && decision.actionId === "shield";
+}
+
+function selectShieldTargetTieRootDecision(
+  state: GameState,
+  perspective: PlayerId,
+  config: CpuAiProfileConfig,
+  options: CpuAiOptions,
+  fallback: EvaluatedDecision | undefined,
+  evaluated: readonly EvaluatedDecision[],
+): CpuDecision | undefined {
+  if (
+    !fallback ||
+    !isWhiteMirrorState(state, perspective) ||
+    !config.terminalPlanRolloutAllowShieldTargetTie ||
+    !isShieldDecision(fallback.decision)
+  ) {
+    return undefined;
+  }
+  if (fallback.after.players[perspective].stones > 1) {
+    return undefined;
+  }
+
+  const closeShieldCandidates = closeShieldTargetTieCandidates(evaluated, fallback, config);
+  if (closeShieldCandidates.length < 2) {
+    return undefined;
+  }
+
+  const maxSteps = Math.trunc(config.terminalPlanRolloutShieldTargetTieSteps ?? 16);
+  const rolloutWeight = config.terminalPlanRolloutWeight ?? 0;
+  if (maxSteps <= 0 || rolloutWeight <= 0) {
+    return undefined;
+  }
+
+  const rolloutOptions = withoutTerminalPlanRolloutOptions(options);
+  const scored = closeShieldCandidates
+    .map((candidate) => {
+      const rollout = evaluateTerminalPlanHandoffRollout(
+        candidate.after,
+        state.turnNumber,
+        perspective,
+        maxSteps,
+        rolloutOptions,
+        config,
+      );
+      return {
+        candidate,
+        rollout,
+        score: candidate.totalScore + clampNumber(rollout.score, -1_000, 1_000) * rolloutWeight,
+      };
+    })
+    .sort(
+      (a, b) =>
+        b.score - a.score ||
+        b.candidate.totalScore - a.candidate.totalScore ||
+        compareTieBreak(a.candidate.decision, b.candidate.decision, a.candidate.index, b.candidate.index),
+    );
+  const best = scored[0];
+  if (!best || best.candidate.index === fallback.index) {
+    return undefined;
+  }
+  const fallbackScore = scored.find((entry) => entry.candidate.index === fallback.index)?.score;
+  const margin = fallbackScore === undefined ? 0 : best.score - fallbackScore;
+  if (margin < 4) {
+    return undefined;
+  }
+  return {
+    ...best.candidate.decision,
+    reason:
+      `${best.candidate.decision.reason} / 盾対象応答評価: ` +
+      `次自ターン${Math.round(best.rollout.score)}点、fallback比${Math.round(margin)}点差`,
+  };
+}
+
+function closeShieldTargetTieCandidates(
+  evaluated: readonly EvaluatedDecision[],
+  fallback: EvaluatedDecision,
+  config: CpuAiProfileConfig,
+): EvaluatedDecision[] {
+  if (!isShieldDecision(fallback.decision) || fallback.decision.target.kind !== "monster") {
+    return [];
+  }
+  const maxRootGap = config.terminalPlanRolloutShieldTargetTieMaxRootScoreGap ?? 12;
+  const candidates = evaluated.filter((candidate) => {
+    const decision = candidate.decision;
+    return (
+      isShieldDecision(decision) &&
+      decision.target.kind === "monster" &&
+      fallback.totalScore - candidate.totalScore <= maxRootGap
+    );
+  });
+  const targetSlots = new Set(
+    candidates
+      .map((candidate) => candidate.decision)
+      .filter((decision): decision is Extract<CpuDecision, { type: "master_action" }> => isShieldDecision(decision))
+      .map((decision) => decision.target)
+      .filter((target): target is Extract<Target, { kind: "monster" }> => target.kind === "monster")
+      .map((target) => target.slotKey),
+  );
+  return targetSlots.size >= 2 ? candidates : [];
+}
+
 function isBacklineReachSummonDecision(state: GameState, decision: CpuDecision): boolean {
   if (decision.type !== "summon") {
     return false;
@@ -1563,6 +1768,39 @@ function evaluateTerminalPlanRollout(
   let current = state;
   let steps = 1;
   while (!current.winner && steps < maxSteps && current.turnNumber < 120) {
+    current = runAutoStep(current, options);
+    steps += 1;
+  }
+  const opponent = opponentOf(perspective);
+  const score = current.winner === perspective
+    ? 1_000_000
+    : current.winner === opponent
+      ? -1_000_000
+      : evaluateState(current, perspective, config.weights);
+  return {
+    score,
+    steps,
+    ...(current.winner ? { winner: current.winner } : {}),
+    ...(current.winner ? { winnerProfile: resolveRolloutWinnerProfile(current.winner, options) } : {}),
+  };
+}
+
+function evaluateTerminalPlanHandoffRollout(
+  state: GameState,
+  rootTurnNumber: number,
+  perspective: PlayerId,
+  maxSteps: number,
+  options: CpuAiOptions,
+  config: CpuAiProfileConfig,
+): TerminalPlanRolloutResult {
+  let current = state;
+  let steps = 1;
+  while (
+    !current.winner &&
+    steps < maxSteps &&
+    current.turnNumber < 120 &&
+    !(current.currentPlayer === perspective && current.turnNumber > rootTurnNumber)
+  ) {
     current = runAutoStep(current, options);
     steps += 1;
   }

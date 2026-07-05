@@ -140,6 +140,73 @@ describe("cpu ai", () => {
     expect(afterTurnChange.turnAiRolloutDecisionHistory).toBeUndefined();
   });
 
+  it("uses response reading to break low-stone white mirror shield target ties", () => {
+    const game = createCpuGame();
+    game.turnNumber = 9;
+    game.players.cpu.masterId = "white";
+    game.players.player.masterId = "white";
+    game.players.cpu.stones = 3;
+    game.players.player.stones = 2;
+    game.players.cpu.hand = [];
+    game.players.player.hand = [];
+    for (const slot of Object.values(game.slots)) {
+      delete slot.monster;
+    }
+    game.slots.player_front_left.monster = createActiveMonster("card_133", "player", {
+      instanceId: "player_death_sheep_l2",
+      level: 2,
+      hp: 6,
+      investedStones: 2,
+      actionCount: 1,
+    });
+    game.slots.player_front_right.monster = createActiveMonster("card_047", "player", {
+      instanceId: "player_dyne_l2_shielded",
+      level: 2,
+      hp: 6,
+      investedStones: 2,
+      actionCount: 1,
+      shielded: true,
+    });
+    game.slots.player_back_left.monster = createActiveMonster("bomuzo", "player", {
+      instanceId: "player_bomuzo_prep",
+      status: "prepared",
+      hp: 6,
+    });
+    game.slots.cpu_front_left.monster = createActiveMonster("card_133", "cpu", {
+      instanceId: "cpu_death_sheep_l2_focus",
+      level: 2,
+      hp: 6,
+      investedStones: 2,
+      actionCount: 1,
+      focused: true,
+    });
+    game.slots.cpu_front_right.monster = createActiveMonster("bomuzo", "cpu", {
+      instanceId: "cpu_bomuzo_l2",
+      level: 2,
+      hp: 5,
+      investedStones: 2,
+      actionCount: 1,
+    });
+    game.slots.cpu_back_left.monster = createActiveMonster("card_133", "cpu", {
+      instanceId: "cpu_back_death_sheep_focus",
+      hp: 1,
+      actionCount: 1,
+      focused: true,
+    });
+    game.slots.cpu_back_right.monster = createActiveMonster("card_051", "cpu", {
+      instanceId: "cpu_pygmy_l2",
+      level: 2,
+      hp: 3,
+      investedStones: 2,
+      actionCount: 2,
+    });
+
+    const decision = chooseCpuDecision(game, { profiles: { cpu: "white_planner", player: "white" } });
+
+    expect(decisionTestSignature(decision)).toBe("master_action:shield:cpu_front_right");
+    expect(decision.reason).toContain("ターンプラン探索");
+  });
+
   it("does not spend an action focusing when direct master damage is already available", () => {
     const game = createCpuGame();
     game.players.cpu.hand = [];

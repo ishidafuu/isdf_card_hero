@@ -56,6 +56,9 @@ export interface CpuAiSearchOptions {
   terminalPlanRolloutFrontFocusStripAttackMinRootScoreGap?: number;
   terminalPlanRolloutFrontFocusStripAttackMaxRootScoreGap?: number;
   terminalPlanRolloutFrontFocusStripAttackSteps?: number;
+  terminalPlanRolloutAllowShieldTargetTie?: number;
+  terminalPlanRolloutShieldTargetTieMaxRootScoreGap?: number;
+  terminalPlanRolloutShieldTargetTieSteps?: number;
   terminalPlanRolloutOncePerTurn?: number;
   beamScoreThreshold?: number;
 }
