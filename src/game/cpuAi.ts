@@ -223,6 +223,8 @@ type CpuAiProfileConfig = {
   terminalPlanRolloutAllowShieldTargetTie?: number;
   terminalPlanRolloutShieldTargetTieMaxRootScoreGap?: number;
   terminalPlanRolloutShieldTargetTieSteps?: number;
+  terminalPlanRolloutUseHandoff?: number;
+  terminalPlanRolloutUseLightweightProfile?: number;
   terminalPlanRolloutOncePerTurn?: number;
 };
 
@@ -1065,6 +1067,14 @@ function applyCpuAiSearchOptions(
       search.terminalPlanRolloutShieldTargetTieSteps,
       base.terminalPlanRolloutShieldTargetTieSteps,
     ),
+    terminalPlanRolloutUseHandoff: normalizedOptionalSearchNumber(
+      search.terminalPlanRolloutUseHandoff,
+      base.terminalPlanRolloutUseHandoff,
+    ),
+    terminalPlanRolloutUseLightweightProfile: normalizedOptionalSearchNumber(
+      search.terminalPlanRolloutUseLightweightProfile,
+      base.terminalPlanRolloutUseLightweightProfile,
+    ),
     terminalPlanRolloutOncePerTurn: normalizedOptionalSearchNumber(
       search.terminalPlanRolloutOncePerTurn,
       base.terminalPlanRolloutOncePerTurn,
@@ -1409,9 +1419,15 @@ function applyTerminalPlanRolloutScores(
   }
 
   const rolloutCache = new Map<string, TerminalPlanRolloutResult>();
+  const rolloutProfileOverride = config.terminalPlanRolloutUseLightweightProfile
+    ? "strong"
+    : isFrontFocusStripRolloutTrigger
+      ? "white"
+      : undefined;
   const rolloutOptions = withoutTerminalPlanRolloutOptions(
     options,
-    isFrontFocusStripRolloutTrigger ? "white" : undefined,
+    rolloutProfileOverride,
+    Boolean(config.terminalPlanRolloutUseLightweightProfile),
   );
   const rolloutFor = (selection: TerminalPlanSelection): TerminalPlanRolloutResult | undefined => {
     const key = cpuDecisionKey(selection.candidate.decision);
@@ -1422,7 +1438,8 @@ function applyTerminalPlanRolloutScores(
     if (cached) {
       return cached;
     }
-    const result = isShieldTargetTieRolloutTrigger
+    const useHandoffRollout = isShieldTargetTieRolloutTrigger || Boolean(config.terminalPlanRolloutUseHandoff);
+    const result = useHandoffRollout
       ? evaluateTerminalPlanHandoffRollout(
           selection.candidate.after,
           rootState.turnNumber,
@@ -1821,6 +1838,7 @@ function evaluateTerminalPlanHandoffRollout(
 function withoutTerminalPlanRolloutOptions(
   options: CpuAiOptions,
   plannerProfileOverride?: CpuAiProfile,
+  overrideWhiteProfiles = false,
 ): CpuAiOptions {
   const stripSearch = (search: CpuAiSearchOptions | undefined): CpuAiSearchOptions => {
     return {
@@ -1832,7 +1850,10 @@ function withoutTerminalPlanRolloutOptions(
   };
   const profileFor = (playerId: PlayerId): CpuAiProfile | undefined => {
     const profile = options.profiles?.[playerId] ?? options.profile;
-    if (plannerProfileOverride && (profile === "white_planner" || profile === "white_rollout")) {
+    if (
+      plannerProfileOverride &&
+      (profile === "white_planner" || profile === "white_rollout" || (overrideWhiteProfiles && profile === "white"))
+    ) {
       return plannerProfileOverride;
     }
     return profile;

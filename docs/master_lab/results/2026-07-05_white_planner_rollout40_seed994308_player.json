@@ -1,0 +1,122 @@
+{
+  "generatedAt": "2026-07-05T02:05:33.048Z",
+  "options": {
+    "seedStart": 994308,
+    "gamesPerDirection": 1,
+    "maxSteps": 500,
+    "maxTurns": 120,
+    "deckPreset": "master-lab-white-1377-death-sheep3",
+    "directions": [
+      "challenger-as-player"
+    ],
+    "candidates": [
+      {
+        "id": "rollout3_40_w015_gap200",
+        "note": "通常rolloutを40手へ抑え、局所的な応答読みを残しつつ判断時間を下げる",
+        "search": {
+          "terminalPlanRolloutSteps": 40,
+          "terminalPlanRolloutCandidateLimit": 3,
+          "terminalPlanRolloutWeight": 0.15,
+          "terminalPlanRolloutAdoptionMinScoreGap": 200,
+          "terminalPlanRolloutTriggerMinRootScoreGap": 120,
+          "terminalPlanRolloutTriggerMaxPlannerMargin": 40,
+          "terminalPlanRolloutTurnFrom": 6,
+          "terminalPlanRolloutTurnTo": 10,
+          "terminalPlanRolloutMaxOpponentStones": 1,
+          "terminalPlanRolloutRequireFallbackMove": 1,
+          "terminalPlanRolloutRequirePlannerSummon": 1,
+          "terminalPlanRolloutRequirePlannerSummonBacklineReach": 1,
+          "terminalPlanRolloutOncePerTurn": 1
+        }
+      }
+    ],
+    "streamProgress": true,
+    "markdownPath": "docs/master_lab/results/2026-07-05_white_planner_rollout40_seed994308_player.md",
+    "jsonPath": "docs/master_lab/results/2026-07-05_white_planner_rollout40_seed994308_player.json"
+  },
+  "games": [
+    {
+      "candidateId": "rollout3_40_w015_gap200",
+      "direction": "challenger-as-player",
+      "seed": 994308,
+      "profiles": {
+        "player": "white_planner",
+        "cpu": "white"
+      },
+      "winner": "cpu",
+      "winnerProfile": "white",
+      "steps": 217,
+      "turns": 19,
+      "playerHp": 0,
+      "cpuHp": 6,
+      "challengerHp": 0,
+      "baselineHp": 6,
+      "decisionStats": {
+        "player": {
+          "decisions": 99,
+          "elapsedMs": 161345.1858749999,
+          "maxDecisionMs": 43342.589250000005,
+          "actionCounts": {
+            "summon": 13,
+            "end_turn": 19,
+            "focus": 12,
+            "attack": 28,
+            "master:shield": 6,
+            "move": 4,
+            "master:master_attack": 12,
+            "magic": 2,
+            "master:wake_up": 3
+          }
+        },
+        "cpu": {
+          "decisions": 111,
+          "elapsedMs": 63117.18433800024,
+          "maxDecisionMs": 4069.515000000014,
+          "actionCounts": {
+            "summon": 14,
+            "end_turn": 18,
+            "focus": 21,
+            "master:shield": 3,
+            "attack": 35,
+            "master:master_attack": 11,
+            "master:wake_up": 3,
+            "move": 5,
+            "magic": 1
+          }
+        }
+      }
+    }
+  ],
+  "summaries": [
+    {
+      "candidateId": "rollout3_40_w015_gap200",
+      "note": "通常rolloutを40手へ抑え、局所的な応答読みを残しつつ判断時間を下げる",
+      "games": 1,
+      "challengerWins": 0,
+      "baselineWins": 1,
+      "draws": 0,
+      "winPointRate": 0,
+      "averageHpMargin": -6,
+      "averageSteps": 217,
+      "averageTurns": 19,
+      "averageDecisionMs": 1629.7493522727264,
+      "maxDecisionMs": 43342.589250000005,
+      "issues": 0,
+      "actionCounts": {
+        "attack": 28,
+        "end_turn": 19,
+        "focus": 12,
+        "magic": 2,
+        "master:master_attack": 12,
+        "master:shield": 6,
+        "master:wake_up": 3,
+        "move": 4,
+        "summon": 13
+      }
+    }
+  ],
+  "conclusion": [
+    "best candidate: rollout3_40_w015_gap200 (0-1-0, WPR 0%, avg HP margin -6)",
+    "No candidate beat the current white baseline in this sample. Keep white_planner experimental and tighten adoption around clearly winning planner differences."
+  ]
+}

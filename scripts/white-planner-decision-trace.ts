@@ -12,6 +12,7 @@ import {
 import { AI_EVALUATION_WEIGHTS } from "../src/game/aiWeights";
 import { getCardName } from "../src/game/cards";
 import { buildDeckPresetCardIds, deckPresetAllowsSpecial, type DeckPresetId } from "../src/game/deckPresets";
+import type { CpuAiSearchOptions } from "../src/game/cpuAiTypes";
 import { createInitialGame, opponentOf, runAutoStep, targetToKey } from "../src/game/rules";
 import type { GameState, PlayerId, SlotKey } from "../src/game/types";
 import { readInteger, readString, round } from "./lib/cli";
@@ -24,6 +25,7 @@ interface CliOptions {
   deckPreset: DeckPresetId;
   maxSteps: number;
   maxTurns: number;
+  search: CpuAiSearchOptions;
   markdownPath?: string;
   jsonPath?: string;
 }
@@ -74,6 +76,7 @@ const DEFAULT_OPTIONS: CliOptions = {
   deckPreset: "master-lab-white-1377-death-sheep3",
   maxSteps: 420,
   maxTurns: 90,
+  search: {},
 };
 
 const options = parseArgs(process.argv.slice(2));
@@ -103,7 +106,10 @@ function runTrace(options: CliOptions): DecisionTraceReport {
   let state = createWhiteMirrorGame(options.seed, options.deckPreset);
   const profiles = profilesForDirection(options.direction);
   const plannerSide = plannerSideForDirection(options.direction);
-  const aiOptions: CpuAiOptions = { profiles };
+  const aiOptions: CpuAiOptions = {
+    profiles,
+    ...(Object.keys(options.search).length > 0 ? { searches: { [plannerSide]: options.search } } : {}),
+  };
   const decisions: DecisionTraceEntry[] = [];
   let steps = 0;
 
@@ -199,6 +205,7 @@ function formatMarkdown(report: DecisionTraceReport): string {
     `deck: \`${report.options.deckPreset}\``,
     `seed: ${report.options.seed}`,
     `direction: ${report.options.direction}`,
+    `search: \`${JSON.stringify(report.options.search)}\``,
     "",
     "## Conclusion",
     "",
@@ -286,7 +293,7 @@ function escapeCell(value: string): string {
 }
 
 function parseArgs(args: string[]): CliOptions {
-  const parsed: CliOptions = { ...DEFAULT_OPTIONS };
+  const parsed: CliOptions = { ...DEFAULT_OPTIONS, search: { ...DEFAULT_OPTIONS.search } };
   for (let index = 0; index < args.length; index += 1) {
     const arg = args[index];
     const next = args[index + 1];
@@ -304,6 +311,27 @@ function parseArgs(args: string[]): CliOptions {
       index += 1;
     } else if (arg === "--max-turns") {
       parsed.maxTurns = readInteger(arg, next);
+      index += 1;
+    } else if (arg === "--planner-rollout-steps") {
+      parsed.search = { ...parsed.search, terminalPlanRolloutSteps: readInteger(arg, next) };
+      index += 1;
+    } else if (arg === "--planner-rollout-candidate-limit") {
+      parsed.search = { ...parsed.search, terminalPlanRolloutCandidateLimit: readInteger(arg, next) };
+      index += 1;
+    } else if (arg === "--planner-rollout-weight") {
+      parsed.search = { ...parsed.search, terminalPlanRolloutWeight: readNumber(arg, next) };
+      index += 1;
+    } else if (arg === "--planner-rollout-front-focus-steps") {
+      parsed.search = { ...parsed.search, terminalPlanRolloutFrontFocusStripAttackSteps: readInteger(arg, next) };
+      index += 1;
+    } else if (arg === "--planner-rollout-shield-target-tie-steps") {
+      parsed.search = { ...parsed.search, terminalPlanRolloutShieldTargetTieSteps: readInteger(arg, next) };
+      index += 1;
+    } else if (arg === "--planner-rollout-use-handoff") {
+      parsed.search = { ...parsed.search, terminalPlanRolloutUseHandoff: readNumber(arg, next) };
+      index += 1;
+    } else if (arg === "--planner-rollout-use-lightweight-profile") {
+      parsed.search = { ...parsed.search, terminalPlanRolloutUseLightweightProfile: readNumber(arg, next) };
       index += 1;
     } else if (arg === "--markdown") {
       parsed.markdownPath = readString(arg, next);
@@ -327,6 +355,14 @@ function readDirection(value: string): Direction {
   throw new Error("--direction must be one of: challenger-as-cpu, challenger-as-player");
 }
 
+function readNumber(name: string, value: string | undefined): number {
+  const number = Number(readString(name, value));
+  if (!Number.isFinite(number)) {
+    throw new Error(`${name} must be a number`);
+  }
+  return number;
+}
+
 async function writeReport(path: string, content: string): Promise<void> {
   await mkdir(dirname(path), { recursive: true });
   await writeFile(path, content);
@@ -342,6 +378,13 @@ Options:
   --deck-preset <id>     Deck preset. Default: ${DEFAULT_OPTIONS.deckPreset}
   --max-steps <n>        Step cap. Default: ${DEFAULT_OPTIONS.maxSteps}
   --max-turns <n>        Turn cap. Default: ${DEFAULT_OPTIONS.maxTurns}
+  --planner-rollout-steps <n>
+  --planner-rollout-candidate-limit <n>
+  --planner-rollout-weight <n>
+  --planner-rollout-front-focus-steps <n>
+  --planner-rollout-shield-target-tie-steps <n>
+  --planner-rollout-use-handoff <0|1>
+  --planner-rollout-use-lightweight-profile <0|1>
   --markdown <path>      Write Markdown report.
   --json <path>          Write JSON report.
 `);

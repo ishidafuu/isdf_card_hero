@@ -1,0 +1,222 @@
+{
+  "generatedAt": "2026-07-05T02:13:20.116Z",
+  "options": {
+    "seedStart": 994308,
+    "gamesPerDirection": 1,
+    "maxSteps": 500,
+    "maxTurns": 120,
+    "deckPreset": "master-lab-white-1377-death-sheep3",
+    "directions": [
+      "challenger-as-player"
+    ],
+    "candidates": [
+      {
+        "id": "rollout3_40_front16_w015_gap200",
+        "note": "通常rollout40手、前衛focus剥がしrollout16手で重い白ミラー比較を抑える",
+        "search": {
+          "terminalPlanRolloutSteps": 40,
+          "terminalPlanRolloutCandidateLimit": 3,
+          "terminalPlanRolloutWeight": 0.15,
+          "terminalPlanRolloutAdoptionMinScoreGap": 200,
+          "terminalPlanRolloutTriggerMinRootScoreGap": 120,
+          "terminalPlanRolloutTriggerMaxPlannerMargin": 40,
+          "terminalPlanRolloutTurnFrom": 6,
+          "terminalPlanRolloutTurnTo": 10,
+          "terminalPlanRolloutMaxOpponentStones": 1,
+          "terminalPlanRolloutRequireFallbackMove": 1,
+          "terminalPlanRolloutRequirePlannerSummon": 1,
+          "terminalPlanRolloutRequirePlannerSummonBacklineReach": 1,
+          "terminalPlanRolloutAllowFrontFocusStripAttack": 1,
+          "terminalPlanRolloutFrontFocusStripAttackSteps": 16,
+          "terminalPlanRolloutOncePerTurn": 1
+        }
+      },
+      {
+        "id": "rollout3_40_front12_w015_gap200",
+        "note": "通常rollout40手、前衛focus剥がしrollout12手まで短縮して実戦時間を優先する",
+        "search": {
+          "terminalPlanRolloutSteps": 40,
+          "terminalPlanRolloutCandidateLimit": 3,
+          "terminalPlanRolloutWeight": 0.15,
+          "terminalPlanRolloutAdoptionMinScoreGap": 200,
+          "terminalPlanRolloutTriggerMinRootScoreGap": 120,
+          "terminalPlanRolloutTriggerMaxPlannerMargin": 40,
+          "terminalPlanRolloutTurnFrom": 6,
+          "terminalPlanRolloutTurnTo": 10,
+          "terminalPlanRolloutMaxOpponentStones": 1,
+          "terminalPlanRolloutRequireFallbackMove": 1,
+          "terminalPlanRolloutRequirePlannerSummon": 1,
+          "terminalPlanRolloutRequirePlannerSummonBacklineReach": 1,
+          "terminalPlanRolloutAllowFrontFocusStripAttack": 1,
+          "terminalPlanRolloutFrontFocusStripAttackSteps": 12,
+          "terminalPlanRolloutOncePerTurn": 1
+        }
+      }
+    ],
+    "streamProgress": true,
+    "markdownPath": "docs/master_lab/results/2026-07-05_white_planner_frontfocus_step_probe_seed994308.md",
+    "jsonPath": "docs/master_lab/results/2026-07-05_white_planner_frontfocus_step_probe_seed994308.json"
+  },
+  "games": [
+    {
+      "candidateId": "rollout3_40_front16_w015_gap200",
+      "direction": "challenger-as-player",
+      "seed": 994308,
+      "profiles": {
+        "player": "white_planner",
+        "cpu": "white"
+      },
+      "winner": "cpu",
+      "winnerProfile": "white",
+      "steps": 217,
+      "turns": 19,
+      "playerHp": 0,
+      "cpuHp": 6,
+      "challengerHp": 0,
+      "baselineHp": 6,
+      "decisionStats": {
+        "player": {
+          "decisions": 99,
+          "elapsedMs": 141744.11500299998,
+          "maxDecisionMs": 24989.244750000013,
+          "actionCounts": {
+            "summon": 13,
+            "end_turn": 19,
+            "focus": 12,
+            "attack": 28,
+            "master:shield": 6,
+            "move": 4,
+            "master:master_attack": 12,
+            "magic": 2,
+            "master:wake_up": 3
+          }
+        },
+        "cpu": {
+          "decisions": 111,
+          "elapsedMs": 63361.12983699997,
+          "maxDecisionMs": 4058.370500000019,
+          "actionCounts": {
+            "summon": 14,
+            "end_turn": 18,
+            "focus": 21,
+            "master:shield": 3,
+            "attack": 35,
+            "master:master_attack": 11,
+            "master:wake_up": 3,
+            "move": 5,
+            "magic": 1
+          }
+        }
+      }
+    },
+    {
+      "candidateId": "rollout3_40_front12_w015_gap200",
+      "direction": "challenger-as-player",
+      "seed": 994308,
+      "profiles": {
+        "player": "white_planner",
+        "cpu": "white"
+      },
+      "winner": "cpu",
+      "winnerProfile": "white",
+      "steps": 291,
+      "turns": 27,
+      "playerHp": 0,
+      "cpuHp": 5,
+      "challengerHp": 0,
+      "baselineHp": 5,
+      "decisionStats": {
+        "player": {
+          "decisions": 148,
+          "elapsedMs": 126987.43549799963,
+          "maxDecisionMs": 17090.56916700001,
+          "actionCounts": {
+            "summon": 17,
+            "end_turn": 26,
+            "focus": 20,
+            "attack": 52,
+            "master:shield": 9,
+            "move": 7,
+            "master:master_attack": 12,
+            "master:wake_up": 3,
+            "magic": 2
+          }
+        },
+        "cpu": {
+          "decisions": 135,
+          "elapsedMs": 82519.62858500014,
+          "maxDecisionMs": 3531.441916999989,
+          "actionCounts": {
+            "summon": 19,
+            "end_turn": 26,
+            "focus": 23,
+            "master:shield": 7,
+            "attack": 40,
+            "master:master_attack": 11,
+            "master:wake_up": 4,
+            "move": 3,
+            "magic": 2
+          }
+        }
+      }
+    }
+  ],
+  "summaries": [
+    {
+      "candidateId": "rollout3_40_front12_w015_gap200",
+      "note": "通常rollout40手、前衛focus剥がしrollout12手まで短縮して実戦時間を優先する",
+      "games": 1,
+      "challengerWins": 0,
+      "baselineWins": 1,
+      "draws": 0,
+      "winPointRate": 0,
+      "averageHpMargin": -5,
+      "averageSteps": 291,
+      "averageTurns": 27,
+      "averageDecisionMs": 858.0232128243218,
+      "maxDecisionMs": 17090.56916700001,
+      "issues": 0,
+      "actionCounts": {
+        "attack": 52,
+        "end_turn": 26,
+        "focus": 20,
+        "magic": 2,
+        "master:master_attack": 12,
+        "master:shield": 9,
+        "master:wake_up": 3,
+        "move": 7,
+        "summon": 17
+      }
+    },
+    {
+      "candidateId": "rollout3_40_front16_w015_gap200",
+      "note": "通常rollout40手、前衛focus剥がしrollout16手で重い白ミラー比較を抑える",
+      "games": 1,
+      "challengerWins": 0,
+      "baselineWins": 1,
+      "draws": 0,
+      "winPointRate": 0,
+      "averageHpMargin": -6,
+      "averageSteps": 217,
+      "averageTurns": 19,
+      "averageDecisionMs": 1431.7587374040402,
+      "maxDecisionMs": 24989.244750000013,
+      "issues": 0,
+      "actionCounts": {
+        "attack": 28,
+        "end_turn": 19,
+        "focus": 12,
+        "magic": 2,
+        "master:master_attack": 12,
+        "master:shield": 6,
+        "master:wake_up": 3,
+        "move": 4,
+        "summon": 13
+      }
+    }
+  ],
+  "conclusion": [
+    "best candidate: rollout3_40_front12_w015_gap200 (0-1-0, WPR 0%, avg HP margin -5)",
+    "No candidate beat the current white baseline in this sample. Keep white_planner experimental and tighten adoption around clearly winning planner differences."
+  ]
+}
