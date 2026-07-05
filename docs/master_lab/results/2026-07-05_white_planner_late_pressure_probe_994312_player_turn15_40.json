@@ -1,0 +1,108 @@
+{
+  "generatedAt": "2026-07-05T15:59:23.293Z",
+  "options": {
+    "seedStart": 994312,
+    "gamesPerDirection": 1,
+    "maxSteps": 500,
+    "maxTurns": 120,
+    "deckPreset": "master-lab-white-1377-death-sheep3",
+    "directions": [
+      "challenger-as-player"
+    ],
+    "candidates": [
+      {
+        "id": "current",
+        "note": "現行 white_planner",
+        "search": {}
+      }
+    ],
+    "streamProgress": true,
+    "markdownPath": "docs/master_lab/results/2026-07-05_white_planner_late_pressure_probe_994312_player_turn15_40.md",
+    "jsonPath": "docs/master_lab/results/2026-07-05_white_planner_late_pressure_probe_994312_player_turn15_40.json"
+  },
+  "games": [
+    {
+      "candidateId": "current",
+      "direction": "challenger-as-player",
+      "seed": 994312,
+      "profiles": {
+        "player": "white_planner",
+        "cpu": "white"
+      },
+      "winner": "player",
+      "winnerProfile": "white_planner",
+      "steps": 309,
+      "turns": 27,
+      "playerHp": 4,
+      "cpuHp": 0,
+      "challengerHp": 4,
+      "baselineHp": 0,
+      "decisionStats": {
+        "player": {
+          "decisions": 164,
+          "elapsedMs": 173681.61117100006,
+          "maxDecisionMs": 54576.62012499999,
+          "actionCounts": {
+            "summon": 18,
+            "end_turn": 26,
+            "focus": 32,
+            "master:wake_up": 4,
+            "attack": 53,
+            "magic": 1,
+            "move": 10,
+            "master:master_attack": 15,
+            "master:shield": 5
+          }
+        },
+        "cpu": {
+          "decisions": 136,
+          "elapsedMs": 69145.94533800005,
+          "maxDecisionMs": 2954.022834000003,
+          "actionCounts": {
+            "summon": 18,
+            "end_turn": 26,
+            "attack": 36,
+            "master:wake_up": 2,
+            "focus": 25,
+            "master:shield": 13,
+            "move": 5,
+            "master:master_attack": 9,
+            "magic": 2
+          }
+        }
+      }
+    }
+  ],
+  "summaries": [
+    {
+      "candidateId": "current",
+      "note": "現行 white_planner",
+      "games": 1,
+      "challengerWins": 1,
+      "baselineWins": 0,
+      "draws": 0,
+      "winPointRate": 1,
+      "averageHpMargin": 4,
+      "averageSteps": 309,
+      "averageTurns": 27,
+      "averageDecisionMs": 1059.0342144573174,
+      "maxDecisionMs": 54576.62012499999,
+      "issues": 0,
+      "actionCounts": {
+        "attack": 53,
+        "end_turn": 26,
+        "focus": 32,
+        "magic": 1,
+        "master:master_attack": 15,
+        "master:shield": 5,
+        "master:wake_up": 4,
+        "move": 10,
+        "summon": 18
+      }
+    }
+  ],
+  "conclusion": [
+    "best candidate: current (1-0-0, WPR 100%, avg HP margin 4)",
+    "The best candidate beat the current white baseline in this sample. Re-run with more seeds before adopting."
+  ]
+}

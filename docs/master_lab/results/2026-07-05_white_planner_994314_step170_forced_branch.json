@@ -1,0 +1,127 @@
+{
+  "generatedAt": "2026-07-05T14:50:05.140Z",
+  "seed": 994314,
+  "direction": "challenger-as-player",
+  "deckPreset": "master-lab-white-1377-death-sheep3",
+  "branchTop": 8,
+  "maxReplaySteps": 140,
+  "samples": [
+    {
+      "step": 170,
+      "turnNumber": 15,
+      "plannerSide": "player",
+      "currentPlayer": "player",
+      "state": "turn 15 / current player / HP player/cpu 10/5 / stones player/cpu 11/0 / deck player/cpu 11/11 / hand player/cpu 6/5",
+      "board": "player_front_left:PF:ボムゾウ Lv1 HP6 act0/1 focus | player_front_right:PF:デスシープ Lv2 HP4 act0/1 | player_back_right:PB:ヤンバル Lv1 HP3 act0/1 focus | cpu_front_left:CF:デスシープ Lv2 HP6 act1/1 shield | cpu_back_left:CB:ピグミィ Lv2 HP1 act2/2 | cpu_back_right:CB:ヤンバル Lv2 HP3 act1/1",
+      "branches": [
+        {
+          "rank": 1,
+          "decision": "attack:デスシープ:attack->cpu master",
+          "rootScore": 239.5,
+          "selected": false,
+          "applied": true,
+          "winner": "cpu",
+          "winnerProfile": "white",
+          "replaySteps": 49,
+          "finalTurn": 25,
+          "branchScore": -1000000,
+          "finalState": "turn 25 / current cpu / HP player/cpu 0/2 / stones player/cpu 54/13 / deck player/cpu 1/0 / hand player/cpu 5/6",
+          "finalBoard": "player_front_right:PF:ヤンバル Lv1 HP3 act0/1 focus | cpu_front_left:CF:デスシープ Lv2 HP6 act1/1 | cpu_front_right:CF:ヤンバル Lv2 HP3 act0/1 focus | cpu_back_left:CB:ピグミィ Lv2 HP1 act0/2 focus"
+        },
+        {
+          "rank": 2,
+          "decision": "summon:ヤンバル->player_back_left",
+          "rootScore": 174.7,
+          "selected": true,
+          "applied": true,
+          "winner": "cpu",
+          "winnerProfile": "white",
+          "replaySteps": 54,
+          "finalTurn": 25,
+          "branchScore": -1000000,
+          "finalState": "turn 25 / current cpu / HP player/cpu 0/2 / stones player/cpu 52/11 / deck player/cpu 1/0 / hand player/cpu 5/6",
+          "finalBoard": "player_front_right:PF:ヤンバル Lv1 HP3 act0/1 focus | cpu_front_left:CF:デスシープ Lv2 HP6 act1/1 | cpu_front_right:CF:ヤンバル Lv2 HP3 act0/1 focus | cpu_back_left:CB:ピグミィ Lv2 HP1 act0/2 focus"
+        },
+        {
+          "rank": 3,
+          "decision": "end_turn",
+          "rootScore": 149.6,
+          "selected": false,
+          "applied": true,
+          "winner": "player",
+          "winnerProfile": "white_planner",
+          "replaySteps": 52,
+          "finalTurn": 29,
+          "branchScore": 1000000,
+          "finalState": "turn 29 / current cpu / HP player/cpu 7/0 / stones player/cpu 54/40 / deck player/cpu 0/0 / hand player/cpu 5/5",
+          "finalBoard": "player_front_right:PF:ヤンバル Lv2 HP3 act0/1 focus | cpu_front_right:CF:ヤンバル Lv2 HP3 act0/1 focus"
+        },
+        {
+          "rank": 4,
+          "decision": "focus:デスシープ",
+          "rootScore": 47.3,
+          "selected": false,
+          "applied": true,
+          "winner": "player",
+          "winnerProfile": "white_planner",
+          "replaySteps": 62,
+          "finalTurn": 26,
+          "branchScore": 1000000,
+          "finalState": "turn 26 / current cpu / HP player/cpu 3/0 / stones player/cpu 47/28 / deck player/cpu 0/0 / hand player/cpu 5/5",
+          "finalBoard": "player_front_left:PF:真勇者ダイン Lv1 HP6 act0/1 focus | cpu_front_left:CF:ヤンバル Lv2 HP3 act0/1 focus | cpu_front_right:CF:デスシープ Lv2 HP6 act0/1 | cpu_back_right:CB:真勇者ダイン Lv2 HP6 act0/1 focus"
+        },
+        {
+          "rank": 5,
+          "decision": "attack:ボムゾウ:self_bomb->デスシープ",
+          "rootScore": -288.8,
+          "selected": false,
+          "applied": true,
+          "winner": "player",
+          "winnerProfile": "white_planner",
+          "replaySteps": 56,
+          "finalTurn": 26,
+          "branchScore": 1000000,
+          "finalState": "turn 26 / current cpu / HP player/cpu 9/0 / stones player/cpu 33/27 / deck player/cpu 0/0 / hand player/cpu 5/5",
+          "finalBoard": "player_front_right:PF:ヤンバル Lv2 HP3 act0/1 focus | cpu_front_right:CF:ヤンバル Lv2 HP3 act0/1 focus"
+        },
+        {
+          "rank": 6,
+          "decision": "attack:ヤンバル:wild_claw->デスシープ",
+          "rootScore": -298,
+          "selected": false,
+          "applied": true,
+          "winner": "cpu",
+          "winnerProfile": "white",
+          "replaySteps": 54,
+          "finalTurn": 25,
+          "branchScore": -1000000,
+          "finalState": "turn 25 / current cpu / HP player/cpu 0/2 / stones player/cpu 54/11 / deck player/cpu 1/0 / hand player/cpu 5/6",
+          "finalBoard": "player_front_right:PF:ヤンバル Lv1 HP3 act0/1 focus | cpu_front_left:CF:デスシープ Lv2 HP5 act1/1 | cpu_front_right:CF:ヤンバル Lv2 HP3 act0/1 focus | cpu_back_left:CB:ピグミィ Lv2 HP1 act0/2 focus"
+        },
+        {
+          "rank": 7,
+          "decision": "attack:ボムゾウ:self_bomb->cpu master",
+          "rootScore": -328.1,
+          "selected": false,
+          "applied": true,
+          "winner": "cpu",
+          "winnerProfile": "white",
+          "replaySteps": 49,
+          "finalTurn": 25,
+          "branchScore": -1000000,
+          "finalState": "turn 25 / current cpu / HP player/cpu 0/2 / stones player/cpu 54/13 / deck player/cpu 1/0 / hand player/cpu 5/6",
+          "finalBoard": "player_front_right:PF:ヤンバル Lv1 HP3 act0/1 focus | cpu_front_left:CF:デスシープ Lv2 HP6 act1/1 | cpu_front_right:CF:ヤンバル Lv2 HP3 act0/1 focus | cpu_back_left:CB:ピグミィ Lv2 HP1 act0/2 focus"
+        }
+      ],
+      "bestDecision": "end_turn",
+      "selectedDecision": "summon:ヤンバル->player_back_left",
+      "selectedRank": 5,
+      "bestVsSelectedScoreDelta": 2000000
+    }
+  ],
+  "conclusion": [
+    "1/1 samples で選択手より最終scoreが高い代替がある。",
+    "root評価では低いが最終勝敗に効く候補だけを、局面条件へ還元して検証する。"
+  ]
+}
+

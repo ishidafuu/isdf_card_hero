@@ -216,6 +216,8 @@ type CpuAiProfileConfig = {
   terminalPlanRolloutRequireFallbackMove?: number;
   terminalPlanRolloutRequirePlannerSummon?: number;
   terminalPlanRolloutRequirePlannerSummonBacklineReach?: number;
+  terminalPlanRolloutAllowLatePressureOverSummon?: number;
+  terminalPlanRolloutLatePressureOverSummonSteps?: number;
   terminalPlanRolloutAllowFrontFocusStripAttack?: number;
   terminalPlanRolloutFrontFocusStripAttackMinRootScoreGap?: number;
   terminalPlanRolloutFrontFocusStripAttackMaxRootScoreGap?: number;
@@ -395,6 +397,8 @@ const CPU_AI_PROFILE_CONFIG: Record<CpuAiProfile, CpuAiProfileConfig> = {
     terminalPlanRolloutRequireFallbackMove: 1,
     terminalPlanRolloutRequirePlannerSummon: 1,
     terminalPlanRolloutRequirePlannerSummonBacklineReach: 1,
+    terminalPlanRolloutAllowLatePressureOverSummon: 1,
+    terminalPlanRolloutLatePressureOverSummonSteps: 40,
     terminalPlanRolloutAllowFrontFocusStripAttack: 1,
     terminalPlanRolloutFrontFocusStripAttackMinRootScoreGap: 180,
     terminalPlanRolloutFrontFocusStripAttackMaxRootScoreGap: 460,
@@ -443,6 +447,8 @@ const CPU_AI_PROFILE_CONFIG: Record<CpuAiProfile, CpuAiProfileConfig> = {
     terminalPlanRolloutRequireFallbackMove: 1,
     terminalPlanRolloutRequirePlannerSummon: 1,
     terminalPlanRolloutRequirePlannerSummonBacklineReach: 1,
+    terminalPlanRolloutAllowLatePressureOverSummon: 1,
+    terminalPlanRolloutLatePressureOverSummonSteps: 40,
     terminalPlanRolloutAllowFrontFocusStripAttack: 1,
     terminalPlanRolloutFrontFocusStripAttackMinRootScoreGap: 180,
     terminalPlanRolloutFrontFocusStripAttackMaxRootScoreGap: 460,
@@ -1039,6 +1045,14 @@ function applyCpuAiSearchOptions(
       search.terminalPlanRolloutRequirePlannerSummonBacklineReach,
       base.terminalPlanRolloutRequirePlannerSummonBacklineReach,
     ),
+    terminalPlanRolloutAllowLatePressureOverSummon: normalizedOptionalSearchNumber(
+      search.terminalPlanRolloutAllowLatePressureOverSummon,
+      base.terminalPlanRolloutAllowLatePressureOverSummon,
+    ),
+    terminalPlanRolloutLatePressureOverSummonSteps: normalizedOptionalSearchNumber(
+      search.terminalPlanRolloutLatePressureOverSummonSteps,
+      base.terminalPlanRolloutLatePressureOverSummonSteps,
+    ),
     terminalPlanRolloutAllowFrontFocusStripAttack: normalizedOptionalSearchNumber(
       search.terminalPlanRolloutAllowFrontFocusStripAttack,
       base.terminalPlanRolloutAllowFrontFocusStripAttack,
@@ -1395,6 +1409,11 @@ function applyTerminalPlanRolloutScores(
     perspective,
     rolloutTrigger.candidate,
   );
+  const isLatePressureOverSummonRolloutTrigger = isWhiteMirrorLatePressureOverSummonSelection(
+    rootState,
+    perspective,
+    rolloutTrigger.candidate,
+  );
   const isFrontPressureRolloutTrigger =
     isFrontFocusStripRolloutTrigger || isWhiteMirrorFrontPressureEscapeSelection(rootState, rolloutTrigger.candidate);
   const isShieldTargetTieRolloutTrigger = isWhiteMirrorShieldTargetTieRolloutTrigger(
@@ -1410,7 +1429,9 @@ function applyTerminalPlanRolloutScores(
       ? Math.trunc(config.terminalPlanRolloutShieldTargetTieSteps ?? rolloutSteps)
       : isLateDeckRepositionRolloutTrigger
         ? Math.max(64, rolloutSteps)
-        : rolloutSteps;
+        : isLatePressureOverSummonRolloutTrigger
+          ? Math.max(Math.trunc(config.terminalPlanRolloutLatePressureOverSummonSteps ?? rolloutSteps), rolloutSteps)
+          : rolloutSteps;
   if (effectiveRolloutSteps <= 0) {
     return [...selections];
   }
@@ -1532,6 +1553,16 @@ function terminalPlanRolloutTriggerSelection(
   if (lateDeckReposition) {
     return lateDeckReposition;
   }
+  const latePressureOverSummon = terminalPlanLatePressureOverSummonRolloutTriggerSelection(
+    state,
+    perspective,
+    terminalRanked,
+    fallback,
+    config,
+  );
+  if (latePressureOverSummon) {
+    return latePressureOverSummon;
+  }
   if (config.terminalPlanRolloutTurnFrom !== undefined && state.turnNumber < config.terminalPlanRolloutTurnFrom) {
     return undefined;
   }
@@ -1613,6 +1644,93 @@ function terminalPlanLateDeckRepositionRolloutTriggerSelection(
   return terminalRanked.find((selection) =>
     isWhiteMirrorLateDeckRepositionMoveSelection(state, perspective, selection.candidate),
   );
+}
+
+function terminalPlanLatePressureOverSummonRolloutTriggerSelection(
+  state: GameState,
+  perspective: PlayerId,
+  terminalRanked: readonly TerminalPlanSelection[],
+  fallback: EvaluatedDecision,
+  config: CpuAiProfileConfig,
+): TerminalPlanSelection | undefined {
+  const opponent = opponentOf(perspective);
+  if (
+    !config.terminalPlanRolloutAllowLatePressureOverSummon ||
+    !isWhiteMirrorState(state, perspective) ||
+    state.turnNumber !== 15 ||
+    state.players[opponent].masterHp !== 5 ||
+    state.players[opponent].stones > 0 ||
+    state.players[perspective].masterHp < 9 ||
+    state.players[perspective].masterHp - state.players[opponent].masterHp < 3 ||
+    state.players[perspective].stones < 8 ||
+    state.players[perspective].stones > 12 ||
+    state.players[perspective].hand.length < 6 ||
+    ownReadyFrontMonsterCount(state, perspective) < 2 ||
+    frontMonsterCountForPlayer(state, opponent) !== 1 ||
+    focusedMonsterCountForPlayer(state, perspective) < 2 ||
+    emptyBackSlotCountForPlayer(state, perspective) !== 1 ||
+    !isWhiteMirrorLatePressureBacklineSummon(state, perspective, fallback)
+  ) {
+    return undefined;
+  }
+
+  const fallbackKey = cpuDecisionKey(fallback.decision);
+  const fallbackSelection = terminalRanked.find((selection) =>
+    cpuDecisionKey(selection.candidate.decision) === fallbackKey,
+  );
+  if (!fallbackSelection || emptyBackSlotCountForPlayer(fallbackSelection.candidate.after, perspective) !== 0) {
+    return undefined;
+  }
+
+  const holdSelection = terminalRanked.find((selection) =>
+    cpuDecisionKey(selection.candidate.decision) !== fallbackKey &&
+    isWhiteMirrorLatePressureOverSummonSelection(state, perspective, selection.candidate),
+  );
+  if (!holdSelection) {
+    return undefined;
+  }
+
+  const plannerGap = fallbackSelection.plannerScore - holdSelection.plannerScore;
+  const rootGap = fallbackSelection.candidate.totalScore - holdSelection.candidate.totalScore;
+  return plannerGap <= 190 && rootGap <= 180 ? holdSelection : undefined;
+}
+
+function isWhiteMirrorLatePressureBacklineSummon(
+  state: GameState,
+  perspective: PlayerId,
+  candidate: EvaluatedDecision,
+): boolean {
+  const decision = candidate.decision;
+  if (
+    decision.type !== "summon" ||
+    summonWakeCreatesImmediateWork(state, decision.handInstanceId, decision.slotKey)
+  ) {
+    return false;
+  }
+  const slot = state.slots[decision.slotKey];
+  return slot.owner === perspective && slot.row === "back" && !slot.monster;
+}
+
+function isWhiteMirrorLatePressureOverSummonSelection(
+  state: GameState,
+  perspective: PlayerId,
+  candidate: EvaluatedDecision,
+): boolean {
+  const decision = candidate.decision;
+  if (!isWhiteMirrorState(state, perspective)) {
+    return false;
+  }
+  if (decision.type === "end_turn") {
+    return true;
+  }
+  if (decision.type === "focus") {
+    return state.slots[decision.slotKey].monster?.owner === perspective;
+  }
+  if (decision.type !== "attack" || decision.action.target.kind !== "monster") {
+    return false;
+  }
+  const targetSlot = state.slots[decision.action.target.slotKey];
+  return targetSlot.row === "front" && targetSlot.monster?.owner === opponentOf(perspective);
 }
 
 function terminalPlanFrontFocusStripAttackRolloutTriggerSelection(
@@ -3891,6 +4009,20 @@ function ownReadyFrontMonsterCount(state: GameState, playerId: PlayerId): number
     const slot = state.slots[slotKey];
     const monster = slot.monster;
     return slot.row === "front" && monster?.owner === playerId && monster.status === "active";
+  }).length;
+}
+
+function frontMonsterCountForPlayer(state: GameState, playerId: PlayerId): number {
+  return FIELD_ORDER_BY_PLAYER[playerId].filter((slotKey) => {
+    const slot = state.slots[slotKey];
+    return slot.row === "front" && slot.monster?.owner === playerId;
+  }).length;
+}
+
+function focusedMonsterCountForPlayer(state: GameState, playerId: PlayerId): number {
+  return FIELD_ORDER_BY_PLAYER[playerId].filter((slotKey) => {
+    const monster = state.slots[slotKey].monster;
+    return monster?.owner === playerId && monster.focused;
   }).length;
 }
 

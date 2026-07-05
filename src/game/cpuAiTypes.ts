@@ -52,6 +52,8 @@ export interface CpuAiSearchOptions {
   terminalPlanRolloutRequireFallbackMove?: number;
   terminalPlanRolloutRequirePlannerSummon?: number;
   terminalPlanRolloutRequirePlannerSummonBacklineReach?: number;
+  terminalPlanRolloutAllowLatePressureOverSummon?: number;
+  terminalPlanRolloutLatePressureOverSummonSteps?: number;
   terminalPlanRolloutAllowFrontFocusStripAttack?: number;
   terminalPlanRolloutFrontFocusStripAttackMinRootScoreGap?: number;
   terminalPlanRolloutFrontFocusStripAttackMaxRootScoreGap?: number;
