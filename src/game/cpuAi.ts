@@ -1415,6 +1415,12 @@ function applyTerminalPlanRolloutScores(
   if (isFrontPressureRolloutTrigger) {
     // The front-pressure escape candidates are handled by the lightweight planner bonus.
     // Rolling them all out made a few dense white mirrors exceed practical turn time.
+    const holdEndTurn = terminalRanked.find((selection) =>
+      isWhiteMirrorFrontPressureHoldEndTurnSelection(rootState, perspective, selection.candidate),
+    );
+    if (holdEndTurn) {
+      rolloutKeys.add(cpuDecisionKey(holdEndTurn.candidate.decision));
+    }
   } else {
     rolloutCandidatePool.forEach((selection) => {
       rolloutKeys.add(cpuDecisionKey(selection.candidate.decision));
@@ -5295,6 +5301,38 @@ function addTerminalPlanCoverageCandidates(
 
 function isWhiteMirrorFrontPressureEscapeSelection(state: GameState, candidate: EvaluatedDecision): boolean {
   return whiteMirrorFrontPressureEscapeScore(state, candidate) > 0;
+}
+
+function isWhiteMirrorFrontPressureHoldEndTurnSelection(
+  state: GameState,
+  perspective: PlayerId,
+  candidate: EvaluatedDecision,
+): boolean {
+  if (
+    candidate.decision.type !== "end_turn" ||
+    candidate.totalScore < -120 ||
+    !isWhiteMirrorState(state, perspective) ||
+    !hasEnemyFrontThreatSource(state, perspective)
+  ) {
+    return false;
+  }
+
+  return FIELD_ORDER_BY_PLAYER[perspective].some((slotKey) => {
+    const before = state.slots[slotKey];
+    const after = candidate.after.slots[slotKey];
+    const beforeMonster = before.monster;
+    const afterMonster = after.monster;
+    return (
+      before.row === "front" &&
+      beforeMonster?.owner === perspective &&
+      beforeMonster.status === "active" &&
+      !beforeMonster.focused &&
+      beforeMonster.actionCount < beforeMonster.actionLimit &&
+      afterMonster?.owner === perspective &&
+      afterMonster.instanceId === beforeMonster.instanceId &&
+      afterMonster.focused
+    );
+  });
 }
 
 function whiteMirrorFrontPressureEscapeScore(state: GameState, candidate: EvaluatedDecision): number {
