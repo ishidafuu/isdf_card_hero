@@ -1,0 +1,174 @@
+{
+  "generatedAt": "2026-07-05T21:39:16.292Z",
+  "options": {
+    "seedStart": 994315,
+    "count": 1,
+    "directions": [
+      "challenger-as-player"
+    ],
+    "deckPreset": "master-lab-white-1377-death-sheep3",
+    "maxSteps": 27,
+    "maxTurns": 10,
+    "baselineProfile": "white",
+    "challengerProfile": "white_planner",
+    "inspectThresholdMs": 5000,
+    "candidateLimit": 8,
+    "streamProgress": false,
+    "markdownPath": "docs/master_lab/results/2026-07-06_white_planner_rollout_trigger_audit_994315_player_step26.md",
+    "jsonPath": "docs/master_lab/results/2026-07-06_white_planner_rollout_trigger_audit_994315_player_step26.json"
+  },
+  "games": [
+    {
+      "seed": 994315,
+      "direction": "challenger-as-player",
+      "profiles": {
+        "player": "white_planner",
+        "cpu": "white"
+      },
+      "steps": 27,
+      "turns": 3,
+      "playerHp": 10,
+      "cpuHp": 10,
+      "issue": "winner was not decided within 27 auto steps",
+      "challengerStats": {
+        "decisions": 16,
+        "elapsedMs": 13604.626417,
+        "maxDecisionMs": 7806.804083999999
+      },
+      "events": [
+        {
+          "seed": 994315,
+          "direction": "challenger-as-player",
+          "step": 26,
+          "turnNumber": 3,
+          "side": "player",
+          "elapsedMs": 7806.8,
+          "inspectionElapsedMs": 267.4,
+          "rolloutTriggered": false,
+          "adopted": false,
+          "decision": "master:shield->monster:player_front_right",
+          "fallbackDecision": "master:shield->monster:player_front_right",
+          "selectedDecision": "master:shield->monster:player_front_left",
+          "fallbackScore": -190,
+          "selectedPlannerScore": 73.7,
+          "runnerUpPlannerScore": 67.4,
+          "rootScoreGapToFallback": -243.8,
+          "plannerMarginToFallback": 6.3,
+          "state": "turn 3 / current player / HP player/cpu 10/10 / stones player/cpu 3/0 / deck player/cpu 23/23 / hand player/cpu 3/3",
+          "board": "player_front_left:PF:デスシープ Lv1 HP6 act1/1 | player_front_right:PF:ボムゾウ Lv1 HP6 act1/1 focus | player_back_left:PB:ピグミィ Lv1 HP3 act2/2 focus | player_back_right:PB:デスシープ Lv1 HP6 act1/1 focus | cpu_front_left:CF:真勇者ダイン Lv1 HP6 act1/1 shield | cpu_front_right:CF:デスシープ Lv1 HP5 act1/1 | cpu_back_left:CB:ピグミィ Lv1 HP3 prep | cpu_back_right:CB:ピグミィ Lv1 HP3 act2/2 focus",
+          "candidates": [
+            {
+              "rank": 1,
+              "selectedByCpu": false,
+              "selectedByPlanner": true,
+              "fallback": false,
+              "decision": "master:shield->monster:player_front_left",
+              "features": "-",
+              "rootScore": 53.8,
+              "plannerScore": 73.7,
+              "responseScore": 61.9,
+              "ownDelta": 93.4,
+              "opponentDelta": 30.4
+            },
+            {
+              "rank": 2,
+              "selectedByCpu": true,
+              "selectedByPlanner": false,
+              "fallback": true,
+              "decision": "master:shield->monster:player_front_right",
+              "features": "-",
+              "rootScore": 57,
+              "plannerScore": 67.4,
+              "responseScore": 54.9,
+              "ownDelta": 79.4,
+              "opponentDelta": 30.4
+            },
+            {
+              "rank": 3,
+              "selectedByCpu": false,
+              "selectedByPlanner": false,
+              "fallback": false,
+              "decision": "end_turn",
+              "features": "-",
+              "rootScore": -100.6,
+              "plannerScore": -2,
+              "responseScore": 58.9,
+              "ownDelta": 77.4,
+              "opponentDelta": 40.4
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "events": [
+    {
+      "seed": 994315,
+      "direction": "challenger-as-player",
+      "step": 26,
+      "turnNumber": 3,
+      "side": "player",
+      "elapsedMs": 7806.8,
+      "inspectionElapsedMs": 267.4,
+      "rolloutTriggered": false,
+      "adopted": false,
+      "decision": "master:shield->monster:player_front_right",
+      "fallbackDecision": "master:shield->monster:player_front_right",
+      "selectedDecision": "master:shield->monster:player_front_left",
+      "fallbackScore": -190,
+      "selectedPlannerScore": 73.7,
+      "runnerUpPlannerScore": 67.4,
+      "rootScoreGapToFallback": -243.8,
+      "plannerMarginToFallback": 6.3,
+      "state": "turn 3 / current player / HP player/cpu 10/10 / stones player/cpu 3/0 / deck player/cpu 23/23 / hand player/cpu 3/3",
+      "board": "player_front_left:PF:デスシープ Lv1 HP6 act1/1 | player_front_right:PF:ボムゾウ Lv1 HP6 act1/1 focus | player_back_left:PB:ピグミィ Lv1 HP3 act2/2 focus | player_back_right:PB:デスシープ Lv1 HP6 act1/1 focus | cpu_front_left:CF:真勇者ダイン Lv1 HP6 act1/1 shield | cpu_front_right:CF:デスシープ Lv1 HP5 act1/1 | cpu_back_left:CB:ピグミィ Lv1 HP3 prep | cpu_back_right:CB:ピグミィ Lv1 HP3 act2/2 focus",
+      "candidates": [
+        {
+          "rank": 1,
+          "selectedByCpu": false,
+          "selectedByPlanner": true,
+          "fallback": false,
+          "decision": "master:shield->monster:player_front_left",
+          "features": "-",
+          "rootScore": 53.8,
+          "plannerScore": 73.7,
+          "responseScore": 61.9,
+          "ownDelta": 93.4,
+          "opponentDelta": 30.4
+        },
+        {
+          "rank": 2,
+          "selectedByCpu": true,
+          "selectedByPlanner": false,
+          "fallback": true,
+          "decision": "master:shield->monster:player_front_right",
+          "features": "-",
+          "rootScore": 57,
+          "plannerScore": 67.4,
+          "responseScore": 54.9,
+          "ownDelta": 79.4,
+          "opponentDelta": 30.4
+        },
+        {
+          "rank": 3,
+          "selectedByCpu": false,
+          "selectedByPlanner": false,
+          "fallback": false,
+          "decision": "end_turn",
+          "features": "-",
+          "rootScore": -100.6,
+          "plannerScore": -2,
+          "responseScore": 58.9,
+          "ownDelta": 77.4,
+          "opponentDelta": 40.4
+        }
+      ]
+    }
+  ],
+  "conclusion": [
+    "1 games. challenger wins 0, inspected decisions 1, rollout-triggered decisions 0.",
+    "max challenger decision 7806.8ms, avg challenger decision 850.3ms.",
+    "No rollout-triggered decision was captured. Lower --inspect-threshold-ms or expand seeds before tuning."
+  ]
+}
+

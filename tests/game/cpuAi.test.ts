@@ -204,7 +204,7 @@ describe("cpu ai", () => {
     const decision = chooseCpuDecision(game, { profiles: { cpu: "white_planner", player: "white" } });
 
     expect(decisionTestSignature(decision)).toBe("master_action:shield:cpu_front_right");
-    expect(decision.reason).toContain("ターンプラン探索");
+    expect(decision.reason).toContain("盾対象応答評価");
   });
 
   it("holds the late white mirror shield when it would spend down to one stone in the deck race", () => {

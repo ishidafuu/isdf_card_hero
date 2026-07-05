@@ -551,7 +551,13 @@ export function chooseCpuDecision(state: GameState, options: CpuAiOptions = {}):
     return shieldHoldEndTurnDecision;
   }
 
-  if (shouldSelectTerminalPlanRoot(state, perspective, config)) {
+  const skipTerminalPlanRoot = shouldSkipTerminalPlanRootForShieldOnlyRoot(
+    state,
+    perspective,
+    config,
+    best,
+  );
+  if (!skipTerminalPlanRoot && shouldSelectTerminalPlanRoot(state, perspective, config)) {
     const selection = selectTerminalPlanRootDecision(state, perspective, config, options, best);
     if (selection && shouldAdoptTerminalPlanRootSelection(state, perspective, selection, best, config)) {
       return withTerminalPlanReason(selection.candidate.decision, selection);
@@ -1535,7 +1541,9 @@ function applyTerminalPlanRolloutScores(
     ? "strong"
     : isFrontPressureRolloutTrigger
       ? "white"
-      : undefined;
+      : isShieldTargetTieRolloutTrigger
+        ? "strong"
+        : undefined;
   const rolloutOptions = withoutTerminalPlanRolloutOptions(
     options,
     rolloutProfileOverride,
@@ -1946,6 +1954,45 @@ function isShieldDecision(decision: CpuDecision): decision is Extract<CpuDecisio
   return decision.type === "master_action" && decision.actionId === "shield";
 }
 
+function shouldSkipTerminalPlanRootForShieldOnlyRoot(
+  state: GameState,
+  perspective: PlayerId,
+  config: CpuAiProfileConfig,
+  fallback: EvaluatedDecision | undefined,
+): boolean {
+  if (
+    !fallback ||
+    !isWhiteMirrorState(state, perspective) ||
+    !isShieldDecision(fallback.decision) ||
+    fallback.decision.target.kind !== "monster"
+  ) {
+    return false;
+  }
+  const fallbackTargetSlot = state.slots[fallback.decision.target.slotKey];
+  if (fallbackTargetSlot.owner !== perspective || !fallbackTargetSlot.monster) {
+    return false;
+  }
+
+  const baselineScore = evaluateState(state, perspective, config.weights);
+  const context = createTerminalPlanEvaluationContext(baselineScore);
+  const rootCandidates = withWhiteMirrorHoldFallbackCandidates(
+    state,
+    perspective,
+    config,
+    terminalPlanRootCandidates(state, perspective, config, context),
+    fallback,
+  ).filter((candidate) => candidate.decision.type !== "end_turn");
+
+  return rootCandidates.length > 0 && rootCandidates.every((candidate) => {
+    const decision = candidate.decision;
+    if (!isShieldDecision(decision) || decision.target.kind !== "monster") {
+      return false;
+    }
+    const targetSlot = state.slots[decision.target.slotKey];
+    return targetSlot.owner === perspective && !!targetSlot.monster;
+  });
+}
+
 function selectWhiteMirrorShieldHoldEndTurnDecision(
   state: GameState,
   perspective: PlayerId,
@@ -2015,7 +2062,7 @@ function selectShieldTargetTieRootDecision(
     return undefined;
   }
 
-  const rolloutOptions = withoutTerminalPlanRolloutOptions(options);
+  const rolloutOptions = withoutTerminalPlanRolloutOptions(options, "strong", true);
   const scored = closeShieldCandidates
     .map((candidate) => {
       const rollout = evaluateTerminalPlanHandoffRollout(

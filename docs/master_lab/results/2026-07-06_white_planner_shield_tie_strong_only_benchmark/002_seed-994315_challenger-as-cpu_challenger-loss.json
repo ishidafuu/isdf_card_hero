@@ -1,0 +1,5890 @@
+{
+  "direction": "challenger-as-cpu",
+  "seed": 994315,
+  "winner": "player",
+  "winnerProfile": "white",
+  "steps": 327,
+  "turns": 32,
+  "issueCount": 0,
+  "warningCount": 1,
+  "finalState": {
+    "currentPlayer": "cpu",
+    "turnNumber": 32,
+    "winner": "player",
+    "pendingLevelUp": false,
+    "players": {
+      "player": {
+        "masterId": "white",
+        "hp": 2,
+        "stones": 37,
+        "hand": 5,
+        "deck": 0,
+        "discard": 24
+      },
+      "cpu": {
+        "masterId": "white",
+        "hp": 0,
+        "stones": 43,
+        "hand": 5,
+        "deck": 0,
+        "discard": 24
+      }
+    },
+    "slots": [
+      {
+        "slotKey": "player_front_left",
+        "card": "card_037",
+        "name": "ドノマンティス",
+        "owner": "player",
+        "hp": 5,
+        "level": 1,
+        "status": "active",
+        "actions": "0/1",
+        "focused": true,
+        "berserkPower": false,
+        "shielded": false
+      },
+      {
+        "slotKey": "player_front_right"
+      },
+      {
+        "slotKey": "player_back_left"
+      },
+      {
+        "slotKey": "player_back_right"
+      },
+      {
+        "slotKey": "cpu_front_left"
+      },
+      {
+        "slotKey": "cpu_front_right",
+        "card": "card_051",
+        "name": "ピグミィ",
+        "owner": "cpu",
+        "hp": 3,
+        "level": 2,
+        "status": "active",
+        "actions": "0/2",
+        "focused": true,
+        "berserkPower": false,
+        "shielded": false
+      },
+      {
+        "slotKey": "cpu_back_left"
+      },
+      {
+        "slotKey": "cpu_back_right"
+      }
+    ]
+  },
+  "logTail": [
+    "CPUはストーンを3個得た",
+    "CPUはターン開始で引けず、山札切れペナルティ",
+    "CPUのマスターHPが1減った（山札切れ）。ストーン+1",
+    "CPU判断: ドノマンティスを削れるため攻撃 / ターンプラン探索: 返し込み最終盤面-749798点、次点と295点差",
+    "CPUのピグミィ Lv2: スパイクボール 1P",
+    "ドノマンティス Lv1は気合いで1ダメージ軽減した",
+    "スパイクボールでドノマンティス Lv1に0ダメージ",
+    "CPU判断: 有効な行動がないためターン終了 / ターンプラン探索: 返し込み最終盤面-749819点",
+    "ピグミィ Lv2は気合いだめした",
+    "プレイヤーのターン開始",
+    "プレイヤーはストーンを3個得た",
+    "プレイヤーはターン開始で引けず、山札切れペナルティ",
+    "プレイヤーのマスターHPが1減った（山札切れ）。ストーン+1",
+    "プレイヤーAI判断: 有効な行動がないためターン終了",
+    "ドノマンティス Lv1は気合いだめした",
+    "CPUのターン開始",
+    "CPUはストーンを3個得た",
+    "CPUはターン開始で引けず、山札切れペナルティ",
+    "CPUのマスターHPが1減った（山札切れ）。ストーン+1",
+    "プレイヤーの勝利"
+  ],
+  "history": [
+    {
+      "seed": 994315,
+      "step": 297,
+      "turnNumber": 24,
+      "player": "player",
+      "decision": "end_turn",
+      "reason": "有効な行動がないためターン終了 / 見送り: マスター特技は46点差で見送り",
+      "score": 0,
+      "legalDecisionCount": 2,
+      "nonEndDecisionCount": 1,
+      "before": {
+        "currentPlayer": "player",
+        "turnNumber": 24,
+        "pendingLevelUp": false,
+        "players": {
+          "player": {
+            "masterId": "white",
+            "hp": 10,
+            "stones": 10,
+            "hand": 5,
+            "deck": 2,
+            "discard": 21
+          },
+          "cpu": {
+            "masterId": "white",
+            "hp": 8,
+            "stones": 7,
+            "hand": 5,
+            "deck": 2,
+            "discard": 19
+          }
+        },
+        "slots": [
+          {
+            "slotKey": "player_front_left",
+            "card": "card_037",
+            "name": "ドノマンティス",
+            "owner": "player",
+            "hp": 5,
+            "level": 1,
+            "status": "active",
+            "actions": "0/1",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "player_front_right",
+            "card": "bomuzo",
+            "name": "ボムゾウ",
+            "owner": "player",
+            "hp": 6,
+            "level": 1,
+            "status": "active",
+            "actions": "0/1",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "player_back_left"
+          },
+          {
+            "slotKey": "player_back_right"
+          },
+          {
+            "slotKey": "cpu_front_left",
+            "card": "yanbaru",
+            "name": "ヤンバル",
+            "owner": "cpu",
+            "hp": 3,
+            "level": 1,
+            "status": "active",
+            "actions": "0/1",
+            "focused": true,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "cpu_front_right",
+            "card": "bomuzo",
+            "name": "ボムゾウ",
+            "owner": "cpu",
+            "hp": 5,
+            "level": 2,
+            "status": "active",
+            "actions": "0/1",
+            "focused": true,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "cpu_back_left",
+            "card": "card_051",
+            "name": "ピグミィ",
+            "owner": "cpu",
+            "hp": 3,
+            "level": 2,
+            "status": "active",
+            "actions": "1/2",
+            "focused": true,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "cpu_back_right",
+            "card": "card_051",
+            "name": "ピグミィ",
+            "owner": "cpu",
+            "hp": 3,
+            "level": 2,
+            "status": "active",
+            "actions": "0/2",
+            "focused": true,
+            "berserkPower": false,
+            "shielded": false
+          }
+        ]
+      },
+      "after": {
+        "currentPlayer": "cpu",
+        "turnNumber": 24,
+        "pendingLevelUp": false,
+        "players": {
+          "player": {
+            "masterId": "white",
+            "hp": 10,
+            "stones": 10,
+            "hand": 5,
+            "deck": 2,
+            "discard": 21
+          },
+          "cpu": {
+            "masterId": "white",
+            "hp": 8,
+            "stones": 10,
+            "hand": 6,
+            "deck": 1,
+            "discard": 19
+          }
+        },
+        "slots": [
+          {
+            "slotKey": "player_front_left",
+            "card": "card_037",
+            "name": "ドノマンティス",
+            "owner": "player",
+            "hp": 5,
+            "level": 1,
+            "status": "active",
+            "actions": "0/1",
+            "focused": true,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "player_front_right",
+            "card": "bomuzo",
+            "name": "ボムゾウ",
+            "owner": "player",
+            "hp": 6,
+            "level": 1,
+            "status": "active",
+            "actions": "0/1",
+            "focused": true,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "player_back_left"
+          },
+          {
+            "slotKey": "player_back_right"
+          },
+          {
+            "slotKey": "cpu_front_left",
+            "card": "yanbaru",
+            "name": "ヤンバル",
+            "owner": "cpu",
+            "hp": 3,
+            "level": 1,
+            "status": "active",
+            "actions": "0/1",
+            "focused": true,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "cpu_front_right",
+            "card": "bomuzo",
+            "name": "ボムゾウ",
+            "owner": "cpu",
+            "hp": 5,
+            "level": 2,
+            "status": "active",
+            "actions": "0/1",
+            "focused": true,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "cpu_back_left",
+            "card": "card_051",
+            "name": "ピグミィ",
+            "owner": "cpu",
+            "hp": 3,
+            "level": 2,
+            "status": "active",
+            "actions": "0/2",
+            "focused": true,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "cpu_back_right",
+            "card": "card_051",
+            "name": "ピグミィ",
+            "owner": "cpu",
+            "hp": 3,
+            "level": 2,
+            "status": "active",
+            "actions": "0/2",
+            "focused": true,
+            "berserkPower": false,
+            "shielded": false
+          }
+        ]
+      },
+      "newLog": [
+        "プレイヤーAI判断: 有効な行動がないためターン終了 / 見送り: マスター特技は46点差で見送り",
+        "ドノマンティス Lv1は気合いだめした",
+        "ボムゾウ Lv1は気合いだめした",
+        "CPUのターン開始",
+        "CPUはストーンを3個得た",
+        "CPUはカードを引いた"
+      ]
+    },
+    {
+      "seed": 994315,
+      "step": 298,
+      "turnNumber": 24,
+      "player": "cpu",
+      "decision": "attack:cpu_back_left:スパイクボール->monster:player_front_left",
+      "reason": "ドノマンティスを削れるため攻撃 / ターンプラン探索: 返し込み最終盤面247点、次点と0点差",
+      "score": 62,
+      "legalDecisionCount": 8,
+      "nonEndDecisionCount": 7,
+      "before": {
+        "currentPlayer": "cpu",
+        "turnNumber": 24,
+        "pendingLevelUp": false,
+        "players": {
+          "player": {
+            "masterId": "white",
+            "hp": 10,
+            "stones": 10,
+            "hand": 5,
+            "deck": 2,
+            "discard": 21
+          },
+          "cpu": {
+            "masterId": "white",
+            "hp": 8,
+            "stones": 10,
+            "hand": 6,
+            "deck": 1,
+            "discard": 19
+          }
+        },
+        "slots": [
+          {
+            "slotKey": "player_front_left",
+            "card": "card_037",
+            "name": "ドノマンティス",
+            "owner": "player",
+            "hp": 5,
+            "level": 1,
+            "status": "active",
+            "actions": "0/1",
+            "focused": true,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "player_front_right",
+            "card": "bomuzo",
+            "name": "ボムゾウ",
+            "owner": "player",
+            "hp": 6,
+            "level": 1,
+            "status": "active",
+            "actions": "0/1",
+            "focused": true,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "player_back_left"
+          },
+          {
+            "slotKey": "player_back_right"
+          },
+          {
+            "slotKey": "cpu_front_left",
+            "card": "yanbaru",
+            "name": "ヤンバル",
+            "owner": "cpu",
+            "hp": 3,
+            "level": 1,
+            "status": "active",
+            "actions": "0/1",
+            "focused": true,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "cpu_front_right",
+            "card": "bomuzo",
+            "name": "ボムゾウ",
+            "owner": "cpu",
+            "hp": 5,
+            "level": 2,
+            "status": "active",
+            "actions": "0/1",
+            "focused": true,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "cpu_back_left",
+            "card": "card_051",
+            "name": "ピグミィ",
+            "owner": "cpu",
+            "hp": 3,
+            "level": 2,
+            "status": "active",
+            "actions": "0/2",
+            "focused": true,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "cpu_back_right",
+            "card": "card_051",
+            "name": "ピグミィ",
+            "owner": "cpu",
+            "hp": 3,
+            "level": 2,
+            "status": "active",
+            "actions": "0/2",
+            "focused": true,
+            "berserkPower": false,
+            "shielded": false
+          }
+        ]
+      },
+      "after": {
+        "currentPlayer": "cpu",
+        "turnNumber": 24,
+        "pendingLevelUp": false,
+        "players": {
+          "player": {
+            "masterId": "white",
+            "hp": 10,
+            "stones": 10,
+            "hand": 5,
+            "deck": 2,
+            "discard": 21
+          },
+          "cpu": {
+            "masterId": "white",
+            "hp": 8,
+            "stones": 10,
+            "hand": 6,
+            "deck": 1,
+            "discard": 19
+          }
+        },
+        "slots": [
+          {
+            "slotKey": "player_front_left",
+            "card": "card_037",
+            "name": "ドノマンティス",
+            "owner": "player",
+            "hp": 5,
+            "level": 1,
+            "status": "active",
+            "actions": "0/1",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "player_front_right",
+            "card": "bomuzo",
+            "name": "ボムゾウ",
+            "owner": "player",
+            "hp": 6,
+            "level": 1,
+            "status": "active",
+            "actions": "0/1",
+            "focused": true,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "player_back_left"
+          },
+          {
+            "slotKey": "player_back_right"
+          },
+          {
+            "slotKey": "cpu_front_left",
+            "card": "yanbaru",
+            "name": "ヤンバル",
+            "owner": "cpu",
+            "hp": 3,
+            "level": 1,
+            "status": "active",
+            "actions": "0/1",
+            "focused": true,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "cpu_front_right",
+            "card": "bomuzo",
+            "name": "ボムゾウ",
+            "owner": "cpu",
+            "hp": 5,
+            "level": 2,
+            "status": "active",
+            "actions": "0/1",
+            "focused": true,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "cpu_back_left",
+            "card": "card_051",
+            "name": "ピグミィ",
+            "owner": "cpu",
+            "hp": 3,
+            "level": 2,
+            "status": "active",
+            "actions": "1/2",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "cpu_back_right",
+            "card": "card_051",
+            "name": "ピグミィ",
+            "owner": "cpu",
+            "hp": 3,
+            "level": 2,
+            "status": "active",
+            "actions": "0/2",
+            "focused": true,
+            "berserkPower": false,
+            "shielded": false
+          }
+        ]
+      },
+      "newLog": [
+        "CPU判断: ドノマンティスを削れるため攻撃 / ターンプラン探索: 返し込み最終盤面247点、次点と0点差",
+        "CPUのピグミィ Lv2: スパイクボール 1P",
+        "ドノマンティス Lv1は気合いで1ダメージ軽減した",
+        "スパイクボールでドノマンティス Lv1に0ダメージ"
+      ]
+    },
+    {
+      "seed": 994315,
+      "step": 299,
+      "turnNumber": 24,
+      "player": "cpu",
+      "decision": "attack:cpu_back_right:スパイクボール->monster:player_front_right",
+      "reason": "ボムゾウを削れるため攻撃 / ターンプラン探索: 返し込み最終盤面249点、次点と63点差",
+      "score": 62,
+      "legalDecisionCount": 5,
+      "nonEndDecisionCount": 4,
+      "before": {
+        "currentPlayer": "cpu",
+        "turnNumber": 24,
+        "pendingLevelUp": false,
+        "players": {
+          "player": {
+            "masterId": "white",
+            "hp": 10,
+            "stones": 10,
+            "hand": 5,
+            "deck": 2,
+            "discard": 21
+          },
+          "cpu": {
+            "masterId": "white",
+            "hp": 8,
+            "stones": 10,
+            "hand": 6,
+            "deck": 1,
+            "discard": 19
+          }
+        },
+        "slots": [
+          {
+            "slotKey": "player_front_left",
+            "card": "card_037",
+            "name": "ドノマンティス",
+            "owner": "player",
+            "hp": 5,
+            "level": 1,
+            "status": "active",
+            "actions": "0/1",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "player_front_right",
+            "card": "bomuzo",
+            "name": "ボムゾウ",
+            "owner": "player",
+            "hp": 6,
+            "level": 1,
+            "status": "active",
+            "actions": "0/1",
+            "focused": true,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "player_back_left"
+          },
+          {
+            "slotKey": "player_back_right"
+          },
+          {
+            "slotKey": "cpu_front_left",
+            "card": "yanbaru",
+            "name": "ヤンバル",
+            "owner": "cpu",
+            "hp": 3,
+            "level": 1,
+            "status": "active",
+            "actions": "0/1",
+            "focused": true,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "cpu_front_right",
+            "card": "bomuzo",
+            "name": "ボムゾウ",
+            "owner": "cpu",
+            "hp": 5,
+            "level": 2,
+            "status": "active",
+            "actions": "0/1",
+            "focused": true,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "cpu_back_left",
+            "card": "card_051",
+            "name": "ピグミィ",
+            "owner": "cpu",
+            "hp": 3,
+            "level": 2,
+            "status": "active",
+            "actions": "1/2",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "cpu_back_right",
+            "card": "card_051",
+            "name": "ピグミィ",
+            "owner": "cpu",
+            "hp": 3,
+            "level": 2,
+            "status": "active",
+            "actions": "0/2",
+            "focused": true,
+            "berserkPower": false,
+            "shielded": false
+          }
+        ]
+      },
+      "after": {
+        "currentPlayer": "cpu",
+        "turnNumber": 24,
+        "pendingLevelUp": false,
+        "players": {
+          "player": {
+            "masterId": "white",
+            "hp": 10,
+            "stones": 10,
+            "hand": 5,
+            "deck": 2,
+            "discard": 21
+          },
+          "cpu": {
+            "masterId": "white",
+            "hp": 8,
+            "stones": 10,
+            "hand": 6,
+            "deck": 1,
+            "discard": 19
+          }
+        },
+        "slots": [
+          {
+            "slotKey": "player_front_left",
+            "card": "card_037",
+            "name": "ドノマンティス",
+            "owner": "player",
+            "hp": 5,
+            "level": 1,
+            "status": "active",
+            "actions": "0/1",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "player_front_right",
+            "card": "bomuzo",
+            "name": "ボムゾウ",
+            "owner": "player",
+            "hp": 6,
+            "level": 1,
+            "status": "active",
+            "actions": "0/1",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "player_back_left"
+          },
+          {
+            "slotKey": "player_back_right"
+          },
+          {
+            "slotKey": "cpu_front_left",
+            "card": "yanbaru",
+            "name": "ヤンバル",
+            "owner": "cpu",
+            "hp": 3,
+            "level": 1,
+            "status": "active",
+            "actions": "0/1",
+            "focused": true,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "cpu_front_right",
+            "card": "bomuzo",
+            "name": "ボムゾウ",
+            "owner": "cpu",
+            "hp": 5,
+            "level": 2,
+            "status": "active",
+            "actions": "0/1",
+            "focused": true,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "cpu_back_left",
+            "card": "card_051",
+            "name": "ピグミィ",
+            "owner": "cpu",
+            "hp": 3,
+            "level": 2,
+            "status": "active",
+            "actions": "1/2",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "cpu_back_right",
+            "card": "card_051",
+            "name": "ピグミィ",
+            "owner": "cpu",
+            "hp": 3,
+            "level": 2,
+            "status": "active",
+            "actions": "1/2",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          }
+        ]
+      },
+      "newLog": [
+        "CPU判断: ボムゾウを削れるため攻撃 / ターンプラン探索: 返し込み最終盤面249点、次点と63点差",
+        "CPUのピグミィ Lv2: スパイクボール 1P",
+        "ボムゾウ Lv1は気合いで1ダメージ軽減した",
+        "スパイクボールでボムゾウ Lv1に0ダメージ"
+      ]
+    },
+    {
+      "seed": 994315,
+      "step": 300,
+      "turnNumber": 24,
+      "player": "cpu",
+      "decision": "attack:cpu_front_right:self_bomb->monster:player_front_right",
+      "reason": "ボムゾウを削れるため攻撃 / ターンプラン探索: 返し込み最終盤面254点、次点と37点差",
+      "score": 100,
+      "legalDecisionCount": 3,
+      "nonEndDecisionCount": 2,
+      "before": {
+        "currentPlayer": "cpu",
+        "turnNumber": 24,
+        "pendingLevelUp": false,
+        "players": {
+          "player": {
+            "masterId": "white",
+            "hp": 10,
+            "stones": 10,
+            "hand": 5,
+            "deck": 2,
+            "discard": 21
+          },
+          "cpu": {
+            "masterId": "white",
+            "hp": 8,
+            "stones": 10,
+            "hand": 6,
+            "deck": 1,
+            "discard": 19
+          }
+        },
+        "slots": [
+          {
+            "slotKey": "player_front_left",
+            "card": "card_037",
+            "name": "ドノマンティス",
+            "owner": "player",
+            "hp": 5,
+            "level": 1,
+            "status": "active",
+            "actions": "0/1",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "player_front_right",
+            "card": "bomuzo",
+            "name": "ボムゾウ",
+            "owner": "player",
+            "hp": 6,
+            "level": 1,
+            "status": "active",
+            "actions": "0/1",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "player_back_left"
+          },
+          {
+            "slotKey": "player_back_right"
+          },
+          {
+            "slotKey": "cpu_front_left",
+            "card": "yanbaru",
+            "name": "ヤンバル",
+            "owner": "cpu",
+            "hp": 3,
+            "level": 1,
+            "status": "active",
+            "actions": "0/1",
+            "focused": true,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "cpu_front_right",
+            "card": "bomuzo",
+            "name": "ボムゾウ",
+            "owner": "cpu",
+            "hp": 5,
+            "level": 2,
+            "status": "active",
+            "actions": "0/1",
+            "focused": true,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "cpu_back_left",
+            "card": "card_051",
+            "name": "ピグミィ",
+            "owner": "cpu",
+            "hp": 3,
+            "level": 2,
+            "status": "active",
+            "actions": "1/2",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "cpu_back_right",
+            "card": "card_051",
+            "name": "ピグミィ",
+            "owner": "cpu",
+            "hp": 3,
+            "level": 2,
+            "status": "active",
+            "actions": "1/2",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          }
+        ]
+      },
+      "after": {
+        "currentPlayer": "cpu",
+        "turnNumber": 24,
+        "pendingLevelUp": false,
+        "players": {
+          "player": {
+            "masterId": "white",
+            "hp": 10,
+            "stones": 10,
+            "hand": 5,
+            "deck": 2,
+            "discard": 21
+          },
+          "cpu": {
+            "masterId": "white",
+            "hp": 8,
+            "stones": 10,
+            "hand": 6,
+            "deck": 1,
+            "discard": 19
+          }
+        },
+        "slots": [
+          {
+            "slotKey": "player_front_left",
+            "card": "card_037",
+            "name": "ドノマンティス",
+            "owner": "player",
+            "hp": 5,
+            "level": 1,
+            "status": "active",
+            "actions": "0/1",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "player_front_right",
+            "card": "bomuzo",
+            "name": "ボムゾウ",
+            "owner": "player",
+            "hp": 2,
+            "level": 1,
+            "status": "active",
+            "actions": "0/1",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "player_back_left"
+          },
+          {
+            "slotKey": "player_back_right"
+          },
+          {
+            "slotKey": "cpu_front_left",
+            "card": "yanbaru",
+            "name": "ヤンバル",
+            "owner": "cpu",
+            "hp": 3,
+            "level": 1,
+            "status": "active",
+            "actions": "0/1",
+            "focused": true,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "cpu_front_right",
+            "card": "bomuzo",
+            "name": "ボムゾウ",
+            "owner": "cpu",
+            "hp": 2,
+            "level": 2,
+            "status": "active",
+            "actions": "1/1",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "cpu_back_left",
+            "card": "card_051",
+            "name": "ピグミィ",
+            "owner": "cpu",
+            "hp": 3,
+            "level": 2,
+            "status": "active",
+            "actions": "1/2",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "cpu_back_right",
+            "card": "card_051",
+            "name": "ピグミィ",
+            "owner": "cpu",
+            "hp": 3,
+            "level": 2,
+            "status": "active",
+            "actions": "1/2",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          }
+        ]
+      },
+      "newLog": [
+        "CPU判断: ボムゾウを削れるため攻撃 / ターンプラン探索: 返し込み最終盤面254点、次点と37点差",
+        "CPUのボムゾウ Lv2: 自爆 4P",
+        "自爆でボムゾウ Lv1に4ダメージ",
+        "反動でボムゾウ Lv2に3ダメージ"
+      ]
+    },
+    {
+      "seed": 994315,
+      "step": 301,
+      "turnNumber": 24,
+      "player": "cpu",
+      "decision": "attack:cpu_front_left:wild_claw->monster:player_front_right",
+      "reason": "敵モンスターを撃破できるため攻撃 / ターンプラン探索: 返し込み最終盤面287点、次点と76点差",
+      "score": 484,
+      "legalDecisionCount": 5,
+      "nonEndDecisionCount": 4,
+      "before": {
+        "currentPlayer": "cpu",
+        "turnNumber": 24,
+        "pendingLevelUp": false,
+        "players": {
+          "player": {
+            "masterId": "white",
+            "hp": 10,
+            "stones": 10,
+            "hand": 5,
+            "deck": 2,
+            "discard": 21
+          },
+          "cpu": {
+            "masterId": "white",
+            "hp": 8,
+            "stones": 10,
+            "hand": 6,
+            "deck": 1,
+            "discard": 19
+          }
+        },
+        "slots": [
+          {
+            "slotKey": "player_front_left",
+            "card": "card_037",
+            "name": "ドノマンティス",
+            "owner": "player",
+            "hp": 5,
+            "level": 1,
+            "status": "active",
+            "actions": "0/1",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "player_front_right",
+            "card": "bomuzo",
+            "name": "ボムゾウ",
+            "owner": "player",
+            "hp": 2,
+            "level": 1,
+            "status": "active",
+            "actions": "0/1",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "player_back_left"
+          },
+          {
+            "slotKey": "player_back_right"
+          },
+          {
+            "slotKey": "cpu_front_left",
+            "card": "yanbaru",
+            "name": "ヤンバル",
+            "owner": "cpu",
+            "hp": 3,
+            "level": 1,
+            "status": "active",
+            "actions": "0/1",
+            "focused": true,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "cpu_front_right",
+            "card": "bomuzo",
+            "name": "ボムゾウ",
+            "owner": "cpu",
+            "hp": 2,
+            "level": 2,
+            "status": "active",
+            "actions": "1/1",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "cpu_back_left",
+            "card": "card_051",
+            "name": "ピグミィ",
+            "owner": "cpu",
+            "hp": 3,
+            "level": 2,
+            "status": "active",
+            "actions": "1/2",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "cpu_back_right",
+            "card": "card_051",
+            "name": "ピグミィ",
+            "owner": "cpu",
+            "hp": 3,
+            "level": 2,
+            "status": "active",
+            "actions": "1/2",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          }
+        ]
+      },
+      "after": {
+        "currentPlayer": "cpu",
+        "turnNumber": 24,
+        "pendingLevelUp": false,
+        "players": {
+          "player": {
+            "masterId": "white",
+            "hp": 10,
+            "stones": 11,
+            "hand": 5,
+            "deck": 2,
+            "discard": 22
+          },
+          "cpu": {
+            "masterId": "white",
+            "hp": 8,
+            "stones": 9,
+            "hand": 6,
+            "deck": 1,
+            "discard": 19
+          }
+        },
+        "slots": [
+          {
+            "slotKey": "player_front_left",
+            "card": "card_037",
+            "name": "ドノマンティス",
+            "owner": "player",
+            "hp": 5,
+            "level": 1,
+            "status": "active",
+            "actions": "0/1",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "player_front_right"
+          },
+          {
+            "slotKey": "player_back_left"
+          },
+          {
+            "slotKey": "player_back_right"
+          },
+          {
+            "slotKey": "cpu_front_left",
+            "card": "yanbaru",
+            "name": "ヤンバル",
+            "owner": "cpu",
+            "hp": 3,
+            "level": 2,
+            "status": "active",
+            "actions": "1/1",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "cpu_front_right",
+            "card": "bomuzo",
+            "name": "ボムゾウ",
+            "owner": "cpu",
+            "hp": 2,
+            "level": 2,
+            "status": "active",
+            "actions": "1/1",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "cpu_back_left",
+            "card": "card_051",
+            "name": "ピグミィ",
+            "owner": "cpu",
+            "hp": 3,
+            "level": 2,
+            "status": "active",
+            "actions": "1/2",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "cpu_back_right",
+            "card": "card_051",
+            "name": "ピグミィ",
+            "owner": "cpu",
+            "hp": 3,
+            "level": 2,
+            "status": "active",
+            "actions": "1/2",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          }
+        ]
+      },
+      "newLog": [
+        "CPU判断: 敵モンスターを撃破できるため攻撃 / ターンプラン探索: 返し込み最終盤面287点、次点と76点差",
+        "CPUのヤンバル Lv1: ワイルドクロウ 2P",
+        "ワイルドクロウでボムゾウ Lv1に2ダメージ",
+        "ボムゾウ Lv1は倒れ、プレイヤーにストーン1個が戻った",
+        "ヤンバル Lv2はLv2になり、HPが全回復した"
+      ]
+    },
+    {
+      "seed": 994315,
+      "step": 302,
+      "turnNumber": 24,
+      "player": "cpu",
+      "decision": "master:shield->monster:cpu_front_right",
+      "reason": "致死圏の味方を守れるためシールド / 見送り: マスター特技は8点差で見送り",
+      "score": 121.19999999999999,
+      "legalDecisionCount": 3,
+      "nonEndDecisionCount": 2,
+      "before": {
+        "currentPlayer": "cpu",
+        "turnNumber": 24,
+        "pendingLevelUp": false,
+        "players": {
+          "player": {
+            "masterId": "white",
+            "hp": 10,
+            "stones": 11,
+            "hand": 5,
+            "deck": 2,
+            "discard": 22
+          },
+          "cpu": {
+            "masterId": "white",
+            "hp": 8,
+            "stones": 9,
+            "hand": 6,
+            "deck": 1,
+            "discard": 19
+          }
+        },
+        "slots": [
+          {
+            "slotKey": "player_front_left",
+            "card": "card_037",
+            "name": "ドノマンティス",
+            "owner": "player",
+            "hp": 5,
+            "level": 1,
+            "status": "active",
+            "actions": "0/1",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "player_front_right"
+          },
+          {
+            "slotKey": "player_back_left"
+          },
+          {
+            "slotKey": "player_back_right"
+          },
+          {
+            "slotKey": "cpu_front_left",
+            "card": "yanbaru",
+            "name": "ヤンバル",
+            "owner": "cpu",
+            "hp": 3,
+            "level": 2,
+            "status": "active",
+            "actions": "1/1",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "cpu_front_right",
+            "card": "bomuzo",
+            "name": "ボムゾウ",
+            "owner": "cpu",
+            "hp": 2,
+            "level": 2,
+            "status": "active",
+            "actions": "1/1",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "cpu_back_left",
+            "card": "card_051",
+            "name": "ピグミィ",
+            "owner": "cpu",
+            "hp": 3,
+            "level": 2,
+            "status": "active",
+            "actions": "1/2",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "cpu_back_right",
+            "card": "card_051",
+            "name": "ピグミィ",
+            "owner": "cpu",
+            "hp": 3,
+            "level": 2,
+            "status": "active",
+            "actions": "1/2",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          }
+        ]
+      },
+      "after": {
+        "currentPlayer": "cpu",
+        "turnNumber": 24,
+        "pendingLevelUp": false,
+        "players": {
+          "player": {
+            "masterId": "white",
+            "hp": 10,
+            "stones": 11,
+            "hand": 5,
+            "deck": 2,
+            "discard": 22
+          },
+          "cpu": {
+            "masterId": "white",
+            "hp": 8,
+            "stones": 7,
+            "hand": 6,
+            "deck": 1,
+            "discard": 19
+          }
+        },
+        "slots": [
+          {
+            "slotKey": "player_front_left",
+            "card": "card_037",
+            "name": "ドノマンティス",
+            "owner": "player",
+            "hp": 5,
+            "level": 1,
+            "status": "active",
+            "actions": "0/1",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "player_front_right"
+          },
+          {
+            "slotKey": "player_back_left"
+          },
+          {
+            "slotKey": "player_back_right"
+          },
+          {
+            "slotKey": "cpu_front_left",
+            "card": "yanbaru",
+            "name": "ヤンバル",
+            "owner": "cpu",
+            "hp": 3,
+            "level": 2,
+            "status": "active",
+            "actions": "1/1",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "cpu_front_right",
+            "card": "bomuzo",
+            "name": "ボムゾウ",
+            "owner": "cpu",
+            "hp": 2,
+            "level": 2,
+            "status": "active",
+            "actions": "1/1",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": true
+          },
+          {
+            "slotKey": "cpu_back_left",
+            "card": "card_051",
+            "name": "ピグミィ",
+            "owner": "cpu",
+            "hp": 3,
+            "level": 2,
+            "status": "active",
+            "actions": "1/2",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "cpu_back_right",
+            "card": "card_051",
+            "name": "ピグミィ",
+            "owner": "cpu",
+            "hp": 3,
+            "level": 2,
+            "status": "active",
+            "actions": "1/2",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          }
+        ]
+      },
+      "newLog": [
+        "CPU判断: 致死圏の味方を守れるためシールド / 見送り: マスター特技は8点差で見送り",
+        "CPUはボムゾウ Lv2にシールドを張った"
+      ]
+    },
+    {
+      "seed": 994315,
+      "step": 303,
+      "turnNumber": 24,
+      "player": "cpu",
+      "decision": "master:shield->monster:cpu_front_left",
+      "reason": "致死圏の味方を守れるためシールド",
+      "score": 117.96000000000001,
+      "legalDecisionCount": 2,
+      "nonEndDecisionCount": 1,
+      "before": {
+        "currentPlayer": "cpu",
+        "turnNumber": 24,
+        "pendingLevelUp": false,
+        "players": {
+          "player": {
+            "masterId": "white",
+            "hp": 10,
+            "stones": 11,
+            "hand": 5,
+            "deck": 2,
+            "discard": 22
+          },
+          "cpu": {
+            "masterId": "white",
+            "hp": 8,
+            "stones": 7,
+            "hand": 6,
+            "deck": 1,
+            "discard": 19
+          }
+        },
+        "slots": [
+          {
+            "slotKey": "player_front_left",
+            "card": "card_037",
+            "name": "ドノマンティス",
+            "owner": "player",
+            "hp": 5,
+            "level": 1,
+            "status": "active",
+            "actions": "0/1",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "player_front_right"
+          },
+          {
+            "slotKey": "player_back_left"
+          },
+          {
+            "slotKey": "player_back_right"
+          },
+          {
+            "slotKey": "cpu_front_left",
+            "card": "yanbaru",
+            "name": "ヤンバル",
+            "owner": "cpu",
+            "hp": 3,
+            "level": 2,
+            "status": "active",
+            "actions": "1/1",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "cpu_front_right",
+            "card": "bomuzo",
+            "name": "ボムゾウ",
+            "owner": "cpu",
+            "hp": 2,
+            "level": 2,
+            "status": "active",
+            "actions": "1/1",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": true
+          },
+          {
+            "slotKey": "cpu_back_left",
+            "card": "card_051",
+            "name": "ピグミィ",
+            "owner": "cpu",
+            "hp": 3,
+            "level": 2,
+            "status": "active",
+            "actions": "1/2",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "cpu_back_right",
+            "card": "card_051",
+            "name": "ピグミィ",
+            "owner": "cpu",
+            "hp": 3,
+            "level": 2,
+            "status": "active",
+            "actions": "1/2",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          }
+        ]
+      },
+      "after": {
+        "currentPlayer": "cpu",
+        "turnNumber": 24,
+        "pendingLevelUp": false,
+        "players": {
+          "player": {
+            "masterId": "white",
+            "hp": 10,
+            "stones": 11,
+            "hand": 5,
+            "deck": 2,
+            "discard": 22
+          },
+          "cpu": {
+            "masterId": "white",
+            "hp": 8,
+            "stones": 5,
+            "hand": 6,
+            "deck": 1,
+            "discard": 19
+          }
+        },
+        "slots": [
+          {
+            "slotKey": "player_front_left",
+            "card": "card_037",
+            "name": "ドノマンティス",
+            "owner": "player",
+            "hp": 5,
+            "level": 1,
+            "status": "active",
+            "actions": "0/1",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "player_front_right"
+          },
+          {
+            "slotKey": "player_back_left"
+          },
+          {
+            "slotKey": "player_back_right"
+          },
+          {
+            "slotKey": "cpu_front_left",
+            "card": "yanbaru",
+            "name": "ヤンバル",
+            "owner": "cpu",
+            "hp": 3,
+            "level": 2,
+            "status": "active",
+            "actions": "1/1",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": true
+          },
+          {
+            "slotKey": "cpu_front_right",
+            "card": "bomuzo",
+            "name": "ボムゾウ",
+            "owner": "cpu",
+            "hp": 2,
+            "level": 2,
+            "status": "active",
+            "actions": "1/1",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": true
+          },
+          {
+            "slotKey": "cpu_back_left",
+            "card": "card_051",
+            "name": "ピグミィ",
+            "owner": "cpu",
+            "hp": 3,
+            "level": 2,
+            "status": "active",
+            "actions": "1/2",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "cpu_back_right",
+            "card": "card_051",
+            "name": "ピグミィ",
+            "owner": "cpu",
+            "hp": 3,
+            "level": 2,
+            "status": "active",
+            "actions": "1/2",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          }
+        ]
+      },
+      "newLog": [
+        "CPU判断: 致死圏の味方を守れるためシールド",
+        "CPUはヤンバル Lv2にシールドを張った"
+      ]
+    },
+    {
+      "seed": 994315,
+      "step": 304,
+      "turnNumber": 24,
+      "player": "cpu",
+      "decision": "end_turn",
+      "reason": "有効な行動がないためターン終了 / ターンプラン探索: 返し込み最終盤面139点",
+      "score": 0,
+      "legalDecisionCount": 1,
+      "nonEndDecisionCount": 0,
+      "before": {
+        "currentPlayer": "cpu",
+        "turnNumber": 24,
+        "pendingLevelUp": false,
+        "players": {
+          "player": {
+            "masterId": "white",
+            "hp": 10,
+            "stones": 11,
+            "hand": 5,
+            "deck": 2,
+            "discard": 22
+          },
+          "cpu": {
+            "masterId": "white",
+            "hp": 8,
+            "stones": 5,
+            "hand": 6,
+            "deck": 1,
+            "discard": 19
+          }
+        },
+        "slots": [
+          {
+            "slotKey": "player_front_left",
+            "card": "card_037",
+            "name": "ドノマンティス",
+            "owner": "player",
+            "hp": 5,
+            "level": 1,
+            "status": "active",
+            "actions": "0/1",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "player_front_right"
+          },
+          {
+            "slotKey": "player_back_left"
+          },
+          {
+            "slotKey": "player_back_right"
+          },
+          {
+            "slotKey": "cpu_front_left",
+            "card": "yanbaru",
+            "name": "ヤンバル",
+            "owner": "cpu",
+            "hp": 3,
+            "level": 2,
+            "status": "active",
+            "actions": "1/1",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": true
+          },
+          {
+            "slotKey": "cpu_front_right",
+            "card": "bomuzo",
+            "name": "ボムゾウ",
+            "owner": "cpu",
+            "hp": 2,
+            "level": 2,
+            "status": "active",
+            "actions": "1/1",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": true
+          },
+          {
+            "slotKey": "cpu_back_left",
+            "card": "card_051",
+            "name": "ピグミィ",
+            "owner": "cpu",
+            "hp": 3,
+            "level": 2,
+            "status": "active",
+            "actions": "1/2",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "cpu_back_right",
+            "card": "card_051",
+            "name": "ピグミィ",
+            "owner": "cpu",
+            "hp": 3,
+            "level": 2,
+            "status": "active",
+            "actions": "1/2",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          }
+        ]
+      },
+      "after": {
+        "currentPlayer": "player",
+        "turnNumber": 25,
+        "pendingLevelUp": false,
+        "players": {
+          "player": {
+            "masterId": "white",
+            "hp": 10,
+            "stones": 14,
+            "hand": 6,
+            "deck": 1,
+            "discard": 22
+          },
+          "cpu": {
+            "masterId": "white",
+            "hp": 8,
+            "stones": 5,
+            "hand": 5,
+            "deck": 1,
+            "discard": 20
+          }
+        },
+        "slots": [
+          {
+            "slotKey": "player_front_left",
+            "card": "card_037",
+            "name": "ドノマンティス",
+            "owner": "player",
+            "hp": 5,
+            "level": 1,
+            "status": "active",
+            "actions": "0/1",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "player_front_right"
+          },
+          {
+            "slotKey": "player_back_left"
+          },
+          {
+            "slotKey": "player_back_right"
+          },
+          {
+            "slotKey": "cpu_front_left",
+            "card": "yanbaru",
+            "name": "ヤンバル",
+            "owner": "cpu",
+            "hp": 3,
+            "level": 2,
+            "status": "active",
+            "actions": "1/1",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": true
+          },
+          {
+            "slotKey": "cpu_front_right",
+            "card": "bomuzo",
+            "name": "ボムゾウ",
+            "owner": "cpu",
+            "hp": 2,
+            "level": 2,
+            "status": "active",
+            "actions": "1/1",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": true
+          },
+          {
+            "slotKey": "cpu_back_left",
+            "card": "card_051",
+            "name": "ピグミィ",
+            "owner": "cpu",
+            "hp": 3,
+            "level": 2,
+            "status": "active",
+            "actions": "1/2",
+            "focused": true,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "cpu_back_right",
+            "card": "card_051",
+            "name": "ピグミィ",
+            "owner": "cpu",
+            "hp": 3,
+            "level": 2,
+            "status": "active",
+            "actions": "1/2",
+            "focused": true,
+            "berserkPower": false,
+            "shielded": false
+          }
+        ]
+      },
+      "newLog": [
+        "CPU判断: 有効な行動がないためターン終了 / ターンプラン探索: 返し込み最終盤面139点",
+        "ピグミィ Lv2は気合いだめした",
+        "ピグミィ Lv2は気合いだめした",
+        "CPUのカード溢れ: 手札を5枚まで捨てる",
+        "CPUは手札上限でエクスチェンジを捨てた",
+        "プレイヤーのターン開始",
+        "プレイヤーはストーンを3個得た",
+        "プレイヤーは真勇者ダインを引いた"
+      ]
+    },
+    {
+      "seed": 994315,
+      "step": 305,
+      "turnNumber": 25,
+      "player": "player",
+      "decision": "end_turn",
+      "reason": "有効な行動がないためターン終了",
+      "score": 0,
+      "legalDecisionCount": 1,
+      "nonEndDecisionCount": 0,
+      "before": {
+        "currentPlayer": "player",
+        "turnNumber": 25,
+        "pendingLevelUp": false,
+        "players": {
+          "player": {
+            "masterId": "white",
+            "hp": 10,
+            "stones": 14,
+            "hand": 6,
+            "deck": 1,
+            "discard": 22
+          },
+          "cpu": {
+            "masterId": "white",
+            "hp": 8,
+            "stones": 5,
+            "hand": 5,
+            "deck": 1,
+            "discard": 20
+          }
+        },
+        "slots": [
+          {
+            "slotKey": "player_front_left",
+            "card": "card_037",
+            "name": "ドノマンティス",
+            "owner": "player",
+            "hp": 5,
+            "level": 1,
+            "status": "active",
+            "actions": "0/1",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "player_front_right"
+          },
+          {
+            "slotKey": "player_back_left"
+          },
+          {
+            "slotKey": "player_back_right"
+          },
+          {
+            "slotKey": "cpu_front_left",
+            "card": "yanbaru",
+            "name": "ヤンバル",
+            "owner": "cpu",
+            "hp": 3,
+            "level": 2,
+            "status": "active",
+            "actions": "1/1",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": true
+          },
+          {
+            "slotKey": "cpu_front_right",
+            "card": "bomuzo",
+            "name": "ボムゾウ",
+            "owner": "cpu",
+            "hp": 2,
+            "level": 2,
+            "status": "active",
+            "actions": "1/1",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": true
+          },
+          {
+            "slotKey": "cpu_back_left",
+            "card": "card_051",
+            "name": "ピグミィ",
+            "owner": "cpu",
+            "hp": 3,
+            "level": 2,
+            "status": "active",
+            "actions": "1/2",
+            "focused": true,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "cpu_back_right",
+            "card": "card_051",
+            "name": "ピグミィ",
+            "owner": "cpu",
+            "hp": 3,
+            "level": 2,
+            "status": "active",
+            "actions": "1/2",
+            "focused": true,
+            "berserkPower": false,
+            "shielded": false
+          }
+        ]
+      },
+      "after": {
+        "currentPlayer": "cpu",
+        "turnNumber": 25,
+        "pendingLevelUp": false,
+        "players": {
+          "player": {
+            "masterId": "white",
+            "hp": 10,
+            "stones": 14,
+            "hand": 5,
+            "deck": 1,
+            "discard": 23
+          },
+          "cpu": {
+            "masterId": "white",
+            "hp": 8,
+            "stones": 8,
+            "hand": 6,
+            "deck": 0,
+            "discard": 20
+          }
+        },
+        "slots": [
+          {
+            "slotKey": "player_front_left",
+            "card": "card_037",
+            "name": "ドノマンティス",
+            "owner": "player",
+            "hp": 5,
+            "level": 1,
+            "status": "active",
+            "actions": "0/1",
+            "focused": true,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "player_front_right"
+          },
+          {
+            "slotKey": "player_back_left"
+          },
+          {
+            "slotKey": "player_back_right"
+          },
+          {
+            "slotKey": "cpu_front_left",
+            "card": "yanbaru",
+            "name": "ヤンバル",
+            "owner": "cpu",
+            "hp": 3,
+            "level": 2,
+            "status": "active",
+            "actions": "0/1",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "cpu_front_right",
+            "card": "bomuzo",
+            "name": "ボムゾウ",
+            "owner": "cpu",
+            "hp": 2,
+            "level": 2,
+            "status": "active",
+            "actions": "0/1",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "cpu_back_left",
+            "card": "card_051",
+            "name": "ピグミィ",
+            "owner": "cpu",
+            "hp": 3,
+            "level": 2,
+            "status": "active",
+            "actions": "0/2",
+            "focused": true,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "cpu_back_right",
+            "card": "card_051",
+            "name": "ピグミィ",
+            "owner": "cpu",
+            "hp": 3,
+            "level": 2,
+            "status": "active",
+            "actions": "0/2",
+            "focused": true,
+            "berserkPower": false,
+            "shielded": false
+          }
+        ]
+      },
+      "newLog": [
+        "プレイヤーAI判断: 有効な行動がないためターン終了",
+        "ドノマンティス Lv1は気合いだめした",
+        "プレイヤーのカード溢れ: 手札を5枚まで捨てる",
+        "プレイヤーは手札上限でスケープゴートを捨てた",
+        "CPUのターン開始",
+        "CPUはストーンを3個得た",
+        "ヤンバル Lv2の防御効果が切れた",
+        "ボムゾウ Lv2の防御効果が切れた",
+        "CPUはカードを引いた"
+      ]
+    },
+    {
+      "seed": 994315,
+      "step": 306,
+      "turnNumber": 25,
+      "player": "cpu",
+      "decision": "end_turn",
+      "reason": "有効な行動がないためターン終了 / ターンプラン探索: 返し込み最終盤面174点",
+      "score": 0,
+      "legalDecisionCount": 2,
+      "nonEndDecisionCount": 1,
+      "before": {
+        "currentPlayer": "cpu",
+        "turnNumber": 25,
+        "pendingLevelUp": false,
+        "players": {
+          "player": {
+            "masterId": "white",
+            "hp": 10,
+            "stones": 14,
+            "hand": 5,
+            "deck": 1,
+            "discard": 23
+          },
+          "cpu": {
+            "masterId": "white",
+            "hp": 8,
+            "stones": 8,
+            "hand": 6,
+            "deck": 0,
+            "discard": 20
+          }
+        },
+        "slots": [
+          {
+            "slotKey": "player_front_left",
+            "card": "card_037",
+            "name": "ドノマンティス",
+            "owner": "player",
+            "hp": 5,
+            "level": 1,
+            "status": "active",
+            "actions": "0/1",
+            "focused": true,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "player_front_right"
+          },
+          {
+            "slotKey": "player_back_left"
+          },
+          {
+            "slotKey": "player_back_right"
+          },
+          {
+            "slotKey": "cpu_front_left",
+            "card": "yanbaru",
+            "name": "ヤンバル",
+            "owner": "cpu",
+            "hp": 3,
+            "level": 2,
+            "status": "active",
+            "actions": "0/1",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "cpu_front_right",
+            "card": "bomuzo",
+            "name": "ボムゾウ",
+            "owner": "cpu",
+            "hp": 2,
+            "level": 2,
+            "status": "active",
+            "actions": "0/1",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "cpu_back_left",
+            "card": "card_051",
+            "name": "ピグミィ",
+            "owner": "cpu",
+            "hp": 3,
+            "level": 2,
+            "status": "active",
+            "actions": "0/2",
+            "focused": true,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "cpu_back_right",
+            "card": "card_051",
+            "name": "ピグミィ",
+            "owner": "cpu",
+            "hp": 3,
+            "level": 2,
+            "status": "active",
+            "actions": "0/2",
+            "focused": true,
+            "berserkPower": false,
+            "shielded": false
+          }
+        ]
+      },
+      "after": {
+        "currentPlayer": "player",
+        "turnNumber": 26,
+        "pendingLevelUp": false,
+        "players": {
+          "player": {
+            "masterId": "white",
+            "hp": 10,
+            "stones": 17,
+            "hand": 6,
+            "deck": 0,
+            "discard": 23
+          },
+          "cpu": {
+            "masterId": "white",
+            "hp": 8,
+            "stones": 8,
+            "hand": 5,
+            "deck": 0,
+            "discard": 21
+          }
+        },
+        "slots": [
+          {
+            "slotKey": "player_front_left",
+            "card": "card_037",
+            "name": "ドノマンティス",
+            "owner": "player",
+            "hp": 5,
+            "level": 1,
+            "status": "active",
+            "actions": "0/1",
+            "focused": true,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "player_front_right"
+          },
+          {
+            "slotKey": "player_back_left"
+          },
+          {
+            "slotKey": "player_back_right"
+          },
+          {
+            "slotKey": "cpu_front_left",
+            "card": "yanbaru",
+            "name": "ヤンバル",
+            "owner": "cpu",
+            "hp": 3,
+            "level": 2,
+            "status": "active",
+            "actions": "0/1",
+            "focused": true,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "cpu_front_right",
+            "card": "bomuzo",
+            "name": "ボムゾウ",
+            "owner": "cpu",
+            "hp": 2,
+            "level": 2,
+            "status": "active",
+            "actions": "0/1",
+            "focused": true,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "cpu_back_left",
+            "card": "card_051",
+            "name": "ピグミィ",
+            "owner": "cpu",
+            "hp": 3,
+            "level": 2,
+            "status": "active",
+            "actions": "0/2",
+            "focused": true,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "cpu_back_right",
+            "card": "card_051",
+            "name": "ピグミィ",
+            "owner": "cpu",
+            "hp": 3,
+            "level": 2,
+            "status": "active",
+            "actions": "0/2",
+            "focused": true,
+            "berserkPower": false,
+            "shielded": false
+          }
+        ]
+      },
+      "newLog": [
+        "CPU判断: 有効な行動がないためターン終了 / ターンプラン探索: 返し込み最終盤面174点",
+        "ヤンバル Lv2は気合いだめした",
+        "ボムゾウ Lv2は気合いだめした",
+        "CPUのカード溢れ: 手札を5枚まで捨てる",
+        "CPUは手札上限でローテーションを捨てた",
+        "プレイヤーのターン開始",
+        "プレイヤーはストーンを3個得た",
+        "プレイヤーはポリスピナーを引いた"
+      ]
+    },
+    {
+      "seed": 994315,
+      "step": 307,
+      "turnNumber": 26,
+      "player": "player",
+      "decision": "attack:player_front_left:attack->monster:cpu_front_left",
+      "reason": "ヤンバルを削れるため攻撃 / 見送り: 攻撃は561点差で見送り",
+      "score": 50,
+      "legalDecisionCount": 3,
+      "nonEndDecisionCount": 2,
+      "before": {
+        "currentPlayer": "player",
+        "turnNumber": 26,
+        "pendingLevelUp": false,
+        "players": {
+          "player": {
+            "masterId": "white",
+            "hp": 10,
+            "stones": 17,
+            "hand": 6,
+            "deck": 0,
+            "discard": 23
+          },
+          "cpu": {
+            "masterId": "white",
+            "hp": 8,
+            "stones": 8,
+            "hand": 5,
+            "deck": 0,
+            "discard": 21
+          }
+        },
+        "slots": [
+          {
+            "slotKey": "player_front_left",
+            "card": "card_037",
+            "name": "ドノマンティス",
+            "owner": "player",
+            "hp": 5,
+            "level": 1,
+            "status": "active",
+            "actions": "0/1",
+            "focused": true,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "player_front_right"
+          },
+          {
+            "slotKey": "player_back_left"
+          },
+          {
+            "slotKey": "player_back_right"
+          },
+          {
+            "slotKey": "cpu_front_left",
+            "card": "yanbaru",
+            "name": "ヤンバル",
+            "owner": "cpu",
+            "hp": 3,
+            "level": 2,
+            "status": "active",
+            "actions": "0/1",
+            "focused": true,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "cpu_front_right",
+            "card": "bomuzo",
+            "name": "ボムゾウ",
+            "owner": "cpu",
+            "hp": 2,
+            "level": 2,
+            "status": "active",
+            "actions": "0/1",
+            "focused": true,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "cpu_back_left",
+            "card": "card_051",
+            "name": "ピグミィ",
+            "owner": "cpu",
+            "hp": 3,
+            "level": 2,
+            "status": "active",
+            "actions": "0/2",
+            "focused": true,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "cpu_back_right",
+            "card": "card_051",
+            "name": "ピグミィ",
+            "owner": "cpu",
+            "hp": 3,
+            "level": 2,
+            "status": "active",
+            "actions": "0/2",
+            "focused": true,
+            "berserkPower": false,
+            "shielded": false
+          }
+        ]
+      },
+      "after": {
+        "currentPlayer": "player",
+        "turnNumber": 26,
+        "pendingLevelUp": false,
+        "players": {
+          "player": {
+            "masterId": "white",
+            "hp": 10,
+            "stones": 17,
+            "hand": 6,
+            "deck": 0,
+            "discard": 23
+          },
+          "cpu": {
+            "masterId": "white",
+            "hp": 8,
+            "stones": 8,
+            "hand": 5,
+            "deck": 0,
+            "discard": 21
+          }
+        },
+        "slots": [
+          {
+            "slotKey": "player_front_left",
+            "card": "card_037",
+            "name": "ドノマンティス",
+            "owner": "player",
+            "hp": 5,
+            "level": 1,
+            "status": "active",
+            "actions": "1/1",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "player_front_right"
+          },
+          {
+            "slotKey": "player_back_left"
+          },
+          {
+            "slotKey": "player_back_right"
+          },
+          {
+            "slotKey": "cpu_front_left",
+            "card": "yanbaru",
+            "name": "ヤンバル",
+            "owner": "cpu",
+            "hp": 1,
+            "level": 2,
+            "status": "active",
+            "actions": "0/1",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "cpu_front_right",
+            "card": "bomuzo",
+            "name": "ボムゾウ",
+            "owner": "cpu",
+            "hp": 2,
+            "level": 2,
+            "status": "active",
+            "actions": "0/1",
+            "focused": true,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "cpu_back_left",
+            "card": "card_051",
+            "name": "ピグミィ",
+            "owner": "cpu",
+            "hp": 3,
+            "level": 2,
+            "status": "active",
+            "actions": "0/2",
+            "focused": true,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "cpu_back_right",
+            "card": "card_051",
+            "name": "ピグミィ",
+            "owner": "cpu",
+            "hp": 3,
+            "level": 2,
+            "status": "active",
+            "actions": "0/2",
+            "focused": true,
+            "berserkPower": false,
+            "shielded": false
+          }
+        ]
+      },
+      "newLog": [
+        "プレイヤーAI判断: ヤンバルを削れるため攻撃 / 見送り: 攻撃は561点差で見送り",
+        "プレイヤーのドノマンティス Lv1: アタック 3P",
+        "ヤンバル Lv2は気合いで1ダメージ軽減した",
+        "アタックでヤンバル Lv2に2ダメージ"
+      ]
+    },
+    {
+      "seed": 994315,
+      "step": 308,
+      "turnNumber": 26,
+      "player": "player",
+      "decision": "master:master_attack->monster:cpu_front_left",
+      "reason": "マスターアタックで敵モンスターを撃破できるため使用",
+      "score": 342,
+      "legalDecisionCount": 2,
+      "nonEndDecisionCount": 1,
+      "before": {
+        "currentPlayer": "player",
+        "turnNumber": 26,
+        "pendingLevelUp": false,
+        "players": {
+          "player": {
+            "masterId": "white",
+            "hp": 10,
+            "stones": 17,
+            "hand": 6,
+            "deck": 0,
+            "discard": 23
+          },
+          "cpu": {
+            "masterId": "white",
+            "hp": 8,
+            "stones": 8,
+            "hand": 5,
+            "deck": 0,
+            "discard": 21
+          }
+        },
+        "slots": [
+          {
+            "slotKey": "player_front_left",
+            "card": "card_037",
+            "name": "ドノマンティス",
+            "owner": "player",
+            "hp": 5,
+            "level": 1,
+            "status": "active",
+            "actions": "1/1",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "player_front_right"
+          },
+          {
+            "slotKey": "player_back_left"
+          },
+          {
+            "slotKey": "player_back_right"
+          },
+          {
+            "slotKey": "cpu_front_left",
+            "card": "yanbaru",
+            "name": "ヤンバル",
+            "owner": "cpu",
+            "hp": 1,
+            "level": 2,
+            "status": "active",
+            "actions": "0/1",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "cpu_front_right",
+            "card": "bomuzo",
+            "name": "ボムゾウ",
+            "owner": "cpu",
+            "hp": 2,
+            "level": 2,
+            "status": "active",
+            "actions": "0/1",
+            "focused": true,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "cpu_back_left",
+            "card": "card_051",
+            "name": "ピグミィ",
+            "owner": "cpu",
+            "hp": 3,
+            "level": 2,
+            "status": "active",
+            "actions": "0/2",
+            "focused": true,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "cpu_back_right",
+            "card": "card_051",
+            "name": "ピグミィ",
+            "owner": "cpu",
+            "hp": 3,
+            "level": 2,
+            "status": "active",
+            "actions": "0/2",
+            "focused": true,
+            "berserkPower": false,
+            "shielded": false
+          }
+        ]
+      },
+      "after": {
+        "currentPlayer": "player",
+        "turnNumber": 26,
+        "pendingLevelUp": false,
+        "players": {
+          "player": {
+            "masterId": "white",
+            "hp": 10,
+            "stones": 14,
+            "hand": 6,
+            "deck": 0,
+            "discard": 23
+          },
+          "cpu": {
+            "masterId": "white",
+            "hp": 8,
+            "stones": 10,
+            "hand": 5,
+            "deck": 0,
+            "discard": 22
+          }
+        },
+        "slots": [
+          {
+            "slotKey": "player_front_left",
+            "card": "card_037",
+            "name": "ドノマンティス",
+            "owner": "player",
+            "hp": 5,
+            "level": 1,
+            "status": "active",
+            "actions": "1/1",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "player_front_right"
+          },
+          {
+            "slotKey": "player_back_left"
+          },
+          {
+            "slotKey": "player_back_right"
+          },
+          {
+            "slotKey": "cpu_front_left"
+          },
+          {
+            "slotKey": "cpu_front_right",
+            "card": "bomuzo",
+            "name": "ボムゾウ",
+            "owner": "cpu",
+            "hp": 2,
+            "level": 2,
+            "status": "active",
+            "actions": "0/1",
+            "focused": true,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "cpu_back_left",
+            "card": "card_051",
+            "name": "ピグミィ",
+            "owner": "cpu",
+            "hp": 3,
+            "level": 2,
+            "status": "active",
+            "actions": "0/2",
+            "focused": true,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "cpu_back_right",
+            "card": "card_051",
+            "name": "ピグミィ",
+            "owner": "cpu",
+            "hp": 3,
+            "level": 2,
+            "status": "active",
+            "actions": "0/2",
+            "focused": true,
+            "berserkPower": false,
+            "shielded": false
+          }
+        ]
+      },
+      "newLog": [
+        "プレイヤーAI判断: マスターアタックで敵モンスターを撃破できるため使用",
+        "プレイヤーのマスターアタック",
+        "マスターアタックでヤンバル Lv2に2ダメージ",
+        "ヤンバル Lv2は倒れ、CPUにストーン2個が戻った"
+      ]
+    },
+    {
+      "seed": 994315,
+      "step": 309,
+      "turnNumber": 26,
+      "player": "player",
+      "decision": "end_turn",
+      "reason": "有効な行動がないためターン終了",
+      "score": 0,
+      "legalDecisionCount": 1,
+      "nonEndDecisionCount": 0,
+      "before": {
+        "currentPlayer": "player",
+        "turnNumber": 26,
+        "pendingLevelUp": false,
+        "players": {
+          "player": {
+            "masterId": "white",
+            "hp": 10,
+            "stones": 14,
+            "hand": 6,
+            "deck": 0,
+            "discard": 23
+          },
+          "cpu": {
+            "masterId": "white",
+            "hp": 8,
+            "stones": 10,
+            "hand": 5,
+            "deck": 0,
+            "discard": 22
+          }
+        },
+        "slots": [
+          {
+            "slotKey": "player_front_left",
+            "card": "card_037",
+            "name": "ドノマンティス",
+            "owner": "player",
+            "hp": 5,
+            "level": 1,
+            "status": "active",
+            "actions": "1/1",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "player_front_right"
+          },
+          {
+            "slotKey": "player_back_left"
+          },
+          {
+            "slotKey": "player_back_right"
+          },
+          {
+            "slotKey": "cpu_front_left"
+          },
+          {
+            "slotKey": "cpu_front_right",
+            "card": "bomuzo",
+            "name": "ボムゾウ",
+            "owner": "cpu",
+            "hp": 2,
+            "level": 2,
+            "status": "active",
+            "actions": "0/1",
+            "focused": true,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "cpu_back_left",
+            "card": "card_051",
+            "name": "ピグミィ",
+            "owner": "cpu",
+            "hp": 3,
+            "level": 2,
+            "status": "active",
+            "actions": "0/2",
+            "focused": true,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "cpu_back_right",
+            "card": "card_051",
+            "name": "ピグミィ",
+            "owner": "cpu",
+            "hp": 3,
+            "level": 2,
+            "status": "active",
+            "actions": "0/2",
+            "focused": true,
+            "berserkPower": false,
+            "shielded": false
+          }
+        ]
+      },
+      "after": {
+        "currentPlayer": "cpu",
+        "turnNumber": 26,
+        "pendingLevelUp": false,
+        "players": {
+          "player": {
+            "masterId": "white",
+            "hp": 10,
+            "stones": 14,
+            "hand": 5,
+            "deck": 0,
+            "discard": 24
+          },
+          "cpu": {
+            "masterId": "white",
+            "hp": 7,
+            "stones": 14,
+            "hand": 5,
+            "deck": 0,
+            "discard": 22
+          }
+        },
+        "slots": [
+          {
+            "slotKey": "player_front_left",
+            "card": "card_037",
+            "name": "ドノマンティス",
+            "owner": "player",
+            "hp": 5,
+            "level": 1,
+            "status": "active",
+            "actions": "1/1",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "player_front_right"
+          },
+          {
+            "slotKey": "player_back_left"
+          },
+          {
+            "slotKey": "player_back_right"
+          },
+          {
+            "slotKey": "cpu_front_left",
+            "card": "card_051",
+            "name": "ピグミィ",
+            "owner": "cpu",
+            "hp": 3,
+            "level": 2,
+            "status": "active",
+            "actions": "0/2",
+            "focused": true,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "cpu_front_right",
+            "card": "bomuzo",
+            "name": "ボムゾウ",
+            "owner": "cpu",
+            "hp": 2,
+            "level": 2,
+            "status": "active",
+            "actions": "0/1",
+            "focused": true,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "cpu_back_left"
+          },
+          {
+            "slotKey": "cpu_back_right",
+            "card": "card_051",
+            "name": "ピグミィ",
+            "owner": "cpu",
+            "hp": 3,
+            "level": 2,
+            "status": "active",
+            "actions": "0/2",
+            "focused": true,
+            "berserkPower": false,
+            "shielded": false
+          }
+        ]
+      },
+      "newLog": [
+        "プレイヤーAI判断: 有効な行動がないためターン終了",
+        "プレイヤーのカード溢れ: 手札を5枚まで捨てる",
+        "プレイヤーは手札上限でドロー５を捨てた",
+        "CPUのターン開始",
+        "ピグミィ Lv2が前衛へ自動移動した",
+        "CPUはストーンを3個得た",
+        "CPUはターン開始で引けず、山札切れペナルティ",
+        "CPUのマスターHPが1減った（山札切れ）。ストーン+1"
+      ]
+    },
+    {
+      "seed": 994315,
+      "step": 310,
+      "turnNumber": 26,
+      "player": "cpu",
+      "decision": "end_turn",
+      "reason": "有効な行動がないためターン終了 / ターンプラン探索: 返し込み最終盤面160点",
+      "score": 0,
+      "legalDecisionCount": 2,
+      "nonEndDecisionCount": 1,
+      "before": {
+        "currentPlayer": "cpu",
+        "turnNumber": 26,
+        "pendingLevelUp": false,
+        "players": {
+          "player": {
+            "masterId": "white",
+            "hp": 10,
+            "stones": 14,
+            "hand": 5,
+            "deck": 0,
+            "discard": 24
+          },
+          "cpu": {
+            "masterId": "white",
+            "hp": 7,
+            "stones": 14,
+            "hand": 5,
+            "deck": 0,
+            "discard": 22
+          }
+        },
+        "slots": [
+          {
+            "slotKey": "player_front_left",
+            "card": "card_037",
+            "name": "ドノマンティス",
+            "owner": "player",
+            "hp": 5,
+            "level": 1,
+            "status": "active",
+            "actions": "1/1",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "player_front_right"
+          },
+          {
+            "slotKey": "player_back_left"
+          },
+          {
+            "slotKey": "player_back_right"
+          },
+          {
+            "slotKey": "cpu_front_left",
+            "card": "card_051",
+            "name": "ピグミィ",
+            "owner": "cpu",
+            "hp": 3,
+            "level": 2,
+            "status": "active",
+            "actions": "0/2",
+            "focused": true,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "cpu_front_right",
+            "card": "bomuzo",
+            "name": "ボムゾウ",
+            "owner": "cpu",
+            "hp": 2,
+            "level": 2,
+            "status": "active",
+            "actions": "0/1",
+            "focused": true,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "cpu_back_left"
+          },
+          {
+            "slotKey": "cpu_back_right",
+            "card": "card_051",
+            "name": "ピグミィ",
+            "owner": "cpu",
+            "hp": 3,
+            "level": 2,
+            "status": "active",
+            "actions": "0/2",
+            "focused": true,
+            "berserkPower": false,
+            "shielded": false
+          }
+        ]
+      },
+      "after": {
+        "currentPlayer": "player",
+        "turnNumber": 27,
+        "pendingLevelUp": false,
+        "players": {
+          "player": {
+            "masterId": "white",
+            "hp": 9,
+            "stones": 18,
+            "hand": 5,
+            "deck": 0,
+            "discard": 24
+          },
+          "cpu": {
+            "masterId": "white",
+            "hp": 7,
+            "stones": 14,
+            "hand": 5,
+            "deck": 0,
+            "discard": 22
+          }
+        },
+        "slots": [
+          {
+            "slotKey": "player_front_left",
+            "card": "card_037",
+            "name": "ドノマンティス",
+            "owner": "player",
+            "hp": 5,
+            "level": 1,
+            "status": "active",
+            "actions": "0/1",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "player_front_right"
+          },
+          {
+            "slotKey": "player_back_left"
+          },
+          {
+            "slotKey": "player_back_right"
+          },
+          {
+            "slotKey": "cpu_front_left",
+            "card": "card_051",
+            "name": "ピグミィ",
+            "owner": "cpu",
+            "hp": 3,
+            "level": 2,
+            "status": "active",
+            "actions": "0/2",
+            "focused": true,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "cpu_front_right",
+            "card": "bomuzo",
+            "name": "ボムゾウ",
+            "owner": "cpu",
+            "hp": 2,
+            "level": 2,
+            "status": "active",
+            "actions": "0/1",
+            "focused": true,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "cpu_back_left"
+          },
+          {
+            "slotKey": "cpu_back_right",
+            "card": "card_051",
+            "name": "ピグミィ",
+            "owner": "cpu",
+            "hp": 3,
+            "level": 2,
+            "status": "active",
+            "actions": "0/2",
+            "focused": true,
+            "berserkPower": false,
+            "shielded": false
+          }
+        ]
+      },
+      "newLog": [
+        "CPU判断: 有効な行動がないためターン終了 / ターンプラン探索: 返し込み最終盤面160点",
+        "プレイヤーのターン開始",
+        "プレイヤーはストーンを3個得た",
+        "プレイヤーはターン開始で引けず、山札切れペナルティ",
+        "プレイヤーのマスターHPが1減った（山札切れ）。ストーン+1"
+      ]
+    },
+    {
+      "seed": 994315,
+      "step": 311,
+      "turnNumber": 27,
+      "player": "player",
+      "decision": "end_turn",
+      "reason": "有効な行動がないためターン終了",
+      "score": 0,
+      "legalDecisionCount": 1,
+      "nonEndDecisionCount": 0,
+      "before": {
+        "currentPlayer": "player",
+        "turnNumber": 27,
+        "pendingLevelUp": false,
+        "players": {
+          "player": {
+            "masterId": "white",
+            "hp": 9,
+            "stones": 18,
+            "hand": 5,
+            "deck": 0,
+            "discard": 24
+          },
+          "cpu": {
+            "masterId": "white",
+            "hp": 7,
+            "stones": 14,
+            "hand": 5,
+            "deck": 0,
+            "discard": 22
+          }
+        },
+        "slots": [
+          {
+            "slotKey": "player_front_left",
+            "card": "card_037",
+            "name": "ドノマンティス",
+            "owner": "player",
+            "hp": 5,
+            "level": 1,
+            "status": "active",
+            "actions": "0/1",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "player_front_right"
+          },
+          {
+            "slotKey": "player_back_left"
+          },
+          {
+            "slotKey": "player_back_right"
+          },
+          {
+            "slotKey": "cpu_front_left",
+            "card": "card_051",
+            "name": "ピグミィ",
+            "owner": "cpu",
+            "hp": 3,
+            "level": 2,
+            "status": "active",
+            "actions": "0/2",
+            "focused": true,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "cpu_front_right",
+            "card": "bomuzo",
+            "name": "ボムゾウ",
+            "owner": "cpu",
+            "hp": 2,
+            "level": 2,
+            "status": "active",
+            "actions": "0/1",
+            "focused": true,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "cpu_back_left"
+          },
+          {
+            "slotKey": "cpu_back_right",
+            "card": "card_051",
+            "name": "ピグミィ",
+            "owner": "cpu",
+            "hp": 3,
+            "level": 2,
+            "status": "active",
+            "actions": "0/2",
+            "focused": true,
+            "berserkPower": false,
+            "shielded": false
+          }
+        ]
+      },
+      "after": {
+        "currentPlayer": "cpu",
+        "turnNumber": 27,
+        "pendingLevelUp": false,
+        "players": {
+          "player": {
+            "masterId": "white",
+            "hp": 9,
+            "stones": 18,
+            "hand": 5,
+            "deck": 0,
+            "discard": 24
+          },
+          "cpu": {
+            "masterId": "white",
+            "hp": 6,
+            "stones": 18,
+            "hand": 5,
+            "deck": 0,
+            "discard": 22
+          }
+        },
+        "slots": [
+          {
+            "slotKey": "player_front_left",
+            "card": "card_037",
+            "name": "ドノマンティス",
+            "owner": "player",
+            "hp": 5,
+            "level": 1,
+            "status": "active",
+            "actions": "0/1",
+            "focused": true,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "player_front_right"
+          },
+          {
+            "slotKey": "player_back_left"
+          },
+          {
+            "slotKey": "player_back_right"
+          },
+          {
+            "slotKey": "cpu_front_left",
+            "card": "card_051",
+            "name": "ピグミィ",
+            "owner": "cpu",
+            "hp": 3,
+            "level": 2,
+            "status": "active",
+            "actions": "0/2",
+            "focused": true,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "cpu_front_right",
+            "card": "bomuzo",
+            "name": "ボムゾウ",
+            "owner": "cpu",
+            "hp": 2,
+            "level": 2,
+            "status": "active",
+            "actions": "0/1",
+            "focused": true,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "cpu_back_left"
+          },
+          {
+            "slotKey": "cpu_back_right",
+            "card": "card_051",
+            "name": "ピグミィ",
+            "owner": "cpu",
+            "hp": 3,
+            "level": 2,
+            "status": "active",
+            "actions": "0/2",
+            "focused": true,
+            "berserkPower": false,
+            "shielded": false
+          }
+        ]
+      },
+      "newLog": [
+        "プレイヤーAI判断: 有効な行動がないためターン終了",
+        "ドノマンティス Lv1は気合いだめした",
+        "CPUのターン開始",
+        "CPUはストーンを3個得た",
+        "CPUはターン開始で引けず、山札切れペナルティ",
+        "CPUのマスターHPが1減った（山札切れ）。ストーン+1"
+      ]
+    },
+    {
+      "seed": 994315,
+      "step": 312,
+      "turnNumber": 27,
+      "player": "cpu",
+      "decision": "end_turn",
+      "reason": "有効な行動がないためターン終了 / ターンプラン探索: 返し込み最終盤面159点",
+      "score": 0,
+      "legalDecisionCount": 2,
+      "nonEndDecisionCount": 1,
+      "before": {
+        "currentPlayer": "cpu",
+        "turnNumber": 27,
+        "pendingLevelUp": false,
+        "players": {
+          "player": {
+            "masterId": "white",
+            "hp": 9,
+            "stones": 18,
+            "hand": 5,
+            "deck": 0,
+            "discard": 24
+          },
+          "cpu": {
+            "masterId": "white",
+            "hp": 6,
+            "stones": 18,
+            "hand": 5,
+            "deck": 0,
+            "discard": 22
+          }
+        },
+        "slots": [
+          {
+            "slotKey": "player_front_left",
+            "card": "card_037",
+            "name": "ドノマンティス",
+            "owner": "player",
+            "hp": 5,
+            "level": 1,
+            "status": "active",
+            "actions": "0/1",
+            "focused": true,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "player_front_right"
+          },
+          {
+            "slotKey": "player_back_left"
+          },
+          {
+            "slotKey": "player_back_right"
+          },
+          {
+            "slotKey": "cpu_front_left",
+            "card": "card_051",
+            "name": "ピグミィ",
+            "owner": "cpu",
+            "hp": 3,
+            "level": 2,
+            "status": "active",
+            "actions": "0/2",
+            "focused": true,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "cpu_front_right",
+            "card": "bomuzo",
+            "name": "ボムゾウ",
+            "owner": "cpu",
+            "hp": 2,
+            "level": 2,
+            "status": "active",
+            "actions": "0/1",
+            "focused": true,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "cpu_back_left"
+          },
+          {
+            "slotKey": "cpu_back_right",
+            "card": "card_051",
+            "name": "ピグミィ",
+            "owner": "cpu",
+            "hp": 3,
+            "level": 2,
+            "status": "active",
+            "actions": "0/2",
+            "focused": true,
+            "berserkPower": false,
+            "shielded": false
+          }
+        ]
+      },
+      "after": {
+        "currentPlayer": "player",
+        "turnNumber": 28,
+        "pendingLevelUp": false,
+        "players": {
+          "player": {
+            "masterId": "white",
+            "hp": 8,
+            "stones": 22,
+            "hand": 5,
+            "deck": 0,
+            "discard": 24
+          },
+          "cpu": {
+            "masterId": "white",
+            "hp": 6,
+            "stones": 18,
+            "hand": 5,
+            "deck": 0,
+            "discard": 22
+          }
+        },
+        "slots": [
+          {
+            "slotKey": "player_front_left",
+            "card": "card_037",
+            "name": "ドノマンティス",
+            "owner": "player",
+            "hp": 5,
+            "level": 1,
+            "status": "active",
+            "actions": "0/1",
+            "focused": true,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "player_front_right"
+          },
+          {
+            "slotKey": "player_back_left"
+          },
+          {
+            "slotKey": "player_back_right"
+          },
+          {
+            "slotKey": "cpu_front_left",
+            "card": "card_051",
+            "name": "ピグミィ",
+            "owner": "cpu",
+            "hp": 3,
+            "level": 2,
+            "status": "active",
+            "actions": "0/2",
+            "focused": true,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "cpu_front_right",
+            "card": "bomuzo",
+            "name": "ボムゾウ",
+            "owner": "cpu",
+            "hp": 2,
+            "level": 2,
+            "status": "active",
+            "actions": "0/1",
+            "focused": true,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "cpu_back_left"
+          },
+          {
+            "slotKey": "cpu_back_right",
+            "card": "card_051",
+            "name": "ピグミィ",
+            "owner": "cpu",
+            "hp": 3,
+            "level": 2,
+            "status": "active",
+            "actions": "0/2",
+            "focused": true,
+            "berserkPower": false,
+            "shielded": false
+          }
+        ]
+      },
+      "newLog": [
+        "CPU判断: 有効な行動がないためターン終了 / ターンプラン探索: 返し込み最終盤面159点",
+        "プレイヤーのターン開始",
+        "プレイヤーはストーンを3個得た",
+        "プレイヤーはターン開始で引けず、山札切れペナルティ",
+        "プレイヤーのマスターHPが1減った（山札切れ）。ストーン+1"
+      ]
+    },
+    {
+      "seed": 994315,
+      "step": 313,
+      "turnNumber": 28,
+      "player": "player",
+      "decision": "attack:player_front_left:attack->monster:cpu_front_left",
+      "reason": "ピグミィを削れるため攻撃 / 見送り: 攻撃は482点差で見送り",
+      "score": 50,
+      "legalDecisionCount": 3,
+      "nonEndDecisionCount": 2,
+      "before": {
+        "currentPlayer": "player",
+        "turnNumber": 28,
+        "pendingLevelUp": false,
+        "players": {
+          "player": {
+            "masterId": "white",
+            "hp": 8,
+            "stones": 22,
+            "hand": 5,
+            "deck": 0,
+            "discard": 24
+          },
+          "cpu": {
+            "masterId": "white",
+            "hp": 6,
+            "stones": 18,
+            "hand": 5,
+            "deck": 0,
+            "discard": 22
+          }
+        },
+        "slots": [
+          {
+            "slotKey": "player_front_left",
+            "card": "card_037",
+            "name": "ドノマンティス",
+            "owner": "player",
+            "hp": 5,
+            "level": 1,
+            "status": "active",
+            "actions": "0/1",
+            "focused": true,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "player_front_right"
+          },
+          {
+            "slotKey": "player_back_left"
+          },
+          {
+            "slotKey": "player_back_right"
+          },
+          {
+            "slotKey": "cpu_front_left",
+            "card": "card_051",
+            "name": "ピグミィ",
+            "owner": "cpu",
+            "hp": 3,
+            "level": 2,
+            "status": "active",
+            "actions": "0/2",
+            "focused": true,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "cpu_front_right",
+            "card": "bomuzo",
+            "name": "ボムゾウ",
+            "owner": "cpu",
+            "hp": 2,
+            "level": 2,
+            "status": "active",
+            "actions": "0/1",
+            "focused": true,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "cpu_back_left"
+          },
+          {
+            "slotKey": "cpu_back_right",
+            "card": "card_051",
+            "name": "ピグミィ",
+            "owner": "cpu",
+            "hp": 3,
+            "level": 2,
+            "status": "active",
+            "actions": "0/2",
+            "focused": true,
+            "berserkPower": false,
+            "shielded": false
+          }
+        ]
+      },
+      "after": {
+        "currentPlayer": "player",
+        "turnNumber": 28,
+        "pendingLevelUp": false,
+        "players": {
+          "player": {
+            "masterId": "white",
+            "hp": 8,
+            "stones": 22,
+            "hand": 5,
+            "deck": 0,
+            "discard": 24
+          },
+          "cpu": {
+            "masterId": "white",
+            "hp": 6,
+            "stones": 18,
+            "hand": 5,
+            "deck": 0,
+            "discard": 22
+          }
+        },
+        "slots": [
+          {
+            "slotKey": "player_front_left",
+            "card": "card_037",
+            "name": "ドノマンティス",
+            "owner": "player",
+            "hp": 5,
+            "level": 1,
+            "status": "active",
+            "actions": "1/1",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "player_front_right"
+          },
+          {
+            "slotKey": "player_back_left"
+          },
+          {
+            "slotKey": "player_back_right"
+          },
+          {
+            "slotKey": "cpu_front_left",
+            "card": "card_051",
+            "name": "ピグミィ",
+            "owner": "cpu",
+            "hp": 1,
+            "level": 2,
+            "status": "active",
+            "actions": "0/2",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "cpu_front_right",
+            "card": "bomuzo",
+            "name": "ボムゾウ",
+            "owner": "cpu",
+            "hp": 2,
+            "level": 2,
+            "status": "active",
+            "actions": "0/1",
+            "focused": true,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "cpu_back_left"
+          },
+          {
+            "slotKey": "cpu_back_right",
+            "card": "card_051",
+            "name": "ピグミィ",
+            "owner": "cpu",
+            "hp": 3,
+            "level": 2,
+            "status": "active",
+            "actions": "0/2",
+            "focused": true,
+            "berserkPower": false,
+            "shielded": false
+          }
+        ]
+      },
+      "newLog": [
+        "プレイヤーAI判断: ピグミィを削れるため攻撃 / 見送り: 攻撃は482点差で見送り",
+        "プレイヤーのドノマンティス Lv1: アタック 3P",
+        "ピグミィ Lv2は気合いで1ダメージ軽減した",
+        "アタックでピグミィ Lv2に2ダメージ"
+      ]
+    },
+    {
+      "seed": 994315,
+      "step": 314,
+      "turnNumber": 28,
+      "player": "player",
+      "decision": "master:master_attack->monster:cpu_front_left",
+      "reason": "マスターアタックで敵モンスターを撃破できるため使用",
+      "score": 342,
+      "legalDecisionCount": 2,
+      "nonEndDecisionCount": 1,
+      "before": {
+        "currentPlayer": "player",
+        "turnNumber": 28,
+        "pendingLevelUp": false,
+        "players": {
+          "player": {
+            "masterId": "white",
+            "hp": 8,
+            "stones": 22,
+            "hand": 5,
+            "deck": 0,
+            "discard": 24
+          },
+          "cpu": {
+            "masterId": "white",
+            "hp": 6,
+            "stones": 18,
+            "hand": 5,
+            "deck": 0,
+            "discard": 22
+          }
+        },
+        "slots": [
+          {
+            "slotKey": "player_front_left",
+            "card": "card_037",
+            "name": "ドノマンティス",
+            "owner": "player",
+            "hp": 5,
+            "level": 1,
+            "status": "active",
+            "actions": "1/1",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "player_front_right"
+          },
+          {
+            "slotKey": "player_back_left"
+          },
+          {
+            "slotKey": "player_back_right"
+          },
+          {
+            "slotKey": "cpu_front_left",
+            "card": "card_051",
+            "name": "ピグミィ",
+            "owner": "cpu",
+            "hp": 1,
+            "level": 2,
+            "status": "active",
+            "actions": "0/2",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "cpu_front_right",
+            "card": "bomuzo",
+            "name": "ボムゾウ",
+            "owner": "cpu",
+            "hp": 2,
+            "level": 2,
+            "status": "active",
+            "actions": "0/1",
+            "focused": true,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "cpu_back_left"
+          },
+          {
+            "slotKey": "cpu_back_right",
+            "card": "card_051",
+            "name": "ピグミィ",
+            "owner": "cpu",
+            "hp": 3,
+            "level": 2,
+            "status": "active",
+            "actions": "0/2",
+            "focused": true,
+            "berserkPower": false,
+            "shielded": false
+          }
+        ]
+      },
+      "after": {
+        "currentPlayer": "player",
+        "turnNumber": 28,
+        "pendingLevelUp": false,
+        "players": {
+          "player": {
+            "masterId": "white",
+            "hp": 8,
+            "stones": 19,
+            "hand": 5,
+            "deck": 0,
+            "discard": 24
+          },
+          "cpu": {
+            "masterId": "white",
+            "hp": 6,
+            "stones": 20,
+            "hand": 5,
+            "deck": 0,
+            "discard": 23
+          }
+        },
+        "slots": [
+          {
+            "slotKey": "player_front_left",
+            "card": "card_037",
+            "name": "ドノマンティス",
+            "owner": "player",
+            "hp": 5,
+            "level": 1,
+            "status": "active",
+            "actions": "1/1",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "player_front_right"
+          },
+          {
+            "slotKey": "player_back_left"
+          },
+          {
+            "slotKey": "player_back_right"
+          },
+          {
+            "slotKey": "cpu_front_left"
+          },
+          {
+            "slotKey": "cpu_front_right",
+            "card": "bomuzo",
+            "name": "ボムゾウ",
+            "owner": "cpu",
+            "hp": 2,
+            "level": 2,
+            "status": "active",
+            "actions": "0/1",
+            "focused": true,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "cpu_back_left"
+          },
+          {
+            "slotKey": "cpu_back_right",
+            "card": "card_051",
+            "name": "ピグミィ",
+            "owner": "cpu",
+            "hp": 3,
+            "level": 2,
+            "status": "active",
+            "actions": "0/2",
+            "focused": true,
+            "berserkPower": false,
+            "shielded": false
+          }
+        ]
+      },
+      "newLog": [
+        "プレイヤーAI判断: マスターアタックで敵モンスターを撃破できるため使用",
+        "プレイヤーのマスターアタック",
+        "マスターアタックでピグミィ Lv2に2ダメージ",
+        "ピグミィ Lv2は倒れ、CPUにストーン2個が戻った"
+      ]
+    },
+    {
+      "seed": 994315,
+      "step": 315,
+      "turnNumber": 28,
+      "player": "player",
+      "decision": "end_turn",
+      "reason": "有効な行動がないためターン終了",
+      "score": 0,
+      "legalDecisionCount": 1,
+      "nonEndDecisionCount": 0,
+      "before": {
+        "currentPlayer": "player",
+        "turnNumber": 28,
+        "pendingLevelUp": false,
+        "players": {
+          "player": {
+            "masterId": "white",
+            "hp": 8,
+            "stones": 19,
+            "hand": 5,
+            "deck": 0,
+            "discard": 24
+          },
+          "cpu": {
+            "masterId": "white",
+            "hp": 6,
+            "stones": 20,
+            "hand": 5,
+            "deck": 0,
+            "discard": 23
+          }
+        },
+        "slots": [
+          {
+            "slotKey": "player_front_left",
+            "card": "card_037",
+            "name": "ドノマンティス",
+            "owner": "player",
+            "hp": 5,
+            "level": 1,
+            "status": "active",
+            "actions": "1/1",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "player_front_right"
+          },
+          {
+            "slotKey": "player_back_left"
+          },
+          {
+            "slotKey": "player_back_right"
+          },
+          {
+            "slotKey": "cpu_front_left"
+          },
+          {
+            "slotKey": "cpu_front_right",
+            "card": "bomuzo",
+            "name": "ボムゾウ",
+            "owner": "cpu",
+            "hp": 2,
+            "level": 2,
+            "status": "active",
+            "actions": "0/1",
+            "focused": true,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "cpu_back_left"
+          },
+          {
+            "slotKey": "cpu_back_right",
+            "card": "card_051",
+            "name": "ピグミィ",
+            "owner": "cpu",
+            "hp": 3,
+            "level": 2,
+            "status": "active",
+            "actions": "0/2",
+            "focused": true,
+            "berserkPower": false,
+            "shielded": false
+          }
+        ]
+      },
+      "after": {
+        "currentPlayer": "cpu",
+        "turnNumber": 28,
+        "pendingLevelUp": false,
+        "players": {
+          "player": {
+            "masterId": "white",
+            "hp": 8,
+            "stones": 19,
+            "hand": 5,
+            "deck": 0,
+            "discard": 24
+          },
+          "cpu": {
+            "masterId": "white",
+            "hp": 5,
+            "stones": 24,
+            "hand": 5,
+            "deck": 0,
+            "discard": 23
+          }
+        },
+        "slots": [
+          {
+            "slotKey": "player_front_left",
+            "card": "card_037",
+            "name": "ドノマンティス",
+            "owner": "player",
+            "hp": 5,
+            "level": 1,
+            "status": "active",
+            "actions": "1/1",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "player_front_right"
+          },
+          {
+            "slotKey": "player_back_left"
+          },
+          {
+            "slotKey": "player_back_right"
+          },
+          {
+            "slotKey": "cpu_front_left"
+          },
+          {
+            "slotKey": "cpu_front_right",
+            "card": "bomuzo",
+            "name": "ボムゾウ",
+            "owner": "cpu",
+            "hp": 2,
+            "level": 2,
+            "status": "active",
+            "actions": "0/1",
+            "focused": true,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "cpu_back_left"
+          },
+          {
+            "slotKey": "cpu_back_right",
+            "card": "card_051",
+            "name": "ピグミィ",
+            "owner": "cpu",
+            "hp": 3,
+            "level": 2,
+            "status": "active",
+            "actions": "0/2",
+            "focused": true,
+            "berserkPower": false,
+            "shielded": false
+          }
+        ]
+      },
+      "newLog": [
+        "プレイヤーAI判断: 有効な行動がないためターン終了",
+        "CPUのターン開始",
+        "CPUはストーンを3個得た",
+        "CPUはターン開始で引けず、山札切れペナルティ",
+        "CPUのマスターHPが1減った（山札切れ）。ストーン+1"
+      ]
+    },
+    {
+      "seed": 994315,
+      "step": 316,
+      "turnNumber": 28,
+      "player": "cpu",
+      "decision": "end_turn",
+      "reason": "有効な行動がないためターン終了 / ターンプラン探索: 返し込み最終盤面119点",
+      "score": 0,
+      "legalDecisionCount": 2,
+      "nonEndDecisionCount": 1,
+      "before": {
+        "currentPlayer": "cpu",
+        "turnNumber": 28,
+        "pendingLevelUp": false,
+        "players": {
+          "player": {
+            "masterId": "white",
+            "hp": 8,
+            "stones": 19,
+            "hand": 5,
+            "deck": 0,
+            "discard": 24
+          },
+          "cpu": {
+            "masterId": "white",
+            "hp": 5,
+            "stones": 24,
+            "hand": 5,
+            "deck": 0,
+            "discard": 23
+          }
+        },
+        "slots": [
+          {
+            "slotKey": "player_front_left",
+            "card": "card_037",
+            "name": "ドノマンティス",
+            "owner": "player",
+            "hp": 5,
+            "level": 1,
+            "status": "active",
+            "actions": "1/1",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "player_front_right"
+          },
+          {
+            "slotKey": "player_back_left"
+          },
+          {
+            "slotKey": "player_back_right"
+          },
+          {
+            "slotKey": "cpu_front_left"
+          },
+          {
+            "slotKey": "cpu_front_right",
+            "card": "bomuzo",
+            "name": "ボムゾウ",
+            "owner": "cpu",
+            "hp": 2,
+            "level": 2,
+            "status": "active",
+            "actions": "0/1",
+            "focused": true,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "cpu_back_left"
+          },
+          {
+            "slotKey": "cpu_back_right",
+            "card": "card_051",
+            "name": "ピグミィ",
+            "owner": "cpu",
+            "hp": 3,
+            "level": 2,
+            "status": "active",
+            "actions": "0/2",
+            "focused": true,
+            "berserkPower": false,
+            "shielded": false
+          }
+        ]
+      },
+      "after": {
+        "currentPlayer": "player",
+        "turnNumber": 29,
+        "pendingLevelUp": false,
+        "players": {
+          "player": {
+            "masterId": "white",
+            "hp": 7,
+            "stones": 23,
+            "hand": 5,
+            "deck": 0,
+            "discard": 24
+          },
+          "cpu": {
+            "masterId": "white",
+            "hp": 5,
+            "stones": 24,
+            "hand": 5,
+            "deck": 0,
+            "discard": 23
+          }
+        },
+        "slots": [
+          {
+            "slotKey": "player_front_left",
+            "card": "card_037",
+            "name": "ドノマンティス",
+            "owner": "player",
+            "hp": 5,
+            "level": 1,
+            "status": "active",
+            "actions": "0/1",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "player_front_right"
+          },
+          {
+            "slotKey": "player_back_left"
+          },
+          {
+            "slotKey": "player_back_right"
+          },
+          {
+            "slotKey": "cpu_front_left"
+          },
+          {
+            "slotKey": "cpu_front_right",
+            "card": "bomuzo",
+            "name": "ボムゾウ",
+            "owner": "cpu",
+            "hp": 2,
+            "level": 2,
+            "status": "active",
+            "actions": "0/1",
+            "focused": true,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "cpu_back_left"
+          },
+          {
+            "slotKey": "cpu_back_right",
+            "card": "card_051",
+            "name": "ピグミィ",
+            "owner": "cpu",
+            "hp": 3,
+            "level": 2,
+            "status": "active",
+            "actions": "0/2",
+            "focused": true,
+            "berserkPower": false,
+            "shielded": false
+          }
+        ]
+      },
+      "newLog": [
+        "CPU判断: 有効な行動がないためターン終了 / ターンプラン探索: 返し込み最終盤面119点",
+        "プレイヤーのターン開始",
+        "プレイヤーはストーンを3個得た",
+        "プレイヤーはターン開始で引けず、山札切れペナルティ",
+        "プレイヤーのマスターHPが1減った（山札切れ）。ストーン+1"
+      ]
+    },
+    {
+      "seed": 994315,
+      "step": 317,
+      "turnNumber": 29,
+      "player": "player",
+      "decision": "end_turn",
+      "reason": "有効な行動がないためターン終了",
+      "score": 0,
+      "legalDecisionCount": 1,
+      "nonEndDecisionCount": 0,
+      "before": {
+        "currentPlayer": "player",
+        "turnNumber": 29,
+        "pendingLevelUp": false,
+        "players": {
+          "player": {
+            "masterId": "white",
+            "hp": 7,
+            "stones": 23,
+            "hand": 5,
+            "deck": 0,
+            "discard": 24
+          },
+          "cpu": {
+            "masterId": "white",
+            "hp": 5,
+            "stones": 24,
+            "hand": 5,
+            "deck": 0,
+            "discard": 23
+          }
+        },
+        "slots": [
+          {
+            "slotKey": "player_front_left",
+            "card": "card_037",
+            "name": "ドノマンティス",
+            "owner": "player",
+            "hp": 5,
+            "level": 1,
+            "status": "active",
+            "actions": "0/1",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "player_front_right"
+          },
+          {
+            "slotKey": "player_back_left"
+          },
+          {
+            "slotKey": "player_back_right"
+          },
+          {
+            "slotKey": "cpu_front_left"
+          },
+          {
+            "slotKey": "cpu_front_right",
+            "card": "bomuzo",
+            "name": "ボムゾウ",
+            "owner": "cpu",
+            "hp": 2,
+            "level": 2,
+            "status": "active",
+            "actions": "0/1",
+            "focused": true,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "cpu_back_left"
+          },
+          {
+            "slotKey": "cpu_back_right",
+            "card": "card_051",
+            "name": "ピグミィ",
+            "owner": "cpu",
+            "hp": 3,
+            "level": 2,
+            "status": "active",
+            "actions": "0/2",
+            "focused": true,
+            "berserkPower": false,
+            "shielded": false
+          }
+        ]
+      },
+      "after": {
+        "currentPlayer": "cpu",
+        "turnNumber": 29,
+        "pendingLevelUp": false,
+        "players": {
+          "player": {
+            "masterId": "white",
+            "hp": 7,
+            "stones": 23,
+            "hand": 5,
+            "deck": 0,
+            "discard": 24
+          },
+          "cpu": {
+            "masterId": "white",
+            "hp": 4,
+            "stones": 28,
+            "hand": 5,
+            "deck": 0,
+            "discard": 23
+          }
+        },
+        "slots": [
+          {
+            "slotKey": "player_front_left",
+            "card": "card_037",
+            "name": "ドノマンティス",
+            "owner": "player",
+            "hp": 5,
+            "level": 1,
+            "status": "active",
+            "actions": "0/1",
+            "focused": true,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "player_front_right"
+          },
+          {
+            "slotKey": "player_back_left"
+          },
+          {
+            "slotKey": "player_back_right"
+          },
+          {
+            "slotKey": "cpu_front_left"
+          },
+          {
+            "slotKey": "cpu_front_right",
+            "card": "bomuzo",
+            "name": "ボムゾウ",
+            "owner": "cpu",
+            "hp": 2,
+            "level": 2,
+            "status": "active",
+            "actions": "0/1",
+            "focused": true,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "cpu_back_left"
+          },
+          {
+            "slotKey": "cpu_back_right",
+            "card": "card_051",
+            "name": "ピグミィ",
+            "owner": "cpu",
+            "hp": 3,
+            "level": 2,
+            "status": "active",
+            "actions": "0/2",
+            "focused": true,
+            "berserkPower": false,
+            "shielded": false
+          }
+        ]
+      },
+      "newLog": [
+        "プレイヤーAI判断: 有効な行動がないためターン終了",
+        "ドノマンティス Lv1は気合いだめした",
+        "CPUのターン開始",
+        "CPUはストーンを3個得た",
+        "CPUはターン開始で引けず、山札切れペナルティ",
+        "CPUのマスターHPが1減った（山札切れ）。ストーン+1"
+      ]
+    },
+    {
+      "seed": 994315,
+      "step": 318,
+      "turnNumber": 29,
+      "player": "cpu",
+      "decision": "attack:cpu_front_right:self_bomb->master:player",
+      "reason": "ターン開始時の最大打点2点で詰めろを作れるため攻撃",
+      "score": 164,
+      "legalDecisionCount": 2,
+      "nonEndDecisionCount": 1,
+      "before": {
+        "currentPlayer": "cpu",
+        "turnNumber": 29,
+        "pendingLevelUp": false,
+        "players": {
+          "player": {
+            "masterId": "white",
+            "hp": 7,
+            "stones": 23,
+            "hand": 5,
+            "deck": 0,
+            "discard": 24
+          },
+          "cpu": {
+            "masterId": "white",
+            "hp": 4,
+            "stones": 28,
+            "hand": 5,
+            "deck": 0,
+            "discard": 23
+          }
+        },
+        "slots": [
+          {
+            "slotKey": "player_front_left",
+            "card": "card_037",
+            "name": "ドノマンティス",
+            "owner": "player",
+            "hp": 5,
+            "level": 1,
+            "status": "active",
+            "actions": "0/1",
+            "focused": true,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "player_front_right"
+          },
+          {
+            "slotKey": "player_back_left"
+          },
+          {
+            "slotKey": "player_back_right"
+          },
+          {
+            "slotKey": "cpu_front_left"
+          },
+          {
+            "slotKey": "cpu_front_right",
+            "card": "bomuzo",
+            "name": "ボムゾウ",
+            "owner": "cpu",
+            "hp": 2,
+            "level": 2,
+            "status": "active",
+            "actions": "0/1",
+            "focused": true,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "cpu_back_left"
+          },
+          {
+            "slotKey": "cpu_back_right",
+            "card": "card_051",
+            "name": "ピグミィ",
+            "owner": "cpu",
+            "hp": 3,
+            "level": 2,
+            "status": "active",
+            "actions": "0/2",
+            "focused": true,
+            "berserkPower": false,
+            "shielded": false
+          }
+        ]
+      },
+      "after": {
+        "currentPlayer": "cpu",
+        "turnNumber": 29,
+        "pendingLevelUp": false,
+        "players": {
+          "player": {
+            "masterId": "white",
+            "hp": 5,
+            "stones": 25,
+            "hand": 5,
+            "deck": 0,
+            "discard": 24
+          },
+          "cpu": {
+            "masterId": "white",
+            "hp": 4,
+            "stones": 30,
+            "hand": 5,
+            "deck": 0,
+            "discard": 24
+          }
+        },
+        "slots": [
+          {
+            "slotKey": "player_front_left",
+            "card": "card_037",
+            "name": "ドノマンティス",
+            "owner": "player",
+            "hp": 5,
+            "level": 1,
+            "status": "active",
+            "actions": "0/1",
+            "focused": true,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "player_front_right"
+          },
+          {
+            "slotKey": "player_back_left"
+          },
+          {
+            "slotKey": "player_back_right"
+          },
+          {
+            "slotKey": "cpu_front_left"
+          },
+          {
+            "slotKey": "cpu_front_right"
+          },
+          {
+            "slotKey": "cpu_back_left"
+          },
+          {
+            "slotKey": "cpu_back_right",
+            "card": "card_051",
+            "name": "ピグミィ",
+            "owner": "cpu",
+            "hp": 3,
+            "level": 2,
+            "status": "active",
+            "actions": "0/2",
+            "focused": true,
+            "berserkPower": false,
+            "shielded": false
+          }
+        ]
+      },
+      "newLog": [
+        "CPU判断: ターン開始時の最大打点2点で詰めろを作れるため攻撃",
+        "CPUのボムゾウ Lv2: 自爆 4P",
+        "プレイヤーのマスターHPが2減った（自爆）。ストーン+2",
+        "反動でボムゾウ Lv2に3ダメージ",
+        "ボムゾウ Lv2は倒れ、CPUにストーン2個が戻った"
+      ]
+    },
+    {
+      "seed": 994315,
+      "step": 319,
+      "turnNumber": 29,
+      "player": "cpu",
+      "decision": "end_turn",
+      "reason": "有効な行動がないためターン終了 / ターンプラン探索: 返し込み最終盤面55点",
+      "score": 0,
+      "legalDecisionCount": 1,
+      "nonEndDecisionCount": 0,
+      "before": {
+        "currentPlayer": "cpu",
+        "turnNumber": 29,
+        "pendingLevelUp": false,
+        "players": {
+          "player": {
+            "masterId": "white",
+            "hp": 5,
+            "stones": 25,
+            "hand": 5,
+            "deck": 0,
+            "discard": 24
+          },
+          "cpu": {
+            "masterId": "white",
+            "hp": 4,
+            "stones": 30,
+            "hand": 5,
+            "deck": 0,
+            "discard": 24
+          }
+        },
+        "slots": [
+          {
+            "slotKey": "player_front_left",
+            "card": "card_037",
+            "name": "ドノマンティス",
+            "owner": "player",
+            "hp": 5,
+            "level": 1,
+            "status": "active",
+            "actions": "0/1",
+            "focused": true,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "player_front_right"
+          },
+          {
+            "slotKey": "player_back_left"
+          },
+          {
+            "slotKey": "player_back_right"
+          },
+          {
+            "slotKey": "cpu_front_left"
+          },
+          {
+            "slotKey": "cpu_front_right"
+          },
+          {
+            "slotKey": "cpu_back_left"
+          },
+          {
+            "slotKey": "cpu_back_right",
+            "card": "card_051",
+            "name": "ピグミィ",
+            "owner": "cpu",
+            "hp": 3,
+            "level": 2,
+            "status": "active",
+            "actions": "0/2",
+            "focused": true,
+            "berserkPower": false,
+            "shielded": false
+          }
+        ]
+      },
+      "after": {
+        "currentPlayer": "player",
+        "turnNumber": 30,
+        "pendingLevelUp": false,
+        "players": {
+          "player": {
+            "masterId": "white",
+            "hp": 4,
+            "stones": 29,
+            "hand": 5,
+            "deck": 0,
+            "discard": 24
+          },
+          "cpu": {
+            "masterId": "white",
+            "hp": 4,
+            "stones": 30,
+            "hand": 5,
+            "deck": 0,
+            "discard": 24
+          }
+        },
+        "slots": [
+          {
+            "slotKey": "player_front_left",
+            "card": "card_037",
+            "name": "ドノマンティス",
+            "owner": "player",
+            "hp": 5,
+            "level": 1,
+            "status": "active",
+            "actions": "0/1",
+            "focused": true,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "player_front_right"
+          },
+          {
+            "slotKey": "player_back_left"
+          },
+          {
+            "slotKey": "player_back_right"
+          },
+          {
+            "slotKey": "cpu_front_left"
+          },
+          {
+            "slotKey": "cpu_front_right"
+          },
+          {
+            "slotKey": "cpu_back_left"
+          },
+          {
+            "slotKey": "cpu_back_right",
+            "card": "card_051",
+            "name": "ピグミィ",
+            "owner": "cpu",
+            "hp": 3,
+            "level": 2,
+            "status": "active",
+            "actions": "0/2",
+            "focused": true,
+            "berserkPower": false,
+            "shielded": false
+          }
+        ]
+      },
+      "newLog": [
+        "CPU判断: 有効な行動がないためターン終了 / ターンプラン探索: 返し込み最終盤面55点",
+        "プレイヤーのターン開始",
+        "プレイヤーはストーンを3個得た",
+        "プレイヤーはターン開始で引けず、山札切れペナルティ",
+        "プレイヤーのマスターHPが1減った（山札切れ）。ストーン+1"
+      ]
+    },
+    {
+      "seed": 994315,
+      "step": 320,
+      "turnNumber": 30,
+      "player": "player",
+      "decision": "attack:player_front_left:attack->master:cpu",
+      "reason": "相手マスターへ実ダメージを与えられるため攻撃",
+      "score": 106,
+      "legalDecisionCount": 2,
+      "nonEndDecisionCount": 1,
+      "before": {
+        "currentPlayer": "player",
+        "turnNumber": 30,
+        "pendingLevelUp": false,
+        "players": {
+          "player": {
+            "masterId": "white",
+            "hp": 4,
+            "stones": 29,
+            "hand": 5,
+            "deck": 0,
+            "discard": 24
+          },
+          "cpu": {
+            "masterId": "white",
+            "hp": 4,
+            "stones": 30,
+            "hand": 5,
+            "deck": 0,
+            "discard": 24
+          }
+        },
+        "slots": [
+          {
+            "slotKey": "player_front_left",
+            "card": "card_037",
+            "name": "ドノマンティス",
+            "owner": "player",
+            "hp": 5,
+            "level": 1,
+            "status": "active",
+            "actions": "0/1",
+            "focused": true,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "player_front_right"
+          },
+          {
+            "slotKey": "player_back_left"
+          },
+          {
+            "slotKey": "player_back_right"
+          },
+          {
+            "slotKey": "cpu_front_left"
+          },
+          {
+            "slotKey": "cpu_front_right"
+          },
+          {
+            "slotKey": "cpu_back_left"
+          },
+          {
+            "slotKey": "cpu_back_right",
+            "card": "card_051",
+            "name": "ピグミィ",
+            "owner": "cpu",
+            "hp": 3,
+            "level": 2,
+            "status": "active",
+            "actions": "0/2",
+            "focused": true,
+            "berserkPower": false,
+            "shielded": false
+          }
+        ]
+      },
+      "after": {
+        "currentPlayer": "player",
+        "turnNumber": 30,
+        "pendingLevelUp": false,
+        "players": {
+          "player": {
+            "masterId": "white",
+            "hp": 4,
+            "stones": 29,
+            "hand": 5,
+            "deck": 0,
+            "discard": 24
+          },
+          "cpu": {
+            "masterId": "white",
+            "hp": 3,
+            "stones": 31,
+            "hand": 5,
+            "deck": 0,
+            "discard": 24
+          }
+        },
+        "slots": [
+          {
+            "slotKey": "player_front_left",
+            "card": "card_037",
+            "name": "ドノマンティス",
+            "owner": "player",
+            "hp": 5,
+            "level": 1,
+            "status": "active",
+            "actions": "1/1",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "player_front_right"
+          },
+          {
+            "slotKey": "player_back_left"
+          },
+          {
+            "slotKey": "player_back_right"
+          },
+          {
+            "slotKey": "cpu_front_left"
+          },
+          {
+            "slotKey": "cpu_front_right"
+          },
+          {
+            "slotKey": "cpu_back_left"
+          },
+          {
+            "slotKey": "cpu_back_right",
+            "card": "card_051",
+            "name": "ピグミィ",
+            "owner": "cpu",
+            "hp": 3,
+            "level": 2,
+            "status": "active",
+            "actions": "0/2",
+            "focused": true,
+            "berserkPower": false,
+            "shielded": false
+          }
+        ]
+      },
+      "newLog": [
+        "プレイヤーAI判断: 相手マスターへ実ダメージを与えられるため攻撃",
+        "プレイヤーのドノマンティス Lv1: アタック 3P",
+        "CPUのマスターHPが1減った（アタック）。ストーン+1"
+      ]
+    },
+    {
+      "seed": 994315,
+      "step": 321,
+      "turnNumber": 30,
+      "player": "player",
+      "decision": "end_turn",
+      "reason": "有効な行動がないためターン終了",
+      "score": 0,
+      "legalDecisionCount": 1,
+      "nonEndDecisionCount": 0,
+      "before": {
+        "currentPlayer": "player",
+        "turnNumber": 30,
+        "pendingLevelUp": false,
+        "players": {
+          "player": {
+            "masterId": "white",
+            "hp": 4,
+            "stones": 29,
+            "hand": 5,
+            "deck": 0,
+            "discard": 24
+          },
+          "cpu": {
+            "masterId": "white",
+            "hp": 3,
+            "stones": 31,
+            "hand": 5,
+            "deck": 0,
+            "discard": 24
+          }
+        },
+        "slots": [
+          {
+            "slotKey": "player_front_left",
+            "card": "card_037",
+            "name": "ドノマンティス",
+            "owner": "player",
+            "hp": 5,
+            "level": 1,
+            "status": "active",
+            "actions": "1/1",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "player_front_right"
+          },
+          {
+            "slotKey": "player_back_left"
+          },
+          {
+            "slotKey": "player_back_right"
+          },
+          {
+            "slotKey": "cpu_front_left"
+          },
+          {
+            "slotKey": "cpu_front_right"
+          },
+          {
+            "slotKey": "cpu_back_left"
+          },
+          {
+            "slotKey": "cpu_back_right",
+            "card": "card_051",
+            "name": "ピグミィ",
+            "owner": "cpu",
+            "hp": 3,
+            "level": 2,
+            "status": "active",
+            "actions": "0/2",
+            "focused": true,
+            "berserkPower": false,
+            "shielded": false
+          }
+        ]
+      },
+      "after": {
+        "currentPlayer": "cpu",
+        "turnNumber": 30,
+        "pendingLevelUp": false,
+        "players": {
+          "player": {
+            "masterId": "white",
+            "hp": 4,
+            "stones": 29,
+            "hand": 5,
+            "deck": 0,
+            "discard": 24
+          },
+          "cpu": {
+            "masterId": "white",
+            "hp": 2,
+            "stones": 35,
+            "hand": 5,
+            "deck": 0,
+            "discard": 24
+          }
+        },
+        "slots": [
+          {
+            "slotKey": "player_front_left",
+            "card": "card_037",
+            "name": "ドノマンティス",
+            "owner": "player",
+            "hp": 5,
+            "level": 1,
+            "status": "active",
+            "actions": "1/1",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "player_front_right"
+          },
+          {
+            "slotKey": "player_back_left"
+          },
+          {
+            "slotKey": "player_back_right"
+          },
+          {
+            "slotKey": "cpu_front_left"
+          },
+          {
+            "slotKey": "cpu_front_right",
+            "card": "card_051",
+            "name": "ピグミィ",
+            "owner": "cpu",
+            "hp": 3,
+            "level": 2,
+            "status": "active",
+            "actions": "0/2",
+            "focused": true,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "cpu_back_left"
+          },
+          {
+            "slotKey": "cpu_back_right"
+          }
+        ]
+      },
+      "newLog": [
+        "プレイヤーAI判断: 有効な行動がないためターン終了",
+        "CPUのターン開始",
+        "ピグミィ Lv2が前衛へ自動移動した",
+        "CPUはストーンを3個得た",
+        "CPUはターン開始で引けず、山札切れペナルティ",
+        "CPUのマスターHPが1減った（山札切れ）。ストーン+1"
+      ]
+    },
+    {
+      "seed": 994315,
+      "step": 322,
+      "turnNumber": 30,
+      "player": "cpu",
+      "decision": "end_turn",
+      "reason": "有効な行動がないためターン終了 / ターンプラン探索: 返し込み最終盤面66点",
+      "score": 0,
+      "legalDecisionCount": 1,
+      "nonEndDecisionCount": 0,
+      "before": {
+        "currentPlayer": "cpu",
+        "turnNumber": 30,
+        "pendingLevelUp": false,
+        "players": {
+          "player": {
+            "masterId": "white",
+            "hp": 4,
+            "stones": 29,
+            "hand": 5,
+            "deck": 0,
+            "discard": 24
+          },
+          "cpu": {
+            "masterId": "white",
+            "hp": 2,
+            "stones": 35,
+            "hand": 5,
+            "deck": 0,
+            "discard": 24
+          }
+        },
+        "slots": [
+          {
+            "slotKey": "player_front_left",
+            "card": "card_037",
+            "name": "ドノマンティス",
+            "owner": "player",
+            "hp": 5,
+            "level": 1,
+            "status": "active",
+            "actions": "1/1",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "player_front_right"
+          },
+          {
+            "slotKey": "player_back_left"
+          },
+          {
+            "slotKey": "player_back_right"
+          },
+          {
+            "slotKey": "cpu_front_left"
+          },
+          {
+            "slotKey": "cpu_front_right",
+            "card": "card_051",
+            "name": "ピグミィ",
+            "owner": "cpu",
+            "hp": 3,
+            "level": 2,
+            "status": "active",
+            "actions": "0/2",
+            "focused": true,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "cpu_back_left"
+          },
+          {
+            "slotKey": "cpu_back_right"
+          }
+        ]
+      },
+      "after": {
+        "currentPlayer": "player",
+        "turnNumber": 31,
+        "pendingLevelUp": false,
+        "players": {
+          "player": {
+            "masterId": "white",
+            "hp": 3,
+            "stones": 33,
+            "hand": 5,
+            "deck": 0,
+            "discard": 24
+          },
+          "cpu": {
+            "masterId": "white",
+            "hp": 2,
+            "stones": 35,
+            "hand": 5,
+            "deck": 0,
+            "discard": 24
+          }
+        },
+        "slots": [
+          {
+            "slotKey": "player_front_left",
+            "card": "card_037",
+            "name": "ドノマンティス",
+            "owner": "player",
+            "hp": 5,
+            "level": 1,
+            "status": "active",
+            "actions": "0/1",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "player_front_right"
+          },
+          {
+            "slotKey": "player_back_left"
+          },
+          {
+            "slotKey": "player_back_right"
+          },
+          {
+            "slotKey": "cpu_front_left"
+          },
+          {
+            "slotKey": "cpu_front_right",
+            "card": "card_051",
+            "name": "ピグミィ",
+            "owner": "cpu",
+            "hp": 3,
+            "level": 2,
+            "status": "active",
+            "actions": "0/2",
+            "focused": true,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "cpu_back_left"
+          },
+          {
+            "slotKey": "cpu_back_right"
+          }
+        ]
+      },
+      "newLog": [
+        "CPU判断: 有効な行動がないためターン終了 / ターンプラン探索: 返し込み最終盤面66点",
+        "プレイヤーのターン開始",
+        "プレイヤーはストーンを3個得た",
+        "プレイヤーはターン開始で引けず、山札切れペナルティ",
+        "プレイヤーのマスターHPが1減った（山札切れ）。ストーン+1"
+      ]
+    },
+    {
+      "seed": 994315,
+      "step": 323,
+      "turnNumber": 31,
+      "player": "player",
+      "decision": "end_turn",
+      "reason": "有効な行動がないためターン終了",
+      "score": 0,
+      "legalDecisionCount": 1,
+      "nonEndDecisionCount": 0,
+      "before": {
+        "currentPlayer": "player",
+        "turnNumber": 31,
+        "pendingLevelUp": false,
+        "players": {
+          "player": {
+            "masterId": "white",
+            "hp": 3,
+            "stones": 33,
+            "hand": 5,
+            "deck": 0,
+            "discard": 24
+          },
+          "cpu": {
+            "masterId": "white",
+            "hp": 2,
+            "stones": 35,
+            "hand": 5,
+            "deck": 0,
+            "discard": 24
+          }
+        },
+        "slots": [
+          {
+            "slotKey": "player_front_left",
+            "card": "card_037",
+            "name": "ドノマンティス",
+            "owner": "player",
+            "hp": 5,
+            "level": 1,
+            "status": "active",
+            "actions": "0/1",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "player_front_right"
+          },
+          {
+            "slotKey": "player_back_left"
+          },
+          {
+            "slotKey": "player_back_right"
+          },
+          {
+            "slotKey": "cpu_front_left"
+          },
+          {
+            "slotKey": "cpu_front_right",
+            "card": "card_051",
+            "name": "ピグミィ",
+            "owner": "cpu",
+            "hp": 3,
+            "level": 2,
+            "status": "active",
+            "actions": "0/2",
+            "focused": true,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "cpu_back_left"
+          },
+          {
+            "slotKey": "cpu_back_right"
+          }
+        ]
+      },
+      "after": {
+        "currentPlayer": "cpu",
+        "turnNumber": 31,
+        "pendingLevelUp": false,
+        "players": {
+          "player": {
+            "masterId": "white",
+            "hp": 3,
+            "stones": 33,
+            "hand": 5,
+            "deck": 0,
+            "discard": 24
+          },
+          "cpu": {
+            "masterId": "white",
+            "hp": 1,
+            "stones": 39,
+            "hand": 5,
+            "deck": 0,
+            "discard": 24
+          }
+        },
+        "slots": [
+          {
+            "slotKey": "player_front_left",
+            "card": "card_037",
+            "name": "ドノマンティス",
+            "owner": "player",
+            "hp": 5,
+            "level": 1,
+            "status": "active",
+            "actions": "0/1",
+            "focused": true,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "player_front_right"
+          },
+          {
+            "slotKey": "player_back_left"
+          },
+          {
+            "slotKey": "player_back_right"
+          },
+          {
+            "slotKey": "cpu_front_left"
+          },
+          {
+            "slotKey": "cpu_front_right",
+            "card": "card_051",
+            "name": "ピグミィ",
+            "owner": "cpu",
+            "hp": 3,
+            "level": 2,
+            "status": "active",
+            "actions": "0/2",
+            "focused": true,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "cpu_back_left"
+          },
+          {
+            "slotKey": "cpu_back_right"
+          }
+        ]
+      },
+      "newLog": [
+        "プレイヤーAI判断: 有効な行動がないためターン終了",
+        "ドノマンティス Lv1は気合いだめした",
+        "CPUのターン開始",
+        "CPUはストーンを3個得た",
+        "CPUはターン開始で引けず、山札切れペナルティ",
+        "CPUのマスターHPが1減った（山札切れ）。ストーン+1"
+      ]
+    },
+    {
+      "seed": 994315,
+      "step": 324,
+      "turnNumber": 31,
+      "player": "cpu",
+      "decision": "attack:cpu_front_right:スパイクボール->monster:player_front_left",
+      "reason": "ドノマンティスを削れるため攻撃 / ターンプラン探索: 返し込み最終盤面-749798点、次点と295点差",
+      "score": 62,
+      "legalDecisionCount": 2,
+      "nonEndDecisionCount": 1,
+      "before": {
+        "currentPlayer": "cpu",
+        "turnNumber": 31,
+        "pendingLevelUp": false,
+        "players": {
+          "player": {
+            "masterId": "white",
+            "hp": 3,
+            "stones": 33,
+            "hand": 5,
+            "deck": 0,
+            "discard": 24
+          },
+          "cpu": {
+            "masterId": "white",
+            "hp": 1,
+            "stones": 39,
+            "hand": 5,
+            "deck": 0,
+            "discard": 24
+          }
+        },
+        "slots": [
+          {
+            "slotKey": "player_front_left",
+            "card": "card_037",
+            "name": "ドノマンティス",
+            "owner": "player",
+            "hp": 5,
+            "level": 1,
+            "status": "active",
+            "actions": "0/1",
+            "focused": true,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "player_front_right"
+          },
+          {
+            "slotKey": "player_back_left"
+          },
+          {
+            "slotKey": "player_back_right"
+          },
+          {
+            "slotKey": "cpu_front_left"
+          },
+          {
+            "slotKey": "cpu_front_right",
+            "card": "card_051",
+            "name": "ピグミィ",
+            "owner": "cpu",
+            "hp": 3,
+            "level": 2,
+            "status": "active",
+            "actions": "0/2",
+            "focused": true,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "cpu_back_left"
+          },
+          {
+            "slotKey": "cpu_back_right"
+          }
+        ]
+      },
+      "after": {
+        "currentPlayer": "cpu",
+        "turnNumber": 31,
+        "pendingLevelUp": false,
+        "players": {
+          "player": {
+            "masterId": "white",
+            "hp": 3,
+            "stones": 33,
+            "hand": 5,
+            "deck": 0,
+            "discard": 24
+          },
+          "cpu": {
+            "masterId": "white",
+            "hp": 1,
+            "stones": 39,
+            "hand": 5,
+            "deck": 0,
+            "discard": 24
+          }
+        },
+        "slots": [
+          {
+            "slotKey": "player_front_left",
+            "card": "card_037",
+            "name": "ドノマンティス",
+            "owner": "player",
+            "hp": 5,
+            "level": 1,
+            "status": "active",
+            "actions": "0/1",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "player_front_right"
+          },
+          {
+            "slotKey": "player_back_left"
+          },
+          {
+            "slotKey": "player_back_right"
+          },
+          {
+            "slotKey": "cpu_front_left"
+          },
+          {
+            "slotKey": "cpu_front_right",
+            "card": "card_051",
+            "name": "ピグミィ",
+            "owner": "cpu",
+            "hp": 3,
+            "level": 2,
+            "status": "active",
+            "actions": "1/2",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "cpu_back_left"
+          },
+          {
+            "slotKey": "cpu_back_right"
+          }
+        ]
+      },
+      "newLog": [
+        "CPU判断: ドノマンティスを削れるため攻撃 / ターンプラン探索: 返し込み最終盤面-749798点、次点と295点差",
+        "CPUのピグミィ Lv2: スパイクボール 1P",
+        "ドノマンティス Lv1は気合いで1ダメージ軽減した",
+        "スパイクボールでドノマンティス Lv1に0ダメージ"
+      ]
+    },
+    {
+      "seed": 994315,
+      "step": 325,
+      "turnNumber": 31,
+      "player": "cpu",
+      "decision": "end_turn",
+      "reason": "有効な行動がないためターン終了 / ターンプラン探索: 返し込み最終盤面-749819点",
+      "score": 0,
+      "legalDecisionCount": 1,
+      "nonEndDecisionCount": 0,
+      "before": {
+        "currentPlayer": "cpu",
+        "turnNumber": 31,
+        "pendingLevelUp": false,
+        "players": {
+          "player": {
+            "masterId": "white",
+            "hp": 3,
+            "stones": 33,
+            "hand": 5,
+            "deck": 0,
+            "discard": 24
+          },
+          "cpu": {
+            "masterId": "white",
+            "hp": 1,
+            "stones": 39,
+            "hand": 5,
+            "deck": 0,
+            "discard": 24
+          }
+        },
+        "slots": [
+          {
+            "slotKey": "player_front_left",
+            "card": "card_037",
+            "name": "ドノマンティス",
+            "owner": "player",
+            "hp": 5,
+            "level": 1,
+            "status": "active",
+            "actions": "0/1",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "player_front_right"
+          },
+          {
+            "slotKey": "player_back_left"
+          },
+          {
+            "slotKey": "player_back_right"
+          },
+          {
+            "slotKey": "cpu_front_left"
+          },
+          {
+            "slotKey": "cpu_front_right",
+            "card": "card_051",
+            "name": "ピグミィ",
+            "owner": "cpu",
+            "hp": 3,
+            "level": 2,
+            "status": "active",
+            "actions": "1/2",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "cpu_back_left"
+          },
+          {
+            "slotKey": "cpu_back_right"
+          }
+        ]
+      },
+      "after": {
+        "currentPlayer": "player",
+        "turnNumber": 32,
+        "pendingLevelUp": false,
+        "players": {
+          "player": {
+            "masterId": "white",
+            "hp": 2,
+            "stones": 37,
+            "hand": 5,
+            "deck": 0,
+            "discard": 24
+          },
+          "cpu": {
+            "masterId": "white",
+            "hp": 1,
+            "stones": 39,
+            "hand": 5,
+            "deck": 0,
+            "discard": 24
+          }
+        },
+        "slots": [
+          {
+            "slotKey": "player_front_left",
+            "card": "card_037",
+            "name": "ドノマンティス",
+            "owner": "player",
+            "hp": 5,
+            "level": 1,
+            "status": "active",
+            "actions": "0/1",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "player_front_right"
+          },
+          {
+            "slotKey": "player_back_left"
+          },
+          {
+            "slotKey": "player_back_right"
+          },
+          {
+            "slotKey": "cpu_front_left"
+          },
+          {
+            "slotKey": "cpu_front_right",
+            "card": "card_051",
+            "name": "ピグミィ",
+            "owner": "cpu",
+            "hp": 3,
+            "level": 2,
+            "status": "active",
+            "actions": "1/2",
+            "focused": true,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "cpu_back_left"
+          },
+          {
+            "slotKey": "cpu_back_right"
+          }
+        ]
+      },
+      "newLog": [
+        "CPU判断: 有効な行動がないためターン終了 / ターンプラン探索: 返し込み最終盤面-749819点",
+        "ピグミィ Lv2は気合いだめした",
+        "プレイヤーのターン開始",
+        "プレイヤーはストーンを3個得た",
+        "プレイヤーはターン開始で引けず、山札切れペナルティ",
+        "プレイヤーのマスターHPが1減った（山札切れ）。ストーン+1"
+      ]
+    },
+    {
+      "seed": 994315,
+      "step": 326,
+      "turnNumber": 32,
+      "player": "player",
+      "decision": "end_turn",
+      "reason": "有効な行動がないためターン終了",
+      "score": 0,
+      "legalDecisionCount": 1,
+      "nonEndDecisionCount": 0,
+      "before": {
+        "currentPlayer": "player",
+        "turnNumber": 32,
+        "pendingLevelUp": false,
+        "players": {
+          "player": {
+            "masterId": "white",
+            "hp": 2,
+            "stones": 37,
+            "hand": 5,
+            "deck": 0,
+            "discard": 24
+          },
+          "cpu": {
+            "masterId": "white",
+            "hp": 1,
+            "stones": 39,
+            "hand": 5,
+            "deck": 0,
+            "discard": 24
+          }
+        },
+        "slots": [
+          {
+            "slotKey": "player_front_left",
+            "card": "card_037",
+            "name": "ドノマンティス",
+            "owner": "player",
+            "hp": 5,
+            "level": 1,
+            "status": "active",
+            "actions": "0/1",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "player_front_right"
+          },
+          {
+            "slotKey": "player_back_left"
+          },
+          {
+            "slotKey": "player_back_right"
+          },
+          {
+            "slotKey": "cpu_front_left"
+          },
+          {
+            "slotKey": "cpu_front_right",
+            "card": "card_051",
+            "name": "ピグミィ",
+            "owner": "cpu",
+            "hp": 3,
+            "level": 2,
+            "status": "active",
+            "actions": "1/2",
+            "focused": true,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "cpu_back_left"
+          },
+          {
+            "slotKey": "cpu_back_right"
+          }
+        ]
+      },
+      "after": {
+        "currentPlayer": "cpu",
+        "turnNumber": 32,
+        "winner": "player",
+        "pendingLevelUp": false,
+        "players": {
+          "player": {
+            "masterId": "white",
+            "hp": 2,
+            "stones": 37,
+            "hand": 5,
+            "deck": 0,
+            "discard": 24
+          },
+          "cpu": {
+            "masterId": "white",
+            "hp": 0,
+            "stones": 43,
+            "hand": 5,
+            "deck": 0,
+            "discard": 24
+          }
+        },
+        "slots": [
+          {
+            "slotKey": "player_front_left",
+            "card": "card_037",
+            "name": "ドノマンティス",
+            "owner": "player",
+            "hp": 5,
+            "level": 1,
+            "status": "active",
+            "actions": "0/1",
+            "focused": true,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "player_front_right"
+          },
+          {
+            "slotKey": "player_back_left"
+          },
+          {
+            "slotKey": "player_back_right"
+          },
+          {
+            "slotKey": "cpu_front_left"
+          },
+          {
+            "slotKey": "cpu_front_right",
+            "card": "card_051",
+            "name": "ピグミィ",
+            "owner": "cpu",
+            "hp": 3,
+            "level": 2,
+            "status": "active",
+            "actions": "0/2",
+            "focused": true,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "cpu_back_left"
+          },
+          {
+            "slotKey": "cpu_back_right"
+          }
+        ]
+      },
+      "newLog": [
+        "プレイヤーAI判断: 有効な行動がないためターン終了",
+        "ドノマンティス Lv1は気合いだめした",
+        "CPUのターン開始",
+        "CPUはストーンを3個得た",
+        "CPUはターン開始で引けず、山札切れペナルティ",
+        "CPUのマスターHPが1減った（山札切れ）。ストーン+1",
+        "プレイヤーの勝利"
+      ]
+    }
+  ]
+}
