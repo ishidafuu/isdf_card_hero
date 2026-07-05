@@ -1950,6 +1950,9 @@ function shouldAdoptTerminalPlanRootSelection(
   if (shouldAdoptSetupOverFocusRootSelection(state, perspective, selection, fallback, rootScoreGap, config)) {
     return true;
   }
+  if (shouldAdoptBacklineReserveSummonOverFocusSelection(state, perspective, selection, fallback, rootScoreGap)) {
+    return true;
+  }
   if (shouldAdoptFrontPressureEscapeOverFocusSelection(state, perspective, selection, fallback, rootScoreGap)) {
     return true;
   }
@@ -2014,6 +2017,26 @@ function shouldAdoptSetupOverFocusRootSelection(
     ? Number.POSITIVE_INFINITY
     : selection.plannerScore - selection.runnerUpScore;
   return plannerMargin >= (config.terminalPlanSetupOverFocusAdoptionMinMargin ?? 0);
+}
+
+function shouldAdoptBacklineReserveSummonOverFocusSelection(
+  state: GameState,
+  perspective: PlayerId,
+  selection: TerminalPlanSelection,
+  fallback: EvaluatedDecision,
+  rootScoreGap: number,
+): boolean {
+  if (
+    fallback.decision.type !== "focus" ||
+    rootScoreGap > 260 ||
+    backlineReserveSummonOverFocusPlannerBonus(state, selection.candidate, fallback, perspective) < 35
+  ) {
+    return false;
+  }
+  const plannerMargin = selection.runnerUpScore === undefined
+    ? Number.POSITIVE_INFINITY
+    : selection.plannerScore - selection.runnerUpScore;
+  return plannerMargin >= 8;
 }
 
 function shouldAdoptFrontPressureEscapeOverFocusSelection(
@@ -2113,7 +2136,13 @@ function terminalPlanRootPlannerScore(
     fallback,
     perspective,
   );
-  return terminalScore + rootScoreBonus + frontPressureEscapeBonus - rootGapPenalty;
+  const backlineReserveSummonBonus = backlineReserveSummonOverFocusPlannerBonus(
+    rootState,
+    candidate,
+    fallback,
+    perspective,
+  );
+  return terminalScore + rootScoreBonus + frontPressureEscapeBonus + backlineReserveSummonBonus - rootGapPenalty;
 }
 
 function shouldNeutralizeSetupOverFocusRootScore(
@@ -2134,6 +2163,57 @@ function shouldNeutralizeSetupOverFocusRootScore(
     return false;
   }
   return candidate.index === fallback.index || candidate.decision.type === "summon";
+}
+
+function backlineReserveSummonOverFocusPlannerBonus(
+  state: GameState,
+  candidate: EvaluatedDecision,
+  fallback: EvaluatedDecision | undefined,
+  perspective: PlayerId,
+): number {
+  const decision = candidate.decision;
+  if (
+    !isWhiteMirrorState(state, perspective) ||
+    state.turnNumber < 6 ||
+    state.turnNumber > 8 ||
+    state.players[opponentOf(perspective)].stones > 1 ||
+    state.players[perspective].stones < 3 ||
+    fallback?.decision.type !== "focus" ||
+    decision.type !== "summon"
+  ) {
+    return 0;
+  }
+  const fallbackSlot = state.slots[fallback.decision.slotKey];
+  if (fallbackSlot.owner !== perspective || fallbackSlot.row !== "front") {
+    return 0;
+  }
+  const summonSlot = state.slots[decision.slotKey];
+  if (summonSlot.owner !== perspective || summonSlot.row !== "back" || summonSlot.monster) {
+    return 0;
+  }
+  const handCard = state.players[perspective].hand.find((card) => card.instanceId === decision.handInstanceId);
+  if (!handCard) {
+    return 0;
+  }
+  const cardDef = getCardDef(handCard.cardId);
+  if (cardDef.type !== "monster") {
+    return 0;
+  }
+  const monsterDef = getMonsterDef(handCard.cardId);
+  const levelOneHp = monsterDef.levels[0]?.maxHp ?? 0;
+  if (levelOneHp < 5 || monsterDef.maxLevel < 2) {
+    return 0;
+  }
+  const ownFrontCount = FIELD_ORDER_BY_PLAYER[perspective].filter((slotKey) => {
+    const slot = state.slots[slotKey];
+    return slot.row === "front" && slot.monster?.owner === perspective;
+  }).length;
+  if (ownFrontCount < 2) {
+    return 0;
+  }
+  const handoffScore = evaluateState(candidate.after, perspective, AI_EVALUATION_WEIGHTS.white) -
+    evaluateState(state, perspective, AI_EVALUATION_WEIGHTS.white);
+  return 42 + Math.max(0, levelOneHp - 5) * 8 + Math.max(0, handoffScore) * 0.05;
 }
 
 function ownBackRowOccupancy(state: GameState, perspective: PlayerId): number {
