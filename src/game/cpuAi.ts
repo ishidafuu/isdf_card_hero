@@ -216,6 +216,8 @@ type CpuAiProfileConfig = {
   terminalPlanRolloutRequireFallbackMove?: number;
   terminalPlanRolloutRequirePlannerSummon?: number;
   terminalPlanRolloutRequirePlannerSummonBacklineReach?: number;
+  terminalPlanRolloutAllowCloseoutHoldEndTurn?: number;
+  terminalPlanRolloutCloseoutHoldEndTurnSteps?: number;
   terminalPlanRolloutAllowLatePressureOverSummon?: number;
   terminalPlanRolloutLatePressureOverSummonSteps?: number;
   terminalPlanRolloutAllowLateDeckHoldEndTurn?: number;
@@ -399,6 +401,8 @@ const CPU_AI_PROFILE_CONFIG: Record<CpuAiProfile, CpuAiProfileConfig> = {
     terminalPlanRolloutRequireFallbackMove: 1,
     terminalPlanRolloutRequirePlannerSummon: 1,
     terminalPlanRolloutRequirePlannerSummonBacklineReach: 1,
+    terminalPlanRolloutAllowCloseoutHoldEndTurn: 1,
+    terminalPlanRolloutCloseoutHoldEndTurnSteps: 12,
     terminalPlanRolloutAllowLatePressureOverSummon: 1,
     terminalPlanRolloutLatePressureOverSummonSteps: 40,
     terminalPlanRolloutAllowLateDeckHoldEndTurn: 1,
@@ -451,6 +455,8 @@ const CPU_AI_PROFILE_CONFIG: Record<CpuAiProfile, CpuAiProfileConfig> = {
     terminalPlanRolloutRequireFallbackMove: 1,
     terminalPlanRolloutRequirePlannerSummon: 1,
     terminalPlanRolloutRequirePlannerSummonBacklineReach: 1,
+    terminalPlanRolloutAllowCloseoutHoldEndTurn: 1,
+    terminalPlanRolloutCloseoutHoldEndTurnSteps: 12,
     terminalPlanRolloutAllowLatePressureOverSummon: 1,
     terminalPlanRolloutLatePressureOverSummonSteps: 40,
     terminalPlanRolloutAllowLateDeckHoldEndTurn: 1,
@@ -588,7 +594,7 @@ export function inspectCpuTerminalPlan(
 
   const baselineScore = evaluateState(state, perspective, config.weights);
   const context = createTerminalPlanEvaluationContext(baselineScore);
-  const rootCandidates = withWhiteMirrorLateDeckHoldFallbackCandidate(
+  const rootCandidates = withWhiteMirrorHoldFallbackCandidates(
     state,
     perspective,
     config,
@@ -1057,6 +1063,14 @@ function applyCpuAiSearchOptions(
       search.terminalPlanRolloutRequirePlannerSummonBacklineReach,
       base.terminalPlanRolloutRequirePlannerSummonBacklineReach,
     ),
+    terminalPlanRolloutAllowCloseoutHoldEndTurn: normalizedOptionalSearchNumber(
+      search.terminalPlanRolloutAllowCloseoutHoldEndTurn,
+      base.terminalPlanRolloutAllowCloseoutHoldEndTurn,
+    ),
+    terminalPlanRolloutCloseoutHoldEndTurnSteps: normalizedOptionalSearchNumber(
+      search.terminalPlanRolloutCloseoutHoldEndTurnSteps,
+      base.terminalPlanRolloutCloseoutHoldEndTurnSteps,
+    ),
     terminalPlanRolloutAllowLatePressureOverSummon: normalizedOptionalSearchNumber(
       search.terminalPlanRolloutAllowLatePressureOverSummon,
       base.terminalPlanRolloutAllowLatePressureOverSummon,
@@ -1312,7 +1326,7 @@ function selectTerminalPlanRootDecision(
 ): TerminalPlanSelection | undefined {
   const baselineScore = evaluateState(state, perspective, config.weights);
   const context = createTerminalPlanEvaluationContext(baselineScore);
-  const candidates = withWhiteMirrorLateDeckHoldFallbackCandidate(
+  const candidates = withWhiteMirrorHoldFallbackCandidates(
     state,
     perspective,
     config,
@@ -1440,6 +1454,11 @@ function applyTerminalPlanRolloutScores(
     perspective,
     rolloutTrigger.candidate,
   );
+  const isCloseoutHoldEndTurnRolloutTrigger = isWhiteMirrorCloseoutHoldEndTurnSelection(
+    rootState,
+    perspective,
+    rolloutTrigger.candidate,
+  );
   const isLatePressureOverSummonRolloutTrigger = isWhiteMirrorLatePressureOverSummonSelection(
     rootState,
     perspective,
@@ -1458,13 +1477,15 @@ function applyTerminalPlanRolloutScores(
     ? Math.trunc(config.terminalPlanRolloutFrontFocusStripAttackSteps ?? rolloutSteps)
     : isShieldTargetTieRolloutTrigger
       ? Math.trunc(config.terminalPlanRolloutShieldTargetTieSteps ?? rolloutSteps)
-      : isLateDeckRepositionRolloutTrigger
-        ? Math.max(64, rolloutSteps)
-        : isLateDeckHoldEndTurnRolloutTrigger
-          ? Math.trunc(config.terminalPlanRolloutLateDeckHoldEndTurnSteps ?? rolloutSteps)
-          : isLatePressureOverSummonRolloutTrigger
-            ? Math.max(Math.trunc(config.terminalPlanRolloutLatePressureOverSummonSteps ?? rolloutSteps), rolloutSteps)
-            : rolloutSteps;
+      : isCloseoutHoldEndTurnRolloutTrigger
+        ? Math.trunc(config.terminalPlanRolloutCloseoutHoldEndTurnSteps ?? rolloutSteps)
+        : isLateDeckRepositionRolloutTrigger
+          ? Math.max(64, rolloutSteps)
+          : isLateDeckHoldEndTurnRolloutTrigger
+            ? Math.trunc(config.terminalPlanRolloutLateDeckHoldEndTurnSteps ?? rolloutSteps)
+            : isLatePressureOverSummonRolloutTrigger
+              ? Math.max(Math.trunc(config.terminalPlanRolloutLatePressureOverSummonSteps ?? rolloutSteps), rolloutSteps)
+              : rolloutSteps;
   if (effectiveRolloutSteps <= 0) {
     return [...selections];
   }
@@ -1482,7 +1503,7 @@ function applyTerminalPlanRolloutScores(
     if (holdEndTurn) {
       rolloutKeys.add(cpuDecisionKey(holdEndTurn.candidate.decision));
     }
-  } else {
+  } else if (!isCloseoutHoldEndTurnRolloutTrigger) {
     rolloutCandidatePool.forEach((selection) => {
       rolloutKeys.add(cpuDecisionKey(selection.candidate.decision));
     });
@@ -1577,6 +1598,16 @@ function terminalPlanRolloutTriggerSelection(
   if (!best || !fallback) {
     return undefined;
   }
+  const closeoutHoldEndTurn = terminalPlanCloseoutHoldEndTurnRolloutTriggerSelection(
+    state,
+    perspective,
+    terminalRanked,
+    fallback,
+    config,
+  );
+  if (closeoutHoldEndTurn) {
+    return closeoutHoldEndTurn;
+  }
   const lateDeckHoldEndTurn = terminalPlanLateDeckHoldEndTurnRolloutTriggerSelection(
     state,
     perspective,
@@ -1669,6 +1700,25 @@ function terminalPlanRolloutTriggerSelection(
     : best.plannerScore - fallbackSelection.plannerScore;
   const maxPlannerMargin = config.terminalPlanRolloutTriggerMaxPlannerMargin ?? 40;
   return plannerMargin <= maxPlannerMargin ? rolloutChallenger : undefined;
+}
+
+function terminalPlanCloseoutHoldEndTurnRolloutTriggerSelection(
+  state: GameState,
+  perspective: PlayerId,
+  terminalRanked: readonly TerminalPlanSelection[],
+  fallback: EvaluatedDecision,
+  config: CpuAiProfileConfig,
+): TerminalPlanSelection | undefined {
+  if (
+    !config.terminalPlanRolloutAllowCloseoutHoldEndTurn ||
+    !isWhiteMirrorCloseoutHoldEndTurnFallback(state, perspective, fallback)
+  ) {
+    return undefined;
+  }
+
+  return terminalRanked.find((selection) =>
+    isWhiteMirrorCloseoutHoldEndTurnSelection(state, perspective, selection.candidate),
+  );
 }
 
 function terminalPlanLateDeckHoldEndTurnRolloutTriggerSelection(
@@ -2141,7 +2191,7 @@ function terminalPlanRootCandidates(
   return coveredCandidates;
 }
 
-function withWhiteMirrorLateDeckHoldFallbackCandidate(
+function withWhiteMirrorHoldFallbackCandidates(
   state: GameState,
   perspective: PlayerId,
   config: CpuAiProfileConfig,
@@ -2150,14 +2200,28 @@ function withWhiteMirrorLateDeckHoldFallbackCandidate(
 ): EvaluatedDecision[] {
   if (
     !fallback ||
-    !config.terminalPlanRolloutAllowLateDeckHoldEndTurn ||
-    !isWhiteMirrorLateDeckHoldEndTurnFallback(state, perspective, fallback) ||
-    !candidates.some((candidate) => isWhiteMirrorLateDeckHoldEndTurnSelection(state, perspective, candidate)) ||
+    !shouldAddWhiteMirrorHoldFallbackCandidate(state, perspective, config, candidates, fallback) ||
     candidates.some((candidate) => cpuDecisionKey(candidate.decision) === cpuDecisionKey(fallback.decision))
   ) {
     return [...candidates];
   }
   return [...candidates, fallback];
+}
+
+function shouldAddWhiteMirrorHoldFallbackCandidate(
+  state: GameState,
+  perspective: PlayerId,
+  config: CpuAiProfileConfig,
+  candidates: readonly EvaluatedDecision[],
+  fallback: EvaluatedDecision,
+): boolean {
+  const hasCloseoutHold = Boolean(config.terminalPlanRolloutAllowCloseoutHoldEndTurn) &&
+    isWhiteMirrorCloseoutHoldEndTurnFallback(state, perspective, fallback) &&
+    candidates.some((candidate) => isWhiteMirrorCloseoutHoldEndTurnSelection(state, perspective, candidate));
+  const hasLateDeckHold = Boolean(config.terminalPlanRolloutAllowLateDeckHoldEndTurn) &&
+    isWhiteMirrorLateDeckHoldEndTurnFallback(state, perspective, fallback) &&
+    candidates.some((candidate) => isWhiteMirrorLateDeckHoldEndTurnSelection(state, perspective, candidate));
+  return hasCloseoutHold || hasLateDeckHold;
 }
 
 function withTerminalPlanReason(decision: CpuDecision, selection: TerminalPlanSelection): CpuDecision {
@@ -5602,6 +5666,84 @@ function isWhiteMirrorLateDeckRepositionMoveSelection(
   const durableFront = backBefore.hp >= frontBefore.hp + 2 || backTrait.role === "front";
   const preservesBacklineWork = frontTrait.role === "back" || frontBefore.actionLimit > 1;
   return durableFront && preservesBacklineWork;
+}
+
+function isWhiteMirrorCloseoutHoldEndTurnSelection(
+  state: GameState,
+  perspective: PlayerId,
+  candidate: EvaluatedDecision,
+): boolean {
+  return candidate.decision.type === "end_turn" && isWhiteMirrorCloseoutHoldState(state, perspective);
+}
+
+function isWhiteMirrorCloseoutHoldEndTurnFallback(
+  state: GameState,
+  perspective: PlayerId,
+  fallback: EvaluatedDecision,
+): boolean {
+  if (!isWhiteMirrorCloseoutHoldState(state, perspective)) {
+    return false;
+  }
+  if (fallback.after.winner || fallback.after.pendingLevelUp || fallback.decision.type !== "attack") {
+    return false;
+  }
+  if (fallback.decision.action.target.kind !== "monster") {
+    return false;
+  }
+  const targetSlotKey = fallback.decision.action.target.slotKey;
+  const beforeMonster = state.slots[targetSlotKey].monster;
+  const afterMonster = fallback.after.slots[targetSlotKey].monster;
+  if (
+    !beforeMonster ||
+    !afterMonster ||
+    beforeMonster.owner !== opponentOf(perspective) ||
+    afterMonster.owner !== beforeMonster.owner ||
+    afterMonster.instanceId !== beforeMonster.instanceId ||
+    !beforeMonster.focused ||
+    afterMonster.focused ||
+    afterMonster.hp !== beforeMonster.hp
+  ) {
+    return false;
+  }
+  if (masterDamageFromTransition(state, fallback.after, perspective) > 0) {
+    return false;
+  }
+  if (removesEnemyMonster(state, fallback.after, targetSlotKey, perspective)) {
+    return false;
+  }
+
+  const opponent = opponentOf(perspective);
+  const ownHp = state.players[perspective].masterHp;
+  const beforeThreat = buildThreatModel(state, opponent).masterDamage[perspective];
+  return beforeThreat < ownHp;
+}
+
+function isWhiteMirrorCloseoutHoldState(state: GameState, perspective: PlayerId): boolean {
+  if (!isWhiteMirrorState(state, perspective) || state.turnNumber < 12) {
+    return false;
+  }
+  const opponent = opponentOf(perspective);
+  const own = state.players[perspective];
+  const enemy = state.players[opponent];
+  if (enemy.masterHp > 2 || own.masterHp <= enemy.masterHp) {
+    return false;
+  }
+  return buildThreatModel(state, perspective).masterDamage[opponent] >= enemy.masterHp;
+}
+
+function removesEnemyMonster(
+  before: GameState,
+  after: GameState,
+  targetSlotKey: SlotKey,
+  perspective: PlayerId,
+): boolean {
+  const beforeMonster = before.slots[targetSlotKey].monster;
+  const afterMonster = after.slots[targetSlotKey].monster;
+  const opponent = opponentOf(perspective);
+  return !!(
+    beforeMonster?.owner === opponent &&
+    (!afterMonster || afterMonster.owner !== opponent || afterMonster.instanceId !== beforeMonster.instanceId)
+  );
 }
 
 function isWhiteMirrorLateDeckHoldEndTurnSelection(
