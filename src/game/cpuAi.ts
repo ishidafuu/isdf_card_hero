@@ -217,6 +217,7 @@ type CpuAiProfileConfig = {
   terminalPlanRolloutRequirePlannerSummon?: number;
   terminalPlanRolloutRequirePlannerSummonBacklineReach?: number;
   terminalPlanRolloutAllowFrontFocusStripAttack?: number;
+  terminalPlanRolloutFrontFocusStripAttackMinRootScoreGap?: number;
   terminalPlanRolloutFrontFocusStripAttackMaxRootScoreGap?: number;
   terminalPlanRolloutFrontFocusStripAttackSteps?: number;
   terminalPlanRolloutOncePerTurn?: number;
@@ -390,6 +391,7 @@ const CPU_AI_PROFILE_CONFIG: Record<CpuAiProfile, CpuAiProfileConfig> = {
     terminalPlanRolloutRequirePlannerSummon: 1,
     terminalPlanRolloutRequirePlannerSummonBacklineReach: 1,
     terminalPlanRolloutAllowFrontFocusStripAttack: 1,
+    terminalPlanRolloutFrontFocusStripAttackMinRootScoreGap: 180,
     terminalPlanRolloutFrontFocusStripAttackMaxRootScoreGap: 460,
     terminalPlanRolloutFrontFocusStripAttackSteps: 28,
     terminalPlanRolloutOncePerTurn: 1,
@@ -434,6 +436,7 @@ const CPU_AI_PROFILE_CONFIG: Record<CpuAiProfile, CpuAiProfileConfig> = {
     terminalPlanRolloutRequirePlannerSummon: 1,
     terminalPlanRolloutRequirePlannerSummonBacklineReach: 1,
     terminalPlanRolloutAllowFrontFocusStripAttack: 1,
+    terminalPlanRolloutFrontFocusStripAttackMinRootScoreGap: 180,
     terminalPlanRolloutFrontFocusStripAttackMaxRootScoreGap: 460,
     terminalPlanRolloutFrontFocusStripAttackSteps: 28,
     terminalPlanRolloutOncePerTurn: 1,
@@ -1024,6 +1027,10 @@ function applyCpuAiSearchOptions(
       search.terminalPlanRolloutAllowFrontFocusStripAttack,
       base.terminalPlanRolloutAllowFrontFocusStripAttack,
     ),
+    terminalPlanRolloutFrontFocusStripAttackMinRootScoreGap: normalizedOptionalSearchNumber(
+      search.terminalPlanRolloutFrontFocusStripAttackMinRootScoreGap,
+      base.terminalPlanRolloutFrontFocusStripAttackMinRootScoreGap,
+    ),
     terminalPlanRolloutFrontFocusStripAttackMaxRootScoreGap: normalizedOptionalSearchNumber(
       search.terminalPlanRolloutFrontFocusStripAttackMaxRootScoreGap,
       base.terminalPlanRolloutFrontFocusStripAttackMaxRootScoreGap,
@@ -1506,7 +1513,10 @@ function terminalPlanFrontFocusStripAttackRolloutTriggerSelection(
     return undefined;
   }
   const rootScoreGap = fallback.totalScore - challenger.candidate.totalScore;
-  const minRootScoreGap = config.terminalPlanRolloutTriggerMinRootScoreGap ?? 120;
+  const minRootScoreGap =
+    config.terminalPlanRolloutFrontFocusStripAttackMinRootScoreGap ??
+    config.terminalPlanRolloutTriggerMinRootScoreGap ??
+    120;
   const maxRootScoreGap = config.terminalPlanRolloutFrontFocusStripAttackMaxRootScoreGap ?? 320;
   return rootScoreGap >= minRootScoreGap && rootScoreGap <= maxRootScoreGap ? challenger : undefined;
 }
