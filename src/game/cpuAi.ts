@@ -1390,6 +1390,8 @@ function applyTerminalPlanRolloutScores(
   }
 
   const isFrontFocusStripRolloutTrigger = isWhiteMirrorEnemyFrontFocusStripAttackSelection(rootState, rolloutTrigger.candidate);
+  const isFrontPressureRolloutTrigger =
+    isFrontFocusStripRolloutTrigger || isWhiteMirrorFrontPressureEscapeSelection(rootState, rolloutTrigger.candidate);
   const isShieldTargetTieRolloutTrigger = isWhiteMirrorShieldTargetTieRolloutTrigger(
     rootState,
     perspective,
@@ -1397,7 +1399,7 @@ function applyTerminalPlanRolloutScores(
     rolloutTrigger,
     config,
   );
-  const effectiveRolloutSteps = isFrontFocusStripRolloutTrigger
+  const effectiveRolloutSteps = isFrontPressureRolloutTrigger
     ? Math.trunc(config.terminalPlanRolloutFrontFocusStripAttackSteps ?? rolloutSteps)
     : isShieldTargetTieRolloutTrigger
       ? Math.trunc(config.terminalPlanRolloutShieldTargetTieSteps ?? rolloutSteps)
@@ -1409,8 +1411,12 @@ function applyTerminalPlanRolloutScores(
   const candidateLimit = Math.trunc(config.terminalPlanRolloutCandidateLimit ?? terminalRanked.length);
   const rolloutKeys = new Set<string>();
   rolloutKeys.add(cpuDecisionKey(rolloutTrigger.candidate.decision));
-  if (!isFrontFocusStripRolloutTrigger) {
-    terminalRanked.slice(0, Math.max(1, candidateLimit)).forEach((selection) => {
+  const rolloutCandidatePool = terminalRanked.slice(0, Math.max(1, candidateLimit));
+  if (isFrontPressureRolloutTrigger) {
+    // The front-pressure escape candidates are handled by the lightweight planner bonus.
+    // Rolling them all out made a few dense white mirrors exceed practical turn time.
+  } else {
+    rolloutCandidatePool.forEach((selection) => {
       rolloutKeys.add(cpuDecisionKey(selection.candidate.decision));
     });
   }
@@ -1421,7 +1427,7 @@ function applyTerminalPlanRolloutScores(
   const rolloutCache = new Map<string, TerminalPlanRolloutResult>();
   const rolloutProfileOverride = config.terminalPlanRolloutUseLightweightProfile
     ? "strong"
-    : isFrontFocusStripRolloutTrigger
+    : isFrontPressureRolloutTrigger
       ? "white"
       : undefined;
   const rolloutOptions = withoutTerminalPlanRolloutOptions(
@@ -1461,30 +1467,32 @@ function applyTerminalPlanRolloutScores(
 
   const fallbackRolloutScore = fallbackSelection ? rolloutFor(fallbackSelection)?.score : undefined;
 
-  return selections.filter((selection) => rolloutKeys.has(cpuDecisionKey(selection.candidate.decision))).map((selection) => {
-    const rollout = rolloutFor(selection);
-    if (!rollout) {
-      return selection;
-    }
-    const normalizedRolloutScore = clampNumber(rollout.score, -1_000, 1_000);
-    const rolloutBonus = normalizedRolloutScore * rolloutWeight;
-    const rolloutScoreGapToFallback = fallbackRolloutScore === undefined ? undefined : rollout.score - fallbackRolloutScore;
-    const rolloutConfirmationBonus =
-      config.terminalPlanRolloutAdoptionMinScoreGap !== undefined &&
-      rolloutScoreGapToFallback !== undefined &&
-      rolloutScoreGapToFallback >= config.terminalPlanRolloutAdoptionMinScoreGap
-        ? Math.min(500, rolloutScoreGapToFallback)
-        : 0;
-    return {
-      ...selection,
-      plannerScore: selection.plannerScore + rolloutBonus + rolloutConfirmationBonus,
-      rolloutScore: rollout.score,
-      ...(rolloutScoreGapToFallback !== undefined ? { rolloutScoreGapToFallback } : {}),
-      rolloutSteps: rollout.steps,
-      ...(rollout.winner ? { rolloutWinner: rollout.winner } : {}),
-      ...(rollout.winnerProfile ? { rolloutWinnerProfile: rollout.winnerProfile } : {}),
-    };
-  });
+  return selections
+    .filter((selection) => isFrontPressureRolloutTrigger || rolloutKeys.has(cpuDecisionKey(selection.candidate.decision)))
+    .map((selection) => {
+      const rollout = rolloutFor(selection);
+      if (!rollout) {
+        return selection;
+      }
+      const normalizedRolloutScore = clampNumber(rollout.score, -1_000, 1_000);
+      const rolloutBonus = normalizedRolloutScore * rolloutWeight;
+      const rolloutScoreGapToFallback = fallbackRolloutScore === undefined ? undefined : rollout.score - fallbackRolloutScore;
+      const rolloutConfirmationBonus =
+        config.terminalPlanRolloutAdoptionMinScoreGap !== undefined &&
+        rolloutScoreGapToFallback !== undefined &&
+        rolloutScoreGapToFallback >= config.terminalPlanRolloutAdoptionMinScoreGap
+          ? Math.min(500, rolloutScoreGapToFallback)
+          : 0;
+      return {
+        ...selection,
+        plannerScore: selection.plannerScore + rolloutBonus + rolloutConfirmationBonus,
+        rolloutScore: rollout.score,
+        ...(rolloutScoreGapToFallback !== undefined ? { rolloutScoreGapToFallback } : {}),
+        rolloutSteps: rollout.steps,
+        ...(rollout.winner ? { rolloutWinner: rollout.winner } : {}),
+        ...(rollout.winnerProfile ? { rolloutWinnerProfile: rollout.winnerProfile } : {}),
+      };
+    });
 }
 
 function terminalPlanRolloutTriggerSelection(
@@ -1942,6 +1950,9 @@ function shouldAdoptTerminalPlanRootSelection(
   if (shouldAdoptSetupOverFocusRootSelection(state, perspective, selection, fallback, rootScoreGap, config)) {
     return true;
   }
+  if (shouldAdoptFrontPressureEscapeOverFocusSelection(state, perspective, selection, fallback, rootScoreGap)) {
+    return true;
+  }
   const maxRootScoreGap = config.terminalPlanAdoptionMaxRootScoreGap ?? Number.POSITIVE_INFINITY;
   if (rootScoreGap > maxRootScoreGap) {
     return false;
@@ -2003,6 +2014,26 @@ function shouldAdoptSetupOverFocusRootSelection(
     ? Number.POSITIVE_INFINITY
     : selection.plannerScore - selection.runnerUpScore;
   return plannerMargin >= (config.terminalPlanSetupOverFocusAdoptionMinMargin ?? 0);
+}
+
+function shouldAdoptFrontPressureEscapeOverFocusSelection(
+  state: GameState,
+  perspective: PlayerId,
+  selection: TerminalPlanSelection,
+  fallback: EvaluatedDecision,
+  rootScoreGap: number,
+): boolean {
+  if (
+    fallback.decision.type !== "focus" ||
+    rootScoreGap > 280 ||
+    whiteMirrorFrontPressureEscapePlannerBonus(state, selection.candidate, fallback, perspective) < 120
+  ) {
+    return false;
+  }
+  const plannerMargin = selection.runnerUpScore === undefined
+    ? Number.POSITIVE_INFINITY
+    : selection.plannerScore - selection.runnerUpScore;
+  return plannerMargin >= 8;
 }
 
 function isRolloutConfirmedTerminalPlanSelection(
@@ -2076,7 +2107,13 @@ function terminalPlanRootPlannerScore(
   const rootGapPenalty = gapPenaltyWeight > 0
     ? Math.max(0, bestRootTotalScore - candidate.totalScore - gapFreeMargin) * gapPenaltyWeight
     : 0;
-  return terminalScore + rootScoreBonus - rootGapPenalty;
+  const frontPressureEscapeBonus = whiteMirrorFrontPressureEscapePlannerBonus(
+    rootState,
+    candidate,
+    fallback,
+    perspective,
+  );
+  return terminalScore + rootScoreBonus + frontPressureEscapeBonus - rootGapPenalty;
 }
 
 function shouldNeutralizeSetupOverFocusRootScore(
@@ -5084,6 +5121,31 @@ function addTerminalPlanCoverageCandidates(
       seen.add(best.index);
     }
   };
+  const appendFrontPressureEscapeCandidates = () => {
+    const seenAfter = new Set(covered.map((candidate) => terminalPlanStateKey(candidate.after)));
+    let added = 0;
+    const ranked = evaluated
+      .map((candidate) => ({ candidate, pressureScore: whiteMirrorFrontPressureEscapeScore(state, candidate) }))
+      .filter(({ candidate, pressureScore }) => !seen.has(candidate.index) && candidate.totalScore >= -100 && pressureScore > 0)
+      .sort(
+        (a, b) =>
+          b.candidate.totalScore + b.pressureScore * 0.2 - (a.candidate.totalScore + a.pressureScore * 0.2) ||
+          compareTieBreak(a.candidate.decision, b.candidate.decision, a.candidate.index, b.candidate.index),
+      );
+    for (const { candidate } of ranked) {
+      const afterKey = terminalPlanStateKey(candidate.after);
+      if (seenAfter.has(afterKey)) {
+        continue;
+      }
+      covered.push(candidate);
+      seen.add(candidate.index);
+      seenAfter.add(afterKey);
+      added += 1;
+      if (added >= 3) {
+        break;
+      }
+    }
+  };
 
   appendBest((candidate) => candidate.decision.type === "focus", -20);
   appendBest(
@@ -5092,8 +5154,148 @@ function addTerminalPlanCoverageCandidates(
   );
   if (config.terminalPlanRolloutAllowFrontFocusStripAttack) {
     appendBest((candidate) => isWhiteMirrorEnemyFrontFocusStripAttackSelection(state, candidate), -80);
+    appendFrontPressureEscapeCandidates();
   }
   return covered;
+}
+
+function isWhiteMirrorFrontPressureEscapeSelection(state: GameState, candidate: EvaluatedDecision): boolean {
+  return whiteMirrorFrontPressureEscapeScore(state, candidate) > 0;
+}
+
+function whiteMirrorFrontPressureEscapeScore(state: GameState, candidate: EvaluatedDecision): number {
+  const perspective = state.currentPlayer;
+  if (
+    !isWhiteMirrorState(state, perspective) ||
+    state.players[opponentOf(perspective)].stones > 1 ||
+    whiteMirrorEnemyFrontFormationThreat(state, perspective) < 120
+  ) {
+    return 0;
+  }
+  if (candidate.decision.type === "magic") {
+    return whiteMirrorFrontPressureWarpScore(state, candidate, perspective);
+  }
+  return 0;
+}
+
+function whiteMirrorFrontPressureWarpScore(
+  state: GameState,
+  candidate: EvaluatedDecision,
+  perspective: PlayerId,
+): number {
+  const decision = candidate.decision;
+  if (decision.type !== "magic") {
+    return 0;
+  }
+  const card = state.players[perspective].hand.find((handCard) => handCard.instanceId === decision.action.handInstanceId);
+  if (!card || getCardName(card.cardId) !== "ワープ") {
+    return 0;
+  }
+  const primaryTarget = decision.action.target;
+  const secondaryTarget = decision.action.secondaryTarget;
+  if (primaryTarget.kind !== "monster" || secondaryTarget?.kind !== "monster") {
+    return 0;
+  }
+  const opponent = opponentOf(perspective);
+  const primarySlot = state.slots[primaryTarget.slotKey];
+  const secondarySlot = state.slots[secondaryTarget.slotKey];
+  if (
+    primarySlot.owner !== opponent ||
+    secondarySlot.owner !== opponent ||
+    primarySlot.row === secondarySlot.row
+  ) {
+    return 0;
+  }
+  const beforeThreat = whiteMirrorEnemyFrontFormationThreat(state, perspective);
+  const threatDrop = Math.max(0, beforeThreat - whiteMirrorEnemyFrontFormationThreat(candidate.after, perspective));
+  const frontSlotKey = primarySlot.row === "front" ? primaryTarget.slotKey : secondaryTarget.slotKey;
+  const incomingSlotKey = primarySlot.row === "front" ? secondaryTarget.slotKey : primaryTarget.slotKey;
+  const frontMonster = state.slots[frontSlotKey].monster;
+  const incomingMonster = state.slots[incomingSlotKey].monster;
+  const levelDrop = Math.max(0, (frontMonster?.level ?? 0) - (incomingMonster?.level ?? 0));
+  if (threatDrop < 40 && levelDrop <= 0) {
+    return 0;
+  }
+  const incomingActionPenalty = incomingMonster && monsterActionsRemaining(incomingMonster) > 0 ? 40 : 0;
+  const incomingLevelPenalty = incomingMonster ? Math.max(0, incomingMonster.level - 1) * 60 : 0;
+  const incomingDamagePenalty = directMasterDamageFromSlot(candidate.after, frontSlotKey, opponent) * 35;
+  const frontMaxLevel = frontMonster ? getMonsterDef(frontMonster.cardId).maxLevel : 1;
+  const levelDropBonus =
+    levelDrop * 110 +
+    (frontMonster && frontMonster.level >= frontMaxLevel && frontMaxLevel > 1 ? 55 : 0);
+  return Math.max(0,
+    70 +
+    threatDrop * 0.8 +
+    whiteMirrorFrontSlotThreat(state, frontSlotKey, perspective) * 0.15 +
+    levelDropBonus +
+    Math.max(0, candidate.totalScore) * 0.05 -
+    incomingActionPenalty -
+    incomingLevelPenalty -
+    incomingDamagePenalty
+  );
+}
+
+function whiteMirrorEnemyFrontFormationThreat(state: GameState, perspective: PlayerId): number {
+  const opponent = opponentOf(perspective);
+  return FIELD_ORDER_BY_PLAYER[opponent].reduce((total, slotKey) => {
+    return total + whiteMirrorFrontSlotThreat(state, slotKey, perspective);
+  }, 0);
+}
+
+function whiteMirrorFrontSlotThreat(state: GameState, slotKey: SlotKey, perspective: PlayerId): number {
+  const slot = state.slots[slotKey];
+  const monster = slot.monster;
+  if (!monster || slot.row !== "front" || monster.status !== "active" || monster.owner !== opponentOf(perspective)) {
+    return 0;
+  }
+  const maxLevel = getMonsterDef(monster.cardId).maxLevel;
+  const actionScale = monsterActionsRemaining(monster) > 0 ? 1 : 0.35;
+  const levelPressure = (monster.level * 55 + (monster.level >= maxLevel && maxLevel > 1 ? 45 : 0)) * actionScale;
+  const focusPressure = monster.focused ? 34 : 0;
+  const masterDamagePressure = directMasterDamageFromSlot(state, slotKey, monster.owner) * 42 * actionScale;
+  return levelPressure + focusPressure + masterDamagePressure + monsterValue(state, slotKey) * 0.12;
+}
+
+function whiteMirrorFrontPressureEscapePlannerBonus(
+  state: GameState,
+  candidate: EvaluatedDecision,
+  fallback: EvaluatedDecision | undefined,
+  perspective: PlayerId,
+): number {
+  if (fallback?.decision.type !== "focus") {
+    return 0;
+  }
+  const pressureScore = whiteMirrorFrontPressureEscapeScore(state, candidate);
+  if (pressureScore <= 0) {
+    return 0;
+  }
+  if (frontPressureWarpIncomingLevel(state, candidate) >= 2) {
+    return Math.min(80, pressureScore * 0.5);
+  }
+  return Math.min(260, pressureScore * 1.2);
+}
+
+function frontPressureWarpIncomingLevel(state: GameState, candidate: EvaluatedDecision): number {
+  const decision = candidate.decision;
+  if (decision.type !== "magic") {
+    return 0;
+  }
+  const primaryTarget = decision.action.target;
+  const secondaryTarget = decision.action.secondaryTarget;
+  if (primaryTarget.kind !== "monster" || secondaryTarget?.kind !== "monster") {
+    return 0;
+  }
+  const primarySlot = state.slots[primaryTarget.slotKey];
+  const secondarySlot = state.slots[secondaryTarget.slotKey];
+  if (primarySlot.row === secondarySlot.row) {
+    return 0;
+  }
+  const incomingSlotKey = primarySlot.row === "front" ? secondaryTarget.slotKey : primaryTarget.slotKey;
+  return state.slots[incomingSlotKey].monster?.level ?? 0;
+}
+
+function monsterActionsRemaining(monster: Pick<MonsterState, "actionCount" | "actionLimit">): number {
+  return Math.max(0, monster.actionLimit - monster.actionCount);
 }
 
 function evaluateImmediateCpuDecisionsCached(

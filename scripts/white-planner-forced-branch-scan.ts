@@ -11,7 +11,7 @@ import { AI_EVALUATION_WEIGHTS } from "../src/game/aiWeights";
 import { getCardName } from "../src/game/cards";
 import { buildDeckPresetCardIds, deckPresetAllowsSpecial, type DeckPresetId } from "../src/game/deckPresets";
 import { createInitialGame, opponentOf, runAutoStep, targetToKey } from "../src/game/rules";
-import type { GameState, PlayerId, SlotKey } from "../src/game/types";
+import type { GameState, PlayerId, SlotKey, Target } from "../src/game/types";
 import { escapeMarkdownTableCell, readInteger, readString, round, writeReport } from "./lib/cli";
 
 type Direction = "challenger-as-cpu" | "challenger-as-player";
@@ -373,7 +373,8 @@ function decisionLabel(state: GameState, decision: CpuDecision): string {
     const target = decision.action.target.kind === "monster"
       ? monsterNameAt(state, decision.action.target.slotKey) ?? decision.action.target.slotKey
       : `${decision.action.target.playerId} master`;
-    return `attack:${attacker}:${decision.action.commandId}->${target}`;
+    const secondary = decision.action.secondaryTarget ? `:${targetToKey(decision.action.secondaryTarget)}` : "";
+    return `attack:${attacker}:${decision.action.commandId}->${target}${secondary}`;
   }
   if (decision.type === "master_action") {
     return `master:${decision.actionId}->${targetToKey(decision.target)}`;
@@ -384,7 +385,8 @@ function decisionLabel(state: GameState, decision: CpuDecision): string {
   }
   if (decision.type === "magic") {
     const card = state.players[state.currentPlayer].hand.find((handCard) => handCard.instanceId === decision.action.handInstanceId);
-    return `magic:${card ? getCardName(card.cardId) : decision.action.handInstanceId}->${targetToKey(decision.action.target)}`;
+    const secondary = decision.action.secondaryTarget ? `:${targetToKey(decision.action.secondaryTarget)}` : "";
+    return `magic:${card ? getCardName(card.cardId) : decision.action.handInstanceId}->${targetToKey(decision.action.target)}${secondary}`;
   }
   if (decision.type === "move") {
     return `move:${decision.fromSlotKey}->${decision.toSlotKey}`;
@@ -397,24 +399,28 @@ function decisionLabel(state: GameState, decision: CpuDecision): string {
 
 function decisionKey(decision: CpuDecision): string {
   if (decision.type === "attack") {
-    return `attack:${decision.action.attackerSlotKey}:${decision.action.commandId}->${targetToKey(decision.action.target)}`;
+    return `attack:${decision.action.attackerSlotKey}:${decision.action.commandId}:${targetToKey(decision.action.target)}:${optionalTargetKey(decision.action.secondaryTarget)}:${decision.action.secondaryHandInstanceId ?? ""}`;
   }
   if (decision.type === "master_action") {
-    return `master:${decision.actionId}->${targetToKey(decision.target)}`;
+    return `master:${decision.actionId}:${targetToKey(decision.target)}`;
   }
   if (decision.type === "summon") {
-    return `summon:${decision.handInstanceId}->${decision.slotKey}`;
+    return `summon:${decision.handInstanceId}:${decision.slotKey}`;
   }
   if (decision.type === "magic") {
-    return `magic:${decision.action.handInstanceId}->${targetToKey(decision.action.target)}`;
+    return `magic:${decision.action.handInstanceId}:${targetToKey(decision.action.target)}:${optionalTargetKey(decision.action.secondaryTarget)}:${decision.action.secondaryHandInstanceId ?? ""}:${decision.action.selectedHandInstanceIds?.join(",") ?? ""}:${decision.action.deckTopOrderInstanceIds?.join(",") ?? ""}:${decision.action.searchCategory ?? ""}:${decision.action.rotationDirection ?? ""}`;
   }
   if (decision.type === "move") {
-    return `move:${decision.fromSlotKey}->${decision.toSlotKey}`;
+    return `move:${decision.fromSlotKey}:${decision.toSlotKey}`;
   }
   if (decision.type === "focus") {
     return `focus:${decision.slotKey}`;
   }
   return "end_turn";
+}
+
+function optionalTargetKey(target: Target | undefined): string {
+  return target ? targetToKey(target) : "";
 }
 
 function stateLine(state: GameState, perspective: PlayerId): string {
