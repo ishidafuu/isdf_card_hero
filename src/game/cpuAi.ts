@@ -222,6 +222,7 @@ type CpuAiProfileConfig = {
   terminalPlanRolloutLatePressureOverSummonSteps?: number;
   terminalPlanRolloutAllowLateDeckHoldEndTurn?: number;
   terminalPlanRolloutLateDeckHoldEndTurnSteps?: number;
+  terminalPlanAllowShieldHoldEndTurn?: number;
   terminalPlanRolloutAllowFrontFocusStripAttack?: number;
   terminalPlanRolloutFrontFocusStripAttackMinRootScoreGap?: number;
   terminalPlanRolloutFrontFocusStripAttackMaxRootScoreGap?: number;
@@ -407,6 +408,7 @@ const CPU_AI_PROFILE_CONFIG: Record<CpuAiProfile, CpuAiProfileConfig> = {
     terminalPlanRolloutLatePressureOverSummonSteps: 40,
     terminalPlanRolloutAllowLateDeckHoldEndTurn: 1,
     terminalPlanRolloutLateDeckHoldEndTurnSteps: 56,
+    terminalPlanAllowShieldHoldEndTurn: 1,
     terminalPlanRolloutAllowFrontFocusStripAttack: 1,
     terminalPlanRolloutFrontFocusStripAttackMinRootScoreGap: 180,
     terminalPlanRolloutFrontFocusStripAttackMaxRootScoreGap: 460,
@@ -461,6 +463,7 @@ const CPU_AI_PROFILE_CONFIG: Record<CpuAiProfile, CpuAiProfileConfig> = {
     terminalPlanRolloutLatePressureOverSummonSteps: 40,
     terminalPlanRolloutAllowLateDeckHoldEndTurn: 1,
     terminalPlanRolloutLateDeckHoldEndTurnSteps: 56,
+    terminalPlanAllowShieldHoldEndTurn: 1,
     terminalPlanRolloutAllowFrontFocusStripAttack: 1,
     terminalPlanRolloutFrontFocusStripAttackMinRootScoreGap: 180,
     terminalPlanRolloutFrontFocusStripAttackMaxRootScoreGap: 460,
@@ -536,6 +539,17 @@ export function chooseCpuDecision(state: GameState, options: CpuAiOptions = {}):
       best = candidate;
     }
   });
+
+  const shieldHoldEndTurnDecision = selectWhiteMirrorShieldHoldEndTurnDecision(
+    state,
+    perspective,
+    config,
+    best,
+    evaluated,
+  );
+  if (shieldHoldEndTurnDecision) {
+    return shieldHoldEndTurnDecision;
+  }
 
   if (shouldSelectTerminalPlanRoot(state, perspective, config)) {
     const selection = selectTerminalPlanRootDecision(state, perspective, config, options, best);
@@ -1086,6 +1100,10 @@ function applyCpuAiSearchOptions(
     terminalPlanRolloutLateDeckHoldEndTurnSteps: normalizedOptionalSearchNumber(
       search.terminalPlanRolloutLateDeckHoldEndTurnSteps,
       base.terminalPlanRolloutLateDeckHoldEndTurnSteps,
+    ),
+    terminalPlanAllowShieldHoldEndTurn: normalizedOptionalSearchNumber(
+      search.terminalPlanAllowShieldHoldEndTurn,
+      base.terminalPlanAllowShieldHoldEndTurn,
     ),
     terminalPlanRolloutAllowFrontFocusStripAttack: normalizedOptionalSearchNumber(
       search.terminalPlanRolloutAllowFrontFocusStripAttack,
@@ -1926,6 +1944,44 @@ function isWhiteMirrorShieldTargetTieRolloutTrigger(
 
 function isShieldDecision(decision: CpuDecision): decision is Extract<CpuDecision, { type: "master_action" }> {
   return decision.type === "master_action" && decision.actionId === "shield";
+}
+
+function selectWhiteMirrorShieldHoldEndTurnDecision(
+  state: GameState,
+  perspective: PlayerId,
+  config: CpuAiProfileConfig,
+  fallback: EvaluatedDecision | undefined,
+  evaluated: readonly EvaluatedDecision[],
+): CpuDecision | undefined {
+  if (
+    !config.terminalPlanAllowShieldHoldEndTurn ||
+    !fallback ||
+    !isWhiteMirrorShieldHoldEndTurnFallback(state, perspective, fallback)
+  ) {
+    return undefined;
+  }
+  if (fallback.after.players[perspective].stones > 1) {
+    return undefined;
+  }
+  const opponent = opponentOf(perspective);
+  if (state.players[perspective].masterHp >= state.players[opponent].masterHp) {
+    return undefined;
+  }
+
+  const endTurn = evaluated.find((candidate) => candidate.decision.type === "end_turn");
+  if (!endTurn) {
+    return undefined;
+  }
+  const rootGap = fallback.totalScore - endTurn.totalScore;
+  if (rootGap > 300) {
+    return undefined;
+  }
+  return {
+    ...endTurn.decision,
+    reason:
+      `${endTurn.decision.reason} / 白ミラー終盤: ` +
+      "盾で石が1以下になり山札raceの詰めを落とすため見送り",
+  };
 }
 
 function selectShieldTargetTieRootDecision(
@@ -5752,6 +5808,41 @@ function isWhiteMirrorLateDeckHoldEndTurnSelection(
   candidate: EvaluatedDecision,
 ): boolean {
   return candidate.decision.type === "end_turn" && isWhiteMirrorLateDeckHoldState(state, perspective);
+}
+
+function isWhiteMirrorShieldHoldEndTurnFallback(
+  state: GameState,
+  perspective: PlayerId,
+  fallback: EvaluatedDecision,
+): boolean {
+  if (!isWhiteMirrorShieldHoldEndTurnState(state, perspective) || !isShieldDecision(fallback.decision)) {
+    return false;
+  }
+  if (fallback.after.winner || fallback.after.pendingLevelUp || fallback.decision.target.kind !== "monster") {
+    return false;
+  }
+  const targetSlot = state.slots[fallback.decision.target.slotKey];
+  if (targetSlot.owner !== perspective || !targetSlot.monster) {
+    return false;
+  }
+  const opponentThreat = buildThreatModel(state, opponentOf(perspective)).masterDamage[perspective];
+  return opponentThreat < state.players[perspective].masterHp;
+}
+
+function isWhiteMirrorShieldHoldEndTurnState(state: GameState, perspective: PlayerId): boolean {
+  if (!isWhiteMirrorState(state, perspective) || state.turnNumber < 18) {
+    return false;
+  }
+  const opponent = opponentOf(perspective);
+  const own = state.players[perspective];
+  const enemy = state.players[opponent];
+  return (
+    own.deck.length <= 8 &&
+    enemy.deck.length <= 8 &&
+    Math.abs(own.deck.length - enemy.deck.length) <= 1 &&
+    own.masterHp + 1 >= enemy.masterHp &&
+    own.stones >= getMasterActionCost("shield")
+  );
 }
 
 function isWhiteMirrorLateDeckHoldEndTurnFallback(

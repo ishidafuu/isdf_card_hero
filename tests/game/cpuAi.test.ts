@@ -207,6 +207,75 @@ describe("cpu ai", () => {
     expect(decision.reason).toContain("ターンプラン探索");
   });
 
+  it("holds the late white mirror shield when it would spend down to one stone in the deck race", () => {
+    const game = createPlayerAutoGame(createHand("player_hand", 4));
+    game.turnNumber = 18;
+    game.players.player.masterId = "white";
+    game.players.cpu.masterId = "white";
+    game.players.player.masterHp = 8;
+    game.players.cpu.masterHp = 9;
+    game.players.player.stones = 3;
+    game.players.cpu.stones = 4;
+    game.players.player.deck = createHand("player_deck", 8);
+    game.players.cpu.deck = createHand("cpu_deck", 8);
+    game.players.cpu.hand = createHand("cpu_hand", 3);
+    for (const slot of Object.values(game.slots)) {
+      delete slot.monster;
+    }
+    game.slots.player_front_left.monster = createActiveMonster("bomuzo", "player", {
+      instanceId: "player_late_bomuzo",
+      status: "prepared",
+      hp: 6,
+    });
+    game.slots.player_front_right.monster = createActiveMonster("card_047", "player", {
+      instanceId: "player_late_dyne_l3",
+      level: 3,
+      hp: 6,
+      investedStones: 3,
+      actionCount: 1,
+    });
+    game.slots.player_back_left.monster = createActiveMonster("card_051", "player", {
+      instanceId: "player_late_pygmy_l2",
+      level: 2,
+      hp: 3,
+      investedStones: 2,
+      actionCount: 2,
+      focused: true,
+    });
+    game.slots.player_back_right.monster = createActiveMonster("yanbaru", "player", {
+      instanceId: "player_late_yanbaru_l2",
+      level: 2,
+      hp: 3,
+      investedStones: 2,
+      actionCount: 1,
+    });
+    game.slots.cpu_front_left.monster = createActiveMonster("card_133", "cpu", {
+      instanceId: "cpu_late_death_sheep_l2",
+      level: 2,
+      hp: 6,
+      investedStones: 2,
+      actionCount: 1,
+    });
+    game.slots.cpu_back_left.monster = createActiveMonster("yanbaru", "cpu", {
+      instanceId: "cpu_late_yanbaru_l2",
+      level: 2,
+      hp: 3,
+      investedStones: 2,
+      actionCount: 1,
+      shielded: true,
+    });
+    game.slots.cpu_back_right.monster = createActiveMonster("card_037", "cpu", {
+      instanceId: "cpu_late_donomantis",
+      status: "prepared",
+      hp: 5,
+    });
+
+    const decision = chooseCpuDecision(game, { profiles: { player: "white_planner", cpu: "white" } });
+
+    expect(decision.type).toBe("end_turn");
+    expect(decision.reason).toContain("盾で石が1以下");
+  });
+
   it("does not spend an action focusing when direct master damage is already available", () => {
     const game = createCpuGame();
     game.players.cpu.hand = [];
@@ -3587,6 +3656,13 @@ function createPlayerAutoGame(hand: CardInstance[] = []): GameState {
   game.players.player.discard = [];
   game.players.cpu.hand = [];
   return game;
+}
+
+function createHand(prefix: string, count: number, cardId = "yanbaru"): CardInstance[] {
+  return Array.from({ length: count }, (_, index) => ({
+    cardId,
+    instanceId: `${prefix}_${index}`,
+  }));
 }
 
 function isMasterDamagePlanStep(decision: ReturnType<typeof chooseCpuDecision>): boolean {
