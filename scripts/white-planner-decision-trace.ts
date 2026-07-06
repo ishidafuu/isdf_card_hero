@@ -6,6 +6,7 @@ import {
   chooseCpuDecision,
   evaluateState,
   inspectCpuDecisionEvaluations,
+  inspectCpuTerminalPlan,
   listCpuDecisions,
   type CpuAiOptions,
   type CpuAiProfile,
@@ -141,11 +142,51 @@ function runTrace(options: CliOptions): DecisionTraceReport {
       const whiteEvaluations = inspectCpuDecisionEvaluations(before, { profile: "white" });
       const whiteEvalElapsedMs = performance.now() - whiteEvalStartedAt;
       console.log(`[profile] step ${steps} inspect white ${round(whiteEvalElapsedMs, 1)}ms count ${whiteEvaluations.length}`);
+      whiteEvaluations
+        .sort((a, b) =>
+          b.totalScore - a.totalScore || compareDecisionTraceTieBreak(a.decision, b.decision, a.index, b.index),
+        )
+        .slice(0, 8)
+        .forEach((evaluation, rank) => {
+          console.log(
+            `[profile white evaluation ${rank + 1}] ${round(evaluation.totalScore, 1)} ` +
+              `${decisionLabel(before, evaluation.decision)}`,
+          );
+        });
 
       const plannerEvalStartedAt = performance.now();
       const plannerEvaluations = inspectCpuDecisionEvaluations(before, { profile: "white_planner" });
       const plannerEvalElapsedMs = performance.now() - plannerEvalStartedAt;
       console.log(`[profile] step ${steps} inspect white_planner ${round(plannerEvalElapsedMs, 1)}ms count ${plannerEvaluations.length}`);
+      plannerEvaluations
+        .sort((a, b) =>
+          b.totalScore - a.totalScore || compareDecisionTraceTieBreak(a.decision, b.decision, a.index, b.index),
+        )
+        .slice(0, 12)
+        .forEach((evaluation, rank) => {
+          console.log(
+            `[profile evaluation ${rank + 1}] ${round(evaluation.totalScore, 1)} ` +
+              `${decisionLabel(before, evaluation.decision)}`,
+          );
+        });
+      const terminalPlan = inspectCpuTerminalPlan(before, { profile: "white_planner" });
+      console.log(
+        `[profile terminal] enabled=${terminalPlan.enabled} adopted=${terminalPlan.adopted} ` +
+          `selected=${terminalPlan.selectedDecision ? decisionLabel(before, terminalPlan.selectedDecision) : "-"} ` +
+          `fallback=${terminalPlan.fallbackDecision ? decisionLabel(before, terminalPlan.fallbackDecision) : "-"} ` +
+          `reason=${terminalPlan.rejectedReason ?? "-"}`,
+      );
+      terminalPlan.candidates
+        .sort((a, b) => b.plannerScore - a.plannerScore || b.rootScore - a.rootScore)
+        .slice(0, 8)
+        .forEach((candidate, rank) => {
+          console.log(
+            `[profile terminal ${rank + 1}] root=${round(candidate.rootScore, 1)} ` +
+              `planner=${round(candidate.plannerScore, 1)} ` +
+              `response=${round(candidate.responseScore, 1)} ` +
+              `${decisionLabel(before, candidate.decision)}`,
+          );
+        });
     }
     const startedAt = performance.now();
     const decision = chooseCpuDecision(before, aiOptions);
