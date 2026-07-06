@@ -607,6 +607,16 @@ export function chooseCpuDecision(state: GameState, options: CpuAiOptions = {}):
     return frontClogHoldEndTurnDecision;
   }
 
+  const lateNoStoneFaceHoldEndTurnDecision = selectWhiteMirrorLateNoStoneFaceHoldEndTurnDecision(
+    state,
+    perspective,
+    best,
+    evaluated,
+  );
+  if (lateNoStoneFaceHoldEndTurnDecision) {
+    return lateNoStoneFaceHoldEndTurnDecision;
+  }
+
   const skipTerminalPlanRoot = shouldSkipTerminalPlanRootForShieldOnlyRoot(
     state,
     perspective,
@@ -615,8 +625,20 @@ export function chooseCpuDecision(state: GameState, options: CpuAiOptions = {}):
   );
   if (!skipTerminalPlanRoot && shouldSelectTerminalPlanRoot(state, perspective, config)) {
     const selection = selectTerminalPlanRootDecision(state, perspective, config, options, best);
-    if (selection && shouldAdoptTerminalPlanRootSelection(state, perspective, selection, best, config)) {
-      return withTerminalPlanReason(selection.candidate.decision, selection);
+    if (selection) {
+      const lateNoStoneFaceHold = selectWhiteMirrorLateNoStoneFaceHoldEndTurnDecision(
+        state,
+        perspective,
+        selection.candidate,
+        evaluated,
+        500,
+      );
+      if (lateNoStoneFaceHold) {
+        return lateNoStoneFaceHold;
+      }
+      if (shouldAdoptTerminalPlanRootSelection(state, perspective, selection, best, config)) {
+        return withTerminalPlanReason(selection.candidate.decision, selection);
+      }
     }
   }
 
@@ -1926,6 +1948,68 @@ function selectWhiteMirrorFrontClogHoldEndTurnDecision(
     ...hold.decision,
     reason: `${hold.decision.reason} / 白ミラー前列蓋: 低HP前衛を残して後列エースの前進を遅らせる`,
   };
+}
+
+function selectWhiteMirrorLateNoStoneFaceHoldEndTurnDecision(
+  state: GameState,
+  perspective: PlayerId,
+  fallback: EvaluatedDecision | undefined,
+  evaluated: readonly EvaluatedDecision[],
+  maxRootGap = 240,
+): CpuDecision | undefined {
+  if (!fallback || !isWhiteMirrorLateNoStoneFaceHoldFallback(state, perspective, fallback)) {
+    return undefined;
+  }
+
+  const hold = evaluated.find((candidate) => candidate.decision.type === "end_turn");
+  if (!hold) {
+    return undefined;
+  }
+
+  const rootGap = fallback.totalScore - hold.totalScore;
+  if (rootGap > maxRootGap) {
+    return undefined;
+  }
+
+  return {
+    ...hold.decision,
+    reason:
+      `${hold.decision.reason} / 白ミラー終盤: ` +
+      "石0で相手に石を渡す非リーサル顔打点を見送り、盤面と山札raceを優先",
+  };
+}
+
+function isWhiteMirrorLateNoStoneFaceHoldFallback(
+  state: GameState,
+  perspective: PlayerId,
+  fallback: EvaluatedDecision,
+): boolean {
+  if (
+    !isWhiteMirrorState(state, perspective) ||
+    state.turnNumber < 18 ||
+    state.players[perspective].stones > 0 ||
+    state.players[perspective].deck.length > 8 ||
+    state.players[opponentOf(perspective)].deck.length > 8 ||
+    fallback.after.winner ||
+    fallback.after.pendingLevelUp ||
+    fallback.decision.type !== "attack" ||
+    fallback.decision.action.target.kind !== "master"
+  ) {
+    return false;
+  }
+
+  const opponent = opponentOf(perspective);
+  const damage = masterDamageFromTransition(state, fallback.after, perspective);
+  if (
+    damage <= 0 ||
+    fallback.after.players[opponent].masterHp <= 3 ||
+    state.players[perspective].masterHp < state.players[opponent].masterHp + 1 ||
+    fallback.after.players[opponent].stones <= state.players[opponent].stones
+  ) {
+    return false;
+  }
+
+  return whiteMirrorEnemyFrontFormationThreat(state, perspective) >= 90;
 }
 
 function isWhiteMirrorFrontClogFrontSummonCandidate(

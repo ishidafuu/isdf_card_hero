@@ -2607,6 +2607,60 @@ describe("cpu ai", () => {
     expect(decision.reason).toContain("後列へ下げて行動を使う前");
   });
 
+  it("holds late white mirror non-lethal face damage when it would give stone at zero stones", () => {
+    const game = createCpuGame();
+    game.turnNumber = 18;
+    game.players.cpu.masterId = "white";
+    game.players.player.masterId = "white";
+    game.players.cpu.masterHp = 8;
+    game.players.player.masterHp = 6;
+    game.players.cpu.stones = 0;
+    game.players.player.stones = 3;
+    game.players.cpu.deck = createHand("cpu_late_deck", 7);
+    game.players.player.deck = createHand("player_late_deck", 8);
+    game.players.cpu.hand = [];
+    game.players.player.hand = [];
+    for (const slot of Object.values(game.slots)) {
+      delete slot.monster;
+    }
+    game.slots.player_front_left.monster = createActiveMonster("card_047", "player", {
+      instanceId: "player_late_dyne_l2",
+      level: 2,
+      hp: 6,
+      investedStones: 2,
+      actionCount: 1,
+      focused: true,
+    });
+    game.slots.player_back_right.monster = createActiveMonster("polyspinner", "player", {
+      instanceId: "player_late_poly",
+      actionCount: 2,
+    });
+    game.slots.cpu_front_left.monster = createActiveMonster("bomuzo", "cpu", {
+      instanceId: "cpu_late_bomuzo_l2",
+      level: 2,
+      hp: 5,
+      investedStones: 2,
+      actionCount: 1,
+    });
+    game.slots.cpu_front_right.monster = createActiveMonster("polyspinner", "cpu", {
+      instanceId: "cpu_late_poly_l2",
+      level: 2,
+      hp: 3,
+      investedStones: 2,
+      actionCount: 1,
+      actionLimit: 2,
+    });
+    game.slots.cpu_back_left.monster = createActiveMonster("card_047", "cpu", {
+      instanceId: "cpu_late_dyne",
+      hp: 6,
+    });
+
+    const decision = chooseCpuDecision(game, { profiles: { cpu: "white_planner", player: "white" } });
+
+    expect(decision.type).toBe("end_turn");
+    expect(decision.reason).toContain("石0で相手に石を渡す非リーサル顔打点");
+  });
+
   it("uses the last back-slot no-reach guard only in the default white-vs-black matchup", () => {
     const createLastSlotGame = (opponentMasterId: "black" | "white") => {
       const game = createCpuGame([{ cardId: "card_047", instanceId: "cpu_last_slot_dyne" }]);
