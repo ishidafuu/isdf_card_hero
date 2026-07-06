@@ -1,0 +1,350 @@
+{
+  "generatedAt": "2026-07-06T16:54:48.190Z",
+  "seed": 994331,
+  "direction": "challenger-as-cpu",
+  "deckPreset": "master-lab-white-1377-death-sheep3",
+  "branchTop": 10,
+  "maxReplaySteps": 240,
+  "samples": [
+    {
+      "step": 176,
+      "turnNumber": 16,
+      "plannerSide": "cpu",
+      "currentPlayer": "cpu",
+      "state": "turn 16 / current cpu / HP cpu/player 6/3 / stones cpu/player 13/3 / deck cpu/player 9/10 / hand cpu/player 5/5",
+      "board": "player_front_left:PF:ボムゾウ Lv2 HP2 act1/1 shield | player_back_left:PB:真勇者ダイン Lv3 HP5 act1/1 | player_back_right:PB:ポリスピナー Lv1 HP3 act0/2 focus | cpu_front_left:CF:ピグミィ Lv1 HP3 act0/2 focus | cpu_front_right:CF:ポリスピナー Lv2 HP3 act1/2",
+      "branches": [
+        {
+          "rank": 1,
+          "decision": "attack:ポリスピナー:attack->player master",
+          "rootScore": 1100.3,
+          "selected": true,
+          "applied": true,
+          "winner": "player",
+          "winnerProfile": "white",
+          "replaySteps": 23,
+          "finalTurn": 20,
+          "branchScore": -1000000,
+          "finalState": "turn 20 / current player / HP cpu/player 0/2 / stones cpu/player 19/12 / deck cpu/player 6/6 / hand cpu/player 5/6",
+          "finalBoard": "player_front_left:PF:真勇者ダイン Lv3 HP5 act1/1 | player_front_right:PF:ポリスピナー Lv1 HP3 act0/2 focus | cpu_front_left:CF:ピグミィ Lv1 HP3 act0/2 focus,shield"
+        },
+        {
+          "rank": 2,
+          "decision": "end_turn",
+          "rootScore": 602.9,
+          "selected": false,
+          "applied": true,
+          "winner": "player",
+          "winnerProfile": "white",
+          "replaySteps": 19,
+          "finalTurn": 20,
+          "branchScore": -1000000,
+          "finalState": "turn 20 / current player / HP cpu/player 0/3 / stones cpu/player 25/11 / deck cpu/player 6/6 / hand cpu/player 5/6",
+          "finalBoard": "player_front_left:PF:真勇者ダイン Lv3 HP5 act1/1 | player_front_right:PF:ポリスピナー Lv1 HP3 act0/2 focus | cpu_front_left:CF:ピグミィ Lv1 HP3 act0/2 focus,shield"
+        }
+      ],
+      "bestDecision": "attack:ポリスピナー:attack->player master",
+      "selectedDecision": "attack:ポリスピナー:attack->player master",
+      "selectedRank": 1,
+      "bestVsSelectedScoreDelta": 0
+    },
+    {
+      "step": 177,
+      "turnNumber": 16,
+      "plannerSide": "cpu",
+      "currentPlayer": "cpu",
+      "state": "turn 16 / current cpu / HP cpu/player 6/2 / stones cpu/player 13/4 / deck cpu/player 9/10 / hand cpu/player 5/5",
+      "board": "player_front_left:PF:ボムゾウ Lv2 HP2 act1/1 shield | player_back_left:PB:真勇者ダイン Lv3 HP5 act1/1 | player_back_right:PB:ポリスピナー Lv1 HP3 act0/2 focus | cpu_front_left:CF:ピグミィ Lv1 HP3 act0/2 focus | cpu_front_right:CF:ポリスピナー Lv2 HP3 act2/2",
+      "branches": [
+        {
+          "rank": 1,
+          "decision": "master:shield->monster:cpu_front_left",
+          "rootScore": 219.1,
+          "selected": true,
+          "applied": true,
+          "winner": "player",
+          "winnerProfile": "white",
+          "replaySteps": 22,
+          "finalTurn": 20,
+          "branchScore": -1000000,
+          "finalState": "turn 20 / current player / HP cpu/player 0/2 / stones cpu/player 19/12 / deck cpu/player 6/6 / hand cpu/player 5/6",
+          "finalBoard": "player_front_left:PF:真勇者ダイン Lv3 HP5 act1/1 | player_front_right:PF:ポリスピナー Lv1 HP3 act0/2 focus | cpu_front_left:CF:ピグミィ Lv1 HP3 act0/2 focus,shield"
+        },
+        {
+          "rank": 2,
+          "decision": "master:shield->monster:cpu_front_right",
+          "rootScore": 160.6,
+          "selected": false,
+          "applied": true,
+          "winner": "player",
+          "winnerProfile": "white",
+          "replaySteps": 22,
+          "finalTurn": 20,
+          "branchScore": -1000000,
+          "finalState": "turn 20 / current player / HP cpu/player 0/2 / stones cpu/player 19/12 / deck cpu/player 6/6 / hand cpu/player 5/6",
+          "finalBoard": "player_front_left:PF:真勇者ダイン Lv3 HP5 act1/1 | player_front_right:PF:ポリスピナー Lv1 HP3 act0/2 focus | cpu_front_left:CF:ピグミィ Lv1 HP3 act0/2 focus,shield"
+        },
+        {
+          "rank": 3,
+          "decision": "end_turn",
+          "rootScore": -317.2,
+          "selected": false,
+          "applied": true,
+          "winner": "player",
+          "winnerProfile": "white",
+          "replaySteps": 16,
+          "finalTurn": 19,
+          "branchScore": -1000000,
+          "finalState": "turn 19 / current player / HP cpu/player 0/2 / stones cpu/player 22/12 / deck cpu/player 7/7 / hand cpu/player 5/6",
+          "finalBoard": "player_front_left:PF:真勇者ダイン Lv3 HP5 act1/1 | player_front_right:PF:ポリスピナー Lv2 HP3 act0/2 | cpu_front_left:CF:ピグミィ Lv1 HP3 act0/2 focus,shield"
+        }
+      ],
+      "bestDecision": "master:shield->monster:cpu_front_left",
+      "selectedDecision": "master:shield->monster:cpu_front_left",
+      "selectedRank": 1,
+      "bestVsSelectedScoreDelta": 0
+    },
+    {
+      "step": 178,
+      "turnNumber": 16,
+      "plannerSide": "cpu",
+      "currentPlayer": "cpu",
+      "state": "turn 16 / current cpu / HP cpu/player 6/2 / stones cpu/player 11/4 / deck cpu/player 9/10 / hand cpu/player 5/5",
+      "board": "player_front_left:PF:ボムゾウ Lv2 HP2 act1/1 shield | player_back_left:PB:真勇者ダイン Lv3 HP5 act1/1 | player_back_right:PB:ポリスピナー Lv1 HP3 act0/2 focus | cpu_front_left:CF:ピグミィ Lv1 HP3 act0/2 focus,shield | cpu_front_right:CF:ポリスピナー Lv2 HP3 act2/2",
+      "branches": [
+        {
+          "rank": 1,
+          "decision": "master:shield->monster:cpu_front_right",
+          "rootScore": 160.6,
+          "selected": true,
+          "applied": true,
+          "winner": "player",
+          "winnerProfile": "white",
+          "replaySteps": 21,
+          "finalTurn": 20,
+          "branchScore": -1000000,
+          "finalState": "turn 20 / current player / HP cpu/player 0/2 / stones cpu/player 19/12 / deck cpu/player 6/6 / hand cpu/player 5/6",
+          "finalBoard": "player_front_left:PF:真勇者ダイン Lv3 HP5 act1/1 | player_front_right:PF:ポリスピナー Lv1 HP3 act0/2 focus | cpu_front_left:CF:ピグミィ Lv1 HP3 act0/2 focus,shield"
+        },
+        {
+          "rank": 2,
+          "decision": "end_turn",
+          "rootScore": -317.2,
+          "selected": false,
+          "applied": true,
+          "winner": "player",
+          "winnerProfile": "white",
+          "replaySteps": 16,
+          "finalTurn": 19,
+          "branchScore": -1000000,
+          "finalState": "turn 19 / current player / HP cpu/player 0/2 / stones cpu/player 20/12 / deck cpu/player 7/7 / hand cpu/player 5/6",
+          "finalBoard": "player_front_left:PF:真勇者ダイン Lv3 HP5 act1/1 | player_front_right:PF:ポリスピナー Lv2 HP3 act0/2 | cpu_front_left:CF:ピグミィ Lv1 HP3 act0/2 focus,shield"
+        }
+      ],
+      "bestDecision": "master:shield->monster:cpu_front_right",
+      "selectedDecision": "master:shield->monster:cpu_front_right",
+      "selectedRank": 1,
+      "bestVsSelectedScoreDelta": 0
+    },
+    {
+      "step": 189,
+      "turnNumber": 18,
+      "plannerSide": "cpu",
+      "currentPlayer": "cpu",
+      "state": "turn 18 / current cpu / HP cpu/player 5/2 / stones cpu/player 16/6 / deck cpu/player 7/8 / hand cpu/player 6/5",
+      "board": "player_front_left:PF:ボムゾウ Lv2 HP2 act0/1 focus | player_front_right:PF:ポリスピナー Lv1 HP3 act1/2 focus | player_back_left:PB:真勇者ダイン Lv3 HP5 act0/1 focus | cpu_front_left:CF:ピグミィ Lv1 HP3 act0/2 focus",
+      "branches": [
+        {
+          "rank": 1,
+          "decision": "attack:ピグミィ:attack->ボムゾウ",
+          "rootScore": 499.8,
+          "selected": true,
+          "applied": true,
+          "winner": "player",
+          "winnerProfile": "white",
+          "replaySteps": 10,
+          "finalTurn": 20,
+          "branchScore": -1000000,
+          "finalState": "turn 20 / current player / HP cpu/player 0/2 / stones cpu/player 19/12 / deck cpu/player 6/6 / hand cpu/player 5/6",
+          "finalBoard": "player_front_left:PF:真勇者ダイン Lv3 HP5 act1/1 | player_front_right:PF:ポリスピナー Lv1 HP3 act0/2 focus | cpu_front_left:CF:ピグミィ Lv1 HP3 act0/2 focus,shield"
+        },
+        {
+          "rank": 2,
+          "decision": "attack:ピグミィ:スパイクボール->ポリスピナー",
+          "rootScore": 385.4,
+          "selected": false,
+          "applied": true,
+          "winner": "player",
+          "winnerProfile": "white",
+          "replaySteps": 14,
+          "finalTurn": 21,
+          "branchScore": -1000000,
+          "finalState": "turn 21 / current player / HP cpu/player 0/2 / stones cpu/player 20/15 / deck cpu/player 5/5 / hand cpu/player 5/6",
+          "finalBoard": "player_front_left:PF:真勇者ダイン Lv3 HP5 act1/1 | player_front_right:PF:ポリスピナー Lv1 HP3 act0/2 focus | cpu_front_left:CF:ピグミィ Lv1 HP3 act0/2 focus,shield"
+        },
+        {
+          "rank": 3,
+          "decision": "end_turn",
+          "rootScore": -11.6,
+          "selected": false,
+          "applied": true,
+          "winner": "player",
+          "winnerProfile": "white",
+          "replaySteps": 7,
+          "finalTurn": 20,
+          "branchScore": -1000000,
+          "finalState": "turn 20 / current player / HP cpu/player 0/2 / stones cpu/player 24/14 / deck cpu/player 6/6 / hand cpu/player 5/6",
+          "finalBoard": "player_front_left:PF:真勇者ダイン Lv3 HP5 act1/1 | player_front_right:PF:ポリスピナー Lv1 HP3 act0/2 | cpu_front_left:CF:ピグミィ Lv1 HP3 act1/2 focus"
+        }
+      ],
+      "bestDecision": "attack:ピグミィ:attack->ボムゾウ",
+      "selectedDecision": "attack:ピグミィ:attack->ボムゾウ",
+      "selectedRank": 1,
+      "bestVsSelectedScoreDelta": 0
+    },
+    {
+      "step": 190,
+      "turnNumber": 18,
+      "plannerSide": "cpu",
+      "currentPlayer": "cpu",
+      "state": "turn 18 / current cpu / HP cpu/player 5/2 / stones cpu/player 16/6 / deck cpu/player 7/8 / hand cpu/player 6/5",
+      "board": "player_front_left:PF:ボムゾウ Lv2 HP2 act0/1 | player_front_right:PF:ポリスピナー Lv1 HP3 act1/2 focus | player_back_left:PB:真勇者ダイン Lv3 HP5 act0/1 focus | cpu_front_left:CF:ピグミィ Lv1 HP3 act1/2",
+      "branches": [
+        {
+          "rank": 1,
+          "decision": "master:master_attack->monster:player_front_left",
+          "rootScore": 898.2,
+          "selected": true,
+          "applied": true,
+          "winner": "player",
+          "winnerProfile": "white",
+          "replaySteps": 9,
+          "finalTurn": 20,
+          "branchScore": -1000000,
+          "finalState": "turn 20 / current player / HP cpu/player 0/2 / stones cpu/player 19/12 / deck cpu/player 6/6 / hand cpu/player 5/6",
+          "finalBoard": "player_front_left:PF:真勇者ダイン Lv3 HP5 act1/1 | player_front_right:PF:ポリスピナー Lv1 HP3 act0/2 focus | cpu_front_left:CF:ピグミィ Lv1 HP3 act0/2 focus,shield"
+        },
+        {
+          "rank": 2,
+          "decision": "attack:ピグミィ:スパイクボール->ポリスピナー",
+          "rootScore": 659.9,
+          "selected": false,
+          "applied": true,
+          "winner": "player",
+          "winnerProfile": "white",
+          "replaySteps": 9,
+          "finalTurn": 20,
+          "branchScore": -1000000,
+          "finalState": "turn 20 / current player / HP cpu/player 0/2 / stones cpu/player 19/12 / deck cpu/player 6/6 / hand cpu/player 5/6",
+          "finalBoard": "player_front_left:PF:真勇者ダイン Lv3 HP5 act1/1 | player_front_right:PF:ポリスピナー Lv1 HP3 act0/2 focus | cpu_front_left:CF:ピグミィ Lv1 HP3 act0/2 focus,shield"
+        },
+        {
+          "rank": 3,
+          "decision": "end_turn",
+          "rootScore": 44.5,
+          "selected": false,
+          "applied": true,
+          "winner": "player",
+          "winnerProfile": "white",
+          "replaySteps": 13,
+          "finalTurn": 21,
+          "branchScore": -1000000,
+          "finalState": "turn 21 / current player / HP cpu/player 0/2 / stones cpu/player 22/15 / deck cpu/player 5/5 / hand cpu/player 5/6",
+          "finalBoard": "player_front_left:PF:真勇者ダイン Lv3 HP5 act1/1 | player_front_right:PF:ポリスピナー Lv1 HP3 act0/2 focus | cpu_front_left:CF:ピグミィ Lv1 HP3 act0/2 focus,shield"
+        }
+      ],
+      "bestDecision": "master:master_attack->monster:player_front_left",
+      "selectedDecision": "master:master_attack->monster:player_front_left",
+      "selectedRank": 1,
+      "bestVsSelectedScoreDelta": 0
+    },
+    {
+      "step": 191,
+      "turnNumber": 18,
+      "plannerSide": "cpu",
+      "currentPlayer": "cpu",
+      "state": "turn 18 / current cpu / HP cpu/player 5/2 / stones cpu/player 13/8 / deck cpu/player 7/8 / hand cpu/player 6/5",
+      "board": "player_front_right:PF:ポリスピナー Lv1 HP3 act1/2 focus | player_back_left:PB:真勇者ダイン Lv3 HP5 act0/1 focus | cpu_front_left:CF:ピグミィ Lv1 HP3 act1/2",
+      "branches": [
+        {
+          "rank": 1,
+          "decision": "attack:ピグミィ:スパイクボール->ポリスピナー",
+          "rootScore": 366.6,
+          "selected": true,
+          "applied": true,
+          "winner": "player",
+          "winnerProfile": "white",
+          "replaySteps": 8,
+          "finalTurn": 20,
+          "branchScore": -1000000,
+          "finalState": "turn 20 / current player / HP cpu/player 0/2 / stones cpu/player 19/12 / deck cpu/player 6/6 / hand cpu/player 5/6",
+          "finalBoard": "player_front_left:PF:真勇者ダイン Lv3 HP5 act1/1 | player_front_right:PF:ポリスピナー Lv1 HP3 act0/2 focus | cpu_front_left:CF:ピグミィ Lv1 HP3 act0/2 focus,shield"
+        },
+        {
+          "rank": 2,
+          "decision": "end_turn",
+          "rootScore": -1102.6,
+          "selected": false,
+          "applied": true,
+          "winner": "player",
+          "winnerProfile": "white",
+          "replaySteps": 8,
+          "finalTurn": 20,
+          "branchScore": -1000000,
+          "finalState": "turn 20 / current player / HP cpu/player 0/2 / stones cpu/player 19/12 / deck cpu/player 6/6 / hand cpu/player 5/6",
+          "finalBoard": "player_front_left:PF:真勇者ダイン Lv3 HP5 act1/1 | player_front_right:PF:ポリスピナー Lv1 HP3 act0/2 focus | cpu_front_left:CF:ピグミィ Lv1 HP3 act0/2 focus,shield"
+        }
+      ],
+      "bestDecision": "attack:ピグミィ:スパイクボール->ポリスピナー",
+      "selectedDecision": "attack:ピグミィ:スパイクボール->ポリスピナー",
+      "selectedRank": 1,
+      "bestVsSelectedScoreDelta": 0
+    },
+    {
+      "step": 196,
+      "turnNumber": 19,
+      "plannerSide": "cpu",
+      "currentPlayer": "cpu",
+      "state": "turn 19 / current cpu / HP cpu/player 2/2 / stones cpu/player 19/9 / deck cpu/player 6/7 / hand cpu/player 6/5",
+      "board": "player_front_left:PF:真勇者ダイン Lv3 HP5 act1/1 | player_front_right:PF:ポリスピナー Lv1 HP3 act0/2 focus,shield | cpu_front_left:CF:ピグミィ Lv1 HP3 act0/2",
+      "branches": [
+        {
+          "rank": 1,
+          "decision": "master:shield->monster:cpu_front_left",
+          "rootScore": 61.6,
+          "selected": true,
+          "applied": true,
+          "winner": "player",
+          "winnerProfile": "white",
+          "replaySteps": 3,
+          "finalTurn": 20,
+          "branchScore": -1000000,
+          "finalState": "turn 20 / current player / HP cpu/player 0/2 / stones cpu/player 19/12 / deck cpu/player 6/6 / hand cpu/player 5/6",
+          "finalBoard": "player_front_left:PF:真勇者ダイン Lv3 HP5 act1/1 | player_front_right:PF:ポリスピナー Lv1 HP3 act0/2 focus | cpu_front_left:CF:ピグミィ Lv1 HP3 act0/2 focus,shield"
+        },
+        {
+          "rank": 2,
+          "decision": "end_turn",
+          "rootScore": -851738.3,
+          "selected": false,
+          "applied": true,
+          "winner": "player",
+          "winnerProfile": "white",
+          "replaySteps": 2,
+          "finalTurn": 20,
+          "branchScore": -1000000,
+          "finalState": "turn 20 / current player / HP cpu/player 0/2 / stones cpu/player 21/12 / deck cpu/player 6/6 / hand cpu/player 5/6",
+          "finalBoard": "player_front_left:PF:真勇者ダイン Lv3 HP5 act1/1 | player_front_right:PF:ポリスピナー Lv1 HP3 act0/2 focus | cpu_front_left:CF:ピグミィ Lv1 HP3 act0/2 focus"
+        }
+      ],
+      "bestDecision": "master:shield->monster:cpu_front_left",
+      "selectedDecision": "master:shield->monster:cpu_front_left",
+      "selectedRank": 1,
+      "bestVsSelectedScoreDelta": 0
+    }
+  ],
+  "conclusion": [
+    "強制分岐の範囲では、選択手を最終勝敗まで明確に上回る代替は見つからない。"
+  ]
+}
+

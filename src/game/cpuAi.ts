@@ -555,6 +555,17 @@ export function chooseCpuDecision(state: GameState, options: CpuAiOptions = {}):
     return shieldHoldEndTurnDecision;
   }
 
+  const midgameOverprotectShieldHoldEndTurnDecision =
+    selectWhiteMirrorMidgameOverprotectShieldHoldEndTurnDecision(
+      state,
+      perspective,
+      best,
+      evaluated,
+    );
+  if (midgameOverprotectShieldHoldEndTurnDecision) {
+    return midgameOverprotectShieldHoldEndTurnDecision;
+  }
+
   const earlyHoldEndTurnDecision = selectWhiteMirrorEarlyHoldEndTurnDecision(
     state,
     perspective,
@@ -2130,6 +2141,88 @@ function selectWhiteMirrorShieldHoldEndTurnDecision(
       `${endTurn.decision.reason} / 白ミラー終盤: ` +
       "盾で石が1以下になり山札raceの詰めを落とすため見送り",
   };
+}
+
+function selectWhiteMirrorMidgameOverprotectShieldHoldEndTurnDecision(
+  state: GameState,
+  perspective: PlayerId,
+  fallback: EvaluatedDecision | undefined,
+  evaluated: readonly EvaluatedDecision[],
+): CpuDecision | undefined {
+  if (!fallback || !isWhiteMirrorMidgameOverprotectShieldFallback(state, perspective, fallback)) {
+    return undefined;
+  }
+
+  const endTurn = evaluated.find((candidate) => candidate.decision.type === "end_turn");
+  if (!endTurn) {
+    return undefined;
+  }
+
+  const rootGap = fallback.totalScore - endTurn.totalScore;
+  if (rootGap > 320) {
+    return undefined;
+  }
+
+  return {
+    ...endTurn.decision,
+    reason:
+      `${endTurn.decision.reason} / 白ミラー中盤: ` +
+      "最大レベル前衛への過保護な盾で石と次ターンの柔軟性を落とすため見送り",
+  };
+}
+
+function isWhiteMirrorMidgameOverprotectShieldFallback(
+  state: GameState,
+  perspective: PlayerId,
+  fallback: EvaluatedDecision,
+): boolean {
+  if (
+    !isWhiteMirrorState(state, perspective) ||
+    state.turnNumber < 10 ||
+    state.turnNumber > 13 ||
+    !isShieldDecision(fallback.decision) ||
+    fallback.decision.target.kind !== "monster" ||
+    fallback.after.winner ||
+    fallback.after.pendingLevelUp
+  ) {
+    return false;
+  }
+
+  const opponent = opponentOf(perspective);
+  const own = state.players[perspective];
+  const enemy = state.players[opponent];
+  if (
+    own.masterHp < enemy.masterHp ||
+    enemy.masterHp > 7 ||
+    enemy.stones > 3 ||
+    own.stones < 5 ||
+    fallback.after.players[perspective].stones < 5
+  ) {
+    return false;
+  }
+
+  const targetSlotKey = fallback.decision.target.slotKey;
+  const targetSlot = state.slots[targetSlotKey];
+  const target = targetSlot.monster;
+  if (
+    targetSlot.owner !== perspective ||
+    targetSlot.row !== "front" ||
+    !target ||
+    target.owner !== perspective ||
+    target.shielded ||
+    target.level < getMonsterDef(target.cardId).maxLevel ||
+    getMonsterAiTrait(target.cardId).role !== "front"
+  ) {
+    return false;
+  }
+
+  const threat = incomingThreat(state, targetSlotKey);
+  if (isLethalIncomingThreat(threat) || maxIncomingThreatDamage(threat) >= target.hp) {
+    return false;
+  }
+
+  const masterThreat = buildThreatModel(state, opponent).masterDamage[perspective];
+  return masterThreat < own.masterHp;
 }
 
 function selectWhiteMirrorEarlyHoldEndTurnDecision(
