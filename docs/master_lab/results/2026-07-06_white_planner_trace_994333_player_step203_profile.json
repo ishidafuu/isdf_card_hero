@@ -1,0 +1,47 @@
+{
+  "generatedAt": "2026-07-06T14:59:12.829Z",
+  "options": {
+    "seed": 994333,
+    "direction": "challenger-as-player",
+    "deckPreset": "master-lab-white-1377-death-sheep3",
+    "maxSteps": 420,
+    "maxTurns": 90,
+    "search": {},
+    "streamDecisions": false,
+    "dumpEvaluationsOnSlow": false,
+    "profileStep": 203,
+    "stopAfterSlowMs": 1,
+    "markdownPath": "docs/master_lab/results/2026-07-06_white_planner_trace_994333_player_step203_profile.md",
+    "jsonPath": "docs/master_lab/results/2026-07-06_white_planner_trace_994333_player_step203_profile.json"
+  },
+  "profiles": {
+    "player": "white_planner",
+    "cpu": "white"
+  },
+  "plannerSide": "player",
+  "steps": 0,
+  "turns": 1,
+  "finalState": "turn 1 / current player / HP player/cpu 10/10 / stones player/cpu 2/0 / deck player/cpu 25/25 / hand player/cpu 4/5",
+  "finalBoard": "player_back_left:PB:ピグミィ Lv1 HP3 prep",
+  "decisions": [
+    {
+      "step": 0,
+      "turnNumber": 1,
+      "side": "player",
+      "elapsedMs": 472,
+      "decision": "summon:ピグミィ->player_back_left",
+      "reason": "後衛カードを後列左へ召喚 / ターンプラン探索: 返し込み最終盤面263点、次点と0点差",
+      "score": 27,
+      "state": "turn 1 / current player / HP player/cpu 10/10 / stones player/cpu 3/0 / deck player/cpu 25/25 / hand player/cpu 5/5",
+      "board": "empty",
+      "afterState": "turn 1 / current player / HP player/cpu 10/10 / stones player/cpu 2/0 / deck player/cpu 25/25 / hand player/cpu 4/5",
+      "afterBoard": "player_back_left:PB:ピグミィ Lv1 HP3 prep"
+    }
+  ],
+  "conclusion": [
+    "winner: none, final score 71.2.",
+    "planner decisions 1, attacks 0, focus 0, max decision 472ms.",
+    "slow decisions >=5000ms: 0.",
+    "Use this trace to pick exact turn/step targets before running expensive branch replay."
+  ]
+}

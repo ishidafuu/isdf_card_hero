@@ -1502,6 +1502,10 @@ function applyTerminalPlanRolloutScores(
     perspective,
     rolloutTrigger.candidate,
   );
+  const isFrontClogHoldOverSummonRolloutTrigger =
+    !!fallback &&
+    isWhiteMirrorFrontClogHoldOverSummonFallback(rootState, perspective, fallback) &&
+    rolloutTrigger.candidate.decision.type === "end_turn";
   const isFrontPressureRolloutTrigger =
     isFrontFocusStripRolloutTrigger || isWhiteMirrorFrontPressureEscapeSelection(rootState, rolloutTrigger.candidate);
   const isShieldTargetTieRolloutTrigger = isWhiteMirrorShieldTargetTieRolloutTrigger(
@@ -1541,7 +1545,11 @@ function applyTerminalPlanRolloutScores(
     if (holdEndTurn) {
       rolloutKeys.add(cpuDecisionKey(holdEndTurn.candidate.decision));
     }
-  } else if (!isCloseoutHoldEndTurnRolloutTrigger && !isLateDeckHoldEndTurnRolloutTrigger) {
+  } else if (
+    !isCloseoutHoldEndTurnRolloutTrigger &&
+    !isLateDeckHoldEndTurnRolloutTrigger &&
+    !isFrontClogHoldOverSummonRolloutTrigger
+  ) {
     rolloutCandidatePool.forEach((selection) => {
       rolloutKeys.add(cpuDecisionKey(selection.candidate.decision));
     });
@@ -1614,9 +1622,15 @@ function applyTerminalPlanRolloutScores(
         rolloutScoreGapToFallback >= config.terminalPlanRolloutAdoptionMinScoreGap
           ? Math.min(500, rolloutScoreGapToFallback)
           : 0;
+      const rolloutWinBonus =
+        isLatePressureOverSummonRolloutTrigger &&
+        rollout.winner === perspective &&
+        (fallbackRolloutScore === undefined || rollout.score > fallbackRolloutScore)
+          ? 1_000
+          : 0;
       return {
         ...selection,
-        plannerScore: selection.plannerScore + rolloutBonus + rolloutConfirmationBonus,
+        plannerScore: selection.plannerScore + rolloutBonus + rolloutConfirmationBonus + rolloutWinBonus,
         rolloutScore: rollout.score,
         ...(rolloutScoreGapToFallback !== undefined ? { rolloutScoreGapToFallback } : {}),
         rolloutSteps: rollout.steps,
@@ -1812,6 +1826,16 @@ function terminalPlanLatePressureOverSummonRolloutTriggerSelection(
   config: CpuAiProfileConfig,
 ): TerminalPlanSelection | undefined {
   const opponent = opponentOf(perspective);
+  const frontClogHold = terminalPlanFrontClogHoldOverSummonRolloutTriggerSelection(
+    state,
+    perspective,
+    terminalRanked,
+    fallback,
+    config,
+  );
+  if (frontClogHold) {
+    return frontClogHold;
+  }
   if (
     !config.terminalPlanRolloutAllowLatePressureOverSummon ||
     !isWhiteMirrorState(state, perspective) ||
@@ -1851,6 +1875,103 @@ function terminalPlanLatePressureOverSummonRolloutTriggerSelection(
   const plannerGap = fallbackSelection.plannerScore - holdSelection.plannerScore;
   const rootGap = fallbackSelection.candidate.totalScore - holdSelection.candidate.totalScore;
   return plannerGap <= 190 && rootGap <= 180 ? holdSelection : undefined;
+}
+
+function terminalPlanFrontClogHoldOverSummonRolloutTriggerSelection(
+  state: GameState,
+  perspective: PlayerId,
+  terminalRanked: readonly TerminalPlanSelection[],
+  fallback: EvaluatedDecision,
+  config: CpuAiProfileConfig,
+): TerminalPlanSelection | undefined {
+  if (
+    !config.terminalPlanRolloutAllowLatePressureOverSummon ||
+    !isWhiteMirrorFrontClogHoldOverSummonFallback(state, perspective, fallback)
+  ) {
+    return undefined;
+  }
+
+  const fallbackKey = cpuDecisionKey(fallback.decision);
+  const fallbackSelection = terminalRanked.find((selection) =>
+    cpuDecisionKey(selection.candidate.decision) === fallbackKey,
+  );
+  const holdSelection = terminalRanked.find((selection) =>
+    cpuDecisionKey(selection.candidate.decision) !== fallbackKey &&
+    selection.candidate.decision.type === "end_turn" &&
+    selection.candidate.totalScore >= -180,
+  );
+  if (!fallbackSelection || !holdSelection) {
+    return undefined;
+  }
+
+  const rootGap = fallbackSelection.candidate.totalScore - holdSelection.candidate.totalScore;
+  return rootGap <= 260 ? holdSelection : undefined;
+}
+
+function isWhiteMirrorFrontClogHoldOverSummonFallback(
+  state: GameState,
+  perspective: PlayerId,
+  fallback: EvaluatedDecision,
+): boolean {
+  const opponent = opponentOf(perspective);
+  const decision = fallback.decision;
+  if (
+    !isWhiteMirrorState(state, perspective) ||
+    state.turnNumber < 12 ||
+    state.turnNumber > 17 ||
+    decision.type !== "summon" ||
+    !summonWakeCreatesImmediateWork(state, decision.handInstanceId, decision.slotKey)
+  ) {
+    return false;
+  }
+
+  const slot = state.slots[decision.slotKey];
+  if (slot.owner !== perspective || slot.row !== "front" || slot.monster) {
+    return false;
+  }
+
+  const own = state.players[perspective];
+  const enemy = state.players[opponent];
+  if (
+    own.masterHp + 1 < enemy.masterHp ||
+    enemy.masterHp > 7 ||
+    own.stones < 4 ||
+    own.stones > 8 ||
+    frontMonsterCountForPlayer(state, opponent) !== 1 ||
+    opponentBackMonsterCountForPlayer(state, opponent) < 2 ||
+    !hasLowHpEnemyFrontClog(state, perspective) ||
+    !hasOpponentBackFrontAceWaiting(state, perspective)
+  ) {
+    return false;
+  }
+
+  return true;
+}
+
+function hasLowHpEnemyFrontClog(state: GameState, perspective: PlayerId): boolean {
+  const opponent = opponentOf(perspective);
+  return FIELD_ORDER_BY_PLAYER[opponent].some((slotKey) => {
+    const slot = state.slots[slotKey];
+    const monster = slot.monster;
+    return slot.row === "front" && monster?.owner === opponent && monster.hp <= 2;
+  });
+}
+
+function hasOpponentBackFrontAceWaiting(state: GameState, perspective: PlayerId): boolean {
+  const opponent = opponentOf(perspective);
+  return FIELD_ORDER_BY_PLAYER[opponent].some((slotKey) => {
+    const slot = state.slots[slotKey];
+    const monster = slot.monster;
+    if (
+      slot.row !== "back" ||
+      monster?.owner !== opponent ||
+      monster.status !== "active" ||
+      getMonsterAiTrait(monster.cardId).role !== "front"
+    ) {
+      return false;
+    }
+    return getMonsterDef(monster.cardId).maxLevel >= 3;
+  });
 }
 
 function isWhiteMirrorLatePressureBacklineSummon(
@@ -4384,6 +4505,13 @@ function frontMonsterCountForPlayer(state: GameState, playerId: PlayerId): numbe
   return FIELD_ORDER_BY_PLAYER[playerId].filter((slotKey) => {
     const slot = state.slots[slotKey];
     return slot.row === "front" && slot.monster?.owner === playerId;
+  }).length;
+}
+
+function opponentBackMonsterCountForPlayer(state: GameState, playerId: PlayerId): number {
+  return FIELD_ORDER_BY_PLAYER[playerId].filter((slotKey) => {
+    const slot = state.slots[slotKey];
+    return slot.row === "back" && slot.monster?.owner === playerId;
   }).length;
 }
 

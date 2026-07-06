@@ -1,0 +1,156 @@
+{
+  "generatedAt": "2026-07-06T15:03:51.700Z",
+  "options": {
+    "seed": 994333,
+    "direction": "challenger-as-player",
+    "deckPreset": "master-lab-white-1377-death-sheep3",
+    "step": 203,
+    "branches": [
+      "selected",
+      "attack:真勇者ダイン:ダイン斬り->真勇者ダイン",
+      "attack:ピグミィ:スパイクボール->真勇者ダイン",
+      "master:master_attack->monster:cpu_front_right",
+      "master:shield",
+      "end_turn"
+    ],
+    "search": {},
+    "maxReplaySteps": 120,
+    "maxCheckpoints": 14,
+    "markdownPath": "docs/master_lab/results/2026-07-06_white_planner_994333_step203_branch_timeline.md",
+    "jsonPath": "docs/master_lab/results/2026-07-06_white_planner_994333_step203_branch_timeline.json"
+  },
+  "plannerSide": "player",
+  "startState": "turn 17 / current player / HP player/cpu 2/4 / stones player/cpu 14/6 / deck player/cpu 9/9 / hand player/cpu 6/5",
+  "startBoard": "player_front_left:PF:真勇者ダイン Lv3 HP6 act0/1 | player_back_left:PB:ピグミィ Lv2 HP3 act0/2 focus | cpu_front_left:CF:ドノマンティス Lv1 HP5 act0/1 focus,shield | cpu_front_right:CF:真勇者ダイン Lv3 HP5 act1/1",
+  "selectedDecision": "attack:真勇者ダイン:ダイン斬り->cpu master",
+  "timelines": [
+    {
+      "branch": "selected",
+      "matchedDecision": "attack:真勇者ダイン:ダイン斬り->cpu master",
+      "rootScore": 636.1,
+      "applied": true,
+      "winner": "cpu",
+      "winnerProfile": "white",
+      "finalScore": -1000000,
+      "replaySteps": 3,
+      "finalState": "turn 17 / current cpu / HP player/cpu 0/2 / stones player/cpu 16/11 / deck player/cpu 9/8 / hand player/cpu 5/6",
+      "finalBoard": "player_front_left:PF:真勇者ダイン Lv3 HP6 act1/1 | player_back_left:PB:ピグミィ Lv2 HP3 act0/2 focus | cpu_front_left:CF:ドノマンティス Lv1 HP5 act0/1 focus | cpu_front_right:CF:真勇者ダイン Lv3 HP5 act1/1",
+      "checkpoints": [
+        {
+          "replayStep": 1,
+          "label": "after forced decision",
+          "state": "turn 17 / current player / HP player/cpu 2/2 / stones player/cpu 14/8 / deck player/cpu 9/9 / hand player/cpu 6/5",
+          "board": "player_front_left:PF:真勇者ダイン Lv3 HP6 act1/1 | player_back_left:PB:ピグミィ Lv2 HP3 act0/2 focus | cpu_front_left:CF:ドノマンティス Lv1 HP5 act0/1 focus,shield | cpu_front_right:CF:真勇者ダイン Lv3 HP5 act1/1",
+          "nextDecision": "end_turn",
+          "score": 72,
+          "recentLog": "プレイヤーAI判断: 相手マスターへ実ダメージを与えられるため攻撃 / プレイヤーの真勇者ダイン Lv3: ダイン斬り 4P / CPUのマスターHPが2減った（ダイン斬り）。ストーン+2"
+        },
+        {
+          "replayStep": 1,
+          "label": "planner decision",
+          "state": "turn 17 / current player / HP player/cpu 2/2 / stones player/cpu 14/8 / deck player/cpu 9/9 / hand player/cpu 6/5",
+          "board": "player_front_left:PF:真勇者ダイン Lv3 HP6 act1/1 | player_back_left:PB:ピグミィ Lv2 HP3 act0/2 focus | cpu_front_left:CF:ドノマンティス Lv1 HP5 act0/1 focus,shield | cpu_front_right:CF:真勇者ダイン Lv3 HP5 act1/1",
+          "nextDecision": "end_turn",
+          "score": 72,
+          "recentLog": "プレイヤーAI判断: 相手マスターへ実ダメージを与えられるため攻撃 / プレイヤーの真勇者ダイン Lv3: ダイン斬り 4P / CPUのマスターHPが2減った（ダイン斬り）。ストーン+2"
+        },
+        {
+          "replayStep": 3,
+          "label": "final",
+          "state": "turn 17 / current cpu / HP player/cpu 0/2 / stones player/cpu 16/11 / deck player/cpu 9/8 / hand player/cpu 5/6",
+          "board": "player_front_left:PF:真勇者ダイン Lv3 HP6 act1/1 | player_back_left:PB:ピグミィ Lv2 HP3 act0/2 focus | cpu_front_left:CF:ドノマンティス Lv1 HP5 act0/1 focus | cpu_front_right:CF:真勇者ダイン Lv3 HP5 act1/1",
+          "score": -1000000,
+          "recentLog": "CPUの真勇者ダイン Lv3: ダイン斬り 4P / プレイヤーのマスターHPが2減った（ダイン斬り）。ストーン+2 / CPUの勝利"
+        }
+      ]
+    },
+    {
+      "branch": "attack:真勇者ダイン:ダイン斬り->真勇者ダイン",
+      "matchedDecision": "-",
+      "rootScore": null,
+      "applied": false,
+      "error": "No branch matched: attack:真勇者ダイン:ダイン斬り->真勇者ダイン",
+      "finalScore": null,
+      "replaySteps": 0,
+      "finalState": "turn 17 / current player / HP player/cpu 2/4 / stones player/cpu 14/6 / deck player/cpu 9/9 / hand player/cpu 6/5",
+      "finalBoard": "player_front_left:PF:真勇者ダイン Lv3 HP6 act0/1 | player_back_left:PB:ピグミィ Lv2 HP3 act0/2 focus | cpu_front_left:CF:ドノマンティス Lv1 HP5 act0/1 focus,shield | cpu_front_right:CF:真勇者ダイン Lv3 HP5 act1/1",
+      "checkpoints": []
+    },
+    {
+      "branch": "attack:ピグミィ:スパイクボール->真勇者ダイン",
+      "matchedDecision": "-",
+      "rootScore": null,
+      "applied": false,
+      "error": "No branch matched: attack:ピグミィ:スパイクボール->真勇者ダイン",
+      "finalScore": null,
+      "replaySteps": 0,
+      "finalState": "turn 17 / current player / HP player/cpu 2/4 / stones player/cpu 14/6 / deck player/cpu 9/9 / hand player/cpu 6/5",
+      "finalBoard": "player_front_left:PF:真勇者ダイン Lv3 HP6 act0/1 | player_back_left:PB:ピグミィ Lv2 HP3 act0/2 focus | cpu_front_left:CF:ドノマンティス Lv1 HP5 act0/1 focus,shield | cpu_front_right:CF:真勇者ダイン Lv3 HP5 act1/1",
+      "checkpoints": []
+    },
+    {
+      "branch": "master:master_attack->monster:cpu_front_right",
+      "matchedDecision": "-",
+      "rootScore": null,
+      "applied": false,
+      "error": "No branch matched: master:master_attack->monster:cpu_front_right",
+      "finalScore": null,
+      "replaySteps": 0,
+      "finalState": "turn 17 / current player / HP player/cpu 2/4 / stones player/cpu 14/6 / deck player/cpu 9/9 / hand player/cpu 6/5",
+      "finalBoard": "player_front_left:PF:真勇者ダイン Lv3 HP6 act0/1 | player_back_left:PB:ピグミィ Lv2 HP3 act0/2 focus | cpu_front_left:CF:ドノマンティス Lv1 HP5 act0/1 focus,shield | cpu_front_right:CF:真勇者ダイン Lv3 HP5 act1/1",
+      "checkpoints": []
+    },
+    {
+      "branch": "master:shield",
+      "matchedDecision": "-",
+      "rootScore": null,
+      "applied": false,
+      "error": "No branch matched: master:shield",
+      "finalScore": null,
+      "replaySteps": 0,
+      "finalState": "turn 17 / current player / HP player/cpu 2/4 / stones player/cpu 14/6 / deck player/cpu 9/9 / hand player/cpu 6/5",
+      "finalBoard": "player_front_left:PF:真勇者ダイン Lv3 HP6 act0/1 | player_back_left:PB:ピグミィ Lv2 HP3 act0/2 focus | cpu_front_left:CF:ドノマンティス Lv1 HP5 act0/1 focus,shield | cpu_front_right:CF:真勇者ダイン Lv3 HP5 act1/1",
+      "checkpoints": []
+    },
+    {
+      "branch": "end_turn",
+      "matchedDecision": "end_turn",
+      "rootScore": -851657.3,
+      "applied": true,
+      "winner": "cpu",
+      "winnerProfile": "white",
+      "finalScore": -1000000,
+      "replaySteps": 2,
+      "finalState": "turn 17 / current cpu / HP player/cpu 0/4 / stones player/cpu 16/9 / deck player/cpu 9/8 / hand player/cpu 5/6",
+      "finalBoard": "player_front_left:PF:真勇者ダイン Lv3 HP6 act0/1 focus | player_back_left:PB:ピグミィ Lv2 HP3 act0/2 focus | cpu_front_left:CF:ドノマンティス Lv1 HP5 act0/1 focus | cpu_front_right:CF:真勇者ダイン Lv3 HP5 act1/1",
+      "checkpoints": [
+        {
+          "replayStep": 1,
+          "label": "after forced decision",
+          "state": "turn 17 / current cpu / HP player/cpu 2/4 / stones player/cpu 14/9 / deck player/cpu 9/8 / hand player/cpu 5/6",
+          "board": "player_front_left:PF:真勇者ダイン Lv3 HP6 act0/1 focus | player_back_left:PB:ピグミィ Lv2 HP3 act0/2 focus | cpu_front_left:CF:ドノマンティス Lv1 HP5 act0/1 focus | cpu_front_right:CF:真勇者ダイン Lv3 HP5 act0/1",
+          "score": -80,
+          "recentLog": "CPUはストーンを3個得た / ドノマンティス Lv1の防御効果が切れた / CPUはカードを引いた"
+        },
+        {
+          "replayStep": 2,
+          "label": "final",
+          "state": "turn 17 / current cpu / HP player/cpu 0/4 / stones player/cpu 16/9 / deck player/cpu 9/8 / hand player/cpu 5/6",
+          "board": "player_front_left:PF:真勇者ダイン Lv3 HP6 act0/1 focus | player_back_left:PB:ピグミィ Lv2 HP3 act0/2 focus | cpu_front_left:CF:ドノマンティス Lv1 HP5 act0/1 focus | cpu_front_right:CF:真勇者ダイン Lv3 HP5 act1/1",
+          "score": -1000000,
+          "recentLog": "CPUの真勇者ダイン Lv3: ダイン斬り 4P / プレイヤーのマスターHPが2減った（ダイン斬り）。ストーン+2 / CPUの勝利"
+        }
+      ]
+    }
+  ],
+  "conclusion": [
+    "同一局面から候補を強制し、planner側の次手番ごとの状態差を追跡した。",
+    "selected: attack:真勇者ダイン:ダイン斬り->cpu master -> white / score -1000000",
+    "attack:真勇者ダイン:ダイン斬り->真勇者ダイン: - -> no winner / score -Infinity",
+    "attack:ピグミィ:スパイクボール->真勇者ダイン: - -> no winner / score -Infinity",
+    "master:master_attack->monster:cpu_front_right: - -> no winner / score -Infinity",
+    "master:shield: - -> no winner / score -Infinity",
+    "end_turn: end_turn -> white / score -1000000"
+  ]
+}
+
