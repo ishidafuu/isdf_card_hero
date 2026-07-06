@@ -26,6 +26,7 @@ interface CliOptions {
   baselineProfile: CpuAiProfile;
   challengerProfile: CpuAiProfile;
   inspectThresholdMs: number;
+  inspectTurnPlanDecisions: boolean;
   candidateLimit: number;
   streamProgress: boolean;
   markdownPath?: string;
@@ -77,6 +78,8 @@ interface RolloutTriggerEvent {
   selectedRolloutScoreGapToFallback?: number;
   rootScoreGapToFallback?: number;
   plannerMarginToFallback?: number;
+  rolloutConfirmedOverride?: boolean;
+  rootGapOverDefaultGate?: boolean;
   state: string;
   board: string;
   candidates: RolloutTriggerCandidate[];
@@ -126,6 +129,7 @@ const DEFAULT_OPTIONS: CliOptions = {
   baselineProfile: "white",
   challengerProfile: "white_rollout",
   inspectThresholdMs: 3000,
+  inspectTurnPlanDecisions: false,
   candidateLimit: 4,
   streamProgress: false,
 };
@@ -242,7 +246,11 @@ function runGame(seed: number, direction: Direction, options: CliOptions): Rollo
 }
 
 function shouldInspectDecision(decision: CpuDecision, elapsedMs: number, options: CliOptions): boolean {
-  return elapsedMs >= options.inspectThresholdMs || decision.reason.includes("rollout");
+  return (
+    elapsedMs >= options.inspectThresholdMs ||
+    decision.reason.includes("rollout") ||
+    (options.inspectTurnPlanDecisions && decision.reason.includes("ターンプラン探索"))
+  );
 }
 
 function buildEvent(
@@ -266,6 +274,15 @@ function buildEvent(
   );
   const selectedCandidate = ranked.find((candidate) => decisionKey(candidate.decision) === selectedKey);
   const fallbackCandidate = ranked.find((candidate) => decisionKey(candidate.decision) === fallbackKey);
+  const rootScoreGapToFallback = selectedCandidate && inspection.fallbackScore !== undefined
+    ? round(inspection.fallbackScore - selectedCandidate.rootScore, 1)
+    : undefined;
+  const rolloutConfirmedOverride =
+    selectedKey !== "" &&
+    fallbackKey !== "" &&
+    selectedKey !== fallbackKey &&
+    selectedCandidate?.rolloutScoreGapToFallback !== undefined &&
+    selectedCandidate.rolloutScoreGapToFallback >= 200;
   const candidates = (options.candidateLimit > 0 ? ranked.slice(0, options.candidateLimit) : ranked).map(
     (candidate, index): RolloutTriggerCandidate => {
       const key = decisionKey(candidate.decision);
@@ -312,11 +329,13 @@ function buildEvent(
     ...(inspection.selectedRolloutScoreGapToFallback !== undefined
       ? { selectedRolloutScoreGapToFallback: round(inspection.selectedRolloutScoreGapToFallback, 1) }
       : {}),
-    ...(selectedCandidate && inspection.fallbackScore !== undefined
-      ? { rootScoreGapToFallback: round(inspection.fallbackScore - selectedCandidate.rootScore, 1) }
-      : {}),
+    ...(rootScoreGapToFallback !== undefined ? { rootScoreGapToFallback } : {}),
     ...(selectedCandidate && fallbackCandidate
       ? { plannerMarginToFallback: round(selectedCandidate.plannerScore - fallbackCandidate.plannerScore, 1) }
+      : {}),
+    ...(rolloutConfirmedOverride ? { rolloutConfirmedOverride: true } : {}),
+    ...(rolloutConfirmedOverride && rootScoreGapToFallback !== undefined && rootScoreGapToFallback > 70
+      ? { rootGapOverDefaultGate: true }
       : {}),
     state: stateLine(state, state.currentPlayer),
     board: boardLine(state),
@@ -471,6 +490,15 @@ function candidateFeatureSummary(
     pieces.push(`mover:${monsterShort(before, decision.fromSlotKey)}`);
   } else if (decision.type === "attack" && decision.action.target.kind === "monster") {
     pieces.push(`attackTarget:${slotCoord(before, decision.action.target.slotKey)}:${monsterShort(before, decision.action.target.slotKey)}`);
+    pieces.push(`targetAfter:${monsterShort(afterRoot, decision.action.target.slotKey)}`);
+    const attackerBefore = monsterShort(before, decision.action.attackerSlotKey);
+    const attackerAfter = monsterShort(afterRoot, decision.action.attackerSlotKey);
+    if (attackerBefore !== attackerAfter) {
+      pieces.push(`attackerAfter:${attackerAfter}`);
+    }
+  } else if (decision.type === "attack" && decision.action.target.kind === "master") {
+    const target = decision.action.target.playerId;
+    pieces.push(`masterHp:${target}:${before.players[target].masterHp}->${afterRoot.players[target].masterHp}`);
   }
 
   if (fallbackDecision?.type === "move") {
@@ -534,6 +562,8 @@ function opponentOfLocal(playerId: PlayerId): PlayerId {
 
 function buildConclusion(games: readonly RolloutTriggerGame[], events: readonly RolloutTriggerEvent[]): string[] {
   const rolloutEvents = events.filter((event) => event.rolloutTriggered);
+  const confirmedOverrides = events.filter((event) => event.rolloutConfirmedOverride);
+  const likelyGateBypasses = events.filter((event) => event.rootGapOverDefaultGate);
   const wins = games.filter((game) => game.winnerProfile === game.profiles[challengerPlayer(game.direction)]).length;
   const maxDecision = Math.max(0, ...games.map((game) => game.challengerStats.maxDecisionMs));
   const lines = [
@@ -548,6 +578,7 @@ function buildConclusion(games: readonly RolloutTriggerGame[], events: readonly 
       event.selectedRolloutScoreGapToFallback === undefined ? [] : [event.selectedRolloutScoreGapToFallback],
     ));
     lines.push(`rollout adopted ${adopted}/${rolloutEvents.length}; avg selected rollout gap ${round(avgGap, 1)}.`);
+    lines.push(`rollout-confirmed overrides ${confirmedOverrides.length}; root gap over default gate ${likelyGateBypasses.length}.`);
     lines.push(
       rolloutEvents.length >= 2
         ? "Next implementation target is the repeated rollout-trigger shape, not a broad coefficient change."
@@ -567,6 +598,7 @@ function formatMarkdown(report: RolloutTriggerReport): string {
     `directions: ${report.options.directions.join(", ")}`,
     `baseline: \`${report.options.baselineProfile}\`, challenger: \`${report.options.challengerProfile}\``,
     `inspectThresholdMs: ${report.options.inspectThresholdMs}`,
+    `inspectTurnPlanDecisions: ${report.options.inspectTurnPlanDecisions}`,
     "",
     "## Conclusion",
     "",
@@ -602,6 +634,8 @@ function formatMarkdown(report: RolloutTriggerReport): string {
       `- decision: ${event.decision}`,
       `- fallback: ${event.fallbackDecision}${event.fallbackScore === undefined ? "" : ` (${event.fallbackScore})`}`,
       `- planner selected: ${event.selectedDecision}${event.selectedPlannerScore === undefined ? "" : ` (${event.selectedPlannerScore})`}`,
+      ...(event.rolloutConfirmedOverride ? ["- rollout-confirmed override: yes"] : []),
+      ...(event.rootGapOverDefaultGate ? ["- root gap over default gate: yes"] : []),
       ...(event.rootScoreGapToFallback === undefined ? [] : [`- root gap to fallback: ${event.rootScoreGapToFallback}`]),
       ...(event.plannerMarginToFallback === undefined ? [] : [`- planner margin to fallback: ${event.plannerMarginToFallback}`]),
       ...(event.selectedRolloutScoreGapToFallback === undefined
@@ -658,6 +692,8 @@ function parseArgs(args: string[]): CliOptions {
     } else if (arg === "--inspect-threshold-ms") {
       parsed.inspectThresholdMs = readInteger(arg, next);
       index += 1;
+    } else if (arg === "--inspect-turn-plan") {
+      parsed.inspectTurnPlanDecisions = true;
     } else if (arg === "--candidate-limit") {
       parsed.candidateLimit = readInteger(arg, next);
       index += 1;
