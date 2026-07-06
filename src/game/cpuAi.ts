@@ -1559,7 +1559,10 @@ function applyTerminalPlanRolloutScores(
     if (cached) {
       return cached;
     }
-    const useHandoffRollout = isShieldTargetTieRolloutTrigger || Boolean(config.terminalPlanRolloutUseHandoff);
+    const useHandoffRollout =
+      isShieldTargetTieRolloutTrigger ||
+      isLateDeckHoldEndTurnRolloutTrigger ||
+      Boolean(config.terminalPlanRolloutUseHandoff);
     const result = useHandoffRollout
       ? evaluateTerminalPlanHandoffRollout(
           selection.candidate.after,
