@@ -150,6 +150,22 @@ const DEFAULT_CANDIDATES = [
     },
   },
   {
+    id: "terminal4_current",
+    note: "自ターン終端深さを4へ落とし、重い白ミラー局面の判断時間を抑える",
+    search: {
+      sameTurnTerminalPlanDepth: 4,
+    },
+  },
+  {
+    id: "terminal4_response2",
+    note: "自ターン終端深さ4に抑え、相手応答だけ深さ2・幅2で補う",
+    search: {
+      sameTurnTerminalPlanDepth: 4,
+      sameTurnOpponentTerminalPlanDepth: 2,
+      sameTurnOpponentTerminalPlanWidth: 2,
+    },
+  },
+  {
     id: "response2_width3",
     note: "相手応答を深さ2・幅3で読み、終盤の返し候補漏れを減らす",
     search: {
