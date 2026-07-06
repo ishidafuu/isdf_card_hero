@@ -576,6 +576,17 @@ export function chooseCpuDecision(state: GameState, options: CpuAiOptions = {}):
     return backlineMoveBeforeSummonDecision;
   }
 
+  const backThreatAttackBeforeRetreatDecision =
+    selectWhiteMirrorBackThreatAttackBeforeRetreatDecision(
+      state,
+      perspective,
+      best,
+      evaluated,
+    );
+  if (backThreatAttackBeforeRetreatDecision) {
+    return backThreatAttackBeforeRetreatDecision;
+  }
+
   const earlyHoldEndTurnDecision = selectWhiteMirrorEarlyHoldEndTurnDecision(
     state,
     perspective,
@@ -2340,6 +2351,152 @@ function isWhiteMirrorBacklineMoveBeforeBackSummonCandidate(
 function isMaxLevelFrontAce(monster: MonsterState): boolean {
   const def = getMonsterDef(monster.cardId);
   return getMonsterAiTrait(monster.cardId).role === "front" && def.maxLevel >= 3 && monster.level >= def.maxLevel;
+}
+
+function selectWhiteMirrorBackThreatAttackBeforeRetreatDecision(
+  state: GameState,
+  perspective: PlayerId,
+  fallback: EvaluatedDecision | undefined,
+  evaluated: readonly EvaluatedDecision[],
+): CpuDecision | undefined {
+  if (!fallback || !isWhiteMirrorBackThreatRetreatFallback(state, perspective, fallback)) {
+    return undefined;
+  }
+
+  const attack = evaluated
+    .filter((candidate) =>
+      isWhiteMirrorBackThreatAttackCandidate(state, fallback.after, perspective, fallback, candidate),
+    )
+    .sort(
+      (a, b) =>
+        whiteMirrorBackThreatAttackBeforeRetreatScore(state, b) -
+          whiteMirrorBackThreatAttackBeforeRetreatScore(state, a) ||
+        b.totalScore - a.totalScore ||
+        compareTieBreak(a.decision, b.decision, a.index, b.index),
+    )[0];
+  if (!attack) {
+    return undefined;
+  }
+
+  const rootGap = fallback.totalScore - attack.totalScore;
+  if (rootGap > 260 || whiteMirrorBackThreatAttackBeforeRetreatScore(state, attack) < 180) {
+    return undefined;
+  }
+
+  return {
+    ...attack.decision,
+    reason:
+      `${attack.decision.reason} / 白ミラー中盤: ` +
+      "後列へ下げて行動を使う前に高レベル後衛を削る",
+  };
+}
+
+function isWhiteMirrorBackThreatRetreatFallback(
+  state: GameState,
+  perspective: PlayerId,
+  fallback: EvaluatedDecision,
+): boolean {
+  const decision = fallback.decision;
+  if (
+    !isWhiteMirrorState(state, perspective) ||
+    state.turnNumber < 7 ||
+    state.turnNumber > 10 ||
+    decision.type !== "move" ||
+    fallback.after.winner ||
+    fallback.after.pendingLevelUp ||
+    state.players[perspective].masterHp > state.players[opponentOf(perspective)].masterHp ||
+    state.players[perspective].stones < 3
+  ) {
+    return false;
+  }
+
+  const fromSlot = state.slots[decision.fromSlotKey];
+  const toSlot = state.slots[decision.toSlotKey];
+  const mover = fromSlot.monster;
+  return (
+    fromSlot.owner === perspective &&
+    toSlot.owner === perspective &&
+    fromSlot.row === "front" &&
+    toSlot.row === "back" &&
+    !toSlot.monster &&
+    !!mover &&
+    mover.owner === perspective &&
+    mover.status === "active" &&
+    mover.actionCount < mover.actionLimit &&
+    (getMonsterAiTrait(mover.cardId).role === "back" || mover.actionLimit > 1)
+  );
+}
+
+function isWhiteMirrorBackThreatAttackCandidate(
+  state: GameState,
+  afterRetreat: GameState,
+  perspective: PlayerId,
+  fallback: EvaluatedDecision,
+  candidate: EvaluatedDecision,
+): boolean {
+  const fallbackDecision = fallback.decision;
+  const decision = candidate.decision;
+  if (
+    fallbackDecision.type !== "move" ||
+    decision.type !== "attack" ||
+    decision.action.attackerSlotKey !== fallbackDecision.fromSlotKey ||
+    decision.action.target.kind !== "monster"
+  ) {
+    return false;
+  }
+
+  const targetSlotKey = decision.action.target.slotKey;
+  const targetSlot = state.slots[targetSlotKey];
+  const targetBefore = targetSlot.monster;
+  const targetAfter = candidate.after.slots[targetSlotKey].monster;
+  if (
+    targetSlot.owner !== opponentOf(perspective) ||
+    targetSlot.row !== "back" ||
+    !targetBefore ||
+    targetBefore.owner !== opponentOf(perspective) ||
+    getMonsterAiTrait(targetBefore.cardId).role !== "back" ||
+    targetBefore.level < 2 ||
+    !targetAfter ||
+    targetAfter.owner !== targetBefore.owner ||
+    targetAfter.instanceId !== targetBefore.instanceId ||
+    targetAfter.hp >= targetBefore.hp
+  ) {
+    return false;
+  }
+
+  const movedSlotKey = findMonsterSlot(afterRetreat, state.slots[fallbackDecision.fromSlotKey].monster?.instanceId ?? "");
+  if (!movedSlotKey) {
+    return false;
+  }
+  const moverBefore = state.slots[fallbackDecision.fromSlotKey].monster;
+  const moverAfter = afterRetreat.slots[movedSlotKey].monster;
+  return !!moverBefore && !!moverAfter && moverAfter.actionCount > moverBefore.actionCount;
+}
+
+function whiteMirrorBackThreatAttackBeforeRetreatScore(
+  state: GameState,
+  candidate: EvaluatedDecision,
+): number {
+  const decision = candidate.decision;
+  if (decision.type !== "attack" || decision.action.target.kind !== "monster") {
+    return 0;
+  }
+
+  const targetSlotKey = decision.action.target.slotKey;
+  const targetBefore = state.slots[targetSlotKey].monster;
+  const targetAfter = candidate.after.slots[targetSlotKey].monster;
+  if (!targetBefore || !targetAfter || targetAfter.hp >= targetBefore.hp) {
+    return 0;
+  }
+
+  const damage = targetBefore.hp - targetAfter.hp;
+  const lowHpProgress = targetAfter.hp <= 2 ? 70 : 0;
+  return (
+    targetBefore.level * 82 +
+    damage * 42 +
+    Math.min(130, monsterValue(state, targetSlotKey) * 0.32) +
+    lowHpProgress
+  );
 }
 
 function selectWhiteMirrorEarlyHoldEndTurnDecision(

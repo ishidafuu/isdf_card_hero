@@ -2551,6 +2551,62 @@ describe("cpu ai", () => {
     expect(decisionTestSignature(selected)).toBe("move:cpu_back_left:cpu_front_right");
   });
 
+  it("chips a leveled backline threat before retreating a ranged unit in a white mirror", () => {
+    const game = createCpuGame([
+      { cardId: "bomuzo", instanceId: "cpu_back_threat_bomuzo" },
+      { cardId: "polyspinner", instanceId: "cpu_back_threat_polyspinner" },
+    ]);
+    game.turnNumber = 8;
+    game.players.cpu.masterId = "white";
+    game.players.player.masterId = "white";
+    game.players.cpu.masterHp = 8;
+    game.players.player.masterHp = 10;
+    game.players.cpu.stones = 4;
+    game.players.player.stones = 1;
+    game.players.player.hand = [];
+    for (const slot of Object.values(game.slots)) {
+      delete slot.monster;
+    }
+    game.slots.player_front_left.monster = createActiveMonster("yanbaru", "player", {
+      instanceId: "player_front_yanbaru",
+      hp: 3,
+      actionCount: 1,
+    });
+    game.slots.player_front_right.monster = createActiveMonster("card_047", "player", {
+      instanceId: "player_shielded_dyne",
+      level: 2,
+      hp: 6,
+      investedStones: 2,
+      actionCount: 1,
+      shielded: true,
+    });
+    game.slots.player_back_left.monster = createActiveMonster("bomuzo", "player", {
+      instanceId: "player_prepared_bomuzo",
+      status: "prepared",
+      hp: 6,
+    });
+    game.slots.player_back_right.monster = createActiveMonster("yanbaru", "player", {
+      instanceId: "player_leveled_back_yanbaru",
+      level: 2,
+      hp: 3,
+      investedStones: 2,
+      actionCount: 1,
+    });
+    game.slots.cpu_front_right.monster = createActiveMonster("card_051", "cpu", {
+      instanceId: "cpu_front_pygmy",
+      level: 2,
+      hp: 3,
+      investedStones: 2,
+      actionLimit: 2,
+      focused: true,
+    });
+
+    const decision = chooseCpuDecision(game, { profiles: { cpu: "white_planner", player: "white" } });
+
+    expect(decisionTestSignature(decision)).toBe("attack:cpu_front_right:player_back_right");
+    expect(decision.reason).toContain("後列へ下げて行動を使う前");
+  });
+
   it("uses the last back-slot no-reach guard only in the default white-vs-black matchup", () => {
     const createLastSlotGame = (opponentMasterId: "black" | "white") => {
       const game = createCpuGame([{ cardId: "card_047", instanceId: "cpu_last_slot_dyne" }]);
