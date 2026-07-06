@@ -71,6 +71,14 @@ Direction breakdown:
 - `challenger-as-cpu` は固定4seedで 2-2。これは今回の長考修正後も残る白白の手番/座席差として、次フェーズで別途見る。
 - ただし今回の主目的だった `994315 / challenger-as-player` の長考は、5秒超えなしで勝ち切るところまで改善済み。
 
+## 追加probe
+
+front focus / late deck hold rollout を軽量化した後、残る最大長考として `994325 / challenger-as-cpu` の盾target tie比較が残った。
+`terminalPlanRolloutShieldTargetTieSteps` を `0 / 4 / 8` で単体traceしたところ、`994325` 自体は勝敗を変えずに最大 6-7秒台まで下がった。
+
+ただし `4` を本体候補として32戦監査へ広げたところ、早い段階で `994319 / challenger-as-cpu` の勝ちseedを落とした。
+盾target tieは局所的には重いが、白ミラーの勝率維持に効いているため、現時点では `16` のまま据え置く。
+
 ## 検証
 
 - `npm test -- tests/game/cpuAi.test.ts`
