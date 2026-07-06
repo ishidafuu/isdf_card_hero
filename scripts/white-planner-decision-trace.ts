@@ -412,6 +412,9 @@ function parseArgs(args: string[]): CliOptions {
     } else if (arg === "--planner-rollout-front-focus-steps") {
       parsed.search = { ...parsed.search, terminalPlanRolloutFrontFocusStripAttackSteps: readInteger(arg, next) };
       index += 1;
+    } else if (arg === "--planner-rollout-late-deck-hold-steps") {
+      parsed.search = { ...parsed.search, terminalPlanRolloutLateDeckHoldEndTurnSteps: readInteger(arg, next) };
+      index += 1;
     } else if (arg === "--planner-rollout-shield-target-tie-steps") {
       parsed.search = { ...parsed.search, terminalPlanRolloutShieldTargetTieSteps: readInteger(arg, next) };
       index += 1;
@@ -484,6 +487,7 @@ Options:
   --planner-rollout-candidate-limit <n>
   --planner-rollout-weight <n>
   --planner-rollout-front-focus-steps <n>
+  --planner-rollout-late-deck-hold-steps <n>
   --planner-rollout-shield-target-tie-steps <n>
   --planner-rollout-use-handoff <0|1>
   --planner-rollout-use-lightweight-profile <0|1>
