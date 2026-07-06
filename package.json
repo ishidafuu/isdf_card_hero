@@ -45,6 +45,7 @@
     "audit:white-planner-search-diff": "vite-node scripts/white-planner-search-diff-audit.ts",
     "audit:white-planner-summon-slot": "vite-node scripts/white-planner-summon-slot-audit.ts",
     "audit:white-rollout-triggers": "vite-node scripts/white-rollout-trigger-audit.ts",
+    "audit:white-planner-trace-risk": "vite-node scripts/white-planner-trace-risk-audit.ts",
     "lab:masters:shield-audit": "vite-node scripts/shield-usage-audit-loop.ts",
     "lab:masters:white-shield-followup-loss": "vite-node scripts/white-shield-followup-loss-audit.ts",
     "lab:masters:white-shield-response-matrix": "vite-node scripts/white-shield-response-matrix-audit.ts",
