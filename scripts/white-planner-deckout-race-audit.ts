@@ -178,7 +178,12 @@ function readArtifacts(dirs: readonly string[]): GameArtifact[] {
         .filter((path) => statSync(path).isFile()),
     )
     .sort()
-    .map((path) => JSON.parse(readFileSync(path, "utf8")) as GameArtifact);
+    .map((path) => JSON.parse(readFileSync(path, "utf8")) as Partial<GameArtifact>)
+    .filter((artifact): artifact is GameArtifact =>
+      typeof artifact.seed === "number" &&
+      (artifact.direction === "challenger-as-cpu" || artifact.direction === "challenger-as-player") &&
+      Array.isArray(artifact.history),
+    );
 }
 
 function auditGame(artifact: GameArtifact, deckThreshold: number): GameDeckoutAudit {

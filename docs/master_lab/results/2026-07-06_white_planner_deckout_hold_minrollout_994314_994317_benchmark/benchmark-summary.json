@@ -1,0 +1,90 @@
+{
+  "ok": true,
+  "options": {
+    "seedStart": 994314,
+    "seedEnd": 994317,
+    "count": 4,
+    "deckPreset": "master-lab-white-1377-death-sheep3",
+    "masterIds": {
+      "player": "white",
+      "cpu": "white"
+    },
+    "maxSteps": 360,
+    "maxTurns": 90,
+    "failOnWarnings": false,
+    "baselineProfile": "white",
+    "challengerProfile": "white_planner",
+    "directions": [
+      "challenger-as-cpu",
+      "challenger-as-player"
+    ]
+  },
+  "summary": {
+    "games": 8,
+    "profileWins": {
+      "stable": 0,
+      "strong": 0,
+      "pressure": 0,
+      "defensive": 0,
+      "white": 0,
+      "white_planner": 8,
+      "white_rollout": 0,
+      "omniscient": 0
+    },
+    "undecided": 0,
+    "failures": 0,
+    "warnings": 1,
+    "maxSteps": 305,
+    "maxTurns": 29,
+    "averageSteps": 224.625,
+    "averageTurns": 23,
+    "challengerLosses": [],
+    "issueSeeds": [
+      994315
+    ]
+  },
+  "runs": [
+    {
+      "direction": "challenger-as-cpu",
+      "label": "challenger as cpu",
+      "profiles": {
+        "player": "white",
+        "cpu": "white_planner"
+      },
+      "profileWins": {
+        "stable": 0,
+        "strong": 0,
+        "pressure": 0,
+        "defensive": 0,
+        "white": 0,
+        "white_planner": 4,
+        "white_rollout": 0,
+        "omniscient": 0
+      },
+      "undecided": 0,
+      "averageSteps": 215,
+      "averageTurns": 22.5
+    },
+    {
+      "direction": "challenger-as-player",
+      "label": "challenger as player",
+      "profiles": {
+        "player": "white_planner",
+        "cpu": "white"
+      },
+      "profileWins": {
+        "stable": 0,
+        "strong": 0,
+        "pressure": 0,
+        "defensive": 0,
+        "white": 0,
+        "white_planner": 4,
+        "white_rollout": 0,
+        "omniscient": 0
+      },
+      "undecided": 0,
+      "averageSteps": 234.25,
+      "averageTurns": 23.5
+    }
+  ]
+}

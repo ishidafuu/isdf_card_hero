@@ -407,7 +407,7 @@ const CPU_AI_PROFILE_CONFIG: Record<CpuAiProfile, CpuAiProfileConfig> = {
     terminalPlanRolloutAllowLatePressureOverSummon: 1,
     terminalPlanRolloutLatePressureOverSummonSteps: 40,
     terminalPlanRolloutAllowLateDeckHoldEndTurn: 1,
-    terminalPlanRolloutLateDeckHoldEndTurnSteps: 56,
+    terminalPlanRolloutLateDeckHoldEndTurnSteps: 48,
     terminalPlanAllowShieldHoldEndTurn: 1,
     terminalPlanRolloutAllowFrontFocusStripAttack: 1,
     terminalPlanRolloutFrontFocusStripAttackMinRootScoreGap: 180,
@@ -462,7 +462,7 @@ const CPU_AI_PROFILE_CONFIG: Record<CpuAiProfile, CpuAiProfileConfig> = {
     terminalPlanRolloutAllowLatePressureOverSummon: 1,
     terminalPlanRolloutLatePressureOverSummonSteps: 40,
     terminalPlanRolloutAllowLateDeckHoldEndTurn: 1,
-    terminalPlanRolloutLateDeckHoldEndTurnSteps: 56,
+    terminalPlanRolloutLateDeckHoldEndTurnSteps: 48,
     terminalPlanAllowShieldHoldEndTurn: 1,
     terminalPlanRolloutAllowFrontFocusStripAttack: 1,
     terminalPlanRolloutFrontFocusStripAttackMinRootScoreGap: 180,
@@ -1527,7 +1527,7 @@ function applyTerminalPlanRolloutScores(
     if (holdEndTurn) {
       rolloutKeys.add(cpuDecisionKey(holdEndTurn.candidate.decision));
     }
-  } else if (!isCloseoutHoldEndTurnRolloutTrigger) {
+  } else if (!isCloseoutHoldEndTurnRolloutTrigger && !isLateDeckHoldEndTurnRolloutTrigger) {
     rolloutCandidatePool.forEach((selection) => {
       rolloutKeys.add(cpuDecisionKey(selection.candidate.decision));
     });
@@ -5913,6 +5913,15 @@ function isWhiteMirrorLateDeckHoldEndTurnFallback(
     return false;
   }
   const decision = fallback.decision;
+  if (fallback.after.winner || fallback.after.pendingLevelUp) {
+    return false;
+  }
+  if (masterDamageFromTransition(state, fallback.after, perspective) > 0) {
+    return false;
+  }
+  if (isLateDeckNonLethalEnemyFrontPressureDecision(state, fallback, perspective)) {
+    return true;
+  }
   if (decision.type !== "master_action" || decision.actionId !== "master_attack" || decision.target.kind !== "monster") {
     return false;
   }
@@ -5930,9 +5939,6 @@ function isWhiteMirrorLateDeckHoldEndTurnFallback(
   ) {
     return false;
   }
-  if (fallback.after.winner || fallback.after.pendingLevelUp) {
-    return false;
-  }
   const stoneSpent = state.players[perspective].stones - fallback.after.players[perspective].stones;
   if (stoneSpent < 2) {
     return false;
@@ -5942,6 +5948,36 @@ function isWhiteMirrorLateDeckHoldEndTurnFallback(
   return afterThreat >= beforeThreat;
 }
 
+function isLateDeckNonLethalEnemyFrontPressureDecision(
+  state: GameState,
+  candidate: EvaluatedDecision,
+  perspective: PlayerId,
+): boolean {
+  const decision = candidate.decision;
+  if (decision.type !== "attack" || decision.action.target.kind !== "monster") {
+    return false;
+  }
+  const opponent = opponentOf(perspective);
+  const targetSlotKey = decision.action.target.slotKey;
+  const targetSlot = state.slots[targetSlotKey];
+  const beforeMonster = targetSlot.monster;
+  const afterMonster = candidate.after.slots[targetSlotKey].monster;
+  if (
+    targetSlot.row !== "front" ||
+    beforeMonster?.owner !== opponent ||
+    !afterMonster ||
+    afterMonster.owner !== opponent ||
+    afterMonster.instanceId !== beforeMonster.instanceId
+  ) {
+    return false;
+  }
+  return (
+    afterMonster.hp < beforeMonster.hp ||
+    (beforeMonster.focused && !afterMonster.focused) ||
+    (beforeMonster.shielded && !afterMonster.shielded)
+  );
+}
+
 function isWhiteMirrorLateDeckHoldState(state: GameState, perspective: PlayerId): boolean {
   if (!isWhiteMirrorState(state, perspective) || state.turnNumber < 18) {
     return false;
@@ -5949,11 +5985,16 @@ function isWhiteMirrorLateDeckHoldState(state: GameState, perspective: PlayerId)
   const opponent = opponentOf(perspective);
   const own = state.players[perspective];
   const enemy = state.players[opponent];
+  const deathClockMargin = deckoutDeathClockHalfTurns(state, opponent) -
+    deckoutDeathClockHalfTurns(state, perspective);
+  const hpDeficit = Math.max(0, enemy.masterHp - own.masterHp);
   if (
     own.deck.length > 6 ||
+    enemy.deck.length > 6 ||
     enemy.deck.length > own.deck.length + 1 ||
-    own.masterHp <= enemy.masterHp ||
-    own.stones < 4
+    own.stones < 4 ||
+    deathClockMargin > 3 ||
+    (hpDeficit > 2 && deathClockMargin > 0)
   ) {
     return false;
   }
@@ -6552,6 +6593,7 @@ export function evaluateState(
   score += (state.players[perspective].stones - state.players[opponent].stones) * weights.stone;
   score += (state.players[perspective].hand.length - state.players[opponent].hand.length) * weights.hand;
   score += (state.players[perspective].deck.length - state.players[opponent].deck.length) * weights.deck;
+  score += whiteMirrorDeckoutClockScore(state, perspective);
 
   for (const slotKey of ALL_FIELD_ORDER) {
     const value = monsterValue(state, slotKey);
@@ -6563,6 +6605,39 @@ export function evaluateState(
   }
 
   return score;
+}
+
+function whiteMirrorDeckoutClockScore(state: GameState, perspective: PlayerId): number {
+  if (!isWhiteMirrorState(state, perspective) || state.winner || state.pendingLevelUp || state.turnNumber < 16) {
+    return 0;
+  }
+
+  const opponent = opponentOf(perspective);
+  const own = state.players[perspective];
+  const enemy = state.players[opponent];
+  const minDeck = Math.min(own.deck.length, enemy.deck.length);
+  const maxDeck = Math.max(own.deck.length, enemy.deck.length);
+  if (minDeck > 4 || maxDeck > 6) {
+    return 0;
+  }
+
+  const ownDeathClock = deckoutDeathClockHalfTurns(state, perspective);
+  const enemyDeathClock = deckoutDeathClockHalfTurns(state, opponent);
+  const margin = enemyDeathClock - ownDeathClock;
+  const urgency = Math.max(1, 5 - minDeck);
+  if (margin > 0) {
+    const hpDeficit = Math.max(0, enemy.masterHp - own.masterHp);
+    return -Math.min(900, margin * (55 + urgency * 12) + hpDeficit * 18);
+  }
+
+  const hpLead = Math.max(0, own.masterHp - enemy.masterHp);
+  return Math.min(650, -margin * (34 + urgency * 8) + hpLead * 8);
+}
+
+function deckoutDeathClockHalfTurns(state: GameState, playerId: PlayerId): number {
+  const player = state.players[playerId];
+  const nextStartHalfTurns = state.currentPlayer === playerId ? 2 : 1;
+  return nextStartHalfTurns + (player.deck.length + Math.max(1, player.masterHp) - 1) * 2;
 }
 
 function evaluateConfiguredFutureTacticalValue(
