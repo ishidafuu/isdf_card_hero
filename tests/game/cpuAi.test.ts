@@ -242,6 +242,27 @@ describe("cpu ai", () => {
     expect(afterTurnChange.turnAiRolloutDecisionHistory).toBeUndefined();
   });
 
+  it("holds stones instead of early low-conversion white mirror setup after front work", () => {
+    const deck = buildDeckPresetCardIds("master-lab-white-1377-death-sheep3");
+    const allowsSpecial = deckPresetAllowsSpecial("master-lab-white-1377-death-sheep3");
+    const options = { profiles: { player: "white" as const, cpu: "white_planner" as const } };
+    let game = createInitialGame(994322, {
+      masterIds: { player: "white", cpu: "white" },
+      playerDeckCardIds: deck,
+      cpuDeckCardIds: deck,
+      allowSpecialDecks: { player: allowsSpecial, cpu: allowsSpecial },
+    });
+
+    for (let step = 0; step < 16; step += 1) {
+      game = runAutoStep(game, options);
+    }
+
+    const decision = chooseCpuDecision(game, options);
+
+    expect(decision.type).toBe("end_turn");
+    expect(decision.reason).toContain("白ミラー序盤");
+  });
+
   it("uses response reading to break low-stone white mirror shield target ties", () => {
     const game = createCpuGame();
     game.turnNumber = 9;

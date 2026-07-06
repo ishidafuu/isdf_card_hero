@@ -88,6 +88,9 @@ const SUMMON_SLOT_ORDER_BY_PLAYER: Record<PlayerId, SlotKey[]> = {
 };
 
 const ALL_FIELD_ORDER: SlotKey[] = [...FIELD_ORDER_BY_PLAYER.cpu, ...FIELD_ORDER_BY_PLAYER.player];
+const WHITE_MIRROR_EARLY_HOLD_TURN_TO = 4;
+const WHITE_MIRROR_EARLY_HOLD_MIN_END_TURN_SCORE = -360;
+const WHITE_MIRROR_EARLY_HOLD_MAX_ROOT_GAP = 520;
 
 type EvaluatedDecision = { decision: CpuDecision; totalScore: number; index: number; after: GameState };
 type TerminalPlanOutcome = { delta: number; handoffState: GameState };
@@ -550,6 +553,16 @@ export function chooseCpuDecision(state: GameState, options: CpuAiOptions = {}):
   );
   if (shieldHoldEndTurnDecision) {
     return shieldHoldEndTurnDecision;
+  }
+
+  const earlyHoldEndTurnDecision = selectWhiteMirrorEarlyHoldEndTurnDecision(
+    state,
+    perspective,
+    best,
+    evaluated,
+  );
+  if (earlyHoldEndTurnDecision) {
+    return earlyHoldEndTurnDecision;
   }
 
   const skipTerminalPlanRoot = shouldSkipTerminalPlanRootForShieldOnlyRoot(
@@ -2033,6 +2046,94 @@ function selectWhiteMirrorShieldHoldEndTurnDecision(
       `${endTurn.decision.reason} / 白ミラー終盤: ` +
       "盾で石が1以下になり山札raceの詰めを落とすため見送り",
   };
+}
+
+function selectWhiteMirrorEarlyHoldEndTurnDecision(
+  state: GameState,
+  perspective: PlayerId,
+  fallback: EvaluatedDecision | undefined,
+  evaluated: readonly EvaluatedDecision[],
+): CpuDecision | undefined {
+  if (
+    !fallback ||
+    !isWhiteMirrorState(state, perspective) ||
+    state.turnNumber > WHITE_MIRROR_EARLY_HOLD_TURN_TO ||
+    state.players[perspective].stones < 3 ||
+    state.players[opponentOf(perspective)].stones > 1 ||
+    currentTurnSpentMonsterActionCount(state, perspective) <= 0 ||
+    frontMonsterCountForPlayer(state, perspective) < 2 ||
+    frontMonsterCountForPlayer(state, opponentOf(perspective)) < 2 ||
+    fallback.decision.type === "end_turn" ||
+    !isWhiteMirrorEarlyHoldSetupDecision(state, fallback, perspective)
+  ) {
+    return undefined;
+  }
+
+  const endTurn = evaluated.find((candidate) => candidate.decision.type === "end_turn");
+  if (
+    !endTurn ||
+    endTurn.totalScore < WHITE_MIRROR_EARLY_HOLD_MIN_END_TURN_SCORE ||
+    fallback.totalScore - endTurn.totalScore > WHITE_MIRROR_EARLY_HOLD_MAX_ROOT_GAP
+  ) {
+    return undefined;
+  }
+
+  const strongerActions = evaluated.filter(
+    (candidate) =>
+      candidate.decision.type !== "end_turn" &&
+      candidate.totalScore > endTurn.totalScore &&
+      fallback.totalScore - candidate.totalScore <= WHITE_MIRROR_EARLY_HOLD_MAX_ROOT_GAP,
+  );
+  const hasOnlyLowConversionSetup = strongerActions.every((candidate) =>
+    isWhiteMirrorEarlyHoldSetupDecision(state, candidate, perspective),
+  );
+  if (strongerActions.length === 0 || !hasOnlyLowConversionSetup) {
+    return undefined;
+  }
+
+  return {
+    ...endTurn.decision,
+    reason:
+      `${endTurn.decision.reason} / 白ミラー序盤: ` +
+      "前衛の仕事後に残りが低変換セットアップのみで、相手石が少ないため石と陣形を温存",
+  };
+}
+
+function isWhiteMirrorEarlyHoldSetupDecision(
+  state: GameState,
+  candidate: EvaluatedDecision,
+  perspective: PlayerId,
+): boolean {
+  if (
+    candidate.after.winner ||
+    candidate.after.pendingLevelUp ||
+    masterDamageFromTransition(state, candidate.after, perspective) > 0
+  ) {
+    return false;
+  }
+
+  const decision = candidate.decision;
+  if (decision.type === "focus") {
+    const slot = state.slots[decision.slotKey];
+    const monster = slot.monster;
+    return !!(
+      monster &&
+      monster.owner === perspective &&
+      slot.row === "back" &&
+      getMonsterAiTrait(monster.cardId).role !== "back"
+    );
+  }
+
+  if (decision.type !== "magic" || !isRotationMagicDecision(state, perspective, decision)) {
+    return false;
+  }
+  const spentStones = state.players[perspective].stones - candidate.after.players[perspective].stones;
+  return (
+    decision.action.target.kind === "master" &&
+    decision.action.target.playerId === perspective &&
+    spentStones >= 3 &&
+    candidate.after.players[perspective].stones <= 0
+  );
 }
 
 function selectShieldTargetTieRootDecision(
