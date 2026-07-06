@@ -566,6 +566,16 @@ export function chooseCpuDecision(state: GameState, options: CpuAiOptions = {}):
     return midgameOverprotectShieldHoldEndTurnDecision;
   }
 
+  const backlineMoveBeforeSummonDecision = selectWhiteMirrorBacklineMoveBeforeBackSummonDecision(
+    state,
+    perspective,
+    best,
+    evaluated,
+  );
+  if (backlineMoveBeforeSummonDecision) {
+    return backlineMoveBeforeSummonDecision;
+  }
+
   const earlyHoldEndTurnDecision = selectWhiteMirrorEarlyHoldEndTurnDecision(
     state,
     perspective,
@@ -2223,6 +2233,113 @@ function isWhiteMirrorMidgameOverprotectShieldFallback(
 
   const masterThreat = buildThreatModel(state, opponent).masterDamage[perspective];
   return masterThreat < own.masterHp;
+}
+
+function selectWhiteMirrorBacklineMoveBeforeBackSummonDecision(
+  state: GameState,
+  perspective: PlayerId,
+  fallback: EvaluatedDecision | undefined,
+  evaluated: readonly EvaluatedDecision[],
+): CpuDecision | undefined {
+  if (!fallback || !isWhiteMirrorBacklineMoveBeforeBackSummonFallback(state, perspective, fallback)) {
+    return undefined;
+  }
+
+  const move = evaluated
+    .filter((candidate) => isWhiteMirrorBacklineMoveBeforeBackSummonCandidate(state, perspective, candidate))
+    .sort(
+      (a, b) =>
+        b.totalScore - a.totalScore || compareTieBreak(a.decision, b.decision, a.index, b.index),
+    )[0];
+  if (!move) {
+    return undefined;
+  }
+
+  const rootGap = fallback.totalScore - move.totalScore;
+  if (rootGap > 140) {
+    return undefined;
+  }
+
+  return {
+    ...move.decision,
+    reason:
+      `${move.decision.reason} / 白ミラー中盤: ` +
+      "最後の後列枠を埋める前に行動可能な後衛を前へ出して盤面を広げる",
+  };
+}
+
+function isWhiteMirrorBacklineMoveBeforeBackSummonFallback(
+  state: GameState,
+  perspective: PlayerId,
+  fallback: EvaluatedDecision,
+): boolean {
+  if (
+    !isWhiteMirrorState(state, perspective) ||
+    state.turnNumber < 9 ||
+    state.turnNumber > 12 ||
+    fallback.decision.type !== "summon" ||
+    fallback.after.winner ||
+    fallback.after.pendingLevelUp ||
+    summonWakeCreatesImmediateWork(state, fallback.decision.handInstanceId, fallback.decision.slotKey) ||
+    emptyBackSlotCountForPlayer(state, perspective) !== 1 ||
+    emptyBackSlotCountForPlayer(fallback.after, perspective) !== 0
+  ) {
+    return false;
+  }
+
+  const opponent = opponentOf(perspective);
+  if (
+    state.players[perspective].masterHp < state.players[opponent].masterHp ||
+    state.players[opponent].stones > 3
+  ) {
+    return false;
+  }
+
+  const summonSlot = state.slots[fallback.decision.slotKey];
+  return summonSlot.owner === perspective && summonSlot.row === "back" && !summonSlot.monster;
+}
+
+function isWhiteMirrorBacklineMoveBeforeBackSummonCandidate(
+  state: GameState,
+  perspective: PlayerId,
+  candidate: EvaluatedDecision,
+): boolean {
+  const decision = candidate.decision;
+  if (decision.type !== "move" || emptyBackSlotCountForPlayer(candidate.after, perspective) <= 0) {
+    return false;
+  }
+
+  const fromSlot = state.slots[decision.fromSlotKey];
+  const toSlot = state.slots[decision.toSlotKey];
+  const mover = fromSlot.monster;
+  const displaced = toSlot.monster;
+  if (
+    fromSlot.owner !== perspective ||
+    toSlot.owner !== perspective ||
+    fromSlot.row !== "back" ||
+    toSlot.row !== "front" ||
+    !mover ||
+    mover.owner !== perspective ||
+    mover.status !== "active" ||
+    mover.actionCount >= mover.actionLimit ||
+    !displaced ||
+    displaced.owner !== perspective ||
+    isMaxLevelFrontAce(displaced)
+  ) {
+    return false;
+  }
+
+  const movedSlotKey = findMonsterSlot(candidate.after, mover.instanceId);
+  if (!movedSlotKey || candidate.after.slots[movedSlotKey].row !== "front") {
+    return false;
+  }
+
+  return mover.actionLimit > 1 || bestAttackOpportunityScore(candidate.after, movedSlotKey) > 0;
+}
+
+function isMaxLevelFrontAce(monster: MonsterState): boolean {
+  const def = getMonsterDef(monster.cardId);
+  return getMonsterAiTrait(monster.cardId).role === "front" && def.maxLevel >= 3 && monster.level >= def.maxLevel;
 }
 
 function selectWhiteMirrorEarlyHoldEndTurnDecision(
