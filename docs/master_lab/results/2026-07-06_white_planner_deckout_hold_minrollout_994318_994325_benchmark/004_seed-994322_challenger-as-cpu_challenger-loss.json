@@ -1,0 +1,6311 @@
+{
+  "direction": "challenger-as-cpu",
+  "seed": 994322,
+  "winner": "player",
+  "winnerProfile": "white",
+  "steps": 275,
+  "turns": 26,
+  "issueCount": 0,
+  "warningCount": 0,
+  "finalState": {
+    "currentPlayer": "cpu",
+    "turnNumber": 26,
+    "winner": "player",
+    "pendingLevelUp": false,
+    "players": {
+      "player": {
+        "masterId": "white",
+        "hp": 2,
+        "stones": 29,
+        "hand": 5,
+        "deck": 0,
+        "discard": 24
+      },
+      "cpu": {
+        "masterId": "white",
+        "hp": 0,
+        "stones": 14,
+        "hand": 5,
+        "deck": 0,
+        "discard": 22
+      }
+    },
+    "slots": [
+      {
+        "slotKey": "player_front_left",
+        "card": "card_133",
+        "name": "デスシープ",
+        "owner": "player",
+        "hp": 6,
+        "level": 1,
+        "status": "active",
+        "actions": "1/1",
+        "focused": false,
+        "berserkPower": false,
+        "shielded": false
+      },
+      {
+        "slotKey": "player_front_right"
+      },
+      {
+        "slotKey": "player_back_left"
+      },
+      {
+        "slotKey": "player_back_right"
+      },
+      {
+        "slotKey": "cpu_front_left",
+        "card": "card_051",
+        "name": "ピグミィ",
+        "owner": "cpu",
+        "hp": 3,
+        "level": 2,
+        "status": "active",
+        "actions": "0/2",
+        "focused": true,
+        "berserkPower": false,
+        "shielded": false
+      },
+      {
+        "slotKey": "cpu_front_right",
+        "card": "card_133",
+        "name": "デスシープ",
+        "owner": "cpu",
+        "hp": 6,
+        "level": 2,
+        "status": "active",
+        "actions": "0/1",
+        "focused": false,
+        "berserkPower": false,
+        "shielded": false
+      },
+      {
+        "slotKey": "cpu_back_left"
+      },
+      {
+        "slotKey": "cpu_back_right",
+        "card": "yanbaru",
+        "name": "ヤンバル",
+        "owner": "cpu",
+        "hp": 3,
+        "level": 2,
+        "status": "active",
+        "actions": "0/1",
+        "focused": false,
+        "berserkPower": false,
+        "shielded": false
+      }
+    ]
+  },
+  "logTail": [
+    "CPU判断: ターン開始時の最大打点1点で詰めろを作れるため攻撃",
+    "CPUのデスシープ Lv2: アタック 3P",
+    "プレイヤーのマスターHPが1減った（アタック）。ストーン+1",
+    "CPU判断: 有効な行動がないためターン終了 / ターンプラン探索: 返し込み最終盤面-750060点",
+    "CPUのカード溢れ: 手札を5枚まで捨てる",
+    "CPUは手札上限でポリスピナーを捨てた",
+    "プレイヤーのターン開始",
+    "プレイヤーはストーンを3個得た",
+    "プレイヤーはエクスチェンジを引いた",
+    "プレイヤーAI判断: 相手マスターへ実ダメージを与えられるため攻撃 / 見送り: 攻撃は3500875点差で見送り",
+    "プレイヤーのデスシープ Lv1: アタック 3P",
+    "CPUのマスターHPが1減った（アタック）。ストーン+1",
+    "プレイヤーAI判断: 有効な行動がないためターン終了",
+    "プレイヤーのカード溢れ: 手札を5枚まで捨てる",
+    "プレイヤーは手札上限でピグミィを捨てた",
+    "CPUのターン開始",
+    "CPUはストーンを3個得た",
+    "CPUはターン開始で引けず、山札切れペナルティ",
+    "CPUのマスターHPが1減った（山札切れ）。ストーン+1",
+    "プレイヤーの勝利"
+  ],
+  "history": [
+    {
+      "seed": 994322,
+      "step": 245,
+      "turnNumber": 21,
+      "player": "cpu",
+      "decision": "attack:cpu_front_left:スパイクボール->monster:player_front_right",
+      "reason": "敵モンスターを撃破できるため攻撃 / ターンプラン探索: 返し込み最終盤面76点、次点と89点差",
+      "score": 478,
+      "legalDecisionCount": 3,
+      "nonEndDecisionCount": 2,
+      "before": {
+        "currentPlayer": "cpu",
+        "turnNumber": 21,
+        "pendingLevelUp": false,
+        "players": {
+          "player": {
+            "masterId": "white",
+            "hp": 9,
+            "stones": 7,
+            "hand": 4,
+            "deck": 5,
+            "discard": 18
+          },
+          "cpu": {
+            "masterId": "white",
+            "hp": 4,
+            "stones": 7,
+            "hand": 6,
+            "deck": 4,
+            "discard": 17
+          }
+        },
+        "slots": [
+          {
+            "slotKey": "player_front_left"
+          },
+          {
+            "slotKey": "player_front_right",
+            "card": "card_047",
+            "name": "真勇者ダイン",
+            "owner": "player",
+            "hp": 1,
+            "level": 1,
+            "status": "active",
+            "actions": "0/1",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "player_back_left",
+            "card": "card_133",
+            "name": "デスシープ",
+            "owner": "player",
+            "hp": 6,
+            "level": 1,
+            "status": "active",
+            "actions": "0/1",
+            "focused": true,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "player_back_right",
+            "card": "bomuzo",
+            "name": "ボムゾウ",
+            "owner": "player",
+            "hp": 6,
+            "level": 1,
+            "status": "active",
+            "actions": "0/1",
+            "focused": true,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "cpu_front_left",
+            "card": "card_051",
+            "name": "ピグミィ",
+            "owner": "cpu",
+            "hp": 3,
+            "level": 1,
+            "status": "active",
+            "actions": "1/2",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "cpu_front_right",
+            "card": "card_133",
+            "name": "デスシープ",
+            "owner": "cpu",
+            "hp": 6,
+            "level": 2,
+            "status": "active",
+            "actions": "1/1",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "cpu_back_left"
+          },
+          {
+            "slotKey": "cpu_back_right",
+            "card": "yanbaru",
+            "name": "ヤンバル",
+            "owner": "cpu",
+            "hp": 3,
+            "level": 2,
+            "status": "active",
+            "actions": "1/1",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          }
+        ]
+      },
+      "after": {
+        "currentPlayer": "cpu",
+        "turnNumber": 21,
+        "pendingLevelUp": false,
+        "players": {
+          "player": {
+            "masterId": "white",
+            "hp": 9,
+            "stones": 8,
+            "hand": 4,
+            "deck": 5,
+            "discard": 19
+          },
+          "cpu": {
+            "masterId": "white",
+            "hp": 4,
+            "stones": 6,
+            "hand": 6,
+            "deck": 4,
+            "discard": 17
+          }
+        },
+        "slots": [
+          {
+            "slotKey": "player_front_left"
+          },
+          {
+            "slotKey": "player_front_right"
+          },
+          {
+            "slotKey": "player_back_left",
+            "card": "card_133",
+            "name": "デスシープ",
+            "owner": "player",
+            "hp": 6,
+            "level": 1,
+            "status": "active",
+            "actions": "0/1",
+            "focused": true,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "player_back_right",
+            "card": "bomuzo",
+            "name": "ボムゾウ",
+            "owner": "player",
+            "hp": 6,
+            "level": 1,
+            "status": "active",
+            "actions": "0/1",
+            "focused": true,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "cpu_front_left",
+            "card": "card_051",
+            "name": "ピグミィ",
+            "owner": "cpu",
+            "hp": 3,
+            "level": 2,
+            "status": "active",
+            "actions": "2/2",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "cpu_front_right",
+            "card": "card_133",
+            "name": "デスシープ",
+            "owner": "cpu",
+            "hp": 6,
+            "level": 2,
+            "status": "active",
+            "actions": "1/1",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "cpu_back_left"
+          },
+          {
+            "slotKey": "cpu_back_right",
+            "card": "yanbaru",
+            "name": "ヤンバル",
+            "owner": "cpu",
+            "hp": 3,
+            "level": 2,
+            "status": "active",
+            "actions": "1/1",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          }
+        ]
+      },
+      "newLog": [
+        "CPU判断: 敵モンスターを撃破できるため攻撃 / ターンプラン探索: 返し込み最終盤面76点、次点と89点差",
+        "CPUのピグミィ Lv1: スパイクボール 1P",
+        "スパイクボールで真勇者ダイン Lv1に1ダメージ",
+        "真勇者ダイン Lv1は倒れ、プレイヤーにストーン1個が戻った",
+        "ピグミィ Lv2はLv2になり、HPが全回復した"
+      ]
+    },
+    {
+      "seed": 994322,
+      "step": 246,
+      "turnNumber": 21,
+      "player": "cpu",
+      "decision": "master:shield->monster:cpu_front_left",
+      "reason": "致死圏の味方を守れるためシールド",
+      "score": 117.96000000000001,
+      "legalDecisionCount": 2,
+      "nonEndDecisionCount": 1,
+      "before": {
+        "currentPlayer": "cpu",
+        "turnNumber": 21,
+        "pendingLevelUp": false,
+        "players": {
+          "player": {
+            "masterId": "white",
+            "hp": 9,
+            "stones": 8,
+            "hand": 4,
+            "deck": 5,
+            "discard": 19
+          },
+          "cpu": {
+            "masterId": "white",
+            "hp": 4,
+            "stones": 6,
+            "hand": 6,
+            "deck": 4,
+            "discard": 17
+          }
+        },
+        "slots": [
+          {
+            "slotKey": "player_front_left"
+          },
+          {
+            "slotKey": "player_front_right"
+          },
+          {
+            "slotKey": "player_back_left",
+            "card": "card_133",
+            "name": "デスシープ",
+            "owner": "player",
+            "hp": 6,
+            "level": 1,
+            "status": "active",
+            "actions": "0/1",
+            "focused": true,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "player_back_right",
+            "card": "bomuzo",
+            "name": "ボムゾウ",
+            "owner": "player",
+            "hp": 6,
+            "level": 1,
+            "status": "active",
+            "actions": "0/1",
+            "focused": true,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "cpu_front_left",
+            "card": "card_051",
+            "name": "ピグミィ",
+            "owner": "cpu",
+            "hp": 3,
+            "level": 2,
+            "status": "active",
+            "actions": "2/2",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "cpu_front_right",
+            "card": "card_133",
+            "name": "デスシープ",
+            "owner": "cpu",
+            "hp": 6,
+            "level": 2,
+            "status": "active",
+            "actions": "1/1",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "cpu_back_left"
+          },
+          {
+            "slotKey": "cpu_back_right",
+            "card": "yanbaru",
+            "name": "ヤンバル",
+            "owner": "cpu",
+            "hp": 3,
+            "level": 2,
+            "status": "active",
+            "actions": "1/1",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          }
+        ]
+      },
+      "after": {
+        "currentPlayer": "cpu",
+        "turnNumber": 21,
+        "pendingLevelUp": false,
+        "players": {
+          "player": {
+            "masterId": "white",
+            "hp": 9,
+            "stones": 8,
+            "hand": 4,
+            "deck": 5,
+            "discard": 19
+          },
+          "cpu": {
+            "masterId": "white",
+            "hp": 4,
+            "stones": 4,
+            "hand": 6,
+            "deck": 4,
+            "discard": 17
+          }
+        },
+        "slots": [
+          {
+            "slotKey": "player_front_left"
+          },
+          {
+            "slotKey": "player_front_right"
+          },
+          {
+            "slotKey": "player_back_left",
+            "card": "card_133",
+            "name": "デスシープ",
+            "owner": "player",
+            "hp": 6,
+            "level": 1,
+            "status": "active",
+            "actions": "0/1",
+            "focused": true,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "player_back_right",
+            "card": "bomuzo",
+            "name": "ボムゾウ",
+            "owner": "player",
+            "hp": 6,
+            "level": 1,
+            "status": "active",
+            "actions": "0/1",
+            "focused": true,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "cpu_front_left",
+            "card": "card_051",
+            "name": "ピグミィ",
+            "owner": "cpu",
+            "hp": 3,
+            "level": 2,
+            "status": "active",
+            "actions": "2/2",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": true
+          },
+          {
+            "slotKey": "cpu_front_right",
+            "card": "card_133",
+            "name": "デスシープ",
+            "owner": "cpu",
+            "hp": 6,
+            "level": 2,
+            "status": "active",
+            "actions": "1/1",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "cpu_back_left"
+          },
+          {
+            "slotKey": "cpu_back_right",
+            "card": "yanbaru",
+            "name": "ヤンバル",
+            "owner": "cpu",
+            "hp": 3,
+            "level": 2,
+            "status": "active",
+            "actions": "1/1",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          }
+        ]
+      },
+      "newLog": [
+        "CPU判断: 致死圏の味方を守れるためシールド",
+        "CPUはピグミィ Lv2にシールドを張った"
+      ]
+    },
+    {
+      "seed": 994322,
+      "step": 247,
+      "turnNumber": 21,
+      "player": "cpu",
+      "decision": "end_turn",
+      "reason": "有効な行動がないためターン終了 / ターンプラン探索: 返し込み最終盤面-104点",
+      "score": 0,
+      "legalDecisionCount": 1,
+      "nonEndDecisionCount": 0,
+      "before": {
+        "currentPlayer": "cpu",
+        "turnNumber": 21,
+        "pendingLevelUp": false,
+        "players": {
+          "player": {
+            "masterId": "white",
+            "hp": 9,
+            "stones": 8,
+            "hand": 4,
+            "deck": 5,
+            "discard": 19
+          },
+          "cpu": {
+            "masterId": "white",
+            "hp": 4,
+            "stones": 4,
+            "hand": 6,
+            "deck": 4,
+            "discard": 17
+          }
+        },
+        "slots": [
+          {
+            "slotKey": "player_front_left"
+          },
+          {
+            "slotKey": "player_front_right"
+          },
+          {
+            "slotKey": "player_back_left",
+            "card": "card_133",
+            "name": "デスシープ",
+            "owner": "player",
+            "hp": 6,
+            "level": 1,
+            "status": "active",
+            "actions": "0/1",
+            "focused": true,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "player_back_right",
+            "card": "bomuzo",
+            "name": "ボムゾウ",
+            "owner": "player",
+            "hp": 6,
+            "level": 1,
+            "status": "active",
+            "actions": "0/1",
+            "focused": true,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "cpu_front_left",
+            "card": "card_051",
+            "name": "ピグミィ",
+            "owner": "cpu",
+            "hp": 3,
+            "level": 2,
+            "status": "active",
+            "actions": "2/2",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": true
+          },
+          {
+            "slotKey": "cpu_front_right",
+            "card": "card_133",
+            "name": "デスシープ",
+            "owner": "cpu",
+            "hp": 6,
+            "level": 2,
+            "status": "active",
+            "actions": "1/1",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "cpu_back_left"
+          },
+          {
+            "slotKey": "cpu_back_right",
+            "card": "yanbaru",
+            "name": "ヤンバル",
+            "owner": "cpu",
+            "hp": 3,
+            "level": 2,
+            "status": "active",
+            "actions": "1/1",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          }
+        ]
+      },
+      "after": {
+        "currentPlayer": "player",
+        "turnNumber": 22,
+        "pendingLevelUp": false,
+        "players": {
+          "player": {
+            "masterId": "white",
+            "hp": 9,
+            "stones": 11,
+            "hand": 5,
+            "deck": 4,
+            "discard": 19
+          },
+          "cpu": {
+            "masterId": "white",
+            "hp": 4,
+            "stones": 4,
+            "hand": 5,
+            "deck": 4,
+            "discard": 18
+          }
+        },
+        "slots": [
+          {
+            "slotKey": "player_front_left",
+            "card": "card_133",
+            "name": "デスシープ",
+            "owner": "player",
+            "hp": 6,
+            "level": 1,
+            "status": "active",
+            "actions": "0/1",
+            "focused": true,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "player_front_right",
+            "card": "bomuzo",
+            "name": "ボムゾウ",
+            "owner": "player",
+            "hp": 6,
+            "level": 1,
+            "status": "active",
+            "actions": "0/1",
+            "focused": true,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "player_back_left"
+          },
+          {
+            "slotKey": "player_back_right"
+          },
+          {
+            "slotKey": "cpu_front_left",
+            "card": "card_051",
+            "name": "ピグミィ",
+            "owner": "cpu",
+            "hp": 3,
+            "level": 2,
+            "status": "active",
+            "actions": "2/2",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": true
+          },
+          {
+            "slotKey": "cpu_front_right",
+            "card": "card_133",
+            "name": "デスシープ",
+            "owner": "cpu",
+            "hp": 6,
+            "level": 2,
+            "status": "active",
+            "actions": "1/1",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "cpu_back_left"
+          },
+          {
+            "slotKey": "cpu_back_right",
+            "card": "yanbaru",
+            "name": "ヤンバル",
+            "owner": "cpu",
+            "hp": 3,
+            "level": 2,
+            "status": "active",
+            "actions": "1/1",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          }
+        ]
+      },
+      "newLog": [
+        "CPU判断: 有効な行動がないためターン終了 / ターンプラン探索: 返し込み最終盤面-104点",
+        "CPUのカード溢れ: 手札を5枚まで捨てる",
+        "CPUは手札上限でドノマンティスを捨てた",
+        "プレイヤーのターン開始",
+        "デスシープ Lv1が前衛へ自動移動した",
+        "ボムゾウ Lv1が前衛へ自動移動した",
+        "プレイヤーはストーンを3個得た",
+        "プレイヤーはピグミィを引いた"
+      ]
+    },
+    {
+      "seed": 994322,
+      "step": 248,
+      "turnNumber": 22,
+      "player": "player",
+      "decision": "attack:player_front_left:attack->master:cpu",
+      "reason": "ターン開始時の最大打点2点で詰めろを作れるため攻撃",
+      "score": 106,
+      "legalDecisionCount": 5,
+      "nonEndDecisionCount": 4,
+      "before": {
+        "currentPlayer": "player",
+        "turnNumber": 22,
+        "pendingLevelUp": false,
+        "players": {
+          "player": {
+            "masterId": "white",
+            "hp": 9,
+            "stones": 11,
+            "hand": 5,
+            "deck": 4,
+            "discard": 19
+          },
+          "cpu": {
+            "masterId": "white",
+            "hp": 4,
+            "stones": 4,
+            "hand": 5,
+            "deck": 4,
+            "discard": 18
+          }
+        },
+        "slots": [
+          {
+            "slotKey": "player_front_left",
+            "card": "card_133",
+            "name": "デスシープ",
+            "owner": "player",
+            "hp": 6,
+            "level": 1,
+            "status": "active",
+            "actions": "0/1",
+            "focused": true,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "player_front_right",
+            "card": "bomuzo",
+            "name": "ボムゾウ",
+            "owner": "player",
+            "hp": 6,
+            "level": 1,
+            "status": "active",
+            "actions": "0/1",
+            "focused": true,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "player_back_left"
+          },
+          {
+            "slotKey": "player_back_right"
+          },
+          {
+            "slotKey": "cpu_front_left",
+            "card": "card_051",
+            "name": "ピグミィ",
+            "owner": "cpu",
+            "hp": 3,
+            "level": 2,
+            "status": "active",
+            "actions": "2/2",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": true
+          },
+          {
+            "slotKey": "cpu_front_right",
+            "card": "card_133",
+            "name": "デスシープ",
+            "owner": "cpu",
+            "hp": 6,
+            "level": 2,
+            "status": "active",
+            "actions": "1/1",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "cpu_back_left"
+          },
+          {
+            "slotKey": "cpu_back_right",
+            "card": "yanbaru",
+            "name": "ヤンバル",
+            "owner": "cpu",
+            "hp": 3,
+            "level": 2,
+            "status": "active",
+            "actions": "1/1",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          }
+        ]
+      },
+      "after": {
+        "currentPlayer": "player",
+        "turnNumber": 22,
+        "pendingLevelUp": false,
+        "players": {
+          "player": {
+            "masterId": "white",
+            "hp": 9,
+            "stones": 11,
+            "hand": 5,
+            "deck": 4,
+            "discard": 19
+          },
+          "cpu": {
+            "masterId": "white",
+            "hp": 3,
+            "stones": 5,
+            "hand": 5,
+            "deck": 4,
+            "discard": 18
+          }
+        },
+        "slots": [
+          {
+            "slotKey": "player_front_left",
+            "card": "card_133",
+            "name": "デスシープ",
+            "owner": "player",
+            "hp": 6,
+            "level": 1,
+            "status": "active",
+            "actions": "1/1",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "player_front_right",
+            "card": "bomuzo",
+            "name": "ボムゾウ",
+            "owner": "player",
+            "hp": 6,
+            "level": 1,
+            "status": "active",
+            "actions": "0/1",
+            "focused": true,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "player_back_left"
+          },
+          {
+            "slotKey": "player_back_right"
+          },
+          {
+            "slotKey": "cpu_front_left",
+            "card": "card_051",
+            "name": "ピグミィ",
+            "owner": "cpu",
+            "hp": 3,
+            "level": 2,
+            "status": "active",
+            "actions": "2/2",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": true
+          },
+          {
+            "slotKey": "cpu_front_right",
+            "card": "card_133",
+            "name": "デスシープ",
+            "owner": "cpu",
+            "hp": 6,
+            "level": 2,
+            "status": "active",
+            "actions": "1/1",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "cpu_back_left"
+          },
+          {
+            "slotKey": "cpu_back_right",
+            "card": "yanbaru",
+            "name": "ヤンバル",
+            "owner": "cpu",
+            "hp": 3,
+            "level": 2,
+            "status": "active",
+            "actions": "1/1",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          }
+        ]
+      },
+      "newLog": [
+        "プレイヤーAI判断: ターン開始時の最大打点2点で詰めろを作れるため攻撃",
+        "プレイヤーのデスシープ Lv1: アタック 3P",
+        "CPUのマスターHPが1減った（アタック）。ストーン+1"
+      ]
+    },
+    {
+      "seed": 994322,
+      "step": 249,
+      "turnNumber": 22,
+      "player": "player",
+      "decision": "attack:player_front_right:self_bomb->master:cpu",
+      "reason": "相手マスターへ実ダメージを与えられるため攻撃 / 見送り: 攻撃は755点差で見送り",
+      "score": 118,
+      "legalDecisionCount": 3,
+      "nonEndDecisionCount": 2,
+      "before": {
+        "currentPlayer": "player",
+        "turnNumber": 22,
+        "pendingLevelUp": false,
+        "players": {
+          "player": {
+            "masterId": "white",
+            "hp": 9,
+            "stones": 11,
+            "hand": 5,
+            "deck": 4,
+            "discard": 19
+          },
+          "cpu": {
+            "masterId": "white",
+            "hp": 3,
+            "stones": 5,
+            "hand": 5,
+            "deck": 4,
+            "discard": 18
+          }
+        },
+        "slots": [
+          {
+            "slotKey": "player_front_left",
+            "card": "card_133",
+            "name": "デスシープ",
+            "owner": "player",
+            "hp": 6,
+            "level": 1,
+            "status": "active",
+            "actions": "1/1",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "player_front_right",
+            "card": "bomuzo",
+            "name": "ボムゾウ",
+            "owner": "player",
+            "hp": 6,
+            "level": 1,
+            "status": "active",
+            "actions": "0/1",
+            "focused": true,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "player_back_left"
+          },
+          {
+            "slotKey": "player_back_right"
+          },
+          {
+            "slotKey": "cpu_front_left",
+            "card": "card_051",
+            "name": "ピグミィ",
+            "owner": "cpu",
+            "hp": 3,
+            "level": 2,
+            "status": "active",
+            "actions": "2/2",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": true
+          },
+          {
+            "slotKey": "cpu_front_right",
+            "card": "card_133",
+            "name": "デスシープ",
+            "owner": "cpu",
+            "hp": 6,
+            "level": 2,
+            "status": "active",
+            "actions": "1/1",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "cpu_back_left"
+          },
+          {
+            "slotKey": "cpu_back_right",
+            "card": "yanbaru",
+            "name": "ヤンバル",
+            "owner": "cpu",
+            "hp": 3,
+            "level": 2,
+            "status": "active",
+            "actions": "1/1",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          }
+        ]
+      },
+      "after": {
+        "currentPlayer": "player",
+        "turnNumber": 22,
+        "pendingLevelUp": false,
+        "players": {
+          "player": {
+            "masterId": "white",
+            "hp": 9,
+            "stones": 11,
+            "hand": 5,
+            "deck": 4,
+            "discard": 19
+          },
+          "cpu": {
+            "masterId": "white",
+            "hp": 2,
+            "stones": 6,
+            "hand": 5,
+            "deck": 4,
+            "discard": 18
+          }
+        },
+        "slots": [
+          {
+            "slotKey": "player_front_left",
+            "card": "card_133",
+            "name": "デスシープ",
+            "owner": "player",
+            "hp": 6,
+            "level": 1,
+            "status": "active",
+            "actions": "1/1",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "player_front_right",
+            "card": "bomuzo",
+            "name": "ボムゾウ",
+            "owner": "player",
+            "hp": 4,
+            "level": 1,
+            "status": "active",
+            "actions": "1/1",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "player_back_left"
+          },
+          {
+            "slotKey": "player_back_right"
+          },
+          {
+            "slotKey": "cpu_front_left",
+            "card": "card_051",
+            "name": "ピグミィ",
+            "owner": "cpu",
+            "hp": 3,
+            "level": 2,
+            "status": "active",
+            "actions": "2/2",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": true
+          },
+          {
+            "slotKey": "cpu_front_right",
+            "card": "card_133",
+            "name": "デスシープ",
+            "owner": "cpu",
+            "hp": 6,
+            "level": 2,
+            "status": "active",
+            "actions": "1/1",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "cpu_back_left"
+          },
+          {
+            "slotKey": "cpu_back_right",
+            "card": "yanbaru",
+            "name": "ヤンバル",
+            "owner": "cpu",
+            "hp": 3,
+            "level": 2,
+            "status": "active",
+            "actions": "1/1",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          }
+        ]
+      },
+      "newLog": [
+        "プレイヤーAI判断: 相手マスターへ実ダメージを与えられるため攻撃 / 見送り: 攻撃は755点差で見送り",
+        "プレイヤーのボムゾウ Lv1: 自爆 3P",
+        "CPUのマスターHPが1減った（自爆）。ストーン+1",
+        "反動でボムゾウ Lv1に2ダメージ"
+      ]
+    },
+    {
+      "seed": 994322,
+      "step": 250,
+      "turnNumber": 22,
+      "player": "player",
+      "decision": "master:shield->monster:player_front_right",
+      "reason": "致死圏の味方を守れるためシールド",
+      "score": 115.62,
+      "legalDecisionCount": 2,
+      "nonEndDecisionCount": 1,
+      "before": {
+        "currentPlayer": "player",
+        "turnNumber": 22,
+        "pendingLevelUp": false,
+        "players": {
+          "player": {
+            "masterId": "white",
+            "hp": 9,
+            "stones": 11,
+            "hand": 5,
+            "deck": 4,
+            "discard": 19
+          },
+          "cpu": {
+            "masterId": "white",
+            "hp": 2,
+            "stones": 6,
+            "hand": 5,
+            "deck": 4,
+            "discard": 18
+          }
+        },
+        "slots": [
+          {
+            "slotKey": "player_front_left",
+            "card": "card_133",
+            "name": "デスシープ",
+            "owner": "player",
+            "hp": 6,
+            "level": 1,
+            "status": "active",
+            "actions": "1/1",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "player_front_right",
+            "card": "bomuzo",
+            "name": "ボムゾウ",
+            "owner": "player",
+            "hp": 4,
+            "level": 1,
+            "status": "active",
+            "actions": "1/1",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "player_back_left"
+          },
+          {
+            "slotKey": "player_back_right"
+          },
+          {
+            "slotKey": "cpu_front_left",
+            "card": "card_051",
+            "name": "ピグミィ",
+            "owner": "cpu",
+            "hp": 3,
+            "level": 2,
+            "status": "active",
+            "actions": "2/2",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": true
+          },
+          {
+            "slotKey": "cpu_front_right",
+            "card": "card_133",
+            "name": "デスシープ",
+            "owner": "cpu",
+            "hp": 6,
+            "level": 2,
+            "status": "active",
+            "actions": "1/1",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "cpu_back_left"
+          },
+          {
+            "slotKey": "cpu_back_right",
+            "card": "yanbaru",
+            "name": "ヤンバル",
+            "owner": "cpu",
+            "hp": 3,
+            "level": 2,
+            "status": "active",
+            "actions": "1/1",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          }
+        ]
+      },
+      "after": {
+        "currentPlayer": "player",
+        "turnNumber": 22,
+        "pendingLevelUp": false,
+        "players": {
+          "player": {
+            "masterId": "white",
+            "hp": 9,
+            "stones": 9,
+            "hand": 5,
+            "deck": 4,
+            "discard": 19
+          },
+          "cpu": {
+            "masterId": "white",
+            "hp": 2,
+            "stones": 6,
+            "hand": 5,
+            "deck": 4,
+            "discard": 18
+          }
+        },
+        "slots": [
+          {
+            "slotKey": "player_front_left",
+            "card": "card_133",
+            "name": "デスシープ",
+            "owner": "player",
+            "hp": 6,
+            "level": 1,
+            "status": "active",
+            "actions": "1/1",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "player_front_right",
+            "card": "bomuzo",
+            "name": "ボムゾウ",
+            "owner": "player",
+            "hp": 4,
+            "level": 1,
+            "status": "active",
+            "actions": "1/1",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": true
+          },
+          {
+            "slotKey": "player_back_left"
+          },
+          {
+            "slotKey": "player_back_right"
+          },
+          {
+            "slotKey": "cpu_front_left",
+            "card": "card_051",
+            "name": "ピグミィ",
+            "owner": "cpu",
+            "hp": 3,
+            "level": 2,
+            "status": "active",
+            "actions": "2/2",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": true
+          },
+          {
+            "slotKey": "cpu_front_right",
+            "card": "card_133",
+            "name": "デスシープ",
+            "owner": "cpu",
+            "hp": 6,
+            "level": 2,
+            "status": "active",
+            "actions": "1/1",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "cpu_back_left"
+          },
+          {
+            "slotKey": "cpu_back_right",
+            "card": "yanbaru",
+            "name": "ヤンバル",
+            "owner": "cpu",
+            "hp": 3,
+            "level": 2,
+            "status": "active",
+            "actions": "1/1",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          }
+        ]
+      },
+      "newLog": [
+        "プレイヤーAI判断: 致死圏の味方を守れるためシールド",
+        "プレイヤーはボムゾウ Lv1にシールドを張った"
+      ]
+    },
+    {
+      "seed": 994322,
+      "step": 251,
+      "turnNumber": 22,
+      "player": "player",
+      "decision": "end_turn",
+      "reason": "有効な行動がないためターン終了",
+      "score": 0,
+      "legalDecisionCount": 1,
+      "nonEndDecisionCount": 0,
+      "before": {
+        "currentPlayer": "player",
+        "turnNumber": 22,
+        "pendingLevelUp": false,
+        "players": {
+          "player": {
+            "masterId": "white",
+            "hp": 9,
+            "stones": 9,
+            "hand": 5,
+            "deck": 4,
+            "discard": 19
+          },
+          "cpu": {
+            "masterId": "white",
+            "hp": 2,
+            "stones": 6,
+            "hand": 5,
+            "deck": 4,
+            "discard": 18
+          }
+        },
+        "slots": [
+          {
+            "slotKey": "player_front_left",
+            "card": "card_133",
+            "name": "デスシープ",
+            "owner": "player",
+            "hp": 6,
+            "level": 1,
+            "status": "active",
+            "actions": "1/1",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "player_front_right",
+            "card": "bomuzo",
+            "name": "ボムゾウ",
+            "owner": "player",
+            "hp": 4,
+            "level": 1,
+            "status": "active",
+            "actions": "1/1",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": true
+          },
+          {
+            "slotKey": "player_back_left"
+          },
+          {
+            "slotKey": "player_back_right"
+          },
+          {
+            "slotKey": "cpu_front_left",
+            "card": "card_051",
+            "name": "ピグミィ",
+            "owner": "cpu",
+            "hp": 3,
+            "level": 2,
+            "status": "active",
+            "actions": "2/2",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": true
+          },
+          {
+            "slotKey": "cpu_front_right",
+            "card": "card_133",
+            "name": "デスシープ",
+            "owner": "cpu",
+            "hp": 6,
+            "level": 2,
+            "status": "active",
+            "actions": "1/1",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "cpu_back_left"
+          },
+          {
+            "slotKey": "cpu_back_right",
+            "card": "yanbaru",
+            "name": "ヤンバル",
+            "owner": "cpu",
+            "hp": 3,
+            "level": 2,
+            "status": "active",
+            "actions": "1/1",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          }
+        ]
+      },
+      "after": {
+        "currentPlayer": "cpu",
+        "turnNumber": 22,
+        "pendingLevelUp": false,
+        "players": {
+          "player": {
+            "masterId": "white",
+            "hp": 9,
+            "stones": 9,
+            "hand": 5,
+            "deck": 4,
+            "discard": 19
+          },
+          "cpu": {
+            "masterId": "white",
+            "hp": 2,
+            "stones": 9,
+            "hand": 6,
+            "deck": 3,
+            "discard": 18
+          }
+        },
+        "slots": [
+          {
+            "slotKey": "player_front_left",
+            "card": "card_133",
+            "name": "デスシープ",
+            "owner": "player",
+            "hp": 6,
+            "level": 1,
+            "status": "active",
+            "actions": "1/1",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "player_front_right",
+            "card": "bomuzo",
+            "name": "ボムゾウ",
+            "owner": "player",
+            "hp": 4,
+            "level": 1,
+            "status": "active",
+            "actions": "1/1",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": true
+          },
+          {
+            "slotKey": "player_back_left"
+          },
+          {
+            "slotKey": "player_back_right"
+          },
+          {
+            "slotKey": "cpu_front_left",
+            "card": "card_051",
+            "name": "ピグミィ",
+            "owner": "cpu",
+            "hp": 3,
+            "level": 2,
+            "status": "active",
+            "actions": "0/2",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "cpu_front_right",
+            "card": "card_133",
+            "name": "デスシープ",
+            "owner": "cpu",
+            "hp": 6,
+            "level": 2,
+            "status": "active",
+            "actions": "0/1",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "cpu_back_left"
+          },
+          {
+            "slotKey": "cpu_back_right",
+            "card": "yanbaru",
+            "name": "ヤンバル",
+            "owner": "cpu",
+            "hp": 3,
+            "level": 2,
+            "status": "active",
+            "actions": "0/1",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          }
+        ]
+      },
+      "newLog": [
+        "プレイヤーAI判断: 有効な行動がないためターン終了",
+        "CPUのターン開始",
+        "CPUはストーンを3個得た",
+        "ピグミィ Lv2の防御効果が切れた",
+        "CPUはカードを引いた"
+      ]
+    },
+    {
+      "seed": 994322,
+      "step": 252,
+      "turnNumber": 22,
+      "player": "cpu",
+      "decision": "attack:cpu_back_right:wild_claw->master:player",
+      "reason": "ターン開始時の最大打点2点で詰めろを作れるため攻撃",
+      "score": 154,
+      "legalDecisionCount": 6,
+      "nonEndDecisionCount": 5,
+      "before": {
+        "currentPlayer": "cpu",
+        "turnNumber": 22,
+        "pendingLevelUp": false,
+        "players": {
+          "player": {
+            "masterId": "white",
+            "hp": 9,
+            "stones": 9,
+            "hand": 5,
+            "deck": 4,
+            "discard": 19
+          },
+          "cpu": {
+            "masterId": "white",
+            "hp": 2,
+            "stones": 9,
+            "hand": 6,
+            "deck": 3,
+            "discard": 18
+          }
+        },
+        "slots": [
+          {
+            "slotKey": "player_front_left",
+            "card": "card_133",
+            "name": "デスシープ",
+            "owner": "player",
+            "hp": 6,
+            "level": 1,
+            "status": "active",
+            "actions": "1/1",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "player_front_right",
+            "card": "bomuzo",
+            "name": "ボムゾウ",
+            "owner": "player",
+            "hp": 4,
+            "level": 1,
+            "status": "active",
+            "actions": "1/1",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": true
+          },
+          {
+            "slotKey": "player_back_left"
+          },
+          {
+            "slotKey": "player_back_right"
+          },
+          {
+            "slotKey": "cpu_front_left",
+            "card": "card_051",
+            "name": "ピグミィ",
+            "owner": "cpu",
+            "hp": 3,
+            "level": 2,
+            "status": "active",
+            "actions": "0/2",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "cpu_front_right",
+            "card": "card_133",
+            "name": "デスシープ",
+            "owner": "cpu",
+            "hp": 6,
+            "level": 2,
+            "status": "active",
+            "actions": "0/1",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "cpu_back_left"
+          },
+          {
+            "slotKey": "cpu_back_right",
+            "card": "yanbaru",
+            "name": "ヤンバル",
+            "owner": "cpu",
+            "hp": 3,
+            "level": 2,
+            "status": "active",
+            "actions": "0/1",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          }
+        ]
+      },
+      "after": {
+        "currentPlayer": "cpu",
+        "turnNumber": 22,
+        "pendingLevelUp": false,
+        "players": {
+          "player": {
+            "masterId": "white",
+            "hp": 8,
+            "stones": 10,
+            "hand": 5,
+            "deck": 4,
+            "discard": 19
+          },
+          "cpu": {
+            "masterId": "white",
+            "hp": 2,
+            "stones": 9,
+            "hand": 6,
+            "deck": 3,
+            "discard": 18
+          }
+        },
+        "slots": [
+          {
+            "slotKey": "player_front_left",
+            "card": "card_133",
+            "name": "デスシープ",
+            "owner": "player",
+            "hp": 6,
+            "level": 1,
+            "status": "active",
+            "actions": "1/1",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "player_front_right",
+            "card": "bomuzo",
+            "name": "ボムゾウ",
+            "owner": "player",
+            "hp": 4,
+            "level": 1,
+            "status": "active",
+            "actions": "1/1",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": true
+          },
+          {
+            "slotKey": "player_back_left"
+          },
+          {
+            "slotKey": "player_back_right"
+          },
+          {
+            "slotKey": "cpu_front_left",
+            "card": "card_051",
+            "name": "ピグミィ",
+            "owner": "cpu",
+            "hp": 3,
+            "level": 2,
+            "status": "active",
+            "actions": "0/2",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "cpu_front_right",
+            "card": "card_133",
+            "name": "デスシープ",
+            "owner": "cpu",
+            "hp": 6,
+            "level": 2,
+            "status": "active",
+            "actions": "0/1",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "cpu_back_left"
+          },
+          {
+            "slotKey": "cpu_back_right",
+            "card": "yanbaru",
+            "name": "ヤンバル",
+            "owner": "cpu",
+            "hp": 3,
+            "level": 2,
+            "status": "active",
+            "actions": "1/1",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          }
+        ]
+      },
+      "newLog": [
+        "CPU判断: ターン開始時の最大打点2点で詰めろを作れるため攻撃",
+        "CPUのヤンバル Lv2: ワイルドクロウ 3P",
+        "プレイヤーのマスターHPが1減った（ワイルドクロウ）。ストーン+1"
+      ]
+    },
+    {
+      "seed": 994322,
+      "step": 253,
+      "turnNumber": 22,
+      "player": "cpu",
+      "decision": "attack:cpu_front_right:attack->master:player",
+      "reason": "ターン開始時の最大打点1点で詰めろを作れるため攻撃",
+      "score": 154,
+      "legalDecisionCount": 3,
+      "nonEndDecisionCount": 2,
+      "before": {
+        "currentPlayer": "cpu",
+        "turnNumber": 22,
+        "pendingLevelUp": false,
+        "players": {
+          "player": {
+            "masterId": "white",
+            "hp": 8,
+            "stones": 10,
+            "hand": 5,
+            "deck": 4,
+            "discard": 19
+          },
+          "cpu": {
+            "masterId": "white",
+            "hp": 2,
+            "stones": 9,
+            "hand": 6,
+            "deck": 3,
+            "discard": 18
+          }
+        },
+        "slots": [
+          {
+            "slotKey": "player_front_left",
+            "card": "card_133",
+            "name": "デスシープ",
+            "owner": "player",
+            "hp": 6,
+            "level": 1,
+            "status": "active",
+            "actions": "1/1",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "player_front_right",
+            "card": "bomuzo",
+            "name": "ボムゾウ",
+            "owner": "player",
+            "hp": 4,
+            "level": 1,
+            "status": "active",
+            "actions": "1/1",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": true
+          },
+          {
+            "slotKey": "player_back_left"
+          },
+          {
+            "slotKey": "player_back_right"
+          },
+          {
+            "slotKey": "cpu_front_left",
+            "card": "card_051",
+            "name": "ピグミィ",
+            "owner": "cpu",
+            "hp": 3,
+            "level": 2,
+            "status": "active",
+            "actions": "0/2",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "cpu_front_right",
+            "card": "card_133",
+            "name": "デスシープ",
+            "owner": "cpu",
+            "hp": 6,
+            "level": 2,
+            "status": "active",
+            "actions": "0/1",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "cpu_back_left"
+          },
+          {
+            "slotKey": "cpu_back_right",
+            "card": "yanbaru",
+            "name": "ヤンバル",
+            "owner": "cpu",
+            "hp": 3,
+            "level": 2,
+            "status": "active",
+            "actions": "1/1",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          }
+        ]
+      },
+      "after": {
+        "currentPlayer": "cpu",
+        "turnNumber": 22,
+        "pendingLevelUp": false,
+        "players": {
+          "player": {
+            "masterId": "white",
+            "hp": 7,
+            "stones": 11,
+            "hand": 5,
+            "deck": 4,
+            "discard": 19
+          },
+          "cpu": {
+            "masterId": "white",
+            "hp": 2,
+            "stones": 9,
+            "hand": 6,
+            "deck": 3,
+            "discard": 18
+          }
+        },
+        "slots": [
+          {
+            "slotKey": "player_front_left",
+            "card": "card_133",
+            "name": "デスシープ",
+            "owner": "player",
+            "hp": 6,
+            "level": 1,
+            "status": "active",
+            "actions": "1/1",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "player_front_right",
+            "card": "bomuzo",
+            "name": "ボムゾウ",
+            "owner": "player",
+            "hp": 4,
+            "level": 1,
+            "status": "active",
+            "actions": "1/1",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": true
+          },
+          {
+            "slotKey": "player_back_left"
+          },
+          {
+            "slotKey": "player_back_right"
+          },
+          {
+            "slotKey": "cpu_front_left",
+            "card": "card_051",
+            "name": "ピグミィ",
+            "owner": "cpu",
+            "hp": 3,
+            "level": 2,
+            "status": "active",
+            "actions": "0/2",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "cpu_front_right",
+            "card": "card_133",
+            "name": "デスシープ",
+            "owner": "cpu",
+            "hp": 6,
+            "level": 2,
+            "status": "active",
+            "actions": "1/1",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "cpu_back_left"
+          },
+          {
+            "slotKey": "cpu_back_right",
+            "card": "yanbaru",
+            "name": "ヤンバル",
+            "owner": "cpu",
+            "hp": 3,
+            "level": 2,
+            "status": "active",
+            "actions": "1/1",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          }
+        ]
+      },
+      "newLog": [
+        "CPU判断: ターン開始時の最大打点1点で詰めろを作れるため攻撃",
+        "CPUのデスシープ Lv2: アタック 3P",
+        "プレイヤーのマスターHPが1減った（アタック）。ストーン+1"
+      ]
+    },
+    {
+      "seed": 994322,
+      "step": 254,
+      "turnNumber": 22,
+      "player": "cpu",
+      "decision": "master:shield->monster:cpu_front_left",
+      "reason": "致死圏の味方を守れるためシールド",
+      "score": 120.12,
+      "legalDecisionCount": 2,
+      "nonEndDecisionCount": 1,
+      "before": {
+        "currentPlayer": "cpu",
+        "turnNumber": 22,
+        "pendingLevelUp": false,
+        "players": {
+          "player": {
+            "masterId": "white",
+            "hp": 7,
+            "stones": 11,
+            "hand": 5,
+            "deck": 4,
+            "discard": 19
+          },
+          "cpu": {
+            "masterId": "white",
+            "hp": 2,
+            "stones": 9,
+            "hand": 6,
+            "deck": 3,
+            "discard": 18
+          }
+        },
+        "slots": [
+          {
+            "slotKey": "player_front_left",
+            "card": "card_133",
+            "name": "デスシープ",
+            "owner": "player",
+            "hp": 6,
+            "level": 1,
+            "status": "active",
+            "actions": "1/1",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "player_front_right",
+            "card": "bomuzo",
+            "name": "ボムゾウ",
+            "owner": "player",
+            "hp": 4,
+            "level": 1,
+            "status": "active",
+            "actions": "1/1",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": true
+          },
+          {
+            "slotKey": "player_back_left"
+          },
+          {
+            "slotKey": "player_back_right"
+          },
+          {
+            "slotKey": "cpu_front_left",
+            "card": "card_051",
+            "name": "ピグミィ",
+            "owner": "cpu",
+            "hp": 3,
+            "level": 2,
+            "status": "active",
+            "actions": "0/2",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "cpu_front_right",
+            "card": "card_133",
+            "name": "デスシープ",
+            "owner": "cpu",
+            "hp": 6,
+            "level": 2,
+            "status": "active",
+            "actions": "1/1",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "cpu_back_left"
+          },
+          {
+            "slotKey": "cpu_back_right",
+            "card": "yanbaru",
+            "name": "ヤンバル",
+            "owner": "cpu",
+            "hp": 3,
+            "level": 2,
+            "status": "active",
+            "actions": "1/1",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          }
+        ]
+      },
+      "after": {
+        "currentPlayer": "cpu",
+        "turnNumber": 22,
+        "pendingLevelUp": false,
+        "players": {
+          "player": {
+            "masterId": "white",
+            "hp": 7,
+            "stones": 11,
+            "hand": 5,
+            "deck": 4,
+            "discard": 19
+          },
+          "cpu": {
+            "masterId": "white",
+            "hp": 2,
+            "stones": 7,
+            "hand": 6,
+            "deck": 3,
+            "discard": 18
+          }
+        },
+        "slots": [
+          {
+            "slotKey": "player_front_left",
+            "card": "card_133",
+            "name": "デスシープ",
+            "owner": "player",
+            "hp": 6,
+            "level": 1,
+            "status": "active",
+            "actions": "1/1",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "player_front_right",
+            "card": "bomuzo",
+            "name": "ボムゾウ",
+            "owner": "player",
+            "hp": 4,
+            "level": 1,
+            "status": "active",
+            "actions": "1/1",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": true
+          },
+          {
+            "slotKey": "player_back_left"
+          },
+          {
+            "slotKey": "player_back_right"
+          },
+          {
+            "slotKey": "cpu_front_left",
+            "card": "card_051",
+            "name": "ピグミィ",
+            "owner": "cpu",
+            "hp": 3,
+            "level": 2,
+            "status": "active",
+            "actions": "0/2",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": true
+          },
+          {
+            "slotKey": "cpu_front_right",
+            "card": "card_133",
+            "name": "デスシープ",
+            "owner": "cpu",
+            "hp": 6,
+            "level": 2,
+            "status": "active",
+            "actions": "1/1",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "cpu_back_left"
+          },
+          {
+            "slotKey": "cpu_back_right",
+            "card": "yanbaru",
+            "name": "ヤンバル",
+            "owner": "cpu",
+            "hp": 3,
+            "level": 2,
+            "status": "active",
+            "actions": "1/1",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          }
+        ]
+      },
+      "newLog": [
+        "CPU判断: 致死圏の味方を守れるためシールド",
+        "CPUはピグミィ Lv2にシールドを張った"
+      ]
+    },
+    {
+      "seed": 994322,
+      "step": 255,
+      "turnNumber": 22,
+      "player": "cpu",
+      "decision": "end_turn",
+      "reason": "有効な行動がないためターン終了 / ターンプラン探索: 返し込み最終盤面29点",
+      "score": 0,
+      "legalDecisionCount": 1,
+      "nonEndDecisionCount": 0,
+      "before": {
+        "currentPlayer": "cpu",
+        "turnNumber": 22,
+        "pendingLevelUp": false,
+        "players": {
+          "player": {
+            "masterId": "white",
+            "hp": 7,
+            "stones": 11,
+            "hand": 5,
+            "deck": 4,
+            "discard": 19
+          },
+          "cpu": {
+            "masterId": "white",
+            "hp": 2,
+            "stones": 7,
+            "hand": 6,
+            "deck": 3,
+            "discard": 18
+          }
+        },
+        "slots": [
+          {
+            "slotKey": "player_front_left",
+            "card": "card_133",
+            "name": "デスシープ",
+            "owner": "player",
+            "hp": 6,
+            "level": 1,
+            "status": "active",
+            "actions": "1/1",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "player_front_right",
+            "card": "bomuzo",
+            "name": "ボムゾウ",
+            "owner": "player",
+            "hp": 4,
+            "level": 1,
+            "status": "active",
+            "actions": "1/1",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": true
+          },
+          {
+            "slotKey": "player_back_left"
+          },
+          {
+            "slotKey": "player_back_right"
+          },
+          {
+            "slotKey": "cpu_front_left",
+            "card": "card_051",
+            "name": "ピグミィ",
+            "owner": "cpu",
+            "hp": 3,
+            "level": 2,
+            "status": "active",
+            "actions": "0/2",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": true
+          },
+          {
+            "slotKey": "cpu_front_right",
+            "card": "card_133",
+            "name": "デスシープ",
+            "owner": "cpu",
+            "hp": 6,
+            "level": 2,
+            "status": "active",
+            "actions": "1/1",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "cpu_back_left"
+          },
+          {
+            "slotKey": "cpu_back_right",
+            "card": "yanbaru",
+            "name": "ヤンバル",
+            "owner": "cpu",
+            "hp": 3,
+            "level": 2,
+            "status": "active",
+            "actions": "1/1",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          }
+        ]
+      },
+      "after": {
+        "currentPlayer": "player",
+        "turnNumber": 23,
+        "pendingLevelUp": false,
+        "players": {
+          "player": {
+            "masterId": "white",
+            "hp": 7,
+            "stones": 14,
+            "hand": 6,
+            "deck": 3,
+            "discard": 19
+          },
+          "cpu": {
+            "masterId": "white",
+            "hp": 2,
+            "stones": 7,
+            "hand": 5,
+            "deck": 3,
+            "discard": 19
+          }
+        },
+        "slots": [
+          {
+            "slotKey": "player_front_left",
+            "card": "card_133",
+            "name": "デスシープ",
+            "owner": "player",
+            "hp": 6,
+            "level": 1,
+            "status": "active",
+            "actions": "0/1",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "player_front_right",
+            "card": "bomuzo",
+            "name": "ボムゾウ",
+            "owner": "player",
+            "hp": 4,
+            "level": 1,
+            "status": "active",
+            "actions": "0/1",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "player_back_left"
+          },
+          {
+            "slotKey": "player_back_right"
+          },
+          {
+            "slotKey": "cpu_front_left",
+            "card": "card_051",
+            "name": "ピグミィ",
+            "owner": "cpu",
+            "hp": 3,
+            "level": 2,
+            "status": "active",
+            "actions": "0/2",
+            "focused": true,
+            "berserkPower": false,
+            "shielded": true
+          },
+          {
+            "slotKey": "cpu_front_right",
+            "card": "card_133",
+            "name": "デスシープ",
+            "owner": "cpu",
+            "hp": 6,
+            "level": 2,
+            "status": "active",
+            "actions": "1/1",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "cpu_back_left"
+          },
+          {
+            "slotKey": "cpu_back_right",
+            "card": "yanbaru",
+            "name": "ヤンバル",
+            "owner": "cpu",
+            "hp": 3,
+            "level": 2,
+            "status": "active",
+            "actions": "1/1",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          }
+        ]
+      },
+      "newLog": [
+        "CPU判断: 有効な行動がないためターン終了 / ターンプラン探索: 返し込み最終盤面29点",
+        "ピグミィ Lv2は気合いだめした",
+        "CPUのカード溢れ: 手札を5枚まで捨てる",
+        "CPUは手札上限でピグミィを捨てた",
+        "プレイヤーのターン開始",
+        "プレイヤーはストーンを3個得た",
+        "ボムゾウ Lv1の防御効果が切れた",
+        "プレイヤーはスケープゴートを引いた"
+      ]
+    },
+    {
+      "seed": 994322,
+      "step": 256,
+      "turnNumber": 23,
+      "player": "player",
+      "decision": "end_turn",
+      "reason": "有効な行動がないためターン終了 / 見送り: マスター特技は932点差で見送り",
+      "score": 0,
+      "legalDecisionCount": 2,
+      "nonEndDecisionCount": 1,
+      "before": {
+        "currentPlayer": "player",
+        "turnNumber": 23,
+        "pendingLevelUp": false,
+        "players": {
+          "player": {
+            "masterId": "white",
+            "hp": 7,
+            "stones": 14,
+            "hand": 6,
+            "deck": 3,
+            "discard": 19
+          },
+          "cpu": {
+            "masterId": "white",
+            "hp": 2,
+            "stones": 7,
+            "hand": 5,
+            "deck": 3,
+            "discard": 19
+          }
+        },
+        "slots": [
+          {
+            "slotKey": "player_front_left",
+            "card": "card_133",
+            "name": "デスシープ",
+            "owner": "player",
+            "hp": 6,
+            "level": 1,
+            "status": "active",
+            "actions": "0/1",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "player_front_right",
+            "card": "bomuzo",
+            "name": "ボムゾウ",
+            "owner": "player",
+            "hp": 4,
+            "level": 1,
+            "status": "active",
+            "actions": "0/1",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "player_back_left"
+          },
+          {
+            "slotKey": "player_back_right"
+          },
+          {
+            "slotKey": "cpu_front_left",
+            "card": "card_051",
+            "name": "ピグミィ",
+            "owner": "cpu",
+            "hp": 3,
+            "level": 2,
+            "status": "active",
+            "actions": "0/2",
+            "focused": true,
+            "berserkPower": false,
+            "shielded": true
+          },
+          {
+            "slotKey": "cpu_front_right",
+            "card": "card_133",
+            "name": "デスシープ",
+            "owner": "cpu",
+            "hp": 6,
+            "level": 2,
+            "status": "active",
+            "actions": "1/1",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "cpu_back_left"
+          },
+          {
+            "slotKey": "cpu_back_right",
+            "card": "yanbaru",
+            "name": "ヤンバル",
+            "owner": "cpu",
+            "hp": 3,
+            "level": 2,
+            "status": "active",
+            "actions": "1/1",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          }
+        ]
+      },
+      "after": {
+        "currentPlayer": "cpu",
+        "turnNumber": 23,
+        "pendingLevelUp": false,
+        "players": {
+          "player": {
+            "masterId": "white",
+            "hp": 7,
+            "stones": 14,
+            "hand": 5,
+            "deck": 3,
+            "discard": 20
+          },
+          "cpu": {
+            "masterId": "white",
+            "hp": 2,
+            "stones": 10,
+            "hand": 6,
+            "deck": 2,
+            "discard": 19
+          }
+        },
+        "slots": [
+          {
+            "slotKey": "player_front_left",
+            "card": "card_133",
+            "name": "デスシープ",
+            "owner": "player",
+            "hp": 6,
+            "level": 1,
+            "status": "active",
+            "actions": "0/1",
+            "focused": true,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "player_front_right",
+            "card": "bomuzo",
+            "name": "ボムゾウ",
+            "owner": "player",
+            "hp": 4,
+            "level": 1,
+            "status": "active",
+            "actions": "0/1",
+            "focused": true,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "player_back_left"
+          },
+          {
+            "slotKey": "player_back_right"
+          },
+          {
+            "slotKey": "cpu_front_left",
+            "card": "card_051",
+            "name": "ピグミィ",
+            "owner": "cpu",
+            "hp": 3,
+            "level": 2,
+            "status": "active",
+            "actions": "0/2",
+            "focused": true,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "cpu_front_right",
+            "card": "card_133",
+            "name": "デスシープ",
+            "owner": "cpu",
+            "hp": 6,
+            "level": 2,
+            "status": "active",
+            "actions": "0/1",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "cpu_back_left"
+          },
+          {
+            "slotKey": "cpu_back_right",
+            "card": "yanbaru",
+            "name": "ヤンバル",
+            "owner": "cpu",
+            "hp": 3,
+            "level": 2,
+            "status": "active",
+            "actions": "0/1",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          }
+        ]
+      },
+      "newLog": [
+        "プレイヤーAI判断: 有効な行動がないためターン終了 / 見送り: マスター特技は932点差で見送り",
+        "デスシープ Lv1は気合いだめした",
+        "ボムゾウ Lv1は気合いだめした",
+        "プレイヤーのカード溢れ: 手札を5枚まで捨てる",
+        "プレイヤーは手札上限でスケープゴートを捨てた",
+        "CPUのターン開始",
+        "CPUはストーンを3個得た",
+        "ピグミィ Lv2の防御効果が切れた",
+        "CPUはカードを引いた"
+      ]
+    },
+    {
+      "seed": 994322,
+      "step": 257,
+      "turnNumber": 23,
+      "player": "cpu",
+      "decision": "attack:cpu_back_right:wild_claw->monster:player_front_right",
+      "reason": "ボムゾウを削れるため攻撃 / ターンプラン探索: 返し込み最終盤面276点、次点と12点差",
+      "score": 50,
+      "legalDecisionCount": 6,
+      "nonEndDecisionCount": 5,
+      "before": {
+        "currentPlayer": "cpu",
+        "turnNumber": 23,
+        "pendingLevelUp": false,
+        "players": {
+          "player": {
+            "masterId": "white",
+            "hp": 7,
+            "stones": 14,
+            "hand": 5,
+            "deck": 3,
+            "discard": 20
+          },
+          "cpu": {
+            "masterId": "white",
+            "hp": 2,
+            "stones": 10,
+            "hand": 6,
+            "deck": 2,
+            "discard": 19
+          }
+        },
+        "slots": [
+          {
+            "slotKey": "player_front_left",
+            "card": "card_133",
+            "name": "デスシープ",
+            "owner": "player",
+            "hp": 6,
+            "level": 1,
+            "status": "active",
+            "actions": "0/1",
+            "focused": true,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "player_front_right",
+            "card": "bomuzo",
+            "name": "ボムゾウ",
+            "owner": "player",
+            "hp": 4,
+            "level": 1,
+            "status": "active",
+            "actions": "0/1",
+            "focused": true,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "player_back_left"
+          },
+          {
+            "slotKey": "player_back_right"
+          },
+          {
+            "slotKey": "cpu_front_left",
+            "card": "card_051",
+            "name": "ピグミィ",
+            "owner": "cpu",
+            "hp": 3,
+            "level": 2,
+            "status": "active",
+            "actions": "0/2",
+            "focused": true,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "cpu_front_right",
+            "card": "card_133",
+            "name": "デスシープ",
+            "owner": "cpu",
+            "hp": 6,
+            "level": 2,
+            "status": "active",
+            "actions": "0/1",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "cpu_back_left"
+          },
+          {
+            "slotKey": "cpu_back_right",
+            "card": "yanbaru",
+            "name": "ヤンバル",
+            "owner": "cpu",
+            "hp": 3,
+            "level": 2,
+            "status": "active",
+            "actions": "0/1",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          }
+        ]
+      },
+      "after": {
+        "currentPlayer": "cpu",
+        "turnNumber": 23,
+        "pendingLevelUp": false,
+        "players": {
+          "player": {
+            "masterId": "white",
+            "hp": 7,
+            "stones": 14,
+            "hand": 5,
+            "deck": 3,
+            "discard": 20
+          },
+          "cpu": {
+            "masterId": "white",
+            "hp": 2,
+            "stones": 10,
+            "hand": 6,
+            "deck": 2,
+            "discard": 19
+          }
+        },
+        "slots": [
+          {
+            "slotKey": "player_front_left",
+            "card": "card_133",
+            "name": "デスシープ",
+            "owner": "player",
+            "hp": 6,
+            "level": 1,
+            "status": "active",
+            "actions": "0/1",
+            "focused": true,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "player_front_right",
+            "card": "bomuzo",
+            "name": "ボムゾウ",
+            "owner": "player",
+            "hp": 2,
+            "level": 1,
+            "status": "active",
+            "actions": "0/1",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "player_back_left"
+          },
+          {
+            "slotKey": "player_back_right"
+          },
+          {
+            "slotKey": "cpu_front_left",
+            "card": "card_051",
+            "name": "ピグミィ",
+            "owner": "cpu",
+            "hp": 3,
+            "level": 2,
+            "status": "active",
+            "actions": "0/2",
+            "focused": true,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "cpu_front_right",
+            "card": "card_133",
+            "name": "デスシープ",
+            "owner": "cpu",
+            "hp": 6,
+            "level": 2,
+            "status": "active",
+            "actions": "0/1",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "cpu_back_left"
+          },
+          {
+            "slotKey": "cpu_back_right",
+            "card": "yanbaru",
+            "name": "ヤンバル",
+            "owner": "cpu",
+            "hp": 3,
+            "level": 2,
+            "status": "active",
+            "actions": "1/1",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          }
+        ]
+      },
+      "newLog": [
+        "CPU判断: ボムゾウを削れるため攻撃 / ターンプラン探索: 返し込み最終盤面276点、次点と12点差",
+        "CPUのヤンバル Lv2: ワイルドクロウ 3P",
+        "ボムゾウ Lv1は気合いで1ダメージ軽減した",
+        "ワイルドクロウでボムゾウ Lv1に2ダメージ"
+      ]
+    },
+    {
+      "seed": 994322,
+      "step": 258,
+      "turnNumber": 23,
+      "player": "cpu",
+      "decision": "attack:cpu_front_right:attack->master:player",
+      "reason": "ターン開始時の最大打点1点で詰めろを作れるため攻撃",
+      "score": 154,
+      "legalDecisionCount": 5,
+      "nonEndDecisionCount": 4,
+      "before": {
+        "currentPlayer": "cpu",
+        "turnNumber": 23,
+        "pendingLevelUp": false,
+        "players": {
+          "player": {
+            "masterId": "white",
+            "hp": 7,
+            "stones": 14,
+            "hand": 5,
+            "deck": 3,
+            "discard": 20
+          },
+          "cpu": {
+            "masterId": "white",
+            "hp": 2,
+            "stones": 10,
+            "hand": 6,
+            "deck": 2,
+            "discard": 19
+          }
+        },
+        "slots": [
+          {
+            "slotKey": "player_front_left",
+            "card": "card_133",
+            "name": "デスシープ",
+            "owner": "player",
+            "hp": 6,
+            "level": 1,
+            "status": "active",
+            "actions": "0/1",
+            "focused": true,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "player_front_right",
+            "card": "bomuzo",
+            "name": "ボムゾウ",
+            "owner": "player",
+            "hp": 2,
+            "level": 1,
+            "status": "active",
+            "actions": "0/1",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "player_back_left"
+          },
+          {
+            "slotKey": "player_back_right"
+          },
+          {
+            "slotKey": "cpu_front_left",
+            "card": "card_051",
+            "name": "ピグミィ",
+            "owner": "cpu",
+            "hp": 3,
+            "level": 2,
+            "status": "active",
+            "actions": "0/2",
+            "focused": true,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "cpu_front_right",
+            "card": "card_133",
+            "name": "デスシープ",
+            "owner": "cpu",
+            "hp": 6,
+            "level": 2,
+            "status": "active",
+            "actions": "0/1",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "cpu_back_left"
+          },
+          {
+            "slotKey": "cpu_back_right",
+            "card": "yanbaru",
+            "name": "ヤンバル",
+            "owner": "cpu",
+            "hp": 3,
+            "level": 2,
+            "status": "active",
+            "actions": "1/1",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          }
+        ]
+      },
+      "after": {
+        "currentPlayer": "cpu",
+        "turnNumber": 23,
+        "pendingLevelUp": false,
+        "players": {
+          "player": {
+            "masterId": "white",
+            "hp": 6,
+            "stones": 15,
+            "hand": 5,
+            "deck": 3,
+            "discard": 20
+          },
+          "cpu": {
+            "masterId": "white",
+            "hp": 2,
+            "stones": 10,
+            "hand": 6,
+            "deck": 2,
+            "discard": 19
+          }
+        },
+        "slots": [
+          {
+            "slotKey": "player_front_left",
+            "card": "card_133",
+            "name": "デスシープ",
+            "owner": "player",
+            "hp": 6,
+            "level": 1,
+            "status": "active",
+            "actions": "0/1",
+            "focused": true,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "player_front_right",
+            "card": "bomuzo",
+            "name": "ボムゾウ",
+            "owner": "player",
+            "hp": 2,
+            "level": 1,
+            "status": "active",
+            "actions": "0/1",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "player_back_left"
+          },
+          {
+            "slotKey": "player_back_right"
+          },
+          {
+            "slotKey": "cpu_front_left",
+            "card": "card_051",
+            "name": "ピグミィ",
+            "owner": "cpu",
+            "hp": 3,
+            "level": 2,
+            "status": "active",
+            "actions": "0/2",
+            "focused": true,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "cpu_front_right",
+            "card": "card_133",
+            "name": "デスシープ",
+            "owner": "cpu",
+            "hp": 6,
+            "level": 2,
+            "status": "active",
+            "actions": "1/1",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "cpu_back_left"
+          },
+          {
+            "slotKey": "cpu_back_right",
+            "card": "yanbaru",
+            "name": "ヤンバル",
+            "owner": "cpu",
+            "hp": 3,
+            "level": 2,
+            "status": "active",
+            "actions": "1/1",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          }
+        ]
+      },
+      "newLog": [
+        "CPU判断: ターン開始時の最大打点1点で詰めろを作れるため攻撃",
+        "CPUのデスシープ Lv2: アタック 3P",
+        "プレイヤーのマスターHPが1減った（アタック）。ストーン+1"
+      ]
+    },
+    {
+      "seed": 994322,
+      "step": 259,
+      "turnNumber": 23,
+      "player": "cpu",
+      "decision": "attack:cpu_front_left:attack->monster:player_front_left",
+      "reason": "デスシープを削れるため攻撃 / 見送り: マスター特技は8点差で見送り",
+      "score": 62,
+      "legalDecisionCount": 3,
+      "nonEndDecisionCount": 2,
+      "before": {
+        "currentPlayer": "cpu",
+        "turnNumber": 23,
+        "pendingLevelUp": false,
+        "players": {
+          "player": {
+            "masterId": "white",
+            "hp": 6,
+            "stones": 15,
+            "hand": 5,
+            "deck": 3,
+            "discard": 20
+          },
+          "cpu": {
+            "masterId": "white",
+            "hp": 2,
+            "stones": 10,
+            "hand": 6,
+            "deck": 2,
+            "discard": 19
+          }
+        },
+        "slots": [
+          {
+            "slotKey": "player_front_left",
+            "card": "card_133",
+            "name": "デスシープ",
+            "owner": "player",
+            "hp": 6,
+            "level": 1,
+            "status": "active",
+            "actions": "0/1",
+            "focused": true,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "player_front_right",
+            "card": "bomuzo",
+            "name": "ボムゾウ",
+            "owner": "player",
+            "hp": 2,
+            "level": 1,
+            "status": "active",
+            "actions": "0/1",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "player_back_left"
+          },
+          {
+            "slotKey": "player_back_right"
+          },
+          {
+            "slotKey": "cpu_front_left",
+            "card": "card_051",
+            "name": "ピグミィ",
+            "owner": "cpu",
+            "hp": 3,
+            "level": 2,
+            "status": "active",
+            "actions": "0/2",
+            "focused": true,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "cpu_front_right",
+            "card": "card_133",
+            "name": "デスシープ",
+            "owner": "cpu",
+            "hp": 6,
+            "level": 2,
+            "status": "active",
+            "actions": "1/1",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "cpu_back_left"
+          },
+          {
+            "slotKey": "cpu_back_right",
+            "card": "yanbaru",
+            "name": "ヤンバル",
+            "owner": "cpu",
+            "hp": 3,
+            "level": 2,
+            "status": "active",
+            "actions": "1/1",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          }
+        ]
+      },
+      "after": {
+        "currentPlayer": "cpu",
+        "turnNumber": 23,
+        "pendingLevelUp": false,
+        "players": {
+          "player": {
+            "masterId": "white",
+            "hp": 6,
+            "stones": 15,
+            "hand": 5,
+            "deck": 3,
+            "discard": 20
+          },
+          "cpu": {
+            "masterId": "white",
+            "hp": 2,
+            "stones": 10,
+            "hand": 6,
+            "deck": 2,
+            "discard": 19
+          }
+        },
+        "slots": [
+          {
+            "slotKey": "player_front_left",
+            "card": "card_133",
+            "name": "デスシープ",
+            "owner": "player",
+            "hp": 6,
+            "level": 1,
+            "status": "active",
+            "actions": "0/1",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "player_front_right",
+            "card": "bomuzo",
+            "name": "ボムゾウ",
+            "owner": "player",
+            "hp": 2,
+            "level": 1,
+            "status": "active",
+            "actions": "0/1",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "player_back_left"
+          },
+          {
+            "slotKey": "player_back_right"
+          },
+          {
+            "slotKey": "cpu_front_left",
+            "card": "card_051",
+            "name": "ピグミィ",
+            "owner": "cpu",
+            "hp": 3,
+            "level": 2,
+            "status": "active",
+            "actions": "1/2",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "cpu_front_right",
+            "card": "card_133",
+            "name": "デスシープ",
+            "owner": "cpu",
+            "hp": 6,
+            "level": 2,
+            "status": "active",
+            "actions": "1/1",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "cpu_back_left"
+          },
+          {
+            "slotKey": "cpu_back_right",
+            "card": "yanbaru",
+            "name": "ヤンバル",
+            "owner": "cpu",
+            "hp": 3,
+            "level": 2,
+            "status": "active",
+            "actions": "1/1",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          }
+        ]
+      },
+      "newLog": [
+        "CPU判断: デスシープを削れるため攻撃 / 見送り: マスター特技は8点差で見送り",
+        "CPUのピグミィ Lv2: アタック 1P",
+        "デスシープ Lv1は気合いで1ダメージ軽減した",
+        "アタックでデスシープ Lv1に0ダメージ"
+      ]
+    },
+    {
+      "seed": 994322,
+      "step": 260,
+      "turnNumber": 23,
+      "player": "cpu",
+      "decision": "master:master_attack->monster:player_front_right",
+      "reason": "マスターアタックで敵モンスターを撃破できるため使用 / ターンプラン探索: 返し込み最終盤面180点、次点と295点差",
+      "score": 329,
+      "legalDecisionCount": 2,
+      "nonEndDecisionCount": 1,
+      "before": {
+        "currentPlayer": "cpu",
+        "turnNumber": 23,
+        "pendingLevelUp": false,
+        "players": {
+          "player": {
+            "masterId": "white",
+            "hp": 6,
+            "stones": 15,
+            "hand": 5,
+            "deck": 3,
+            "discard": 20
+          },
+          "cpu": {
+            "masterId": "white",
+            "hp": 2,
+            "stones": 10,
+            "hand": 6,
+            "deck": 2,
+            "discard": 19
+          }
+        },
+        "slots": [
+          {
+            "slotKey": "player_front_left",
+            "card": "card_133",
+            "name": "デスシープ",
+            "owner": "player",
+            "hp": 6,
+            "level": 1,
+            "status": "active",
+            "actions": "0/1",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "player_front_right",
+            "card": "bomuzo",
+            "name": "ボムゾウ",
+            "owner": "player",
+            "hp": 2,
+            "level": 1,
+            "status": "active",
+            "actions": "0/1",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "player_back_left"
+          },
+          {
+            "slotKey": "player_back_right"
+          },
+          {
+            "slotKey": "cpu_front_left",
+            "card": "card_051",
+            "name": "ピグミィ",
+            "owner": "cpu",
+            "hp": 3,
+            "level": 2,
+            "status": "active",
+            "actions": "1/2",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "cpu_front_right",
+            "card": "card_133",
+            "name": "デスシープ",
+            "owner": "cpu",
+            "hp": 6,
+            "level": 2,
+            "status": "active",
+            "actions": "1/1",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "cpu_back_left"
+          },
+          {
+            "slotKey": "cpu_back_right",
+            "card": "yanbaru",
+            "name": "ヤンバル",
+            "owner": "cpu",
+            "hp": 3,
+            "level": 2,
+            "status": "active",
+            "actions": "1/1",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          }
+        ]
+      },
+      "after": {
+        "currentPlayer": "cpu",
+        "turnNumber": 23,
+        "pendingLevelUp": false,
+        "players": {
+          "player": {
+            "masterId": "white",
+            "hp": 6,
+            "stones": 16,
+            "hand": 5,
+            "deck": 3,
+            "discard": 21
+          },
+          "cpu": {
+            "masterId": "white",
+            "hp": 2,
+            "stones": 7,
+            "hand": 6,
+            "deck": 2,
+            "discard": 19
+          }
+        },
+        "slots": [
+          {
+            "slotKey": "player_front_left",
+            "card": "card_133",
+            "name": "デスシープ",
+            "owner": "player",
+            "hp": 6,
+            "level": 1,
+            "status": "active",
+            "actions": "0/1",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "player_front_right"
+          },
+          {
+            "slotKey": "player_back_left"
+          },
+          {
+            "slotKey": "player_back_right"
+          },
+          {
+            "slotKey": "cpu_front_left",
+            "card": "card_051",
+            "name": "ピグミィ",
+            "owner": "cpu",
+            "hp": 3,
+            "level": 2,
+            "status": "active",
+            "actions": "1/2",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "cpu_front_right",
+            "card": "card_133",
+            "name": "デスシープ",
+            "owner": "cpu",
+            "hp": 6,
+            "level": 2,
+            "status": "active",
+            "actions": "1/1",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "cpu_back_left"
+          },
+          {
+            "slotKey": "cpu_back_right",
+            "card": "yanbaru",
+            "name": "ヤンバル",
+            "owner": "cpu",
+            "hp": 3,
+            "level": 2,
+            "status": "active",
+            "actions": "1/1",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          }
+        ]
+      },
+      "newLog": [
+        "CPU判断: マスターアタックで敵モンスターを撃破できるため使用 / ターンプラン探索: 返し込み最終盤面180点、次点と295点差",
+        "CPUのマスターアタック",
+        "マスターアタックでボムゾウ Lv1に2ダメージ",
+        "ボムゾウ Lv1は倒れ、プレイヤーにストーン1個が戻った"
+      ]
+    },
+    {
+      "seed": 994322,
+      "step": 261,
+      "turnNumber": 23,
+      "player": "cpu",
+      "decision": "master:shield->monster:cpu_front_left",
+      "reason": "致死圏の味方を守れるためシールド",
+      "score": 120.12,
+      "legalDecisionCount": 2,
+      "nonEndDecisionCount": 1,
+      "before": {
+        "currentPlayer": "cpu",
+        "turnNumber": 23,
+        "pendingLevelUp": false,
+        "players": {
+          "player": {
+            "masterId": "white",
+            "hp": 6,
+            "stones": 16,
+            "hand": 5,
+            "deck": 3,
+            "discard": 21
+          },
+          "cpu": {
+            "masterId": "white",
+            "hp": 2,
+            "stones": 7,
+            "hand": 6,
+            "deck": 2,
+            "discard": 19
+          }
+        },
+        "slots": [
+          {
+            "slotKey": "player_front_left",
+            "card": "card_133",
+            "name": "デスシープ",
+            "owner": "player",
+            "hp": 6,
+            "level": 1,
+            "status": "active",
+            "actions": "0/1",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "player_front_right"
+          },
+          {
+            "slotKey": "player_back_left"
+          },
+          {
+            "slotKey": "player_back_right"
+          },
+          {
+            "slotKey": "cpu_front_left",
+            "card": "card_051",
+            "name": "ピグミィ",
+            "owner": "cpu",
+            "hp": 3,
+            "level": 2,
+            "status": "active",
+            "actions": "1/2",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "cpu_front_right",
+            "card": "card_133",
+            "name": "デスシープ",
+            "owner": "cpu",
+            "hp": 6,
+            "level": 2,
+            "status": "active",
+            "actions": "1/1",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "cpu_back_left"
+          },
+          {
+            "slotKey": "cpu_back_right",
+            "card": "yanbaru",
+            "name": "ヤンバル",
+            "owner": "cpu",
+            "hp": 3,
+            "level": 2,
+            "status": "active",
+            "actions": "1/1",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          }
+        ]
+      },
+      "after": {
+        "currentPlayer": "cpu",
+        "turnNumber": 23,
+        "pendingLevelUp": false,
+        "players": {
+          "player": {
+            "masterId": "white",
+            "hp": 6,
+            "stones": 16,
+            "hand": 5,
+            "deck": 3,
+            "discard": 21
+          },
+          "cpu": {
+            "masterId": "white",
+            "hp": 2,
+            "stones": 5,
+            "hand": 6,
+            "deck": 2,
+            "discard": 19
+          }
+        },
+        "slots": [
+          {
+            "slotKey": "player_front_left",
+            "card": "card_133",
+            "name": "デスシープ",
+            "owner": "player",
+            "hp": 6,
+            "level": 1,
+            "status": "active",
+            "actions": "0/1",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "player_front_right"
+          },
+          {
+            "slotKey": "player_back_left"
+          },
+          {
+            "slotKey": "player_back_right"
+          },
+          {
+            "slotKey": "cpu_front_left",
+            "card": "card_051",
+            "name": "ピグミィ",
+            "owner": "cpu",
+            "hp": 3,
+            "level": 2,
+            "status": "active",
+            "actions": "1/2",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": true
+          },
+          {
+            "slotKey": "cpu_front_right",
+            "card": "card_133",
+            "name": "デスシープ",
+            "owner": "cpu",
+            "hp": 6,
+            "level": 2,
+            "status": "active",
+            "actions": "1/1",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "cpu_back_left"
+          },
+          {
+            "slotKey": "cpu_back_right",
+            "card": "yanbaru",
+            "name": "ヤンバル",
+            "owner": "cpu",
+            "hp": 3,
+            "level": 2,
+            "status": "active",
+            "actions": "1/1",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          }
+        ]
+      },
+      "newLog": [
+        "CPU判断: 致死圏の味方を守れるためシールド",
+        "CPUはピグミィ Lv2にシールドを張った"
+      ]
+    },
+    {
+      "seed": 994322,
+      "step": 262,
+      "turnNumber": 23,
+      "player": "cpu",
+      "decision": "end_turn",
+      "reason": "有効な行動がないためターン終了 / ターンプラン探索: 返し込み最終盤面55点",
+      "score": 0,
+      "legalDecisionCount": 1,
+      "nonEndDecisionCount": 0,
+      "before": {
+        "currentPlayer": "cpu",
+        "turnNumber": 23,
+        "pendingLevelUp": false,
+        "players": {
+          "player": {
+            "masterId": "white",
+            "hp": 6,
+            "stones": 16,
+            "hand": 5,
+            "deck": 3,
+            "discard": 21
+          },
+          "cpu": {
+            "masterId": "white",
+            "hp": 2,
+            "stones": 5,
+            "hand": 6,
+            "deck": 2,
+            "discard": 19
+          }
+        },
+        "slots": [
+          {
+            "slotKey": "player_front_left",
+            "card": "card_133",
+            "name": "デスシープ",
+            "owner": "player",
+            "hp": 6,
+            "level": 1,
+            "status": "active",
+            "actions": "0/1",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "player_front_right"
+          },
+          {
+            "slotKey": "player_back_left"
+          },
+          {
+            "slotKey": "player_back_right"
+          },
+          {
+            "slotKey": "cpu_front_left",
+            "card": "card_051",
+            "name": "ピグミィ",
+            "owner": "cpu",
+            "hp": 3,
+            "level": 2,
+            "status": "active",
+            "actions": "1/2",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": true
+          },
+          {
+            "slotKey": "cpu_front_right",
+            "card": "card_133",
+            "name": "デスシープ",
+            "owner": "cpu",
+            "hp": 6,
+            "level": 2,
+            "status": "active",
+            "actions": "1/1",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "cpu_back_left"
+          },
+          {
+            "slotKey": "cpu_back_right",
+            "card": "yanbaru",
+            "name": "ヤンバル",
+            "owner": "cpu",
+            "hp": 3,
+            "level": 2,
+            "status": "active",
+            "actions": "1/1",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          }
+        ]
+      },
+      "after": {
+        "currentPlayer": "player",
+        "turnNumber": 24,
+        "pendingLevelUp": false,
+        "players": {
+          "player": {
+            "masterId": "white",
+            "hp": 6,
+            "stones": 19,
+            "hand": 6,
+            "deck": 2,
+            "discard": 21
+          },
+          "cpu": {
+            "masterId": "white",
+            "hp": 2,
+            "stones": 5,
+            "hand": 5,
+            "deck": 2,
+            "discard": 20
+          }
+        },
+        "slots": [
+          {
+            "slotKey": "player_front_left",
+            "card": "card_133",
+            "name": "デスシープ",
+            "owner": "player",
+            "hp": 6,
+            "level": 1,
+            "status": "active",
+            "actions": "0/1",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "player_front_right"
+          },
+          {
+            "slotKey": "player_back_left"
+          },
+          {
+            "slotKey": "player_back_right"
+          },
+          {
+            "slotKey": "cpu_front_left",
+            "card": "card_051",
+            "name": "ピグミィ",
+            "owner": "cpu",
+            "hp": 3,
+            "level": 2,
+            "status": "active",
+            "actions": "1/2",
+            "focused": true,
+            "berserkPower": false,
+            "shielded": true
+          },
+          {
+            "slotKey": "cpu_front_right",
+            "card": "card_133",
+            "name": "デスシープ",
+            "owner": "cpu",
+            "hp": 6,
+            "level": 2,
+            "status": "active",
+            "actions": "1/1",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "cpu_back_left"
+          },
+          {
+            "slotKey": "cpu_back_right",
+            "card": "yanbaru",
+            "name": "ヤンバル",
+            "owner": "cpu",
+            "hp": 3,
+            "level": 2,
+            "status": "active",
+            "actions": "1/1",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          }
+        ]
+      },
+      "newLog": [
+        "CPU判断: 有効な行動がないためターン終了 / ターンプラン探索: 返し込み最終盤面55点",
+        "ピグミィ Lv2は気合いだめした",
+        "CPUのカード溢れ: 手札を5枚まで捨てる",
+        "CPUは手札上限でポリスピナーを捨てた",
+        "プレイヤーのターン開始",
+        "プレイヤーはストーンを3個得た",
+        "プレイヤーはドロー５を引いた"
+      ]
+    },
+    {
+      "seed": 994322,
+      "step": 263,
+      "turnNumber": 24,
+      "player": "player",
+      "decision": "end_turn",
+      "reason": "有効な行動がないためターン終了",
+      "score": 0,
+      "legalDecisionCount": 1,
+      "nonEndDecisionCount": 0,
+      "before": {
+        "currentPlayer": "player",
+        "turnNumber": 24,
+        "pendingLevelUp": false,
+        "players": {
+          "player": {
+            "masterId": "white",
+            "hp": 6,
+            "stones": 19,
+            "hand": 6,
+            "deck": 2,
+            "discard": 21
+          },
+          "cpu": {
+            "masterId": "white",
+            "hp": 2,
+            "stones": 5,
+            "hand": 5,
+            "deck": 2,
+            "discard": 20
+          }
+        },
+        "slots": [
+          {
+            "slotKey": "player_front_left",
+            "card": "card_133",
+            "name": "デスシープ",
+            "owner": "player",
+            "hp": 6,
+            "level": 1,
+            "status": "active",
+            "actions": "0/1",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "player_front_right"
+          },
+          {
+            "slotKey": "player_back_left"
+          },
+          {
+            "slotKey": "player_back_right"
+          },
+          {
+            "slotKey": "cpu_front_left",
+            "card": "card_051",
+            "name": "ピグミィ",
+            "owner": "cpu",
+            "hp": 3,
+            "level": 2,
+            "status": "active",
+            "actions": "1/2",
+            "focused": true,
+            "berserkPower": false,
+            "shielded": true
+          },
+          {
+            "slotKey": "cpu_front_right",
+            "card": "card_133",
+            "name": "デスシープ",
+            "owner": "cpu",
+            "hp": 6,
+            "level": 2,
+            "status": "active",
+            "actions": "1/1",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "cpu_back_left"
+          },
+          {
+            "slotKey": "cpu_back_right",
+            "card": "yanbaru",
+            "name": "ヤンバル",
+            "owner": "cpu",
+            "hp": 3,
+            "level": 2,
+            "status": "active",
+            "actions": "1/1",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          }
+        ]
+      },
+      "after": {
+        "currentPlayer": "cpu",
+        "turnNumber": 24,
+        "pendingLevelUp": false,
+        "players": {
+          "player": {
+            "masterId": "white",
+            "hp": 6,
+            "stones": 19,
+            "hand": 5,
+            "deck": 2,
+            "discard": 22
+          },
+          "cpu": {
+            "masterId": "white",
+            "hp": 2,
+            "stones": 8,
+            "hand": 6,
+            "deck": 1,
+            "discard": 20
+          }
+        },
+        "slots": [
+          {
+            "slotKey": "player_front_left",
+            "card": "card_133",
+            "name": "デスシープ",
+            "owner": "player",
+            "hp": 6,
+            "level": 1,
+            "status": "active",
+            "actions": "0/1",
+            "focused": true,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "player_front_right"
+          },
+          {
+            "slotKey": "player_back_left"
+          },
+          {
+            "slotKey": "player_back_right"
+          },
+          {
+            "slotKey": "cpu_front_left",
+            "card": "card_051",
+            "name": "ピグミィ",
+            "owner": "cpu",
+            "hp": 3,
+            "level": 2,
+            "status": "active",
+            "actions": "0/2",
+            "focused": true,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "cpu_front_right",
+            "card": "card_133",
+            "name": "デスシープ",
+            "owner": "cpu",
+            "hp": 6,
+            "level": 2,
+            "status": "active",
+            "actions": "0/1",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "cpu_back_left"
+          },
+          {
+            "slotKey": "cpu_back_right",
+            "card": "yanbaru",
+            "name": "ヤンバル",
+            "owner": "cpu",
+            "hp": 3,
+            "level": 2,
+            "status": "active",
+            "actions": "0/1",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          }
+        ]
+      },
+      "newLog": [
+        "プレイヤーAI判断: 有効な行動がないためターン終了",
+        "デスシープ Lv1は気合いだめした",
+        "プレイヤーのカード溢れ: 手札を5枚まで捨てる",
+        "プレイヤーは手札上限でドノマンティスを捨てた",
+        "CPUのターン開始",
+        "CPUはストーンを3個得た",
+        "ピグミィ Lv2の防御効果が切れた",
+        "CPUはカードを引いた"
+      ]
+    },
+    {
+      "seed": 994322,
+      "step": 264,
+      "turnNumber": 24,
+      "player": "cpu",
+      "decision": "attack:cpu_back_right:wild_claw->master:player",
+      "reason": "ターン開始時の最大打点2点で詰めろを作れるため攻撃",
+      "score": 154,
+      "legalDecisionCount": 4,
+      "nonEndDecisionCount": 3,
+      "before": {
+        "currentPlayer": "cpu",
+        "turnNumber": 24,
+        "pendingLevelUp": false,
+        "players": {
+          "player": {
+            "masterId": "white",
+            "hp": 6,
+            "stones": 19,
+            "hand": 5,
+            "deck": 2,
+            "discard": 22
+          },
+          "cpu": {
+            "masterId": "white",
+            "hp": 2,
+            "stones": 8,
+            "hand": 6,
+            "deck": 1,
+            "discard": 20
+          }
+        },
+        "slots": [
+          {
+            "slotKey": "player_front_left",
+            "card": "card_133",
+            "name": "デスシープ",
+            "owner": "player",
+            "hp": 6,
+            "level": 1,
+            "status": "active",
+            "actions": "0/1",
+            "focused": true,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "player_front_right"
+          },
+          {
+            "slotKey": "player_back_left"
+          },
+          {
+            "slotKey": "player_back_right"
+          },
+          {
+            "slotKey": "cpu_front_left",
+            "card": "card_051",
+            "name": "ピグミィ",
+            "owner": "cpu",
+            "hp": 3,
+            "level": 2,
+            "status": "active",
+            "actions": "0/2",
+            "focused": true,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "cpu_front_right",
+            "card": "card_133",
+            "name": "デスシープ",
+            "owner": "cpu",
+            "hp": 6,
+            "level": 2,
+            "status": "active",
+            "actions": "0/1",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "cpu_back_left"
+          },
+          {
+            "slotKey": "cpu_back_right",
+            "card": "yanbaru",
+            "name": "ヤンバル",
+            "owner": "cpu",
+            "hp": 3,
+            "level": 2,
+            "status": "active",
+            "actions": "0/1",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          }
+        ]
+      },
+      "after": {
+        "currentPlayer": "cpu",
+        "turnNumber": 24,
+        "pendingLevelUp": false,
+        "players": {
+          "player": {
+            "masterId": "white",
+            "hp": 5,
+            "stones": 20,
+            "hand": 5,
+            "deck": 2,
+            "discard": 22
+          },
+          "cpu": {
+            "masterId": "white",
+            "hp": 2,
+            "stones": 8,
+            "hand": 6,
+            "deck": 1,
+            "discard": 20
+          }
+        },
+        "slots": [
+          {
+            "slotKey": "player_front_left",
+            "card": "card_133",
+            "name": "デスシープ",
+            "owner": "player",
+            "hp": 6,
+            "level": 1,
+            "status": "active",
+            "actions": "0/1",
+            "focused": true,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "player_front_right"
+          },
+          {
+            "slotKey": "player_back_left"
+          },
+          {
+            "slotKey": "player_back_right"
+          },
+          {
+            "slotKey": "cpu_front_left",
+            "card": "card_051",
+            "name": "ピグミィ",
+            "owner": "cpu",
+            "hp": 3,
+            "level": 2,
+            "status": "active",
+            "actions": "0/2",
+            "focused": true,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "cpu_front_right",
+            "card": "card_133",
+            "name": "デスシープ",
+            "owner": "cpu",
+            "hp": 6,
+            "level": 2,
+            "status": "active",
+            "actions": "0/1",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "cpu_back_left"
+          },
+          {
+            "slotKey": "cpu_back_right",
+            "card": "yanbaru",
+            "name": "ヤンバル",
+            "owner": "cpu",
+            "hp": 3,
+            "level": 2,
+            "status": "active",
+            "actions": "1/1",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          }
+        ]
+      },
+      "newLog": [
+        "CPU判断: ターン開始時の最大打点2点で詰めろを作れるため攻撃",
+        "CPUのヤンバル Lv2: ワイルドクロウ 3P",
+        "プレイヤーのマスターHPが1減った（ワイルドクロウ）。ストーン+1"
+      ]
+    },
+    {
+      "seed": 994322,
+      "step": 265,
+      "turnNumber": 24,
+      "player": "cpu",
+      "decision": "attack:cpu_front_right:attack->master:player",
+      "reason": "ターン開始時の最大打点1点で詰めろを作れるため攻撃",
+      "score": 142,
+      "legalDecisionCount": 3,
+      "nonEndDecisionCount": 2,
+      "before": {
+        "currentPlayer": "cpu",
+        "turnNumber": 24,
+        "pendingLevelUp": false,
+        "players": {
+          "player": {
+            "masterId": "white",
+            "hp": 5,
+            "stones": 20,
+            "hand": 5,
+            "deck": 2,
+            "discard": 22
+          },
+          "cpu": {
+            "masterId": "white",
+            "hp": 2,
+            "stones": 8,
+            "hand": 6,
+            "deck": 1,
+            "discard": 20
+          }
+        },
+        "slots": [
+          {
+            "slotKey": "player_front_left",
+            "card": "card_133",
+            "name": "デスシープ",
+            "owner": "player",
+            "hp": 6,
+            "level": 1,
+            "status": "active",
+            "actions": "0/1",
+            "focused": true,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "player_front_right"
+          },
+          {
+            "slotKey": "player_back_left"
+          },
+          {
+            "slotKey": "player_back_right"
+          },
+          {
+            "slotKey": "cpu_front_left",
+            "card": "card_051",
+            "name": "ピグミィ",
+            "owner": "cpu",
+            "hp": 3,
+            "level": 2,
+            "status": "active",
+            "actions": "0/2",
+            "focused": true,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "cpu_front_right",
+            "card": "card_133",
+            "name": "デスシープ",
+            "owner": "cpu",
+            "hp": 6,
+            "level": 2,
+            "status": "active",
+            "actions": "0/1",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "cpu_back_left"
+          },
+          {
+            "slotKey": "cpu_back_right",
+            "card": "yanbaru",
+            "name": "ヤンバル",
+            "owner": "cpu",
+            "hp": 3,
+            "level": 2,
+            "status": "active",
+            "actions": "1/1",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          }
+        ]
+      },
+      "after": {
+        "currentPlayer": "cpu",
+        "turnNumber": 24,
+        "pendingLevelUp": false,
+        "players": {
+          "player": {
+            "masterId": "white",
+            "hp": 4,
+            "stones": 21,
+            "hand": 5,
+            "deck": 2,
+            "discard": 22
+          },
+          "cpu": {
+            "masterId": "white",
+            "hp": 2,
+            "stones": 8,
+            "hand": 6,
+            "deck": 1,
+            "discard": 20
+          }
+        },
+        "slots": [
+          {
+            "slotKey": "player_front_left",
+            "card": "card_133",
+            "name": "デスシープ",
+            "owner": "player",
+            "hp": 6,
+            "level": 1,
+            "status": "active",
+            "actions": "0/1",
+            "focused": true,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "player_front_right"
+          },
+          {
+            "slotKey": "player_back_left"
+          },
+          {
+            "slotKey": "player_back_right"
+          },
+          {
+            "slotKey": "cpu_front_left",
+            "card": "card_051",
+            "name": "ピグミィ",
+            "owner": "cpu",
+            "hp": 3,
+            "level": 2,
+            "status": "active",
+            "actions": "0/2",
+            "focused": true,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "cpu_front_right",
+            "card": "card_133",
+            "name": "デスシープ",
+            "owner": "cpu",
+            "hp": 6,
+            "level": 2,
+            "status": "active",
+            "actions": "1/1",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "cpu_back_left"
+          },
+          {
+            "slotKey": "cpu_back_right",
+            "card": "yanbaru",
+            "name": "ヤンバル",
+            "owner": "cpu",
+            "hp": 3,
+            "level": 2,
+            "status": "active",
+            "actions": "1/1",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          }
+        ]
+      },
+      "newLog": [
+        "CPU判断: ターン開始時の最大打点1点で詰めろを作れるため攻撃",
+        "CPUのデスシープ Lv2: アタック 3P",
+        "プレイヤーのマスターHPが1減った（アタック）。ストーン+1"
+      ]
+    },
+    {
+      "seed": 994322,
+      "step": 266,
+      "turnNumber": 24,
+      "player": "cpu",
+      "decision": "attack:cpu_front_left:attack->monster:player_front_left",
+      "reason": "デスシープを削れるため攻撃 / ターンプラン探索: 返し込み最終盤面66点、次点と334点差",
+      "score": 62,
+      "legalDecisionCount": 2,
+      "nonEndDecisionCount": 1,
+      "before": {
+        "currentPlayer": "cpu",
+        "turnNumber": 24,
+        "pendingLevelUp": false,
+        "players": {
+          "player": {
+            "masterId": "white",
+            "hp": 4,
+            "stones": 21,
+            "hand": 5,
+            "deck": 2,
+            "discard": 22
+          },
+          "cpu": {
+            "masterId": "white",
+            "hp": 2,
+            "stones": 8,
+            "hand": 6,
+            "deck": 1,
+            "discard": 20
+          }
+        },
+        "slots": [
+          {
+            "slotKey": "player_front_left",
+            "card": "card_133",
+            "name": "デスシープ",
+            "owner": "player",
+            "hp": 6,
+            "level": 1,
+            "status": "active",
+            "actions": "0/1",
+            "focused": true,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "player_front_right"
+          },
+          {
+            "slotKey": "player_back_left"
+          },
+          {
+            "slotKey": "player_back_right"
+          },
+          {
+            "slotKey": "cpu_front_left",
+            "card": "card_051",
+            "name": "ピグミィ",
+            "owner": "cpu",
+            "hp": 3,
+            "level": 2,
+            "status": "active",
+            "actions": "0/2",
+            "focused": true,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "cpu_front_right",
+            "card": "card_133",
+            "name": "デスシープ",
+            "owner": "cpu",
+            "hp": 6,
+            "level": 2,
+            "status": "active",
+            "actions": "1/1",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "cpu_back_left"
+          },
+          {
+            "slotKey": "cpu_back_right",
+            "card": "yanbaru",
+            "name": "ヤンバル",
+            "owner": "cpu",
+            "hp": 3,
+            "level": 2,
+            "status": "active",
+            "actions": "1/1",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          }
+        ]
+      },
+      "after": {
+        "currentPlayer": "cpu",
+        "turnNumber": 24,
+        "pendingLevelUp": false,
+        "players": {
+          "player": {
+            "masterId": "white",
+            "hp": 4,
+            "stones": 21,
+            "hand": 5,
+            "deck": 2,
+            "discard": 22
+          },
+          "cpu": {
+            "masterId": "white",
+            "hp": 2,
+            "stones": 8,
+            "hand": 6,
+            "deck": 1,
+            "discard": 20
+          }
+        },
+        "slots": [
+          {
+            "slotKey": "player_front_left",
+            "card": "card_133",
+            "name": "デスシープ",
+            "owner": "player",
+            "hp": 6,
+            "level": 1,
+            "status": "active",
+            "actions": "0/1",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "player_front_right"
+          },
+          {
+            "slotKey": "player_back_left"
+          },
+          {
+            "slotKey": "player_back_right"
+          },
+          {
+            "slotKey": "cpu_front_left",
+            "card": "card_051",
+            "name": "ピグミィ",
+            "owner": "cpu",
+            "hp": 3,
+            "level": 2,
+            "status": "active",
+            "actions": "1/2",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "cpu_front_right",
+            "card": "card_133",
+            "name": "デスシープ",
+            "owner": "cpu",
+            "hp": 6,
+            "level": 2,
+            "status": "active",
+            "actions": "1/1",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "cpu_back_left"
+          },
+          {
+            "slotKey": "cpu_back_right",
+            "card": "yanbaru",
+            "name": "ヤンバル",
+            "owner": "cpu",
+            "hp": 3,
+            "level": 2,
+            "status": "active",
+            "actions": "1/1",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          }
+        ]
+      },
+      "newLog": [
+        "CPU判断: デスシープを削れるため攻撃 / ターンプラン探索: 返し込み最終盤面66点、次点と334点差",
+        "CPUのピグミィ Lv2: アタック 1P",
+        "デスシープ Lv1は気合いで1ダメージ軽減した",
+        "アタックでデスシープ Lv1に0ダメージ"
+      ]
+    },
+    {
+      "seed": 994322,
+      "step": 267,
+      "turnNumber": 24,
+      "player": "cpu",
+      "decision": "master:shield->monster:cpu_front_left",
+      "reason": "致死圏の味方を守れるためシールド",
+      "score": 120.12,
+      "legalDecisionCount": 2,
+      "nonEndDecisionCount": 1,
+      "before": {
+        "currentPlayer": "cpu",
+        "turnNumber": 24,
+        "pendingLevelUp": false,
+        "players": {
+          "player": {
+            "masterId": "white",
+            "hp": 4,
+            "stones": 21,
+            "hand": 5,
+            "deck": 2,
+            "discard": 22
+          },
+          "cpu": {
+            "masterId": "white",
+            "hp": 2,
+            "stones": 8,
+            "hand": 6,
+            "deck": 1,
+            "discard": 20
+          }
+        },
+        "slots": [
+          {
+            "slotKey": "player_front_left",
+            "card": "card_133",
+            "name": "デスシープ",
+            "owner": "player",
+            "hp": 6,
+            "level": 1,
+            "status": "active",
+            "actions": "0/1",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "player_front_right"
+          },
+          {
+            "slotKey": "player_back_left"
+          },
+          {
+            "slotKey": "player_back_right"
+          },
+          {
+            "slotKey": "cpu_front_left",
+            "card": "card_051",
+            "name": "ピグミィ",
+            "owner": "cpu",
+            "hp": 3,
+            "level": 2,
+            "status": "active",
+            "actions": "1/2",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "cpu_front_right",
+            "card": "card_133",
+            "name": "デスシープ",
+            "owner": "cpu",
+            "hp": 6,
+            "level": 2,
+            "status": "active",
+            "actions": "1/1",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "cpu_back_left"
+          },
+          {
+            "slotKey": "cpu_back_right",
+            "card": "yanbaru",
+            "name": "ヤンバル",
+            "owner": "cpu",
+            "hp": 3,
+            "level": 2,
+            "status": "active",
+            "actions": "1/1",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          }
+        ]
+      },
+      "after": {
+        "currentPlayer": "cpu",
+        "turnNumber": 24,
+        "pendingLevelUp": false,
+        "players": {
+          "player": {
+            "masterId": "white",
+            "hp": 4,
+            "stones": 21,
+            "hand": 5,
+            "deck": 2,
+            "discard": 22
+          },
+          "cpu": {
+            "masterId": "white",
+            "hp": 2,
+            "stones": 6,
+            "hand": 6,
+            "deck": 1,
+            "discard": 20
+          }
+        },
+        "slots": [
+          {
+            "slotKey": "player_front_left",
+            "card": "card_133",
+            "name": "デスシープ",
+            "owner": "player",
+            "hp": 6,
+            "level": 1,
+            "status": "active",
+            "actions": "0/1",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "player_front_right"
+          },
+          {
+            "slotKey": "player_back_left"
+          },
+          {
+            "slotKey": "player_back_right"
+          },
+          {
+            "slotKey": "cpu_front_left",
+            "card": "card_051",
+            "name": "ピグミィ",
+            "owner": "cpu",
+            "hp": 3,
+            "level": 2,
+            "status": "active",
+            "actions": "1/2",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": true
+          },
+          {
+            "slotKey": "cpu_front_right",
+            "card": "card_133",
+            "name": "デスシープ",
+            "owner": "cpu",
+            "hp": 6,
+            "level": 2,
+            "status": "active",
+            "actions": "1/1",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "cpu_back_left"
+          },
+          {
+            "slotKey": "cpu_back_right",
+            "card": "yanbaru",
+            "name": "ヤンバル",
+            "owner": "cpu",
+            "hp": 3,
+            "level": 2,
+            "status": "active",
+            "actions": "1/1",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          }
+        ]
+      },
+      "newLog": [
+        "CPU判断: 致死圏の味方を守れるためシールド",
+        "CPUはピグミィ Lv2にシールドを張った"
+      ]
+    },
+    {
+      "seed": 994322,
+      "step": 268,
+      "turnNumber": 24,
+      "player": "cpu",
+      "decision": "end_turn",
+      "reason": "有効な行動がないためターン終了 / ターンプラン探索: 返し込み最終盤面29点",
+      "score": 0,
+      "legalDecisionCount": 1,
+      "nonEndDecisionCount": 0,
+      "before": {
+        "currentPlayer": "cpu",
+        "turnNumber": 24,
+        "pendingLevelUp": false,
+        "players": {
+          "player": {
+            "masterId": "white",
+            "hp": 4,
+            "stones": 21,
+            "hand": 5,
+            "deck": 2,
+            "discard": 22
+          },
+          "cpu": {
+            "masterId": "white",
+            "hp": 2,
+            "stones": 6,
+            "hand": 6,
+            "deck": 1,
+            "discard": 20
+          }
+        },
+        "slots": [
+          {
+            "slotKey": "player_front_left",
+            "card": "card_133",
+            "name": "デスシープ",
+            "owner": "player",
+            "hp": 6,
+            "level": 1,
+            "status": "active",
+            "actions": "0/1",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "player_front_right"
+          },
+          {
+            "slotKey": "player_back_left"
+          },
+          {
+            "slotKey": "player_back_right"
+          },
+          {
+            "slotKey": "cpu_front_left",
+            "card": "card_051",
+            "name": "ピグミィ",
+            "owner": "cpu",
+            "hp": 3,
+            "level": 2,
+            "status": "active",
+            "actions": "1/2",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": true
+          },
+          {
+            "slotKey": "cpu_front_right",
+            "card": "card_133",
+            "name": "デスシープ",
+            "owner": "cpu",
+            "hp": 6,
+            "level": 2,
+            "status": "active",
+            "actions": "1/1",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "cpu_back_left"
+          },
+          {
+            "slotKey": "cpu_back_right",
+            "card": "yanbaru",
+            "name": "ヤンバル",
+            "owner": "cpu",
+            "hp": 3,
+            "level": 2,
+            "status": "active",
+            "actions": "1/1",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          }
+        ]
+      },
+      "after": {
+        "currentPlayer": "player",
+        "turnNumber": 25,
+        "pendingLevelUp": false,
+        "players": {
+          "player": {
+            "masterId": "white",
+            "hp": 4,
+            "stones": 24,
+            "hand": 6,
+            "deck": 1,
+            "discard": 22
+          },
+          "cpu": {
+            "masterId": "white",
+            "hp": 2,
+            "stones": 6,
+            "hand": 5,
+            "deck": 1,
+            "discard": 21
+          }
+        },
+        "slots": [
+          {
+            "slotKey": "player_front_left",
+            "card": "card_133",
+            "name": "デスシープ",
+            "owner": "player",
+            "hp": 6,
+            "level": 1,
+            "status": "active",
+            "actions": "0/1",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "player_front_right"
+          },
+          {
+            "slotKey": "player_back_left"
+          },
+          {
+            "slotKey": "player_back_right"
+          },
+          {
+            "slotKey": "cpu_front_left",
+            "card": "card_051",
+            "name": "ピグミィ",
+            "owner": "cpu",
+            "hp": 3,
+            "level": 2,
+            "status": "active",
+            "actions": "1/2",
+            "focused": true,
+            "berserkPower": false,
+            "shielded": true
+          },
+          {
+            "slotKey": "cpu_front_right",
+            "card": "card_133",
+            "name": "デスシープ",
+            "owner": "cpu",
+            "hp": 6,
+            "level": 2,
+            "status": "active",
+            "actions": "1/1",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "cpu_back_left"
+          },
+          {
+            "slotKey": "cpu_back_right",
+            "card": "yanbaru",
+            "name": "ヤンバル",
+            "owner": "cpu",
+            "hp": 3,
+            "level": 2,
+            "status": "active",
+            "actions": "1/1",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          }
+        ]
+      },
+      "newLog": [
+        "CPU判断: 有効な行動がないためターン終了 / ターンプラン探索: 返し込み最終盤面29点",
+        "ピグミィ Lv2は気合いだめした",
+        "CPUのカード溢れ: 手札を5枚まで捨てる",
+        "CPUは手札上限でワープを捨てた",
+        "プレイヤーのターン開始",
+        "プレイヤーはストーンを3個得た",
+        "プレイヤーはローテーションを引いた"
+      ]
+    },
+    {
+      "seed": 994322,
+      "step": 269,
+      "turnNumber": 25,
+      "player": "player",
+      "decision": "end_turn",
+      "reason": "有効な行動がないためターン終了",
+      "score": 0,
+      "legalDecisionCount": 1,
+      "nonEndDecisionCount": 0,
+      "before": {
+        "currentPlayer": "player",
+        "turnNumber": 25,
+        "pendingLevelUp": false,
+        "players": {
+          "player": {
+            "masterId": "white",
+            "hp": 4,
+            "stones": 24,
+            "hand": 6,
+            "deck": 1,
+            "discard": 22
+          },
+          "cpu": {
+            "masterId": "white",
+            "hp": 2,
+            "stones": 6,
+            "hand": 5,
+            "deck": 1,
+            "discard": 21
+          }
+        },
+        "slots": [
+          {
+            "slotKey": "player_front_left",
+            "card": "card_133",
+            "name": "デスシープ",
+            "owner": "player",
+            "hp": 6,
+            "level": 1,
+            "status": "active",
+            "actions": "0/1",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "player_front_right"
+          },
+          {
+            "slotKey": "player_back_left"
+          },
+          {
+            "slotKey": "player_back_right"
+          },
+          {
+            "slotKey": "cpu_front_left",
+            "card": "card_051",
+            "name": "ピグミィ",
+            "owner": "cpu",
+            "hp": 3,
+            "level": 2,
+            "status": "active",
+            "actions": "1/2",
+            "focused": true,
+            "berserkPower": false,
+            "shielded": true
+          },
+          {
+            "slotKey": "cpu_front_right",
+            "card": "card_133",
+            "name": "デスシープ",
+            "owner": "cpu",
+            "hp": 6,
+            "level": 2,
+            "status": "active",
+            "actions": "1/1",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "cpu_back_left"
+          },
+          {
+            "slotKey": "cpu_back_right",
+            "card": "yanbaru",
+            "name": "ヤンバル",
+            "owner": "cpu",
+            "hp": 3,
+            "level": 2,
+            "status": "active",
+            "actions": "1/1",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          }
+        ]
+      },
+      "after": {
+        "currentPlayer": "cpu",
+        "turnNumber": 25,
+        "pendingLevelUp": false,
+        "players": {
+          "player": {
+            "masterId": "white",
+            "hp": 4,
+            "stones": 24,
+            "hand": 5,
+            "deck": 1,
+            "discard": 23
+          },
+          "cpu": {
+            "masterId": "white",
+            "hp": 2,
+            "stones": 9,
+            "hand": 6,
+            "deck": 0,
+            "discard": 21
+          }
+        },
+        "slots": [
+          {
+            "slotKey": "player_front_left",
+            "card": "card_133",
+            "name": "デスシープ",
+            "owner": "player",
+            "hp": 6,
+            "level": 1,
+            "status": "active",
+            "actions": "0/1",
+            "focused": true,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "player_front_right"
+          },
+          {
+            "slotKey": "player_back_left"
+          },
+          {
+            "slotKey": "player_back_right"
+          },
+          {
+            "slotKey": "cpu_front_left",
+            "card": "card_051",
+            "name": "ピグミィ",
+            "owner": "cpu",
+            "hp": 3,
+            "level": 2,
+            "status": "active",
+            "actions": "0/2",
+            "focused": true,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "cpu_front_right",
+            "card": "card_133",
+            "name": "デスシープ",
+            "owner": "cpu",
+            "hp": 6,
+            "level": 2,
+            "status": "active",
+            "actions": "0/1",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "cpu_back_left"
+          },
+          {
+            "slotKey": "cpu_back_right",
+            "card": "yanbaru",
+            "name": "ヤンバル",
+            "owner": "cpu",
+            "hp": 3,
+            "level": 2,
+            "status": "active",
+            "actions": "0/1",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          }
+        ]
+      },
+      "newLog": [
+        "プレイヤーAI判断: 有効な行動がないためターン終了",
+        "デスシープ Lv1は気合いだめした",
+        "プレイヤーのカード溢れ: 手札を5枚まで捨てる",
+        "プレイヤーは手札上限で黄昏の風を捨てた",
+        "CPUのターン開始",
+        "CPUはストーンを3個得た",
+        "ピグミィ Lv2の防御効果が切れた",
+        "CPUはカードを引いた"
+      ]
+    },
+    {
+      "seed": 994322,
+      "step": 270,
+      "turnNumber": 25,
+      "player": "cpu",
+      "decision": "attack:cpu_back_right:wild_claw->master:player",
+      "reason": "ターン開始時の最大打点2点で詰めろを作れるため攻撃",
+      "score": 138,
+      "legalDecisionCount": 3,
+      "nonEndDecisionCount": 2,
+      "before": {
+        "currentPlayer": "cpu",
+        "turnNumber": 25,
+        "pendingLevelUp": false,
+        "players": {
+          "player": {
+            "masterId": "white",
+            "hp": 4,
+            "stones": 24,
+            "hand": 5,
+            "deck": 1,
+            "discard": 23
+          },
+          "cpu": {
+            "masterId": "white",
+            "hp": 2,
+            "stones": 9,
+            "hand": 6,
+            "deck": 0,
+            "discard": 21
+          }
+        },
+        "slots": [
+          {
+            "slotKey": "player_front_left",
+            "card": "card_133",
+            "name": "デスシープ",
+            "owner": "player",
+            "hp": 6,
+            "level": 1,
+            "status": "active",
+            "actions": "0/1",
+            "focused": true,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "player_front_right"
+          },
+          {
+            "slotKey": "player_back_left"
+          },
+          {
+            "slotKey": "player_back_right"
+          },
+          {
+            "slotKey": "cpu_front_left",
+            "card": "card_051",
+            "name": "ピグミィ",
+            "owner": "cpu",
+            "hp": 3,
+            "level": 2,
+            "status": "active",
+            "actions": "0/2",
+            "focused": true,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "cpu_front_right",
+            "card": "card_133",
+            "name": "デスシープ",
+            "owner": "cpu",
+            "hp": 6,
+            "level": 2,
+            "status": "active",
+            "actions": "0/1",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "cpu_back_left"
+          },
+          {
+            "slotKey": "cpu_back_right",
+            "card": "yanbaru",
+            "name": "ヤンバル",
+            "owner": "cpu",
+            "hp": 3,
+            "level": 2,
+            "status": "active",
+            "actions": "0/1",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          }
+        ]
+      },
+      "after": {
+        "currentPlayer": "cpu",
+        "turnNumber": 25,
+        "pendingLevelUp": false,
+        "players": {
+          "player": {
+            "masterId": "white",
+            "hp": 3,
+            "stones": 25,
+            "hand": 5,
+            "deck": 1,
+            "discard": 23
+          },
+          "cpu": {
+            "masterId": "white",
+            "hp": 2,
+            "stones": 9,
+            "hand": 6,
+            "deck": 0,
+            "discard": 21
+          }
+        },
+        "slots": [
+          {
+            "slotKey": "player_front_left",
+            "card": "card_133",
+            "name": "デスシープ",
+            "owner": "player",
+            "hp": 6,
+            "level": 1,
+            "status": "active",
+            "actions": "0/1",
+            "focused": true,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "player_front_right"
+          },
+          {
+            "slotKey": "player_back_left"
+          },
+          {
+            "slotKey": "player_back_right"
+          },
+          {
+            "slotKey": "cpu_front_left",
+            "card": "card_051",
+            "name": "ピグミィ",
+            "owner": "cpu",
+            "hp": 3,
+            "level": 2,
+            "status": "active",
+            "actions": "0/2",
+            "focused": true,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "cpu_front_right",
+            "card": "card_133",
+            "name": "デスシープ",
+            "owner": "cpu",
+            "hp": 6,
+            "level": 2,
+            "status": "active",
+            "actions": "0/1",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "cpu_back_left"
+          },
+          {
+            "slotKey": "cpu_back_right",
+            "card": "yanbaru",
+            "name": "ヤンバル",
+            "owner": "cpu",
+            "hp": 3,
+            "level": 2,
+            "status": "active",
+            "actions": "1/1",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          }
+        ]
+      },
+      "newLog": [
+        "CPU判断: ターン開始時の最大打点2点で詰めろを作れるため攻撃",
+        "CPUのヤンバル Lv2: ワイルドクロウ 3P",
+        "プレイヤーのマスターHPが1減った（ワイルドクロウ）。ストーン+1"
+      ]
+    },
+    {
+      "seed": 994322,
+      "step": 271,
+      "turnNumber": 25,
+      "player": "cpu",
+      "decision": "attack:cpu_front_right:attack->master:player",
+      "reason": "ターン開始時の最大打点1点で詰めろを作れるため攻撃",
+      "score": 134,
+      "legalDecisionCount": 2,
+      "nonEndDecisionCount": 1,
+      "before": {
+        "currentPlayer": "cpu",
+        "turnNumber": 25,
+        "pendingLevelUp": false,
+        "players": {
+          "player": {
+            "masterId": "white",
+            "hp": 3,
+            "stones": 25,
+            "hand": 5,
+            "deck": 1,
+            "discard": 23
+          },
+          "cpu": {
+            "masterId": "white",
+            "hp": 2,
+            "stones": 9,
+            "hand": 6,
+            "deck": 0,
+            "discard": 21
+          }
+        },
+        "slots": [
+          {
+            "slotKey": "player_front_left",
+            "card": "card_133",
+            "name": "デスシープ",
+            "owner": "player",
+            "hp": 6,
+            "level": 1,
+            "status": "active",
+            "actions": "0/1",
+            "focused": true,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "player_front_right"
+          },
+          {
+            "slotKey": "player_back_left"
+          },
+          {
+            "slotKey": "player_back_right"
+          },
+          {
+            "slotKey": "cpu_front_left",
+            "card": "card_051",
+            "name": "ピグミィ",
+            "owner": "cpu",
+            "hp": 3,
+            "level": 2,
+            "status": "active",
+            "actions": "0/2",
+            "focused": true,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "cpu_front_right",
+            "card": "card_133",
+            "name": "デスシープ",
+            "owner": "cpu",
+            "hp": 6,
+            "level": 2,
+            "status": "active",
+            "actions": "0/1",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "cpu_back_left"
+          },
+          {
+            "slotKey": "cpu_back_right",
+            "card": "yanbaru",
+            "name": "ヤンバル",
+            "owner": "cpu",
+            "hp": 3,
+            "level": 2,
+            "status": "active",
+            "actions": "1/1",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          }
+        ]
+      },
+      "after": {
+        "currentPlayer": "cpu",
+        "turnNumber": 25,
+        "pendingLevelUp": false,
+        "players": {
+          "player": {
+            "masterId": "white",
+            "hp": 2,
+            "stones": 26,
+            "hand": 5,
+            "deck": 1,
+            "discard": 23
+          },
+          "cpu": {
+            "masterId": "white",
+            "hp": 2,
+            "stones": 9,
+            "hand": 6,
+            "deck": 0,
+            "discard": 21
+          }
+        },
+        "slots": [
+          {
+            "slotKey": "player_front_left",
+            "card": "card_133",
+            "name": "デスシープ",
+            "owner": "player",
+            "hp": 6,
+            "level": 1,
+            "status": "active",
+            "actions": "0/1",
+            "focused": true,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "player_front_right"
+          },
+          {
+            "slotKey": "player_back_left"
+          },
+          {
+            "slotKey": "player_back_right"
+          },
+          {
+            "slotKey": "cpu_front_left",
+            "card": "card_051",
+            "name": "ピグミィ",
+            "owner": "cpu",
+            "hp": 3,
+            "level": 2,
+            "status": "active",
+            "actions": "0/2",
+            "focused": true,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "cpu_front_right",
+            "card": "card_133",
+            "name": "デスシープ",
+            "owner": "cpu",
+            "hp": 6,
+            "level": 2,
+            "status": "active",
+            "actions": "1/1",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "cpu_back_left"
+          },
+          {
+            "slotKey": "cpu_back_right",
+            "card": "yanbaru",
+            "name": "ヤンバル",
+            "owner": "cpu",
+            "hp": 3,
+            "level": 2,
+            "status": "active",
+            "actions": "1/1",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          }
+        ]
+      },
+      "newLog": [
+        "CPU判断: ターン開始時の最大打点1点で詰めろを作れるため攻撃",
+        "CPUのデスシープ Lv2: アタック 3P",
+        "プレイヤーのマスターHPが1減った（アタック）。ストーン+1"
+      ]
+    },
+    {
+      "seed": 994322,
+      "step": 272,
+      "turnNumber": 25,
+      "player": "cpu",
+      "decision": "end_turn",
+      "reason": "有効な行動がないためターン終了 / ターンプラン探索: 返し込み最終盤面-750060点",
+      "score": 0,
+      "legalDecisionCount": 1,
+      "nonEndDecisionCount": 0,
+      "before": {
+        "currentPlayer": "cpu",
+        "turnNumber": 25,
+        "pendingLevelUp": false,
+        "players": {
+          "player": {
+            "masterId": "white",
+            "hp": 2,
+            "stones": 26,
+            "hand": 5,
+            "deck": 1,
+            "discard": 23
+          },
+          "cpu": {
+            "masterId": "white",
+            "hp": 2,
+            "stones": 9,
+            "hand": 6,
+            "deck": 0,
+            "discard": 21
+          }
+        },
+        "slots": [
+          {
+            "slotKey": "player_front_left",
+            "card": "card_133",
+            "name": "デスシープ",
+            "owner": "player",
+            "hp": 6,
+            "level": 1,
+            "status": "active",
+            "actions": "0/1",
+            "focused": true,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "player_front_right"
+          },
+          {
+            "slotKey": "player_back_left"
+          },
+          {
+            "slotKey": "player_back_right"
+          },
+          {
+            "slotKey": "cpu_front_left",
+            "card": "card_051",
+            "name": "ピグミィ",
+            "owner": "cpu",
+            "hp": 3,
+            "level": 2,
+            "status": "active",
+            "actions": "0/2",
+            "focused": true,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "cpu_front_right",
+            "card": "card_133",
+            "name": "デスシープ",
+            "owner": "cpu",
+            "hp": 6,
+            "level": 2,
+            "status": "active",
+            "actions": "1/1",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "cpu_back_left"
+          },
+          {
+            "slotKey": "cpu_back_right",
+            "card": "yanbaru",
+            "name": "ヤンバル",
+            "owner": "cpu",
+            "hp": 3,
+            "level": 2,
+            "status": "active",
+            "actions": "1/1",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          }
+        ]
+      },
+      "after": {
+        "currentPlayer": "player",
+        "turnNumber": 26,
+        "pendingLevelUp": false,
+        "players": {
+          "player": {
+            "masterId": "white",
+            "hp": 2,
+            "stones": 29,
+            "hand": 6,
+            "deck": 0,
+            "discard": 23
+          },
+          "cpu": {
+            "masterId": "white",
+            "hp": 2,
+            "stones": 9,
+            "hand": 5,
+            "deck": 0,
+            "discard": 22
+          }
+        },
+        "slots": [
+          {
+            "slotKey": "player_front_left",
+            "card": "card_133",
+            "name": "デスシープ",
+            "owner": "player",
+            "hp": 6,
+            "level": 1,
+            "status": "active",
+            "actions": "0/1",
+            "focused": true,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "player_front_right"
+          },
+          {
+            "slotKey": "player_back_left"
+          },
+          {
+            "slotKey": "player_back_right"
+          },
+          {
+            "slotKey": "cpu_front_left",
+            "card": "card_051",
+            "name": "ピグミィ",
+            "owner": "cpu",
+            "hp": 3,
+            "level": 2,
+            "status": "active",
+            "actions": "0/2",
+            "focused": true,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "cpu_front_right",
+            "card": "card_133",
+            "name": "デスシープ",
+            "owner": "cpu",
+            "hp": 6,
+            "level": 2,
+            "status": "active",
+            "actions": "1/1",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "cpu_back_left"
+          },
+          {
+            "slotKey": "cpu_back_right",
+            "card": "yanbaru",
+            "name": "ヤンバル",
+            "owner": "cpu",
+            "hp": 3,
+            "level": 2,
+            "status": "active",
+            "actions": "1/1",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          }
+        ]
+      },
+      "newLog": [
+        "CPU判断: 有効な行動がないためターン終了 / ターンプラン探索: 返し込み最終盤面-750060点",
+        "CPUのカード溢れ: 手札を5枚まで捨てる",
+        "CPUは手札上限でポリスピナーを捨てた",
+        "プレイヤーのターン開始",
+        "プレイヤーはストーンを3個得た",
+        "プレイヤーはエクスチェンジを引いた"
+      ]
+    },
+    {
+      "seed": 994322,
+      "step": 273,
+      "turnNumber": 26,
+      "player": "player",
+      "decision": "attack:player_front_left:attack->master:cpu",
+      "reason": "相手マスターへ実ダメージを与えられるため攻撃 / 見送り: 攻撃は3500875点差で見送り",
+      "score": 130,
+      "legalDecisionCount": 3,
+      "nonEndDecisionCount": 2,
+      "before": {
+        "currentPlayer": "player",
+        "turnNumber": 26,
+        "pendingLevelUp": false,
+        "players": {
+          "player": {
+            "masterId": "white",
+            "hp": 2,
+            "stones": 29,
+            "hand": 6,
+            "deck": 0,
+            "discard": 23
+          },
+          "cpu": {
+            "masterId": "white",
+            "hp": 2,
+            "stones": 9,
+            "hand": 5,
+            "deck": 0,
+            "discard": 22
+          }
+        },
+        "slots": [
+          {
+            "slotKey": "player_front_left",
+            "card": "card_133",
+            "name": "デスシープ",
+            "owner": "player",
+            "hp": 6,
+            "level": 1,
+            "status": "active",
+            "actions": "0/1",
+            "focused": true,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "player_front_right"
+          },
+          {
+            "slotKey": "player_back_left"
+          },
+          {
+            "slotKey": "player_back_right"
+          },
+          {
+            "slotKey": "cpu_front_left",
+            "card": "card_051",
+            "name": "ピグミィ",
+            "owner": "cpu",
+            "hp": 3,
+            "level": 2,
+            "status": "active",
+            "actions": "0/2",
+            "focused": true,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "cpu_front_right",
+            "card": "card_133",
+            "name": "デスシープ",
+            "owner": "cpu",
+            "hp": 6,
+            "level": 2,
+            "status": "active",
+            "actions": "1/1",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "cpu_back_left"
+          },
+          {
+            "slotKey": "cpu_back_right",
+            "card": "yanbaru",
+            "name": "ヤンバル",
+            "owner": "cpu",
+            "hp": 3,
+            "level": 2,
+            "status": "active",
+            "actions": "1/1",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          }
+        ]
+      },
+      "after": {
+        "currentPlayer": "player",
+        "turnNumber": 26,
+        "pendingLevelUp": false,
+        "players": {
+          "player": {
+            "masterId": "white",
+            "hp": 2,
+            "stones": 29,
+            "hand": 6,
+            "deck": 0,
+            "discard": 23
+          },
+          "cpu": {
+            "masterId": "white",
+            "hp": 1,
+            "stones": 10,
+            "hand": 5,
+            "deck": 0,
+            "discard": 22
+          }
+        },
+        "slots": [
+          {
+            "slotKey": "player_front_left",
+            "card": "card_133",
+            "name": "デスシープ",
+            "owner": "player",
+            "hp": 6,
+            "level": 1,
+            "status": "active",
+            "actions": "1/1",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "player_front_right"
+          },
+          {
+            "slotKey": "player_back_left"
+          },
+          {
+            "slotKey": "player_back_right"
+          },
+          {
+            "slotKey": "cpu_front_left",
+            "card": "card_051",
+            "name": "ピグミィ",
+            "owner": "cpu",
+            "hp": 3,
+            "level": 2,
+            "status": "active",
+            "actions": "0/2",
+            "focused": true,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "cpu_front_right",
+            "card": "card_133",
+            "name": "デスシープ",
+            "owner": "cpu",
+            "hp": 6,
+            "level": 2,
+            "status": "active",
+            "actions": "1/1",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "cpu_back_left"
+          },
+          {
+            "slotKey": "cpu_back_right",
+            "card": "yanbaru",
+            "name": "ヤンバル",
+            "owner": "cpu",
+            "hp": 3,
+            "level": 2,
+            "status": "active",
+            "actions": "1/1",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          }
+        ]
+      },
+      "newLog": [
+        "プレイヤーAI判断: 相手マスターへ実ダメージを与えられるため攻撃 / 見送り: 攻撃は3500875点差で見送り",
+        "プレイヤーのデスシープ Lv1: アタック 3P",
+        "CPUのマスターHPが1減った（アタック）。ストーン+1"
+      ]
+    },
+    {
+      "seed": 994322,
+      "step": 274,
+      "turnNumber": 26,
+      "player": "player",
+      "decision": "end_turn",
+      "reason": "有効な行動がないためターン終了",
+      "score": 0,
+      "legalDecisionCount": 1,
+      "nonEndDecisionCount": 0,
+      "before": {
+        "currentPlayer": "player",
+        "turnNumber": 26,
+        "pendingLevelUp": false,
+        "players": {
+          "player": {
+            "masterId": "white",
+            "hp": 2,
+            "stones": 29,
+            "hand": 6,
+            "deck": 0,
+            "discard": 23
+          },
+          "cpu": {
+            "masterId": "white",
+            "hp": 1,
+            "stones": 10,
+            "hand": 5,
+            "deck": 0,
+            "discard": 22
+          }
+        },
+        "slots": [
+          {
+            "slotKey": "player_front_left",
+            "card": "card_133",
+            "name": "デスシープ",
+            "owner": "player",
+            "hp": 6,
+            "level": 1,
+            "status": "active",
+            "actions": "1/1",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "player_front_right"
+          },
+          {
+            "slotKey": "player_back_left"
+          },
+          {
+            "slotKey": "player_back_right"
+          },
+          {
+            "slotKey": "cpu_front_left",
+            "card": "card_051",
+            "name": "ピグミィ",
+            "owner": "cpu",
+            "hp": 3,
+            "level": 2,
+            "status": "active",
+            "actions": "0/2",
+            "focused": true,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "cpu_front_right",
+            "card": "card_133",
+            "name": "デスシープ",
+            "owner": "cpu",
+            "hp": 6,
+            "level": 2,
+            "status": "active",
+            "actions": "1/1",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "cpu_back_left"
+          },
+          {
+            "slotKey": "cpu_back_right",
+            "card": "yanbaru",
+            "name": "ヤンバル",
+            "owner": "cpu",
+            "hp": 3,
+            "level": 2,
+            "status": "active",
+            "actions": "1/1",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          }
+        ]
+      },
+      "after": {
+        "currentPlayer": "cpu",
+        "turnNumber": 26,
+        "winner": "player",
+        "pendingLevelUp": false,
+        "players": {
+          "player": {
+            "masterId": "white",
+            "hp": 2,
+            "stones": 29,
+            "hand": 5,
+            "deck": 0,
+            "discard": 24
+          },
+          "cpu": {
+            "masterId": "white",
+            "hp": 0,
+            "stones": 14,
+            "hand": 5,
+            "deck": 0,
+            "discard": 22
+          }
+        },
+        "slots": [
+          {
+            "slotKey": "player_front_left",
+            "card": "card_133",
+            "name": "デスシープ",
+            "owner": "player",
+            "hp": 6,
+            "level": 1,
+            "status": "active",
+            "actions": "1/1",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "player_front_right"
+          },
+          {
+            "slotKey": "player_back_left"
+          },
+          {
+            "slotKey": "player_back_right"
+          },
+          {
+            "slotKey": "cpu_front_left",
+            "card": "card_051",
+            "name": "ピグミィ",
+            "owner": "cpu",
+            "hp": 3,
+            "level": 2,
+            "status": "active",
+            "actions": "0/2",
+            "focused": true,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "cpu_front_right",
+            "card": "card_133",
+            "name": "デスシープ",
+            "owner": "cpu",
+            "hp": 6,
+            "level": 2,
+            "status": "active",
+            "actions": "0/1",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "cpu_back_left"
+          },
+          {
+            "slotKey": "cpu_back_right",
+            "card": "yanbaru",
+            "name": "ヤンバル",
+            "owner": "cpu",
+            "hp": 3,
+            "level": 2,
+            "status": "active",
+            "actions": "0/1",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          }
+        ]
+      },
+      "newLog": [
+        "プレイヤーAI判断: 有効な行動がないためターン終了",
+        "プレイヤーのカード溢れ: 手札を5枚まで捨てる",
+        "プレイヤーは手札上限でピグミィを捨てた",
+        "CPUのターン開始",
+        "CPUはストーンを3個得た",
+        "CPUはターン開始で引けず、山札切れペナルティ",
+        "CPUのマスターHPが1減った（山札切れ）。ストーン+1",
+        "プレイヤーの勝利"
+      ]
+    }
+  ]
+}

@@ -1,0 +1,71 @@
+{
+  "generatedAt": "2026-07-06T02:57:49.452Z",
+  "options": {
+    "seed": 994320,
+    "direction": "challenger-as-player",
+    "deckPreset": "master-lab-white-1377-death-sheep3",
+    "step": 101,
+    "markdownPath": "docs/master_lab/results/2026-07-06_white_planner_terminal_plan_994320_step101_current.md",
+    "jsonPath": "docs/master_lab/results/2026-07-06_white_planner_terminal_plan_994320_step101_current.json"
+  },
+  "state": "turn 10 / current player / HP player/cpu 6/8 / stones player/cpu 8/4 / deck player/cpu 16/16 / hand player/cpu 5/5",
+  "board": "player_front_left:PF:真勇者ダイン Lv1 HP6 act0/1 | player_front_right:PF:ヤンバル Lv2 HP3 act0/1 | player_back_left:PB:ピグミィ Lv1 HP3 act0/2 | cpu_front_left:CF:デスシープ Lv1 HP6 act0/1 focus | cpu_front_right:CF:真勇者ダイン Lv3 HP6 act1/1 | cpu_back_left:CB:ピグミィ Lv1 HP3 prep | cpu_back_right:CB:ピグミィ Lv1 HP3 act0/2 focus",
+  "fallback": "master:wake_up->monster:cpu_back_left",
+  "fallbackScore": 621.4,
+  "selected": "focus:真勇者ダイン",
+  "selectedPlannerScore": 157.6,
+  "runnerUpPlannerScore": 153,
+  "adopted": false,
+  "rejectedReason": "terminal plan candidate did not pass adoption gate",
+  "candidates": [
+    {
+      "rank": 1,
+      "selected": true,
+      "decision": "focus:真勇者ダイン",
+      "rootScore": 186.2,
+      "plannerScore": 157.6
+    },
+    {
+      "rank": 2,
+      "selected": false,
+      "decision": "master:wake_up->monster:cpu_back_left",
+      "rootScore": 295,
+      "plannerScore": 153
+    },
+    {
+      "rank": 3,
+      "selected": false,
+      "decision": "attack:ピグミィ:スパイクボール->デスシープ",
+      "rootScore": 92.9,
+      "plannerScore": 72.8
+    },
+    {
+      "rank": 4,
+      "selected": false,
+      "decision": "focus:ピグミィ",
+      "rootScore": 44,
+      "plannerScore": 56.6
+    },
+    {
+      "rank": 5,
+      "selected": false,
+      "decision": "attack:ヤンバル:wild_claw->デスシープ",
+      "rootScore": 6.4,
+      "plannerScore": 29.5
+    },
+    {
+      "rank": 6,
+      "selected": false,
+      "decision": "attack:ヤンバル:wild_claw->ピグミィ",
+      "rootScore": 66,
+      "plannerScore": -57.6
+    },
+    {
+      "rank": 7,
+      "selected": false,
+      "decision": "end_turn",
+      "rootScore": -51.2,
+      "plannerScore": -100
+    }
+  ]
+}

@@ -1,0 +1,7252 @@
+{
+  "direction": "challenger-as-player",
+  "seed": 994320,
+  "winner": "cpu",
+  "winnerProfile": "white",
+  "steps": 150,
+  "turns": 13,
+  "issueCount": 0,
+  "warningCount": 0,
+  "finalState": {
+    "currentPlayer": "cpu",
+    "turnNumber": 13,
+    "winner": "cpu",
+    "pendingLevelUp": false,
+    "players": {
+      "player": {
+        "masterId": "white",
+        "hp": 0,
+        "stones": 5,
+        "hand": 5,
+        "deck": 13,
+        "discard": 9
+      },
+      "cpu": {
+        "masterId": "white",
+        "hp": 6,
+        "stones": 9,
+        "hand": 6,
+        "deck": 12,
+        "discard": 9
+      }
+    },
+    "slots": [
+      {
+        "slotKey": "player_front_left",
+        "card": "card_037",
+        "name": "ドノマンティス",
+        "owner": "player",
+        "hp": 5,
+        "level": 2,
+        "status": "active",
+        "actions": "1/1",
+        "focused": false,
+        "berserkPower": false,
+        "shielded": false
+      },
+      {
+        "slotKey": "player_front_right",
+        "card": "polyspinner",
+        "name": "ポリスピナー",
+        "owner": "player",
+        "hp": 3,
+        "level": 1,
+        "status": "active",
+        "actions": "0/2",
+        "focused": true,
+        "berserkPower": false,
+        "shielded": true
+      },
+      {
+        "slotKey": "player_back_left",
+        "card": "card_051",
+        "name": "ピグミィ",
+        "owner": "player",
+        "hp": 3,
+        "level": 1,
+        "status": "active",
+        "actions": "0/2",
+        "focused": true,
+        "berserkPower": false,
+        "shielded": false
+      },
+      {
+        "slotKey": "player_back_right"
+      },
+      {
+        "slotKey": "cpu_front_left",
+        "card": "card_037",
+        "name": "ドノマンティス",
+        "owner": "cpu",
+        "hp": 5,
+        "level": 1,
+        "status": "active",
+        "actions": "0/1",
+        "focused": false,
+        "berserkPower": false,
+        "shielded": false
+      },
+      {
+        "slotKey": "cpu_front_right",
+        "card": "card_047",
+        "name": "真勇者ダイン",
+        "owner": "cpu",
+        "hp": 5,
+        "level": 3,
+        "status": "active",
+        "actions": "1/1",
+        "focused": false,
+        "berserkPower": false,
+        "shielded": false
+      },
+      {
+        "slotKey": "cpu_back_left"
+      },
+      {
+        "slotKey": "cpu_back_right",
+        "card": "card_051",
+        "name": "ピグミィ",
+        "owner": "cpu",
+        "hp": 2,
+        "level": 1,
+        "status": "active",
+        "actions": "0/2",
+        "focused": true,
+        "berserkPower": false,
+        "shielded": false
+      }
+    ]
+  },
+  "logTail": [
+    "プレイヤーのターン開始",
+    "ポリスピナー Lv1が登場した",
+    "プレイヤーはストーンを3個得た",
+    "プレイヤーはボムゾウを引いた",
+    "プレイヤーAI判断: 相手マスターへ実ダメージを与えられるため攻撃 / ターンプラン探索: 返し込み最終盤面-749477点、次点と32点差",
+    "プレイヤーのドノマンティス Lv2: 呪いの刃 4P",
+    "CPUのマスターHPが2減った（呪いの刃）。ストーン+2",
+    "プレイヤーAI判断: 倒されそうな高価値味方を守るためシールド",
+    "プレイヤーはポリスピナー Lv1にシールドを張った",
+    "プレイヤーAI判断: 有効な行動がないためターン終了 / ターンプラン探索: 返し込み最終盤面-749631点",
+    "ポリスピナー Lv1は気合いだめした",
+    "ピグミィ Lv1は気合いだめした",
+    "CPUのターン開始",
+    "CPUはストーンを3個得た",
+    "ドノマンティス Lv1の防御効果が切れた",
+    "CPUはカードを引いた",
+    "CPU判断: ターン開始時の最大打点で相手マスターを倒せるため攻撃",
+    "CPUの真勇者ダイン Lv3: ダイン斬り 4P",
+    "プレイヤーのマスターHPが2減った（ダイン斬り）。ストーン+2",
+    "CPUの勝利"
+  ],
+  "history": [
+    {
+      "seed": 994320,
+      "step": 119,
+      "turnNumber": 10,
+      "player": "cpu",
+      "decision": "summon:cpu_card_037_1->cpu_back_left",
+      "reason": "カードを後列左へ召喚 / 見送り: マスター特技は50点差で見送り、マスター特技は177点差で見送り",
+      "score": 24,
+      "legalDecisionCount": 4,
+      "nonEndDecisionCount": 3,
+      "before": {
+        "currentPlayer": "cpu",
+        "turnNumber": 10,
+        "pendingLevelUp": false,
+        "players": {
+          "player": {
+            "masterId": "white",
+            "hp": 6,
+            "stones": 3,
+            "hand": 4,
+            "deck": 16,
+            "discard": 8
+          },
+          "cpu": {
+            "masterId": "white",
+            "hp": 8,
+            "stones": 2,
+            "hand": 5,
+            "deck": 15,
+            "discard": 7
+          }
+        },
+        "slots": [
+          {
+            "slotKey": "player_front_left"
+          },
+          {
+            "slotKey": "player_front_right"
+          },
+          {
+            "slotKey": "player_back_left",
+            "card": "card_051",
+            "name": "ピグミィ",
+            "owner": "player",
+            "hp": 3,
+            "level": 1,
+            "status": "active",
+            "actions": "2/2",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "player_back_right",
+            "card": "card_051",
+            "name": "ピグミィ",
+            "owner": "player",
+            "hp": 3,
+            "level": 1,
+            "status": "active",
+            "actions": "2/2",
+            "focused": true,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "cpu_front_left",
+            "card": "card_133",
+            "name": "デスシープ",
+            "owner": "cpu",
+            "hp": 6,
+            "level": 2,
+            "status": "active",
+            "actions": "1/1",
+            "focused": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "cpu_front_right",
+            "card": "card_047",
+            "name": "真勇者ダイン",
+            "owner": "cpu",
+            "hp": 6,
+            "level": 3,
+            "status": "active",
+            "actions": "1/1",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "cpu_back_left"
+          },
+          {
+            "slotKey": "cpu_back_right",
+            "card": "card_051",
+            "name": "ピグミィ",
+            "owner": "cpu",
+            "hp": 3,
+            "level": 1,
+            "status": "active",
+            "actions": "2/2",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          }
+        ]
+      },
+      "after": {
+        "currentPlayer": "cpu",
+        "turnNumber": 10,
+        "pendingLevelUp": false,
+        "players": {
+          "player": {
+            "masterId": "white",
+            "hp": 6,
+            "stones": 3,
+            "hand": 4,
+            "deck": 16,
+            "discard": 8
+          },
+          "cpu": {
+            "masterId": "white",
+            "hp": 8,
+            "stones": 1,
+            "hand": 4,
+            "deck": 15,
+            "discard": 7
+          }
+        },
+        "slots": [
+          {
+            "slotKey": "player_front_left"
+          },
+          {
+            "slotKey": "player_front_right"
+          },
+          {
+            "slotKey": "player_back_left",
+            "card": "card_051",
+            "name": "ピグミィ",
+            "owner": "player",
+            "hp": 3,
+            "level": 1,
+            "status": "active",
+            "actions": "2/2",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "player_back_right",
+            "card": "card_051",
+            "name": "ピグミィ",
+            "owner": "player",
+            "hp": 3,
+            "level": 1,
+            "status": "active",
+            "actions": "2/2",
+            "focused": true,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "cpu_front_left",
+            "card": "card_133",
+            "name": "デスシープ",
+            "owner": "cpu",
+            "hp": 6,
+            "level": 2,
+            "status": "active",
+            "actions": "1/1",
+            "focused": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "cpu_front_right",
+            "card": "card_047",
+            "name": "真勇者ダイン",
+            "owner": "cpu",
+            "hp": 6,
+            "level": 3,
+            "status": "active",
+            "actions": "1/1",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "cpu_back_left",
+            "card": "card_037",
+            "name": "ドノマンティス",
+            "owner": "cpu",
+            "hp": 5,
+            "level": 1,
+            "status": "prepared",
+            "actions": "0/1",
+            "focused": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "cpu_back_right",
+            "card": "card_051",
+            "name": "ピグミィ",
+            "owner": "cpu",
+            "hp": 3,
+            "level": 1,
+            "status": "active",
+            "actions": "2/2",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          }
+        ]
+      },
+      "newLog": [
+        "CPU判断: カードを後列左へ召喚 / 見送り: マスター特技は50点差で見送り、マスター特技は177点差で見送り",
+        "CPUはカードを準備中で召喚した"
+      ]
+    },
+    {
+      "seed": 994320,
+      "step": 120,
+      "turnNumber": 10,
+      "player": "cpu",
+      "decision": "end_turn",
+      "reason": "有効な行動がないためターン終了",
+      "score": 0,
+      "legalDecisionCount": 1,
+      "nonEndDecisionCount": 0,
+      "before": {
+        "currentPlayer": "cpu",
+        "turnNumber": 10,
+        "pendingLevelUp": false,
+        "players": {
+          "player": {
+            "masterId": "white",
+            "hp": 6,
+            "stones": 3,
+            "hand": 4,
+            "deck": 16,
+            "discard": 8
+          },
+          "cpu": {
+            "masterId": "white",
+            "hp": 8,
+            "stones": 1,
+            "hand": 4,
+            "deck": 15,
+            "discard": 7
+          }
+        },
+        "slots": [
+          {
+            "slotKey": "player_front_left"
+          },
+          {
+            "slotKey": "player_front_right"
+          },
+          {
+            "slotKey": "player_back_left",
+            "card": "card_051",
+            "name": "ピグミィ",
+            "owner": "player",
+            "hp": 3,
+            "level": 1,
+            "status": "active",
+            "actions": "2/2",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "player_back_right",
+            "card": "card_051",
+            "name": "ピグミィ",
+            "owner": "player",
+            "hp": 3,
+            "level": 1,
+            "status": "active",
+            "actions": "2/2",
+            "focused": true,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "cpu_front_left",
+            "card": "card_133",
+            "name": "デスシープ",
+            "owner": "cpu",
+            "hp": 6,
+            "level": 2,
+            "status": "active",
+            "actions": "1/1",
+            "focused": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "cpu_front_right",
+            "card": "card_047",
+            "name": "真勇者ダイン",
+            "owner": "cpu",
+            "hp": 6,
+            "level": 3,
+            "status": "active",
+            "actions": "1/1",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "cpu_back_left",
+            "card": "card_037",
+            "name": "ドノマンティス",
+            "owner": "cpu",
+            "hp": 5,
+            "level": 1,
+            "status": "prepared",
+            "actions": "0/1",
+            "focused": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "cpu_back_right",
+            "card": "card_051",
+            "name": "ピグミィ",
+            "owner": "cpu",
+            "hp": 3,
+            "level": 1,
+            "status": "active",
+            "actions": "2/2",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          }
+        ]
+      },
+      "after": {
+        "currentPlayer": "player",
+        "turnNumber": 11,
+        "pendingLevelUp": false,
+        "players": {
+          "player": {
+            "masterId": "white",
+            "hp": 6,
+            "stones": 6,
+            "hand": 5,
+            "deck": 15,
+            "discard": 8
+          },
+          "cpu": {
+            "masterId": "white",
+            "hp": 8,
+            "stones": 1,
+            "hand": 4,
+            "deck": 15,
+            "discard": 7
+          }
+        },
+        "slots": [
+          {
+            "slotKey": "player_front_left",
+            "card": "card_051",
+            "name": "ピグミィ",
+            "owner": "player",
+            "hp": 3,
+            "level": 1,
+            "status": "active",
+            "actions": "0/2",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "player_front_right",
+            "card": "card_051",
+            "name": "ピグミィ",
+            "owner": "player",
+            "hp": 3,
+            "level": 1,
+            "status": "active",
+            "actions": "0/2",
+            "focused": true,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "player_back_left"
+          },
+          {
+            "slotKey": "player_back_right"
+          },
+          {
+            "slotKey": "cpu_front_left",
+            "card": "card_133",
+            "name": "デスシープ",
+            "owner": "cpu",
+            "hp": 6,
+            "level": 2,
+            "status": "active",
+            "actions": "1/1",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "cpu_front_right",
+            "card": "card_047",
+            "name": "真勇者ダイン",
+            "owner": "cpu",
+            "hp": 6,
+            "level": 3,
+            "status": "active",
+            "actions": "1/1",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "cpu_back_left",
+            "card": "card_037",
+            "name": "ドノマンティス",
+            "owner": "cpu",
+            "hp": 5,
+            "level": 1,
+            "status": "prepared",
+            "actions": "0/1",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "cpu_back_right",
+            "card": "card_051",
+            "name": "ピグミィ",
+            "owner": "cpu",
+            "hp": 3,
+            "level": 1,
+            "status": "active",
+            "actions": "2/2",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          }
+        ]
+      },
+      "newLog": [
+        "CPU判断: 有効な行動がないためターン終了",
+        "プレイヤーのターン開始",
+        "ピグミィ Lv1が前衛へ自動移動した",
+        "ピグミィ Lv1が前衛へ自動移動した",
+        "プレイヤーはストーンを3個得た",
+        "プレイヤーはドノマンティスを引いた"
+      ]
+    },
+    {
+      "seed": 994320,
+      "step": 121,
+      "turnNumber": 11,
+      "player": "player",
+      "decision": "focus:player_front_left",
+      "reason": "有効攻撃がないためためる / 見送り: 移動は21点差で見送り、攻撃は31点差で見送り",
+      "score": 26,
+      "legalDecisionCount": 13,
+      "nonEndDecisionCount": 12,
+      "before": {
+        "currentPlayer": "player",
+        "turnNumber": 11,
+        "pendingLevelUp": false,
+        "players": {
+          "player": {
+            "masterId": "white",
+            "hp": 6,
+            "stones": 6,
+            "hand": 5,
+            "deck": 15,
+            "discard": 8
+          },
+          "cpu": {
+            "masterId": "white",
+            "hp": 8,
+            "stones": 1,
+            "hand": 4,
+            "deck": 15,
+            "discard": 7
+          }
+        },
+        "slots": [
+          {
+            "slotKey": "player_front_left",
+            "card": "card_051",
+            "name": "ピグミィ",
+            "owner": "player",
+            "hp": 3,
+            "level": 1,
+            "status": "active",
+            "actions": "0/2",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "player_front_right",
+            "card": "card_051",
+            "name": "ピグミィ",
+            "owner": "player",
+            "hp": 3,
+            "level": 1,
+            "status": "active",
+            "actions": "0/2",
+            "focused": true,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "player_back_left"
+          },
+          {
+            "slotKey": "player_back_right"
+          },
+          {
+            "slotKey": "cpu_front_left",
+            "card": "card_133",
+            "name": "デスシープ",
+            "owner": "cpu",
+            "hp": 6,
+            "level": 2,
+            "status": "active",
+            "actions": "1/1",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "cpu_front_right",
+            "card": "card_047",
+            "name": "真勇者ダイン",
+            "owner": "cpu",
+            "hp": 6,
+            "level": 3,
+            "status": "active",
+            "actions": "1/1",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "cpu_back_left",
+            "card": "card_037",
+            "name": "ドノマンティス",
+            "owner": "cpu",
+            "hp": 5,
+            "level": 1,
+            "status": "prepared",
+            "actions": "0/1",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "cpu_back_right",
+            "card": "card_051",
+            "name": "ピグミィ",
+            "owner": "cpu",
+            "hp": 3,
+            "level": 1,
+            "status": "active",
+            "actions": "2/2",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          }
+        ]
+      },
+      "after": {
+        "currentPlayer": "player",
+        "turnNumber": 11,
+        "pendingLevelUp": false,
+        "players": {
+          "player": {
+            "masterId": "white",
+            "hp": 6,
+            "stones": 6,
+            "hand": 5,
+            "deck": 15,
+            "discard": 8
+          },
+          "cpu": {
+            "masterId": "white",
+            "hp": 8,
+            "stones": 1,
+            "hand": 4,
+            "deck": 15,
+            "discard": 7
+          }
+        },
+        "slots": [
+          {
+            "slotKey": "player_front_left",
+            "card": "card_051",
+            "name": "ピグミィ",
+            "owner": "player",
+            "hp": 3,
+            "level": 1,
+            "status": "active",
+            "actions": "1/2",
+            "focused": true,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "player_front_right",
+            "card": "card_051",
+            "name": "ピグミィ",
+            "owner": "player",
+            "hp": 3,
+            "level": 1,
+            "status": "active",
+            "actions": "0/2",
+            "focused": true,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "player_back_left"
+          },
+          {
+            "slotKey": "player_back_right"
+          },
+          {
+            "slotKey": "cpu_front_left",
+            "card": "card_133",
+            "name": "デスシープ",
+            "owner": "cpu",
+            "hp": 6,
+            "level": 2,
+            "status": "active",
+            "actions": "1/1",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "cpu_front_right",
+            "card": "card_047",
+            "name": "真勇者ダイン",
+            "owner": "cpu",
+            "hp": 6,
+            "level": 3,
+            "status": "active",
+            "actions": "1/1",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "cpu_back_left",
+            "card": "card_037",
+            "name": "ドノマンティス",
+            "owner": "cpu",
+            "hp": 5,
+            "level": 1,
+            "status": "prepared",
+            "actions": "0/1",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "cpu_back_right",
+            "card": "card_051",
+            "name": "ピグミィ",
+            "owner": "cpu",
+            "hp": 3,
+            "level": 1,
+            "status": "active",
+            "actions": "2/2",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          }
+        ]
+      },
+      "newLog": [
+        "プレイヤーAI判断: 有効攻撃がないためためる / 見送り: 移動は21点差で見送り、攻撃は31点差で見送り",
+        "ピグミィ Lv1はためた"
+      ]
+    },
+    {
+      "seed": 994320,
+      "step": 122,
+      "turnNumber": 11,
+      "player": "player",
+      "decision": "attack:player_front_right:スパイクボール->monster:cpu_back_right",
+      "reason": "ピグミィを削れるため攻撃 / 見送り: 攻撃は114点差で見送り、移動は177点差で見送り",
+      "score": 25,
+      "legalDecisionCount": 13,
+      "nonEndDecisionCount": 12,
+      "before": {
+        "currentPlayer": "player",
+        "turnNumber": 11,
+        "pendingLevelUp": false,
+        "players": {
+          "player": {
+            "masterId": "white",
+            "hp": 6,
+            "stones": 6,
+            "hand": 5,
+            "deck": 15,
+            "discard": 8
+          },
+          "cpu": {
+            "masterId": "white",
+            "hp": 8,
+            "stones": 1,
+            "hand": 4,
+            "deck": 15,
+            "discard": 7
+          }
+        },
+        "slots": [
+          {
+            "slotKey": "player_front_left",
+            "card": "card_051",
+            "name": "ピグミィ",
+            "owner": "player",
+            "hp": 3,
+            "level": 1,
+            "status": "active",
+            "actions": "1/2",
+            "focused": true,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "player_front_right",
+            "card": "card_051",
+            "name": "ピグミィ",
+            "owner": "player",
+            "hp": 3,
+            "level": 1,
+            "status": "active",
+            "actions": "0/2",
+            "focused": true,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "player_back_left"
+          },
+          {
+            "slotKey": "player_back_right"
+          },
+          {
+            "slotKey": "cpu_front_left",
+            "card": "card_133",
+            "name": "デスシープ",
+            "owner": "cpu",
+            "hp": 6,
+            "level": 2,
+            "status": "active",
+            "actions": "1/1",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "cpu_front_right",
+            "card": "card_047",
+            "name": "真勇者ダイン",
+            "owner": "cpu",
+            "hp": 6,
+            "level": 3,
+            "status": "active",
+            "actions": "1/1",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "cpu_back_left",
+            "card": "card_037",
+            "name": "ドノマンティス",
+            "owner": "cpu",
+            "hp": 5,
+            "level": 1,
+            "status": "prepared",
+            "actions": "0/1",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "cpu_back_right",
+            "card": "card_051",
+            "name": "ピグミィ",
+            "owner": "cpu",
+            "hp": 3,
+            "level": 1,
+            "status": "active",
+            "actions": "2/2",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          }
+        ]
+      },
+      "after": {
+        "currentPlayer": "player",
+        "turnNumber": 11,
+        "pendingLevelUp": false,
+        "players": {
+          "player": {
+            "masterId": "white",
+            "hp": 6,
+            "stones": 6,
+            "hand": 5,
+            "deck": 15,
+            "discard": 8
+          },
+          "cpu": {
+            "masterId": "white",
+            "hp": 8,
+            "stones": 1,
+            "hand": 4,
+            "deck": 15,
+            "discard": 7
+          }
+        },
+        "slots": [
+          {
+            "slotKey": "player_front_left",
+            "card": "card_051",
+            "name": "ピグミィ",
+            "owner": "player",
+            "hp": 3,
+            "level": 1,
+            "status": "active",
+            "actions": "1/2",
+            "focused": true,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "player_front_right",
+            "card": "card_051",
+            "name": "ピグミィ",
+            "owner": "player",
+            "hp": 3,
+            "level": 1,
+            "status": "active",
+            "actions": "1/2",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "player_back_left"
+          },
+          {
+            "slotKey": "player_back_right"
+          },
+          {
+            "slotKey": "cpu_front_left",
+            "card": "card_133",
+            "name": "デスシープ",
+            "owner": "cpu",
+            "hp": 6,
+            "level": 2,
+            "status": "active",
+            "actions": "1/1",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "cpu_front_right",
+            "card": "card_047",
+            "name": "真勇者ダイン",
+            "owner": "cpu",
+            "hp": 6,
+            "level": 3,
+            "status": "active",
+            "actions": "1/1",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "cpu_back_left",
+            "card": "card_037",
+            "name": "ドノマンティス",
+            "owner": "cpu",
+            "hp": 5,
+            "level": 1,
+            "status": "prepared",
+            "actions": "0/1",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "cpu_back_right",
+            "card": "card_051",
+            "name": "ピグミィ",
+            "owner": "cpu",
+            "hp": 2,
+            "level": 1,
+            "status": "active",
+            "actions": "2/2",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          }
+        ]
+      },
+      "newLog": [
+        "プレイヤーAI判断: ピグミィを削れるため攻撃 / 見送り: 攻撃は114点差で見送り、移動は177点差で見送り",
+        "プレイヤーのピグミィ Lv1: スパイクボール 1P",
+        "スパイクボールでピグミィ Lv1に1ダメージ"
+      ]
+    },
+    {
+      "seed": 994320,
+      "step": 123,
+      "turnNumber": 11,
+      "player": "player",
+      "decision": "focus:player_front_right",
+      "reason": "有効攻撃がないためためる / 見送り: 移動は4点差で見送り、攻撃は127点差で見送り",
+      "score": 26,
+      "legalDecisionCount": 13,
+      "nonEndDecisionCount": 12,
+      "before": {
+        "currentPlayer": "player",
+        "turnNumber": 11,
+        "pendingLevelUp": false,
+        "players": {
+          "player": {
+            "masterId": "white",
+            "hp": 6,
+            "stones": 6,
+            "hand": 5,
+            "deck": 15,
+            "discard": 8
+          },
+          "cpu": {
+            "masterId": "white",
+            "hp": 8,
+            "stones": 1,
+            "hand": 4,
+            "deck": 15,
+            "discard": 7
+          }
+        },
+        "slots": [
+          {
+            "slotKey": "player_front_left",
+            "card": "card_051",
+            "name": "ピグミィ",
+            "owner": "player",
+            "hp": 3,
+            "level": 1,
+            "status": "active",
+            "actions": "1/2",
+            "focused": true,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "player_front_right",
+            "card": "card_051",
+            "name": "ピグミィ",
+            "owner": "player",
+            "hp": 3,
+            "level": 1,
+            "status": "active",
+            "actions": "1/2",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "player_back_left"
+          },
+          {
+            "slotKey": "player_back_right"
+          },
+          {
+            "slotKey": "cpu_front_left",
+            "card": "card_133",
+            "name": "デスシープ",
+            "owner": "cpu",
+            "hp": 6,
+            "level": 2,
+            "status": "active",
+            "actions": "1/1",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "cpu_front_right",
+            "card": "card_047",
+            "name": "真勇者ダイン",
+            "owner": "cpu",
+            "hp": 6,
+            "level": 3,
+            "status": "active",
+            "actions": "1/1",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "cpu_back_left",
+            "card": "card_037",
+            "name": "ドノマンティス",
+            "owner": "cpu",
+            "hp": 5,
+            "level": 1,
+            "status": "prepared",
+            "actions": "0/1",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "cpu_back_right",
+            "card": "card_051",
+            "name": "ピグミィ",
+            "owner": "cpu",
+            "hp": 2,
+            "level": 1,
+            "status": "active",
+            "actions": "2/2",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          }
+        ]
+      },
+      "after": {
+        "currentPlayer": "player",
+        "turnNumber": 11,
+        "pendingLevelUp": false,
+        "players": {
+          "player": {
+            "masterId": "white",
+            "hp": 6,
+            "stones": 6,
+            "hand": 5,
+            "deck": 15,
+            "discard": 8
+          },
+          "cpu": {
+            "masterId": "white",
+            "hp": 8,
+            "stones": 1,
+            "hand": 4,
+            "deck": 15,
+            "discard": 7
+          }
+        },
+        "slots": [
+          {
+            "slotKey": "player_front_left",
+            "card": "card_051",
+            "name": "ピグミィ",
+            "owner": "player",
+            "hp": 3,
+            "level": 1,
+            "status": "active",
+            "actions": "1/2",
+            "focused": true,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "player_front_right",
+            "card": "card_051",
+            "name": "ピグミィ",
+            "owner": "player",
+            "hp": 3,
+            "level": 1,
+            "status": "active",
+            "actions": "2/2",
+            "focused": true,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "player_back_left"
+          },
+          {
+            "slotKey": "player_back_right"
+          },
+          {
+            "slotKey": "cpu_front_left",
+            "card": "card_133",
+            "name": "デスシープ",
+            "owner": "cpu",
+            "hp": 6,
+            "level": 2,
+            "status": "active",
+            "actions": "1/1",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "cpu_front_right",
+            "card": "card_047",
+            "name": "真勇者ダイン",
+            "owner": "cpu",
+            "hp": 6,
+            "level": 3,
+            "status": "active",
+            "actions": "1/1",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "cpu_back_left",
+            "card": "card_037",
+            "name": "ドノマンティス",
+            "owner": "cpu",
+            "hp": 5,
+            "level": 1,
+            "status": "prepared",
+            "actions": "0/1",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "cpu_back_right",
+            "card": "card_051",
+            "name": "ピグミィ",
+            "owner": "cpu",
+            "hp": 2,
+            "level": 1,
+            "status": "active",
+            "actions": "2/2",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          }
+        ]
+      },
+      "newLog": [
+        "プレイヤーAI判断: 有効攻撃がないためためる / 見送り: 移動は4点差で見送り、攻撃は127点差で見送り",
+        "ピグミィ Lv1はためた"
+      ]
+    },
+    {
+      "seed": 994320,
+      "step": 124,
+      "turnNumber": 11,
+      "player": "player",
+      "decision": "summon:player_card_037_3->player_back_left",
+      "reason": "ドノマンティスを空き枠へ召喚 / 見送り: 召喚は1点差で見送り、移動は17点差で見送り",
+      "score": 24,
+      "legalDecisionCount": 8,
+      "nonEndDecisionCount": 7,
+      "before": {
+        "currentPlayer": "player",
+        "turnNumber": 11,
+        "pendingLevelUp": false,
+        "players": {
+          "player": {
+            "masterId": "white",
+            "hp": 6,
+            "stones": 6,
+            "hand": 5,
+            "deck": 15,
+            "discard": 8
+          },
+          "cpu": {
+            "masterId": "white",
+            "hp": 8,
+            "stones": 1,
+            "hand": 4,
+            "deck": 15,
+            "discard": 7
+          }
+        },
+        "slots": [
+          {
+            "slotKey": "player_front_left",
+            "card": "card_051",
+            "name": "ピグミィ",
+            "owner": "player",
+            "hp": 3,
+            "level": 1,
+            "status": "active",
+            "actions": "1/2",
+            "focused": true,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "player_front_right",
+            "card": "card_051",
+            "name": "ピグミィ",
+            "owner": "player",
+            "hp": 3,
+            "level": 1,
+            "status": "active",
+            "actions": "2/2",
+            "focused": true,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "player_back_left"
+          },
+          {
+            "slotKey": "player_back_right"
+          },
+          {
+            "slotKey": "cpu_front_left",
+            "card": "card_133",
+            "name": "デスシープ",
+            "owner": "cpu",
+            "hp": 6,
+            "level": 2,
+            "status": "active",
+            "actions": "1/1",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "cpu_front_right",
+            "card": "card_047",
+            "name": "真勇者ダイン",
+            "owner": "cpu",
+            "hp": 6,
+            "level": 3,
+            "status": "active",
+            "actions": "1/1",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "cpu_back_left",
+            "card": "card_037",
+            "name": "ドノマンティス",
+            "owner": "cpu",
+            "hp": 5,
+            "level": 1,
+            "status": "prepared",
+            "actions": "0/1",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "cpu_back_right",
+            "card": "card_051",
+            "name": "ピグミィ",
+            "owner": "cpu",
+            "hp": 2,
+            "level": 1,
+            "status": "active",
+            "actions": "2/2",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          }
+        ]
+      },
+      "after": {
+        "currentPlayer": "player",
+        "turnNumber": 11,
+        "pendingLevelUp": false,
+        "players": {
+          "player": {
+            "masterId": "white",
+            "hp": 6,
+            "stones": 5,
+            "hand": 4,
+            "deck": 15,
+            "discard": 8
+          },
+          "cpu": {
+            "masterId": "white",
+            "hp": 8,
+            "stones": 1,
+            "hand": 4,
+            "deck": 15,
+            "discard": 7
+          }
+        },
+        "slots": [
+          {
+            "slotKey": "player_front_left",
+            "card": "card_051",
+            "name": "ピグミィ",
+            "owner": "player",
+            "hp": 3,
+            "level": 1,
+            "status": "active",
+            "actions": "1/2",
+            "focused": true,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "player_front_right",
+            "card": "card_051",
+            "name": "ピグミィ",
+            "owner": "player",
+            "hp": 3,
+            "level": 1,
+            "status": "active",
+            "actions": "2/2",
+            "focused": true,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "player_back_left",
+            "card": "card_037",
+            "name": "ドノマンティス",
+            "owner": "player",
+            "hp": 5,
+            "level": 1,
+            "status": "prepared",
+            "actions": "0/1",
+            "focused": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "player_back_right"
+          },
+          {
+            "slotKey": "cpu_front_left",
+            "card": "card_133",
+            "name": "デスシープ",
+            "owner": "cpu",
+            "hp": 6,
+            "level": 2,
+            "status": "active",
+            "actions": "1/1",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "cpu_front_right",
+            "card": "card_047",
+            "name": "真勇者ダイン",
+            "owner": "cpu",
+            "hp": 6,
+            "level": 3,
+            "status": "active",
+            "actions": "1/1",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "cpu_back_left",
+            "card": "card_037",
+            "name": "ドノマンティス",
+            "owner": "cpu",
+            "hp": 5,
+            "level": 1,
+            "status": "prepared",
+            "actions": "0/1",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "cpu_back_right",
+            "card": "card_051",
+            "name": "ピグミィ",
+            "owner": "cpu",
+            "hp": 2,
+            "level": 1,
+            "status": "active",
+            "actions": "2/2",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          }
+        ]
+      },
+      "newLog": [
+        "プレイヤーAI判断: ドノマンティスを空き枠へ召喚 / 見送り: 召喚は1点差で見送り、移動は17点差で見送り",
+        "プレイヤーはドノマンティスを準備中で召喚した"
+      ]
+    },
+    {
+      "seed": 994320,
+      "step": 125,
+      "turnNumber": 11,
+      "player": "player",
+      "decision": "move:player_front_left->player_back_right",
+      "reason": "後衛カードを後列へ戻して射程を活かすため移動 / ターンプラン探索: 返し込み最終盤面-76点、次点と124点差",
+      "score": 86,
+      "legalDecisionCount": 5,
+      "nonEndDecisionCount": 4,
+      "before": {
+        "currentPlayer": "player",
+        "turnNumber": 11,
+        "pendingLevelUp": false,
+        "players": {
+          "player": {
+            "masterId": "white",
+            "hp": 6,
+            "stones": 5,
+            "hand": 4,
+            "deck": 15,
+            "discard": 8
+          },
+          "cpu": {
+            "masterId": "white",
+            "hp": 8,
+            "stones": 1,
+            "hand": 4,
+            "deck": 15,
+            "discard": 7
+          }
+        },
+        "slots": [
+          {
+            "slotKey": "player_front_left",
+            "card": "card_051",
+            "name": "ピグミィ",
+            "owner": "player",
+            "hp": 3,
+            "level": 1,
+            "status": "active",
+            "actions": "1/2",
+            "focused": true,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "player_front_right",
+            "card": "card_051",
+            "name": "ピグミィ",
+            "owner": "player",
+            "hp": 3,
+            "level": 1,
+            "status": "active",
+            "actions": "2/2",
+            "focused": true,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "player_back_left",
+            "card": "card_037",
+            "name": "ドノマンティス",
+            "owner": "player",
+            "hp": 5,
+            "level": 1,
+            "status": "prepared",
+            "actions": "0/1",
+            "focused": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "player_back_right"
+          },
+          {
+            "slotKey": "cpu_front_left",
+            "card": "card_133",
+            "name": "デスシープ",
+            "owner": "cpu",
+            "hp": 6,
+            "level": 2,
+            "status": "active",
+            "actions": "1/1",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "cpu_front_right",
+            "card": "card_047",
+            "name": "真勇者ダイン",
+            "owner": "cpu",
+            "hp": 6,
+            "level": 3,
+            "status": "active",
+            "actions": "1/1",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "cpu_back_left",
+            "card": "card_037",
+            "name": "ドノマンティス",
+            "owner": "cpu",
+            "hp": 5,
+            "level": 1,
+            "status": "prepared",
+            "actions": "0/1",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "cpu_back_right",
+            "card": "card_051",
+            "name": "ピグミィ",
+            "owner": "cpu",
+            "hp": 2,
+            "level": 1,
+            "status": "active",
+            "actions": "2/2",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          }
+        ]
+      },
+      "after": {
+        "currentPlayer": "player",
+        "turnNumber": 11,
+        "pendingLevelUp": false,
+        "players": {
+          "player": {
+            "masterId": "white",
+            "hp": 6,
+            "stones": 5,
+            "hand": 4,
+            "deck": 15,
+            "discard": 8
+          },
+          "cpu": {
+            "masterId": "white",
+            "hp": 8,
+            "stones": 1,
+            "hand": 4,
+            "deck": 15,
+            "discard": 7
+          }
+        },
+        "slots": [
+          {
+            "slotKey": "player_front_left"
+          },
+          {
+            "slotKey": "player_front_right",
+            "card": "card_051",
+            "name": "ピグミィ",
+            "owner": "player",
+            "hp": 3,
+            "level": 1,
+            "status": "active",
+            "actions": "2/2",
+            "focused": true,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "player_back_left",
+            "card": "card_037",
+            "name": "ドノマンティス",
+            "owner": "player",
+            "hp": 5,
+            "level": 1,
+            "status": "prepared",
+            "actions": "0/1",
+            "focused": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "player_back_right",
+            "card": "card_051",
+            "name": "ピグミィ",
+            "owner": "player",
+            "hp": 3,
+            "level": 1,
+            "status": "active",
+            "actions": "2/2",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "cpu_front_left",
+            "card": "card_133",
+            "name": "デスシープ",
+            "owner": "cpu",
+            "hp": 6,
+            "level": 2,
+            "status": "active",
+            "actions": "1/1",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "cpu_front_right",
+            "card": "card_047",
+            "name": "真勇者ダイン",
+            "owner": "cpu",
+            "hp": 6,
+            "level": 3,
+            "status": "active",
+            "actions": "1/1",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "cpu_back_left",
+            "card": "card_037",
+            "name": "ドノマンティス",
+            "owner": "cpu",
+            "hp": 5,
+            "level": 1,
+            "status": "prepared",
+            "actions": "0/1",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "cpu_back_right",
+            "card": "card_051",
+            "name": "ピグミィ",
+            "owner": "cpu",
+            "hp": 2,
+            "level": 1,
+            "status": "active",
+            "actions": "2/2",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          }
+        ]
+      },
+      "newLog": [
+        "プレイヤーAI判断: 後衛カードを後列へ戻して射程を活かすため移動 / ターンプラン探索: 返し込み最終盤面-76点、次点と124点差",
+        "ピグミィ Lv1を移動した"
+      ]
+    },
+    {
+      "seed": 994320,
+      "step": 126,
+      "turnNumber": 11,
+      "player": "player",
+      "decision": "master:master_attack->monster:cpu_front_left",
+      "reason": "ストーンに余裕があり敵を削れるためマスターアタック / 見送り: マスター特技は340点差で見送り",
+      "score": 2,
+      "legalDecisionCount": 3,
+      "nonEndDecisionCount": 2,
+      "before": {
+        "currentPlayer": "player",
+        "turnNumber": 11,
+        "pendingLevelUp": false,
+        "players": {
+          "player": {
+            "masterId": "white",
+            "hp": 6,
+            "stones": 5,
+            "hand": 4,
+            "deck": 15,
+            "discard": 8
+          },
+          "cpu": {
+            "masterId": "white",
+            "hp": 8,
+            "stones": 1,
+            "hand": 4,
+            "deck": 15,
+            "discard": 7
+          }
+        },
+        "slots": [
+          {
+            "slotKey": "player_front_left"
+          },
+          {
+            "slotKey": "player_front_right",
+            "card": "card_051",
+            "name": "ピグミィ",
+            "owner": "player",
+            "hp": 3,
+            "level": 1,
+            "status": "active",
+            "actions": "2/2",
+            "focused": true,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "player_back_left",
+            "card": "card_037",
+            "name": "ドノマンティス",
+            "owner": "player",
+            "hp": 5,
+            "level": 1,
+            "status": "prepared",
+            "actions": "0/1",
+            "focused": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "player_back_right",
+            "card": "card_051",
+            "name": "ピグミィ",
+            "owner": "player",
+            "hp": 3,
+            "level": 1,
+            "status": "active",
+            "actions": "2/2",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "cpu_front_left",
+            "card": "card_133",
+            "name": "デスシープ",
+            "owner": "cpu",
+            "hp": 6,
+            "level": 2,
+            "status": "active",
+            "actions": "1/1",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "cpu_front_right",
+            "card": "card_047",
+            "name": "真勇者ダイン",
+            "owner": "cpu",
+            "hp": 6,
+            "level": 3,
+            "status": "active",
+            "actions": "1/1",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "cpu_back_left",
+            "card": "card_037",
+            "name": "ドノマンティス",
+            "owner": "cpu",
+            "hp": 5,
+            "level": 1,
+            "status": "prepared",
+            "actions": "0/1",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "cpu_back_right",
+            "card": "card_051",
+            "name": "ピグミィ",
+            "owner": "cpu",
+            "hp": 2,
+            "level": 1,
+            "status": "active",
+            "actions": "2/2",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          }
+        ]
+      },
+      "after": {
+        "currentPlayer": "player",
+        "turnNumber": 11,
+        "pendingLevelUp": false,
+        "players": {
+          "player": {
+            "masterId": "white",
+            "hp": 6,
+            "stones": 2,
+            "hand": 4,
+            "deck": 15,
+            "discard": 8
+          },
+          "cpu": {
+            "masterId": "white",
+            "hp": 8,
+            "stones": 1,
+            "hand": 4,
+            "deck": 15,
+            "discard": 7
+          }
+        },
+        "slots": [
+          {
+            "slotKey": "player_front_left"
+          },
+          {
+            "slotKey": "player_front_right",
+            "card": "card_051",
+            "name": "ピグミィ",
+            "owner": "player",
+            "hp": 3,
+            "level": 1,
+            "status": "active",
+            "actions": "2/2",
+            "focused": true,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "player_back_left",
+            "card": "card_037",
+            "name": "ドノマンティス",
+            "owner": "player",
+            "hp": 5,
+            "level": 1,
+            "status": "prepared",
+            "actions": "0/1",
+            "focused": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "player_back_right",
+            "card": "card_051",
+            "name": "ピグミィ",
+            "owner": "player",
+            "hp": 3,
+            "level": 1,
+            "status": "active",
+            "actions": "2/2",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "cpu_front_left",
+            "card": "card_133",
+            "name": "デスシープ",
+            "owner": "cpu",
+            "hp": 4,
+            "level": 2,
+            "status": "active",
+            "actions": "1/1",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "cpu_front_right",
+            "card": "card_047",
+            "name": "真勇者ダイン",
+            "owner": "cpu",
+            "hp": 6,
+            "level": 3,
+            "status": "active",
+            "actions": "1/1",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "cpu_back_left",
+            "card": "card_037",
+            "name": "ドノマンティス",
+            "owner": "cpu",
+            "hp": 5,
+            "level": 1,
+            "status": "prepared",
+            "actions": "0/1",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "cpu_back_right",
+            "card": "card_051",
+            "name": "ピグミィ",
+            "owner": "cpu",
+            "hp": 2,
+            "level": 1,
+            "status": "active",
+            "actions": "2/2",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          }
+        ]
+      },
+      "newLog": [
+        "プレイヤーAI判断: ストーンに余裕があり敵を削れるためマスターアタック / 見送り: マスター特技は340点差で見送り",
+        "プレイヤーのマスターアタック",
+        "マスターアタックでデスシープ Lv2に2ダメージ"
+      ]
+    },
+    {
+      "seed": 994320,
+      "step": 127,
+      "turnNumber": 11,
+      "player": "player",
+      "decision": "master:shield->monster:player_front_right",
+      "reason": "致死圏の味方を守れるためシールド",
+      "score": 113.46000000000001,
+      "legalDecisionCount": 2,
+      "nonEndDecisionCount": 1,
+      "before": {
+        "currentPlayer": "player",
+        "turnNumber": 11,
+        "pendingLevelUp": false,
+        "players": {
+          "player": {
+            "masterId": "white",
+            "hp": 6,
+            "stones": 2,
+            "hand": 4,
+            "deck": 15,
+            "discard": 8
+          },
+          "cpu": {
+            "masterId": "white",
+            "hp": 8,
+            "stones": 1,
+            "hand": 4,
+            "deck": 15,
+            "discard": 7
+          }
+        },
+        "slots": [
+          {
+            "slotKey": "player_front_left"
+          },
+          {
+            "slotKey": "player_front_right",
+            "card": "card_051",
+            "name": "ピグミィ",
+            "owner": "player",
+            "hp": 3,
+            "level": 1,
+            "status": "active",
+            "actions": "2/2",
+            "focused": true,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "player_back_left",
+            "card": "card_037",
+            "name": "ドノマンティス",
+            "owner": "player",
+            "hp": 5,
+            "level": 1,
+            "status": "prepared",
+            "actions": "0/1",
+            "focused": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "player_back_right",
+            "card": "card_051",
+            "name": "ピグミィ",
+            "owner": "player",
+            "hp": 3,
+            "level": 1,
+            "status": "active",
+            "actions": "2/2",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "cpu_front_left",
+            "card": "card_133",
+            "name": "デスシープ",
+            "owner": "cpu",
+            "hp": 4,
+            "level": 2,
+            "status": "active",
+            "actions": "1/1",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "cpu_front_right",
+            "card": "card_047",
+            "name": "真勇者ダイン",
+            "owner": "cpu",
+            "hp": 6,
+            "level": 3,
+            "status": "active",
+            "actions": "1/1",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "cpu_back_left",
+            "card": "card_037",
+            "name": "ドノマンティス",
+            "owner": "cpu",
+            "hp": 5,
+            "level": 1,
+            "status": "prepared",
+            "actions": "0/1",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "cpu_back_right",
+            "card": "card_051",
+            "name": "ピグミィ",
+            "owner": "cpu",
+            "hp": 2,
+            "level": 1,
+            "status": "active",
+            "actions": "2/2",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          }
+        ]
+      },
+      "after": {
+        "currentPlayer": "player",
+        "turnNumber": 11,
+        "pendingLevelUp": false,
+        "players": {
+          "player": {
+            "masterId": "white",
+            "hp": 6,
+            "stones": 0,
+            "hand": 4,
+            "deck": 15,
+            "discard": 8
+          },
+          "cpu": {
+            "masterId": "white",
+            "hp": 8,
+            "stones": 1,
+            "hand": 4,
+            "deck": 15,
+            "discard": 7
+          }
+        },
+        "slots": [
+          {
+            "slotKey": "player_front_left"
+          },
+          {
+            "slotKey": "player_front_right",
+            "card": "card_051",
+            "name": "ピグミィ",
+            "owner": "player",
+            "hp": 3,
+            "level": 1,
+            "status": "active",
+            "actions": "2/2",
+            "focused": true,
+            "berserkPower": false,
+            "shielded": true
+          },
+          {
+            "slotKey": "player_back_left",
+            "card": "card_037",
+            "name": "ドノマンティス",
+            "owner": "player",
+            "hp": 5,
+            "level": 1,
+            "status": "prepared",
+            "actions": "0/1",
+            "focused": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "player_back_right",
+            "card": "card_051",
+            "name": "ピグミィ",
+            "owner": "player",
+            "hp": 3,
+            "level": 1,
+            "status": "active",
+            "actions": "2/2",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "cpu_front_left",
+            "card": "card_133",
+            "name": "デスシープ",
+            "owner": "cpu",
+            "hp": 4,
+            "level": 2,
+            "status": "active",
+            "actions": "1/1",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "cpu_front_right",
+            "card": "card_047",
+            "name": "真勇者ダイン",
+            "owner": "cpu",
+            "hp": 6,
+            "level": 3,
+            "status": "active",
+            "actions": "1/1",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "cpu_back_left",
+            "card": "card_037",
+            "name": "ドノマンティス",
+            "owner": "cpu",
+            "hp": 5,
+            "level": 1,
+            "status": "prepared",
+            "actions": "0/1",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "cpu_back_right",
+            "card": "card_051",
+            "name": "ピグミィ",
+            "owner": "cpu",
+            "hp": 2,
+            "level": 1,
+            "status": "active",
+            "actions": "2/2",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          }
+        ]
+      },
+      "newLog": [
+        "プレイヤーAI判断: 致死圏の味方を守れるためシールド",
+        "プレイヤーはピグミィ Lv1にシールドを張った"
+      ]
+    },
+    {
+      "seed": 994320,
+      "step": 128,
+      "turnNumber": 11,
+      "player": "player",
+      "decision": "end_turn",
+      "reason": "有効な行動がないためターン終了 / ターンプラン探索: 返し込み最終盤面-173点",
+      "score": 0,
+      "legalDecisionCount": 1,
+      "nonEndDecisionCount": 0,
+      "before": {
+        "currentPlayer": "player",
+        "turnNumber": 11,
+        "pendingLevelUp": false,
+        "players": {
+          "player": {
+            "masterId": "white",
+            "hp": 6,
+            "stones": 0,
+            "hand": 4,
+            "deck": 15,
+            "discard": 8
+          },
+          "cpu": {
+            "masterId": "white",
+            "hp": 8,
+            "stones": 1,
+            "hand": 4,
+            "deck": 15,
+            "discard": 7
+          }
+        },
+        "slots": [
+          {
+            "slotKey": "player_front_left"
+          },
+          {
+            "slotKey": "player_front_right",
+            "card": "card_051",
+            "name": "ピグミィ",
+            "owner": "player",
+            "hp": 3,
+            "level": 1,
+            "status": "active",
+            "actions": "2/2",
+            "focused": true,
+            "berserkPower": false,
+            "shielded": true
+          },
+          {
+            "slotKey": "player_back_left",
+            "card": "card_037",
+            "name": "ドノマンティス",
+            "owner": "player",
+            "hp": 5,
+            "level": 1,
+            "status": "prepared",
+            "actions": "0/1",
+            "focused": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "player_back_right",
+            "card": "card_051",
+            "name": "ピグミィ",
+            "owner": "player",
+            "hp": 3,
+            "level": 1,
+            "status": "active",
+            "actions": "2/2",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "cpu_front_left",
+            "card": "card_133",
+            "name": "デスシープ",
+            "owner": "cpu",
+            "hp": 4,
+            "level": 2,
+            "status": "active",
+            "actions": "1/1",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "cpu_front_right",
+            "card": "card_047",
+            "name": "真勇者ダイン",
+            "owner": "cpu",
+            "hp": 6,
+            "level": 3,
+            "status": "active",
+            "actions": "1/1",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "cpu_back_left",
+            "card": "card_037",
+            "name": "ドノマンティス",
+            "owner": "cpu",
+            "hp": 5,
+            "level": 1,
+            "status": "prepared",
+            "actions": "0/1",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "cpu_back_right",
+            "card": "card_051",
+            "name": "ピグミィ",
+            "owner": "cpu",
+            "hp": 2,
+            "level": 1,
+            "status": "active",
+            "actions": "2/2",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          }
+        ]
+      },
+      "after": {
+        "currentPlayer": "cpu",
+        "turnNumber": 11,
+        "pendingLevelUp": false,
+        "players": {
+          "player": {
+            "masterId": "white",
+            "hp": 6,
+            "stones": 0,
+            "hand": 4,
+            "deck": 15,
+            "discard": 8
+          },
+          "cpu": {
+            "masterId": "white",
+            "hp": 8,
+            "stones": 4,
+            "hand": 5,
+            "deck": 14,
+            "discard": 7
+          }
+        },
+        "slots": [
+          {
+            "slotKey": "player_front_left"
+          },
+          {
+            "slotKey": "player_front_right",
+            "card": "card_051",
+            "name": "ピグミィ",
+            "owner": "player",
+            "hp": 3,
+            "level": 1,
+            "status": "active",
+            "actions": "2/2",
+            "focused": true,
+            "berserkPower": false,
+            "shielded": true
+          },
+          {
+            "slotKey": "player_back_left",
+            "card": "card_037",
+            "name": "ドノマンティス",
+            "owner": "player",
+            "hp": 5,
+            "level": 1,
+            "status": "prepared",
+            "actions": "0/1",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "player_back_right",
+            "card": "card_051",
+            "name": "ピグミィ",
+            "owner": "player",
+            "hp": 3,
+            "level": 1,
+            "status": "active",
+            "actions": "2/2",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "cpu_front_left",
+            "card": "card_133",
+            "name": "デスシープ",
+            "owner": "cpu",
+            "hp": 4,
+            "level": 2,
+            "status": "active",
+            "actions": "0/1",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "cpu_front_right",
+            "card": "card_047",
+            "name": "真勇者ダイン",
+            "owner": "cpu",
+            "hp": 6,
+            "level": 3,
+            "status": "active",
+            "actions": "0/1",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "cpu_back_left",
+            "card": "card_037",
+            "name": "ドノマンティス",
+            "owner": "cpu",
+            "hp": 5,
+            "level": 1,
+            "status": "active",
+            "actions": "0/1",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "cpu_back_right",
+            "card": "card_051",
+            "name": "ピグミィ",
+            "owner": "cpu",
+            "hp": 2,
+            "level": 1,
+            "status": "active",
+            "actions": "0/2",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          }
+        ]
+      },
+      "newLog": [
+        "プレイヤーAI判断: 有効な行動がないためターン終了 / ターンプラン探索: 返し込み最終盤面-173点",
+        "CPUのターン開始",
+        "ドノマンティス Lv1が登場した",
+        "CPUはストーンを3個得た",
+        "CPUはカードを引いた"
+      ]
+    },
+    {
+      "seed": 994320,
+      "step": 129,
+      "turnNumber": 11,
+      "player": "cpu",
+      "decision": "attack:cpu_front_left:attack->master:player",
+      "reason": "相手マスターへ実ダメージを与えられるため攻撃 / 見送り: 攻撃は276点差で見送り、ためるは403点差で見送り",
+      "score": 94,
+      "legalDecisionCount": 10,
+      "nonEndDecisionCount": 9,
+      "before": {
+        "currentPlayer": "cpu",
+        "turnNumber": 11,
+        "pendingLevelUp": false,
+        "players": {
+          "player": {
+            "masterId": "white",
+            "hp": 6,
+            "stones": 0,
+            "hand": 4,
+            "deck": 15,
+            "discard": 8
+          },
+          "cpu": {
+            "masterId": "white",
+            "hp": 8,
+            "stones": 4,
+            "hand": 5,
+            "deck": 14,
+            "discard": 7
+          }
+        },
+        "slots": [
+          {
+            "slotKey": "player_front_left"
+          },
+          {
+            "slotKey": "player_front_right",
+            "card": "card_051",
+            "name": "ピグミィ",
+            "owner": "player",
+            "hp": 3,
+            "level": 1,
+            "status": "active",
+            "actions": "2/2",
+            "focused": true,
+            "berserkPower": false,
+            "shielded": true
+          },
+          {
+            "slotKey": "player_back_left",
+            "card": "card_037",
+            "name": "ドノマンティス",
+            "owner": "player",
+            "hp": 5,
+            "level": 1,
+            "status": "prepared",
+            "actions": "0/1",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "player_back_right",
+            "card": "card_051",
+            "name": "ピグミィ",
+            "owner": "player",
+            "hp": 3,
+            "level": 1,
+            "status": "active",
+            "actions": "2/2",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "cpu_front_left",
+            "card": "card_133",
+            "name": "デスシープ",
+            "owner": "cpu",
+            "hp": 4,
+            "level": 2,
+            "status": "active",
+            "actions": "0/1",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "cpu_front_right",
+            "card": "card_047",
+            "name": "真勇者ダイン",
+            "owner": "cpu",
+            "hp": 6,
+            "level": 3,
+            "status": "active",
+            "actions": "0/1",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "cpu_back_left",
+            "card": "card_037",
+            "name": "ドノマンティス",
+            "owner": "cpu",
+            "hp": 5,
+            "level": 1,
+            "status": "active",
+            "actions": "0/1",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "cpu_back_right",
+            "card": "card_051",
+            "name": "ピグミィ",
+            "owner": "cpu",
+            "hp": 2,
+            "level": 1,
+            "status": "active",
+            "actions": "0/2",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          }
+        ]
+      },
+      "after": {
+        "currentPlayer": "cpu",
+        "turnNumber": 11,
+        "pendingLevelUp": false,
+        "players": {
+          "player": {
+            "masterId": "white",
+            "hp": 5,
+            "stones": 1,
+            "hand": 4,
+            "deck": 15,
+            "discard": 8
+          },
+          "cpu": {
+            "masterId": "white",
+            "hp": 8,
+            "stones": 4,
+            "hand": 5,
+            "deck": 14,
+            "discard": 7
+          }
+        },
+        "slots": [
+          {
+            "slotKey": "player_front_left"
+          },
+          {
+            "slotKey": "player_front_right",
+            "card": "card_051",
+            "name": "ピグミィ",
+            "owner": "player",
+            "hp": 3,
+            "level": 1,
+            "status": "active",
+            "actions": "2/2",
+            "focused": true,
+            "berserkPower": false,
+            "shielded": true
+          },
+          {
+            "slotKey": "player_back_left",
+            "card": "card_037",
+            "name": "ドノマンティス",
+            "owner": "player",
+            "hp": 5,
+            "level": 1,
+            "status": "prepared",
+            "actions": "0/1",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "player_back_right",
+            "card": "card_051",
+            "name": "ピグミィ",
+            "owner": "player",
+            "hp": 3,
+            "level": 1,
+            "status": "active",
+            "actions": "2/2",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "cpu_front_left",
+            "card": "card_133",
+            "name": "デスシープ",
+            "owner": "cpu",
+            "hp": 4,
+            "level": 2,
+            "status": "active",
+            "actions": "1/1",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "cpu_front_right",
+            "card": "card_047",
+            "name": "真勇者ダイン",
+            "owner": "cpu",
+            "hp": 6,
+            "level": 3,
+            "status": "active",
+            "actions": "0/1",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "cpu_back_left",
+            "card": "card_037",
+            "name": "ドノマンティス",
+            "owner": "cpu",
+            "hp": 5,
+            "level": 1,
+            "status": "active",
+            "actions": "0/1",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "cpu_back_right",
+            "card": "card_051",
+            "name": "ピグミィ",
+            "owner": "cpu",
+            "hp": 2,
+            "level": 1,
+            "status": "active",
+            "actions": "0/2",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          }
+        ]
+      },
+      "newLog": [
+        "CPU判断: 相手マスターへ実ダメージを与えられるため攻撃 / 見送り: 攻撃は276点差で見送り、ためるは403点差で見送り",
+        "CPUのデスシープ Lv2: アタック 3P",
+        "プレイヤーのマスターHPが1減った（アタック）。ストーン+1"
+      ]
+    },
+    {
+      "seed": 994320,
+      "step": 130,
+      "turnNumber": 11,
+      "player": "cpu",
+      "decision": "attack:cpu_front_right:ダイン斬り->monster:player_front_right",
+      "reason": "ピグミィを削れるため攻撃 / 見送り: ためるは3点差で見送り、ためるは14点差で見送り",
+      "score": 50,
+      "legalDecisionCount": 7,
+      "nonEndDecisionCount": 6,
+      "before": {
+        "currentPlayer": "cpu",
+        "turnNumber": 11,
+        "pendingLevelUp": false,
+        "players": {
+          "player": {
+            "masterId": "white",
+            "hp": 5,
+            "stones": 1,
+            "hand": 4,
+            "deck": 15,
+            "discard": 8
+          },
+          "cpu": {
+            "masterId": "white",
+            "hp": 8,
+            "stones": 4,
+            "hand": 5,
+            "deck": 14,
+            "discard": 7
+          }
+        },
+        "slots": [
+          {
+            "slotKey": "player_front_left"
+          },
+          {
+            "slotKey": "player_front_right",
+            "card": "card_051",
+            "name": "ピグミィ",
+            "owner": "player",
+            "hp": 3,
+            "level": 1,
+            "status": "active",
+            "actions": "2/2",
+            "focused": true,
+            "berserkPower": false,
+            "shielded": true
+          },
+          {
+            "slotKey": "player_back_left",
+            "card": "card_037",
+            "name": "ドノマンティス",
+            "owner": "player",
+            "hp": 5,
+            "level": 1,
+            "status": "prepared",
+            "actions": "0/1",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "player_back_right",
+            "card": "card_051",
+            "name": "ピグミィ",
+            "owner": "player",
+            "hp": 3,
+            "level": 1,
+            "status": "active",
+            "actions": "2/2",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "cpu_front_left",
+            "card": "card_133",
+            "name": "デスシープ",
+            "owner": "cpu",
+            "hp": 4,
+            "level": 2,
+            "status": "active",
+            "actions": "1/1",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "cpu_front_right",
+            "card": "card_047",
+            "name": "真勇者ダイン",
+            "owner": "cpu",
+            "hp": 6,
+            "level": 3,
+            "status": "active",
+            "actions": "0/1",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "cpu_back_left",
+            "card": "card_037",
+            "name": "ドノマンティス",
+            "owner": "cpu",
+            "hp": 5,
+            "level": 1,
+            "status": "active",
+            "actions": "0/1",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "cpu_back_right",
+            "card": "card_051",
+            "name": "ピグミィ",
+            "owner": "cpu",
+            "hp": 2,
+            "level": 1,
+            "status": "active",
+            "actions": "0/2",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          }
+        ]
+      },
+      "after": {
+        "currentPlayer": "cpu",
+        "turnNumber": 11,
+        "pendingLevelUp": false,
+        "players": {
+          "player": {
+            "masterId": "white",
+            "hp": 5,
+            "stones": 1,
+            "hand": 4,
+            "deck": 15,
+            "discard": 8
+          },
+          "cpu": {
+            "masterId": "white",
+            "hp": 8,
+            "stones": 4,
+            "hand": 5,
+            "deck": 14,
+            "discard": 7
+          }
+        },
+        "slots": [
+          {
+            "slotKey": "player_front_left"
+          },
+          {
+            "slotKey": "player_front_right",
+            "card": "card_051",
+            "name": "ピグミィ",
+            "owner": "player",
+            "hp": 1,
+            "level": 1,
+            "status": "active",
+            "actions": "2/2",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": true
+          },
+          {
+            "slotKey": "player_back_left",
+            "card": "card_037",
+            "name": "ドノマンティス",
+            "owner": "player",
+            "hp": 5,
+            "level": 1,
+            "status": "prepared",
+            "actions": "0/1",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "player_back_right",
+            "card": "card_051",
+            "name": "ピグミィ",
+            "owner": "player",
+            "hp": 3,
+            "level": 1,
+            "status": "active",
+            "actions": "2/2",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "cpu_front_left",
+            "card": "card_133",
+            "name": "デスシープ",
+            "owner": "cpu",
+            "hp": 4,
+            "level": 2,
+            "status": "active",
+            "actions": "1/1",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "cpu_front_right",
+            "card": "card_047",
+            "name": "真勇者ダイン",
+            "owner": "cpu",
+            "hp": 6,
+            "level": 3,
+            "status": "active",
+            "actions": "1/1",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "cpu_back_left",
+            "card": "card_037",
+            "name": "ドノマンティス",
+            "owner": "cpu",
+            "hp": 5,
+            "level": 1,
+            "status": "active",
+            "actions": "0/1",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "cpu_back_right",
+            "card": "card_051",
+            "name": "ピグミィ",
+            "owner": "cpu",
+            "hp": 2,
+            "level": 1,
+            "status": "active",
+            "actions": "0/2",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          }
+        ]
+      },
+      "newLog": [
+        "CPU判断: ピグミィを削れるため攻撃 / 見送り: ためるは3点差で見送り、ためるは14点差で見送り",
+        "CPUの真勇者ダイン Lv3: ダイン斬り 4P",
+        "ピグミィ Lv1は気合いで1ダメージ軽減した",
+        "ダイン斬りでピグミィ Lv1に2ダメージ"
+      ]
+    },
+    {
+      "seed": 994320,
+      "step": 131,
+      "turnNumber": 11,
+      "player": "cpu",
+      "decision": "master:master_attack->monster:player_front_right",
+      "reason": "マスターアタックで敵モンスターを撃破できるため使用 / 見送り: ためるは129点差で見送り、ためるは141点差で見送り",
+      "score": 299,
+      "legalDecisionCount": 4,
+      "nonEndDecisionCount": 3,
+      "before": {
+        "currentPlayer": "cpu",
+        "turnNumber": 11,
+        "pendingLevelUp": false,
+        "players": {
+          "player": {
+            "masterId": "white",
+            "hp": 5,
+            "stones": 1,
+            "hand": 4,
+            "deck": 15,
+            "discard": 8
+          },
+          "cpu": {
+            "masterId": "white",
+            "hp": 8,
+            "stones": 4,
+            "hand": 5,
+            "deck": 14,
+            "discard": 7
+          }
+        },
+        "slots": [
+          {
+            "slotKey": "player_front_left"
+          },
+          {
+            "slotKey": "player_front_right",
+            "card": "card_051",
+            "name": "ピグミィ",
+            "owner": "player",
+            "hp": 1,
+            "level": 1,
+            "status": "active",
+            "actions": "2/2",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": true
+          },
+          {
+            "slotKey": "player_back_left",
+            "card": "card_037",
+            "name": "ドノマンティス",
+            "owner": "player",
+            "hp": 5,
+            "level": 1,
+            "status": "prepared",
+            "actions": "0/1",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "player_back_right",
+            "card": "card_051",
+            "name": "ピグミィ",
+            "owner": "player",
+            "hp": 3,
+            "level": 1,
+            "status": "active",
+            "actions": "2/2",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "cpu_front_left",
+            "card": "card_133",
+            "name": "デスシープ",
+            "owner": "cpu",
+            "hp": 4,
+            "level": 2,
+            "status": "active",
+            "actions": "1/1",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "cpu_front_right",
+            "card": "card_047",
+            "name": "真勇者ダイン",
+            "owner": "cpu",
+            "hp": 6,
+            "level": 3,
+            "status": "active",
+            "actions": "1/1",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "cpu_back_left",
+            "card": "card_037",
+            "name": "ドノマンティス",
+            "owner": "cpu",
+            "hp": 5,
+            "level": 1,
+            "status": "active",
+            "actions": "0/1",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "cpu_back_right",
+            "card": "card_051",
+            "name": "ピグミィ",
+            "owner": "cpu",
+            "hp": 2,
+            "level": 1,
+            "status": "active",
+            "actions": "0/2",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          }
+        ]
+      },
+      "after": {
+        "currentPlayer": "cpu",
+        "turnNumber": 11,
+        "pendingLevelUp": false,
+        "players": {
+          "player": {
+            "masterId": "white",
+            "hp": 5,
+            "stones": 2,
+            "hand": 4,
+            "deck": 15,
+            "discard": 9
+          },
+          "cpu": {
+            "masterId": "white",
+            "hp": 8,
+            "stones": 1,
+            "hand": 5,
+            "deck": 14,
+            "discard": 7
+          }
+        },
+        "slots": [
+          {
+            "slotKey": "player_front_left"
+          },
+          {
+            "slotKey": "player_front_right"
+          },
+          {
+            "slotKey": "player_back_left",
+            "card": "card_037",
+            "name": "ドノマンティス",
+            "owner": "player",
+            "hp": 5,
+            "level": 1,
+            "status": "prepared",
+            "actions": "0/1",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "player_back_right",
+            "card": "card_051",
+            "name": "ピグミィ",
+            "owner": "player",
+            "hp": 3,
+            "level": 1,
+            "status": "active",
+            "actions": "2/2",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "cpu_front_left",
+            "card": "card_133",
+            "name": "デスシープ",
+            "owner": "cpu",
+            "hp": 4,
+            "level": 2,
+            "status": "active",
+            "actions": "1/1",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "cpu_front_right",
+            "card": "card_047",
+            "name": "真勇者ダイン",
+            "owner": "cpu",
+            "hp": 6,
+            "level": 3,
+            "status": "active",
+            "actions": "1/1",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "cpu_back_left",
+            "card": "card_037",
+            "name": "ドノマンティス",
+            "owner": "cpu",
+            "hp": 5,
+            "level": 1,
+            "status": "active",
+            "actions": "0/1",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "cpu_back_right",
+            "card": "card_051",
+            "name": "ピグミィ",
+            "owner": "cpu",
+            "hp": 2,
+            "level": 1,
+            "status": "active",
+            "actions": "0/2",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          }
+        ]
+      },
+      "newLog": [
+        "CPU判断: マスターアタックで敵モンスターを撃破できるため使用 / 見送り: ためるは129点差で見送り、ためるは141点差で見送り",
+        "CPUのマスターアタック",
+        "マスターアタックでピグミィ Lv1に1ダメージ",
+        "ピグミィ Lv1は倒れ、プレイヤーにストーン1個が戻った"
+      ]
+    },
+    {
+      "seed": 994320,
+      "step": 132,
+      "turnNumber": 11,
+      "player": "cpu",
+      "decision": "focus:cpu_back_right",
+      "reason": "有効攻撃がないためためる / 見送り: ためるは11点差で見送り",
+      "score": 26,
+      "legalDecisionCount": 3,
+      "nonEndDecisionCount": 2,
+      "before": {
+        "currentPlayer": "cpu",
+        "turnNumber": 11,
+        "pendingLevelUp": false,
+        "players": {
+          "player": {
+            "masterId": "white",
+            "hp": 5,
+            "stones": 2,
+            "hand": 4,
+            "deck": 15,
+            "discard": 9
+          },
+          "cpu": {
+            "masterId": "white",
+            "hp": 8,
+            "stones": 1,
+            "hand": 5,
+            "deck": 14,
+            "discard": 7
+          }
+        },
+        "slots": [
+          {
+            "slotKey": "player_front_left"
+          },
+          {
+            "slotKey": "player_front_right"
+          },
+          {
+            "slotKey": "player_back_left",
+            "card": "card_037",
+            "name": "ドノマンティス",
+            "owner": "player",
+            "hp": 5,
+            "level": 1,
+            "status": "prepared",
+            "actions": "0/1",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "player_back_right",
+            "card": "card_051",
+            "name": "ピグミィ",
+            "owner": "player",
+            "hp": 3,
+            "level": 1,
+            "status": "active",
+            "actions": "2/2",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "cpu_front_left",
+            "card": "card_133",
+            "name": "デスシープ",
+            "owner": "cpu",
+            "hp": 4,
+            "level": 2,
+            "status": "active",
+            "actions": "1/1",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "cpu_front_right",
+            "card": "card_047",
+            "name": "真勇者ダイン",
+            "owner": "cpu",
+            "hp": 6,
+            "level": 3,
+            "status": "active",
+            "actions": "1/1",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "cpu_back_left",
+            "card": "card_037",
+            "name": "ドノマンティス",
+            "owner": "cpu",
+            "hp": 5,
+            "level": 1,
+            "status": "active",
+            "actions": "0/1",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "cpu_back_right",
+            "card": "card_051",
+            "name": "ピグミィ",
+            "owner": "cpu",
+            "hp": 2,
+            "level": 1,
+            "status": "active",
+            "actions": "0/2",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          }
+        ]
+      },
+      "after": {
+        "currentPlayer": "cpu",
+        "turnNumber": 11,
+        "pendingLevelUp": false,
+        "players": {
+          "player": {
+            "masterId": "white",
+            "hp": 5,
+            "stones": 2,
+            "hand": 4,
+            "deck": 15,
+            "discard": 9
+          },
+          "cpu": {
+            "masterId": "white",
+            "hp": 8,
+            "stones": 1,
+            "hand": 5,
+            "deck": 14,
+            "discard": 7
+          }
+        },
+        "slots": [
+          {
+            "slotKey": "player_front_left"
+          },
+          {
+            "slotKey": "player_front_right"
+          },
+          {
+            "slotKey": "player_back_left",
+            "card": "card_037",
+            "name": "ドノマンティス",
+            "owner": "player",
+            "hp": 5,
+            "level": 1,
+            "status": "prepared",
+            "actions": "0/1",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "player_back_right",
+            "card": "card_051",
+            "name": "ピグミィ",
+            "owner": "player",
+            "hp": 3,
+            "level": 1,
+            "status": "active",
+            "actions": "2/2",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "cpu_front_left",
+            "card": "card_133",
+            "name": "デスシープ",
+            "owner": "cpu",
+            "hp": 4,
+            "level": 2,
+            "status": "active",
+            "actions": "1/1",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "cpu_front_right",
+            "card": "card_047",
+            "name": "真勇者ダイン",
+            "owner": "cpu",
+            "hp": 6,
+            "level": 3,
+            "status": "active",
+            "actions": "1/1",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "cpu_back_left",
+            "card": "card_037",
+            "name": "ドノマンティス",
+            "owner": "cpu",
+            "hp": 5,
+            "level": 1,
+            "status": "active",
+            "actions": "0/1",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "cpu_back_right",
+            "card": "card_051",
+            "name": "ピグミィ",
+            "owner": "cpu",
+            "hp": 2,
+            "level": 1,
+            "status": "active",
+            "actions": "1/2",
+            "focused": true,
+            "berserkPower": false,
+            "shielded": false
+          }
+        ]
+      },
+      "newLog": [
+        "CPU判断: 有効攻撃がないためためる / 見送り: ためるは11点差で見送り",
+        "ピグミィ Lv1はためた"
+      ]
+    },
+    {
+      "seed": 994320,
+      "step": 133,
+      "turnNumber": 11,
+      "player": "cpu",
+      "decision": "focus:cpu_back_left",
+      "reason": "有効攻撃がないためためる",
+      "score": 38,
+      "legalDecisionCount": 2,
+      "nonEndDecisionCount": 1,
+      "before": {
+        "currentPlayer": "cpu",
+        "turnNumber": 11,
+        "pendingLevelUp": false,
+        "players": {
+          "player": {
+            "masterId": "white",
+            "hp": 5,
+            "stones": 2,
+            "hand": 4,
+            "deck": 15,
+            "discard": 9
+          },
+          "cpu": {
+            "masterId": "white",
+            "hp": 8,
+            "stones": 1,
+            "hand": 5,
+            "deck": 14,
+            "discard": 7
+          }
+        },
+        "slots": [
+          {
+            "slotKey": "player_front_left"
+          },
+          {
+            "slotKey": "player_front_right"
+          },
+          {
+            "slotKey": "player_back_left",
+            "card": "card_037",
+            "name": "ドノマンティス",
+            "owner": "player",
+            "hp": 5,
+            "level": 1,
+            "status": "prepared",
+            "actions": "0/1",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "player_back_right",
+            "card": "card_051",
+            "name": "ピグミィ",
+            "owner": "player",
+            "hp": 3,
+            "level": 1,
+            "status": "active",
+            "actions": "2/2",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "cpu_front_left",
+            "card": "card_133",
+            "name": "デスシープ",
+            "owner": "cpu",
+            "hp": 4,
+            "level": 2,
+            "status": "active",
+            "actions": "1/1",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "cpu_front_right",
+            "card": "card_047",
+            "name": "真勇者ダイン",
+            "owner": "cpu",
+            "hp": 6,
+            "level": 3,
+            "status": "active",
+            "actions": "1/1",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "cpu_back_left",
+            "card": "card_037",
+            "name": "ドノマンティス",
+            "owner": "cpu",
+            "hp": 5,
+            "level": 1,
+            "status": "active",
+            "actions": "0/1",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "cpu_back_right",
+            "card": "card_051",
+            "name": "ピグミィ",
+            "owner": "cpu",
+            "hp": 2,
+            "level": 1,
+            "status": "active",
+            "actions": "1/2",
+            "focused": true,
+            "berserkPower": false,
+            "shielded": false
+          }
+        ]
+      },
+      "after": {
+        "currentPlayer": "cpu",
+        "turnNumber": 11,
+        "pendingLevelUp": false,
+        "players": {
+          "player": {
+            "masterId": "white",
+            "hp": 5,
+            "stones": 2,
+            "hand": 4,
+            "deck": 15,
+            "discard": 9
+          },
+          "cpu": {
+            "masterId": "white",
+            "hp": 8,
+            "stones": 1,
+            "hand": 5,
+            "deck": 14,
+            "discard": 7
+          }
+        },
+        "slots": [
+          {
+            "slotKey": "player_front_left"
+          },
+          {
+            "slotKey": "player_front_right"
+          },
+          {
+            "slotKey": "player_back_left",
+            "card": "card_037",
+            "name": "ドノマンティス",
+            "owner": "player",
+            "hp": 5,
+            "level": 1,
+            "status": "prepared",
+            "actions": "0/1",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "player_back_right",
+            "card": "card_051",
+            "name": "ピグミィ",
+            "owner": "player",
+            "hp": 3,
+            "level": 1,
+            "status": "active",
+            "actions": "2/2",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "cpu_front_left",
+            "card": "card_133",
+            "name": "デスシープ",
+            "owner": "cpu",
+            "hp": 4,
+            "level": 2,
+            "status": "active",
+            "actions": "1/1",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "cpu_front_right",
+            "card": "card_047",
+            "name": "真勇者ダイン",
+            "owner": "cpu",
+            "hp": 6,
+            "level": 3,
+            "status": "active",
+            "actions": "1/1",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "cpu_back_left",
+            "card": "card_037",
+            "name": "ドノマンティス",
+            "owner": "cpu",
+            "hp": 5,
+            "level": 1,
+            "status": "active",
+            "actions": "1/1",
+            "focused": true,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "cpu_back_right",
+            "card": "card_051",
+            "name": "ピグミィ",
+            "owner": "cpu",
+            "hp": 2,
+            "level": 1,
+            "status": "active",
+            "actions": "1/2",
+            "focused": true,
+            "berserkPower": false,
+            "shielded": false
+          }
+        ]
+      },
+      "newLog": [
+        "CPU判断: 有効攻撃がないためためる",
+        "ドノマンティス Lv1はためた"
+      ]
+    },
+    {
+      "seed": 994320,
+      "step": 134,
+      "turnNumber": 11,
+      "player": "cpu",
+      "decision": "end_turn",
+      "reason": "有効な行動がないためターン終了",
+      "score": 0,
+      "legalDecisionCount": 1,
+      "nonEndDecisionCount": 0,
+      "before": {
+        "currentPlayer": "cpu",
+        "turnNumber": 11,
+        "pendingLevelUp": false,
+        "players": {
+          "player": {
+            "masterId": "white",
+            "hp": 5,
+            "stones": 2,
+            "hand": 4,
+            "deck": 15,
+            "discard": 9
+          },
+          "cpu": {
+            "masterId": "white",
+            "hp": 8,
+            "stones": 1,
+            "hand": 5,
+            "deck": 14,
+            "discard": 7
+          }
+        },
+        "slots": [
+          {
+            "slotKey": "player_front_left"
+          },
+          {
+            "slotKey": "player_front_right"
+          },
+          {
+            "slotKey": "player_back_left",
+            "card": "card_037",
+            "name": "ドノマンティス",
+            "owner": "player",
+            "hp": 5,
+            "level": 1,
+            "status": "prepared",
+            "actions": "0/1",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "player_back_right",
+            "card": "card_051",
+            "name": "ピグミィ",
+            "owner": "player",
+            "hp": 3,
+            "level": 1,
+            "status": "active",
+            "actions": "2/2",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "cpu_front_left",
+            "card": "card_133",
+            "name": "デスシープ",
+            "owner": "cpu",
+            "hp": 4,
+            "level": 2,
+            "status": "active",
+            "actions": "1/1",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "cpu_front_right",
+            "card": "card_047",
+            "name": "真勇者ダイン",
+            "owner": "cpu",
+            "hp": 6,
+            "level": 3,
+            "status": "active",
+            "actions": "1/1",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "cpu_back_left",
+            "card": "card_037",
+            "name": "ドノマンティス",
+            "owner": "cpu",
+            "hp": 5,
+            "level": 1,
+            "status": "active",
+            "actions": "1/1",
+            "focused": true,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "cpu_back_right",
+            "card": "card_051",
+            "name": "ピグミィ",
+            "owner": "cpu",
+            "hp": 2,
+            "level": 1,
+            "status": "active",
+            "actions": "1/2",
+            "focused": true,
+            "berserkPower": false,
+            "shielded": false
+          }
+        ]
+      },
+      "after": {
+        "currentPlayer": "player",
+        "turnNumber": 12,
+        "pendingLevelUp": false,
+        "players": {
+          "player": {
+            "masterId": "white",
+            "hp": 5,
+            "stones": 5,
+            "hand": 5,
+            "deck": 14,
+            "discard": 9
+          },
+          "cpu": {
+            "masterId": "white",
+            "hp": 8,
+            "stones": 1,
+            "hand": 5,
+            "deck": 14,
+            "discard": 7
+          }
+        },
+        "slots": [
+          {
+            "slotKey": "player_front_left",
+            "card": "card_037",
+            "name": "ドノマンティス",
+            "owner": "player",
+            "hp": 5,
+            "level": 1,
+            "status": "active",
+            "actions": "0/1",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "player_front_right",
+            "card": "card_051",
+            "name": "ピグミィ",
+            "owner": "player",
+            "hp": 3,
+            "level": 1,
+            "status": "active",
+            "actions": "0/2",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "player_back_left"
+          },
+          {
+            "slotKey": "player_back_right"
+          },
+          {
+            "slotKey": "cpu_front_left",
+            "card": "card_133",
+            "name": "デスシープ",
+            "owner": "cpu",
+            "hp": 4,
+            "level": 2,
+            "status": "active",
+            "actions": "1/1",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "cpu_front_right",
+            "card": "card_047",
+            "name": "真勇者ダイン",
+            "owner": "cpu",
+            "hp": 6,
+            "level": 3,
+            "status": "active",
+            "actions": "1/1",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "cpu_back_left",
+            "card": "card_037",
+            "name": "ドノマンティス",
+            "owner": "cpu",
+            "hp": 5,
+            "level": 1,
+            "status": "active",
+            "actions": "1/1",
+            "focused": true,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "cpu_back_right",
+            "card": "card_051",
+            "name": "ピグミィ",
+            "owner": "cpu",
+            "hp": 2,
+            "level": 1,
+            "status": "active",
+            "actions": "1/2",
+            "focused": true,
+            "berserkPower": false,
+            "shielded": false
+          }
+        ]
+      },
+      "newLog": [
+        "CPU判断: 有効な行動がないためターン終了",
+        "プレイヤーのターン開始",
+        "ドノマンティス Lv1が登場した",
+        "ドノマンティス Lv1が前衛へ自動移動した",
+        "ピグミィ Lv1が前衛へ自動移動した",
+        "プレイヤーはストーンを3個得た",
+        "プレイヤーはポリスピナーを引いた"
+      ]
+    },
+    {
+      "seed": 994320,
+      "step": 135,
+      "turnNumber": 12,
+      "player": "player",
+      "decision": "move:player_front_right->player_back_left",
+      "reason": "後衛カードを後列へ戻して射程を活かすため移動 / 見送り: 攻撃は28点差で見送り、マスター特技は32点差で見送り",
+      "score": 100.5,
+      "legalDecisionCount": 11,
+      "nonEndDecisionCount": 10,
+      "before": {
+        "currentPlayer": "player",
+        "turnNumber": 12,
+        "pendingLevelUp": false,
+        "players": {
+          "player": {
+            "masterId": "white",
+            "hp": 5,
+            "stones": 5,
+            "hand": 5,
+            "deck": 14,
+            "discard": 9
+          },
+          "cpu": {
+            "masterId": "white",
+            "hp": 8,
+            "stones": 1,
+            "hand": 5,
+            "deck": 14,
+            "discard": 7
+          }
+        },
+        "slots": [
+          {
+            "slotKey": "player_front_left",
+            "card": "card_037",
+            "name": "ドノマンティス",
+            "owner": "player",
+            "hp": 5,
+            "level": 1,
+            "status": "active",
+            "actions": "0/1",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "player_front_right",
+            "card": "card_051",
+            "name": "ピグミィ",
+            "owner": "player",
+            "hp": 3,
+            "level": 1,
+            "status": "active",
+            "actions": "0/2",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "player_back_left"
+          },
+          {
+            "slotKey": "player_back_right"
+          },
+          {
+            "slotKey": "cpu_front_left",
+            "card": "card_133",
+            "name": "デスシープ",
+            "owner": "cpu",
+            "hp": 4,
+            "level": 2,
+            "status": "active",
+            "actions": "1/1",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "cpu_front_right",
+            "card": "card_047",
+            "name": "真勇者ダイン",
+            "owner": "cpu",
+            "hp": 6,
+            "level": 3,
+            "status": "active",
+            "actions": "1/1",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "cpu_back_left",
+            "card": "card_037",
+            "name": "ドノマンティス",
+            "owner": "cpu",
+            "hp": 5,
+            "level": 1,
+            "status": "active",
+            "actions": "1/1",
+            "focused": true,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "cpu_back_right",
+            "card": "card_051",
+            "name": "ピグミィ",
+            "owner": "cpu",
+            "hp": 2,
+            "level": 1,
+            "status": "active",
+            "actions": "1/2",
+            "focused": true,
+            "berserkPower": false,
+            "shielded": false
+          }
+        ]
+      },
+      "after": {
+        "currentPlayer": "player",
+        "turnNumber": 12,
+        "pendingLevelUp": false,
+        "players": {
+          "player": {
+            "masterId": "white",
+            "hp": 5,
+            "stones": 5,
+            "hand": 5,
+            "deck": 14,
+            "discard": 9
+          },
+          "cpu": {
+            "masterId": "white",
+            "hp": 8,
+            "stones": 1,
+            "hand": 5,
+            "deck": 14,
+            "discard": 7
+          }
+        },
+        "slots": [
+          {
+            "slotKey": "player_front_left",
+            "card": "card_037",
+            "name": "ドノマンティス",
+            "owner": "player",
+            "hp": 5,
+            "level": 1,
+            "status": "active",
+            "actions": "0/1",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "player_front_right"
+          },
+          {
+            "slotKey": "player_back_left",
+            "card": "card_051",
+            "name": "ピグミィ",
+            "owner": "player",
+            "hp": 3,
+            "level": 1,
+            "status": "active",
+            "actions": "1/2",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "player_back_right"
+          },
+          {
+            "slotKey": "cpu_front_left",
+            "card": "card_133",
+            "name": "デスシープ",
+            "owner": "cpu",
+            "hp": 4,
+            "level": 2,
+            "status": "active",
+            "actions": "1/1",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "cpu_front_right",
+            "card": "card_047",
+            "name": "真勇者ダイン",
+            "owner": "cpu",
+            "hp": 6,
+            "level": 3,
+            "status": "active",
+            "actions": "1/1",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "cpu_back_left",
+            "card": "card_037",
+            "name": "ドノマンティス",
+            "owner": "cpu",
+            "hp": 5,
+            "level": 1,
+            "status": "active",
+            "actions": "1/1",
+            "focused": true,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "cpu_back_right",
+            "card": "card_051",
+            "name": "ピグミィ",
+            "owner": "cpu",
+            "hp": 2,
+            "level": 1,
+            "status": "active",
+            "actions": "1/2",
+            "focused": true,
+            "berserkPower": false,
+            "shielded": false
+          }
+        ]
+      },
+      "newLog": [
+        "プレイヤーAI判断: 後衛カードを後列へ戻して射程を活かすため移動 / 見送り: 攻撃は28点差で見送り、マスター特技は32点差で見送り",
+        "ピグミィ Lv1を移動した"
+      ]
+    },
+    {
+      "seed": 994320,
+      "step": 136,
+      "turnNumber": 12,
+      "player": "player",
+      "decision": "master:master_attack->monster:cpu_front_left",
+      "reason": "ストーンに余裕があり敵を削れるためマスターアタック / ターンプラン探索: 返し込み最終盤面174点、次点と11点差",
+      "score": 2,
+      "legalDecisionCount": 10,
+      "nonEndDecisionCount": 9,
+      "before": {
+        "currentPlayer": "player",
+        "turnNumber": 12,
+        "pendingLevelUp": false,
+        "players": {
+          "player": {
+            "masterId": "white",
+            "hp": 5,
+            "stones": 5,
+            "hand": 5,
+            "deck": 14,
+            "discard": 9
+          },
+          "cpu": {
+            "masterId": "white",
+            "hp": 8,
+            "stones": 1,
+            "hand": 5,
+            "deck": 14,
+            "discard": 7
+          }
+        },
+        "slots": [
+          {
+            "slotKey": "player_front_left",
+            "card": "card_037",
+            "name": "ドノマンティス",
+            "owner": "player",
+            "hp": 5,
+            "level": 1,
+            "status": "active",
+            "actions": "0/1",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "player_front_right"
+          },
+          {
+            "slotKey": "player_back_left",
+            "card": "card_051",
+            "name": "ピグミィ",
+            "owner": "player",
+            "hp": 3,
+            "level": 1,
+            "status": "active",
+            "actions": "1/2",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "player_back_right"
+          },
+          {
+            "slotKey": "cpu_front_left",
+            "card": "card_133",
+            "name": "デスシープ",
+            "owner": "cpu",
+            "hp": 4,
+            "level": 2,
+            "status": "active",
+            "actions": "1/1",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "cpu_front_right",
+            "card": "card_047",
+            "name": "真勇者ダイン",
+            "owner": "cpu",
+            "hp": 6,
+            "level": 3,
+            "status": "active",
+            "actions": "1/1",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "cpu_back_left",
+            "card": "card_037",
+            "name": "ドノマンティス",
+            "owner": "cpu",
+            "hp": 5,
+            "level": 1,
+            "status": "active",
+            "actions": "1/1",
+            "focused": true,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "cpu_back_right",
+            "card": "card_051",
+            "name": "ピグミィ",
+            "owner": "cpu",
+            "hp": 2,
+            "level": 1,
+            "status": "active",
+            "actions": "1/2",
+            "focused": true,
+            "berserkPower": false,
+            "shielded": false
+          }
+        ]
+      },
+      "after": {
+        "currentPlayer": "player",
+        "turnNumber": 12,
+        "pendingLevelUp": false,
+        "players": {
+          "player": {
+            "masterId": "white",
+            "hp": 5,
+            "stones": 2,
+            "hand": 5,
+            "deck": 14,
+            "discard": 9
+          },
+          "cpu": {
+            "masterId": "white",
+            "hp": 8,
+            "stones": 1,
+            "hand": 5,
+            "deck": 14,
+            "discard": 7
+          }
+        },
+        "slots": [
+          {
+            "slotKey": "player_front_left",
+            "card": "card_037",
+            "name": "ドノマンティス",
+            "owner": "player",
+            "hp": 5,
+            "level": 1,
+            "status": "active",
+            "actions": "0/1",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "player_front_right"
+          },
+          {
+            "slotKey": "player_back_left",
+            "card": "card_051",
+            "name": "ピグミィ",
+            "owner": "player",
+            "hp": 3,
+            "level": 1,
+            "status": "active",
+            "actions": "1/2",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "player_back_right"
+          },
+          {
+            "slotKey": "cpu_front_left",
+            "card": "card_133",
+            "name": "デスシープ",
+            "owner": "cpu",
+            "hp": 2,
+            "level": 2,
+            "status": "active",
+            "actions": "1/1",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "cpu_front_right",
+            "card": "card_047",
+            "name": "真勇者ダイン",
+            "owner": "cpu",
+            "hp": 6,
+            "level": 3,
+            "status": "active",
+            "actions": "1/1",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "cpu_back_left",
+            "card": "card_037",
+            "name": "ドノマンティス",
+            "owner": "cpu",
+            "hp": 5,
+            "level": 1,
+            "status": "active",
+            "actions": "1/1",
+            "focused": true,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "cpu_back_right",
+            "card": "card_051",
+            "name": "ピグミィ",
+            "owner": "cpu",
+            "hp": 2,
+            "level": 1,
+            "status": "active",
+            "actions": "1/2",
+            "focused": true,
+            "berserkPower": false,
+            "shielded": false
+          }
+        ]
+      },
+      "newLog": [
+        "プレイヤーAI判断: ストーンに余裕があり敵を削れるためマスターアタック / ターンプラン探索: 返し込み最終盤面174点、次点と11点差",
+        "プレイヤーのマスターアタック",
+        "マスターアタックでデスシープ Lv2に2ダメージ"
+      ]
+    },
+    {
+      "seed": 994320,
+      "step": 137,
+      "turnNumber": 12,
+      "player": "player",
+      "decision": "attack:player_front_left:attack->monster:cpu_front_left",
+      "reason": "敵モンスターを撃破できるため攻撃 / ターンプラン探索: 返し込み最終盤面158点、次点と206点差",
+      "score": 515,
+      "legalDecisionCount": 8,
+      "nonEndDecisionCount": 7,
+      "before": {
+        "currentPlayer": "player",
+        "turnNumber": 12,
+        "pendingLevelUp": false,
+        "players": {
+          "player": {
+            "masterId": "white",
+            "hp": 5,
+            "stones": 2,
+            "hand": 5,
+            "deck": 14,
+            "discard": 9
+          },
+          "cpu": {
+            "masterId": "white",
+            "hp": 8,
+            "stones": 1,
+            "hand": 5,
+            "deck": 14,
+            "discard": 7
+          }
+        },
+        "slots": [
+          {
+            "slotKey": "player_front_left",
+            "card": "card_037",
+            "name": "ドノマンティス",
+            "owner": "player",
+            "hp": 5,
+            "level": 1,
+            "status": "active",
+            "actions": "0/1",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "player_front_right"
+          },
+          {
+            "slotKey": "player_back_left",
+            "card": "card_051",
+            "name": "ピグミィ",
+            "owner": "player",
+            "hp": 3,
+            "level": 1,
+            "status": "active",
+            "actions": "1/2",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "player_back_right"
+          },
+          {
+            "slotKey": "cpu_front_left",
+            "card": "card_133",
+            "name": "デスシープ",
+            "owner": "cpu",
+            "hp": 2,
+            "level": 2,
+            "status": "active",
+            "actions": "1/1",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "cpu_front_right",
+            "card": "card_047",
+            "name": "真勇者ダイン",
+            "owner": "cpu",
+            "hp": 6,
+            "level": 3,
+            "status": "active",
+            "actions": "1/1",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "cpu_back_left",
+            "card": "card_037",
+            "name": "ドノマンティス",
+            "owner": "cpu",
+            "hp": 5,
+            "level": 1,
+            "status": "active",
+            "actions": "1/1",
+            "focused": true,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "cpu_back_right",
+            "card": "card_051",
+            "name": "ピグミィ",
+            "owner": "cpu",
+            "hp": 2,
+            "level": 1,
+            "status": "active",
+            "actions": "1/2",
+            "focused": true,
+            "berserkPower": false,
+            "shielded": false
+          }
+        ]
+      },
+      "after": {
+        "currentPlayer": "player",
+        "turnNumber": 12,
+        "pendingLevelUp": true,
+        "players": {
+          "player": {
+            "masterId": "white",
+            "hp": 5,
+            "stones": 2,
+            "hand": 5,
+            "deck": 14,
+            "discard": 9
+          },
+          "cpu": {
+            "masterId": "white",
+            "hp": 8,
+            "stones": 3,
+            "hand": 5,
+            "deck": 14,
+            "discard": 8
+          }
+        },
+        "slots": [
+          {
+            "slotKey": "player_front_left",
+            "card": "card_037",
+            "name": "ドノマンティス",
+            "owner": "player",
+            "hp": 5,
+            "level": 1,
+            "status": "active",
+            "actions": "1/1",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "player_front_right"
+          },
+          {
+            "slotKey": "player_back_left",
+            "card": "card_051",
+            "name": "ピグミィ",
+            "owner": "player",
+            "hp": 3,
+            "level": 1,
+            "status": "active",
+            "actions": "1/2",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "player_back_right"
+          },
+          {
+            "slotKey": "cpu_front_left"
+          },
+          {
+            "slotKey": "cpu_front_right",
+            "card": "card_047",
+            "name": "真勇者ダイン",
+            "owner": "cpu",
+            "hp": 6,
+            "level": 3,
+            "status": "active",
+            "actions": "1/1",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "cpu_back_left",
+            "card": "card_037",
+            "name": "ドノマンティス",
+            "owner": "cpu",
+            "hp": 5,
+            "level": 1,
+            "status": "active",
+            "actions": "1/1",
+            "focused": true,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "cpu_back_right",
+            "card": "card_051",
+            "name": "ピグミィ",
+            "owner": "cpu",
+            "hp": 2,
+            "level": 1,
+            "status": "active",
+            "actions": "1/2",
+            "focused": true,
+            "berserkPower": false,
+            "shielded": false
+          }
+        ]
+      },
+      "newLog": [
+        "プレイヤーAI判断: 敵モンスターを撃破できるため攻撃 / ターンプラン探索: 返し込み最終盤面158点、次点と206点差",
+        "プレイヤーのドノマンティス Lv1: アタック 2P",
+        "アタックでデスシープ Lv2に2ダメージ",
+        "デスシープ Lv2は倒れ、CPUにストーン2個が戻った",
+        "ドノマンティス Lv1は1レベルまで上げられる"
+      ]
+    },
+    {
+      "seed": 994320,
+      "step": 139,
+      "turnNumber": 12,
+      "player": "player",
+      "decision": "attack:player_back_left:スパイクボール->monster:cpu_front_right",
+      "reason": "真勇者ダインを削れるため攻撃 / 見送り: ためるは41点差で見送り、召喚は269点差で見送り",
+      "score": 25,
+      "legalDecisionCount": 5,
+      "nonEndDecisionCount": 4,
+      "before": {
+        "currentPlayer": "player",
+        "turnNumber": 12,
+        "pendingLevelUp": false,
+        "players": {
+          "player": {
+            "masterId": "white",
+            "hp": 5,
+            "stones": 1,
+            "hand": 5,
+            "deck": 14,
+            "discard": 9
+          },
+          "cpu": {
+            "masterId": "white",
+            "hp": 8,
+            "stones": 3,
+            "hand": 5,
+            "deck": 14,
+            "discard": 8
+          }
+        },
+        "slots": [
+          {
+            "slotKey": "player_front_left",
+            "card": "card_037",
+            "name": "ドノマンティス",
+            "owner": "player",
+            "hp": 5,
+            "level": 2,
+            "status": "active",
+            "actions": "1/1",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "player_front_right"
+          },
+          {
+            "slotKey": "player_back_left",
+            "card": "card_051",
+            "name": "ピグミィ",
+            "owner": "player",
+            "hp": 3,
+            "level": 1,
+            "status": "active",
+            "actions": "1/2",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "player_back_right"
+          },
+          {
+            "slotKey": "cpu_front_left"
+          },
+          {
+            "slotKey": "cpu_front_right",
+            "card": "card_047",
+            "name": "真勇者ダイン",
+            "owner": "cpu",
+            "hp": 6,
+            "level": 3,
+            "status": "active",
+            "actions": "1/1",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "cpu_back_left",
+            "card": "card_037",
+            "name": "ドノマンティス",
+            "owner": "cpu",
+            "hp": 5,
+            "level": 1,
+            "status": "active",
+            "actions": "1/1",
+            "focused": true,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "cpu_back_right",
+            "card": "card_051",
+            "name": "ピグミィ",
+            "owner": "cpu",
+            "hp": 2,
+            "level": 1,
+            "status": "active",
+            "actions": "1/2",
+            "focused": true,
+            "berserkPower": false,
+            "shielded": false
+          }
+        ]
+      },
+      "after": {
+        "currentPlayer": "player",
+        "turnNumber": 12,
+        "pendingLevelUp": false,
+        "players": {
+          "player": {
+            "masterId": "white",
+            "hp": 5,
+            "stones": 1,
+            "hand": 5,
+            "deck": 14,
+            "discard": 9
+          },
+          "cpu": {
+            "masterId": "white",
+            "hp": 8,
+            "stones": 3,
+            "hand": 5,
+            "deck": 14,
+            "discard": 8
+          }
+        },
+        "slots": [
+          {
+            "slotKey": "player_front_left",
+            "card": "card_037",
+            "name": "ドノマンティス",
+            "owner": "player",
+            "hp": 5,
+            "level": 2,
+            "status": "active",
+            "actions": "1/1",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "player_front_right"
+          },
+          {
+            "slotKey": "player_back_left",
+            "card": "card_051",
+            "name": "ピグミィ",
+            "owner": "player",
+            "hp": 3,
+            "level": 1,
+            "status": "active",
+            "actions": "2/2",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "player_back_right"
+          },
+          {
+            "slotKey": "cpu_front_left"
+          },
+          {
+            "slotKey": "cpu_front_right",
+            "card": "card_047",
+            "name": "真勇者ダイン",
+            "owner": "cpu",
+            "hp": 5,
+            "level": 3,
+            "status": "active",
+            "actions": "1/1",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "cpu_back_left",
+            "card": "card_037",
+            "name": "ドノマンティス",
+            "owner": "cpu",
+            "hp": 5,
+            "level": 1,
+            "status": "active",
+            "actions": "1/1",
+            "focused": true,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "cpu_back_right",
+            "card": "card_051",
+            "name": "ピグミィ",
+            "owner": "cpu",
+            "hp": 2,
+            "level": 1,
+            "status": "active",
+            "actions": "1/2",
+            "focused": true,
+            "berserkPower": false,
+            "shielded": false
+          }
+        ]
+      },
+      "newLog": [
+        "プレイヤーAI判断: 真勇者ダインを削れるため攻撃 / 見送り: ためるは41点差で見送り、召喚は269点差で見送り",
+        "プレイヤーのピグミィ Lv1: スパイクボール 1P",
+        "スパイクボールで真勇者ダイン Lv3に1ダメージ"
+      ]
+    },
+    {
+      "seed": 994320,
+      "step": 140,
+      "turnNumber": 12,
+      "player": "player",
+      "decision": "summon:player_polyspinner_3->player_front_right",
+      "reason": "前衛カードを前列右へ召喚 / 見送り: 召喚は47点差で見送り",
+      "score": 56,
+      "legalDecisionCount": 3,
+      "nonEndDecisionCount": 2,
+      "before": {
+        "currentPlayer": "player",
+        "turnNumber": 12,
+        "pendingLevelUp": false,
+        "players": {
+          "player": {
+            "masterId": "white",
+            "hp": 5,
+            "stones": 1,
+            "hand": 5,
+            "deck": 14,
+            "discard": 9
+          },
+          "cpu": {
+            "masterId": "white",
+            "hp": 8,
+            "stones": 3,
+            "hand": 5,
+            "deck": 14,
+            "discard": 8
+          }
+        },
+        "slots": [
+          {
+            "slotKey": "player_front_left",
+            "card": "card_037",
+            "name": "ドノマンティス",
+            "owner": "player",
+            "hp": 5,
+            "level": 2,
+            "status": "active",
+            "actions": "1/1",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "player_front_right"
+          },
+          {
+            "slotKey": "player_back_left",
+            "card": "card_051",
+            "name": "ピグミィ",
+            "owner": "player",
+            "hp": 3,
+            "level": 1,
+            "status": "active",
+            "actions": "2/2",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "player_back_right"
+          },
+          {
+            "slotKey": "cpu_front_left"
+          },
+          {
+            "slotKey": "cpu_front_right",
+            "card": "card_047",
+            "name": "真勇者ダイン",
+            "owner": "cpu",
+            "hp": 5,
+            "level": 3,
+            "status": "active",
+            "actions": "1/1",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "cpu_back_left",
+            "card": "card_037",
+            "name": "ドノマンティス",
+            "owner": "cpu",
+            "hp": 5,
+            "level": 1,
+            "status": "active",
+            "actions": "1/1",
+            "focused": true,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "cpu_back_right",
+            "card": "card_051",
+            "name": "ピグミィ",
+            "owner": "cpu",
+            "hp": 2,
+            "level": 1,
+            "status": "active",
+            "actions": "1/2",
+            "focused": true,
+            "berserkPower": false,
+            "shielded": false
+          }
+        ]
+      },
+      "after": {
+        "currentPlayer": "player",
+        "turnNumber": 12,
+        "pendingLevelUp": false,
+        "players": {
+          "player": {
+            "masterId": "white",
+            "hp": 5,
+            "stones": 0,
+            "hand": 4,
+            "deck": 14,
+            "discard": 9
+          },
+          "cpu": {
+            "masterId": "white",
+            "hp": 8,
+            "stones": 3,
+            "hand": 5,
+            "deck": 14,
+            "discard": 8
+          }
+        },
+        "slots": [
+          {
+            "slotKey": "player_front_left",
+            "card": "card_037",
+            "name": "ドノマンティス",
+            "owner": "player",
+            "hp": 5,
+            "level": 2,
+            "status": "active",
+            "actions": "1/1",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "player_front_right",
+            "card": "polyspinner",
+            "name": "ポリスピナー",
+            "owner": "player",
+            "hp": 3,
+            "level": 1,
+            "status": "prepared",
+            "actions": "0/2",
+            "focused": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "player_back_left",
+            "card": "card_051",
+            "name": "ピグミィ",
+            "owner": "player",
+            "hp": 3,
+            "level": 1,
+            "status": "active",
+            "actions": "2/2",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "player_back_right"
+          },
+          {
+            "slotKey": "cpu_front_left"
+          },
+          {
+            "slotKey": "cpu_front_right",
+            "card": "card_047",
+            "name": "真勇者ダイン",
+            "owner": "cpu",
+            "hp": 5,
+            "level": 3,
+            "status": "active",
+            "actions": "1/1",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "cpu_back_left",
+            "card": "card_037",
+            "name": "ドノマンティス",
+            "owner": "cpu",
+            "hp": 5,
+            "level": 1,
+            "status": "active",
+            "actions": "1/1",
+            "focused": true,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "cpu_back_right",
+            "card": "card_051",
+            "name": "ピグミィ",
+            "owner": "cpu",
+            "hp": 2,
+            "level": 1,
+            "status": "active",
+            "actions": "1/2",
+            "focused": true,
+            "berserkPower": false,
+            "shielded": false
+          }
+        ]
+      },
+      "newLog": [
+        "プレイヤーAI判断: 前衛カードを前列右へ召喚 / 見送り: 召喚は47点差で見送り",
+        "プレイヤーはポリスピナーを準備中で召喚した"
+      ]
+    },
+    {
+      "seed": 994320,
+      "step": 141,
+      "turnNumber": 12,
+      "player": "player",
+      "decision": "end_turn",
+      "reason": "有効な行動がないためターン終了 / ターンプラン探索: 返し込み最終盤面-111点",
+      "score": 0,
+      "legalDecisionCount": 1,
+      "nonEndDecisionCount": 0,
+      "before": {
+        "currentPlayer": "player",
+        "turnNumber": 12,
+        "pendingLevelUp": false,
+        "players": {
+          "player": {
+            "masterId": "white",
+            "hp": 5,
+            "stones": 0,
+            "hand": 4,
+            "deck": 14,
+            "discard": 9
+          },
+          "cpu": {
+            "masterId": "white",
+            "hp": 8,
+            "stones": 3,
+            "hand": 5,
+            "deck": 14,
+            "discard": 8
+          }
+        },
+        "slots": [
+          {
+            "slotKey": "player_front_left",
+            "card": "card_037",
+            "name": "ドノマンティス",
+            "owner": "player",
+            "hp": 5,
+            "level": 2,
+            "status": "active",
+            "actions": "1/1",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "player_front_right",
+            "card": "polyspinner",
+            "name": "ポリスピナー",
+            "owner": "player",
+            "hp": 3,
+            "level": 1,
+            "status": "prepared",
+            "actions": "0/2",
+            "focused": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "player_back_left",
+            "card": "card_051",
+            "name": "ピグミィ",
+            "owner": "player",
+            "hp": 3,
+            "level": 1,
+            "status": "active",
+            "actions": "2/2",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "player_back_right"
+          },
+          {
+            "slotKey": "cpu_front_left"
+          },
+          {
+            "slotKey": "cpu_front_right",
+            "card": "card_047",
+            "name": "真勇者ダイン",
+            "owner": "cpu",
+            "hp": 5,
+            "level": 3,
+            "status": "active",
+            "actions": "1/1",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "cpu_back_left",
+            "card": "card_037",
+            "name": "ドノマンティス",
+            "owner": "cpu",
+            "hp": 5,
+            "level": 1,
+            "status": "active",
+            "actions": "1/1",
+            "focused": true,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "cpu_back_right",
+            "card": "card_051",
+            "name": "ピグミィ",
+            "owner": "cpu",
+            "hp": 2,
+            "level": 1,
+            "status": "active",
+            "actions": "1/2",
+            "focused": true,
+            "berserkPower": false,
+            "shielded": false
+          }
+        ]
+      },
+      "after": {
+        "currentPlayer": "cpu",
+        "turnNumber": 12,
+        "pendingLevelUp": false,
+        "players": {
+          "player": {
+            "masterId": "white",
+            "hp": 5,
+            "stones": 0,
+            "hand": 4,
+            "deck": 14,
+            "discard": 9
+          },
+          "cpu": {
+            "masterId": "white",
+            "hp": 8,
+            "stones": 6,
+            "hand": 6,
+            "deck": 13,
+            "discard": 8
+          }
+        },
+        "slots": [
+          {
+            "slotKey": "player_front_left",
+            "card": "card_037",
+            "name": "ドノマンティス",
+            "owner": "player",
+            "hp": 5,
+            "level": 2,
+            "status": "active",
+            "actions": "1/1",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "player_front_right",
+            "card": "polyspinner",
+            "name": "ポリスピナー",
+            "owner": "player",
+            "hp": 3,
+            "level": 1,
+            "status": "prepared",
+            "actions": "0/2",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "player_back_left",
+            "card": "card_051",
+            "name": "ピグミィ",
+            "owner": "player",
+            "hp": 3,
+            "level": 1,
+            "status": "active",
+            "actions": "2/2",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "player_back_right"
+          },
+          {
+            "slotKey": "cpu_front_left",
+            "card": "card_037",
+            "name": "ドノマンティス",
+            "owner": "cpu",
+            "hp": 5,
+            "level": 1,
+            "status": "active",
+            "actions": "0/1",
+            "focused": true,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "cpu_front_right",
+            "card": "card_047",
+            "name": "真勇者ダイン",
+            "owner": "cpu",
+            "hp": 5,
+            "level": 3,
+            "status": "active",
+            "actions": "0/1",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "cpu_back_left"
+          },
+          {
+            "slotKey": "cpu_back_right",
+            "card": "card_051",
+            "name": "ピグミィ",
+            "owner": "cpu",
+            "hp": 2,
+            "level": 1,
+            "status": "active",
+            "actions": "0/2",
+            "focused": true,
+            "berserkPower": false,
+            "shielded": false
+          }
+        ]
+      },
+      "newLog": [
+        "プレイヤーAI判断: 有効な行動がないためターン終了 / ターンプラン探索: 返し込み最終盤面-111点",
+        "CPUのターン開始",
+        "ドノマンティス Lv1が前衛へ自動移動した",
+        "CPUはストーンを3個得た",
+        "CPUはカードを引いた"
+      ]
+    },
+    {
+      "seed": 994320,
+      "step": 142,
+      "turnNumber": 12,
+      "player": "cpu",
+      "decision": "attack:cpu_front_left:attack->master:player",
+      "reason": "ターン開始時の最大打点3点で詰めろを作れるため攻撃",
+      "score": 94,
+      "legalDecisionCount": 10,
+      "nonEndDecisionCount": 9,
+      "before": {
+        "currentPlayer": "cpu",
+        "turnNumber": 12,
+        "pendingLevelUp": false,
+        "players": {
+          "player": {
+            "masterId": "white",
+            "hp": 5,
+            "stones": 0,
+            "hand": 4,
+            "deck": 14,
+            "discard": 9
+          },
+          "cpu": {
+            "masterId": "white",
+            "hp": 8,
+            "stones": 6,
+            "hand": 6,
+            "deck": 13,
+            "discard": 8
+          }
+        },
+        "slots": [
+          {
+            "slotKey": "player_front_left",
+            "card": "card_037",
+            "name": "ドノマンティス",
+            "owner": "player",
+            "hp": 5,
+            "level": 2,
+            "status": "active",
+            "actions": "1/1",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "player_front_right",
+            "card": "polyspinner",
+            "name": "ポリスピナー",
+            "owner": "player",
+            "hp": 3,
+            "level": 1,
+            "status": "prepared",
+            "actions": "0/2",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "player_back_left",
+            "card": "card_051",
+            "name": "ピグミィ",
+            "owner": "player",
+            "hp": 3,
+            "level": 1,
+            "status": "active",
+            "actions": "2/2",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "player_back_right"
+          },
+          {
+            "slotKey": "cpu_front_left",
+            "card": "card_037",
+            "name": "ドノマンティス",
+            "owner": "cpu",
+            "hp": 5,
+            "level": 1,
+            "status": "active",
+            "actions": "0/1",
+            "focused": true,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "cpu_front_right",
+            "card": "card_047",
+            "name": "真勇者ダイン",
+            "owner": "cpu",
+            "hp": 5,
+            "level": 3,
+            "status": "active",
+            "actions": "0/1",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "cpu_back_left"
+          },
+          {
+            "slotKey": "cpu_back_right",
+            "card": "card_051",
+            "name": "ピグミィ",
+            "owner": "cpu",
+            "hp": 2,
+            "level": 1,
+            "status": "active",
+            "actions": "0/2",
+            "focused": true,
+            "berserkPower": false,
+            "shielded": false
+          }
+        ]
+      },
+      "after": {
+        "currentPlayer": "cpu",
+        "turnNumber": 12,
+        "pendingLevelUp": false,
+        "players": {
+          "player": {
+            "masterId": "white",
+            "hp": 4,
+            "stones": 1,
+            "hand": 4,
+            "deck": 14,
+            "discard": 9
+          },
+          "cpu": {
+            "masterId": "white",
+            "hp": 8,
+            "stones": 6,
+            "hand": 6,
+            "deck": 13,
+            "discard": 8
+          }
+        },
+        "slots": [
+          {
+            "slotKey": "player_front_left",
+            "card": "card_037",
+            "name": "ドノマンティス",
+            "owner": "player",
+            "hp": 5,
+            "level": 2,
+            "status": "active",
+            "actions": "1/1",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "player_front_right",
+            "card": "polyspinner",
+            "name": "ポリスピナー",
+            "owner": "player",
+            "hp": 3,
+            "level": 1,
+            "status": "prepared",
+            "actions": "0/2",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "player_back_left",
+            "card": "card_051",
+            "name": "ピグミィ",
+            "owner": "player",
+            "hp": 3,
+            "level": 1,
+            "status": "active",
+            "actions": "2/2",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "player_back_right"
+          },
+          {
+            "slotKey": "cpu_front_left",
+            "card": "card_037",
+            "name": "ドノマンティス",
+            "owner": "cpu",
+            "hp": 5,
+            "level": 1,
+            "status": "active",
+            "actions": "1/1",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "cpu_front_right",
+            "card": "card_047",
+            "name": "真勇者ダイン",
+            "owner": "cpu",
+            "hp": 5,
+            "level": 3,
+            "status": "active",
+            "actions": "0/1",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "cpu_back_left"
+          },
+          {
+            "slotKey": "cpu_back_right",
+            "card": "card_051",
+            "name": "ピグミィ",
+            "owner": "cpu",
+            "hp": 2,
+            "level": 1,
+            "status": "active",
+            "actions": "0/2",
+            "focused": true,
+            "berserkPower": false,
+            "shielded": false
+          }
+        ]
+      },
+      "newLog": [
+        "CPU判断: ターン開始時の最大打点3点で詰めろを作れるため攻撃",
+        "CPUのドノマンティス Lv1: アタック 3P",
+        "プレイヤーのマスターHPが1減った（アタック）。ストーン+1"
+      ]
+    },
+    {
+      "seed": 994320,
+      "step": 143,
+      "turnNumber": 12,
+      "player": "cpu",
+      "decision": "attack:cpu_front_right:ダイン斬り->master:player",
+      "reason": "ターン開始時の最大打点2点で詰めろを作れるため攻撃",
+      "score": 212,
+      "legalDecisionCount": 3,
+      "nonEndDecisionCount": 2,
+      "before": {
+        "currentPlayer": "cpu",
+        "turnNumber": 12,
+        "pendingLevelUp": false,
+        "players": {
+          "player": {
+            "masterId": "white",
+            "hp": 4,
+            "stones": 1,
+            "hand": 4,
+            "deck": 14,
+            "discard": 9
+          },
+          "cpu": {
+            "masterId": "white",
+            "hp": 8,
+            "stones": 6,
+            "hand": 6,
+            "deck": 13,
+            "discard": 8
+          }
+        },
+        "slots": [
+          {
+            "slotKey": "player_front_left",
+            "card": "card_037",
+            "name": "ドノマンティス",
+            "owner": "player",
+            "hp": 5,
+            "level": 2,
+            "status": "active",
+            "actions": "1/1",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "player_front_right",
+            "card": "polyspinner",
+            "name": "ポリスピナー",
+            "owner": "player",
+            "hp": 3,
+            "level": 1,
+            "status": "prepared",
+            "actions": "0/2",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "player_back_left",
+            "card": "card_051",
+            "name": "ピグミィ",
+            "owner": "player",
+            "hp": 3,
+            "level": 1,
+            "status": "active",
+            "actions": "2/2",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "player_back_right"
+          },
+          {
+            "slotKey": "cpu_front_left",
+            "card": "card_037",
+            "name": "ドノマンティス",
+            "owner": "cpu",
+            "hp": 5,
+            "level": 1,
+            "status": "active",
+            "actions": "1/1",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "cpu_front_right",
+            "card": "card_047",
+            "name": "真勇者ダイン",
+            "owner": "cpu",
+            "hp": 5,
+            "level": 3,
+            "status": "active",
+            "actions": "0/1",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "cpu_back_left"
+          },
+          {
+            "slotKey": "cpu_back_right",
+            "card": "card_051",
+            "name": "ピグミィ",
+            "owner": "cpu",
+            "hp": 2,
+            "level": 1,
+            "status": "active",
+            "actions": "0/2",
+            "focused": true,
+            "berserkPower": false,
+            "shielded": false
+          }
+        ]
+      },
+      "after": {
+        "currentPlayer": "cpu",
+        "turnNumber": 12,
+        "pendingLevelUp": false,
+        "players": {
+          "player": {
+            "masterId": "white",
+            "hp": 2,
+            "stones": 3,
+            "hand": 4,
+            "deck": 14,
+            "discard": 9
+          },
+          "cpu": {
+            "masterId": "white",
+            "hp": 8,
+            "stones": 6,
+            "hand": 6,
+            "deck": 13,
+            "discard": 8
+          }
+        },
+        "slots": [
+          {
+            "slotKey": "player_front_left",
+            "card": "card_037",
+            "name": "ドノマンティス",
+            "owner": "player",
+            "hp": 5,
+            "level": 2,
+            "status": "active",
+            "actions": "1/1",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "player_front_right",
+            "card": "polyspinner",
+            "name": "ポリスピナー",
+            "owner": "player",
+            "hp": 3,
+            "level": 1,
+            "status": "prepared",
+            "actions": "0/2",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "player_back_left",
+            "card": "card_051",
+            "name": "ピグミィ",
+            "owner": "player",
+            "hp": 3,
+            "level": 1,
+            "status": "active",
+            "actions": "2/2",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "player_back_right"
+          },
+          {
+            "slotKey": "cpu_front_left",
+            "card": "card_037",
+            "name": "ドノマンティス",
+            "owner": "cpu",
+            "hp": 5,
+            "level": 1,
+            "status": "active",
+            "actions": "1/1",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "cpu_front_right",
+            "card": "card_047",
+            "name": "真勇者ダイン",
+            "owner": "cpu",
+            "hp": 5,
+            "level": 3,
+            "status": "active",
+            "actions": "1/1",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "cpu_back_left"
+          },
+          {
+            "slotKey": "cpu_back_right",
+            "card": "card_051",
+            "name": "ピグミィ",
+            "owner": "cpu",
+            "hp": 2,
+            "level": 1,
+            "status": "active",
+            "actions": "0/2",
+            "focused": true,
+            "berserkPower": false,
+            "shielded": false
+          }
+        ]
+      },
+      "newLog": [
+        "CPU判断: ターン開始時の最大打点2点で詰めろを作れるため攻撃",
+        "CPUの真勇者ダイン Lv3: ダイン斬り 4P",
+        "プレイヤーのマスターHPが2減った（ダイン斬り）。ストーン+2"
+      ]
+    },
+    {
+      "seed": 994320,
+      "step": 144,
+      "turnNumber": 12,
+      "player": "cpu",
+      "decision": "master:shield->monster:cpu_front_left",
+      "reason": "致死圏の味方を守れるためシールド",
+      "score": 116.69999999999999,
+      "legalDecisionCount": 2,
+      "nonEndDecisionCount": 1,
+      "before": {
+        "currentPlayer": "cpu",
+        "turnNumber": 12,
+        "pendingLevelUp": false,
+        "players": {
+          "player": {
+            "masterId": "white",
+            "hp": 2,
+            "stones": 3,
+            "hand": 4,
+            "deck": 14,
+            "discard": 9
+          },
+          "cpu": {
+            "masterId": "white",
+            "hp": 8,
+            "stones": 6,
+            "hand": 6,
+            "deck": 13,
+            "discard": 8
+          }
+        },
+        "slots": [
+          {
+            "slotKey": "player_front_left",
+            "card": "card_037",
+            "name": "ドノマンティス",
+            "owner": "player",
+            "hp": 5,
+            "level": 2,
+            "status": "active",
+            "actions": "1/1",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "player_front_right",
+            "card": "polyspinner",
+            "name": "ポリスピナー",
+            "owner": "player",
+            "hp": 3,
+            "level": 1,
+            "status": "prepared",
+            "actions": "0/2",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "player_back_left",
+            "card": "card_051",
+            "name": "ピグミィ",
+            "owner": "player",
+            "hp": 3,
+            "level": 1,
+            "status": "active",
+            "actions": "2/2",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "player_back_right"
+          },
+          {
+            "slotKey": "cpu_front_left",
+            "card": "card_037",
+            "name": "ドノマンティス",
+            "owner": "cpu",
+            "hp": 5,
+            "level": 1,
+            "status": "active",
+            "actions": "1/1",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "cpu_front_right",
+            "card": "card_047",
+            "name": "真勇者ダイン",
+            "owner": "cpu",
+            "hp": 5,
+            "level": 3,
+            "status": "active",
+            "actions": "1/1",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "cpu_back_left"
+          },
+          {
+            "slotKey": "cpu_back_right",
+            "card": "card_051",
+            "name": "ピグミィ",
+            "owner": "cpu",
+            "hp": 2,
+            "level": 1,
+            "status": "active",
+            "actions": "0/2",
+            "focused": true,
+            "berserkPower": false,
+            "shielded": false
+          }
+        ]
+      },
+      "after": {
+        "currentPlayer": "cpu",
+        "turnNumber": 12,
+        "pendingLevelUp": false,
+        "players": {
+          "player": {
+            "masterId": "white",
+            "hp": 2,
+            "stones": 3,
+            "hand": 4,
+            "deck": 14,
+            "discard": 9
+          },
+          "cpu": {
+            "masterId": "white",
+            "hp": 8,
+            "stones": 4,
+            "hand": 6,
+            "deck": 13,
+            "discard": 8
+          }
+        },
+        "slots": [
+          {
+            "slotKey": "player_front_left",
+            "card": "card_037",
+            "name": "ドノマンティス",
+            "owner": "player",
+            "hp": 5,
+            "level": 2,
+            "status": "active",
+            "actions": "1/1",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "player_front_right",
+            "card": "polyspinner",
+            "name": "ポリスピナー",
+            "owner": "player",
+            "hp": 3,
+            "level": 1,
+            "status": "prepared",
+            "actions": "0/2",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "player_back_left",
+            "card": "card_051",
+            "name": "ピグミィ",
+            "owner": "player",
+            "hp": 3,
+            "level": 1,
+            "status": "active",
+            "actions": "2/2",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "player_back_right"
+          },
+          {
+            "slotKey": "cpu_front_left",
+            "card": "card_037",
+            "name": "ドノマンティス",
+            "owner": "cpu",
+            "hp": 5,
+            "level": 1,
+            "status": "active",
+            "actions": "1/1",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": true
+          },
+          {
+            "slotKey": "cpu_front_right",
+            "card": "card_047",
+            "name": "真勇者ダイン",
+            "owner": "cpu",
+            "hp": 5,
+            "level": 3,
+            "status": "active",
+            "actions": "1/1",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "cpu_back_left"
+          },
+          {
+            "slotKey": "cpu_back_right",
+            "card": "card_051",
+            "name": "ピグミィ",
+            "owner": "cpu",
+            "hp": 2,
+            "level": 1,
+            "status": "active",
+            "actions": "0/2",
+            "focused": true,
+            "berserkPower": false,
+            "shielded": false
+          }
+        ]
+      },
+      "newLog": [
+        "CPU判断: 致死圏の味方を守れるためシールド",
+        "CPUはドノマンティス Lv1にシールドを張った"
+      ]
+    },
+    {
+      "seed": 994320,
+      "step": 145,
+      "turnNumber": 12,
+      "player": "cpu",
+      "decision": "end_turn",
+      "reason": "有効な行動がないためターン終了",
+      "score": 0,
+      "legalDecisionCount": 1,
+      "nonEndDecisionCount": 0,
+      "before": {
+        "currentPlayer": "cpu",
+        "turnNumber": 12,
+        "pendingLevelUp": false,
+        "players": {
+          "player": {
+            "masterId": "white",
+            "hp": 2,
+            "stones": 3,
+            "hand": 4,
+            "deck": 14,
+            "discard": 9
+          },
+          "cpu": {
+            "masterId": "white",
+            "hp": 8,
+            "stones": 4,
+            "hand": 6,
+            "deck": 13,
+            "discard": 8
+          }
+        },
+        "slots": [
+          {
+            "slotKey": "player_front_left",
+            "card": "card_037",
+            "name": "ドノマンティス",
+            "owner": "player",
+            "hp": 5,
+            "level": 2,
+            "status": "active",
+            "actions": "1/1",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "player_front_right",
+            "card": "polyspinner",
+            "name": "ポリスピナー",
+            "owner": "player",
+            "hp": 3,
+            "level": 1,
+            "status": "prepared",
+            "actions": "0/2",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "player_back_left",
+            "card": "card_051",
+            "name": "ピグミィ",
+            "owner": "player",
+            "hp": 3,
+            "level": 1,
+            "status": "active",
+            "actions": "2/2",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "player_back_right"
+          },
+          {
+            "slotKey": "cpu_front_left",
+            "card": "card_037",
+            "name": "ドノマンティス",
+            "owner": "cpu",
+            "hp": 5,
+            "level": 1,
+            "status": "active",
+            "actions": "1/1",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": true
+          },
+          {
+            "slotKey": "cpu_front_right",
+            "card": "card_047",
+            "name": "真勇者ダイン",
+            "owner": "cpu",
+            "hp": 5,
+            "level": 3,
+            "status": "active",
+            "actions": "1/1",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "cpu_back_left"
+          },
+          {
+            "slotKey": "cpu_back_right",
+            "card": "card_051",
+            "name": "ピグミィ",
+            "owner": "cpu",
+            "hp": 2,
+            "level": 1,
+            "status": "active",
+            "actions": "0/2",
+            "focused": true,
+            "berserkPower": false,
+            "shielded": false
+          }
+        ]
+      },
+      "after": {
+        "currentPlayer": "player",
+        "turnNumber": 13,
+        "pendingLevelUp": false,
+        "players": {
+          "player": {
+            "masterId": "white",
+            "hp": 2,
+            "stones": 6,
+            "hand": 5,
+            "deck": 13,
+            "discard": 9
+          },
+          "cpu": {
+            "masterId": "white",
+            "hp": 8,
+            "stones": 4,
+            "hand": 5,
+            "deck": 13,
+            "discard": 9
+          }
+        },
+        "slots": [
+          {
+            "slotKey": "player_front_left",
+            "card": "card_037",
+            "name": "ドノマンティス",
+            "owner": "player",
+            "hp": 5,
+            "level": 2,
+            "status": "active",
+            "actions": "0/1",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "player_front_right",
+            "card": "polyspinner",
+            "name": "ポリスピナー",
+            "owner": "player",
+            "hp": 3,
+            "level": 1,
+            "status": "active",
+            "actions": "0/2",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "player_back_left",
+            "card": "card_051",
+            "name": "ピグミィ",
+            "owner": "player",
+            "hp": 3,
+            "level": 1,
+            "status": "active",
+            "actions": "0/2",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "player_back_right"
+          },
+          {
+            "slotKey": "cpu_front_left",
+            "card": "card_037",
+            "name": "ドノマンティス",
+            "owner": "cpu",
+            "hp": 5,
+            "level": 1,
+            "status": "active",
+            "actions": "1/1",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": true
+          },
+          {
+            "slotKey": "cpu_front_right",
+            "card": "card_047",
+            "name": "真勇者ダイン",
+            "owner": "cpu",
+            "hp": 5,
+            "level": 3,
+            "status": "active",
+            "actions": "1/1",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "cpu_back_left"
+          },
+          {
+            "slotKey": "cpu_back_right",
+            "card": "card_051",
+            "name": "ピグミィ",
+            "owner": "cpu",
+            "hp": 2,
+            "level": 1,
+            "status": "active",
+            "actions": "0/2",
+            "focused": true,
+            "berserkPower": false,
+            "shielded": false
+          }
+        ]
+      },
+      "newLog": [
+        "CPU判断: 有効な行動がないためターン終了",
+        "CPUのカード溢れ: 手札を5枚まで捨てる",
+        "CPUは手札上限でスケープゴートを捨てた",
+        "プレイヤーのターン開始",
+        "ポリスピナー Lv1が登場した",
+        "プレイヤーはストーンを3個得た",
+        "プレイヤーはボムゾウを引いた"
+      ]
+    },
+    {
+      "seed": 994320,
+      "step": 146,
+      "turnNumber": 13,
+      "player": "player",
+      "decision": "attack:player_front_left:呪いの刃->master:cpu",
+      "reason": "相手マスターへ実ダメージを与えられるため攻撃 / ターンプラン探索: 返し込み最終盤面-749477点、次点と32点差",
+      "score": 308,
+      "legalDecisionCount": 3,
+      "nonEndDecisionCount": 2,
+      "before": {
+        "currentPlayer": "player",
+        "turnNumber": 13,
+        "pendingLevelUp": false,
+        "players": {
+          "player": {
+            "masterId": "white",
+            "hp": 2,
+            "stones": 6,
+            "hand": 5,
+            "deck": 13,
+            "discard": 9
+          },
+          "cpu": {
+            "masterId": "white",
+            "hp": 8,
+            "stones": 4,
+            "hand": 5,
+            "deck": 13,
+            "discard": 9
+          }
+        },
+        "slots": [
+          {
+            "slotKey": "player_front_left",
+            "card": "card_037",
+            "name": "ドノマンティス",
+            "owner": "player",
+            "hp": 5,
+            "level": 2,
+            "status": "active",
+            "actions": "0/1",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "player_front_right",
+            "card": "polyspinner",
+            "name": "ポリスピナー",
+            "owner": "player",
+            "hp": 3,
+            "level": 1,
+            "status": "active",
+            "actions": "0/2",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "player_back_left",
+            "card": "card_051",
+            "name": "ピグミィ",
+            "owner": "player",
+            "hp": 3,
+            "level": 1,
+            "status": "active",
+            "actions": "0/2",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "player_back_right"
+          },
+          {
+            "slotKey": "cpu_front_left",
+            "card": "card_037",
+            "name": "ドノマンティス",
+            "owner": "cpu",
+            "hp": 5,
+            "level": 1,
+            "status": "active",
+            "actions": "1/1",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": true
+          },
+          {
+            "slotKey": "cpu_front_right",
+            "card": "card_047",
+            "name": "真勇者ダイン",
+            "owner": "cpu",
+            "hp": 5,
+            "level": 3,
+            "status": "active",
+            "actions": "1/1",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "cpu_back_left"
+          },
+          {
+            "slotKey": "cpu_back_right",
+            "card": "card_051",
+            "name": "ピグミィ",
+            "owner": "cpu",
+            "hp": 2,
+            "level": 1,
+            "status": "active",
+            "actions": "0/2",
+            "focused": true,
+            "berserkPower": false,
+            "shielded": false
+          }
+        ]
+      },
+      "after": {
+        "currentPlayer": "player",
+        "turnNumber": 13,
+        "pendingLevelUp": false,
+        "players": {
+          "player": {
+            "masterId": "white",
+            "hp": 2,
+            "stones": 5,
+            "hand": 5,
+            "deck": 13,
+            "discard": 9
+          },
+          "cpu": {
+            "masterId": "white",
+            "hp": 6,
+            "stones": 6,
+            "hand": 5,
+            "deck": 13,
+            "discard": 9
+          }
+        },
+        "slots": [
+          {
+            "slotKey": "player_front_left",
+            "card": "card_037",
+            "name": "ドノマンティス",
+            "owner": "player",
+            "hp": 5,
+            "level": 2,
+            "status": "active",
+            "actions": "1/1",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "player_front_right",
+            "card": "polyspinner",
+            "name": "ポリスピナー",
+            "owner": "player",
+            "hp": 3,
+            "level": 1,
+            "status": "active",
+            "actions": "0/2",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "player_back_left",
+            "card": "card_051",
+            "name": "ピグミィ",
+            "owner": "player",
+            "hp": 3,
+            "level": 1,
+            "status": "active",
+            "actions": "0/2",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "player_back_right"
+          },
+          {
+            "slotKey": "cpu_front_left",
+            "card": "card_037",
+            "name": "ドノマンティス",
+            "owner": "cpu",
+            "hp": 5,
+            "level": 1,
+            "status": "active",
+            "actions": "1/1",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": true
+          },
+          {
+            "slotKey": "cpu_front_right",
+            "card": "card_047",
+            "name": "真勇者ダイン",
+            "owner": "cpu",
+            "hp": 5,
+            "level": 3,
+            "status": "active",
+            "actions": "1/1",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "cpu_back_left"
+          },
+          {
+            "slotKey": "cpu_back_right",
+            "card": "card_051",
+            "name": "ピグミィ",
+            "owner": "cpu",
+            "hp": 2,
+            "level": 1,
+            "status": "active",
+            "actions": "0/2",
+            "focused": true,
+            "berserkPower": false,
+            "shielded": false
+          }
+        ]
+      },
+      "newLog": [
+        "プレイヤーAI判断: 相手マスターへ実ダメージを与えられるため攻撃 / ターンプラン探索: 返し込み最終盤面-749477点、次点と32点差",
+        "プレイヤーのドノマンティス Lv2: 呪いの刃 4P",
+        "CPUのマスターHPが2減った（呪いの刃）。ストーン+2"
+      ]
+    },
+    {
+      "seed": 994320,
+      "step": 147,
+      "turnNumber": 13,
+      "player": "player",
+      "decision": "master:shield->monster:player_front_right",
+      "reason": "倒されそうな高価値味方を守るためシールド",
+      "score": 68.7,
+      "legalDecisionCount": 2,
+      "nonEndDecisionCount": 1,
+      "before": {
+        "currentPlayer": "player",
+        "turnNumber": 13,
+        "pendingLevelUp": false,
+        "players": {
+          "player": {
+            "masterId": "white",
+            "hp": 2,
+            "stones": 5,
+            "hand": 5,
+            "deck": 13,
+            "discard": 9
+          },
+          "cpu": {
+            "masterId": "white",
+            "hp": 6,
+            "stones": 6,
+            "hand": 5,
+            "deck": 13,
+            "discard": 9
+          }
+        },
+        "slots": [
+          {
+            "slotKey": "player_front_left",
+            "card": "card_037",
+            "name": "ドノマンティス",
+            "owner": "player",
+            "hp": 5,
+            "level": 2,
+            "status": "active",
+            "actions": "1/1",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "player_front_right",
+            "card": "polyspinner",
+            "name": "ポリスピナー",
+            "owner": "player",
+            "hp": 3,
+            "level": 1,
+            "status": "active",
+            "actions": "0/2",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "player_back_left",
+            "card": "card_051",
+            "name": "ピグミィ",
+            "owner": "player",
+            "hp": 3,
+            "level": 1,
+            "status": "active",
+            "actions": "0/2",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "player_back_right"
+          },
+          {
+            "slotKey": "cpu_front_left",
+            "card": "card_037",
+            "name": "ドノマンティス",
+            "owner": "cpu",
+            "hp": 5,
+            "level": 1,
+            "status": "active",
+            "actions": "1/1",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": true
+          },
+          {
+            "slotKey": "cpu_front_right",
+            "card": "card_047",
+            "name": "真勇者ダイン",
+            "owner": "cpu",
+            "hp": 5,
+            "level": 3,
+            "status": "active",
+            "actions": "1/1",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "cpu_back_left"
+          },
+          {
+            "slotKey": "cpu_back_right",
+            "card": "card_051",
+            "name": "ピグミィ",
+            "owner": "cpu",
+            "hp": 2,
+            "level": 1,
+            "status": "active",
+            "actions": "0/2",
+            "focused": true,
+            "berserkPower": false,
+            "shielded": false
+          }
+        ]
+      },
+      "after": {
+        "currentPlayer": "player",
+        "turnNumber": 13,
+        "pendingLevelUp": false,
+        "players": {
+          "player": {
+            "masterId": "white",
+            "hp": 2,
+            "stones": 3,
+            "hand": 5,
+            "deck": 13,
+            "discard": 9
+          },
+          "cpu": {
+            "masterId": "white",
+            "hp": 6,
+            "stones": 6,
+            "hand": 5,
+            "deck": 13,
+            "discard": 9
+          }
+        },
+        "slots": [
+          {
+            "slotKey": "player_front_left",
+            "card": "card_037",
+            "name": "ドノマンティス",
+            "owner": "player",
+            "hp": 5,
+            "level": 2,
+            "status": "active",
+            "actions": "1/1",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "player_front_right",
+            "card": "polyspinner",
+            "name": "ポリスピナー",
+            "owner": "player",
+            "hp": 3,
+            "level": 1,
+            "status": "active",
+            "actions": "0/2",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": true
+          },
+          {
+            "slotKey": "player_back_left",
+            "card": "card_051",
+            "name": "ピグミィ",
+            "owner": "player",
+            "hp": 3,
+            "level": 1,
+            "status": "active",
+            "actions": "0/2",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "player_back_right"
+          },
+          {
+            "slotKey": "cpu_front_left",
+            "card": "card_037",
+            "name": "ドノマンティス",
+            "owner": "cpu",
+            "hp": 5,
+            "level": 1,
+            "status": "active",
+            "actions": "1/1",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": true
+          },
+          {
+            "slotKey": "cpu_front_right",
+            "card": "card_047",
+            "name": "真勇者ダイン",
+            "owner": "cpu",
+            "hp": 5,
+            "level": 3,
+            "status": "active",
+            "actions": "1/1",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "cpu_back_left"
+          },
+          {
+            "slotKey": "cpu_back_right",
+            "card": "card_051",
+            "name": "ピグミィ",
+            "owner": "cpu",
+            "hp": 2,
+            "level": 1,
+            "status": "active",
+            "actions": "0/2",
+            "focused": true,
+            "berserkPower": false,
+            "shielded": false
+          }
+        ]
+      },
+      "newLog": [
+        "プレイヤーAI判断: 倒されそうな高価値味方を守るためシールド",
+        "プレイヤーはポリスピナー Lv1にシールドを張った"
+      ]
+    },
+    {
+      "seed": 994320,
+      "step": 148,
+      "turnNumber": 13,
+      "player": "player",
+      "decision": "end_turn",
+      "reason": "有効な行動がないためターン終了 / ターンプラン探索: 返し込み最終盤面-749631点",
+      "score": 0,
+      "legalDecisionCount": 1,
+      "nonEndDecisionCount": 0,
+      "before": {
+        "currentPlayer": "player",
+        "turnNumber": 13,
+        "pendingLevelUp": false,
+        "players": {
+          "player": {
+            "masterId": "white",
+            "hp": 2,
+            "stones": 3,
+            "hand": 5,
+            "deck": 13,
+            "discard": 9
+          },
+          "cpu": {
+            "masterId": "white",
+            "hp": 6,
+            "stones": 6,
+            "hand": 5,
+            "deck": 13,
+            "discard": 9
+          }
+        },
+        "slots": [
+          {
+            "slotKey": "player_front_left",
+            "card": "card_037",
+            "name": "ドノマンティス",
+            "owner": "player",
+            "hp": 5,
+            "level": 2,
+            "status": "active",
+            "actions": "1/1",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "player_front_right",
+            "card": "polyspinner",
+            "name": "ポリスピナー",
+            "owner": "player",
+            "hp": 3,
+            "level": 1,
+            "status": "active",
+            "actions": "0/2",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": true
+          },
+          {
+            "slotKey": "player_back_left",
+            "card": "card_051",
+            "name": "ピグミィ",
+            "owner": "player",
+            "hp": 3,
+            "level": 1,
+            "status": "active",
+            "actions": "0/2",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "player_back_right"
+          },
+          {
+            "slotKey": "cpu_front_left",
+            "card": "card_037",
+            "name": "ドノマンティス",
+            "owner": "cpu",
+            "hp": 5,
+            "level": 1,
+            "status": "active",
+            "actions": "1/1",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": true
+          },
+          {
+            "slotKey": "cpu_front_right",
+            "card": "card_047",
+            "name": "真勇者ダイン",
+            "owner": "cpu",
+            "hp": 5,
+            "level": 3,
+            "status": "active",
+            "actions": "1/1",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "cpu_back_left"
+          },
+          {
+            "slotKey": "cpu_back_right",
+            "card": "card_051",
+            "name": "ピグミィ",
+            "owner": "cpu",
+            "hp": 2,
+            "level": 1,
+            "status": "active",
+            "actions": "0/2",
+            "focused": true,
+            "berserkPower": false,
+            "shielded": false
+          }
+        ]
+      },
+      "after": {
+        "currentPlayer": "cpu",
+        "turnNumber": 13,
+        "pendingLevelUp": false,
+        "players": {
+          "player": {
+            "masterId": "white",
+            "hp": 2,
+            "stones": 3,
+            "hand": 5,
+            "deck": 13,
+            "discard": 9
+          },
+          "cpu": {
+            "masterId": "white",
+            "hp": 6,
+            "stones": 9,
+            "hand": 6,
+            "deck": 12,
+            "discard": 9
+          }
+        },
+        "slots": [
+          {
+            "slotKey": "player_front_left",
+            "card": "card_037",
+            "name": "ドノマンティス",
+            "owner": "player",
+            "hp": 5,
+            "level": 2,
+            "status": "active",
+            "actions": "1/1",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "player_front_right",
+            "card": "polyspinner",
+            "name": "ポリスピナー",
+            "owner": "player",
+            "hp": 3,
+            "level": 1,
+            "status": "active",
+            "actions": "0/2",
+            "focused": true,
+            "berserkPower": false,
+            "shielded": true
+          },
+          {
+            "slotKey": "player_back_left",
+            "card": "card_051",
+            "name": "ピグミィ",
+            "owner": "player",
+            "hp": 3,
+            "level": 1,
+            "status": "active",
+            "actions": "0/2",
+            "focused": true,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "player_back_right"
+          },
+          {
+            "slotKey": "cpu_front_left",
+            "card": "card_037",
+            "name": "ドノマンティス",
+            "owner": "cpu",
+            "hp": 5,
+            "level": 1,
+            "status": "active",
+            "actions": "0/1",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "cpu_front_right",
+            "card": "card_047",
+            "name": "真勇者ダイン",
+            "owner": "cpu",
+            "hp": 5,
+            "level": 3,
+            "status": "active",
+            "actions": "0/1",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "cpu_back_left"
+          },
+          {
+            "slotKey": "cpu_back_right",
+            "card": "card_051",
+            "name": "ピグミィ",
+            "owner": "cpu",
+            "hp": 2,
+            "level": 1,
+            "status": "active",
+            "actions": "0/2",
+            "focused": true,
+            "berserkPower": false,
+            "shielded": false
+          }
+        ]
+      },
+      "newLog": [
+        "プレイヤーAI判断: 有効な行動がないためターン終了 / ターンプラン探索: 返し込み最終盤面-749631点",
+        "ポリスピナー Lv1は気合いだめした",
+        "ピグミィ Lv1は気合いだめした",
+        "CPUのターン開始",
+        "CPUはストーンを3個得た",
+        "ドノマンティス Lv1の防御効果が切れた",
+        "CPUはカードを引いた"
+      ]
+    },
+    {
+      "seed": 994320,
+      "step": 149,
+      "turnNumber": 13,
+      "player": "cpu",
+      "decision": "attack:cpu_front_right:ダイン斬り->master:player",
+      "reason": "ターン開始時の最大打点で相手マスターを倒せるため攻撃",
+      "score": 1000000,
+      "legalDecisionCount": 3,
+      "nonEndDecisionCount": 2,
+      "before": {
+        "currentPlayer": "cpu",
+        "turnNumber": 13,
+        "pendingLevelUp": false,
+        "players": {
+          "player": {
+            "masterId": "white",
+            "hp": 2,
+            "stones": 3,
+            "hand": 5,
+            "deck": 13,
+            "discard": 9
+          },
+          "cpu": {
+            "masterId": "white",
+            "hp": 6,
+            "stones": 9,
+            "hand": 6,
+            "deck": 12,
+            "discard": 9
+          }
+        },
+        "slots": [
+          {
+            "slotKey": "player_front_left",
+            "card": "card_037",
+            "name": "ドノマンティス",
+            "owner": "player",
+            "hp": 5,
+            "level": 2,
+            "status": "active",
+            "actions": "1/1",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "player_front_right",
+            "card": "polyspinner",
+            "name": "ポリスピナー",
+            "owner": "player",
+            "hp": 3,
+            "level": 1,
+            "status": "active",
+            "actions": "0/2",
+            "focused": true,
+            "berserkPower": false,
+            "shielded": true
+          },
+          {
+            "slotKey": "player_back_left",
+            "card": "card_051",
+            "name": "ピグミィ",
+            "owner": "player",
+            "hp": 3,
+            "level": 1,
+            "status": "active",
+            "actions": "0/2",
+            "focused": true,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "player_back_right"
+          },
+          {
+            "slotKey": "cpu_front_left",
+            "card": "card_037",
+            "name": "ドノマンティス",
+            "owner": "cpu",
+            "hp": 5,
+            "level": 1,
+            "status": "active",
+            "actions": "0/1",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "cpu_front_right",
+            "card": "card_047",
+            "name": "真勇者ダイン",
+            "owner": "cpu",
+            "hp": 5,
+            "level": 3,
+            "status": "active",
+            "actions": "0/1",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "cpu_back_left"
+          },
+          {
+            "slotKey": "cpu_back_right",
+            "card": "card_051",
+            "name": "ピグミィ",
+            "owner": "cpu",
+            "hp": 2,
+            "level": 1,
+            "status": "active",
+            "actions": "0/2",
+            "focused": true,
+            "berserkPower": false,
+            "shielded": false
+          }
+        ]
+      },
+      "after": {
+        "currentPlayer": "cpu",
+        "turnNumber": 13,
+        "winner": "cpu",
+        "pendingLevelUp": false,
+        "players": {
+          "player": {
+            "masterId": "white",
+            "hp": 0,
+            "stones": 5,
+            "hand": 5,
+            "deck": 13,
+            "discard": 9
+          },
+          "cpu": {
+            "masterId": "white",
+            "hp": 6,
+            "stones": 9,
+            "hand": 6,
+            "deck": 12,
+            "discard": 9
+          }
+        },
+        "slots": [
+          {
+            "slotKey": "player_front_left",
+            "card": "card_037",
+            "name": "ドノマンティス",
+            "owner": "player",
+            "hp": 5,
+            "level": 2,
+            "status": "active",
+            "actions": "1/1",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "player_front_right",
+            "card": "polyspinner",
+            "name": "ポリスピナー",
+            "owner": "player",
+            "hp": 3,
+            "level": 1,
+            "status": "active",
+            "actions": "0/2",
+            "focused": true,
+            "berserkPower": false,
+            "shielded": true
+          },
+          {
+            "slotKey": "player_back_left",
+            "card": "card_051",
+            "name": "ピグミィ",
+            "owner": "player",
+            "hp": 3,
+            "level": 1,
+            "status": "active",
+            "actions": "0/2",
+            "focused": true,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "player_back_right"
+          },
+          {
+            "slotKey": "cpu_front_left",
+            "card": "card_037",
+            "name": "ドノマンティス",
+            "owner": "cpu",
+            "hp": 5,
+            "level": 1,
+            "status": "active",
+            "actions": "0/1",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "cpu_front_right",
+            "card": "card_047",
+            "name": "真勇者ダイン",
+            "owner": "cpu",
+            "hp": 5,
+            "level": 3,
+            "status": "active",
+            "actions": "1/1",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "cpu_back_left"
+          },
+          {
+            "slotKey": "cpu_back_right",
+            "card": "card_051",
+            "name": "ピグミィ",
+            "owner": "cpu",
+            "hp": 2,
+            "level": 1,
+            "status": "active",
+            "actions": "0/2",
+            "focused": true,
+            "berserkPower": false,
+            "shielded": false
+          }
+        ]
+      },
+      "newLog": [
+        "CPU判断: ターン開始時の最大打点で相手マスターを倒せるため攻撃",
+        "CPUの真勇者ダイン Lv3: ダイン斬り 4P",
+        "プレイヤーのマスターHPが2減った（ダイン斬り）。ストーン+2",
+        "CPUの勝利"
+      ]
+    }
+  ]
+}

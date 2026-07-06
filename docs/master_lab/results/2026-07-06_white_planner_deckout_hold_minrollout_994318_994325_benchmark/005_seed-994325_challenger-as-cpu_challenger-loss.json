@@ -1,0 +1,5935 @@
+{
+  "direction": "challenger-as-cpu",
+  "seed": 994325,
+  "winner": "player",
+  "winnerProfile": "white",
+  "steps": 154,
+  "turns": 19,
+  "issueCount": 0,
+  "warningCount": 0,
+  "finalState": {
+    "currentPlayer": "player",
+    "turnNumber": 19,
+    "winner": "player",
+    "pendingLevelUp": false,
+    "players": {
+      "player": {
+        "masterId": "white",
+        "hp": 9,
+        "stones": 30,
+        "hand": 6,
+        "deck": 7,
+        "discard": 14
+      },
+      "cpu": {
+        "masterId": "white",
+        "hp": 0,
+        "stones": 23,
+        "hand": 5,
+        "deck": 7,
+        "discard": 17
+      }
+    },
+    "slots": [
+      {
+        "slotKey": "player_front_left",
+        "card": "card_037",
+        "name": "ドノマンティス",
+        "owner": "player",
+        "hp": 5,
+        "level": 1,
+        "status": "active",
+        "actions": "1/1",
+        "focused": false,
+        "berserkPower": false,
+        "shielded": false
+      },
+      {
+        "slotKey": "player_front_right",
+        "card": "yanbaru",
+        "name": "ヤンバル",
+        "owner": "player",
+        "hp": 3,
+        "level": 2,
+        "status": "active",
+        "actions": "0/1",
+        "focused": true,
+        "berserkPower": false,
+        "shielded": false
+      },
+      {
+        "slotKey": "player_back_left",
+        "card": "yanbaru",
+        "name": "ヤンバル",
+        "owner": "player",
+        "hp": 3,
+        "level": 1,
+        "status": "active",
+        "actions": "0/1",
+        "focused": true,
+        "berserkPower": false,
+        "shielded": false
+      },
+      {
+        "slotKey": "player_back_right"
+      },
+      {
+        "slotKey": "cpu_front_left",
+        "card": "card_047",
+        "name": "真勇者ダイン",
+        "owner": "cpu",
+        "hp": 6,
+        "level": 1,
+        "status": "active",
+        "actions": "1/1",
+        "focused": false,
+        "berserkPower": false,
+        "shielded": false
+      },
+      {
+        "slotKey": "cpu_front_right"
+      },
+      {
+        "slotKey": "cpu_back_left"
+      },
+      {
+        "slotKey": "cpu_back_right"
+      }
+    ]
+  },
+  "logTail": [
+    "プレイヤーAI判断: 有効な行動がないためターン終了 / 見送り: マスター特技は800点差で見送り",
+    "ドノマンティス Lv1は気合いだめした",
+    "プレイヤーのカード溢れ: 手札を5枚まで捨てる",
+    "プレイヤーは手札上限で真勇者ダインを捨てた",
+    "CPUのターン開始",
+    "CPUはストーンを3個得た",
+    "CPUはカードを引いた",
+    "CPU判断: 相手マスターへ実ダメージを与えられるため攻撃",
+    "CPUの真勇者ダイン Lv1: ダイン斬り 3P",
+    "プレイヤーのマスターHPが1減った（ダイン斬り）。ストーン+1",
+    "CPU判断: 有効な行動がないためターン終了 / ターンプラン探索: 返し込み最終盤面-749202点",
+    "CPUのカード溢れ: 手札を5枚まで捨てる",
+    "CPUは手札上限でスケープゴートを捨てた",
+    "プレイヤーのターン開始",
+    "プレイヤーはストーンを3個得た",
+    "プレイヤーはスケープゴートを引いた",
+    "プレイヤーAI判断: ターン開始時の最大打点で相手マスターを倒せるため攻撃",
+    "プレイヤーのドノマンティス Lv1: アタック 3P",
+    "CPUのマスターHPが1減った（アタック）。ストーン+1",
+    "プレイヤーの勝利"
+  ],
+  "history": [
+    {
+      "seed": 994325,
+      "step": 124,
+      "turnNumber": 12,
+      "player": "player",
+      "decision": "master:wake_up->monster:cpu_back_left",
+      "reason": "相手の準備中モンスターを起こして撃破できるためウェイクアップ / 見送り: 移動は154点差で見送り、移動は459点差で見送り",
+      "score": 310.9,
+      "legalDecisionCount": 14,
+      "nonEndDecisionCount": 13,
+      "before": {
+        "currentPlayer": "player",
+        "turnNumber": 12,
+        "pendingLevelUp": false,
+        "players": {
+          "player": {
+            "masterId": "white",
+            "hp": 10,
+            "stones": 8,
+            "hand": 5,
+            "deck": 14,
+            "discard": 7
+          },
+          "cpu": {
+            "masterId": "white",
+            "hp": 7,
+            "stones": 1,
+            "hand": 4,
+            "deck": 14,
+            "discard": 11
+          }
+        },
+        "slots": [
+          {
+            "slotKey": "player_front_left",
+            "card": "yanbaru",
+            "name": "ヤンバル",
+            "owner": "player",
+            "hp": 3,
+            "level": 2,
+            "status": "active",
+            "actions": "0/1",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "player_front_right",
+            "card": "yanbaru",
+            "name": "ヤンバル",
+            "owner": "player",
+            "hp": 3,
+            "level": 1,
+            "status": "active",
+            "actions": "0/1",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "player_back_left",
+            "card": "bomuzo",
+            "name": "ボムゾウ",
+            "owner": "player",
+            "hp": 5,
+            "level": 2,
+            "status": "active",
+            "actions": "0/1",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "player_back_right",
+            "card": "card_037",
+            "name": "ドノマンティス",
+            "owner": "player",
+            "hp": 5,
+            "level": 1,
+            "status": "active",
+            "actions": "0/1",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "cpu_front_left"
+          },
+          {
+            "slotKey": "cpu_front_right"
+          },
+          {
+            "slotKey": "cpu_back_left",
+            "card": "yanbaru",
+            "name": "ヤンバル",
+            "owner": "cpu",
+            "hp": 3,
+            "level": 1,
+            "status": "prepared",
+            "actions": "0/1",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "cpu_back_right"
+          }
+        ]
+      },
+      "after": {
+        "currentPlayer": "player",
+        "turnNumber": 12,
+        "pendingLevelUp": false,
+        "players": {
+          "player": {
+            "masterId": "white",
+            "hp": 10,
+            "stones": 6,
+            "hand": 5,
+            "deck": 14,
+            "discard": 7
+          },
+          "cpu": {
+            "masterId": "white",
+            "hp": 7,
+            "stones": 1,
+            "hand": 4,
+            "deck": 14,
+            "discard": 11
+          }
+        },
+        "slots": [
+          {
+            "slotKey": "player_front_left",
+            "card": "yanbaru",
+            "name": "ヤンバル",
+            "owner": "player",
+            "hp": 3,
+            "level": 2,
+            "status": "active",
+            "actions": "0/1",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "player_front_right",
+            "card": "yanbaru",
+            "name": "ヤンバル",
+            "owner": "player",
+            "hp": 3,
+            "level": 1,
+            "status": "active",
+            "actions": "0/1",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "player_back_left",
+            "card": "bomuzo",
+            "name": "ボムゾウ",
+            "owner": "player",
+            "hp": 5,
+            "level": 2,
+            "status": "active",
+            "actions": "0/1",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "player_back_right",
+            "card": "card_037",
+            "name": "ドノマンティス",
+            "owner": "player",
+            "hp": 5,
+            "level": 1,
+            "status": "active",
+            "actions": "0/1",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "cpu_front_left"
+          },
+          {
+            "slotKey": "cpu_front_right"
+          },
+          {
+            "slotKey": "cpu_back_left",
+            "card": "yanbaru",
+            "name": "ヤンバル",
+            "owner": "cpu",
+            "hp": 3,
+            "level": 1,
+            "status": "active",
+            "actions": "0/1",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "cpu_back_right"
+          }
+        ]
+      },
+      "newLog": [
+        "プレイヤーAI判断: 相手の準備中モンスターを起こして撃破できるためウェイクアップ / 見送り: 移動は154点差で見送り、移動は459点差で見送り",
+        "プレイヤーはヤンバル Lv1をウェイクアップした"
+      ]
+    },
+    {
+      "seed": 994325,
+      "step": 125,
+      "turnNumber": 12,
+      "player": "player",
+      "decision": "attack:player_front_left:wild_claw->monster:cpu_back_left",
+      "reason": "敵モンスターを撃破できるため攻撃 / 見送り: 移動は134点差で見送り、移動は136点差で見送り",
+      "score": 402,
+      "legalDecisionCount": 15,
+      "nonEndDecisionCount": 14,
+      "before": {
+        "currentPlayer": "player",
+        "turnNumber": 12,
+        "pendingLevelUp": false,
+        "players": {
+          "player": {
+            "masterId": "white",
+            "hp": 10,
+            "stones": 6,
+            "hand": 5,
+            "deck": 14,
+            "discard": 7
+          },
+          "cpu": {
+            "masterId": "white",
+            "hp": 7,
+            "stones": 1,
+            "hand": 4,
+            "deck": 14,
+            "discard": 11
+          }
+        },
+        "slots": [
+          {
+            "slotKey": "player_front_left",
+            "card": "yanbaru",
+            "name": "ヤンバル",
+            "owner": "player",
+            "hp": 3,
+            "level": 2,
+            "status": "active",
+            "actions": "0/1",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "player_front_right",
+            "card": "yanbaru",
+            "name": "ヤンバル",
+            "owner": "player",
+            "hp": 3,
+            "level": 1,
+            "status": "active",
+            "actions": "0/1",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "player_back_left",
+            "card": "bomuzo",
+            "name": "ボムゾウ",
+            "owner": "player",
+            "hp": 5,
+            "level": 2,
+            "status": "active",
+            "actions": "0/1",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "player_back_right",
+            "card": "card_037",
+            "name": "ドノマンティス",
+            "owner": "player",
+            "hp": 5,
+            "level": 1,
+            "status": "active",
+            "actions": "0/1",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "cpu_front_left"
+          },
+          {
+            "slotKey": "cpu_front_right"
+          },
+          {
+            "slotKey": "cpu_back_left",
+            "card": "yanbaru",
+            "name": "ヤンバル",
+            "owner": "cpu",
+            "hp": 3,
+            "level": 1,
+            "status": "active",
+            "actions": "0/1",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "cpu_back_right"
+          }
+        ]
+      },
+      "after": {
+        "currentPlayer": "player",
+        "turnNumber": 12,
+        "pendingLevelUp": false,
+        "players": {
+          "player": {
+            "masterId": "white",
+            "hp": 10,
+            "stones": 6,
+            "hand": 5,
+            "deck": 14,
+            "discard": 7
+          },
+          "cpu": {
+            "masterId": "white",
+            "hp": 7,
+            "stones": 2,
+            "hand": 4,
+            "deck": 14,
+            "discard": 12
+          }
+        },
+        "slots": [
+          {
+            "slotKey": "player_front_left",
+            "card": "yanbaru",
+            "name": "ヤンバル",
+            "owner": "player",
+            "hp": 3,
+            "level": 2,
+            "status": "active",
+            "actions": "1/1",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "player_front_right",
+            "card": "yanbaru",
+            "name": "ヤンバル",
+            "owner": "player",
+            "hp": 3,
+            "level": 1,
+            "status": "active",
+            "actions": "0/1",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "player_back_left",
+            "card": "bomuzo",
+            "name": "ボムゾウ",
+            "owner": "player",
+            "hp": 5,
+            "level": 2,
+            "status": "active",
+            "actions": "0/1",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "player_back_right",
+            "card": "card_037",
+            "name": "ドノマンティス",
+            "owner": "player",
+            "hp": 5,
+            "level": 1,
+            "status": "active",
+            "actions": "0/1",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "cpu_front_left"
+          },
+          {
+            "slotKey": "cpu_front_right"
+          },
+          {
+            "slotKey": "cpu_back_left"
+          },
+          {
+            "slotKey": "cpu_back_right"
+          }
+        ]
+      },
+      "newLog": [
+        "プレイヤーAI判断: 敵モンスターを撃破できるため攻撃 / 見送り: 移動は134点差で見送り、移動は136点差で見送り",
+        "プレイヤーのヤンバル Lv2: ワイルドクロウ 3P",
+        "ワイルドクロウでヤンバル Lv1に3ダメージ",
+        "ヤンバル Lv1は倒れ、CPUにストーン1個が戻った"
+      ]
+    },
+    {
+      "seed": 994325,
+      "step": 126,
+      "turnNumber": 12,
+      "player": "player",
+      "decision": "move:player_front_right->player_back_left",
+      "reason": "移動後に強い攻撃筋を作れるため移動 / 見送り: 移動は11点差で見送り、移動は18点差で見送り",
+      "score": 106,
+      "legalDecisionCount": 8,
+      "nonEndDecisionCount": 7,
+      "before": {
+        "currentPlayer": "player",
+        "turnNumber": 12,
+        "pendingLevelUp": false,
+        "players": {
+          "player": {
+            "masterId": "white",
+            "hp": 10,
+            "stones": 6,
+            "hand": 5,
+            "deck": 14,
+            "discard": 7
+          },
+          "cpu": {
+            "masterId": "white",
+            "hp": 7,
+            "stones": 2,
+            "hand": 4,
+            "deck": 14,
+            "discard": 12
+          }
+        },
+        "slots": [
+          {
+            "slotKey": "player_front_left",
+            "card": "yanbaru",
+            "name": "ヤンバル",
+            "owner": "player",
+            "hp": 3,
+            "level": 2,
+            "status": "active",
+            "actions": "1/1",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "player_front_right",
+            "card": "yanbaru",
+            "name": "ヤンバル",
+            "owner": "player",
+            "hp": 3,
+            "level": 1,
+            "status": "active",
+            "actions": "0/1",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "player_back_left",
+            "card": "bomuzo",
+            "name": "ボムゾウ",
+            "owner": "player",
+            "hp": 5,
+            "level": 2,
+            "status": "active",
+            "actions": "0/1",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "player_back_right",
+            "card": "card_037",
+            "name": "ドノマンティス",
+            "owner": "player",
+            "hp": 5,
+            "level": 1,
+            "status": "active",
+            "actions": "0/1",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "cpu_front_left"
+          },
+          {
+            "slotKey": "cpu_front_right"
+          },
+          {
+            "slotKey": "cpu_back_left"
+          },
+          {
+            "slotKey": "cpu_back_right"
+          }
+        ]
+      },
+      "after": {
+        "currentPlayer": "player",
+        "turnNumber": 12,
+        "pendingLevelUp": false,
+        "players": {
+          "player": {
+            "masterId": "white",
+            "hp": 10,
+            "stones": 6,
+            "hand": 5,
+            "deck": 14,
+            "discard": 7
+          },
+          "cpu": {
+            "masterId": "white",
+            "hp": 7,
+            "stones": 2,
+            "hand": 4,
+            "deck": 14,
+            "discard": 12
+          }
+        },
+        "slots": [
+          {
+            "slotKey": "player_front_left",
+            "card": "yanbaru",
+            "name": "ヤンバル",
+            "owner": "player",
+            "hp": 3,
+            "level": 2,
+            "status": "active",
+            "actions": "1/1",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "player_front_right",
+            "card": "bomuzo",
+            "name": "ボムゾウ",
+            "owner": "player",
+            "hp": 5,
+            "level": 2,
+            "status": "active",
+            "actions": "1/1",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "player_back_left",
+            "card": "yanbaru",
+            "name": "ヤンバル",
+            "owner": "player",
+            "hp": 3,
+            "level": 1,
+            "status": "active",
+            "actions": "1/1",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "player_back_right",
+            "card": "card_037",
+            "name": "ドノマンティス",
+            "owner": "player",
+            "hp": 5,
+            "level": 1,
+            "status": "active",
+            "actions": "0/1",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "cpu_front_left"
+          },
+          {
+            "slotKey": "cpu_front_right"
+          },
+          {
+            "slotKey": "cpu_back_left"
+          },
+          {
+            "slotKey": "cpu_back_right"
+          }
+        ]
+      },
+      "newLog": [
+        "プレイヤーAI判断: 移動後に強い攻撃筋を作れるため移動 / 見送り: 移動は11点差で見送り、移動は18点差で見送り",
+        "ヤンバル Lv1とボムゾウ Lv2の位置を入れ替えた"
+      ]
+    },
+    {
+      "seed": 994325,
+      "step": 127,
+      "turnNumber": 12,
+      "player": "player",
+      "decision": "focus:player_back_right",
+      "reason": "有効攻撃がないためためる",
+      "score": 38,
+      "legalDecisionCount": 2,
+      "nonEndDecisionCount": 1,
+      "before": {
+        "currentPlayer": "player",
+        "turnNumber": 12,
+        "pendingLevelUp": false,
+        "players": {
+          "player": {
+            "masterId": "white",
+            "hp": 10,
+            "stones": 6,
+            "hand": 5,
+            "deck": 14,
+            "discard": 7
+          },
+          "cpu": {
+            "masterId": "white",
+            "hp": 7,
+            "stones": 2,
+            "hand": 4,
+            "deck": 14,
+            "discard": 12
+          }
+        },
+        "slots": [
+          {
+            "slotKey": "player_front_left",
+            "card": "yanbaru",
+            "name": "ヤンバル",
+            "owner": "player",
+            "hp": 3,
+            "level": 2,
+            "status": "active",
+            "actions": "1/1",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "player_front_right",
+            "card": "bomuzo",
+            "name": "ボムゾウ",
+            "owner": "player",
+            "hp": 5,
+            "level": 2,
+            "status": "active",
+            "actions": "1/1",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "player_back_left",
+            "card": "yanbaru",
+            "name": "ヤンバル",
+            "owner": "player",
+            "hp": 3,
+            "level": 1,
+            "status": "active",
+            "actions": "1/1",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "player_back_right",
+            "card": "card_037",
+            "name": "ドノマンティス",
+            "owner": "player",
+            "hp": 5,
+            "level": 1,
+            "status": "active",
+            "actions": "0/1",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "cpu_front_left"
+          },
+          {
+            "slotKey": "cpu_front_right"
+          },
+          {
+            "slotKey": "cpu_back_left"
+          },
+          {
+            "slotKey": "cpu_back_right"
+          }
+        ]
+      },
+      "after": {
+        "currentPlayer": "player",
+        "turnNumber": 12,
+        "pendingLevelUp": false,
+        "players": {
+          "player": {
+            "masterId": "white",
+            "hp": 10,
+            "stones": 6,
+            "hand": 5,
+            "deck": 14,
+            "discard": 7
+          },
+          "cpu": {
+            "masterId": "white",
+            "hp": 7,
+            "stones": 2,
+            "hand": 4,
+            "deck": 14,
+            "discard": 12
+          }
+        },
+        "slots": [
+          {
+            "slotKey": "player_front_left",
+            "card": "yanbaru",
+            "name": "ヤンバル",
+            "owner": "player",
+            "hp": 3,
+            "level": 2,
+            "status": "active",
+            "actions": "1/1",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "player_front_right",
+            "card": "bomuzo",
+            "name": "ボムゾウ",
+            "owner": "player",
+            "hp": 5,
+            "level": 2,
+            "status": "active",
+            "actions": "1/1",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "player_back_left",
+            "card": "yanbaru",
+            "name": "ヤンバル",
+            "owner": "player",
+            "hp": 3,
+            "level": 1,
+            "status": "active",
+            "actions": "1/1",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "player_back_right",
+            "card": "card_037",
+            "name": "ドノマンティス",
+            "owner": "player",
+            "hp": 5,
+            "level": 1,
+            "status": "active",
+            "actions": "1/1",
+            "focused": true,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "cpu_front_left"
+          },
+          {
+            "slotKey": "cpu_front_right"
+          },
+          {
+            "slotKey": "cpu_back_left"
+          },
+          {
+            "slotKey": "cpu_back_right"
+          }
+        ]
+      },
+      "newLog": [
+        "プレイヤーAI判断: 有効攻撃がないためためる",
+        "ドノマンティス Lv1はためた"
+      ]
+    },
+    {
+      "seed": 994325,
+      "step": 128,
+      "turnNumber": 12,
+      "player": "player",
+      "decision": "end_turn",
+      "reason": "有効な行動がないためターン終了",
+      "score": 0,
+      "legalDecisionCount": 1,
+      "nonEndDecisionCount": 0,
+      "before": {
+        "currentPlayer": "player",
+        "turnNumber": 12,
+        "pendingLevelUp": false,
+        "players": {
+          "player": {
+            "masterId": "white",
+            "hp": 10,
+            "stones": 6,
+            "hand": 5,
+            "deck": 14,
+            "discard": 7
+          },
+          "cpu": {
+            "masterId": "white",
+            "hp": 7,
+            "stones": 2,
+            "hand": 4,
+            "deck": 14,
+            "discard": 12
+          }
+        },
+        "slots": [
+          {
+            "slotKey": "player_front_left",
+            "card": "yanbaru",
+            "name": "ヤンバル",
+            "owner": "player",
+            "hp": 3,
+            "level": 2,
+            "status": "active",
+            "actions": "1/1",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "player_front_right",
+            "card": "bomuzo",
+            "name": "ボムゾウ",
+            "owner": "player",
+            "hp": 5,
+            "level": 2,
+            "status": "active",
+            "actions": "1/1",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "player_back_left",
+            "card": "yanbaru",
+            "name": "ヤンバル",
+            "owner": "player",
+            "hp": 3,
+            "level": 1,
+            "status": "active",
+            "actions": "1/1",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "player_back_right",
+            "card": "card_037",
+            "name": "ドノマンティス",
+            "owner": "player",
+            "hp": 5,
+            "level": 1,
+            "status": "active",
+            "actions": "1/1",
+            "focused": true,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "cpu_front_left"
+          },
+          {
+            "slotKey": "cpu_front_right"
+          },
+          {
+            "slotKey": "cpu_back_left"
+          },
+          {
+            "slotKey": "cpu_back_right"
+          }
+        ]
+      },
+      "after": {
+        "currentPlayer": "cpu",
+        "turnNumber": 12,
+        "pendingLevelUp": false,
+        "players": {
+          "player": {
+            "masterId": "white",
+            "hp": 10,
+            "stones": 6,
+            "hand": 5,
+            "deck": 14,
+            "discard": 7
+          },
+          "cpu": {
+            "masterId": "white",
+            "hp": 7,
+            "stones": 5,
+            "hand": 5,
+            "deck": 13,
+            "discard": 12
+          }
+        },
+        "slots": [
+          {
+            "slotKey": "player_front_left",
+            "card": "yanbaru",
+            "name": "ヤンバル",
+            "owner": "player",
+            "hp": 3,
+            "level": 2,
+            "status": "active",
+            "actions": "1/1",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "player_front_right",
+            "card": "bomuzo",
+            "name": "ボムゾウ",
+            "owner": "player",
+            "hp": 5,
+            "level": 2,
+            "status": "active",
+            "actions": "1/1",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "player_back_left",
+            "card": "yanbaru",
+            "name": "ヤンバル",
+            "owner": "player",
+            "hp": 3,
+            "level": 1,
+            "status": "active",
+            "actions": "1/1",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "player_back_right",
+            "card": "card_037",
+            "name": "ドノマンティス",
+            "owner": "player",
+            "hp": 5,
+            "level": 1,
+            "status": "active",
+            "actions": "1/1",
+            "focused": true,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "cpu_front_left"
+          },
+          {
+            "slotKey": "cpu_front_right"
+          },
+          {
+            "slotKey": "cpu_back_left"
+          },
+          {
+            "slotKey": "cpu_back_right"
+          }
+        ]
+      },
+      "newLog": [
+        "プレイヤーAI判断: 有効な行動がないためターン終了",
+        "CPUのターン開始",
+        "CPUはストーンを3個得た",
+        "CPUはカードを引いた"
+      ]
+    },
+    {
+      "seed": 994325,
+      "step": 129,
+      "turnNumber": 12,
+      "player": "cpu",
+      "decision": "magic:cpu_card_093_1->master:cpu",
+      "reason": "ローテーションで局面を改善できるため使用 / ターンプラン探索: 返し込み最終盤面-29点、次点と115点差",
+      "score": 16,
+      "legalDecisionCount": 4,
+      "nonEndDecisionCount": 3,
+      "before": {
+        "currentPlayer": "cpu",
+        "turnNumber": 12,
+        "pendingLevelUp": false,
+        "players": {
+          "player": {
+            "masterId": "white",
+            "hp": 10,
+            "stones": 6,
+            "hand": 5,
+            "deck": 14,
+            "discard": 7
+          },
+          "cpu": {
+            "masterId": "white",
+            "hp": 7,
+            "stones": 5,
+            "hand": 5,
+            "deck": 13,
+            "discard": 12
+          }
+        },
+        "slots": [
+          {
+            "slotKey": "player_front_left",
+            "card": "yanbaru",
+            "name": "ヤンバル",
+            "owner": "player",
+            "hp": 3,
+            "level": 2,
+            "status": "active",
+            "actions": "1/1",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "player_front_right",
+            "card": "bomuzo",
+            "name": "ボムゾウ",
+            "owner": "player",
+            "hp": 5,
+            "level": 2,
+            "status": "active",
+            "actions": "1/1",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "player_back_left",
+            "card": "yanbaru",
+            "name": "ヤンバル",
+            "owner": "player",
+            "hp": 3,
+            "level": 1,
+            "status": "active",
+            "actions": "1/1",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "player_back_right",
+            "card": "card_037",
+            "name": "ドノマンティス",
+            "owner": "player",
+            "hp": 5,
+            "level": 1,
+            "status": "active",
+            "actions": "1/1",
+            "focused": true,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "cpu_front_left"
+          },
+          {
+            "slotKey": "cpu_front_right"
+          },
+          {
+            "slotKey": "cpu_back_left"
+          },
+          {
+            "slotKey": "cpu_back_right"
+          }
+        ]
+      },
+      "after": {
+        "currentPlayer": "cpu",
+        "turnNumber": 12,
+        "pendingLevelUp": false,
+        "players": {
+          "player": {
+            "masterId": "white",
+            "hp": 10,
+            "stones": 6,
+            "hand": 5,
+            "deck": 14,
+            "discard": 7
+          },
+          "cpu": {
+            "masterId": "white",
+            "hp": 7,
+            "stones": 2,
+            "hand": 4,
+            "deck": 13,
+            "discard": 13
+          }
+        },
+        "slots": [
+          {
+            "slotKey": "player_front_left",
+            "card": "yanbaru",
+            "name": "ヤンバル",
+            "owner": "player",
+            "hp": 3,
+            "level": 1,
+            "status": "active",
+            "actions": "1/1",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "player_front_right",
+            "card": "yanbaru",
+            "name": "ヤンバル",
+            "owner": "player",
+            "hp": 3,
+            "level": 2,
+            "status": "active",
+            "actions": "1/1",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "player_back_left",
+            "card": "card_037",
+            "name": "ドノマンティス",
+            "owner": "player",
+            "hp": 5,
+            "level": 1,
+            "status": "active",
+            "actions": "1/1",
+            "focused": true,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "player_back_right",
+            "card": "bomuzo",
+            "name": "ボムゾウ",
+            "owner": "player",
+            "hp": 5,
+            "level": 2,
+            "status": "active",
+            "actions": "1/1",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "cpu_front_left"
+          },
+          {
+            "slotKey": "cpu_front_right"
+          },
+          {
+            "slotKey": "cpu_back_left"
+          },
+          {
+            "slotKey": "cpu_back_right"
+          }
+        ]
+      },
+      "newLog": [
+        "CPU判断: ローテーションで局面を改善できるため使用 / ターンプラン探索: 返し込み最終盤面-29点、次点と115点差",
+        "CPUはローテーションを使った",
+        "フィールドのモンスターを右回りにローテーションした"
+      ]
+    },
+    {
+      "seed": 994325,
+      "step": 130,
+      "turnNumber": 12,
+      "player": "cpu",
+      "decision": "end_turn",
+      "reason": "有効な行動がないためターン終了 / ターンプラン探索: 返し込み最終盤面-96点",
+      "score": 0,
+      "legalDecisionCount": 1,
+      "nonEndDecisionCount": 0,
+      "before": {
+        "currentPlayer": "cpu",
+        "turnNumber": 12,
+        "pendingLevelUp": false,
+        "players": {
+          "player": {
+            "masterId": "white",
+            "hp": 10,
+            "stones": 6,
+            "hand": 5,
+            "deck": 14,
+            "discard": 7
+          },
+          "cpu": {
+            "masterId": "white",
+            "hp": 7,
+            "stones": 2,
+            "hand": 4,
+            "deck": 13,
+            "discard": 13
+          }
+        },
+        "slots": [
+          {
+            "slotKey": "player_front_left",
+            "card": "yanbaru",
+            "name": "ヤンバル",
+            "owner": "player",
+            "hp": 3,
+            "level": 1,
+            "status": "active",
+            "actions": "1/1",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "player_front_right",
+            "card": "yanbaru",
+            "name": "ヤンバル",
+            "owner": "player",
+            "hp": 3,
+            "level": 2,
+            "status": "active",
+            "actions": "1/1",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "player_back_left",
+            "card": "card_037",
+            "name": "ドノマンティス",
+            "owner": "player",
+            "hp": 5,
+            "level": 1,
+            "status": "active",
+            "actions": "1/1",
+            "focused": true,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "player_back_right",
+            "card": "bomuzo",
+            "name": "ボムゾウ",
+            "owner": "player",
+            "hp": 5,
+            "level": 2,
+            "status": "active",
+            "actions": "1/1",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "cpu_front_left"
+          },
+          {
+            "slotKey": "cpu_front_right"
+          },
+          {
+            "slotKey": "cpu_back_left"
+          },
+          {
+            "slotKey": "cpu_back_right"
+          }
+        ]
+      },
+      "after": {
+        "currentPlayer": "player",
+        "turnNumber": 13,
+        "pendingLevelUp": false,
+        "players": {
+          "player": {
+            "masterId": "white",
+            "hp": 10,
+            "stones": 9,
+            "hand": 6,
+            "deck": 13,
+            "discard": 7
+          },
+          "cpu": {
+            "masterId": "white",
+            "hp": 7,
+            "stones": 2,
+            "hand": 4,
+            "deck": 13,
+            "discard": 13
+          }
+        },
+        "slots": [
+          {
+            "slotKey": "player_front_left",
+            "card": "yanbaru",
+            "name": "ヤンバル",
+            "owner": "player",
+            "hp": 3,
+            "level": 1,
+            "status": "active",
+            "actions": "0/1",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "player_front_right",
+            "card": "yanbaru",
+            "name": "ヤンバル",
+            "owner": "player",
+            "hp": 3,
+            "level": 2,
+            "status": "active",
+            "actions": "0/1",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "player_back_left",
+            "card": "card_037",
+            "name": "ドノマンティス",
+            "owner": "player",
+            "hp": 5,
+            "level": 1,
+            "status": "active",
+            "actions": "0/1",
+            "focused": true,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "player_back_right",
+            "card": "bomuzo",
+            "name": "ボムゾウ",
+            "owner": "player",
+            "hp": 5,
+            "level": 2,
+            "status": "active",
+            "actions": "0/1",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "cpu_front_left"
+          },
+          {
+            "slotKey": "cpu_front_right"
+          },
+          {
+            "slotKey": "cpu_back_left"
+          },
+          {
+            "slotKey": "cpu_back_right"
+          }
+        ]
+      },
+      "newLog": [
+        "CPU判断: 有効な行動がないためターン終了 / ターンプラン探索: 返し込み最終盤面-96点",
+        "プレイヤーのターン開始",
+        "プレイヤーはストーンを3個得た",
+        "プレイヤーは真勇者ダインを引いた"
+      ]
+    },
+    {
+      "seed": 994325,
+      "step": 131,
+      "turnNumber": 13,
+      "player": "player",
+      "decision": "move:player_front_right->player_back_right",
+      "reason": "移動後に強い攻撃筋を作れるため移動 / 見送り: 移動は18点差で見送り、移動は44点差で見送り",
+      "score": 106,
+      "legalDecisionCount": 12,
+      "nonEndDecisionCount": 11,
+      "before": {
+        "currentPlayer": "player",
+        "turnNumber": 13,
+        "pendingLevelUp": false,
+        "players": {
+          "player": {
+            "masterId": "white",
+            "hp": 10,
+            "stones": 9,
+            "hand": 6,
+            "deck": 13,
+            "discard": 7
+          },
+          "cpu": {
+            "masterId": "white",
+            "hp": 7,
+            "stones": 2,
+            "hand": 4,
+            "deck": 13,
+            "discard": 13
+          }
+        },
+        "slots": [
+          {
+            "slotKey": "player_front_left",
+            "card": "yanbaru",
+            "name": "ヤンバル",
+            "owner": "player",
+            "hp": 3,
+            "level": 1,
+            "status": "active",
+            "actions": "0/1",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "player_front_right",
+            "card": "yanbaru",
+            "name": "ヤンバル",
+            "owner": "player",
+            "hp": 3,
+            "level": 2,
+            "status": "active",
+            "actions": "0/1",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "player_back_left",
+            "card": "card_037",
+            "name": "ドノマンティス",
+            "owner": "player",
+            "hp": 5,
+            "level": 1,
+            "status": "active",
+            "actions": "0/1",
+            "focused": true,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "player_back_right",
+            "card": "bomuzo",
+            "name": "ボムゾウ",
+            "owner": "player",
+            "hp": 5,
+            "level": 2,
+            "status": "active",
+            "actions": "0/1",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "cpu_front_left"
+          },
+          {
+            "slotKey": "cpu_front_right"
+          },
+          {
+            "slotKey": "cpu_back_left"
+          },
+          {
+            "slotKey": "cpu_back_right"
+          }
+        ]
+      },
+      "after": {
+        "currentPlayer": "player",
+        "turnNumber": 13,
+        "pendingLevelUp": false,
+        "players": {
+          "player": {
+            "masterId": "white",
+            "hp": 10,
+            "stones": 9,
+            "hand": 6,
+            "deck": 13,
+            "discard": 7
+          },
+          "cpu": {
+            "masterId": "white",
+            "hp": 7,
+            "stones": 2,
+            "hand": 4,
+            "deck": 13,
+            "discard": 13
+          }
+        },
+        "slots": [
+          {
+            "slotKey": "player_front_left",
+            "card": "yanbaru",
+            "name": "ヤンバル",
+            "owner": "player",
+            "hp": 3,
+            "level": 1,
+            "status": "active",
+            "actions": "0/1",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "player_front_right",
+            "card": "bomuzo",
+            "name": "ボムゾウ",
+            "owner": "player",
+            "hp": 5,
+            "level": 2,
+            "status": "active",
+            "actions": "1/1",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "player_back_left",
+            "card": "card_037",
+            "name": "ドノマンティス",
+            "owner": "player",
+            "hp": 5,
+            "level": 1,
+            "status": "active",
+            "actions": "0/1",
+            "focused": true,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "player_back_right",
+            "card": "yanbaru",
+            "name": "ヤンバル",
+            "owner": "player",
+            "hp": 3,
+            "level": 2,
+            "status": "active",
+            "actions": "1/1",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "cpu_front_left"
+          },
+          {
+            "slotKey": "cpu_front_right"
+          },
+          {
+            "slotKey": "cpu_back_left"
+          },
+          {
+            "slotKey": "cpu_back_right"
+          }
+        ]
+      },
+      "newLog": [
+        "プレイヤーAI判断: 移動後に強い攻撃筋を作れるため移動 / 見送り: 移動は18点差で見送り、移動は44点差で見送り",
+        "ヤンバル Lv2とボムゾウ Lv2の位置を入れ替えた"
+      ]
+    },
+    {
+      "seed": 994325,
+      "step": 132,
+      "turnNumber": 13,
+      "player": "player",
+      "decision": "move:player_front_left->player_back_left",
+      "reason": "移動後に強い攻撃筋を作れるため移動 / 見送り: 移動は18点差で見送り、ためるは59点差で見送り",
+      "score": 43,
+      "legalDecisionCount": 4,
+      "nonEndDecisionCount": 3,
+      "before": {
+        "currentPlayer": "player",
+        "turnNumber": 13,
+        "pendingLevelUp": false,
+        "players": {
+          "player": {
+            "masterId": "white",
+            "hp": 10,
+            "stones": 9,
+            "hand": 6,
+            "deck": 13,
+            "discard": 7
+          },
+          "cpu": {
+            "masterId": "white",
+            "hp": 7,
+            "stones": 2,
+            "hand": 4,
+            "deck": 13,
+            "discard": 13
+          }
+        },
+        "slots": [
+          {
+            "slotKey": "player_front_left",
+            "card": "yanbaru",
+            "name": "ヤンバル",
+            "owner": "player",
+            "hp": 3,
+            "level": 1,
+            "status": "active",
+            "actions": "0/1",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "player_front_right",
+            "card": "bomuzo",
+            "name": "ボムゾウ",
+            "owner": "player",
+            "hp": 5,
+            "level": 2,
+            "status": "active",
+            "actions": "1/1",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "player_back_left",
+            "card": "card_037",
+            "name": "ドノマンティス",
+            "owner": "player",
+            "hp": 5,
+            "level": 1,
+            "status": "active",
+            "actions": "0/1",
+            "focused": true,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "player_back_right",
+            "card": "yanbaru",
+            "name": "ヤンバル",
+            "owner": "player",
+            "hp": 3,
+            "level": 2,
+            "status": "active",
+            "actions": "1/1",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "cpu_front_left"
+          },
+          {
+            "slotKey": "cpu_front_right"
+          },
+          {
+            "slotKey": "cpu_back_left"
+          },
+          {
+            "slotKey": "cpu_back_right"
+          }
+        ]
+      },
+      "after": {
+        "currentPlayer": "player",
+        "turnNumber": 13,
+        "pendingLevelUp": false,
+        "players": {
+          "player": {
+            "masterId": "white",
+            "hp": 10,
+            "stones": 9,
+            "hand": 6,
+            "deck": 13,
+            "discard": 7
+          },
+          "cpu": {
+            "masterId": "white",
+            "hp": 7,
+            "stones": 2,
+            "hand": 4,
+            "deck": 13,
+            "discard": 13
+          }
+        },
+        "slots": [
+          {
+            "slotKey": "player_front_left",
+            "card": "card_037",
+            "name": "ドノマンティス",
+            "owner": "player",
+            "hp": 5,
+            "level": 1,
+            "status": "active",
+            "actions": "1/1",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "player_front_right",
+            "card": "bomuzo",
+            "name": "ボムゾウ",
+            "owner": "player",
+            "hp": 5,
+            "level": 2,
+            "status": "active",
+            "actions": "1/1",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "player_back_left",
+            "card": "yanbaru",
+            "name": "ヤンバル",
+            "owner": "player",
+            "hp": 3,
+            "level": 1,
+            "status": "active",
+            "actions": "1/1",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "player_back_right",
+            "card": "yanbaru",
+            "name": "ヤンバル",
+            "owner": "player",
+            "hp": 3,
+            "level": 2,
+            "status": "active",
+            "actions": "1/1",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "cpu_front_left"
+          },
+          {
+            "slotKey": "cpu_front_right"
+          },
+          {
+            "slotKey": "cpu_back_left"
+          },
+          {
+            "slotKey": "cpu_back_right"
+          }
+        ]
+      },
+      "newLog": [
+        "プレイヤーAI判断: 移動後に強い攻撃筋を作れるため移動 / 見送り: 移動は18点差で見送り、ためるは59点差で見送り",
+        "ヤンバル Lv1とドノマンティス Lv1の位置を入れ替えた"
+      ]
+    },
+    {
+      "seed": 994325,
+      "step": 133,
+      "turnNumber": 13,
+      "player": "player",
+      "decision": "end_turn",
+      "reason": "有効な行動がないためターン終了",
+      "score": 0,
+      "legalDecisionCount": 1,
+      "nonEndDecisionCount": 0,
+      "before": {
+        "currentPlayer": "player",
+        "turnNumber": 13,
+        "pendingLevelUp": false,
+        "players": {
+          "player": {
+            "masterId": "white",
+            "hp": 10,
+            "stones": 9,
+            "hand": 6,
+            "deck": 13,
+            "discard": 7
+          },
+          "cpu": {
+            "masterId": "white",
+            "hp": 7,
+            "stones": 2,
+            "hand": 4,
+            "deck": 13,
+            "discard": 13
+          }
+        },
+        "slots": [
+          {
+            "slotKey": "player_front_left",
+            "card": "card_037",
+            "name": "ドノマンティス",
+            "owner": "player",
+            "hp": 5,
+            "level": 1,
+            "status": "active",
+            "actions": "1/1",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "player_front_right",
+            "card": "bomuzo",
+            "name": "ボムゾウ",
+            "owner": "player",
+            "hp": 5,
+            "level": 2,
+            "status": "active",
+            "actions": "1/1",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "player_back_left",
+            "card": "yanbaru",
+            "name": "ヤンバル",
+            "owner": "player",
+            "hp": 3,
+            "level": 1,
+            "status": "active",
+            "actions": "1/1",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "player_back_right",
+            "card": "yanbaru",
+            "name": "ヤンバル",
+            "owner": "player",
+            "hp": 3,
+            "level": 2,
+            "status": "active",
+            "actions": "1/1",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "cpu_front_left"
+          },
+          {
+            "slotKey": "cpu_front_right"
+          },
+          {
+            "slotKey": "cpu_back_left"
+          },
+          {
+            "slotKey": "cpu_back_right"
+          }
+        ]
+      },
+      "after": {
+        "currentPlayer": "cpu",
+        "turnNumber": 13,
+        "pendingLevelUp": false,
+        "players": {
+          "player": {
+            "masterId": "white",
+            "hp": 10,
+            "stones": 9,
+            "hand": 5,
+            "deck": 13,
+            "discard": 8
+          },
+          "cpu": {
+            "masterId": "white",
+            "hp": 7,
+            "stones": 5,
+            "hand": 5,
+            "deck": 12,
+            "discard": 13
+          }
+        },
+        "slots": [
+          {
+            "slotKey": "player_front_left",
+            "card": "card_037",
+            "name": "ドノマンティス",
+            "owner": "player",
+            "hp": 5,
+            "level": 1,
+            "status": "active",
+            "actions": "1/1",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "player_front_right",
+            "card": "bomuzo",
+            "name": "ボムゾウ",
+            "owner": "player",
+            "hp": 5,
+            "level": 2,
+            "status": "active",
+            "actions": "1/1",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "player_back_left",
+            "card": "yanbaru",
+            "name": "ヤンバル",
+            "owner": "player",
+            "hp": 3,
+            "level": 1,
+            "status": "active",
+            "actions": "1/1",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "player_back_right",
+            "card": "yanbaru",
+            "name": "ヤンバル",
+            "owner": "player",
+            "hp": 3,
+            "level": 2,
+            "status": "active",
+            "actions": "1/1",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "cpu_front_left"
+          },
+          {
+            "slotKey": "cpu_front_right"
+          },
+          {
+            "slotKey": "cpu_back_left"
+          },
+          {
+            "slotKey": "cpu_back_right"
+          }
+        ]
+      },
+      "newLog": [
+        "プレイヤーAI判断: 有効な行動がないためターン終了",
+        "プレイヤーのカード溢れ: 手札を5枚まで捨てる",
+        "プレイヤーは手札上限でエクスチェンジを捨てた",
+        "CPUのターン開始",
+        "CPUはストーンを3個得た",
+        "CPUはカードを引いた"
+      ]
+    },
+    {
+      "seed": 994325,
+      "step": 134,
+      "turnNumber": 13,
+      "player": "cpu",
+      "decision": "master:master_attack->monster:player_front_right",
+      "reason": "ストーンに余裕があり敵を削れるためマスターアタック / 見送り: マスター特技は41点差で見送り、召喚は120点差で見送り",
+      "score": 2,
+      "legalDecisionCount": 5,
+      "nonEndDecisionCount": 4,
+      "before": {
+        "currentPlayer": "cpu",
+        "turnNumber": 13,
+        "pendingLevelUp": false,
+        "players": {
+          "player": {
+            "masterId": "white",
+            "hp": 10,
+            "stones": 9,
+            "hand": 5,
+            "deck": 13,
+            "discard": 8
+          },
+          "cpu": {
+            "masterId": "white",
+            "hp": 7,
+            "stones": 5,
+            "hand": 5,
+            "deck": 12,
+            "discard": 13
+          }
+        },
+        "slots": [
+          {
+            "slotKey": "player_front_left",
+            "card": "card_037",
+            "name": "ドノマンティス",
+            "owner": "player",
+            "hp": 5,
+            "level": 1,
+            "status": "active",
+            "actions": "1/1",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "player_front_right",
+            "card": "bomuzo",
+            "name": "ボムゾウ",
+            "owner": "player",
+            "hp": 5,
+            "level": 2,
+            "status": "active",
+            "actions": "1/1",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "player_back_left",
+            "card": "yanbaru",
+            "name": "ヤンバル",
+            "owner": "player",
+            "hp": 3,
+            "level": 1,
+            "status": "active",
+            "actions": "1/1",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "player_back_right",
+            "card": "yanbaru",
+            "name": "ヤンバル",
+            "owner": "player",
+            "hp": 3,
+            "level": 2,
+            "status": "active",
+            "actions": "1/1",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "cpu_front_left"
+          },
+          {
+            "slotKey": "cpu_front_right"
+          },
+          {
+            "slotKey": "cpu_back_left"
+          },
+          {
+            "slotKey": "cpu_back_right"
+          }
+        ]
+      },
+      "after": {
+        "currentPlayer": "cpu",
+        "turnNumber": 13,
+        "pendingLevelUp": false,
+        "players": {
+          "player": {
+            "masterId": "white",
+            "hp": 10,
+            "stones": 9,
+            "hand": 5,
+            "deck": 13,
+            "discard": 8
+          },
+          "cpu": {
+            "masterId": "white",
+            "hp": 7,
+            "stones": 2,
+            "hand": 5,
+            "deck": 12,
+            "discard": 13
+          }
+        },
+        "slots": [
+          {
+            "slotKey": "player_front_left",
+            "card": "card_037",
+            "name": "ドノマンティス",
+            "owner": "player",
+            "hp": 5,
+            "level": 1,
+            "status": "active",
+            "actions": "1/1",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "player_front_right",
+            "card": "bomuzo",
+            "name": "ボムゾウ",
+            "owner": "player",
+            "hp": 3,
+            "level": 2,
+            "status": "active",
+            "actions": "1/1",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "player_back_left",
+            "card": "yanbaru",
+            "name": "ヤンバル",
+            "owner": "player",
+            "hp": 3,
+            "level": 1,
+            "status": "active",
+            "actions": "1/1",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "player_back_right",
+            "card": "yanbaru",
+            "name": "ヤンバル",
+            "owner": "player",
+            "hp": 3,
+            "level": 2,
+            "status": "active",
+            "actions": "1/1",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "cpu_front_left"
+          },
+          {
+            "slotKey": "cpu_front_right"
+          },
+          {
+            "slotKey": "cpu_back_left"
+          },
+          {
+            "slotKey": "cpu_back_right"
+          }
+        ]
+      },
+      "newLog": [
+        "CPU判断: ストーンに余裕があり敵を削れるためマスターアタック / 見送り: マスター特技は41点差で見送り、召喚は120点差で見送り",
+        "CPUのマスターアタック",
+        "マスターアタックでボムゾウ Lv2に2ダメージ"
+      ]
+    },
+    {
+      "seed": 994325,
+      "step": 135,
+      "turnNumber": 13,
+      "player": "cpu",
+      "decision": "end_turn",
+      "reason": "有効な行動がないためターン終了 / ターンプラン探索: 返し込み最終盤面-133点",
+      "score": 0,
+      "legalDecisionCount": 5,
+      "nonEndDecisionCount": 4,
+      "before": {
+        "currentPlayer": "cpu",
+        "turnNumber": 13,
+        "pendingLevelUp": false,
+        "players": {
+          "player": {
+            "masterId": "white",
+            "hp": 10,
+            "stones": 9,
+            "hand": 5,
+            "deck": 13,
+            "discard": 8
+          },
+          "cpu": {
+            "masterId": "white",
+            "hp": 7,
+            "stones": 2,
+            "hand": 5,
+            "deck": 12,
+            "discard": 13
+          }
+        },
+        "slots": [
+          {
+            "slotKey": "player_front_left",
+            "card": "card_037",
+            "name": "ドノマンティス",
+            "owner": "player",
+            "hp": 5,
+            "level": 1,
+            "status": "active",
+            "actions": "1/1",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "player_front_right",
+            "card": "bomuzo",
+            "name": "ボムゾウ",
+            "owner": "player",
+            "hp": 3,
+            "level": 2,
+            "status": "active",
+            "actions": "1/1",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "player_back_left",
+            "card": "yanbaru",
+            "name": "ヤンバル",
+            "owner": "player",
+            "hp": 3,
+            "level": 1,
+            "status": "active",
+            "actions": "1/1",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "player_back_right",
+            "card": "yanbaru",
+            "name": "ヤンバル",
+            "owner": "player",
+            "hp": 3,
+            "level": 2,
+            "status": "active",
+            "actions": "1/1",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "cpu_front_left"
+          },
+          {
+            "slotKey": "cpu_front_right"
+          },
+          {
+            "slotKey": "cpu_back_left"
+          },
+          {
+            "slotKey": "cpu_back_right"
+          }
+        ]
+      },
+      "after": {
+        "currentPlayer": "player",
+        "turnNumber": 14,
+        "pendingLevelUp": false,
+        "players": {
+          "player": {
+            "masterId": "white",
+            "hp": 10,
+            "stones": 12,
+            "hand": 6,
+            "deck": 12,
+            "discard": 8
+          },
+          "cpu": {
+            "masterId": "white",
+            "hp": 7,
+            "stones": 2,
+            "hand": 5,
+            "deck": 12,
+            "discard": 13
+          }
+        },
+        "slots": [
+          {
+            "slotKey": "player_front_left",
+            "card": "card_037",
+            "name": "ドノマンティス",
+            "owner": "player",
+            "hp": 5,
+            "level": 1,
+            "status": "active",
+            "actions": "0/1",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "player_front_right",
+            "card": "bomuzo",
+            "name": "ボムゾウ",
+            "owner": "player",
+            "hp": 3,
+            "level": 2,
+            "status": "active",
+            "actions": "0/1",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "player_back_left",
+            "card": "yanbaru",
+            "name": "ヤンバル",
+            "owner": "player",
+            "hp": 3,
+            "level": 1,
+            "status": "active",
+            "actions": "0/1",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "player_back_right",
+            "card": "yanbaru",
+            "name": "ヤンバル",
+            "owner": "player",
+            "hp": 3,
+            "level": 2,
+            "status": "active",
+            "actions": "0/1",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "cpu_front_left"
+          },
+          {
+            "slotKey": "cpu_front_right"
+          },
+          {
+            "slotKey": "cpu_back_left"
+          },
+          {
+            "slotKey": "cpu_back_right"
+          }
+        ]
+      },
+      "newLog": [
+        "CPU判断: 有効な行動がないためターン終了 / ターンプラン探索: 返し込み最終盤面-133点",
+        "プレイヤーのターン開始",
+        "プレイヤーはストーンを3個得た",
+        "プレイヤーはボムゾウを引いた"
+      ]
+    },
+    {
+      "seed": 994325,
+      "step": 136,
+      "turnNumber": 14,
+      "player": "player",
+      "decision": "attack:player_back_right:wild_claw->master:cpu",
+      "reason": "相手マスターへ実ダメージを与えられるため攻撃 / 見送り: ためるは93点差で見送り、ためるは102点差で見送り",
+      "score": 94,
+      "legalDecisionCount": 7,
+      "nonEndDecisionCount": 6,
+      "before": {
+        "currentPlayer": "player",
+        "turnNumber": 14,
+        "pendingLevelUp": false,
+        "players": {
+          "player": {
+            "masterId": "white",
+            "hp": 10,
+            "stones": 12,
+            "hand": 6,
+            "deck": 12,
+            "discard": 8
+          },
+          "cpu": {
+            "masterId": "white",
+            "hp": 7,
+            "stones": 2,
+            "hand": 5,
+            "deck": 12,
+            "discard": 13
+          }
+        },
+        "slots": [
+          {
+            "slotKey": "player_front_left",
+            "card": "card_037",
+            "name": "ドノマンティス",
+            "owner": "player",
+            "hp": 5,
+            "level": 1,
+            "status": "active",
+            "actions": "0/1",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "player_front_right",
+            "card": "bomuzo",
+            "name": "ボムゾウ",
+            "owner": "player",
+            "hp": 3,
+            "level": 2,
+            "status": "active",
+            "actions": "0/1",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "player_back_left",
+            "card": "yanbaru",
+            "name": "ヤンバル",
+            "owner": "player",
+            "hp": 3,
+            "level": 1,
+            "status": "active",
+            "actions": "0/1",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "player_back_right",
+            "card": "yanbaru",
+            "name": "ヤンバル",
+            "owner": "player",
+            "hp": 3,
+            "level": 2,
+            "status": "active",
+            "actions": "0/1",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "cpu_front_left"
+          },
+          {
+            "slotKey": "cpu_front_right"
+          },
+          {
+            "slotKey": "cpu_back_left"
+          },
+          {
+            "slotKey": "cpu_back_right"
+          }
+        ]
+      },
+      "after": {
+        "currentPlayer": "player",
+        "turnNumber": 14,
+        "pendingLevelUp": false,
+        "players": {
+          "player": {
+            "masterId": "white",
+            "hp": 10,
+            "stones": 12,
+            "hand": 6,
+            "deck": 12,
+            "discard": 8
+          },
+          "cpu": {
+            "masterId": "white",
+            "hp": 6,
+            "stones": 3,
+            "hand": 5,
+            "deck": 12,
+            "discard": 13
+          }
+        },
+        "slots": [
+          {
+            "slotKey": "player_front_left",
+            "card": "card_037",
+            "name": "ドノマンティス",
+            "owner": "player",
+            "hp": 5,
+            "level": 1,
+            "status": "active",
+            "actions": "0/1",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "player_front_right",
+            "card": "bomuzo",
+            "name": "ボムゾウ",
+            "owner": "player",
+            "hp": 3,
+            "level": 2,
+            "status": "active",
+            "actions": "0/1",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "player_back_left",
+            "card": "yanbaru",
+            "name": "ヤンバル",
+            "owner": "player",
+            "hp": 3,
+            "level": 1,
+            "status": "active",
+            "actions": "0/1",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "player_back_right",
+            "card": "yanbaru",
+            "name": "ヤンバル",
+            "owner": "player",
+            "hp": 3,
+            "level": 2,
+            "status": "active",
+            "actions": "1/1",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "cpu_front_left"
+          },
+          {
+            "slotKey": "cpu_front_right"
+          },
+          {
+            "slotKey": "cpu_back_left"
+          },
+          {
+            "slotKey": "cpu_back_right"
+          }
+        ]
+      },
+      "newLog": [
+        "プレイヤーAI判断: 相手マスターへ実ダメージを与えられるため攻撃 / 見送り: ためるは93点差で見送り、ためるは102点差で見送り",
+        "プレイヤーのヤンバル Lv2: ワイルドクロウ 3P",
+        "CPUのマスターHPが1減った（ワイルドクロウ）。ストーン+1"
+      ]
+    },
+    {
+      "seed": 994325,
+      "step": 137,
+      "turnNumber": 14,
+      "player": "player",
+      "decision": "end_turn",
+      "reason": "有効な行動がないためターン終了 / 見送り: ためるは122点差で見送り、ためるは137点差で見送り",
+      "score": 0,
+      "legalDecisionCount": 5,
+      "nonEndDecisionCount": 4,
+      "before": {
+        "currentPlayer": "player",
+        "turnNumber": 14,
+        "pendingLevelUp": false,
+        "players": {
+          "player": {
+            "masterId": "white",
+            "hp": 10,
+            "stones": 12,
+            "hand": 6,
+            "deck": 12,
+            "discard": 8
+          },
+          "cpu": {
+            "masterId": "white",
+            "hp": 6,
+            "stones": 3,
+            "hand": 5,
+            "deck": 12,
+            "discard": 13
+          }
+        },
+        "slots": [
+          {
+            "slotKey": "player_front_left",
+            "card": "card_037",
+            "name": "ドノマンティス",
+            "owner": "player",
+            "hp": 5,
+            "level": 1,
+            "status": "active",
+            "actions": "0/1",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "player_front_right",
+            "card": "bomuzo",
+            "name": "ボムゾウ",
+            "owner": "player",
+            "hp": 3,
+            "level": 2,
+            "status": "active",
+            "actions": "0/1",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "player_back_left",
+            "card": "yanbaru",
+            "name": "ヤンバル",
+            "owner": "player",
+            "hp": 3,
+            "level": 1,
+            "status": "active",
+            "actions": "0/1",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "player_back_right",
+            "card": "yanbaru",
+            "name": "ヤンバル",
+            "owner": "player",
+            "hp": 3,
+            "level": 2,
+            "status": "active",
+            "actions": "1/1",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "cpu_front_left"
+          },
+          {
+            "slotKey": "cpu_front_right"
+          },
+          {
+            "slotKey": "cpu_back_left"
+          },
+          {
+            "slotKey": "cpu_back_right"
+          }
+        ]
+      },
+      "after": {
+        "currentPlayer": "cpu",
+        "turnNumber": 14,
+        "pendingLevelUp": false,
+        "players": {
+          "player": {
+            "masterId": "white",
+            "hp": 10,
+            "stones": 12,
+            "hand": 5,
+            "deck": 12,
+            "discard": 9
+          },
+          "cpu": {
+            "masterId": "white",
+            "hp": 6,
+            "stones": 6,
+            "hand": 6,
+            "deck": 11,
+            "discard": 13
+          }
+        },
+        "slots": [
+          {
+            "slotKey": "player_front_left",
+            "card": "card_037",
+            "name": "ドノマンティス",
+            "owner": "player",
+            "hp": 5,
+            "level": 1,
+            "status": "active",
+            "actions": "0/1",
+            "focused": true,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "player_front_right",
+            "card": "bomuzo",
+            "name": "ボムゾウ",
+            "owner": "player",
+            "hp": 3,
+            "level": 2,
+            "status": "active",
+            "actions": "0/1",
+            "focused": true,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "player_back_left",
+            "card": "yanbaru",
+            "name": "ヤンバル",
+            "owner": "player",
+            "hp": 3,
+            "level": 1,
+            "status": "active",
+            "actions": "0/1",
+            "focused": true,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "player_back_right",
+            "card": "yanbaru",
+            "name": "ヤンバル",
+            "owner": "player",
+            "hp": 3,
+            "level": 2,
+            "status": "active",
+            "actions": "1/1",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "cpu_front_left"
+          },
+          {
+            "slotKey": "cpu_front_right"
+          },
+          {
+            "slotKey": "cpu_back_left"
+          },
+          {
+            "slotKey": "cpu_back_right"
+          }
+        ]
+      },
+      "newLog": [
+        "プレイヤーAI判断: 有効な行動がないためターン終了 / 見送り: ためるは122点差で見送り、ためるは137点差で見送り",
+        "ドノマンティス Lv1は気合いだめした",
+        "ボムゾウ Lv2は気合いだめした",
+        "ヤンバル Lv1は気合いだめした",
+        "プレイヤーのカード溢れ: 手札を5枚まで捨てる",
+        "プレイヤーは手札上限でドロー５を捨てた",
+        "CPUのターン開始",
+        "CPUはストーンを3個得た",
+        "CPUはカードを引いた"
+      ]
+    },
+    {
+      "seed": 994325,
+      "step": 138,
+      "turnNumber": 14,
+      "player": "cpu",
+      "decision": "end_turn",
+      "reason": "有効な行動がないためターン終了 / ターンプラン探索: 返し込み最終盤面-62点",
+      "score": 0,
+      "legalDecisionCount": 5,
+      "nonEndDecisionCount": 4,
+      "before": {
+        "currentPlayer": "cpu",
+        "turnNumber": 14,
+        "pendingLevelUp": false,
+        "players": {
+          "player": {
+            "masterId": "white",
+            "hp": 10,
+            "stones": 12,
+            "hand": 5,
+            "deck": 12,
+            "discard": 9
+          },
+          "cpu": {
+            "masterId": "white",
+            "hp": 6,
+            "stones": 6,
+            "hand": 6,
+            "deck": 11,
+            "discard": 13
+          }
+        },
+        "slots": [
+          {
+            "slotKey": "player_front_left",
+            "card": "card_037",
+            "name": "ドノマンティス",
+            "owner": "player",
+            "hp": 5,
+            "level": 1,
+            "status": "active",
+            "actions": "0/1",
+            "focused": true,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "player_front_right",
+            "card": "bomuzo",
+            "name": "ボムゾウ",
+            "owner": "player",
+            "hp": 3,
+            "level": 2,
+            "status": "active",
+            "actions": "0/1",
+            "focused": true,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "player_back_left",
+            "card": "yanbaru",
+            "name": "ヤンバル",
+            "owner": "player",
+            "hp": 3,
+            "level": 1,
+            "status": "active",
+            "actions": "0/1",
+            "focused": true,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "player_back_right",
+            "card": "yanbaru",
+            "name": "ヤンバル",
+            "owner": "player",
+            "hp": 3,
+            "level": 2,
+            "status": "active",
+            "actions": "1/1",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "cpu_front_left"
+          },
+          {
+            "slotKey": "cpu_front_right"
+          },
+          {
+            "slotKey": "cpu_back_left"
+          },
+          {
+            "slotKey": "cpu_back_right"
+          }
+        ]
+      },
+      "after": {
+        "currentPlayer": "player",
+        "turnNumber": 15,
+        "pendingLevelUp": false,
+        "players": {
+          "player": {
+            "masterId": "white",
+            "hp": 10,
+            "stones": 15,
+            "hand": 6,
+            "deck": 11,
+            "discard": 9
+          },
+          "cpu": {
+            "masterId": "white",
+            "hp": 6,
+            "stones": 6,
+            "hand": 5,
+            "deck": 11,
+            "discard": 14
+          }
+        },
+        "slots": [
+          {
+            "slotKey": "player_front_left",
+            "card": "card_037",
+            "name": "ドノマンティス",
+            "owner": "player",
+            "hp": 5,
+            "level": 1,
+            "status": "active",
+            "actions": "0/1",
+            "focused": true,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "player_front_right",
+            "card": "bomuzo",
+            "name": "ボムゾウ",
+            "owner": "player",
+            "hp": 3,
+            "level": 2,
+            "status": "active",
+            "actions": "0/1",
+            "focused": true,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "player_back_left",
+            "card": "yanbaru",
+            "name": "ヤンバル",
+            "owner": "player",
+            "hp": 3,
+            "level": 1,
+            "status": "active",
+            "actions": "0/1",
+            "focused": true,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "player_back_right",
+            "card": "yanbaru",
+            "name": "ヤンバル",
+            "owner": "player",
+            "hp": 3,
+            "level": 2,
+            "status": "active",
+            "actions": "0/1",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "cpu_front_left"
+          },
+          {
+            "slotKey": "cpu_front_right"
+          },
+          {
+            "slotKey": "cpu_back_left"
+          },
+          {
+            "slotKey": "cpu_back_right"
+          }
+        ]
+      },
+      "newLog": [
+        "CPU判断: 有効な行動がないためターン終了 / ターンプラン探索: 返し込み最終盤面-62点",
+        "CPUのカード溢れ: 手札を5枚まで捨てる",
+        "CPUは手札上限で黄昏の風を捨てた",
+        "プレイヤーのターン開始",
+        "プレイヤーはストーンを3個得た",
+        "プレイヤーはポリスピナーを引いた"
+      ]
+    },
+    {
+      "seed": 994325,
+      "step": 139,
+      "turnNumber": 15,
+      "player": "player",
+      "decision": "attack:player_back_right:wild_claw->master:cpu",
+      "reason": "ターン開始時の最大打点4点で詰めろを作れるため攻撃",
+      "score": 94,
+      "legalDecisionCount": 5,
+      "nonEndDecisionCount": 4,
+      "before": {
+        "currentPlayer": "player",
+        "turnNumber": 15,
+        "pendingLevelUp": false,
+        "players": {
+          "player": {
+            "masterId": "white",
+            "hp": 10,
+            "stones": 15,
+            "hand": 6,
+            "deck": 11,
+            "discard": 9
+          },
+          "cpu": {
+            "masterId": "white",
+            "hp": 6,
+            "stones": 6,
+            "hand": 5,
+            "deck": 11,
+            "discard": 14
+          }
+        },
+        "slots": [
+          {
+            "slotKey": "player_front_left",
+            "card": "card_037",
+            "name": "ドノマンティス",
+            "owner": "player",
+            "hp": 5,
+            "level": 1,
+            "status": "active",
+            "actions": "0/1",
+            "focused": true,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "player_front_right",
+            "card": "bomuzo",
+            "name": "ボムゾウ",
+            "owner": "player",
+            "hp": 3,
+            "level": 2,
+            "status": "active",
+            "actions": "0/1",
+            "focused": true,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "player_back_left",
+            "card": "yanbaru",
+            "name": "ヤンバル",
+            "owner": "player",
+            "hp": 3,
+            "level": 1,
+            "status": "active",
+            "actions": "0/1",
+            "focused": true,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "player_back_right",
+            "card": "yanbaru",
+            "name": "ヤンバル",
+            "owner": "player",
+            "hp": 3,
+            "level": 2,
+            "status": "active",
+            "actions": "0/1",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "cpu_front_left"
+          },
+          {
+            "slotKey": "cpu_front_right"
+          },
+          {
+            "slotKey": "cpu_back_left"
+          },
+          {
+            "slotKey": "cpu_back_right"
+          }
+        ]
+      },
+      "after": {
+        "currentPlayer": "player",
+        "turnNumber": 15,
+        "pendingLevelUp": false,
+        "players": {
+          "player": {
+            "masterId": "white",
+            "hp": 10,
+            "stones": 15,
+            "hand": 6,
+            "deck": 11,
+            "discard": 9
+          },
+          "cpu": {
+            "masterId": "white",
+            "hp": 5,
+            "stones": 7,
+            "hand": 5,
+            "deck": 11,
+            "discard": 14
+          }
+        },
+        "slots": [
+          {
+            "slotKey": "player_front_left",
+            "card": "card_037",
+            "name": "ドノマンティス",
+            "owner": "player",
+            "hp": 5,
+            "level": 1,
+            "status": "active",
+            "actions": "0/1",
+            "focused": true,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "player_front_right",
+            "card": "bomuzo",
+            "name": "ボムゾウ",
+            "owner": "player",
+            "hp": 3,
+            "level": 2,
+            "status": "active",
+            "actions": "0/1",
+            "focused": true,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "player_back_left",
+            "card": "yanbaru",
+            "name": "ヤンバル",
+            "owner": "player",
+            "hp": 3,
+            "level": 1,
+            "status": "active",
+            "actions": "0/1",
+            "focused": true,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "player_back_right",
+            "card": "yanbaru",
+            "name": "ヤンバル",
+            "owner": "player",
+            "hp": 3,
+            "level": 2,
+            "status": "active",
+            "actions": "1/1",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "cpu_front_left"
+          },
+          {
+            "slotKey": "cpu_front_right"
+          },
+          {
+            "slotKey": "cpu_back_left"
+          },
+          {
+            "slotKey": "cpu_back_right"
+          }
+        ]
+      },
+      "newLog": [
+        "プレイヤーAI判断: ターン開始時の最大打点4点で詰めろを作れるため攻撃",
+        "プレイヤーのヤンバル Lv2: ワイルドクロウ 3P",
+        "CPUのマスターHPが1減った（ワイルドクロウ）。ストーン+1"
+      ]
+    },
+    {
+      "seed": 994325,
+      "step": 140,
+      "turnNumber": 15,
+      "player": "player",
+      "decision": "attack:player_front_left:attack->master:cpu",
+      "reason": "ターン開始時の最大打点3点で詰めろを作れるため攻撃",
+      "score": 94,
+      "legalDecisionCount": 3,
+      "nonEndDecisionCount": 2,
+      "before": {
+        "currentPlayer": "player",
+        "turnNumber": 15,
+        "pendingLevelUp": false,
+        "players": {
+          "player": {
+            "masterId": "white",
+            "hp": 10,
+            "stones": 15,
+            "hand": 6,
+            "deck": 11,
+            "discard": 9
+          },
+          "cpu": {
+            "masterId": "white",
+            "hp": 5,
+            "stones": 7,
+            "hand": 5,
+            "deck": 11,
+            "discard": 14
+          }
+        },
+        "slots": [
+          {
+            "slotKey": "player_front_left",
+            "card": "card_037",
+            "name": "ドノマンティス",
+            "owner": "player",
+            "hp": 5,
+            "level": 1,
+            "status": "active",
+            "actions": "0/1",
+            "focused": true,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "player_front_right",
+            "card": "bomuzo",
+            "name": "ボムゾウ",
+            "owner": "player",
+            "hp": 3,
+            "level": 2,
+            "status": "active",
+            "actions": "0/1",
+            "focused": true,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "player_back_left",
+            "card": "yanbaru",
+            "name": "ヤンバル",
+            "owner": "player",
+            "hp": 3,
+            "level": 1,
+            "status": "active",
+            "actions": "0/1",
+            "focused": true,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "player_back_right",
+            "card": "yanbaru",
+            "name": "ヤンバル",
+            "owner": "player",
+            "hp": 3,
+            "level": 2,
+            "status": "active",
+            "actions": "1/1",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "cpu_front_left"
+          },
+          {
+            "slotKey": "cpu_front_right"
+          },
+          {
+            "slotKey": "cpu_back_left"
+          },
+          {
+            "slotKey": "cpu_back_right"
+          }
+        ]
+      },
+      "after": {
+        "currentPlayer": "player",
+        "turnNumber": 15,
+        "pendingLevelUp": false,
+        "players": {
+          "player": {
+            "masterId": "white",
+            "hp": 10,
+            "stones": 15,
+            "hand": 6,
+            "deck": 11,
+            "discard": 9
+          },
+          "cpu": {
+            "masterId": "white",
+            "hp": 4,
+            "stones": 8,
+            "hand": 5,
+            "deck": 11,
+            "discard": 14
+          }
+        },
+        "slots": [
+          {
+            "slotKey": "player_front_left",
+            "card": "card_037",
+            "name": "ドノマンティス",
+            "owner": "player",
+            "hp": 5,
+            "level": 1,
+            "status": "active",
+            "actions": "1/1",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "player_front_right",
+            "card": "bomuzo",
+            "name": "ボムゾウ",
+            "owner": "player",
+            "hp": 3,
+            "level": 2,
+            "status": "active",
+            "actions": "0/1",
+            "focused": true,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "player_back_left",
+            "card": "yanbaru",
+            "name": "ヤンバル",
+            "owner": "player",
+            "hp": 3,
+            "level": 1,
+            "status": "active",
+            "actions": "0/1",
+            "focused": true,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "player_back_right",
+            "card": "yanbaru",
+            "name": "ヤンバル",
+            "owner": "player",
+            "hp": 3,
+            "level": 2,
+            "status": "active",
+            "actions": "1/1",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "cpu_front_left"
+          },
+          {
+            "slotKey": "cpu_front_right"
+          },
+          {
+            "slotKey": "cpu_back_left"
+          },
+          {
+            "slotKey": "cpu_back_right"
+          }
+        ]
+      },
+      "newLog": [
+        "プレイヤーAI判断: ターン開始時の最大打点3点で詰めろを作れるため攻撃",
+        "プレイヤーのドノマンティス Lv1: アタック 3P",
+        "CPUのマスターHPが1減った（アタック）。ストーン+1"
+      ]
+    },
+    {
+      "seed": 994325,
+      "step": 141,
+      "turnNumber": 15,
+      "player": "player",
+      "decision": "attack:player_front_right:self_bomb->master:cpu",
+      "reason": "ターン開始時の最大打点2点で詰めろを作れるため攻撃",
+      "score": 92,
+      "legalDecisionCount": 2,
+      "nonEndDecisionCount": 1,
+      "before": {
+        "currentPlayer": "player",
+        "turnNumber": 15,
+        "pendingLevelUp": false,
+        "players": {
+          "player": {
+            "masterId": "white",
+            "hp": 10,
+            "stones": 15,
+            "hand": 6,
+            "deck": 11,
+            "discard": 9
+          },
+          "cpu": {
+            "masterId": "white",
+            "hp": 4,
+            "stones": 8,
+            "hand": 5,
+            "deck": 11,
+            "discard": 14
+          }
+        },
+        "slots": [
+          {
+            "slotKey": "player_front_left",
+            "card": "card_037",
+            "name": "ドノマンティス",
+            "owner": "player",
+            "hp": 5,
+            "level": 1,
+            "status": "active",
+            "actions": "1/1",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "player_front_right",
+            "card": "bomuzo",
+            "name": "ボムゾウ",
+            "owner": "player",
+            "hp": 3,
+            "level": 2,
+            "status": "active",
+            "actions": "0/1",
+            "focused": true,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "player_back_left",
+            "card": "yanbaru",
+            "name": "ヤンバル",
+            "owner": "player",
+            "hp": 3,
+            "level": 1,
+            "status": "active",
+            "actions": "0/1",
+            "focused": true,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "player_back_right",
+            "card": "yanbaru",
+            "name": "ヤンバル",
+            "owner": "player",
+            "hp": 3,
+            "level": 2,
+            "status": "active",
+            "actions": "1/1",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "cpu_front_left"
+          },
+          {
+            "slotKey": "cpu_front_right"
+          },
+          {
+            "slotKey": "cpu_back_left"
+          },
+          {
+            "slotKey": "cpu_back_right"
+          }
+        ]
+      },
+      "after": {
+        "currentPlayer": "player",
+        "turnNumber": 15,
+        "pendingLevelUp": false,
+        "players": {
+          "player": {
+            "masterId": "white",
+            "hp": 10,
+            "stones": 17,
+            "hand": 6,
+            "deck": 11,
+            "discard": 10
+          },
+          "cpu": {
+            "masterId": "white",
+            "hp": 2,
+            "stones": 10,
+            "hand": 5,
+            "deck": 11,
+            "discard": 14
+          }
+        },
+        "slots": [
+          {
+            "slotKey": "player_front_left",
+            "card": "card_037",
+            "name": "ドノマンティス",
+            "owner": "player",
+            "hp": 5,
+            "level": 1,
+            "status": "active",
+            "actions": "1/1",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "player_front_right"
+          },
+          {
+            "slotKey": "player_back_left",
+            "card": "yanbaru",
+            "name": "ヤンバル",
+            "owner": "player",
+            "hp": 3,
+            "level": 1,
+            "status": "active",
+            "actions": "0/1",
+            "focused": true,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "player_back_right",
+            "card": "yanbaru",
+            "name": "ヤンバル",
+            "owner": "player",
+            "hp": 3,
+            "level": 2,
+            "status": "active",
+            "actions": "1/1",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "cpu_front_left"
+          },
+          {
+            "slotKey": "cpu_front_right"
+          },
+          {
+            "slotKey": "cpu_back_left"
+          },
+          {
+            "slotKey": "cpu_back_right"
+          }
+        ]
+      },
+      "newLog": [
+        "プレイヤーAI判断: ターン開始時の最大打点2点で詰めろを作れるため攻撃",
+        "プレイヤーのボムゾウ Lv2: 自爆 4P",
+        "CPUのマスターHPが2減った（自爆）。ストーン+2",
+        "反動でボムゾウ Lv2に3ダメージ",
+        "ボムゾウ Lv2は倒れ、プレイヤーにストーン2個が戻った"
+      ]
+    },
+    {
+      "seed": 994325,
+      "step": 142,
+      "turnNumber": 15,
+      "player": "player",
+      "decision": "end_turn",
+      "reason": "有効な行動がないためターン終了",
+      "score": 0,
+      "legalDecisionCount": 1,
+      "nonEndDecisionCount": 0,
+      "before": {
+        "currentPlayer": "player",
+        "turnNumber": 15,
+        "pendingLevelUp": false,
+        "players": {
+          "player": {
+            "masterId": "white",
+            "hp": 10,
+            "stones": 17,
+            "hand": 6,
+            "deck": 11,
+            "discard": 10
+          },
+          "cpu": {
+            "masterId": "white",
+            "hp": 2,
+            "stones": 10,
+            "hand": 5,
+            "deck": 11,
+            "discard": 14
+          }
+        },
+        "slots": [
+          {
+            "slotKey": "player_front_left",
+            "card": "card_037",
+            "name": "ドノマンティス",
+            "owner": "player",
+            "hp": 5,
+            "level": 1,
+            "status": "active",
+            "actions": "1/1",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "player_front_right"
+          },
+          {
+            "slotKey": "player_back_left",
+            "card": "yanbaru",
+            "name": "ヤンバル",
+            "owner": "player",
+            "hp": 3,
+            "level": 1,
+            "status": "active",
+            "actions": "0/1",
+            "focused": true,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "player_back_right",
+            "card": "yanbaru",
+            "name": "ヤンバル",
+            "owner": "player",
+            "hp": 3,
+            "level": 2,
+            "status": "active",
+            "actions": "1/1",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "cpu_front_left"
+          },
+          {
+            "slotKey": "cpu_front_right"
+          },
+          {
+            "slotKey": "cpu_back_left"
+          },
+          {
+            "slotKey": "cpu_back_right"
+          }
+        ]
+      },
+      "after": {
+        "currentPlayer": "cpu",
+        "turnNumber": 15,
+        "pendingLevelUp": false,
+        "players": {
+          "player": {
+            "masterId": "white",
+            "hp": 10,
+            "stones": 17,
+            "hand": 5,
+            "deck": 11,
+            "discard": 11
+          },
+          "cpu": {
+            "masterId": "white",
+            "hp": 2,
+            "stones": 13,
+            "hand": 6,
+            "deck": 10,
+            "discard": 14
+          }
+        },
+        "slots": [
+          {
+            "slotKey": "player_front_left",
+            "card": "card_037",
+            "name": "ドノマンティス",
+            "owner": "player",
+            "hp": 5,
+            "level": 1,
+            "status": "active",
+            "actions": "1/1",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "player_front_right"
+          },
+          {
+            "slotKey": "player_back_left",
+            "card": "yanbaru",
+            "name": "ヤンバル",
+            "owner": "player",
+            "hp": 3,
+            "level": 1,
+            "status": "active",
+            "actions": "0/1",
+            "focused": true,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "player_back_right",
+            "card": "yanbaru",
+            "name": "ヤンバル",
+            "owner": "player",
+            "hp": 3,
+            "level": 2,
+            "status": "active",
+            "actions": "1/1",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "cpu_front_left"
+          },
+          {
+            "slotKey": "cpu_front_right"
+          },
+          {
+            "slotKey": "cpu_back_left"
+          },
+          {
+            "slotKey": "cpu_back_right"
+          }
+        ]
+      },
+      "newLog": [
+        "プレイヤーAI判断: 有効な行動がないためターン終了",
+        "プレイヤーのカード溢れ: 手札を5枚まで捨てる",
+        "プレイヤーは手札上限でドノマンティスを捨てた",
+        "CPUのターン開始",
+        "CPUはストーンを3個得た",
+        "CPUはカードを引いた"
+      ]
+    },
+    {
+      "seed": 994325,
+      "step": 143,
+      "turnNumber": 15,
+      "player": "cpu",
+      "decision": "end_turn",
+      "reason": "有効な行動がないためターン終了 / ターンプラン探索: 返し込み最終盤面-40点",
+      "score": 0,
+      "legalDecisionCount": 7,
+      "nonEndDecisionCount": 6,
+      "before": {
+        "currentPlayer": "cpu",
+        "turnNumber": 15,
+        "pendingLevelUp": false,
+        "players": {
+          "player": {
+            "masterId": "white",
+            "hp": 10,
+            "stones": 17,
+            "hand": 5,
+            "deck": 11,
+            "discard": 11
+          },
+          "cpu": {
+            "masterId": "white",
+            "hp": 2,
+            "stones": 13,
+            "hand": 6,
+            "deck": 10,
+            "discard": 14
+          }
+        },
+        "slots": [
+          {
+            "slotKey": "player_front_left",
+            "card": "card_037",
+            "name": "ドノマンティス",
+            "owner": "player",
+            "hp": 5,
+            "level": 1,
+            "status": "active",
+            "actions": "1/1",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "player_front_right"
+          },
+          {
+            "slotKey": "player_back_left",
+            "card": "yanbaru",
+            "name": "ヤンバル",
+            "owner": "player",
+            "hp": 3,
+            "level": 1,
+            "status": "active",
+            "actions": "0/1",
+            "focused": true,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "player_back_right",
+            "card": "yanbaru",
+            "name": "ヤンバル",
+            "owner": "player",
+            "hp": 3,
+            "level": 2,
+            "status": "active",
+            "actions": "1/1",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "cpu_front_left"
+          },
+          {
+            "slotKey": "cpu_front_right"
+          },
+          {
+            "slotKey": "cpu_back_left"
+          },
+          {
+            "slotKey": "cpu_back_right"
+          }
+        ]
+      },
+      "after": {
+        "currentPlayer": "player",
+        "turnNumber": 16,
+        "pendingLevelUp": false,
+        "players": {
+          "player": {
+            "masterId": "white",
+            "hp": 10,
+            "stones": 20,
+            "hand": 6,
+            "deck": 10,
+            "discard": 11
+          },
+          "cpu": {
+            "masterId": "white",
+            "hp": 2,
+            "stones": 13,
+            "hand": 5,
+            "deck": 10,
+            "discard": 15
+          }
+        },
+        "slots": [
+          {
+            "slotKey": "player_front_left",
+            "card": "card_037",
+            "name": "ドノマンティス",
+            "owner": "player",
+            "hp": 5,
+            "level": 1,
+            "status": "active",
+            "actions": "0/1",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "player_front_right",
+            "card": "yanbaru",
+            "name": "ヤンバル",
+            "owner": "player",
+            "hp": 3,
+            "level": 2,
+            "status": "active",
+            "actions": "0/1",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "player_back_left",
+            "card": "yanbaru",
+            "name": "ヤンバル",
+            "owner": "player",
+            "hp": 3,
+            "level": 1,
+            "status": "active",
+            "actions": "0/1",
+            "focused": true,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "player_back_right"
+          },
+          {
+            "slotKey": "cpu_front_left"
+          },
+          {
+            "slotKey": "cpu_front_right"
+          },
+          {
+            "slotKey": "cpu_back_left"
+          },
+          {
+            "slotKey": "cpu_back_right"
+          }
+        ]
+      },
+      "newLog": [
+        "CPU判断: 有効な行動がないためターン終了 / ターンプラン探索: 返し込み最終盤面-40点",
+        "CPUのカード溢れ: 手札を5枚まで捨てる",
+        "CPUは手札上限でドロー５を捨てた",
+        "プレイヤーのターン開始",
+        "ヤンバル Lv2が前衛へ自動移動した",
+        "プレイヤーはストーンを3個得た",
+        "プレイヤーはローテーションを引いた"
+      ]
+    },
+    {
+      "seed": 994325,
+      "step": 144,
+      "turnNumber": 16,
+      "player": "player",
+      "decision": "end_turn",
+      "reason": "有効な行動がないためターン終了",
+      "score": 0,
+      "legalDecisionCount": 1,
+      "nonEndDecisionCount": 0,
+      "before": {
+        "currentPlayer": "player",
+        "turnNumber": 16,
+        "pendingLevelUp": false,
+        "players": {
+          "player": {
+            "masterId": "white",
+            "hp": 10,
+            "stones": 20,
+            "hand": 6,
+            "deck": 10,
+            "discard": 11
+          },
+          "cpu": {
+            "masterId": "white",
+            "hp": 2,
+            "stones": 13,
+            "hand": 5,
+            "deck": 10,
+            "discard": 15
+          }
+        },
+        "slots": [
+          {
+            "slotKey": "player_front_left",
+            "card": "card_037",
+            "name": "ドノマンティス",
+            "owner": "player",
+            "hp": 5,
+            "level": 1,
+            "status": "active",
+            "actions": "0/1",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "player_front_right",
+            "card": "yanbaru",
+            "name": "ヤンバル",
+            "owner": "player",
+            "hp": 3,
+            "level": 2,
+            "status": "active",
+            "actions": "0/1",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "player_back_left",
+            "card": "yanbaru",
+            "name": "ヤンバル",
+            "owner": "player",
+            "hp": 3,
+            "level": 1,
+            "status": "active",
+            "actions": "0/1",
+            "focused": true,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "player_back_right"
+          },
+          {
+            "slotKey": "cpu_front_left"
+          },
+          {
+            "slotKey": "cpu_front_right"
+          },
+          {
+            "slotKey": "cpu_back_left"
+          },
+          {
+            "slotKey": "cpu_back_right"
+          }
+        ]
+      },
+      "after": {
+        "currentPlayer": "cpu",
+        "turnNumber": 16,
+        "pendingLevelUp": false,
+        "players": {
+          "player": {
+            "masterId": "white",
+            "hp": 10,
+            "stones": 20,
+            "hand": 5,
+            "deck": 10,
+            "discard": 12
+          },
+          "cpu": {
+            "masterId": "white",
+            "hp": 2,
+            "stones": 16,
+            "hand": 6,
+            "deck": 9,
+            "discard": 15
+          }
+        },
+        "slots": [
+          {
+            "slotKey": "player_front_left",
+            "card": "card_037",
+            "name": "ドノマンティス",
+            "owner": "player",
+            "hp": 5,
+            "level": 1,
+            "status": "active",
+            "actions": "0/1",
+            "focused": true,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "player_front_right",
+            "card": "yanbaru",
+            "name": "ヤンバル",
+            "owner": "player",
+            "hp": 3,
+            "level": 2,
+            "status": "active",
+            "actions": "0/1",
+            "focused": true,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "player_back_left",
+            "card": "yanbaru",
+            "name": "ヤンバル",
+            "owner": "player",
+            "hp": 3,
+            "level": 1,
+            "status": "active",
+            "actions": "0/1",
+            "focused": true,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "player_back_right"
+          },
+          {
+            "slotKey": "cpu_front_left"
+          },
+          {
+            "slotKey": "cpu_front_right"
+          },
+          {
+            "slotKey": "cpu_back_left"
+          },
+          {
+            "slotKey": "cpu_back_right"
+          }
+        ]
+      },
+      "newLog": [
+        "プレイヤーAI判断: 有効な行動がないためターン終了",
+        "ドノマンティス Lv1は気合いだめした",
+        "ヤンバル Lv2は気合いだめした",
+        "プレイヤーのカード溢れ: 手札を5枚まで捨てる",
+        "プレイヤーは手札上限で黄昏の風を捨てた",
+        "CPUのターン開始",
+        "CPUはストーンを3個得た",
+        "CPUはカードを引いた"
+      ]
+    },
+    {
+      "seed": 994325,
+      "step": 145,
+      "turnNumber": 16,
+      "player": "cpu",
+      "decision": "summon:cpu_card_047_1->cpu_back_left",
+      "reason": "カードを後列左へ召喚 / 見送り: 召喚は1点差で見送り、召喚は5点差で見送り",
+      "score": 28,
+      "legalDecisionCount": 9,
+      "nonEndDecisionCount": 8,
+      "before": {
+        "currentPlayer": "cpu",
+        "turnNumber": 16,
+        "pendingLevelUp": false,
+        "players": {
+          "player": {
+            "masterId": "white",
+            "hp": 10,
+            "stones": 20,
+            "hand": 5,
+            "deck": 10,
+            "discard": 12
+          },
+          "cpu": {
+            "masterId": "white",
+            "hp": 2,
+            "stones": 16,
+            "hand": 6,
+            "deck": 9,
+            "discard": 15
+          }
+        },
+        "slots": [
+          {
+            "slotKey": "player_front_left",
+            "card": "card_037",
+            "name": "ドノマンティス",
+            "owner": "player",
+            "hp": 5,
+            "level": 1,
+            "status": "active",
+            "actions": "0/1",
+            "focused": true,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "player_front_right",
+            "card": "yanbaru",
+            "name": "ヤンバル",
+            "owner": "player",
+            "hp": 3,
+            "level": 2,
+            "status": "active",
+            "actions": "0/1",
+            "focused": true,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "player_back_left",
+            "card": "yanbaru",
+            "name": "ヤンバル",
+            "owner": "player",
+            "hp": 3,
+            "level": 1,
+            "status": "active",
+            "actions": "0/1",
+            "focused": true,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "player_back_right"
+          },
+          {
+            "slotKey": "cpu_front_left"
+          },
+          {
+            "slotKey": "cpu_front_right"
+          },
+          {
+            "slotKey": "cpu_back_left"
+          },
+          {
+            "slotKey": "cpu_back_right"
+          }
+        ]
+      },
+      "after": {
+        "currentPlayer": "cpu",
+        "turnNumber": 16,
+        "pendingLevelUp": false,
+        "players": {
+          "player": {
+            "masterId": "white",
+            "hp": 10,
+            "stones": 20,
+            "hand": 5,
+            "deck": 10,
+            "discard": 12
+          },
+          "cpu": {
+            "masterId": "white",
+            "hp": 2,
+            "stones": 15,
+            "hand": 5,
+            "deck": 9,
+            "discard": 15
+          }
+        },
+        "slots": [
+          {
+            "slotKey": "player_front_left",
+            "card": "card_037",
+            "name": "ドノマンティス",
+            "owner": "player",
+            "hp": 5,
+            "level": 1,
+            "status": "active",
+            "actions": "0/1",
+            "focused": true,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "player_front_right",
+            "card": "yanbaru",
+            "name": "ヤンバル",
+            "owner": "player",
+            "hp": 3,
+            "level": 2,
+            "status": "active",
+            "actions": "0/1",
+            "focused": true,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "player_back_left",
+            "card": "yanbaru",
+            "name": "ヤンバル",
+            "owner": "player",
+            "hp": 3,
+            "level": 1,
+            "status": "active",
+            "actions": "0/1",
+            "focused": true,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "player_back_right"
+          },
+          {
+            "slotKey": "cpu_front_left"
+          },
+          {
+            "slotKey": "cpu_front_right"
+          },
+          {
+            "slotKey": "cpu_back_left",
+            "card": "card_047",
+            "name": "真勇者ダイン",
+            "owner": "cpu",
+            "hp": 6,
+            "level": 1,
+            "status": "prepared",
+            "actions": "0/1",
+            "focused": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "cpu_back_right"
+          }
+        ]
+      },
+      "newLog": [
+        "CPU判断: カードを後列左へ召喚 / 見送り: 召喚は1点差で見送り、召喚は5点差で見送り",
+        "CPUはカードを準備中で召喚した"
+      ]
+    },
+    {
+      "seed": 994325,
+      "step": 146,
+      "turnNumber": 16,
+      "player": "cpu",
+      "decision": "end_turn",
+      "reason": "有効な行動がないためターン終了 / ターンプラン探索: 返し込み最終盤面-3点",
+      "score": 0,
+      "legalDecisionCount": 1,
+      "nonEndDecisionCount": 0,
+      "before": {
+        "currentPlayer": "cpu",
+        "turnNumber": 16,
+        "pendingLevelUp": false,
+        "players": {
+          "player": {
+            "masterId": "white",
+            "hp": 10,
+            "stones": 20,
+            "hand": 5,
+            "deck": 10,
+            "discard": 12
+          },
+          "cpu": {
+            "masterId": "white",
+            "hp": 2,
+            "stones": 15,
+            "hand": 5,
+            "deck": 9,
+            "discard": 15
+          }
+        },
+        "slots": [
+          {
+            "slotKey": "player_front_left",
+            "card": "card_037",
+            "name": "ドノマンティス",
+            "owner": "player",
+            "hp": 5,
+            "level": 1,
+            "status": "active",
+            "actions": "0/1",
+            "focused": true,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "player_front_right",
+            "card": "yanbaru",
+            "name": "ヤンバル",
+            "owner": "player",
+            "hp": 3,
+            "level": 2,
+            "status": "active",
+            "actions": "0/1",
+            "focused": true,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "player_back_left",
+            "card": "yanbaru",
+            "name": "ヤンバル",
+            "owner": "player",
+            "hp": 3,
+            "level": 1,
+            "status": "active",
+            "actions": "0/1",
+            "focused": true,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "player_back_right"
+          },
+          {
+            "slotKey": "cpu_front_left"
+          },
+          {
+            "slotKey": "cpu_front_right"
+          },
+          {
+            "slotKey": "cpu_back_left",
+            "card": "card_047",
+            "name": "真勇者ダイン",
+            "owner": "cpu",
+            "hp": 6,
+            "level": 1,
+            "status": "prepared",
+            "actions": "0/1",
+            "focused": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "cpu_back_right"
+          }
+        ]
+      },
+      "after": {
+        "currentPlayer": "player",
+        "turnNumber": 17,
+        "pendingLevelUp": false,
+        "players": {
+          "player": {
+            "masterId": "white",
+            "hp": 10,
+            "stones": 23,
+            "hand": 6,
+            "deck": 9,
+            "discard": 12
+          },
+          "cpu": {
+            "masterId": "white",
+            "hp": 2,
+            "stones": 15,
+            "hand": 5,
+            "deck": 9,
+            "discard": 15
+          }
+        },
+        "slots": [
+          {
+            "slotKey": "player_front_left",
+            "card": "card_037",
+            "name": "ドノマンティス",
+            "owner": "player",
+            "hp": 5,
+            "level": 1,
+            "status": "active",
+            "actions": "0/1",
+            "focused": true,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "player_front_right",
+            "card": "yanbaru",
+            "name": "ヤンバル",
+            "owner": "player",
+            "hp": 3,
+            "level": 2,
+            "status": "active",
+            "actions": "0/1",
+            "focused": true,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "player_back_left",
+            "card": "yanbaru",
+            "name": "ヤンバル",
+            "owner": "player",
+            "hp": 3,
+            "level": 1,
+            "status": "active",
+            "actions": "0/1",
+            "focused": true,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "player_back_right"
+          },
+          {
+            "slotKey": "cpu_front_left"
+          },
+          {
+            "slotKey": "cpu_front_right"
+          },
+          {
+            "slotKey": "cpu_back_left",
+            "card": "card_047",
+            "name": "真勇者ダイン",
+            "owner": "cpu",
+            "hp": 6,
+            "level": 1,
+            "status": "prepared",
+            "actions": "0/1",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "cpu_back_right"
+          }
+        ]
+      },
+      "newLog": [
+        "CPU判断: 有効な行動がないためターン終了 / ターンプラン探索: 返し込み最終盤面-3点",
+        "プレイヤーのターン開始",
+        "プレイヤーはストーンを3個得た",
+        "プレイヤーはピグミィを引いた"
+      ]
+    },
+    {
+      "seed": 994325,
+      "step": 147,
+      "turnNumber": 17,
+      "player": "player",
+      "decision": "attack:player_front_left:attack->master:cpu",
+      "reason": "相手マスターへ実ダメージを与えられるため攻撃",
+      "score": 130,
+      "legalDecisionCount": 2,
+      "nonEndDecisionCount": 1,
+      "before": {
+        "currentPlayer": "player",
+        "turnNumber": 17,
+        "pendingLevelUp": false,
+        "players": {
+          "player": {
+            "masterId": "white",
+            "hp": 10,
+            "stones": 23,
+            "hand": 6,
+            "deck": 9,
+            "discard": 12
+          },
+          "cpu": {
+            "masterId": "white",
+            "hp": 2,
+            "stones": 15,
+            "hand": 5,
+            "deck": 9,
+            "discard": 15
+          }
+        },
+        "slots": [
+          {
+            "slotKey": "player_front_left",
+            "card": "card_037",
+            "name": "ドノマンティス",
+            "owner": "player",
+            "hp": 5,
+            "level": 1,
+            "status": "active",
+            "actions": "0/1",
+            "focused": true,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "player_front_right",
+            "card": "yanbaru",
+            "name": "ヤンバル",
+            "owner": "player",
+            "hp": 3,
+            "level": 2,
+            "status": "active",
+            "actions": "0/1",
+            "focused": true,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "player_back_left",
+            "card": "yanbaru",
+            "name": "ヤンバル",
+            "owner": "player",
+            "hp": 3,
+            "level": 1,
+            "status": "active",
+            "actions": "0/1",
+            "focused": true,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "player_back_right"
+          },
+          {
+            "slotKey": "cpu_front_left"
+          },
+          {
+            "slotKey": "cpu_front_right"
+          },
+          {
+            "slotKey": "cpu_back_left",
+            "card": "card_047",
+            "name": "真勇者ダイン",
+            "owner": "cpu",
+            "hp": 6,
+            "level": 1,
+            "status": "prepared",
+            "actions": "0/1",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "cpu_back_right"
+          }
+        ]
+      },
+      "after": {
+        "currentPlayer": "player",
+        "turnNumber": 17,
+        "pendingLevelUp": false,
+        "players": {
+          "player": {
+            "masterId": "white",
+            "hp": 10,
+            "stones": 23,
+            "hand": 6,
+            "deck": 9,
+            "discard": 12
+          },
+          "cpu": {
+            "masterId": "white",
+            "hp": 1,
+            "stones": 16,
+            "hand": 5,
+            "deck": 9,
+            "discard": 15
+          }
+        },
+        "slots": [
+          {
+            "slotKey": "player_front_left",
+            "card": "card_037",
+            "name": "ドノマンティス",
+            "owner": "player",
+            "hp": 5,
+            "level": 1,
+            "status": "active",
+            "actions": "1/1",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "player_front_right",
+            "card": "yanbaru",
+            "name": "ヤンバル",
+            "owner": "player",
+            "hp": 3,
+            "level": 2,
+            "status": "active",
+            "actions": "0/1",
+            "focused": true,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "player_back_left",
+            "card": "yanbaru",
+            "name": "ヤンバル",
+            "owner": "player",
+            "hp": 3,
+            "level": 1,
+            "status": "active",
+            "actions": "0/1",
+            "focused": true,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "player_back_right"
+          },
+          {
+            "slotKey": "cpu_front_left"
+          },
+          {
+            "slotKey": "cpu_front_right"
+          },
+          {
+            "slotKey": "cpu_back_left",
+            "card": "card_047",
+            "name": "真勇者ダイン",
+            "owner": "cpu",
+            "hp": 6,
+            "level": 1,
+            "status": "prepared",
+            "actions": "0/1",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "cpu_back_right"
+          }
+        ]
+      },
+      "newLog": [
+        "プレイヤーAI判断: 相手マスターへ実ダメージを与えられるため攻撃",
+        "プレイヤーのドノマンティス Lv1: アタック 3P",
+        "CPUのマスターHPが1減った（アタック）。ストーン+1"
+      ]
+    },
+    {
+      "seed": 994325,
+      "step": 148,
+      "turnNumber": 17,
+      "player": "player",
+      "decision": "end_turn",
+      "reason": "有効な行動がないためターン終了",
+      "score": 0,
+      "legalDecisionCount": 1,
+      "nonEndDecisionCount": 0,
+      "before": {
+        "currentPlayer": "player",
+        "turnNumber": 17,
+        "pendingLevelUp": false,
+        "players": {
+          "player": {
+            "masterId": "white",
+            "hp": 10,
+            "stones": 23,
+            "hand": 6,
+            "deck": 9,
+            "discard": 12
+          },
+          "cpu": {
+            "masterId": "white",
+            "hp": 1,
+            "stones": 16,
+            "hand": 5,
+            "deck": 9,
+            "discard": 15
+          }
+        },
+        "slots": [
+          {
+            "slotKey": "player_front_left",
+            "card": "card_037",
+            "name": "ドノマンティス",
+            "owner": "player",
+            "hp": 5,
+            "level": 1,
+            "status": "active",
+            "actions": "1/1",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "player_front_right",
+            "card": "yanbaru",
+            "name": "ヤンバル",
+            "owner": "player",
+            "hp": 3,
+            "level": 2,
+            "status": "active",
+            "actions": "0/1",
+            "focused": true,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "player_back_left",
+            "card": "yanbaru",
+            "name": "ヤンバル",
+            "owner": "player",
+            "hp": 3,
+            "level": 1,
+            "status": "active",
+            "actions": "0/1",
+            "focused": true,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "player_back_right"
+          },
+          {
+            "slotKey": "cpu_front_left"
+          },
+          {
+            "slotKey": "cpu_front_right"
+          },
+          {
+            "slotKey": "cpu_back_left",
+            "card": "card_047",
+            "name": "真勇者ダイン",
+            "owner": "cpu",
+            "hp": 6,
+            "level": 1,
+            "status": "prepared",
+            "actions": "0/1",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "cpu_back_right"
+          }
+        ]
+      },
+      "after": {
+        "currentPlayer": "cpu",
+        "turnNumber": 17,
+        "pendingLevelUp": false,
+        "players": {
+          "player": {
+            "masterId": "white",
+            "hp": 10,
+            "stones": 23,
+            "hand": 5,
+            "deck": 9,
+            "discard": 13
+          },
+          "cpu": {
+            "masterId": "white",
+            "hp": 1,
+            "stones": 19,
+            "hand": 6,
+            "deck": 8,
+            "discard": 15
+          }
+        },
+        "slots": [
+          {
+            "slotKey": "player_front_left",
+            "card": "card_037",
+            "name": "ドノマンティス",
+            "owner": "player",
+            "hp": 5,
+            "level": 1,
+            "status": "active",
+            "actions": "1/1",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "player_front_right",
+            "card": "yanbaru",
+            "name": "ヤンバル",
+            "owner": "player",
+            "hp": 3,
+            "level": 2,
+            "status": "active",
+            "actions": "0/1",
+            "focused": true,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "player_back_left",
+            "card": "yanbaru",
+            "name": "ヤンバル",
+            "owner": "player",
+            "hp": 3,
+            "level": 1,
+            "status": "active",
+            "actions": "0/1",
+            "focused": true,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "player_back_right"
+          },
+          {
+            "slotKey": "cpu_front_left",
+            "card": "card_047",
+            "name": "真勇者ダイン",
+            "owner": "cpu",
+            "hp": 6,
+            "level": 1,
+            "status": "active",
+            "actions": "0/1",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "cpu_front_right"
+          },
+          {
+            "slotKey": "cpu_back_left"
+          },
+          {
+            "slotKey": "cpu_back_right"
+          }
+        ]
+      },
+      "newLog": [
+        "プレイヤーAI判断: 有効な行動がないためターン終了",
+        "プレイヤーのカード溢れ: 手札を5枚まで捨てる",
+        "プレイヤーは手札上限でデスシープを捨てた",
+        "CPUのターン開始",
+        "真勇者ダイン Lv1が登場した",
+        "真勇者ダイン Lv1が前衛へ自動移動した",
+        "CPUはストーンを3個得た",
+        "CPUはカードを引いた"
+      ]
+    },
+    {
+      "seed": 994325,
+      "step": 149,
+      "turnNumber": 17,
+      "player": "cpu",
+      "decision": "end_turn",
+      "reason": "有効な行動がないためターン終了 / ターンプラン探索: 返し込み最終盤面47点",
+      "score": 0,
+      "legalDecisionCount": 1,
+      "nonEndDecisionCount": 0,
+      "before": {
+        "currentPlayer": "cpu",
+        "turnNumber": 17,
+        "pendingLevelUp": false,
+        "players": {
+          "player": {
+            "masterId": "white",
+            "hp": 10,
+            "stones": 23,
+            "hand": 5,
+            "deck": 9,
+            "discard": 13
+          },
+          "cpu": {
+            "masterId": "white",
+            "hp": 1,
+            "stones": 19,
+            "hand": 6,
+            "deck": 8,
+            "discard": 15
+          }
+        },
+        "slots": [
+          {
+            "slotKey": "player_front_left",
+            "card": "card_037",
+            "name": "ドノマンティス",
+            "owner": "player",
+            "hp": 5,
+            "level": 1,
+            "status": "active",
+            "actions": "1/1",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "player_front_right",
+            "card": "yanbaru",
+            "name": "ヤンバル",
+            "owner": "player",
+            "hp": 3,
+            "level": 2,
+            "status": "active",
+            "actions": "0/1",
+            "focused": true,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "player_back_left",
+            "card": "yanbaru",
+            "name": "ヤンバル",
+            "owner": "player",
+            "hp": 3,
+            "level": 1,
+            "status": "active",
+            "actions": "0/1",
+            "focused": true,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "player_back_right"
+          },
+          {
+            "slotKey": "cpu_front_left",
+            "card": "card_047",
+            "name": "真勇者ダイン",
+            "owner": "cpu",
+            "hp": 6,
+            "level": 1,
+            "status": "active",
+            "actions": "0/1",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "cpu_front_right"
+          },
+          {
+            "slotKey": "cpu_back_left"
+          },
+          {
+            "slotKey": "cpu_back_right"
+          }
+        ]
+      },
+      "after": {
+        "currentPlayer": "player",
+        "turnNumber": 18,
+        "pendingLevelUp": false,
+        "players": {
+          "player": {
+            "masterId": "white",
+            "hp": 10,
+            "stones": 26,
+            "hand": 6,
+            "deck": 8,
+            "discard": 13
+          },
+          "cpu": {
+            "masterId": "white",
+            "hp": 1,
+            "stones": 19,
+            "hand": 5,
+            "deck": 8,
+            "discard": 16
+          }
+        },
+        "slots": [
+          {
+            "slotKey": "player_front_left",
+            "card": "card_037",
+            "name": "ドノマンティス",
+            "owner": "player",
+            "hp": 5,
+            "level": 1,
+            "status": "active",
+            "actions": "0/1",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "player_front_right",
+            "card": "yanbaru",
+            "name": "ヤンバル",
+            "owner": "player",
+            "hp": 3,
+            "level": 2,
+            "status": "active",
+            "actions": "0/1",
+            "focused": true,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "player_back_left",
+            "card": "yanbaru",
+            "name": "ヤンバル",
+            "owner": "player",
+            "hp": 3,
+            "level": 1,
+            "status": "active",
+            "actions": "0/1",
+            "focused": true,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "player_back_right"
+          },
+          {
+            "slotKey": "cpu_front_left",
+            "card": "card_047",
+            "name": "真勇者ダイン",
+            "owner": "cpu",
+            "hp": 6,
+            "level": 1,
+            "status": "active",
+            "actions": "0/1",
+            "focused": true,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "cpu_front_right"
+          },
+          {
+            "slotKey": "cpu_back_left"
+          },
+          {
+            "slotKey": "cpu_back_right"
+          }
+        ]
+      },
+      "newLog": [
+        "CPU判断: 有効な行動がないためターン終了 / ターンプラン探索: 返し込み最終盤面47点",
+        "真勇者ダイン Lv1は気合いだめした",
+        "CPUのカード溢れ: 手札を5枚まで捨てる",
+        "CPUは手札上限でエクスチェンジを捨てた",
+        "プレイヤーのターン開始",
+        "プレイヤーはストーンを3個得た",
+        "プレイヤーはスケープゴートを引いた"
+      ]
+    },
+    {
+      "seed": 994325,
+      "step": 150,
+      "turnNumber": 18,
+      "player": "player",
+      "decision": "end_turn",
+      "reason": "有効な行動がないためターン終了 / 見送り: マスター特技は800点差で見送り",
+      "score": 0,
+      "legalDecisionCount": 2,
+      "nonEndDecisionCount": 1,
+      "before": {
+        "currentPlayer": "player",
+        "turnNumber": 18,
+        "pendingLevelUp": false,
+        "players": {
+          "player": {
+            "masterId": "white",
+            "hp": 10,
+            "stones": 26,
+            "hand": 6,
+            "deck": 8,
+            "discard": 13
+          },
+          "cpu": {
+            "masterId": "white",
+            "hp": 1,
+            "stones": 19,
+            "hand": 5,
+            "deck": 8,
+            "discard": 16
+          }
+        },
+        "slots": [
+          {
+            "slotKey": "player_front_left",
+            "card": "card_037",
+            "name": "ドノマンティス",
+            "owner": "player",
+            "hp": 5,
+            "level": 1,
+            "status": "active",
+            "actions": "0/1",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "player_front_right",
+            "card": "yanbaru",
+            "name": "ヤンバル",
+            "owner": "player",
+            "hp": 3,
+            "level": 2,
+            "status": "active",
+            "actions": "0/1",
+            "focused": true,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "player_back_left",
+            "card": "yanbaru",
+            "name": "ヤンバル",
+            "owner": "player",
+            "hp": 3,
+            "level": 1,
+            "status": "active",
+            "actions": "0/1",
+            "focused": true,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "player_back_right"
+          },
+          {
+            "slotKey": "cpu_front_left",
+            "card": "card_047",
+            "name": "真勇者ダイン",
+            "owner": "cpu",
+            "hp": 6,
+            "level": 1,
+            "status": "active",
+            "actions": "0/1",
+            "focused": true,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "cpu_front_right"
+          },
+          {
+            "slotKey": "cpu_back_left"
+          },
+          {
+            "slotKey": "cpu_back_right"
+          }
+        ]
+      },
+      "after": {
+        "currentPlayer": "cpu",
+        "turnNumber": 18,
+        "pendingLevelUp": false,
+        "players": {
+          "player": {
+            "masterId": "white",
+            "hp": 10,
+            "stones": 26,
+            "hand": 5,
+            "deck": 8,
+            "discard": 14
+          },
+          "cpu": {
+            "masterId": "white",
+            "hp": 1,
+            "stones": 22,
+            "hand": 6,
+            "deck": 7,
+            "discard": 16
+          }
+        },
+        "slots": [
+          {
+            "slotKey": "player_front_left",
+            "card": "card_037",
+            "name": "ドノマンティス",
+            "owner": "player",
+            "hp": 5,
+            "level": 1,
+            "status": "active",
+            "actions": "0/1",
+            "focused": true,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "player_front_right",
+            "card": "yanbaru",
+            "name": "ヤンバル",
+            "owner": "player",
+            "hp": 3,
+            "level": 2,
+            "status": "active",
+            "actions": "0/1",
+            "focused": true,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "player_back_left",
+            "card": "yanbaru",
+            "name": "ヤンバル",
+            "owner": "player",
+            "hp": 3,
+            "level": 1,
+            "status": "active",
+            "actions": "0/1",
+            "focused": true,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "player_back_right"
+          },
+          {
+            "slotKey": "cpu_front_left",
+            "card": "card_047",
+            "name": "真勇者ダイン",
+            "owner": "cpu",
+            "hp": 6,
+            "level": 1,
+            "status": "active",
+            "actions": "0/1",
+            "focused": true,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "cpu_front_right"
+          },
+          {
+            "slotKey": "cpu_back_left"
+          },
+          {
+            "slotKey": "cpu_back_right"
+          }
+        ]
+      },
+      "newLog": [
+        "プレイヤーAI判断: 有効な行動がないためターン終了 / 見送り: マスター特技は800点差で見送り",
+        "ドノマンティス Lv1は気合いだめした",
+        "プレイヤーのカード溢れ: 手札を5枚まで捨てる",
+        "プレイヤーは手札上限で真勇者ダインを捨てた",
+        "CPUのターン開始",
+        "CPUはストーンを3個得た",
+        "CPUはカードを引いた"
+      ]
+    },
+    {
+      "seed": 994325,
+      "step": 151,
+      "turnNumber": 18,
+      "player": "cpu",
+      "decision": "attack:cpu_front_left:ダイン斬り->master:player",
+      "reason": "相手マスターへ実ダメージを与えられるため攻撃",
+      "score": 154,
+      "legalDecisionCount": 2,
+      "nonEndDecisionCount": 1,
+      "before": {
+        "currentPlayer": "cpu",
+        "turnNumber": 18,
+        "pendingLevelUp": false,
+        "players": {
+          "player": {
+            "masterId": "white",
+            "hp": 10,
+            "stones": 26,
+            "hand": 5,
+            "deck": 8,
+            "discard": 14
+          },
+          "cpu": {
+            "masterId": "white",
+            "hp": 1,
+            "stones": 22,
+            "hand": 6,
+            "deck": 7,
+            "discard": 16
+          }
+        },
+        "slots": [
+          {
+            "slotKey": "player_front_left",
+            "card": "card_037",
+            "name": "ドノマンティス",
+            "owner": "player",
+            "hp": 5,
+            "level": 1,
+            "status": "active",
+            "actions": "0/1",
+            "focused": true,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "player_front_right",
+            "card": "yanbaru",
+            "name": "ヤンバル",
+            "owner": "player",
+            "hp": 3,
+            "level": 2,
+            "status": "active",
+            "actions": "0/1",
+            "focused": true,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "player_back_left",
+            "card": "yanbaru",
+            "name": "ヤンバル",
+            "owner": "player",
+            "hp": 3,
+            "level": 1,
+            "status": "active",
+            "actions": "0/1",
+            "focused": true,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "player_back_right"
+          },
+          {
+            "slotKey": "cpu_front_left",
+            "card": "card_047",
+            "name": "真勇者ダイン",
+            "owner": "cpu",
+            "hp": 6,
+            "level": 1,
+            "status": "active",
+            "actions": "0/1",
+            "focused": true,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "cpu_front_right"
+          },
+          {
+            "slotKey": "cpu_back_left"
+          },
+          {
+            "slotKey": "cpu_back_right"
+          }
+        ]
+      },
+      "after": {
+        "currentPlayer": "cpu",
+        "turnNumber": 18,
+        "pendingLevelUp": false,
+        "players": {
+          "player": {
+            "masterId": "white",
+            "hp": 9,
+            "stones": 27,
+            "hand": 5,
+            "deck": 8,
+            "discard": 14
+          },
+          "cpu": {
+            "masterId": "white",
+            "hp": 1,
+            "stones": 22,
+            "hand": 6,
+            "deck": 7,
+            "discard": 16
+          }
+        },
+        "slots": [
+          {
+            "slotKey": "player_front_left",
+            "card": "card_037",
+            "name": "ドノマンティス",
+            "owner": "player",
+            "hp": 5,
+            "level": 1,
+            "status": "active",
+            "actions": "0/1",
+            "focused": true,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "player_front_right",
+            "card": "yanbaru",
+            "name": "ヤンバル",
+            "owner": "player",
+            "hp": 3,
+            "level": 2,
+            "status": "active",
+            "actions": "0/1",
+            "focused": true,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "player_back_left",
+            "card": "yanbaru",
+            "name": "ヤンバル",
+            "owner": "player",
+            "hp": 3,
+            "level": 1,
+            "status": "active",
+            "actions": "0/1",
+            "focused": true,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "player_back_right"
+          },
+          {
+            "slotKey": "cpu_front_left",
+            "card": "card_047",
+            "name": "真勇者ダイン",
+            "owner": "cpu",
+            "hp": 6,
+            "level": 1,
+            "status": "active",
+            "actions": "1/1",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "cpu_front_right"
+          },
+          {
+            "slotKey": "cpu_back_left"
+          },
+          {
+            "slotKey": "cpu_back_right"
+          }
+        ]
+      },
+      "newLog": [
+        "CPU判断: 相手マスターへ実ダメージを与えられるため攻撃",
+        "CPUの真勇者ダイン Lv1: ダイン斬り 3P",
+        "プレイヤーのマスターHPが1減った（ダイン斬り）。ストーン+1"
+      ]
+    },
+    {
+      "seed": 994325,
+      "step": 152,
+      "turnNumber": 18,
+      "player": "cpu",
+      "decision": "end_turn",
+      "reason": "有効な行動がないためターン終了 / ターンプラン探索: 返し込み最終盤面-749202点",
+      "score": 0,
+      "legalDecisionCount": 1,
+      "nonEndDecisionCount": 0,
+      "before": {
+        "currentPlayer": "cpu",
+        "turnNumber": 18,
+        "pendingLevelUp": false,
+        "players": {
+          "player": {
+            "masterId": "white",
+            "hp": 9,
+            "stones": 27,
+            "hand": 5,
+            "deck": 8,
+            "discard": 14
+          },
+          "cpu": {
+            "masterId": "white",
+            "hp": 1,
+            "stones": 22,
+            "hand": 6,
+            "deck": 7,
+            "discard": 16
+          }
+        },
+        "slots": [
+          {
+            "slotKey": "player_front_left",
+            "card": "card_037",
+            "name": "ドノマンティス",
+            "owner": "player",
+            "hp": 5,
+            "level": 1,
+            "status": "active",
+            "actions": "0/1",
+            "focused": true,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "player_front_right",
+            "card": "yanbaru",
+            "name": "ヤンバル",
+            "owner": "player",
+            "hp": 3,
+            "level": 2,
+            "status": "active",
+            "actions": "0/1",
+            "focused": true,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "player_back_left",
+            "card": "yanbaru",
+            "name": "ヤンバル",
+            "owner": "player",
+            "hp": 3,
+            "level": 1,
+            "status": "active",
+            "actions": "0/1",
+            "focused": true,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "player_back_right"
+          },
+          {
+            "slotKey": "cpu_front_left",
+            "card": "card_047",
+            "name": "真勇者ダイン",
+            "owner": "cpu",
+            "hp": 6,
+            "level": 1,
+            "status": "active",
+            "actions": "1/1",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "cpu_front_right"
+          },
+          {
+            "slotKey": "cpu_back_left"
+          },
+          {
+            "slotKey": "cpu_back_right"
+          }
+        ]
+      },
+      "after": {
+        "currentPlayer": "player",
+        "turnNumber": 19,
+        "pendingLevelUp": false,
+        "players": {
+          "player": {
+            "masterId": "white",
+            "hp": 9,
+            "stones": 30,
+            "hand": 6,
+            "deck": 7,
+            "discard": 14
+          },
+          "cpu": {
+            "masterId": "white",
+            "hp": 1,
+            "stones": 22,
+            "hand": 5,
+            "deck": 7,
+            "discard": 17
+          }
+        },
+        "slots": [
+          {
+            "slotKey": "player_front_left",
+            "card": "card_037",
+            "name": "ドノマンティス",
+            "owner": "player",
+            "hp": 5,
+            "level": 1,
+            "status": "active",
+            "actions": "0/1",
+            "focused": true,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "player_front_right",
+            "card": "yanbaru",
+            "name": "ヤンバル",
+            "owner": "player",
+            "hp": 3,
+            "level": 2,
+            "status": "active",
+            "actions": "0/1",
+            "focused": true,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "player_back_left",
+            "card": "yanbaru",
+            "name": "ヤンバル",
+            "owner": "player",
+            "hp": 3,
+            "level": 1,
+            "status": "active",
+            "actions": "0/1",
+            "focused": true,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "player_back_right"
+          },
+          {
+            "slotKey": "cpu_front_left",
+            "card": "card_047",
+            "name": "真勇者ダイン",
+            "owner": "cpu",
+            "hp": 6,
+            "level": 1,
+            "status": "active",
+            "actions": "1/1",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "cpu_front_right"
+          },
+          {
+            "slotKey": "cpu_back_left"
+          },
+          {
+            "slotKey": "cpu_back_right"
+          }
+        ]
+      },
+      "newLog": [
+        "CPU判断: 有効な行動がないためターン終了 / ターンプラン探索: 返し込み最終盤面-749202点",
+        "CPUのカード溢れ: 手札を5枚まで捨てる",
+        "CPUは手札上限でスケープゴートを捨てた",
+        "プレイヤーのターン開始",
+        "プレイヤーはストーンを3個得た",
+        "プレイヤーはスケープゴートを引いた"
+      ]
+    },
+    {
+      "seed": 994325,
+      "step": 153,
+      "turnNumber": 19,
+      "player": "player",
+      "decision": "attack:player_front_left:attack->master:cpu",
+      "reason": "ターン開始時の最大打点で相手マスターを倒せるため攻撃",
+      "score": 1000000,
+      "legalDecisionCount": 4,
+      "nonEndDecisionCount": 3,
+      "before": {
+        "currentPlayer": "player",
+        "turnNumber": 19,
+        "pendingLevelUp": false,
+        "players": {
+          "player": {
+            "masterId": "white",
+            "hp": 9,
+            "stones": 30,
+            "hand": 6,
+            "deck": 7,
+            "discard": 14
+          },
+          "cpu": {
+            "masterId": "white",
+            "hp": 1,
+            "stones": 22,
+            "hand": 5,
+            "deck": 7,
+            "discard": 17
+          }
+        },
+        "slots": [
+          {
+            "slotKey": "player_front_left",
+            "card": "card_037",
+            "name": "ドノマンティス",
+            "owner": "player",
+            "hp": 5,
+            "level": 1,
+            "status": "active",
+            "actions": "0/1",
+            "focused": true,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "player_front_right",
+            "card": "yanbaru",
+            "name": "ヤンバル",
+            "owner": "player",
+            "hp": 3,
+            "level": 2,
+            "status": "active",
+            "actions": "0/1",
+            "focused": true,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "player_back_left",
+            "card": "yanbaru",
+            "name": "ヤンバル",
+            "owner": "player",
+            "hp": 3,
+            "level": 1,
+            "status": "active",
+            "actions": "0/1",
+            "focused": true,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "player_back_right"
+          },
+          {
+            "slotKey": "cpu_front_left",
+            "card": "card_047",
+            "name": "真勇者ダイン",
+            "owner": "cpu",
+            "hp": 6,
+            "level": 1,
+            "status": "active",
+            "actions": "1/1",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "cpu_front_right"
+          },
+          {
+            "slotKey": "cpu_back_left"
+          },
+          {
+            "slotKey": "cpu_back_right"
+          }
+        ]
+      },
+      "after": {
+        "currentPlayer": "player",
+        "turnNumber": 19,
+        "winner": "player",
+        "pendingLevelUp": false,
+        "players": {
+          "player": {
+            "masterId": "white",
+            "hp": 9,
+            "stones": 30,
+            "hand": 6,
+            "deck": 7,
+            "discard": 14
+          },
+          "cpu": {
+            "masterId": "white",
+            "hp": 0,
+            "stones": 23,
+            "hand": 5,
+            "deck": 7,
+            "discard": 17
+          }
+        },
+        "slots": [
+          {
+            "slotKey": "player_front_left",
+            "card": "card_037",
+            "name": "ドノマンティス",
+            "owner": "player",
+            "hp": 5,
+            "level": 1,
+            "status": "active",
+            "actions": "1/1",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "player_front_right",
+            "card": "yanbaru",
+            "name": "ヤンバル",
+            "owner": "player",
+            "hp": 3,
+            "level": 2,
+            "status": "active",
+            "actions": "0/1",
+            "focused": true,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "player_back_left",
+            "card": "yanbaru",
+            "name": "ヤンバル",
+            "owner": "player",
+            "hp": 3,
+            "level": 1,
+            "status": "active",
+            "actions": "0/1",
+            "focused": true,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "player_back_right"
+          },
+          {
+            "slotKey": "cpu_front_left",
+            "card": "card_047",
+            "name": "真勇者ダイン",
+            "owner": "cpu",
+            "hp": 6,
+            "level": 1,
+            "status": "active",
+            "actions": "1/1",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "cpu_front_right"
+          },
+          {
+            "slotKey": "cpu_back_left"
+          },
+          {
+            "slotKey": "cpu_back_right"
+          }
+        ]
+      },
+      "newLog": [
+        "プレイヤーAI判断: ターン開始時の最大打点で相手マスターを倒せるため攻撃",
+        "プレイヤーのドノマンティス Lv1: アタック 3P",
+        "CPUのマスターHPが1減った（アタック）。ストーン+1",
+        "プレイヤーの勝利"
+      ]
+    }
+  ]
+}

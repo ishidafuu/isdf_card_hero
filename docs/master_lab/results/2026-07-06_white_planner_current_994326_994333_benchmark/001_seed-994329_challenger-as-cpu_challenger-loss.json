@@ -1,0 +1,5823 @@
+{
+  "direction": "challenger-as-cpu",
+  "seed": 994329,
+  "winner": "player",
+  "winnerProfile": "white",
+  "steps": 249,
+  "turns": 22,
+  "issueCount": 0,
+  "warningCount": 0,
+  "finalState": {
+    "currentPlayer": "player",
+    "turnNumber": 22,
+    "winner": "player",
+    "pendingLevelUp": false,
+    "players": {
+      "player": {
+        "masterId": "white",
+        "hp": 7,
+        "stones": 15,
+        "hand": 6,
+        "deck": 4,
+        "discard": 18
+      },
+      "cpu": {
+        "masterId": "white",
+        "hp": 0,
+        "stones": 8,
+        "hand": 5,
+        "deck": 4,
+        "discard": 20
+      }
+    },
+    "slots": [
+      {
+        "slotKey": "player_front_left",
+        "card": "card_037",
+        "name": "ドノマンティス",
+        "owner": "player",
+        "hp": 5,
+        "level": 2,
+        "status": "active",
+        "actions": "1/1",
+        "focused": false,
+        "berserkPower": false,
+        "shielded": false
+      },
+      {
+        "slotKey": "player_front_right",
+        "card": "card_051",
+        "name": "ピグミィ",
+        "owner": "player",
+        "hp": 3,
+        "level": 1,
+        "status": "active",
+        "actions": "0/2",
+        "focused": true,
+        "berserkPower": false,
+        "shielded": false
+      },
+      {
+        "slotKey": "player_back_left"
+      },
+      {
+        "slotKey": "player_back_right"
+      },
+      {
+        "slotKey": "cpu_front_left",
+        "card": "card_047",
+        "name": "真勇者ダイン",
+        "owner": "cpu",
+        "hp": 6,
+        "level": 1,
+        "status": "active",
+        "actions": "0/1",
+        "focused": true,
+        "berserkPower": false,
+        "shielded": true
+      },
+      {
+        "slotKey": "cpu_front_right"
+      },
+      {
+        "slotKey": "cpu_back_left"
+      },
+      {
+        "slotKey": "cpu_back_right"
+      }
+    ]
+  },
+  "logTail": [
+    "プレイヤーのカード溢れ: 手札を5枚まで捨てる",
+    "プレイヤーは手札上限でローテーションを捨てた",
+    "CPUのターン開始",
+    "真勇者ダイン Lv1が登場した",
+    "真勇者ダイン Lv1が前衛へ自動移動した",
+    "CPUはストーンを3個得た",
+    "CPUはカードを引いた",
+    "CPU判断: 致死圏の味方を守れるためシールド",
+    "CPUは真勇者ダイン Lv1にシールドを張った",
+    "CPU判断: 有効な行動がないためターン終了 / ターンプラン探索: 返し込み最終盤面-748790点",
+    "真勇者ダイン Lv1は気合いだめした",
+    "CPUのカード溢れ: 手札を5枚まで捨てる",
+    "CPUは手札上限でスケープゴートを捨てた",
+    "プレイヤーのターン開始",
+    "プレイヤーはストーンを3個得た",
+    "プレイヤーはデスシープを引いた",
+    "プレイヤーAI判断: ターン開始時の最大打点で相手マスターを倒せるため攻撃",
+    "プレイヤーのドノマンティス Lv2: 呪いの刃 4P",
+    "CPUのマスターHPが1減った（呪いの刃）。ストーン+1",
+    "プレイヤーの勝利"
+  ],
+  "history": [
+    {
+      "seed": 994329,
+      "step": 218,
+      "turnNumber": 17,
+      "player": "cpu",
+      "decision": "master:master_attack->monster:player_front_left",
+      "reason": "ストーンに余裕があり敵を削れるためマスターアタック / 見送り: マスター特技は1点差で見送り",
+      "score": 2,
+      "legalDecisionCount": 3,
+      "nonEndDecisionCount": 2,
+      "before": {
+        "currentPlayer": "cpu",
+        "turnNumber": 17,
+        "pendingLevelUp": false,
+        "players": {
+          "player": {
+            "masterId": "white",
+            "hp": 7,
+            "stones": 1,
+            "hand": 4,
+            "deck": 9,
+            "discard": 13
+          },
+          "cpu": {
+            "masterId": "white",
+            "hp": 8,
+            "stones": 5,
+            "hand": 6,
+            "deck": 8,
+            "discard": 16
+          }
+        },
+        "slots": [
+          {
+            "slotKey": "player_front_left",
+            "card": "card_133",
+            "name": "デスシープ",
+            "owner": "player",
+            "hp": 4,
+            "level": 2,
+            "status": "active",
+            "actions": "1/1",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "player_front_right",
+            "card": "polyspinner",
+            "name": "ポリスピナー",
+            "owner": "player",
+            "hp": 3,
+            "level": 2,
+            "status": "active",
+            "actions": "2/2",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "player_back_left",
+            "card": "card_037",
+            "name": "ドノマンティス",
+            "owner": "player",
+            "hp": 5,
+            "level": 1,
+            "status": "active",
+            "actions": "0/1",
+            "focused": true,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "player_back_right",
+            "card": "polyspinner",
+            "name": "ポリスピナー",
+            "owner": "player",
+            "hp": 3,
+            "level": 1,
+            "status": "prepared",
+            "actions": "0/2",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "cpu_front_left"
+          },
+          {
+            "slotKey": "cpu_front_right"
+          },
+          {
+            "slotKey": "cpu_back_left"
+          },
+          {
+            "slotKey": "cpu_back_right"
+          }
+        ]
+      },
+      "after": {
+        "currentPlayer": "cpu",
+        "turnNumber": 17,
+        "pendingLevelUp": false,
+        "players": {
+          "player": {
+            "masterId": "white",
+            "hp": 7,
+            "stones": 1,
+            "hand": 4,
+            "deck": 9,
+            "discard": 13
+          },
+          "cpu": {
+            "masterId": "white",
+            "hp": 8,
+            "stones": 2,
+            "hand": 6,
+            "deck": 8,
+            "discard": 16
+          }
+        },
+        "slots": [
+          {
+            "slotKey": "player_front_left",
+            "card": "card_133",
+            "name": "デスシープ",
+            "owner": "player",
+            "hp": 2,
+            "level": 2,
+            "status": "active",
+            "actions": "1/1",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "player_front_right",
+            "card": "polyspinner",
+            "name": "ポリスピナー",
+            "owner": "player",
+            "hp": 3,
+            "level": 2,
+            "status": "active",
+            "actions": "2/2",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "player_back_left",
+            "card": "card_037",
+            "name": "ドノマンティス",
+            "owner": "player",
+            "hp": 5,
+            "level": 1,
+            "status": "active",
+            "actions": "0/1",
+            "focused": true,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "player_back_right",
+            "card": "polyspinner",
+            "name": "ポリスピナー",
+            "owner": "player",
+            "hp": 3,
+            "level": 1,
+            "status": "prepared",
+            "actions": "0/2",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "cpu_front_left"
+          },
+          {
+            "slotKey": "cpu_front_right"
+          },
+          {
+            "slotKey": "cpu_back_left"
+          },
+          {
+            "slotKey": "cpu_back_right"
+          }
+        ]
+      },
+      "newLog": [
+        "CPU判断: ストーンに余裕があり敵を削れるためマスターアタック / 見送り: マスター特技は1点差で見送り",
+        "CPUのマスターアタック",
+        "マスターアタックでデスシープ Lv2に2ダメージ"
+      ]
+    },
+    {
+      "seed": 994329,
+      "step": 219,
+      "turnNumber": 17,
+      "player": "cpu",
+      "decision": "end_turn",
+      "reason": "有効な行動がないためターン終了 / ターンプラン探索: 返し込み最終盤面-166点",
+      "score": 0,
+      "legalDecisionCount": 1,
+      "nonEndDecisionCount": 0,
+      "before": {
+        "currentPlayer": "cpu",
+        "turnNumber": 17,
+        "pendingLevelUp": false,
+        "players": {
+          "player": {
+            "masterId": "white",
+            "hp": 7,
+            "stones": 1,
+            "hand": 4,
+            "deck": 9,
+            "discard": 13
+          },
+          "cpu": {
+            "masterId": "white",
+            "hp": 8,
+            "stones": 2,
+            "hand": 6,
+            "deck": 8,
+            "discard": 16
+          }
+        },
+        "slots": [
+          {
+            "slotKey": "player_front_left",
+            "card": "card_133",
+            "name": "デスシープ",
+            "owner": "player",
+            "hp": 2,
+            "level": 2,
+            "status": "active",
+            "actions": "1/1",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "player_front_right",
+            "card": "polyspinner",
+            "name": "ポリスピナー",
+            "owner": "player",
+            "hp": 3,
+            "level": 2,
+            "status": "active",
+            "actions": "2/2",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "player_back_left",
+            "card": "card_037",
+            "name": "ドノマンティス",
+            "owner": "player",
+            "hp": 5,
+            "level": 1,
+            "status": "active",
+            "actions": "0/1",
+            "focused": true,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "player_back_right",
+            "card": "polyspinner",
+            "name": "ポリスピナー",
+            "owner": "player",
+            "hp": 3,
+            "level": 1,
+            "status": "prepared",
+            "actions": "0/2",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "cpu_front_left"
+          },
+          {
+            "slotKey": "cpu_front_right"
+          },
+          {
+            "slotKey": "cpu_back_left"
+          },
+          {
+            "slotKey": "cpu_back_right"
+          }
+        ]
+      },
+      "after": {
+        "currentPlayer": "player",
+        "turnNumber": 18,
+        "pendingLevelUp": false,
+        "players": {
+          "player": {
+            "masterId": "white",
+            "hp": 7,
+            "stones": 4,
+            "hand": 5,
+            "deck": 8,
+            "discard": 13
+          },
+          "cpu": {
+            "masterId": "white",
+            "hp": 8,
+            "stones": 2,
+            "hand": 5,
+            "deck": 8,
+            "discard": 17
+          }
+        },
+        "slots": [
+          {
+            "slotKey": "player_front_left",
+            "card": "card_133",
+            "name": "デスシープ",
+            "owner": "player",
+            "hp": 2,
+            "level": 2,
+            "status": "active",
+            "actions": "0/1",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "player_front_right",
+            "card": "polyspinner",
+            "name": "ポリスピナー",
+            "owner": "player",
+            "hp": 3,
+            "level": 2,
+            "status": "active",
+            "actions": "0/2",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "player_back_left",
+            "card": "card_037",
+            "name": "ドノマンティス",
+            "owner": "player",
+            "hp": 5,
+            "level": 1,
+            "status": "active",
+            "actions": "0/1",
+            "focused": true,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "player_back_right",
+            "card": "polyspinner",
+            "name": "ポリスピナー",
+            "owner": "player",
+            "hp": 3,
+            "level": 1,
+            "status": "active",
+            "actions": "0/2",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "cpu_front_left"
+          },
+          {
+            "slotKey": "cpu_front_right"
+          },
+          {
+            "slotKey": "cpu_back_left"
+          },
+          {
+            "slotKey": "cpu_back_right"
+          }
+        ]
+      },
+      "newLog": [
+        "CPU判断: 有効な行動がないためターン終了 / ターンプラン探索: 返し込み最終盤面-166点",
+        "CPUのカード溢れ: 手札を5枚まで捨てる",
+        "CPUは手札上限でドロー５を捨てた",
+        "プレイヤーのターン開始",
+        "ポリスピナー Lv1が登場した",
+        "プレイヤーはストーンを3個得た",
+        "プレイヤーはピグミィを引いた"
+      ]
+    },
+    {
+      "seed": 994329,
+      "step": 220,
+      "turnNumber": 18,
+      "player": "player",
+      "decision": "attack:player_front_right:attack->master:cpu",
+      "reason": "相手マスターへ実ダメージを与えられるため攻撃 / 見送り: 攻撃は3点差で見送り、移動は261点差で見送り",
+      "score": 110,
+      "legalDecisionCount": 10,
+      "nonEndDecisionCount": 9,
+      "before": {
+        "currentPlayer": "player",
+        "turnNumber": 18,
+        "pendingLevelUp": false,
+        "players": {
+          "player": {
+            "masterId": "white",
+            "hp": 7,
+            "stones": 4,
+            "hand": 5,
+            "deck": 8,
+            "discard": 13
+          },
+          "cpu": {
+            "masterId": "white",
+            "hp": 8,
+            "stones": 2,
+            "hand": 5,
+            "deck": 8,
+            "discard": 17
+          }
+        },
+        "slots": [
+          {
+            "slotKey": "player_front_left",
+            "card": "card_133",
+            "name": "デスシープ",
+            "owner": "player",
+            "hp": 2,
+            "level": 2,
+            "status": "active",
+            "actions": "0/1",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "player_front_right",
+            "card": "polyspinner",
+            "name": "ポリスピナー",
+            "owner": "player",
+            "hp": 3,
+            "level": 2,
+            "status": "active",
+            "actions": "0/2",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "player_back_left",
+            "card": "card_037",
+            "name": "ドノマンティス",
+            "owner": "player",
+            "hp": 5,
+            "level": 1,
+            "status": "active",
+            "actions": "0/1",
+            "focused": true,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "player_back_right",
+            "card": "polyspinner",
+            "name": "ポリスピナー",
+            "owner": "player",
+            "hp": 3,
+            "level": 1,
+            "status": "active",
+            "actions": "0/2",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "cpu_front_left"
+          },
+          {
+            "slotKey": "cpu_front_right"
+          },
+          {
+            "slotKey": "cpu_back_left"
+          },
+          {
+            "slotKey": "cpu_back_right"
+          }
+        ]
+      },
+      "after": {
+        "currentPlayer": "player",
+        "turnNumber": 18,
+        "pendingLevelUp": false,
+        "players": {
+          "player": {
+            "masterId": "white",
+            "hp": 7,
+            "stones": 4,
+            "hand": 5,
+            "deck": 8,
+            "discard": 13
+          },
+          "cpu": {
+            "masterId": "white",
+            "hp": 7,
+            "stones": 3,
+            "hand": 5,
+            "deck": 8,
+            "discard": 17
+          }
+        },
+        "slots": [
+          {
+            "slotKey": "player_front_left",
+            "card": "card_133",
+            "name": "デスシープ",
+            "owner": "player",
+            "hp": 2,
+            "level": 2,
+            "status": "active",
+            "actions": "0/1",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "player_front_right",
+            "card": "polyspinner",
+            "name": "ポリスピナー",
+            "owner": "player",
+            "hp": 3,
+            "level": 2,
+            "status": "active",
+            "actions": "1/2",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "player_back_left",
+            "card": "card_037",
+            "name": "ドノマンティス",
+            "owner": "player",
+            "hp": 5,
+            "level": 1,
+            "status": "active",
+            "actions": "0/1",
+            "focused": true,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "player_back_right",
+            "card": "polyspinner",
+            "name": "ポリスピナー",
+            "owner": "player",
+            "hp": 3,
+            "level": 1,
+            "status": "active",
+            "actions": "0/2",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "cpu_front_left"
+          },
+          {
+            "slotKey": "cpu_front_right"
+          },
+          {
+            "slotKey": "cpu_back_left"
+          },
+          {
+            "slotKey": "cpu_back_right"
+          }
+        ]
+      },
+      "newLog": [
+        "プレイヤーAI判断: 相手マスターへ実ダメージを与えられるため攻撃 / 見送り: 攻撃は3点差で見送り、移動は261点差で見送り",
+        "プレイヤーのポリスピナー Lv2: アタック 3P",
+        "CPUのマスターHPが1減った（アタック）。ストーン+1"
+      ]
+    },
+    {
+      "seed": 994329,
+      "step": 221,
+      "turnNumber": 18,
+      "player": "player",
+      "decision": "attack:player_front_left:attack->master:cpu",
+      "reason": "相手マスターへ実ダメージを与えられるため攻撃 / 見送り: 攻撃は2点差で見送り、移動は278点差で見送り",
+      "score": 94,
+      "legalDecisionCount": 10,
+      "nonEndDecisionCount": 9,
+      "before": {
+        "currentPlayer": "player",
+        "turnNumber": 18,
+        "pendingLevelUp": false,
+        "players": {
+          "player": {
+            "masterId": "white",
+            "hp": 7,
+            "stones": 4,
+            "hand": 5,
+            "deck": 8,
+            "discard": 13
+          },
+          "cpu": {
+            "masterId": "white",
+            "hp": 7,
+            "stones": 3,
+            "hand": 5,
+            "deck": 8,
+            "discard": 17
+          }
+        },
+        "slots": [
+          {
+            "slotKey": "player_front_left",
+            "card": "card_133",
+            "name": "デスシープ",
+            "owner": "player",
+            "hp": 2,
+            "level": 2,
+            "status": "active",
+            "actions": "0/1",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "player_front_right",
+            "card": "polyspinner",
+            "name": "ポリスピナー",
+            "owner": "player",
+            "hp": 3,
+            "level": 2,
+            "status": "active",
+            "actions": "1/2",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "player_back_left",
+            "card": "card_037",
+            "name": "ドノマンティス",
+            "owner": "player",
+            "hp": 5,
+            "level": 1,
+            "status": "active",
+            "actions": "0/1",
+            "focused": true,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "player_back_right",
+            "card": "polyspinner",
+            "name": "ポリスピナー",
+            "owner": "player",
+            "hp": 3,
+            "level": 1,
+            "status": "active",
+            "actions": "0/2",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "cpu_front_left"
+          },
+          {
+            "slotKey": "cpu_front_right"
+          },
+          {
+            "slotKey": "cpu_back_left"
+          },
+          {
+            "slotKey": "cpu_back_right"
+          }
+        ]
+      },
+      "after": {
+        "currentPlayer": "player",
+        "turnNumber": 18,
+        "pendingLevelUp": false,
+        "players": {
+          "player": {
+            "masterId": "white",
+            "hp": 7,
+            "stones": 4,
+            "hand": 5,
+            "deck": 8,
+            "discard": 13
+          },
+          "cpu": {
+            "masterId": "white",
+            "hp": 6,
+            "stones": 4,
+            "hand": 5,
+            "deck": 8,
+            "discard": 17
+          }
+        },
+        "slots": [
+          {
+            "slotKey": "player_front_left",
+            "card": "card_133",
+            "name": "デスシープ",
+            "owner": "player",
+            "hp": 2,
+            "level": 2,
+            "status": "active",
+            "actions": "1/1",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "player_front_right",
+            "card": "polyspinner",
+            "name": "ポリスピナー",
+            "owner": "player",
+            "hp": 3,
+            "level": 2,
+            "status": "active",
+            "actions": "1/2",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "player_back_left",
+            "card": "card_037",
+            "name": "ドノマンティス",
+            "owner": "player",
+            "hp": 5,
+            "level": 1,
+            "status": "active",
+            "actions": "0/1",
+            "focused": true,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "player_back_right",
+            "card": "polyspinner",
+            "name": "ポリスピナー",
+            "owner": "player",
+            "hp": 3,
+            "level": 1,
+            "status": "active",
+            "actions": "0/2",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "cpu_front_left"
+          },
+          {
+            "slotKey": "cpu_front_right"
+          },
+          {
+            "slotKey": "cpu_back_left"
+          },
+          {
+            "slotKey": "cpu_back_right"
+          }
+        ]
+      },
+      "newLog": [
+        "プレイヤーAI判断: 相手マスターへ実ダメージを与えられるため攻撃 / 見送り: 攻撃は2点差で見送り、移動は278点差で見送り",
+        "プレイヤーのデスシープ Lv2: アタック 3P",
+        "CPUのマスターHPが1減った（アタック）。ストーン+1"
+      ]
+    },
+    {
+      "seed": 994329,
+      "step": 222,
+      "turnNumber": 18,
+      "player": "player",
+      "decision": "attack:player_front_right:attack->master:cpu",
+      "reason": "相手マスターへ実ダメージを与えられるため攻撃 / 見送り: ためるは216点差で見送り、ためるは265点差で見送り",
+      "score": 94,
+      "legalDecisionCount": 6,
+      "nonEndDecisionCount": 5,
+      "before": {
+        "currentPlayer": "player",
+        "turnNumber": 18,
+        "pendingLevelUp": false,
+        "players": {
+          "player": {
+            "masterId": "white",
+            "hp": 7,
+            "stones": 4,
+            "hand": 5,
+            "deck": 8,
+            "discard": 13
+          },
+          "cpu": {
+            "masterId": "white",
+            "hp": 6,
+            "stones": 4,
+            "hand": 5,
+            "deck": 8,
+            "discard": 17
+          }
+        },
+        "slots": [
+          {
+            "slotKey": "player_front_left",
+            "card": "card_133",
+            "name": "デスシープ",
+            "owner": "player",
+            "hp": 2,
+            "level": 2,
+            "status": "active",
+            "actions": "1/1",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "player_front_right",
+            "card": "polyspinner",
+            "name": "ポリスピナー",
+            "owner": "player",
+            "hp": 3,
+            "level": 2,
+            "status": "active",
+            "actions": "1/2",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "player_back_left",
+            "card": "card_037",
+            "name": "ドノマンティス",
+            "owner": "player",
+            "hp": 5,
+            "level": 1,
+            "status": "active",
+            "actions": "0/1",
+            "focused": true,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "player_back_right",
+            "card": "polyspinner",
+            "name": "ポリスピナー",
+            "owner": "player",
+            "hp": 3,
+            "level": 1,
+            "status": "active",
+            "actions": "0/2",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "cpu_front_left"
+          },
+          {
+            "slotKey": "cpu_front_right"
+          },
+          {
+            "slotKey": "cpu_back_left"
+          },
+          {
+            "slotKey": "cpu_back_right"
+          }
+        ]
+      },
+      "after": {
+        "currentPlayer": "player",
+        "turnNumber": 18,
+        "pendingLevelUp": false,
+        "players": {
+          "player": {
+            "masterId": "white",
+            "hp": 7,
+            "stones": 4,
+            "hand": 5,
+            "deck": 8,
+            "discard": 13
+          },
+          "cpu": {
+            "masterId": "white",
+            "hp": 5,
+            "stones": 5,
+            "hand": 5,
+            "deck": 8,
+            "discard": 17
+          }
+        },
+        "slots": [
+          {
+            "slotKey": "player_front_left",
+            "card": "card_133",
+            "name": "デスシープ",
+            "owner": "player",
+            "hp": 2,
+            "level": 2,
+            "status": "active",
+            "actions": "1/1",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "player_front_right",
+            "card": "polyspinner",
+            "name": "ポリスピナー",
+            "owner": "player",
+            "hp": 3,
+            "level": 2,
+            "status": "active",
+            "actions": "2/2",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "player_back_left",
+            "card": "card_037",
+            "name": "ドノマンティス",
+            "owner": "player",
+            "hp": 5,
+            "level": 1,
+            "status": "active",
+            "actions": "0/1",
+            "focused": true,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "player_back_right",
+            "card": "polyspinner",
+            "name": "ポリスピナー",
+            "owner": "player",
+            "hp": 3,
+            "level": 1,
+            "status": "active",
+            "actions": "0/2",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "cpu_front_left"
+          },
+          {
+            "slotKey": "cpu_front_right"
+          },
+          {
+            "slotKey": "cpu_back_left"
+          },
+          {
+            "slotKey": "cpu_back_right"
+          }
+        ]
+      },
+      "newLog": [
+        "プレイヤーAI判断: 相手マスターへ実ダメージを与えられるため攻撃 / 見送り: ためるは216点差で見送り、ためるは265点差で見送り",
+        "プレイヤーのポリスピナー Lv2: アタック 3P",
+        "CPUのマスターHPが1減った（アタック）。ストーン+1"
+      ]
+    },
+    {
+      "seed": 994329,
+      "step": 223,
+      "turnNumber": 18,
+      "player": "player",
+      "decision": "focus:player_back_right",
+      "reason": "有効攻撃がないためためる",
+      "score": 38,
+      "legalDecisionCount": 2,
+      "nonEndDecisionCount": 1,
+      "before": {
+        "currentPlayer": "player",
+        "turnNumber": 18,
+        "pendingLevelUp": false,
+        "players": {
+          "player": {
+            "masterId": "white",
+            "hp": 7,
+            "stones": 4,
+            "hand": 5,
+            "deck": 8,
+            "discard": 13
+          },
+          "cpu": {
+            "masterId": "white",
+            "hp": 5,
+            "stones": 5,
+            "hand": 5,
+            "deck": 8,
+            "discard": 17
+          }
+        },
+        "slots": [
+          {
+            "slotKey": "player_front_left",
+            "card": "card_133",
+            "name": "デスシープ",
+            "owner": "player",
+            "hp": 2,
+            "level": 2,
+            "status": "active",
+            "actions": "1/1",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "player_front_right",
+            "card": "polyspinner",
+            "name": "ポリスピナー",
+            "owner": "player",
+            "hp": 3,
+            "level": 2,
+            "status": "active",
+            "actions": "2/2",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "player_back_left",
+            "card": "card_037",
+            "name": "ドノマンティス",
+            "owner": "player",
+            "hp": 5,
+            "level": 1,
+            "status": "active",
+            "actions": "0/1",
+            "focused": true,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "player_back_right",
+            "card": "polyspinner",
+            "name": "ポリスピナー",
+            "owner": "player",
+            "hp": 3,
+            "level": 1,
+            "status": "active",
+            "actions": "0/2",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "cpu_front_left"
+          },
+          {
+            "slotKey": "cpu_front_right"
+          },
+          {
+            "slotKey": "cpu_back_left"
+          },
+          {
+            "slotKey": "cpu_back_right"
+          }
+        ]
+      },
+      "after": {
+        "currentPlayer": "player",
+        "turnNumber": 18,
+        "pendingLevelUp": false,
+        "players": {
+          "player": {
+            "masterId": "white",
+            "hp": 7,
+            "stones": 4,
+            "hand": 5,
+            "deck": 8,
+            "discard": 13
+          },
+          "cpu": {
+            "masterId": "white",
+            "hp": 5,
+            "stones": 5,
+            "hand": 5,
+            "deck": 8,
+            "discard": 17
+          }
+        },
+        "slots": [
+          {
+            "slotKey": "player_front_left",
+            "card": "card_133",
+            "name": "デスシープ",
+            "owner": "player",
+            "hp": 2,
+            "level": 2,
+            "status": "active",
+            "actions": "1/1",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "player_front_right",
+            "card": "polyspinner",
+            "name": "ポリスピナー",
+            "owner": "player",
+            "hp": 3,
+            "level": 2,
+            "status": "active",
+            "actions": "2/2",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "player_back_left",
+            "card": "card_037",
+            "name": "ドノマンティス",
+            "owner": "player",
+            "hp": 5,
+            "level": 1,
+            "status": "active",
+            "actions": "0/1",
+            "focused": true,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "player_back_right",
+            "card": "polyspinner",
+            "name": "ポリスピナー",
+            "owner": "player",
+            "hp": 3,
+            "level": 1,
+            "status": "active",
+            "actions": "1/2",
+            "focused": true,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "cpu_front_left"
+          },
+          {
+            "slotKey": "cpu_front_right"
+          },
+          {
+            "slotKey": "cpu_back_left"
+          },
+          {
+            "slotKey": "cpu_back_right"
+          }
+        ]
+      },
+      "newLog": [
+        "プレイヤーAI判断: 有効攻撃がないためためる",
+        "ポリスピナー Lv1はためた"
+      ]
+    },
+    {
+      "seed": 994329,
+      "step": 224,
+      "turnNumber": 18,
+      "player": "player",
+      "decision": "master:shield->monster:player_front_left",
+      "reason": "致死圏の味方を守れるためシールド / 見送り: マスター特技は104点差で見送り",
+      "score": 121.19999999999999,
+      "legalDecisionCount": 3,
+      "nonEndDecisionCount": 2,
+      "before": {
+        "currentPlayer": "player",
+        "turnNumber": 18,
+        "pendingLevelUp": false,
+        "players": {
+          "player": {
+            "masterId": "white",
+            "hp": 7,
+            "stones": 4,
+            "hand": 5,
+            "deck": 8,
+            "discard": 13
+          },
+          "cpu": {
+            "masterId": "white",
+            "hp": 5,
+            "stones": 5,
+            "hand": 5,
+            "deck": 8,
+            "discard": 17
+          }
+        },
+        "slots": [
+          {
+            "slotKey": "player_front_left",
+            "card": "card_133",
+            "name": "デスシープ",
+            "owner": "player",
+            "hp": 2,
+            "level": 2,
+            "status": "active",
+            "actions": "1/1",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "player_front_right",
+            "card": "polyspinner",
+            "name": "ポリスピナー",
+            "owner": "player",
+            "hp": 3,
+            "level": 2,
+            "status": "active",
+            "actions": "2/2",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "player_back_left",
+            "card": "card_037",
+            "name": "ドノマンティス",
+            "owner": "player",
+            "hp": 5,
+            "level": 1,
+            "status": "active",
+            "actions": "0/1",
+            "focused": true,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "player_back_right",
+            "card": "polyspinner",
+            "name": "ポリスピナー",
+            "owner": "player",
+            "hp": 3,
+            "level": 1,
+            "status": "active",
+            "actions": "1/2",
+            "focused": true,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "cpu_front_left"
+          },
+          {
+            "slotKey": "cpu_front_right"
+          },
+          {
+            "slotKey": "cpu_back_left"
+          },
+          {
+            "slotKey": "cpu_back_right"
+          }
+        ]
+      },
+      "after": {
+        "currentPlayer": "player",
+        "turnNumber": 18,
+        "pendingLevelUp": false,
+        "players": {
+          "player": {
+            "masterId": "white",
+            "hp": 7,
+            "stones": 2,
+            "hand": 5,
+            "deck": 8,
+            "discard": 13
+          },
+          "cpu": {
+            "masterId": "white",
+            "hp": 5,
+            "stones": 5,
+            "hand": 5,
+            "deck": 8,
+            "discard": 17
+          }
+        },
+        "slots": [
+          {
+            "slotKey": "player_front_left",
+            "card": "card_133",
+            "name": "デスシープ",
+            "owner": "player",
+            "hp": 2,
+            "level": 2,
+            "status": "active",
+            "actions": "1/1",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": true
+          },
+          {
+            "slotKey": "player_front_right",
+            "card": "polyspinner",
+            "name": "ポリスピナー",
+            "owner": "player",
+            "hp": 3,
+            "level": 2,
+            "status": "active",
+            "actions": "2/2",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "player_back_left",
+            "card": "card_037",
+            "name": "ドノマンティス",
+            "owner": "player",
+            "hp": 5,
+            "level": 1,
+            "status": "active",
+            "actions": "0/1",
+            "focused": true,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "player_back_right",
+            "card": "polyspinner",
+            "name": "ポリスピナー",
+            "owner": "player",
+            "hp": 3,
+            "level": 1,
+            "status": "active",
+            "actions": "1/2",
+            "focused": true,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "cpu_front_left"
+          },
+          {
+            "slotKey": "cpu_front_right"
+          },
+          {
+            "slotKey": "cpu_back_left"
+          },
+          {
+            "slotKey": "cpu_back_right"
+          }
+        ]
+      },
+      "newLog": [
+        "プレイヤーAI判断: 致死圏の味方を守れるためシールド / 見送り: マスター特技は104点差で見送り",
+        "プレイヤーはデスシープ Lv2にシールドを張った"
+      ]
+    },
+    {
+      "seed": 994329,
+      "step": 225,
+      "turnNumber": 18,
+      "player": "player",
+      "decision": "end_turn",
+      "reason": "有効な行動がないためターン終了 / 見送り: マスター特技は46点差で見送り",
+      "score": 0,
+      "legalDecisionCount": 2,
+      "nonEndDecisionCount": 1,
+      "before": {
+        "currentPlayer": "player",
+        "turnNumber": 18,
+        "pendingLevelUp": false,
+        "players": {
+          "player": {
+            "masterId": "white",
+            "hp": 7,
+            "stones": 2,
+            "hand": 5,
+            "deck": 8,
+            "discard": 13
+          },
+          "cpu": {
+            "masterId": "white",
+            "hp": 5,
+            "stones": 5,
+            "hand": 5,
+            "deck": 8,
+            "discard": 17
+          }
+        },
+        "slots": [
+          {
+            "slotKey": "player_front_left",
+            "card": "card_133",
+            "name": "デスシープ",
+            "owner": "player",
+            "hp": 2,
+            "level": 2,
+            "status": "active",
+            "actions": "1/1",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": true
+          },
+          {
+            "slotKey": "player_front_right",
+            "card": "polyspinner",
+            "name": "ポリスピナー",
+            "owner": "player",
+            "hp": 3,
+            "level": 2,
+            "status": "active",
+            "actions": "2/2",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "player_back_left",
+            "card": "card_037",
+            "name": "ドノマンティス",
+            "owner": "player",
+            "hp": 5,
+            "level": 1,
+            "status": "active",
+            "actions": "0/1",
+            "focused": true,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "player_back_right",
+            "card": "polyspinner",
+            "name": "ポリスピナー",
+            "owner": "player",
+            "hp": 3,
+            "level": 1,
+            "status": "active",
+            "actions": "1/2",
+            "focused": true,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "cpu_front_left"
+          },
+          {
+            "slotKey": "cpu_front_right"
+          },
+          {
+            "slotKey": "cpu_back_left"
+          },
+          {
+            "slotKey": "cpu_back_right"
+          }
+        ]
+      },
+      "after": {
+        "currentPlayer": "cpu",
+        "turnNumber": 18,
+        "pendingLevelUp": false,
+        "players": {
+          "player": {
+            "masterId": "white",
+            "hp": 7,
+            "stones": 2,
+            "hand": 5,
+            "deck": 8,
+            "discard": 13
+          },
+          "cpu": {
+            "masterId": "white",
+            "hp": 5,
+            "stones": 8,
+            "hand": 6,
+            "deck": 7,
+            "discard": 17
+          }
+        },
+        "slots": [
+          {
+            "slotKey": "player_front_left",
+            "card": "card_133",
+            "name": "デスシープ",
+            "owner": "player",
+            "hp": 2,
+            "level": 2,
+            "status": "active",
+            "actions": "1/1",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": true
+          },
+          {
+            "slotKey": "player_front_right",
+            "card": "polyspinner",
+            "name": "ポリスピナー",
+            "owner": "player",
+            "hp": 3,
+            "level": 2,
+            "status": "active",
+            "actions": "2/2",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "player_back_left",
+            "card": "card_037",
+            "name": "ドノマンティス",
+            "owner": "player",
+            "hp": 5,
+            "level": 1,
+            "status": "active",
+            "actions": "0/1",
+            "focused": true,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "player_back_right",
+            "card": "polyspinner",
+            "name": "ポリスピナー",
+            "owner": "player",
+            "hp": 3,
+            "level": 1,
+            "status": "active",
+            "actions": "1/2",
+            "focused": true,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "cpu_front_left"
+          },
+          {
+            "slotKey": "cpu_front_right"
+          },
+          {
+            "slotKey": "cpu_back_left"
+          },
+          {
+            "slotKey": "cpu_back_right"
+          }
+        ]
+      },
+      "newLog": [
+        "プレイヤーAI判断: 有効な行動がないためターン終了 / 見送り: マスター特技は46点差で見送り",
+        "CPUのターン開始",
+        "CPUはストーンを3個得た",
+        "CPUはカードを引いた"
+      ]
+    },
+    {
+      "seed": 994329,
+      "step": 226,
+      "turnNumber": 18,
+      "player": "cpu",
+      "decision": "master:master_attack->monster:player_front_right",
+      "reason": "ストーンに余裕があり敵を削れるためマスターアタック / 見送り: 召喚は778点差で見送り、召喚は778点差で見送り",
+      "score": 2,
+      "legalDecisionCount": 4,
+      "nonEndDecisionCount": 3,
+      "before": {
+        "currentPlayer": "cpu",
+        "turnNumber": 18,
+        "pendingLevelUp": false,
+        "players": {
+          "player": {
+            "masterId": "white",
+            "hp": 7,
+            "stones": 2,
+            "hand": 5,
+            "deck": 8,
+            "discard": 13
+          },
+          "cpu": {
+            "masterId": "white",
+            "hp": 5,
+            "stones": 8,
+            "hand": 6,
+            "deck": 7,
+            "discard": 17
+          }
+        },
+        "slots": [
+          {
+            "slotKey": "player_front_left",
+            "card": "card_133",
+            "name": "デスシープ",
+            "owner": "player",
+            "hp": 2,
+            "level": 2,
+            "status": "active",
+            "actions": "1/1",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": true
+          },
+          {
+            "slotKey": "player_front_right",
+            "card": "polyspinner",
+            "name": "ポリスピナー",
+            "owner": "player",
+            "hp": 3,
+            "level": 2,
+            "status": "active",
+            "actions": "2/2",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "player_back_left",
+            "card": "card_037",
+            "name": "ドノマンティス",
+            "owner": "player",
+            "hp": 5,
+            "level": 1,
+            "status": "active",
+            "actions": "0/1",
+            "focused": true,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "player_back_right",
+            "card": "polyspinner",
+            "name": "ポリスピナー",
+            "owner": "player",
+            "hp": 3,
+            "level": 1,
+            "status": "active",
+            "actions": "1/2",
+            "focused": true,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "cpu_front_left"
+          },
+          {
+            "slotKey": "cpu_front_right"
+          },
+          {
+            "slotKey": "cpu_back_left"
+          },
+          {
+            "slotKey": "cpu_back_right"
+          }
+        ]
+      },
+      "after": {
+        "currentPlayer": "cpu",
+        "turnNumber": 18,
+        "pendingLevelUp": false,
+        "players": {
+          "player": {
+            "masterId": "white",
+            "hp": 7,
+            "stones": 2,
+            "hand": 5,
+            "deck": 8,
+            "discard": 13
+          },
+          "cpu": {
+            "masterId": "white",
+            "hp": 5,
+            "stones": 5,
+            "hand": 6,
+            "deck": 7,
+            "discard": 17
+          }
+        },
+        "slots": [
+          {
+            "slotKey": "player_front_left",
+            "card": "card_133",
+            "name": "デスシープ",
+            "owner": "player",
+            "hp": 2,
+            "level": 2,
+            "status": "active",
+            "actions": "1/1",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": true
+          },
+          {
+            "slotKey": "player_front_right",
+            "card": "polyspinner",
+            "name": "ポリスピナー",
+            "owner": "player",
+            "hp": 1,
+            "level": 2,
+            "status": "active",
+            "actions": "2/2",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "player_back_left",
+            "card": "card_037",
+            "name": "ドノマンティス",
+            "owner": "player",
+            "hp": 5,
+            "level": 1,
+            "status": "active",
+            "actions": "0/1",
+            "focused": true,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "player_back_right",
+            "card": "polyspinner",
+            "name": "ポリスピナー",
+            "owner": "player",
+            "hp": 3,
+            "level": 1,
+            "status": "active",
+            "actions": "1/2",
+            "focused": true,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "cpu_front_left"
+          },
+          {
+            "slotKey": "cpu_front_right"
+          },
+          {
+            "slotKey": "cpu_back_left"
+          },
+          {
+            "slotKey": "cpu_back_right"
+          }
+        ]
+      },
+      "newLog": [
+        "CPU判断: ストーンに余裕があり敵を削れるためマスターアタック / 見送り: 召喚は778点差で見送り、召喚は778点差で見送り",
+        "CPUのマスターアタック",
+        "マスターアタックでポリスピナー Lv2に2ダメージ"
+      ]
+    },
+    {
+      "seed": 994329,
+      "step": 227,
+      "turnNumber": 18,
+      "player": "cpu",
+      "decision": "summon:cpu_yanbaru_2->cpu_back_left",
+      "reason": "後衛カードを後列左へ召喚 / 見送り: 召喚は1点差で見送り、マスター特技は102点差で見送り",
+      "score": 28,
+      "legalDecisionCount": 4,
+      "nonEndDecisionCount": 3,
+      "before": {
+        "currentPlayer": "cpu",
+        "turnNumber": 18,
+        "pendingLevelUp": false,
+        "players": {
+          "player": {
+            "masterId": "white",
+            "hp": 7,
+            "stones": 2,
+            "hand": 5,
+            "deck": 8,
+            "discard": 13
+          },
+          "cpu": {
+            "masterId": "white",
+            "hp": 5,
+            "stones": 5,
+            "hand": 6,
+            "deck": 7,
+            "discard": 17
+          }
+        },
+        "slots": [
+          {
+            "slotKey": "player_front_left",
+            "card": "card_133",
+            "name": "デスシープ",
+            "owner": "player",
+            "hp": 2,
+            "level": 2,
+            "status": "active",
+            "actions": "1/1",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": true
+          },
+          {
+            "slotKey": "player_front_right",
+            "card": "polyspinner",
+            "name": "ポリスピナー",
+            "owner": "player",
+            "hp": 1,
+            "level": 2,
+            "status": "active",
+            "actions": "2/2",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "player_back_left",
+            "card": "card_037",
+            "name": "ドノマンティス",
+            "owner": "player",
+            "hp": 5,
+            "level": 1,
+            "status": "active",
+            "actions": "0/1",
+            "focused": true,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "player_back_right",
+            "card": "polyspinner",
+            "name": "ポリスピナー",
+            "owner": "player",
+            "hp": 3,
+            "level": 1,
+            "status": "active",
+            "actions": "1/2",
+            "focused": true,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "cpu_front_left"
+          },
+          {
+            "slotKey": "cpu_front_right"
+          },
+          {
+            "slotKey": "cpu_back_left"
+          },
+          {
+            "slotKey": "cpu_back_right"
+          }
+        ]
+      },
+      "after": {
+        "currentPlayer": "cpu",
+        "turnNumber": 18,
+        "pendingLevelUp": false,
+        "players": {
+          "player": {
+            "masterId": "white",
+            "hp": 7,
+            "stones": 2,
+            "hand": 5,
+            "deck": 8,
+            "discard": 13
+          },
+          "cpu": {
+            "masterId": "white",
+            "hp": 5,
+            "stones": 4,
+            "hand": 5,
+            "deck": 7,
+            "discard": 17
+          }
+        },
+        "slots": [
+          {
+            "slotKey": "player_front_left",
+            "card": "card_133",
+            "name": "デスシープ",
+            "owner": "player",
+            "hp": 2,
+            "level": 2,
+            "status": "active",
+            "actions": "1/1",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": true
+          },
+          {
+            "slotKey": "player_front_right",
+            "card": "polyspinner",
+            "name": "ポリスピナー",
+            "owner": "player",
+            "hp": 1,
+            "level": 2,
+            "status": "active",
+            "actions": "2/2",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "player_back_left",
+            "card": "card_037",
+            "name": "ドノマンティス",
+            "owner": "player",
+            "hp": 5,
+            "level": 1,
+            "status": "active",
+            "actions": "0/1",
+            "focused": true,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "player_back_right",
+            "card": "polyspinner",
+            "name": "ポリスピナー",
+            "owner": "player",
+            "hp": 3,
+            "level": 1,
+            "status": "active",
+            "actions": "1/2",
+            "focused": true,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "cpu_front_left"
+          },
+          {
+            "slotKey": "cpu_front_right"
+          },
+          {
+            "slotKey": "cpu_back_left",
+            "card": "yanbaru",
+            "name": "ヤンバル",
+            "owner": "cpu",
+            "hp": 3,
+            "level": 1,
+            "status": "prepared",
+            "actions": "0/1",
+            "focused": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "cpu_back_right"
+          }
+        ]
+      },
+      "newLog": [
+        "CPU判断: 後衛カードを後列左へ召喚 / 見送り: 召喚は1点差で見送り、マスター特技は102点差で見送り",
+        "CPUはカードを準備中で召喚した"
+      ]
+    },
+    {
+      "seed": 994329,
+      "step": 228,
+      "turnNumber": 18,
+      "player": "cpu",
+      "decision": "master:wake_up->monster:cpu_back_left",
+      "reason": "準備中の味方を起こして敵を撃破できるためウェイクアップ / ターンプラン探索: 返し込み最終盤面148点、次点と58点差",
+      "score": 311.91999999999996,
+      "legalDecisionCount": 3,
+      "nonEndDecisionCount": 2,
+      "before": {
+        "currentPlayer": "cpu",
+        "turnNumber": 18,
+        "pendingLevelUp": false,
+        "players": {
+          "player": {
+            "masterId": "white",
+            "hp": 7,
+            "stones": 2,
+            "hand": 5,
+            "deck": 8,
+            "discard": 13
+          },
+          "cpu": {
+            "masterId": "white",
+            "hp": 5,
+            "stones": 4,
+            "hand": 5,
+            "deck": 7,
+            "discard": 17
+          }
+        },
+        "slots": [
+          {
+            "slotKey": "player_front_left",
+            "card": "card_133",
+            "name": "デスシープ",
+            "owner": "player",
+            "hp": 2,
+            "level": 2,
+            "status": "active",
+            "actions": "1/1",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": true
+          },
+          {
+            "slotKey": "player_front_right",
+            "card": "polyspinner",
+            "name": "ポリスピナー",
+            "owner": "player",
+            "hp": 1,
+            "level": 2,
+            "status": "active",
+            "actions": "2/2",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "player_back_left",
+            "card": "card_037",
+            "name": "ドノマンティス",
+            "owner": "player",
+            "hp": 5,
+            "level": 1,
+            "status": "active",
+            "actions": "0/1",
+            "focused": true,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "player_back_right",
+            "card": "polyspinner",
+            "name": "ポリスピナー",
+            "owner": "player",
+            "hp": 3,
+            "level": 1,
+            "status": "active",
+            "actions": "1/2",
+            "focused": true,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "cpu_front_left"
+          },
+          {
+            "slotKey": "cpu_front_right"
+          },
+          {
+            "slotKey": "cpu_back_left",
+            "card": "yanbaru",
+            "name": "ヤンバル",
+            "owner": "cpu",
+            "hp": 3,
+            "level": 1,
+            "status": "prepared",
+            "actions": "0/1",
+            "focused": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "cpu_back_right"
+          }
+        ]
+      },
+      "after": {
+        "currentPlayer": "cpu",
+        "turnNumber": 18,
+        "pendingLevelUp": false,
+        "players": {
+          "player": {
+            "masterId": "white",
+            "hp": 7,
+            "stones": 2,
+            "hand": 5,
+            "deck": 8,
+            "discard": 13
+          },
+          "cpu": {
+            "masterId": "white",
+            "hp": 5,
+            "stones": 2,
+            "hand": 5,
+            "deck": 7,
+            "discard": 17
+          }
+        },
+        "slots": [
+          {
+            "slotKey": "player_front_left",
+            "card": "card_133",
+            "name": "デスシープ",
+            "owner": "player",
+            "hp": 2,
+            "level": 2,
+            "status": "active",
+            "actions": "1/1",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": true
+          },
+          {
+            "slotKey": "player_front_right",
+            "card": "polyspinner",
+            "name": "ポリスピナー",
+            "owner": "player",
+            "hp": 1,
+            "level": 2,
+            "status": "active",
+            "actions": "2/2",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "player_back_left",
+            "card": "card_037",
+            "name": "ドノマンティス",
+            "owner": "player",
+            "hp": 5,
+            "level": 1,
+            "status": "active",
+            "actions": "0/1",
+            "focused": true,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "player_back_right",
+            "card": "polyspinner",
+            "name": "ポリスピナー",
+            "owner": "player",
+            "hp": 3,
+            "level": 1,
+            "status": "active",
+            "actions": "1/2",
+            "focused": true,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "cpu_front_left"
+          },
+          {
+            "slotKey": "cpu_front_right"
+          },
+          {
+            "slotKey": "cpu_back_left",
+            "card": "yanbaru",
+            "name": "ヤンバル",
+            "owner": "cpu",
+            "hp": 3,
+            "level": 1,
+            "status": "active",
+            "actions": "0/1",
+            "focused": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "cpu_back_right"
+          }
+        ]
+      },
+      "newLog": [
+        "CPU判断: 準備中の味方を起こして敵を撃破できるためウェイクアップ / ターンプラン探索: 返し込み最終盤面148点、次点と58点差",
+        "CPUはヤンバル Lv1をウェイクアップした"
+      ]
+    },
+    {
+      "seed": 994329,
+      "step": 229,
+      "turnNumber": 18,
+      "player": "cpu",
+      "decision": "attack:cpu_back_left:wild_claw->monster:player_front_right",
+      "reason": "敵モンスターを撃破できるため攻撃 / ターンプラン探索: 返し込み最終盤面115点、次点と447点差",
+      "score": 509,
+      "legalDecisionCount": 4,
+      "nonEndDecisionCount": 3,
+      "before": {
+        "currentPlayer": "cpu",
+        "turnNumber": 18,
+        "pendingLevelUp": false,
+        "players": {
+          "player": {
+            "masterId": "white",
+            "hp": 7,
+            "stones": 2,
+            "hand": 5,
+            "deck": 8,
+            "discard": 13
+          },
+          "cpu": {
+            "masterId": "white",
+            "hp": 5,
+            "stones": 2,
+            "hand": 5,
+            "deck": 7,
+            "discard": 17
+          }
+        },
+        "slots": [
+          {
+            "slotKey": "player_front_left",
+            "card": "card_133",
+            "name": "デスシープ",
+            "owner": "player",
+            "hp": 2,
+            "level": 2,
+            "status": "active",
+            "actions": "1/1",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": true
+          },
+          {
+            "slotKey": "player_front_right",
+            "card": "polyspinner",
+            "name": "ポリスピナー",
+            "owner": "player",
+            "hp": 1,
+            "level": 2,
+            "status": "active",
+            "actions": "2/2",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "player_back_left",
+            "card": "card_037",
+            "name": "ドノマンティス",
+            "owner": "player",
+            "hp": 5,
+            "level": 1,
+            "status": "active",
+            "actions": "0/1",
+            "focused": true,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "player_back_right",
+            "card": "polyspinner",
+            "name": "ポリスピナー",
+            "owner": "player",
+            "hp": 3,
+            "level": 1,
+            "status": "active",
+            "actions": "1/2",
+            "focused": true,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "cpu_front_left"
+          },
+          {
+            "slotKey": "cpu_front_right"
+          },
+          {
+            "slotKey": "cpu_back_left",
+            "card": "yanbaru",
+            "name": "ヤンバル",
+            "owner": "cpu",
+            "hp": 3,
+            "level": 1,
+            "status": "active",
+            "actions": "0/1",
+            "focused": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "cpu_back_right"
+          }
+        ]
+      },
+      "after": {
+        "currentPlayer": "cpu",
+        "turnNumber": 18,
+        "pendingLevelUp": false,
+        "players": {
+          "player": {
+            "masterId": "white",
+            "hp": 7,
+            "stones": 4,
+            "hand": 5,
+            "deck": 8,
+            "discard": 14
+          },
+          "cpu": {
+            "masterId": "white",
+            "hp": 5,
+            "stones": 1,
+            "hand": 5,
+            "deck": 7,
+            "discard": 17
+          }
+        },
+        "slots": [
+          {
+            "slotKey": "player_front_left",
+            "card": "card_133",
+            "name": "デスシープ",
+            "owner": "player",
+            "hp": 2,
+            "level": 2,
+            "status": "active",
+            "actions": "1/1",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": true
+          },
+          {
+            "slotKey": "player_front_right"
+          },
+          {
+            "slotKey": "player_back_left",
+            "card": "card_037",
+            "name": "ドノマンティス",
+            "owner": "player",
+            "hp": 5,
+            "level": 1,
+            "status": "active",
+            "actions": "0/1",
+            "focused": true,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "player_back_right",
+            "card": "polyspinner",
+            "name": "ポリスピナー",
+            "owner": "player",
+            "hp": 3,
+            "level": 1,
+            "status": "active",
+            "actions": "1/2",
+            "focused": true,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "cpu_front_left"
+          },
+          {
+            "slotKey": "cpu_front_right"
+          },
+          {
+            "slotKey": "cpu_back_left",
+            "card": "yanbaru",
+            "name": "ヤンバル",
+            "owner": "cpu",
+            "hp": 3,
+            "level": 2,
+            "status": "active",
+            "actions": "1/1",
+            "focused": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "cpu_back_right"
+          }
+        ]
+      },
+      "newLog": [
+        "CPU判断: 敵モンスターを撃破できるため攻撃 / ターンプラン探索: 返し込み最終盤面115点、次点と447点差",
+        "CPUのヤンバル Lv1: ワイルドクロウ 2P",
+        "ワイルドクロウでポリスピナー Lv2に2ダメージ",
+        "ポリスピナー Lv2は倒れ、プレイヤーにストーン2個が戻った",
+        "ヤンバル Lv2はLv2になり、HPが全回復した"
+      ]
+    },
+    {
+      "seed": 994329,
+      "step": 230,
+      "turnNumber": 18,
+      "player": "cpu",
+      "decision": "end_turn",
+      "reason": "有効な行動がないためターン終了 / ターンプラン探索: 返し込み最終盤面-85点",
+      "score": 0,
+      "legalDecisionCount": 1,
+      "nonEndDecisionCount": 0,
+      "before": {
+        "currentPlayer": "cpu",
+        "turnNumber": 18,
+        "pendingLevelUp": false,
+        "players": {
+          "player": {
+            "masterId": "white",
+            "hp": 7,
+            "stones": 4,
+            "hand": 5,
+            "deck": 8,
+            "discard": 14
+          },
+          "cpu": {
+            "masterId": "white",
+            "hp": 5,
+            "stones": 1,
+            "hand": 5,
+            "deck": 7,
+            "discard": 17
+          }
+        },
+        "slots": [
+          {
+            "slotKey": "player_front_left",
+            "card": "card_133",
+            "name": "デスシープ",
+            "owner": "player",
+            "hp": 2,
+            "level": 2,
+            "status": "active",
+            "actions": "1/1",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": true
+          },
+          {
+            "slotKey": "player_front_right"
+          },
+          {
+            "slotKey": "player_back_left",
+            "card": "card_037",
+            "name": "ドノマンティス",
+            "owner": "player",
+            "hp": 5,
+            "level": 1,
+            "status": "active",
+            "actions": "0/1",
+            "focused": true,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "player_back_right",
+            "card": "polyspinner",
+            "name": "ポリスピナー",
+            "owner": "player",
+            "hp": 3,
+            "level": 1,
+            "status": "active",
+            "actions": "1/2",
+            "focused": true,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "cpu_front_left"
+          },
+          {
+            "slotKey": "cpu_front_right"
+          },
+          {
+            "slotKey": "cpu_back_left",
+            "card": "yanbaru",
+            "name": "ヤンバル",
+            "owner": "cpu",
+            "hp": 3,
+            "level": 2,
+            "status": "active",
+            "actions": "1/1",
+            "focused": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "cpu_back_right"
+          }
+        ]
+      },
+      "after": {
+        "currentPlayer": "player",
+        "turnNumber": 19,
+        "pendingLevelUp": false,
+        "players": {
+          "player": {
+            "masterId": "white",
+            "hp": 7,
+            "stones": 7,
+            "hand": 6,
+            "deck": 7,
+            "discard": 14
+          },
+          "cpu": {
+            "masterId": "white",
+            "hp": 5,
+            "stones": 1,
+            "hand": 5,
+            "deck": 7,
+            "discard": 17
+          }
+        },
+        "slots": [
+          {
+            "slotKey": "player_front_left",
+            "card": "card_133",
+            "name": "デスシープ",
+            "owner": "player",
+            "hp": 2,
+            "level": 2,
+            "status": "active",
+            "actions": "0/1",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "player_front_right",
+            "card": "polyspinner",
+            "name": "ポリスピナー",
+            "owner": "player",
+            "hp": 3,
+            "level": 1,
+            "status": "active",
+            "actions": "0/2",
+            "focused": true,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "player_back_left",
+            "card": "card_037",
+            "name": "ドノマンティス",
+            "owner": "player",
+            "hp": 5,
+            "level": 1,
+            "status": "active",
+            "actions": "0/1",
+            "focused": true,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "player_back_right"
+          },
+          {
+            "slotKey": "cpu_front_left"
+          },
+          {
+            "slotKey": "cpu_front_right"
+          },
+          {
+            "slotKey": "cpu_back_left",
+            "card": "yanbaru",
+            "name": "ヤンバル",
+            "owner": "cpu",
+            "hp": 3,
+            "level": 2,
+            "status": "active",
+            "actions": "1/1",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "cpu_back_right"
+          }
+        ]
+      },
+      "newLog": [
+        "CPU判断: 有効な行動がないためターン終了 / ターンプラン探索: 返し込み最終盤面-85点",
+        "プレイヤーのターン開始",
+        "ポリスピナー Lv1が前衛へ自動移動した",
+        "プレイヤーはストーンを3個得た",
+        "デスシープ Lv2の防御効果が切れた",
+        "プレイヤーはドノマンティスを引いた"
+      ]
+    },
+    {
+      "seed": 994329,
+      "step": 231,
+      "turnNumber": 19,
+      "player": "player",
+      "decision": "summon:player_card_051_2->player_back_right",
+      "reason": "後衛カードを後列右へ召喚 / 見送り: 召喚は91点差で見送り、攻撃は94点差で見送り",
+      "score": 67,
+      "legalDecisionCount": 8,
+      "nonEndDecisionCount": 7,
+      "before": {
+        "currentPlayer": "player",
+        "turnNumber": 19,
+        "pendingLevelUp": false,
+        "players": {
+          "player": {
+            "masterId": "white",
+            "hp": 7,
+            "stones": 7,
+            "hand": 6,
+            "deck": 7,
+            "discard": 14
+          },
+          "cpu": {
+            "masterId": "white",
+            "hp": 5,
+            "stones": 1,
+            "hand": 5,
+            "deck": 7,
+            "discard": 17
+          }
+        },
+        "slots": [
+          {
+            "slotKey": "player_front_left",
+            "card": "card_133",
+            "name": "デスシープ",
+            "owner": "player",
+            "hp": 2,
+            "level": 2,
+            "status": "active",
+            "actions": "0/1",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "player_front_right",
+            "card": "polyspinner",
+            "name": "ポリスピナー",
+            "owner": "player",
+            "hp": 3,
+            "level": 1,
+            "status": "active",
+            "actions": "0/2",
+            "focused": true,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "player_back_left",
+            "card": "card_037",
+            "name": "ドノマンティス",
+            "owner": "player",
+            "hp": 5,
+            "level": 1,
+            "status": "active",
+            "actions": "0/1",
+            "focused": true,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "player_back_right"
+          },
+          {
+            "slotKey": "cpu_front_left"
+          },
+          {
+            "slotKey": "cpu_front_right"
+          },
+          {
+            "slotKey": "cpu_back_left",
+            "card": "yanbaru",
+            "name": "ヤンバル",
+            "owner": "cpu",
+            "hp": 3,
+            "level": 2,
+            "status": "active",
+            "actions": "1/1",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "cpu_back_right"
+          }
+        ]
+      },
+      "after": {
+        "currentPlayer": "player",
+        "turnNumber": 19,
+        "pendingLevelUp": false,
+        "players": {
+          "player": {
+            "masterId": "white",
+            "hp": 7,
+            "stones": 6,
+            "hand": 5,
+            "deck": 7,
+            "discard": 14
+          },
+          "cpu": {
+            "masterId": "white",
+            "hp": 5,
+            "stones": 1,
+            "hand": 5,
+            "deck": 7,
+            "discard": 17
+          }
+        },
+        "slots": [
+          {
+            "slotKey": "player_front_left",
+            "card": "card_133",
+            "name": "デスシープ",
+            "owner": "player",
+            "hp": 2,
+            "level": 2,
+            "status": "active",
+            "actions": "0/1",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "player_front_right",
+            "card": "polyspinner",
+            "name": "ポリスピナー",
+            "owner": "player",
+            "hp": 3,
+            "level": 1,
+            "status": "active",
+            "actions": "0/2",
+            "focused": true,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "player_back_left",
+            "card": "card_037",
+            "name": "ドノマンティス",
+            "owner": "player",
+            "hp": 5,
+            "level": 1,
+            "status": "active",
+            "actions": "0/1",
+            "focused": true,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "player_back_right",
+            "card": "card_051",
+            "name": "ピグミィ",
+            "owner": "player",
+            "hp": 3,
+            "level": 1,
+            "status": "prepared",
+            "actions": "0/2",
+            "focused": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "cpu_front_left"
+          },
+          {
+            "slotKey": "cpu_front_right"
+          },
+          {
+            "slotKey": "cpu_back_left",
+            "card": "yanbaru",
+            "name": "ヤンバル",
+            "owner": "cpu",
+            "hp": 3,
+            "level": 2,
+            "status": "active",
+            "actions": "1/1",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "cpu_back_right"
+          }
+        ]
+      },
+      "newLog": [
+        "プレイヤーAI判断: 後衛カードを後列右へ召喚 / 見送り: 召喚は91点差で見送り、攻撃は94点差で見送り",
+        "プレイヤーはピグミィを準備中で召喚した"
+      ]
+    },
+    {
+      "seed": 994329,
+      "step": 232,
+      "turnNumber": 19,
+      "player": "player",
+      "decision": "attack:player_front_left:attack->master:cpu",
+      "reason": "相手マスターへ実ダメージを与えられるため攻撃 / 見送り: 攻撃は126点差で見送り、ためるは316点差で見送り",
+      "score": 94,
+      "legalDecisionCount": 6,
+      "nonEndDecisionCount": 5,
+      "before": {
+        "currentPlayer": "player",
+        "turnNumber": 19,
+        "pendingLevelUp": false,
+        "players": {
+          "player": {
+            "masterId": "white",
+            "hp": 7,
+            "stones": 6,
+            "hand": 5,
+            "deck": 7,
+            "discard": 14
+          },
+          "cpu": {
+            "masterId": "white",
+            "hp": 5,
+            "stones": 1,
+            "hand": 5,
+            "deck": 7,
+            "discard": 17
+          }
+        },
+        "slots": [
+          {
+            "slotKey": "player_front_left",
+            "card": "card_133",
+            "name": "デスシープ",
+            "owner": "player",
+            "hp": 2,
+            "level": 2,
+            "status": "active",
+            "actions": "0/1",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "player_front_right",
+            "card": "polyspinner",
+            "name": "ポリスピナー",
+            "owner": "player",
+            "hp": 3,
+            "level": 1,
+            "status": "active",
+            "actions": "0/2",
+            "focused": true,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "player_back_left",
+            "card": "card_037",
+            "name": "ドノマンティス",
+            "owner": "player",
+            "hp": 5,
+            "level": 1,
+            "status": "active",
+            "actions": "0/1",
+            "focused": true,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "player_back_right",
+            "card": "card_051",
+            "name": "ピグミィ",
+            "owner": "player",
+            "hp": 3,
+            "level": 1,
+            "status": "prepared",
+            "actions": "0/2",
+            "focused": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "cpu_front_left"
+          },
+          {
+            "slotKey": "cpu_front_right"
+          },
+          {
+            "slotKey": "cpu_back_left",
+            "card": "yanbaru",
+            "name": "ヤンバル",
+            "owner": "cpu",
+            "hp": 3,
+            "level": 2,
+            "status": "active",
+            "actions": "1/1",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "cpu_back_right"
+          }
+        ]
+      },
+      "after": {
+        "currentPlayer": "player",
+        "turnNumber": 19,
+        "pendingLevelUp": false,
+        "players": {
+          "player": {
+            "masterId": "white",
+            "hp": 7,
+            "stones": 6,
+            "hand": 5,
+            "deck": 7,
+            "discard": 14
+          },
+          "cpu": {
+            "masterId": "white",
+            "hp": 4,
+            "stones": 2,
+            "hand": 5,
+            "deck": 7,
+            "discard": 17
+          }
+        },
+        "slots": [
+          {
+            "slotKey": "player_front_left",
+            "card": "card_133",
+            "name": "デスシープ",
+            "owner": "player",
+            "hp": 2,
+            "level": 2,
+            "status": "active",
+            "actions": "1/1",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "player_front_right",
+            "card": "polyspinner",
+            "name": "ポリスピナー",
+            "owner": "player",
+            "hp": 3,
+            "level": 1,
+            "status": "active",
+            "actions": "0/2",
+            "focused": true,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "player_back_left",
+            "card": "card_037",
+            "name": "ドノマンティス",
+            "owner": "player",
+            "hp": 5,
+            "level": 1,
+            "status": "active",
+            "actions": "0/1",
+            "focused": true,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "player_back_right",
+            "card": "card_051",
+            "name": "ピグミィ",
+            "owner": "player",
+            "hp": 3,
+            "level": 1,
+            "status": "prepared",
+            "actions": "0/2",
+            "focused": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "cpu_front_left"
+          },
+          {
+            "slotKey": "cpu_front_right"
+          },
+          {
+            "slotKey": "cpu_back_left",
+            "card": "yanbaru",
+            "name": "ヤンバル",
+            "owner": "cpu",
+            "hp": 3,
+            "level": 2,
+            "status": "active",
+            "actions": "1/1",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "cpu_back_right"
+          }
+        ]
+      },
+      "newLog": [
+        "プレイヤーAI判断: 相手マスターへ実ダメージを与えられるため攻撃 / 見送り: 攻撃は126点差で見送り、ためるは316点差で見送り",
+        "プレイヤーのデスシープ Lv2: アタック 3P",
+        "CPUのマスターHPが1減った（アタック）。ストーン+1"
+      ]
+    },
+    {
+      "seed": 994329,
+      "step": 233,
+      "turnNumber": 19,
+      "player": "player",
+      "decision": "attack:player_front_right:attack->master:cpu",
+      "reason": "相手マスターへ実ダメージを与えられるため攻撃",
+      "score": 106,
+      "legalDecisionCount": 2,
+      "nonEndDecisionCount": 1,
+      "before": {
+        "currentPlayer": "player",
+        "turnNumber": 19,
+        "pendingLevelUp": false,
+        "players": {
+          "player": {
+            "masterId": "white",
+            "hp": 7,
+            "stones": 6,
+            "hand": 5,
+            "deck": 7,
+            "discard": 14
+          },
+          "cpu": {
+            "masterId": "white",
+            "hp": 4,
+            "stones": 2,
+            "hand": 5,
+            "deck": 7,
+            "discard": 17
+          }
+        },
+        "slots": [
+          {
+            "slotKey": "player_front_left",
+            "card": "card_133",
+            "name": "デスシープ",
+            "owner": "player",
+            "hp": 2,
+            "level": 2,
+            "status": "active",
+            "actions": "1/1",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "player_front_right",
+            "card": "polyspinner",
+            "name": "ポリスピナー",
+            "owner": "player",
+            "hp": 3,
+            "level": 1,
+            "status": "active",
+            "actions": "0/2",
+            "focused": true,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "player_back_left",
+            "card": "card_037",
+            "name": "ドノマンティス",
+            "owner": "player",
+            "hp": 5,
+            "level": 1,
+            "status": "active",
+            "actions": "0/1",
+            "focused": true,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "player_back_right",
+            "card": "card_051",
+            "name": "ピグミィ",
+            "owner": "player",
+            "hp": 3,
+            "level": 1,
+            "status": "prepared",
+            "actions": "0/2",
+            "focused": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "cpu_front_left"
+          },
+          {
+            "slotKey": "cpu_front_right"
+          },
+          {
+            "slotKey": "cpu_back_left",
+            "card": "yanbaru",
+            "name": "ヤンバル",
+            "owner": "cpu",
+            "hp": 3,
+            "level": 2,
+            "status": "active",
+            "actions": "1/1",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "cpu_back_right"
+          }
+        ]
+      },
+      "after": {
+        "currentPlayer": "player",
+        "turnNumber": 19,
+        "pendingLevelUp": false,
+        "players": {
+          "player": {
+            "masterId": "white",
+            "hp": 7,
+            "stones": 6,
+            "hand": 5,
+            "deck": 7,
+            "discard": 14
+          },
+          "cpu": {
+            "masterId": "white",
+            "hp": 3,
+            "stones": 3,
+            "hand": 5,
+            "deck": 7,
+            "discard": 17
+          }
+        },
+        "slots": [
+          {
+            "slotKey": "player_front_left",
+            "card": "card_133",
+            "name": "デスシープ",
+            "owner": "player",
+            "hp": 2,
+            "level": 2,
+            "status": "active",
+            "actions": "1/1",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "player_front_right",
+            "card": "polyspinner",
+            "name": "ポリスピナー",
+            "owner": "player",
+            "hp": 3,
+            "level": 1,
+            "status": "active",
+            "actions": "1/2",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "player_back_left",
+            "card": "card_037",
+            "name": "ドノマンティス",
+            "owner": "player",
+            "hp": 5,
+            "level": 1,
+            "status": "active",
+            "actions": "0/1",
+            "focused": true,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "player_back_right",
+            "card": "card_051",
+            "name": "ピグミィ",
+            "owner": "player",
+            "hp": 3,
+            "level": 1,
+            "status": "prepared",
+            "actions": "0/2",
+            "focused": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "cpu_front_left"
+          },
+          {
+            "slotKey": "cpu_front_right"
+          },
+          {
+            "slotKey": "cpu_back_left",
+            "card": "yanbaru",
+            "name": "ヤンバル",
+            "owner": "cpu",
+            "hp": 3,
+            "level": 2,
+            "status": "active",
+            "actions": "1/1",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "cpu_back_right"
+          }
+        ]
+      },
+      "newLog": [
+        "プレイヤーAI判断: 相手マスターへ実ダメージを与えられるため攻撃",
+        "プレイヤーのポリスピナー Lv1: アタック 3P",
+        "CPUのマスターHPが1減った（アタック）。ストーン+1"
+      ]
+    },
+    {
+      "seed": 994329,
+      "step": 234,
+      "turnNumber": 19,
+      "player": "player",
+      "decision": "end_turn",
+      "reason": "有効な行動がないためターン終了 / 見送り: マスター特技は867点差で見送り、マスター特技は897点差で見送り",
+      "score": 0,
+      "legalDecisionCount": 3,
+      "nonEndDecisionCount": 2,
+      "before": {
+        "currentPlayer": "player",
+        "turnNumber": 19,
+        "pendingLevelUp": false,
+        "players": {
+          "player": {
+            "masterId": "white",
+            "hp": 7,
+            "stones": 6,
+            "hand": 5,
+            "deck": 7,
+            "discard": 14
+          },
+          "cpu": {
+            "masterId": "white",
+            "hp": 3,
+            "stones": 3,
+            "hand": 5,
+            "deck": 7,
+            "discard": 17
+          }
+        },
+        "slots": [
+          {
+            "slotKey": "player_front_left",
+            "card": "card_133",
+            "name": "デスシープ",
+            "owner": "player",
+            "hp": 2,
+            "level": 2,
+            "status": "active",
+            "actions": "1/1",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "player_front_right",
+            "card": "polyspinner",
+            "name": "ポリスピナー",
+            "owner": "player",
+            "hp": 3,
+            "level": 1,
+            "status": "active",
+            "actions": "1/2",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "player_back_left",
+            "card": "card_037",
+            "name": "ドノマンティス",
+            "owner": "player",
+            "hp": 5,
+            "level": 1,
+            "status": "active",
+            "actions": "0/1",
+            "focused": true,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "player_back_right",
+            "card": "card_051",
+            "name": "ピグミィ",
+            "owner": "player",
+            "hp": 3,
+            "level": 1,
+            "status": "prepared",
+            "actions": "0/2",
+            "focused": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "cpu_front_left"
+          },
+          {
+            "slotKey": "cpu_front_right"
+          },
+          {
+            "slotKey": "cpu_back_left",
+            "card": "yanbaru",
+            "name": "ヤンバル",
+            "owner": "cpu",
+            "hp": 3,
+            "level": 2,
+            "status": "active",
+            "actions": "1/1",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "cpu_back_right"
+          }
+        ]
+      },
+      "after": {
+        "currentPlayer": "cpu",
+        "turnNumber": 19,
+        "pendingLevelUp": false,
+        "players": {
+          "player": {
+            "masterId": "white",
+            "hp": 7,
+            "stones": 6,
+            "hand": 5,
+            "deck": 7,
+            "discard": 14
+          },
+          "cpu": {
+            "masterId": "white",
+            "hp": 3,
+            "stones": 6,
+            "hand": 6,
+            "deck": 6,
+            "discard": 17
+          }
+        },
+        "slots": [
+          {
+            "slotKey": "player_front_left",
+            "card": "card_133",
+            "name": "デスシープ",
+            "owner": "player",
+            "hp": 2,
+            "level": 2,
+            "status": "active",
+            "actions": "1/1",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "player_front_right",
+            "card": "polyspinner",
+            "name": "ポリスピナー",
+            "owner": "player",
+            "hp": 3,
+            "level": 1,
+            "status": "active",
+            "actions": "1/2",
+            "focused": true,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "player_back_left",
+            "card": "card_037",
+            "name": "ドノマンティス",
+            "owner": "player",
+            "hp": 5,
+            "level": 1,
+            "status": "active",
+            "actions": "0/1",
+            "focused": true,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "player_back_right",
+            "card": "card_051",
+            "name": "ピグミィ",
+            "owner": "player",
+            "hp": 3,
+            "level": 1,
+            "status": "prepared",
+            "actions": "0/2",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "cpu_front_left",
+            "card": "yanbaru",
+            "name": "ヤンバル",
+            "owner": "cpu",
+            "hp": 3,
+            "level": 2,
+            "status": "active",
+            "actions": "0/1",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "cpu_front_right"
+          },
+          {
+            "slotKey": "cpu_back_left"
+          },
+          {
+            "slotKey": "cpu_back_right"
+          }
+        ]
+      },
+      "newLog": [
+        "プレイヤーAI判断: 有効な行動がないためターン終了 / 見送り: マスター特技は867点差で見送り、マスター特技は897点差で見送り",
+        "ポリスピナー Lv1は気合いだめした",
+        "CPUのターン開始",
+        "ヤンバル Lv2が前衛へ自動移動した",
+        "CPUはストーンを3個得た",
+        "CPUはカードを引いた"
+      ]
+    },
+    {
+      "seed": 994329,
+      "step": 235,
+      "turnNumber": 19,
+      "player": "cpu",
+      "decision": "master:master_attack->monster:player_front_left",
+      "reason": "マスターアタックで敵モンスターを撃破できるため使用 / ターンプラン探索: 返し込み最終盤面160点、次点と456点差",
+      "score": 360,
+      "legalDecisionCount": 2,
+      "nonEndDecisionCount": 1,
+      "before": {
+        "currentPlayer": "cpu",
+        "turnNumber": 19,
+        "pendingLevelUp": false,
+        "players": {
+          "player": {
+            "masterId": "white",
+            "hp": 7,
+            "stones": 6,
+            "hand": 5,
+            "deck": 7,
+            "discard": 14
+          },
+          "cpu": {
+            "masterId": "white",
+            "hp": 3,
+            "stones": 6,
+            "hand": 6,
+            "deck": 6,
+            "discard": 17
+          }
+        },
+        "slots": [
+          {
+            "slotKey": "player_front_left",
+            "card": "card_133",
+            "name": "デスシープ",
+            "owner": "player",
+            "hp": 2,
+            "level": 2,
+            "status": "active",
+            "actions": "1/1",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "player_front_right",
+            "card": "polyspinner",
+            "name": "ポリスピナー",
+            "owner": "player",
+            "hp": 3,
+            "level": 1,
+            "status": "active",
+            "actions": "1/2",
+            "focused": true,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "player_back_left",
+            "card": "card_037",
+            "name": "ドノマンティス",
+            "owner": "player",
+            "hp": 5,
+            "level": 1,
+            "status": "active",
+            "actions": "0/1",
+            "focused": true,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "player_back_right",
+            "card": "card_051",
+            "name": "ピグミィ",
+            "owner": "player",
+            "hp": 3,
+            "level": 1,
+            "status": "prepared",
+            "actions": "0/2",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "cpu_front_left",
+            "card": "yanbaru",
+            "name": "ヤンバル",
+            "owner": "cpu",
+            "hp": 3,
+            "level": 2,
+            "status": "active",
+            "actions": "0/1",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "cpu_front_right"
+          },
+          {
+            "slotKey": "cpu_back_left"
+          },
+          {
+            "slotKey": "cpu_back_right"
+          }
+        ]
+      },
+      "after": {
+        "currentPlayer": "cpu",
+        "turnNumber": 19,
+        "pendingLevelUp": false,
+        "players": {
+          "player": {
+            "masterId": "white",
+            "hp": 7,
+            "stones": 8,
+            "hand": 5,
+            "deck": 7,
+            "discard": 15
+          },
+          "cpu": {
+            "masterId": "white",
+            "hp": 3,
+            "stones": 3,
+            "hand": 6,
+            "deck": 6,
+            "discard": 17
+          }
+        },
+        "slots": [
+          {
+            "slotKey": "player_front_left"
+          },
+          {
+            "slotKey": "player_front_right",
+            "card": "polyspinner",
+            "name": "ポリスピナー",
+            "owner": "player",
+            "hp": 3,
+            "level": 1,
+            "status": "active",
+            "actions": "1/2",
+            "focused": true,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "player_back_left",
+            "card": "card_037",
+            "name": "ドノマンティス",
+            "owner": "player",
+            "hp": 5,
+            "level": 1,
+            "status": "active",
+            "actions": "0/1",
+            "focused": true,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "player_back_right",
+            "card": "card_051",
+            "name": "ピグミィ",
+            "owner": "player",
+            "hp": 3,
+            "level": 1,
+            "status": "prepared",
+            "actions": "0/2",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "cpu_front_left",
+            "card": "yanbaru",
+            "name": "ヤンバル",
+            "owner": "cpu",
+            "hp": 3,
+            "level": 2,
+            "status": "active",
+            "actions": "0/1",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "cpu_front_right"
+          },
+          {
+            "slotKey": "cpu_back_left"
+          },
+          {
+            "slotKey": "cpu_back_right"
+          }
+        ]
+      },
+      "newLog": [
+        "CPU判断: マスターアタックで敵モンスターを撃破できるため使用 / ターンプラン探索: 返し込み最終盤面160点、次点と456点差",
+        "CPUのマスターアタック",
+        "マスターアタックでデスシープ Lv2に2ダメージ",
+        "デスシープ Lv2は倒れ、プレイヤーにストーン2個が戻った"
+      ]
+    },
+    {
+      "seed": 994329,
+      "step": 236,
+      "turnNumber": 19,
+      "player": "cpu",
+      "decision": "attack:cpu_front_left:wild_claw->monster:player_front_right",
+      "reason": "ポリスピナーを削れるため攻撃 / ターンプラン探索: 返し込み最終盤面45点、次点と37点差",
+      "score": 50,
+      "legalDecisionCount": 3,
+      "nonEndDecisionCount": 2,
+      "before": {
+        "currentPlayer": "cpu",
+        "turnNumber": 19,
+        "pendingLevelUp": false,
+        "players": {
+          "player": {
+            "masterId": "white",
+            "hp": 7,
+            "stones": 8,
+            "hand": 5,
+            "deck": 7,
+            "discard": 15
+          },
+          "cpu": {
+            "masterId": "white",
+            "hp": 3,
+            "stones": 3,
+            "hand": 6,
+            "deck": 6,
+            "discard": 17
+          }
+        },
+        "slots": [
+          {
+            "slotKey": "player_front_left"
+          },
+          {
+            "slotKey": "player_front_right",
+            "card": "polyspinner",
+            "name": "ポリスピナー",
+            "owner": "player",
+            "hp": 3,
+            "level": 1,
+            "status": "active",
+            "actions": "1/2",
+            "focused": true,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "player_back_left",
+            "card": "card_037",
+            "name": "ドノマンティス",
+            "owner": "player",
+            "hp": 5,
+            "level": 1,
+            "status": "active",
+            "actions": "0/1",
+            "focused": true,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "player_back_right",
+            "card": "card_051",
+            "name": "ピグミィ",
+            "owner": "player",
+            "hp": 3,
+            "level": 1,
+            "status": "prepared",
+            "actions": "0/2",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "cpu_front_left",
+            "card": "yanbaru",
+            "name": "ヤンバル",
+            "owner": "cpu",
+            "hp": 3,
+            "level": 2,
+            "status": "active",
+            "actions": "0/1",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "cpu_front_right"
+          },
+          {
+            "slotKey": "cpu_back_left"
+          },
+          {
+            "slotKey": "cpu_back_right"
+          }
+        ]
+      },
+      "after": {
+        "currentPlayer": "cpu",
+        "turnNumber": 19,
+        "pendingLevelUp": false,
+        "players": {
+          "player": {
+            "masterId": "white",
+            "hp": 7,
+            "stones": 8,
+            "hand": 5,
+            "deck": 7,
+            "discard": 15
+          },
+          "cpu": {
+            "masterId": "white",
+            "hp": 3,
+            "stones": 3,
+            "hand": 6,
+            "deck": 6,
+            "discard": 17
+          }
+        },
+        "slots": [
+          {
+            "slotKey": "player_front_left"
+          },
+          {
+            "slotKey": "player_front_right",
+            "card": "polyspinner",
+            "name": "ポリスピナー",
+            "owner": "player",
+            "hp": 1,
+            "level": 1,
+            "status": "active",
+            "actions": "1/2",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "player_back_left",
+            "card": "card_037",
+            "name": "ドノマンティス",
+            "owner": "player",
+            "hp": 5,
+            "level": 1,
+            "status": "active",
+            "actions": "0/1",
+            "focused": true,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "player_back_right",
+            "card": "card_051",
+            "name": "ピグミィ",
+            "owner": "player",
+            "hp": 3,
+            "level": 1,
+            "status": "prepared",
+            "actions": "0/2",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "cpu_front_left",
+            "card": "yanbaru",
+            "name": "ヤンバル",
+            "owner": "cpu",
+            "hp": 3,
+            "level": 2,
+            "status": "active",
+            "actions": "1/1",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "cpu_front_right"
+          },
+          {
+            "slotKey": "cpu_back_left"
+          },
+          {
+            "slotKey": "cpu_back_right"
+          }
+        ]
+      },
+      "newLog": [
+        "CPU判断: ポリスピナーを削れるため攻撃 / ターンプラン探索: 返し込み最終盤面45点、次点と37点差",
+        "CPUのヤンバル Lv2: ワイルドクロウ 3P",
+        "ポリスピナー Lv1は気合いで1ダメージ軽減した",
+        "ワイルドクロウでポリスピナー Lv1に2ダメージ"
+      ]
+    },
+    {
+      "seed": 994329,
+      "step": 237,
+      "turnNumber": 19,
+      "player": "cpu",
+      "decision": "master:master_attack->monster:player_front_right",
+      "reason": "マスターアタックで敵モンスターを撃破できるため使用 / ターンプラン探索: 返し込み最終盤面27点、次点と220点差",
+      "score": 323,
+      "legalDecisionCount": 3,
+      "nonEndDecisionCount": 2,
+      "before": {
+        "currentPlayer": "cpu",
+        "turnNumber": 19,
+        "pendingLevelUp": false,
+        "players": {
+          "player": {
+            "masterId": "white",
+            "hp": 7,
+            "stones": 8,
+            "hand": 5,
+            "deck": 7,
+            "discard": 15
+          },
+          "cpu": {
+            "masterId": "white",
+            "hp": 3,
+            "stones": 3,
+            "hand": 6,
+            "deck": 6,
+            "discard": 17
+          }
+        },
+        "slots": [
+          {
+            "slotKey": "player_front_left"
+          },
+          {
+            "slotKey": "player_front_right",
+            "card": "polyspinner",
+            "name": "ポリスピナー",
+            "owner": "player",
+            "hp": 1,
+            "level": 1,
+            "status": "active",
+            "actions": "1/2",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "player_back_left",
+            "card": "card_037",
+            "name": "ドノマンティス",
+            "owner": "player",
+            "hp": 5,
+            "level": 1,
+            "status": "active",
+            "actions": "0/1",
+            "focused": true,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "player_back_right",
+            "card": "card_051",
+            "name": "ピグミィ",
+            "owner": "player",
+            "hp": 3,
+            "level": 1,
+            "status": "prepared",
+            "actions": "0/2",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "cpu_front_left",
+            "card": "yanbaru",
+            "name": "ヤンバル",
+            "owner": "cpu",
+            "hp": 3,
+            "level": 2,
+            "status": "active",
+            "actions": "1/1",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "cpu_front_right"
+          },
+          {
+            "slotKey": "cpu_back_left"
+          },
+          {
+            "slotKey": "cpu_back_right"
+          }
+        ]
+      },
+      "after": {
+        "currentPlayer": "cpu",
+        "turnNumber": 19,
+        "pendingLevelUp": false,
+        "players": {
+          "player": {
+            "masterId": "white",
+            "hp": 7,
+            "stones": 9,
+            "hand": 5,
+            "deck": 7,
+            "discard": 16
+          },
+          "cpu": {
+            "masterId": "white",
+            "hp": 3,
+            "stones": 0,
+            "hand": 6,
+            "deck": 6,
+            "discard": 17
+          }
+        },
+        "slots": [
+          {
+            "slotKey": "player_front_left"
+          },
+          {
+            "slotKey": "player_front_right"
+          },
+          {
+            "slotKey": "player_back_left",
+            "card": "card_037",
+            "name": "ドノマンティス",
+            "owner": "player",
+            "hp": 5,
+            "level": 1,
+            "status": "active",
+            "actions": "0/1",
+            "focused": true,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "player_back_right",
+            "card": "card_051",
+            "name": "ピグミィ",
+            "owner": "player",
+            "hp": 3,
+            "level": 1,
+            "status": "prepared",
+            "actions": "0/2",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "cpu_front_left",
+            "card": "yanbaru",
+            "name": "ヤンバル",
+            "owner": "cpu",
+            "hp": 3,
+            "level": 2,
+            "status": "active",
+            "actions": "1/1",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "cpu_front_right"
+          },
+          {
+            "slotKey": "cpu_back_left"
+          },
+          {
+            "slotKey": "cpu_back_right"
+          }
+        ]
+      },
+      "newLog": [
+        "CPU判断: マスターアタックで敵モンスターを撃破できるため使用 / ターンプラン探索: 返し込み最終盤面27点、次点と220点差",
+        "CPUのマスターアタック",
+        "マスターアタックでポリスピナー Lv1に2ダメージ",
+        "ポリスピナー Lv1は倒れ、プレイヤーにストーン1個が戻った"
+      ]
+    },
+    {
+      "seed": 994329,
+      "step": 238,
+      "turnNumber": 19,
+      "player": "cpu",
+      "decision": "end_turn",
+      "reason": "有効な行動がないためターン終了 / ターンプラン探索: 返し込み最終盤面-174点",
+      "score": 0,
+      "legalDecisionCount": 1,
+      "nonEndDecisionCount": 0,
+      "before": {
+        "currentPlayer": "cpu",
+        "turnNumber": 19,
+        "pendingLevelUp": false,
+        "players": {
+          "player": {
+            "masterId": "white",
+            "hp": 7,
+            "stones": 9,
+            "hand": 5,
+            "deck": 7,
+            "discard": 16
+          },
+          "cpu": {
+            "masterId": "white",
+            "hp": 3,
+            "stones": 0,
+            "hand": 6,
+            "deck": 6,
+            "discard": 17
+          }
+        },
+        "slots": [
+          {
+            "slotKey": "player_front_left"
+          },
+          {
+            "slotKey": "player_front_right"
+          },
+          {
+            "slotKey": "player_back_left",
+            "card": "card_037",
+            "name": "ドノマンティス",
+            "owner": "player",
+            "hp": 5,
+            "level": 1,
+            "status": "active",
+            "actions": "0/1",
+            "focused": true,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "player_back_right",
+            "card": "card_051",
+            "name": "ピグミィ",
+            "owner": "player",
+            "hp": 3,
+            "level": 1,
+            "status": "prepared",
+            "actions": "0/2",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "cpu_front_left",
+            "card": "yanbaru",
+            "name": "ヤンバル",
+            "owner": "cpu",
+            "hp": 3,
+            "level": 2,
+            "status": "active",
+            "actions": "1/1",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "cpu_front_right"
+          },
+          {
+            "slotKey": "cpu_back_left"
+          },
+          {
+            "slotKey": "cpu_back_right"
+          }
+        ]
+      },
+      "after": {
+        "currentPlayer": "player",
+        "turnNumber": 20,
+        "pendingLevelUp": false,
+        "players": {
+          "player": {
+            "masterId": "white",
+            "hp": 7,
+            "stones": 12,
+            "hand": 6,
+            "deck": 6,
+            "discard": 16
+          },
+          "cpu": {
+            "masterId": "white",
+            "hp": 3,
+            "stones": 0,
+            "hand": 5,
+            "deck": 6,
+            "discard": 18
+          }
+        },
+        "slots": [
+          {
+            "slotKey": "player_front_left",
+            "card": "card_037",
+            "name": "ドノマンティス",
+            "owner": "player",
+            "hp": 5,
+            "level": 1,
+            "status": "active",
+            "actions": "0/1",
+            "focused": true,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "player_front_right",
+            "card": "card_051",
+            "name": "ピグミィ",
+            "owner": "player",
+            "hp": 3,
+            "level": 1,
+            "status": "active",
+            "actions": "0/2",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "player_back_left"
+          },
+          {
+            "slotKey": "player_back_right"
+          },
+          {
+            "slotKey": "cpu_front_left",
+            "card": "yanbaru",
+            "name": "ヤンバル",
+            "owner": "cpu",
+            "hp": 3,
+            "level": 2,
+            "status": "active",
+            "actions": "1/1",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "cpu_front_right"
+          },
+          {
+            "slotKey": "cpu_back_left"
+          },
+          {
+            "slotKey": "cpu_back_right"
+          }
+        ]
+      },
+      "newLog": [
+        "CPU判断: 有効な行動がないためターン終了 / ターンプラン探索: 返し込み最終盤面-174点",
+        "CPUのカード溢れ: 手札を5枚まで捨てる",
+        "CPUは手札上限でスケープゴートを捨てた",
+        "プレイヤーのターン開始",
+        "ピグミィ Lv1が登場した",
+        "ドノマンティス Lv1が前衛へ自動移動した",
+        "ピグミィ Lv1が前衛へ自動移動した",
+        "プレイヤーはストーンを3個得た",
+        "プレイヤーはヤンバルを引いた"
+      ]
+    },
+    {
+      "seed": 994329,
+      "step": 239,
+      "turnNumber": 20,
+      "player": "player",
+      "decision": "attack:player_front_left:attack->monster:cpu_front_left",
+      "reason": "敵モンスターを撃破できるため攻撃 / 見送り: 攻撃は583点差で見送り",
+      "score": 497,
+      "legalDecisionCount": 3,
+      "nonEndDecisionCount": 2,
+      "before": {
+        "currentPlayer": "player",
+        "turnNumber": 20,
+        "pendingLevelUp": false,
+        "players": {
+          "player": {
+            "masterId": "white",
+            "hp": 7,
+            "stones": 12,
+            "hand": 6,
+            "deck": 6,
+            "discard": 16
+          },
+          "cpu": {
+            "masterId": "white",
+            "hp": 3,
+            "stones": 0,
+            "hand": 5,
+            "deck": 6,
+            "discard": 18
+          }
+        },
+        "slots": [
+          {
+            "slotKey": "player_front_left",
+            "card": "card_037",
+            "name": "ドノマンティス",
+            "owner": "player",
+            "hp": 5,
+            "level": 1,
+            "status": "active",
+            "actions": "0/1",
+            "focused": true,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "player_front_right",
+            "card": "card_051",
+            "name": "ピグミィ",
+            "owner": "player",
+            "hp": 3,
+            "level": 1,
+            "status": "active",
+            "actions": "0/2",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "player_back_left"
+          },
+          {
+            "slotKey": "player_back_right"
+          },
+          {
+            "slotKey": "cpu_front_left",
+            "card": "yanbaru",
+            "name": "ヤンバル",
+            "owner": "cpu",
+            "hp": 3,
+            "level": 2,
+            "status": "active",
+            "actions": "1/1",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "cpu_front_right"
+          },
+          {
+            "slotKey": "cpu_back_left"
+          },
+          {
+            "slotKey": "cpu_back_right"
+          }
+        ]
+      },
+      "after": {
+        "currentPlayer": "player",
+        "turnNumber": 20,
+        "pendingLevelUp": true,
+        "players": {
+          "player": {
+            "masterId": "white",
+            "hp": 7,
+            "stones": 12,
+            "hand": 6,
+            "deck": 6,
+            "discard": 16
+          },
+          "cpu": {
+            "masterId": "white",
+            "hp": 3,
+            "stones": 2,
+            "hand": 5,
+            "deck": 6,
+            "discard": 19
+          }
+        },
+        "slots": [
+          {
+            "slotKey": "player_front_left",
+            "card": "card_037",
+            "name": "ドノマンティス",
+            "owner": "player",
+            "hp": 5,
+            "level": 1,
+            "status": "active",
+            "actions": "1/1",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "player_front_right",
+            "card": "card_051",
+            "name": "ピグミィ",
+            "owner": "player",
+            "hp": 3,
+            "level": 1,
+            "status": "active",
+            "actions": "0/2",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "player_back_left"
+          },
+          {
+            "slotKey": "player_back_right"
+          },
+          {
+            "slotKey": "cpu_front_left"
+          },
+          {
+            "slotKey": "cpu_front_right"
+          },
+          {
+            "slotKey": "cpu_back_left"
+          },
+          {
+            "slotKey": "cpu_back_right"
+          }
+        ]
+      },
+      "newLog": [
+        "プレイヤーAI判断: 敵モンスターを撃破できるため攻撃 / 見送り: 攻撃は583点差で見送り",
+        "プレイヤーのドノマンティス Lv1: アタック 3P",
+        "アタックでヤンバル Lv2に3ダメージ",
+        "ヤンバル Lv2は倒れ、CPUにストーン2個が戻った",
+        "ドノマンティス Lv1は1レベルまで上げられる"
+      ]
+    },
+    {
+      "seed": 994329,
+      "step": 241,
+      "turnNumber": 20,
+      "player": "player",
+      "decision": "end_turn",
+      "reason": "有効な行動がないためターン終了",
+      "score": 0,
+      "legalDecisionCount": 1,
+      "nonEndDecisionCount": 0,
+      "before": {
+        "currentPlayer": "player",
+        "turnNumber": 20,
+        "pendingLevelUp": false,
+        "players": {
+          "player": {
+            "masterId": "white",
+            "hp": 7,
+            "stones": 11,
+            "hand": 6,
+            "deck": 6,
+            "discard": 16
+          },
+          "cpu": {
+            "masterId": "white",
+            "hp": 3,
+            "stones": 2,
+            "hand": 5,
+            "deck": 6,
+            "discard": 19
+          }
+        },
+        "slots": [
+          {
+            "slotKey": "player_front_left",
+            "card": "card_037",
+            "name": "ドノマンティス",
+            "owner": "player",
+            "hp": 5,
+            "level": 2,
+            "status": "active",
+            "actions": "1/1",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "player_front_right",
+            "card": "card_051",
+            "name": "ピグミィ",
+            "owner": "player",
+            "hp": 3,
+            "level": 1,
+            "status": "active",
+            "actions": "0/2",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "player_back_left"
+          },
+          {
+            "slotKey": "player_back_right"
+          },
+          {
+            "slotKey": "cpu_front_left"
+          },
+          {
+            "slotKey": "cpu_front_right"
+          },
+          {
+            "slotKey": "cpu_back_left"
+          },
+          {
+            "slotKey": "cpu_back_right"
+          }
+        ]
+      },
+      "after": {
+        "currentPlayer": "cpu",
+        "turnNumber": 20,
+        "pendingLevelUp": false,
+        "players": {
+          "player": {
+            "masterId": "white",
+            "hp": 7,
+            "stones": 11,
+            "hand": 5,
+            "deck": 6,
+            "discard": 17
+          },
+          "cpu": {
+            "masterId": "white",
+            "hp": 3,
+            "stones": 5,
+            "hand": 6,
+            "deck": 5,
+            "discard": 19
+          }
+        },
+        "slots": [
+          {
+            "slotKey": "player_front_left",
+            "card": "card_037",
+            "name": "ドノマンティス",
+            "owner": "player",
+            "hp": 5,
+            "level": 2,
+            "status": "active",
+            "actions": "1/1",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "player_front_right",
+            "card": "card_051",
+            "name": "ピグミィ",
+            "owner": "player",
+            "hp": 3,
+            "level": 1,
+            "status": "active",
+            "actions": "0/2",
+            "focused": true,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "player_back_left"
+          },
+          {
+            "slotKey": "player_back_right"
+          },
+          {
+            "slotKey": "cpu_front_left"
+          },
+          {
+            "slotKey": "cpu_front_right"
+          },
+          {
+            "slotKey": "cpu_back_left"
+          },
+          {
+            "slotKey": "cpu_back_right"
+          }
+        ]
+      },
+      "newLog": [
+        "プレイヤーAI判断: 有効な行動がないためターン終了",
+        "ピグミィ Lv1は気合いだめした",
+        "プレイヤーのカード溢れ: 手札を5枚まで捨てる",
+        "プレイヤーは手札上限でスケープゴートを捨てた",
+        "CPUのターン開始",
+        "CPUはストーンを3個得た",
+        "CPUはカードを引いた"
+      ]
+    },
+    {
+      "seed": 994329,
+      "step": 242,
+      "turnNumber": 20,
+      "player": "cpu",
+      "decision": "summon:cpu_card_047_1->cpu_back_left",
+      "reason": "カードを後列左へ召喚 / 見送り: 召喚は1点差で見送り",
+      "score": 28,
+      "legalDecisionCount": 3,
+      "nonEndDecisionCount": 2,
+      "before": {
+        "currentPlayer": "cpu",
+        "turnNumber": 20,
+        "pendingLevelUp": false,
+        "players": {
+          "player": {
+            "masterId": "white",
+            "hp": 7,
+            "stones": 11,
+            "hand": 5,
+            "deck": 6,
+            "discard": 17
+          },
+          "cpu": {
+            "masterId": "white",
+            "hp": 3,
+            "stones": 5,
+            "hand": 6,
+            "deck": 5,
+            "discard": 19
+          }
+        },
+        "slots": [
+          {
+            "slotKey": "player_front_left",
+            "card": "card_037",
+            "name": "ドノマンティス",
+            "owner": "player",
+            "hp": 5,
+            "level": 2,
+            "status": "active",
+            "actions": "1/1",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "player_front_right",
+            "card": "card_051",
+            "name": "ピグミィ",
+            "owner": "player",
+            "hp": 3,
+            "level": 1,
+            "status": "active",
+            "actions": "0/2",
+            "focused": true,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "player_back_left"
+          },
+          {
+            "slotKey": "player_back_right"
+          },
+          {
+            "slotKey": "cpu_front_left"
+          },
+          {
+            "slotKey": "cpu_front_right"
+          },
+          {
+            "slotKey": "cpu_back_left"
+          },
+          {
+            "slotKey": "cpu_back_right"
+          }
+        ]
+      },
+      "after": {
+        "currentPlayer": "cpu",
+        "turnNumber": 20,
+        "pendingLevelUp": false,
+        "players": {
+          "player": {
+            "masterId": "white",
+            "hp": 7,
+            "stones": 11,
+            "hand": 5,
+            "deck": 6,
+            "discard": 17
+          },
+          "cpu": {
+            "masterId": "white",
+            "hp": 3,
+            "stones": 4,
+            "hand": 5,
+            "deck": 5,
+            "discard": 19
+          }
+        },
+        "slots": [
+          {
+            "slotKey": "player_front_left",
+            "card": "card_037",
+            "name": "ドノマンティス",
+            "owner": "player",
+            "hp": 5,
+            "level": 2,
+            "status": "active",
+            "actions": "1/1",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "player_front_right",
+            "card": "card_051",
+            "name": "ピグミィ",
+            "owner": "player",
+            "hp": 3,
+            "level": 1,
+            "status": "active",
+            "actions": "0/2",
+            "focused": true,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "player_back_left"
+          },
+          {
+            "slotKey": "player_back_right"
+          },
+          {
+            "slotKey": "cpu_front_left"
+          },
+          {
+            "slotKey": "cpu_front_right"
+          },
+          {
+            "slotKey": "cpu_back_left",
+            "card": "card_047",
+            "name": "真勇者ダイン",
+            "owner": "cpu",
+            "hp": 6,
+            "level": 1,
+            "status": "prepared",
+            "actions": "0/1",
+            "focused": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "cpu_back_right"
+          }
+        ]
+      },
+      "newLog": [
+        "CPU判断: カードを後列左へ召喚 / 見送り: 召喚は1点差で見送り",
+        "CPUはカードを準備中で召喚した"
+      ]
+    },
+    {
+      "seed": 994329,
+      "step": 243,
+      "turnNumber": 20,
+      "player": "cpu",
+      "decision": "end_turn",
+      "reason": "有効な行動がないためターン終了 / ターンプラン探索: 返し込み最終盤面-733点",
+      "score": 0,
+      "legalDecisionCount": 1,
+      "nonEndDecisionCount": 0,
+      "before": {
+        "currentPlayer": "cpu",
+        "turnNumber": 20,
+        "pendingLevelUp": false,
+        "players": {
+          "player": {
+            "masterId": "white",
+            "hp": 7,
+            "stones": 11,
+            "hand": 5,
+            "deck": 6,
+            "discard": 17
+          },
+          "cpu": {
+            "masterId": "white",
+            "hp": 3,
+            "stones": 4,
+            "hand": 5,
+            "deck": 5,
+            "discard": 19
+          }
+        },
+        "slots": [
+          {
+            "slotKey": "player_front_left",
+            "card": "card_037",
+            "name": "ドノマンティス",
+            "owner": "player",
+            "hp": 5,
+            "level": 2,
+            "status": "active",
+            "actions": "1/1",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "player_front_right",
+            "card": "card_051",
+            "name": "ピグミィ",
+            "owner": "player",
+            "hp": 3,
+            "level": 1,
+            "status": "active",
+            "actions": "0/2",
+            "focused": true,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "player_back_left"
+          },
+          {
+            "slotKey": "player_back_right"
+          },
+          {
+            "slotKey": "cpu_front_left"
+          },
+          {
+            "slotKey": "cpu_front_right"
+          },
+          {
+            "slotKey": "cpu_back_left",
+            "card": "card_047",
+            "name": "真勇者ダイン",
+            "owner": "cpu",
+            "hp": 6,
+            "level": 1,
+            "status": "prepared",
+            "actions": "0/1",
+            "focused": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "cpu_back_right"
+          }
+        ]
+      },
+      "after": {
+        "currentPlayer": "player",
+        "turnNumber": 21,
+        "pendingLevelUp": false,
+        "players": {
+          "player": {
+            "masterId": "white",
+            "hp": 7,
+            "stones": 14,
+            "hand": 6,
+            "deck": 5,
+            "discard": 17
+          },
+          "cpu": {
+            "masterId": "white",
+            "hp": 3,
+            "stones": 4,
+            "hand": 5,
+            "deck": 5,
+            "discard": 19
+          }
+        },
+        "slots": [
+          {
+            "slotKey": "player_front_left",
+            "card": "card_037",
+            "name": "ドノマンティス",
+            "owner": "player",
+            "hp": 5,
+            "level": 2,
+            "status": "active",
+            "actions": "0/1",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "player_front_right",
+            "card": "card_051",
+            "name": "ピグミィ",
+            "owner": "player",
+            "hp": 3,
+            "level": 1,
+            "status": "active",
+            "actions": "0/2",
+            "focused": true,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "player_back_left"
+          },
+          {
+            "slotKey": "player_back_right"
+          },
+          {
+            "slotKey": "cpu_front_left"
+          },
+          {
+            "slotKey": "cpu_front_right"
+          },
+          {
+            "slotKey": "cpu_back_left",
+            "card": "card_047",
+            "name": "真勇者ダイン",
+            "owner": "cpu",
+            "hp": 6,
+            "level": 1,
+            "status": "prepared",
+            "actions": "0/1",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "cpu_back_right"
+          }
+        ]
+      },
+      "newLog": [
+        "CPU判断: 有効な行動がないためターン終了 / ターンプラン探索: 返し込み最終盤面-733点",
+        "プレイヤーのターン開始",
+        "プレイヤーはストーンを3個得た",
+        "プレイヤーはヤンバルを引いた"
+      ]
+    },
+    {
+      "seed": 994329,
+      "step": 244,
+      "turnNumber": 21,
+      "player": "player",
+      "decision": "attack:player_front_left:呪いの刃->master:cpu",
+      "reason": "ターン開始時の最大打点2点で詰めろを作れるため攻撃",
+      "score": 236,
+      "legalDecisionCount": 2,
+      "nonEndDecisionCount": 1,
+      "before": {
+        "currentPlayer": "player",
+        "turnNumber": 21,
+        "pendingLevelUp": false,
+        "players": {
+          "player": {
+            "masterId": "white",
+            "hp": 7,
+            "stones": 14,
+            "hand": 6,
+            "deck": 5,
+            "discard": 17
+          },
+          "cpu": {
+            "masterId": "white",
+            "hp": 3,
+            "stones": 4,
+            "hand": 5,
+            "deck": 5,
+            "discard": 19
+          }
+        },
+        "slots": [
+          {
+            "slotKey": "player_front_left",
+            "card": "card_037",
+            "name": "ドノマンティス",
+            "owner": "player",
+            "hp": 5,
+            "level": 2,
+            "status": "active",
+            "actions": "0/1",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "player_front_right",
+            "card": "card_051",
+            "name": "ピグミィ",
+            "owner": "player",
+            "hp": 3,
+            "level": 1,
+            "status": "active",
+            "actions": "0/2",
+            "focused": true,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "player_back_left"
+          },
+          {
+            "slotKey": "player_back_right"
+          },
+          {
+            "slotKey": "cpu_front_left"
+          },
+          {
+            "slotKey": "cpu_front_right"
+          },
+          {
+            "slotKey": "cpu_back_left",
+            "card": "card_047",
+            "name": "真勇者ダイン",
+            "owner": "cpu",
+            "hp": 6,
+            "level": 1,
+            "status": "prepared",
+            "actions": "0/1",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "cpu_back_right"
+          }
+        ]
+      },
+      "after": {
+        "currentPlayer": "player",
+        "turnNumber": 21,
+        "pendingLevelUp": false,
+        "players": {
+          "player": {
+            "masterId": "white",
+            "hp": 7,
+            "stones": 13,
+            "hand": 6,
+            "deck": 5,
+            "discard": 17
+          },
+          "cpu": {
+            "masterId": "white",
+            "hp": 1,
+            "stones": 6,
+            "hand": 5,
+            "deck": 5,
+            "discard": 19
+          }
+        },
+        "slots": [
+          {
+            "slotKey": "player_front_left",
+            "card": "card_037",
+            "name": "ドノマンティス",
+            "owner": "player",
+            "hp": 5,
+            "level": 2,
+            "status": "active",
+            "actions": "1/1",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "player_front_right",
+            "card": "card_051",
+            "name": "ピグミィ",
+            "owner": "player",
+            "hp": 3,
+            "level": 1,
+            "status": "active",
+            "actions": "0/2",
+            "focused": true,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "player_back_left"
+          },
+          {
+            "slotKey": "player_back_right"
+          },
+          {
+            "slotKey": "cpu_front_left"
+          },
+          {
+            "slotKey": "cpu_front_right"
+          },
+          {
+            "slotKey": "cpu_back_left",
+            "card": "card_047",
+            "name": "真勇者ダイン",
+            "owner": "cpu",
+            "hp": 6,
+            "level": 1,
+            "status": "prepared",
+            "actions": "0/1",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "cpu_back_right"
+          }
+        ]
+      },
+      "newLog": [
+        "プレイヤーAI判断: ターン開始時の最大打点2点で詰めろを作れるため攻撃",
+        "プレイヤーのドノマンティス Lv2: 呪いの刃 4P",
+        "CPUのマスターHPが2減った（呪いの刃）。ストーン+2"
+      ]
+    },
+    {
+      "seed": 994329,
+      "step": 245,
+      "turnNumber": 21,
+      "player": "player",
+      "decision": "end_turn",
+      "reason": "有効な行動がないためターン終了",
+      "score": 0,
+      "legalDecisionCount": 1,
+      "nonEndDecisionCount": 0,
+      "before": {
+        "currentPlayer": "player",
+        "turnNumber": 21,
+        "pendingLevelUp": false,
+        "players": {
+          "player": {
+            "masterId": "white",
+            "hp": 7,
+            "stones": 13,
+            "hand": 6,
+            "deck": 5,
+            "discard": 17
+          },
+          "cpu": {
+            "masterId": "white",
+            "hp": 1,
+            "stones": 6,
+            "hand": 5,
+            "deck": 5,
+            "discard": 19
+          }
+        },
+        "slots": [
+          {
+            "slotKey": "player_front_left",
+            "card": "card_037",
+            "name": "ドノマンティス",
+            "owner": "player",
+            "hp": 5,
+            "level": 2,
+            "status": "active",
+            "actions": "1/1",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "player_front_right",
+            "card": "card_051",
+            "name": "ピグミィ",
+            "owner": "player",
+            "hp": 3,
+            "level": 1,
+            "status": "active",
+            "actions": "0/2",
+            "focused": true,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "player_back_left"
+          },
+          {
+            "slotKey": "player_back_right"
+          },
+          {
+            "slotKey": "cpu_front_left"
+          },
+          {
+            "slotKey": "cpu_front_right"
+          },
+          {
+            "slotKey": "cpu_back_left",
+            "card": "card_047",
+            "name": "真勇者ダイン",
+            "owner": "cpu",
+            "hp": 6,
+            "level": 1,
+            "status": "prepared",
+            "actions": "0/1",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "cpu_back_right"
+          }
+        ]
+      },
+      "after": {
+        "currentPlayer": "cpu",
+        "turnNumber": 21,
+        "pendingLevelUp": false,
+        "players": {
+          "player": {
+            "masterId": "white",
+            "hp": 7,
+            "stones": 13,
+            "hand": 5,
+            "deck": 5,
+            "discard": 18
+          },
+          "cpu": {
+            "masterId": "white",
+            "hp": 1,
+            "stones": 9,
+            "hand": 6,
+            "deck": 4,
+            "discard": 19
+          }
+        },
+        "slots": [
+          {
+            "slotKey": "player_front_left",
+            "card": "card_037",
+            "name": "ドノマンティス",
+            "owner": "player",
+            "hp": 5,
+            "level": 2,
+            "status": "active",
+            "actions": "1/1",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "player_front_right",
+            "card": "card_051",
+            "name": "ピグミィ",
+            "owner": "player",
+            "hp": 3,
+            "level": 1,
+            "status": "active",
+            "actions": "0/2",
+            "focused": true,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "player_back_left"
+          },
+          {
+            "slotKey": "player_back_right"
+          },
+          {
+            "slotKey": "cpu_front_left",
+            "card": "card_047",
+            "name": "真勇者ダイン",
+            "owner": "cpu",
+            "hp": 6,
+            "level": 1,
+            "status": "active",
+            "actions": "0/1",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "cpu_front_right"
+          },
+          {
+            "slotKey": "cpu_back_left"
+          },
+          {
+            "slotKey": "cpu_back_right"
+          }
+        ]
+      },
+      "newLog": [
+        "プレイヤーAI判断: 有効な行動がないためターン終了",
+        "プレイヤーのカード溢れ: 手札を5枚まで捨てる",
+        "プレイヤーは手札上限でローテーションを捨てた",
+        "CPUのターン開始",
+        "真勇者ダイン Lv1が登場した",
+        "真勇者ダイン Lv1が前衛へ自動移動した",
+        "CPUはストーンを3個得た",
+        "CPUはカードを引いた"
+      ]
+    },
+    {
+      "seed": 994329,
+      "step": 246,
+      "turnNumber": 21,
+      "player": "cpu",
+      "decision": "master:shield->monster:cpu_front_left",
+      "reason": "致死圏の味方を守れるためシールド",
+      "score": 119.94,
+      "legalDecisionCount": 2,
+      "nonEndDecisionCount": 1,
+      "before": {
+        "currentPlayer": "cpu",
+        "turnNumber": 21,
+        "pendingLevelUp": false,
+        "players": {
+          "player": {
+            "masterId": "white",
+            "hp": 7,
+            "stones": 13,
+            "hand": 5,
+            "deck": 5,
+            "discard": 18
+          },
+          "cpu": {
+            "masterId": "white",
+            "hp": 1,
+            "stones": 9,
+            "hand": 6,
+            "deck": 4,
+            "discard": 19
+          }
+        },
+        "slots": [
+          {
+            "slotKey": "player_front_left",
+            "card": "card_037",
+            "name": "ドノマンティス",
+            "owner": "player",
+            "hp": 5,
+            "level": 2,
+            "status": "active",
+            "actions": "1/1",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "player_front_right",
+            "card": "card_051",
+            "name": "ピグミィ",
+            "owner": "player",
+            "hp": 3,
+            "level": 1,
+            "status": "active",
+            "actions": "0/2",
+            "focused": true,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "player_back_left"
+          },
+          {
+            "slotKey": "player_back_right"
+          },
+          {
+            "slotKey": "cpu_front_left",
+            "card": "card_047",
+            "name": "真勇者ダイン",
+            "owner": "cpu",
+            "hp": 6,
+            "level": 1,
+            "status": "active",
+            "actions": "0/1",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "cpu_front_right"
+          },
+          {
+            "slotKey": "cpu_back_left"
+          },
+          {
+            "slotKey": "cpu_back_right"
+          }
+        ]
+      },
+      "after": {
+        "currentPlayer": "cpu",
+        "turnNumber": 21,
+        "pendingLevelUp": false,
+        "players": {
+          "player": {
+            "masterId": "white",
+            "hp": 7,
+            "stones": 13,
+            "hand": 5,
+            "deck": 5,
+            "discard": 18
+          },
+          "cpu": {
+            "masterId": "white",
+            "hp": 1,
+            "stones": 7,
+            "hand": 6,
+            "deck": 4,
+            "discard": 19
+          }
+        },
+        "slots": [
+          {
+            "slotKey": "player_front_left",
+            "card": "card_037",
+            "name": "ドノマンティス",
+            "owner": "player",
+            "hp": 5,
+            "level": 2,
+            "status": "active",
+            "actions": "1/1",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "player_front_right",
+            "card": "card_051",
+            "name": "ピグミィ",
+            "owner": "player",
+            "hp": 3,
+            "level": 1,
+            "status": "active",
+            "actions": "0/2",
+            "focused": true,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "player_back_left"
+          },
+          {
+            "slotKey": "player_back_right"
+          },
+          {
+            "slotKey": "cpu_front_left",
+            "card": "card_047",
+            "name": "真勇者ダイン",
+            "owner": "cpu",
+            "hp": 6,
+            "level": 1,
+            "status": "active",
+            "actions": "0/1",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": true
+          },
+          {
+            "slotKey": "cpu_front_right"
+          },
+          {
+            "slotKey": "cpu_back_left"
+          },
+          {
+            "slotKey": "cpu_back_right"
+          }
+        ]
+      },
+      "newLog": [
+        "CPU判断: 致死圏の味方を守れるためシールド",
+        "CPUは真勇者ダイン Lv1にシールドを張った"
+      ]
+    },
+    {
+      "seed": 994329,
+      "step": 247,
+      "turnNumber": 21,
+      "player": "cpu",
+      "decision": "end_turn",
+      "reason": "有効な行動がないためターン終了 / ターンプラン探索: 返し込み最終盤面-748790点",
+      "score": 0,
+      "legalDecisionCount": 1,
+      "nonEndDecisionCount": 0,
+      "before": {
+        "currentPlayer": "cpu",
+        "turnNumber": 21,
+        "pendingLevelUp": false,
+        "players": {
+          "player": {
+            "masterId": "white",
+            "hp": 7,
+            "stones": 13,
+            "hand": 5,
+            "deck": 5,
+            "discard": 18
+          },
+          "cpu": {
+            "masterId": "white",
+            "hp": 1,
+            "stones": 7,
+            "hand": 6,
+            "deck": 4,
+            "discard": 19
+          }
+        },
+        "slots": [
+          {
+            "slotKey": "player_front_left",
+            "card": "card_037",
+            "name": "ドノマンティス",
+            "owner": "player",
+            "hp": 5,
+            "level": 2,
+            "status": "active",
+            "actions": "1/1",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "player_front_right",
+            "card": "card_051",
+            "name": "ピグミィ",
+            "owner": "player",
+            "hp": 3,
+            "level": 1,
+            "status": "active",
+            "actions": "0/2",
+            "focused": true,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "player_back_left"
+          },
+          {
+            "slotKey": "player_back_right"
+          },
+          {
+            "slotKey": "cpu_front_left",
+            "card": "card_047",
+            "name": "真勇者ダイン",
+            "owner": "cpu",
+            "hp": 6,
+            "level": 1,
+            "status": "active",
+            "actions": "0/1",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": true
+          },
+          {
+            "slotKey": "cpu_front_right"
+          },
+          {
+            "slotKey": "cpu_back_left"
+          },
+          {
+            "slotKey": "cpu_back_right"
+          }
+        ]
+      },
+      "after": {
+        "currentPlayer": "player",
+        "turnNumber": 22,
+        "pendingLevelUp": false,
+        "players": {
+          "player": {
+            "masterId": "white",
+            "hp": 7,
+            "stones": 16,
+            "hand": 6,
+            "deck": 4,
+            "discard": 18
+          },
+          "cpu": {
+            "masterId": "white",
+            "hp": 1,
+            "stones": 7,
+            "hand": 5,
+            "deck": 4,
+            "discard": 20
+          }
+        },
+        "slots": [
+          {
+            "slotKey": "player_front_left",
+            "card": "card_037",
+            "name": "ドノマンティス",
+            "owner": "player",
+            "hp": 5,
+            "level": 2,
+            "status": "active",
+            "actions": "0/1",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "player_front_right",
+            "card": "card_051",
+            "name": "ピグミィ",
+            "owner": "player",
+            "hp": 3,
+            "level": 1,
+            "status": "active",
+            "actions": "0/2",
+            "focused": true,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "player_back_left"
+          },
+          {
+            "slotKey": "player_back_right"
+          },
+          {
+            "slotKey": "cpu_front_left",
+            "card": "card_047",
+            "name": "真勇者ダイン",
+            "owner": "cpu",
+            "hp": 6,
+            "level": 1,
+            "status": "active",
+            "actions": "0/1",
+            "focused": true,
+            "berserkPower": false,
+            "shielded": true
+          },
+          {
+            "slotKey": "cpu_front_right"
+          },
+          {
+            "slotKey": "cpu_back_left"
+          },
+          {
+            "slotKey": "cpu_back_right"
+          }
+        ]
+      },
+      "newLog": [
+        "CPU判断: 有効な行動がないためターン終了 / ターンプラン探索: 返し込み最終盤面-748790点",
+        "真勇者ダイン Lv1は気合いだめした",
+        "CPUのカード溢れ: 手札を5枚まで捨てる",
+        "CPUは手札上限でスケープゴートを捨てた",
+        "プレイヤーのターン開始",
+        "プレイヤーはストーンを3個得た",
+        "プレイヤーはデスシープを引いた"
+      ]
+    },
+    {
+      "seed": 994329,
+      "step": 248,
+      "turnNumber": 22,
+      "player": "player",
+      "decision": "attack:player_front_left:呪いの刃->master:cpu",
+      "reason": "ターン開始時の最大打点で相手マスターを倒せるため攻撃",
+      "score": 1000000,
+      "legalDecisionCount": 3,
+      "nonEndDecisionCount": 2,
+      "before": {
+        "currentPlayer": "player",
+        "turnNumber": 22,
+        "pendingLevelUp": false,
+        "players": {
+          "player": {
+            "masterId": "white",
+            "hp": 7,
+            "stones": 16,
+            "hand": 6,
+            "deck": 4,
+            "discard": 18
+          },
+          "cpu": {
+            "masterId": "white",
+            "hp": 1,
+            "stones": 7,
+            "hand": 5,
+            "deck": 4,
+            "discard": 20
+          }
+        },
+        "slots": [
+          {
+            "slotKey": "player_front_left",
+            "card": "card_037",
+            "name": "ドノマンティス",
+            "owner": "player",
+            "hp": 5,
+            "level": 2,
+            "status": "active",
+            "actions": "0/1",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "player_front_right",
+            "card": "card_051",
+            "name": "ピグミィ",
+            "owner": "player",
+            "hp": 3,
+            "level": 1,
+            "status": "active",
+            "actions": "0/2",
+            "focused": true,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "player_back_left"
+          },
+          {
+            "slotKey": "player_back_right"
+          },
+          {
+            "slotKey": "cpu_front_left",
+            "card": "card_047",
+            "name": "真勇者ダイン",
+            "owner": "cpu",
+            "hp": 6,
+            "level": 1,
+            "status": "active",
+            "actions": "0/1",
+            "focused": true,
+            "berserkPower": false,
+            "shielded": true
+          },
+          {
+            "slotKey": "cpu_front_right"
+          },
+          {
+            "slotKey": "cpu_back_left"
+          },
+          {
+            "slotKey": "cpu_back_right"
+          }
+        ]
+      },
+      "after": {
+        "currentPlayer": "player",
+        "turnNumber": 22,
+        "winner": "player",
+        "pendingLevelUp": false,
+        "players": {
+          "player": {
+            "masterId": "white",
+            "hp": 7,
+            "stones": 15,
+            "hand": 6,
+            "deck": 4,
+            "discard": 18
+          },
+          "cpu": {
+            "masterId": "white",
+            "hp": 0,
+            "stones": 8,
+            "hand": 5,
+            "deck": 4,
+            "discard": 20
+          }
+        },
+        "slots": [
+          {
+            "slotKey": "player_front_left",
+            "card": "card_037",
+            "name": "ドノマンティス",
+            "owner": "player",
+            "hp": 5,
+            "level": 2,
+            "status": "active",
+            "actions": "1/1",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "player_front_right",
+            "card": "card_051",
+            "name": "ピグミィ",
+            "owner": "player",
+            "hp": 3,
+            "level": 1,
+            "status": "active",
+            "actions": "0/2",
+            "focused": true,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "player_back_left"
+          },
+          {
+            "slotKey": "player_back_right"
+          },
+          {
+            "slotKey": "cpu_front_left",
+            "card": "card_047",
+            "name": "真勇者ダイン",
+            "owner": "cpu",
+            "hp": 6,
+            "level": 1,
+            "status": "active",
+            "actions": "0/1",
+            "focused": true,
+            "berserkPower": false,
+            "shielded": true
+          },
+          {
+            "slotKey": "cpu_front_right"
+          },
+          {
+            "slotKey": "cpu_back_left"
+          },
+          {
+            "slotKey": "cpu_back_right"
+          }
+        ]
+      },
+      "newLog": [
+        "プレイヤーAI判断: ターン開始時の最大打点で相手マスターを倒せるため攻撃",
+        "プレイヤーのドノマンティス Lv2: 呪いの刃 4P",
+        "CPUのマスターHPが1減った（呪いの刃）。ストーン+1",
+        "プレイヤーの勝利"
+      ]
+    }
+  ]
+}

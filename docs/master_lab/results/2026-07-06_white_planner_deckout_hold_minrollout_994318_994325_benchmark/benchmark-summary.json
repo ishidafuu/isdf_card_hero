@@ -1,0 +1,172 @@
+{
+  "ok": true,
+  "options": {
+    "seedStart": 994318,
+    "seedEnd": 994325,
+    "count": 8,
+    "deckPreset": "master-lab-white-1377-death-sheep3",
+    "masterIds": {
+      "player": "white",
+      "cpu": "white"
+    },
+    "maxSteps": 360,
+    "maxTurns": 90,
+    "failOnWarnings": false,
+    "baselineProfile": "white",
+    "challengerProfile": "white_planner",
+    "directions": [
+      "challenger-as-cpu",
+      "challenger-as-player"
+    ]
+  },
+  "summary": {
+    "games": 16,
+    "profileWins": {
+      "stable": 0,
+      "strong": 0,
+      "pressure": 0,
+      "defensive": 0,
+      "white": 8,
+      "white_planner": 8,
+      "white_rollout": 0,
+      "omniscient": 0
+    },
+    "undecided": 0,
+    "failures": 0,
+    "warnings": 2,
+    "maxSteps": 312,
+    "maxTurns": 29,
+    "averageSteps": 213.4375,
+    "averageTurns": 21.625,
+    "challengerLosses": [
+      {
+        "direction": "challenger-as-cpu",
+        "seed": 994318,
+        "winner": "player",
+        "winnerProfile": "white",
+        "steps": 170,
+        "turns": 21,
+        "issueCount": 0,
+        "warningCount": 0
+      },
+      {
+        "direction": "challenger-as-cpu",
+        "seed": 994320,
+        "winner": "player",
+        "winnerProfile": "white",
+        "steps": 302,
+        "turns": 26,
+        "issueCount": 0,
+        "warningCount": 1
+      },
+      {
+        "direction": "challenger-as-cpu",
+        "seed": 994321,
+        "winner": "player",
+        "winnerProfile": "white",
+        "steps": 312,
+        "turns": 29,
+        "issueCount": 0,
+        "warningCount": 1
+      },
+      {
+        "direction": "challenger-as-cpu",
+        "seed": 994322,
+        "winner": "player",
+        "winnerProfile": "white",
+        "steps": 275,
+        "turns": 26,
+        "issueCount": 0,
+        "warningCount": 0
+      },
+      {
+        "direction": "challenger-as-cpu",
+        "seed": 994325,
+        "winner": "player",
+        "winnerProfile": "white",
+        "steps": 154,
+        "turns": 19,
+        "issueCount": 0,
+        "warningCount": 0
+      },
+      {
+        "direction": "challenger-as-player",
+        "seed": 994320,
+        "winner": "cpu",
+        "winnerProfile": "white",
+        "steps": 150,
+        "turns": 13,
+        "issueCount": 0,
+        "warningCount": 0
+      },
+      {
+        "direction": "challenger-as-player",
+        "seed": 994323,
+        "winner": "cpu",
+        "winnerProfile": "white",
+        "steps": 233,
+        "turns": 22,
+        "issueCount": 0,
+        "warningCount": 0
+      },
+      {
+        "direction": "challenger-as-player",
+        "seed": 994324,
+        "winner": "cpu",
+        "winnerProfile": "white",
+        "steps": 212,
+        "turns": 19,
+        "issueCount": 0,
+        "warningCount": 0
+      }
+    ],
+    "issueSeeds": [
+      994320,
+      994321
+    ]
+  },
+  "runs": [
+    {
+      "direction": "challenger-as-cpu",
+      "label": "challenger as cpu",
+      "profiles": {
+        "player": "white",
+        "cpu": "white_planner"
+      },
+      "profileWins": {
+        "stable": 0,
+        "strong": 0,
+        "pressure": 0,
+        "defensive": 0,
+        "white": 5,
+        "white_planner": 3,
+        "white_rollout": 0,
+        "omniscient": 0
+      },
+      "undecided": 0,
+      "averageSteps": 212.875,
+      "averageTurns": 21.875
+    },
+    {
+      "direction": "challenger-as-player",
+      "label": "challenger as player",
+      "profiles": {
+        "player": "white_planner",
+        "cpu": "white"
+      },
+      "profileWins": {
+        "stable": 0,
+        "strong": 0,
+        "pressure": 0,
+        "defensive": 0,
+        "white": 3,
+        "white_planner": 5,
+        "white_rollout": 0,
+        "omniscient": 0
+      },
+      "undecided": 0,
+      "averageSteps": 214,
+      "averageTurns": 21.375
+    }
+  ]
+}
