@@ -262,6 +262,7 @@ const WHITE_MIRROR_EXPOSED_BACK_LEVEL_UP_PENALTY = 150;
 const WHITE_MIRROR_EXPOSED_FRONT_LEVEL_UP_PENALTY = 70;
 const WHITE_MIRROR_EXPOSED_BACK_LEVEL_HANDOFF_PENALTY = 120;
 const WHITE_MIRROR_FRONT_LEVEL_UP_SETUP_ATTACK_BONUS = 80;
+const WHITE_MIRROR_BACKLINE_LEVELED_FRONT_CHIP_MAX_BONUS = 320;
 const LONE_FRONT_OPENING_SUMMON_EXPOSURE_PENALTY = 55;
 const MASTER_DAMAGE_PLAN_MAX_DEPTH = 8;
 const OPPONENT_MASTER_DAMAGE_RESPONSE_MAX_DEPTH = 5;
@@ -4914,6 +4915,98 @@ function whiteMirrorFrontLevelUpSetupAttackBonus(
     : 0;
 }
 
+function whiteMirrorBacklineLeveledFrontThreatChipBonus(
+  state: GameState,
+  after: GameState,
+  action: CommandAction,
+  targetBefore: MonsterState,
+  targetAfter: MonsterState | undefined,
+): number {
+  const perspective = state.currentPlayer;
+  if (
+    !isWhiteMirrorState(state, perspective) ||
+    action.target.kind !== "monster" ||
+    state.slots[action.attackerSlotKey].row !== "back" ||
+    state.slots[action.target.slotKey].row !== "front" ||
+    targetBefore.owner !== opponentOf(perspective) ||
+    targetBefore.level < 2 ||
+    !targetAfter ||
+    targetAfter.owner !== targetBefore.owner ||
+    targetAfter.instanceId !== targetBefore.instanceId ||
+    targetAfter.hp >= targetBefore.hp
+  ) {
+    return 0;
+  }
+
+  const pressureBefore = whiteMirrorLeveledFrontThreatSlotPressure(state, action.target.slotKey, perspective);
+  if (pressureBefore <= 0) {
+    return 0;
+  }
+
+  const pressureAfter = whiteMirrorLeveledFrontThreatSlotPressure(after, action.target.slotKey, perspective);
+  const damage = targetBefore.hp - targetAfter.hp;
+  const pressureDrop = Math.max(0, pressureBefore - pressureAfter);
+  const finishThisTurn = canFinishEnemyMonsterThisTurn(after, action.target.slotKey, perspective);
+  const targetMaxLevel = getMonsterDef(targetBefore.cardId).maxLevel;
+  const maxLevelThreatBonus = targetBefore.level >= targetMaxLevel && targetMaxLevel > 1 ? 54 : 0;
+  const lowHpProgressBonus = targetAfter.hp <= 3 ? 36 : 0;
+  const finishSetupBonus = finishThisTurn ? 90 : 0;
+  const bonus =
+    70 +
+    damage * 30 +
+    Math.min(130, pressureBefore * 0.24) +
+    pressureDrop * 0.6 +
+    maxLevelThreatBonus +
+    lowHpProgressBonus +
+    finishSetupBonus;
+  return Math.min(WHITE_MIRROR_BACKLINE_LEVELED_FRONT_CHIP_MAX_BONUS, bonus);
+}
+
+function whiteMirrorLeveledFrontThreatSlotPressure(
+  state: GameState,
+  slotKey: SlotKey,
+  perspective: PlayerId,
+): number {
+  if (!isWhiteMirrorState(state, perspective)) {
+    return 0;
+  }
+
+  const opponent = opponentOf(perspective);
+  const slot = state.slots[slotKey];
+  const monster = slot.monster;
+  if (!monster || monster.owner !== opponent || monster.level < 2) {
+    return 0;
+  }
+
+  const responseState = responseTurnTacticalEvaluationState(state, opponent);
+  const readyMonster = responseState.slots[slotKey].monster;
+  if (!readyMonster || readyMonster.owner !== opponent || readyMonster.status !== "active") {
+    return 0;
+  }
+
+  const directDamage = directMasterDamageFromSlot(responseState, slotKey, opponent);
+  const formationThreat = slot.row === "front" ? whiteMirrorFrontSlotThreat(responseState, slotKey, perspective) : 0;
+  if (directDamage <= 0 && formationThreat < 120) {
+    return 0;
+  }
+
+  const maxLevel = getMonsterDef(monster.cardId).maxLevel;
+  const actionMultiplier = Math.max(1, readyMonster.actionLimit - readyMonster.actionCount);
+  const hpPressure = Math.max(0, monster.hp - 1) * 10;
+  const levelPressure = monster.level * 42 + (monster.level >= maxLevel && maxLevel > 1 ? 42 : 0);
+  const rowPressure = slot.row === "front" ? 32 : 0;
+  const focusPressure = monster.focused ? 32 : 0;
+  return (
+    70 +
+    directDamage * actionMultiplier * 90 +
+    formationThreat * 0.55 +
+    levelPressure +
+    hpPressure +
+    rowPressure +
+    focusPressure
+  );
+}
+
 function whiteCloseoutAfterShieldDecisionBonus(
   before: GameState,
   after: GameState,
@@ -7135,6 +7228,7 @@ function scoreAttackDecision(state: GameState, after: GameState, action: Command
   return (
     weights.monsterDamagePerPoint * damage +
     recoilPenalty +
+    whiteMirrorBacklineLeveledFrontThreatChipBonus(state, after, action, targetBefore, targetAfter) +
     whiteMirrorFrontLevelUpSetupAttackBonus(state, action, targetAfter) -
     whiteMirrorNonConvertingBacklineChipPenalty(state, after, action, targetAfter)
   );

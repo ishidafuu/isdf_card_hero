@@ -153,6 +153,65 @@ describe("cpu ai", () => {
     expect(decisionTestSignature(decision)).toBe("attack:cpu_front_left:player_front_left");
   });
 
+  it("values safe backline chip damage against a leveled white mirror front threat", () => {
+    const createLeveledFrontThreatGame = (level: number) => {
+      const game = createCpuGame();
+      game.players.cpu.masterId = "white";
+      game.players.player.masterId = "white";
+      game.players.cpu.hand = [];
+      game.players.player.hand = [];
+      game.players.cpu.stones = 0;
+      game.players.player.stones = 3;
+      game.players.cpu.masterHp = 8;
+      game.players.player.masterHp = 8;
+      for (const slot of Object.values(game.slots)) {
+        delete slot.monster;
+      }
+      game.slots.cpu_back_left.monster = createActiveMonster("card_051", "cpu", {
+        level: 2,
+        hp: 3,
+        investedStones: 2,
+      });
+      game.slots.cpu_front_left.monster = createActiveMonster("takokke", "cpu");
+      game.slots.player_front_left.monster = createActiveMonster("card_047", "player", {
+        level,
+        hp: 6,
+        investedStones: level,
+        actionCount: 1,
+      });
+      return game;
+    };
+    const findBacklineChip = (game: GameState) =>
+      inspectCpuDecisionEvaluations(game, {
+        profile: "white",
+        search: { sameTurnSearchDepth: 0 },
+      }).find(
+        (evaluation) =>
+          evaluation.decision.type === "attack" &&
+          evaluation.decision.action.attackerSlotKey === "cpu_back_left" &&
+          evaluation.decision.action.target.kind === "monster" &&
+          evaluation.decision.action.target.slotKey === "player_front_left",
+      );
+    const findBacklineFocus = (game: GameState) =>
+      inspectCpuDecisionEvaluations(game, {
+        profile: "white",
+        search: { sameTurnSearchDepth: 0 },
+      }).find(
+        (evaluation) => evaluation.decision.type === "focus" && evaluation.decision.slotKey === "cpu_back_left",
+      );
+
+    const level1Chip = findBacklineChip(createLeveledFrontThreatGame(1));
+    const level3Game = createLeveledFrontThreatGame(3);
+    const level3Chip = findBacklineChip(level3Game);
+    const level3Focus = findBacklineFocus(level3Game);
+
+    expect(level1Chip).toBeDefined();
+    expect(level3Chip).toBeDefined();
+    expect(level3Focus).toBeDefined();
+    expect(level3Chip?.totalScore).toBeGreaterThan((level1Chip?.totalScore ?? 0) + 120);
+    expect(level3Chip?.totalScore).toBeGreaterThan(level3Focus?.totalScore ?? 0);
+  });
+
   it("exposes white planner as a separate turn-plan profile", () => {
     const game = createCpuGame([{ cardId: "takokke", instanceId: "cpu_planner_takokke" }]);
     game.players.cpu.masterId = "white";
