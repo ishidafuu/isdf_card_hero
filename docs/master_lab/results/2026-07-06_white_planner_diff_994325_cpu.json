@@ -1,0 +1,100 @@
+{
+  "generatedAt": "2026-07-06T13:15:34.528Z",
+  "options": {
+    "seedStart": 994325,
+    "count": 1,
+    "maxSteps": 500,
+    "maxTurns": 120,
+    "deckPreset": "master-lab-white-1377-death-sheep3",
+    "directions": [
+      "challenger-as-cpu"
+    ],
+    "maxDiffSamples": 60,
+    "markdownPath": "docs/master_lab/results/2026-07-06_white_planner_diff_994325_cpu.md",
+    "jsonPath": "docs/master_lab/results/2026-07-06_white_planner_diff_994325_cpu.json"
+  },
+  "games": [
+    {
+      "direction": "challenger-as-cpu",
+      "seed": 994325,
+      "profiles": {
+        "player": "white",
+        "cpu": "white_planner"
+      },
+      "winner": "player",
+      "winnerProfile": "white",
+      "steps": 163,
+      "turns": 17,
+      "playerHp": 10,
+      "cpuHp": 0,
+      "timings": [
+        {
+          "profile": "white",
+          "decisions": 156,
+          "elapsedMs": 62248.18783599982,
+          "maxDecisionMs": 4061.362333000012
+        },
+        {
+          "profile": "white_planner",
+          "decisions": 156,
+          "elapsedMs": 92639.54644800024,
+          "maxDecisionMs": 6015.774458
+        }
+      ],
+      "diffCount": 1,
+      "plannerSelectedDiffCount": 0,
+      "diffSamples": [
+        {
+          "direction": "challenger-as-cpu",
+          "seed": 994325,
+          "step": 13,
+          "turn": 2,
+          "currentPlayer": "player",
+          "activeProfile": "white",
+          "board": "player_front_left:player:ボムゾウ L1 HP6 act focus / player_front_right:player:ポリスピナー L1 HP3 act / player_back_left:player:ヤンバル L1 HP3 act focus / player_back_right:player:ピグミィ L1 HP3 prep / cpu_front_left:cpu:ボムゾウ L1 HP6 prep / cpu_front_right:cpu:ドノマンティス L1 HP5 prep / cpu_back_left:cpu:真勇者ダイン L1 HP6 prep",
+          "whiteDecision": "master:shield->monster:player_front_left",
+          "whitePlannerDecision": "master:shield->monster:player_front_right",
+          "selectedProfile": "white",
+          "selectedDecision": "master:shield->monster:player_front_left",
+          "whiteReason": "高価値の味方を守るためシールド / 見送り: マスター特技は10点差で見送り",
+          "whitePlannerReason": "高価値の味方を守るためシールド / 盾対象応答評価: 次自ターン168点、fallback比10点差",
+          "whiteMs": 108.7,
+          "whitePlannerMs": 391
+        }
+      ]
+    }
+  ],
+  "summary": {
+    "games": 1,
+    "wins": {
+      "white": 1
+    },
+    "draws": 0,
+    "issues": 0,
+    "diffCount": 1,
+    "plannerSelectedDiffCount": 0,
+    "timings": [
+      {
+        "profile": "white",
+        "decisions": 156,
+        "elapsedMs": 62248.18783599982,
+        "maxDecisionMs": 4061.362333000012
+      },
+      {
+        "profile": "white_planner",
+        "decisions": 156,
+        "elapsedMs": 92639.54644800024,
+        "maxDecisionMs": 6015.774458
+      }
+    ]
+  },
+  "reading": [
+    "white_planner average decision 593.8ms, max 6015.8ms.",
+    "white_planner diverged from white 1 times; inspect samples before changing search depth."
+  ],
+  "nextSteps": [
+    "Review decision diff samples and classify good/bad planner divergences.",
+    "If planner average decision time stays practical, run both directions with count 3-5.",
+    "Try opponentTerminalPlanDepth 2 as a v2 candidate."
+  ]
+}
