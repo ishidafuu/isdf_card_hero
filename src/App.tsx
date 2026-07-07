@@ -77,6 +77,7 @@ import {
   type DeckBattleScoreSnapshot,
   type DeckBattleScoreSnapshotSuiteId,
 } from "./game/deckBattleScoreSnapshots";
+import { summarizeGameState } from "./game/autoPlayValidation";
 import { evaluateCard } from "./game/unitEvaluation";
 import type { CardInstance, CardPool, CommandDef, GameState, MagicAction, MagicCardDef, MagicTargetKind, MasterActionId, MasterId, MonsterState, PlayerId, Row, SlotKey, Target } from "./game/types";
 import type { DeckValidationSummary } from "./game/cards";
@@ -880,6 +881,25 @@ function createBattleResultKey(game: GameState, settings: BattleSettings): strin
   ].join("|");
 }
 
+function createBattleDebugReport(game: GameState, settings: BattleSettings, deckSettings: DeckSettings, sourceUrl = ""): string {
+  const report = {
+    generatedAt: new Date().toISOString(),
+    sourceUrl,
+    settings: {
+      seed: settings.seed,
+      firstPlayer: settings.firstPlayer,
+      mode: settings.mode,
+      masterIds: settings.masterIds,
+      aiProfiles: settings.aiProfiles,
+    },
+    deckSettings,
+    stateSummary: summarizeGameState(game),
+    log: game.log,
+    eventLog: game.eventLog,
+  };
+  return JSON.stringify(report, null, 2);
+}
+
 function loadBattleHistory(): BattleHistoryEntry[] {
   return loadJsonArray<Partial<BattleHistoryEntry>>(BATTLE_HISTORY_STORAGE_KEY)
     .map(normalizeBattleHistoryEntry)
@@ -1084,6 +1104,7 @@ export function App() {
   const [infoToolsOpen, setInfoToolsOpen] = useState(false);
   const [logFilter, setLogFilter] = useState<LogFilter>("all");
   const [selectedLogIndex, setSelectedLogIndex] = useState<number | undefined>();
+  const [battleReportCopied, setBattleReportCopied] = useState(false);
   const [seEnabled, setSeEnabled] = useState(() => loadBooleanSetting(SE_ENABLED_STORAGE_KEY, true));
   const [seVolume, setSeVolume] = useState(() => loadNumberSetting(SE_VOLUME_STORAGE_KEY, 0.55, 0, 1));
   const [bgmEnabled, setBgmEnabled] = useState(() => loadBooleanSetting(BGM_ENABLED_STORAGE_KEY, true));
@@ -2095,6 +2116,24 @@ export function App() {
   function handleBattleSeedChange(value: string) {
     const parsed = normalizeSeedInput(value, battleSettings.seed);
     setBattleSettings({ ...battleSettings, seedInput: value, seed: parsed });
+  }
+
+  async function handleCopyBattleReport() {
+    if (typeof navigator === "undefined" || !navigator.clipboard) {
+      setError("クリップボードへコピーできませんでした");
+      return;
+    }
+    try {
+      const sourceUrl = typeof window === "undefined" ? "" : window.location.href;
+      await navigator.clipboard.writeText(
+        createBattleDebugReport(game, activeBattleSettingsRef.current, activeDeckSettingsRef.current, sourceUrl),
+      );
+      setBattleReportCopied(true);
+      setError("");
+      window.setTimeout(() => setBattleReportCopied(false), 1400);
+    } catch {
+      setError("クリップボードへコピーできませんでした");
+    }
   }
 
   function handleBattleFirstPlayerChange(value: string) {
@@ -3365,6 +3404,9 @@ export function App() {
                   <h2><Icon icon="📜" /> Battle Log</h2>
                   <span>{`${visibleLogEntries.length}/${game.log.length}`}</span>
                 </div>
+                <button type="button" onClick={handleCopyBattleReport}>
+                  <Icon icon="📋" /> {battleReportCopied ? "Copied" : "Copy Report"}
+                </button>
               </div>
               <LatestEventSummary log={game.log} />
               <div className="log-filter-row" aria-label="log filters">
