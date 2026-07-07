@@ -576,6 +576,17 @@ export function chooseCpuDecision(state: GameState, options: CpuAiOptions = {}):
     return backlineMoveBeforeSummonDecision;
   }
 
+  const frontReachRetreatBeforeBackSummonDecision =
+    selectWhiteMirrorFrontReachRetreatBeforeBackSummonDecision(
+      state,
+      perspective,
+      best,
+      evaluated,
+    );
+  if (frontReachRetreatBeforeBackSummonDecision) {
+    return frontReachRetreatBeforeBackSummonDecision;
+  }
+
   const backThreatAttackBeforeRetreatDecision =
     selectWhiteMirrorBackThreatAttackBeforeRetreatDecision(
       state,
@@ -2432,9 +2443,179 @@ function isWhiteMirrorBacklineMoveBeforeBackSummonCandidate(
   return mover.actionLimit > 1 || bestAttackOpportunityScore(candidate.after, movedSlotKey) > 0;
 }
 
+function selectWhiteMirrorFrontReachRetreatBeforeBackSummonDecision(
+  state: GameState,
+  perspective: PlayerId,
+  fallback: EvaluatedDecision | undefined,
+  evaluated: readonly EvaluatedDecision[],
+): CpuDecision | undefined {
+  if (!fallback || !isWhiteMirrorFrontReachRetreatBeforeBackSummonFallback(state, perspective, fallback)) {
+    return undefined;
+  }
+
+  const move = evaluated
+    .filter((candidate) =>
+      isWhiteMirrorFrontReachRetreatBeforeBackSummonCandidate(state, perspective, candidate),
+    )
+    .sort(
+      (a, b) =>
+        b.totalScore - a.totalScore || compareTieBreak(a.decision, b.decision, a.index, b.index),
+    )[0];
+  if (!move) {
+    return undefined;
+  }
+
+  const rootGap = fallback.totalScore - move.totalScore;
+  if (rootGap > 120) {
+    return undefined;
+  }
+
+  return {
+    ...move.decision,
+    reason:
+      `${move.decision.reason} / 白ミラー中盤: ` +
+      "後列枠を召喚で埋める前に射程持ち前衛を下げ、Lv3主軸の横の仕事を残す",
+  };
+}
+
+function isWhiteMirrorFrontReachRetreatBeforeBackSummonFallback(
+  state: GameState,
+  perspective: PlayerId,
+  fallback: EvaluatedDecision,
+): boolean {
+  if (
+    !isWhiteMirrorState(state, perspective) ||
+    state.turnNumber < 10 ||
+    state.turnNumber > 14 ||
+    fallback.decision.type !== "summon" ||
+    fallback.after.winner ||
+    fallback.after.pendingLevelUp ||
+    emptyBackSlotCountForPlayer(state, perspective) !== 1 ||
+    emptyBackSlotCountForPlayer(fallback.after, perspective) !== 0 ||
+    summonWakeCreatesImmediateWork(state, fallback.decision.handInstanceId, fallback.decision.slotKey) ||
+    !hasReadyMaxLevelFrontAce(state, perspective)
+  ) {
+    return false;
+  }
+
+  const opponent = opponentOf(perspective);
+  if (
+    state.players[perspective].stones < 5 ||
+    state.players[perspective].masterHp < state.players[opponent].masterHp ||
+    state.players[opponent].masterHp > 8
+  ) {
+    return false;
+  }
+
+  const summonSlot = state.slots[fallback.decision.slotKey];
+  return summonSlot.owner === perspective && summonSlot.row === "back" && !summonSlot.monster;
+}
+
+function isWhiteMirrorFrontReachRetreatBeforeBackSummonCandidate(
+  state: GameState,
+  perspective: PlayerId,
+  candidate: EvaluatedDecision,
+): boolean {
+  const decision = candidate.decision;
+  if (decision.type !== "move") {
+    return false;
+  }
+
+  const fromSlot = state.slots[decision.fromSlotKey];
+  const toSlot = state.slots[decision.toSlotKey];
+  const mover = fromSlot.monster;
+  if (
+    fromSlot.owner !== perspective ||
+    toSlot.owner !== perspective ||
+    fromSlot.row !== "front" ||
+    toSlot.row !== "back" ||
+    toSlot.monster ||
+    !mover ||
+    mover.owner !== perspective ||
+    mover.status !== "active" ||
+    mover.actionCount >= mover.actionLimit ||
+    isMaxLevelFrontAce(mover) ||
+    !hasReadyMaxLevelFrontAce(state, perspective, mover.instanceId)
+  ) {
+    return false;
+  }
+
+  const reachesFromBack =
+    getMonsterAiTrait(mover.cardId).role === "back" ||
+    mover.actionLimit > 1 ||
+    monsterHasBacklineAttackPattern(mover.cardId);
+  if (!reachesFromBack) {
+    return false;
+  }
+
+  const movedSlotKey = findMonsterSlot(candidate.after, mover.instanceId);
+  if (!movedSlotKey || candidate.after.slots[movedSlotKey].row !== "back") {
+    return false;
+  }
+
+  return bestAttackOpportunityScore(candidate.after, movedSlotKey) > 0 ||
+    enemyReadyBacklineThreatCount(state, perspective) >= 2 ||
+    enemyLeveledFrontThreatCount(state, perspective) >= 1;
+}
+
 function isMaxLevelFrontAce(monster: MonsterState): boolean {
   const def = getMonsterDef(monster.cardId);
   return getMonsterAiTrait(monster.cardId).role === "front" && def.maxLevel >= 3 && monster.level >= def.maxLevel;
+}
+
+function hasReadyMaxLevelFrontAce(
+  state: GameState,
+  perspective: PlayerId,
+  excludeInstanceId?: string,
+): boolean {
+  return FIELD_ORDER_BY_PLAYER[perspective].some((slotKey) => {
+    const slot = state.slots[slotKey];
+    const monster = slot.monster;
+    return (
+      slot.row === "front" &&
+      !!monster &&
+      monster.owner === perspective &&
+      monster.instanceId !== excludeInstanceId &&
+      monster.status === "active" &&
+      monster.hp >= 4 &&
+      isMaxLevelFrontAce(monster)
+    );
+  });
+}
+
+function enemyReadyBacklineThreatCount(state: GameState, perspective: PlayerId): number {
+  const opponent = opponentOf(perspective);
+  return FIELD_ORDER_BY_PLAYER[opponent].filter((slotKey) => {
+    const slot = state.slots[slotKey];
+    const monster = slot.monster;
+    if (
+      slot.row !== "back" ||
+      !monster ||
+      monster.owner !== opponent ||
+      monster.status !== "active"
+    ) {
+      return false;
+    }
+    return getMonsterAiTrait(monster.cardId).role === "back" ||
+      monster.actionLimit > 1 ||
+      monsterHasBacklineAttackPattern(monster.cardId);
+  }).length;
+}
+
+function enemyLeveledFrontThreatCount(state: GameState, perspective: PlayerId): number {
+  const opponent = opponentOf(perspective);
+  return FIELD_ORDER_BY_PLAYER[opponent].filter((slotKey) => {
+    const slot = state.slots[slotKey];
+    const monster = slot.monster;
+    return (
+      slot.row === "front" &&
+      !!monster &&
+      monster.owner === opponent &&
+      monster.status === "active" &&
+      monster.level >= 2 &&
+      monster.hp >= 3
+    );
+  }).length;
 }
 
 function selectWhiteMirrorBackThreatAttackBeforeRetreatDecision(

@@ -2607,6 +2607,71 @@ describe("cpu ai", () => {
     expect(decision.reason).toContain("後列へ下げて行動を使う前");
   });
 
+  it("retreats an active ranged front before filling the back slot beside a level 3 ace", () => {
+    const game = createCpuGame([
+      { cardId: "card_037", instanceId: "cpu_hand_donomantis" },
+    ]);
+    game.turnNumber = 12;
+    game.players.cpu.masterId = "white";
+    game.players.player.masterId = "white";
+    game.players.cpu.masterHp = 10;
+    game.players.player.masterHp = 8;
+    game.players.cpu.stones = 9;
+    game.players.player.stones = 4;
+    game.players.cpu.deck = createHand("cpu_mid_deck", 13);
+    game.players.player.deck = createHand("player_mid_deck", 14);
+    game.players.player.hand = createHand("player_mid_hand", 5);
+    for (const slot of Object.values(game.slots)) {
+      delete slot.monster;
+    }
+    game.slots.player_front_left.monster = createActiveMonster("card_047", "player", {
+      instanceId: "player_mid_dyne",
+      actionCount: 1,
+    });
+    game.slots.player_front_right.monster = createActiveMonster("card_133", "player", {
+      instanceId: "player_mid_death_sheep",
+      actionCount: 1,
+      focused: true,
+      shielded: true,
+    });
+    game.slots.player_back_left.monster = createActiveMonster("card_051", "player", {
+      instanceId: "player_mid_pigmy_left_l2",
+      level: 2,
+      hp: 3,
+      actionCount: 2,
+      actionLimit: 2,
+      investedStones: 2,
+    });
+    game.slots.player_back_right.monster = createActiveMonster("card_051", "player", {
+      instanceId: "player_mid_pigmy_right_l2",
+      level: 2,
+      hp: 3,
+      actionCount: 2,
+      actionLimit: 2,
+      investedStones: 2,
+    });
+    game.slots.cpu_front_left.monster = createActiveMonster("yanbaru", "cpu", {
+      instanceId: "cpu_mid_yanbaru",
+    });
+    game.slots.cpu_front_right.monster = createActiveMonster("card_047", "cpu", {
+      instanceId: "cpu_mid_dyne_l3",
+      level: 3,
+      hp: 6,
+      investedStones: 3,
+    });
+    game.slots.cpu_back_right.monster = createActiveMonster("card_051", "cpu", {
+      instanceId: "cpu_mid_pigmy",
+      actionCount: 0,
+      actionLimit: 2,
+      focused: true,
+    });
+
+    const decision = chooseCpuDecision(game, { profiles: { cpu: "white_planner", player: "white" } });
+
+    expect(decisionTestSignature(decision)).toBe("move:cpu_front_left:cpu_back_left");
+    expect(decision.reason).toContain("Lv3主軸");
+  });
+
   it("holds late white mirror non-lethal face damage when it would give stone at zero stones", () => {
     const game = createCpuGame();
     game.turnNumber = 18;
