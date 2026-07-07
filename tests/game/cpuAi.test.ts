@@ -2672,6 +2672,69 @@ describe("cpu ai", () => {
     expect(decision.reason).toContain("Lv3主軸");
   });
 
+  it("summons a white mirror front guard before low-conversion ranged chip", () => {
+    const game = createCpuGame([
+      { cardId: "card_037", instanceId: "cpu_hand_donomantis_guard" },
+    ]);
+    game.turnNumber = 11;
+    game.players.cpu.masterId = "white";
+    game.players.player.masterId = "white";
+    game.players.cpu.masterHp = 8;
+    game.players.player.masterHp = 6;
+    game.players.cpu.stones = 6;
+    game.players.player.stones = 0;
+    game.players.cpu.deck = createHand("cpu_guard_deck", 14);
+    game.players.player.deck = createHand("player_guard_deck", 15);
+    game.players.player.hand = createHand("player_guard_hand", 5);
+    for (const slot of Object.values(game.slots)) {
+      delete slot.monster;
+    }
+    game.slots.player_front_left.monster = createActiveMonster("yanbaru", "player", {
+      instanceId: "player_guard_yanbaru_l2",
+      level: 2,
+      hp: 3,
+      actionCount: 1,
+      shielded: true,
+      investedStones: 2,
+    });
+    game.slots.player_front_right.monster = createActiveMonster("card_133", "player", {
+      instanceId: "player_guard_death_sheep_l2",
+      level: 2,
+      hp: 6,
+      actionCount: 1,
+      investedStones: 2,
+    });
+    game.slots.player_back_left.monster = createActiveMonster("card_051", "player", {
+      instanceId: "player_guard_pigmy_prep",
+      status: "prepared",
+    });
+    game.slots.player_back_right.monster = createActiveMonster("card_051", "player", {
+      instanceId: "player_guard_pigmy_l2",
+      level: 2,
+      hp: 3,
+      actionCount: 2,
+      actionLimit: 2,
+      investedStones: 2,
+    });
+    game.slots.cpu_front_left.monster = createActiveMonster("polyspinner", "cpu", {
+      instanceId: "cpu_guard_poly_l2",
+      level: 2,
+      hp: 3,
+      actionLimit: 2,
+      investedStones: 2,
+    });
+    game.slots.cpu_back_left.monster = createActiveMonster("card_051", "cpu", {
+      instanceId: "cpu_guard_pigmy",
+      actionCount: 1,
+      actionLimit: 2,
+    });
+
+    const decision = chooseCpuDecision(game, { profiles: { cpu: "white_planner", player: "white" } });
+
+    expect(decisionTestSignature(decision)).toBe("summon:cpu_hand_donomantis_guard:cpu_front_right");
+    expect(decision.reason).toContain("低変換の削りより前列ガード");
+  });
+
   it("holds late white mirror non-lethal face damage when it would give stone at zero stones", () => {
     const game = createCpuGame();
     game.turnNumber = 18;

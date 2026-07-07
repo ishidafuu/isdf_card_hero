@@ -587,6 +587,16 @@ export function chooseCpuDecision(state: GameState, options: CpuAiOptions = {}):
     return frontReachRetreatBeforeBackSummonDecision;
   }
 
+  const frontGuardBeforeLowChipDecision = selectWhiteMirrorFrontGuardBeforeLowChipDecision(
+    state,
+    perspective,
+    best,
+    evaluated,
+  );
+  if (frontGuardBeforeLowChipDecision) {
+    return frontGuardBeforeLowChipDecision;
+  }
+
   const backThreatAttackBeforeRetreatDecision =
     selectWhiteMirrorBackThreatAttackBeforeRetreatDecision(
       state,
@@ -2616,6 +2626,113 @@ function enemyLeveledFrontThreatCount(state: GameState, perspective: PlayerId): 
       monster.hp >= 3
     );
   }).length;
+}
+
+function selectWhiteMirrorFrontGuardBeforeLowChipDecision(
+  state: GameState,
+  perspective: PlayerId,
+  fallback: EvaluatedDecision | undefined,
+  evaluated: readonly EvaluatedDecision[],
+): CpuDecision | undefined {
+  if (!fallback || !isWhiteMirrorFrontGuardBeforeLowChipFallback(state, perspective, fallback)) {
+    return undefined;
+  }
+
+  const frontSummon = evaluated
+    .filter((candidate) => isWhiteMirrorFrontGuardBeforeLowChipCandidate(state, perspective, candidate))
+    .sort(
+      (a, b) =>
+        b.totalScore - a.totalScore || compareTieBreak(a.decision, b.decision, a.index, b.index),
+    )[0];
+  if (!frontSummon) {
+    return undefined;
+  }
+
+  const rootGap = fallback.totalScore - frontSummon.totalScore;
+  if (rootGap > 145) {
+    return undefined;
+  }
+
+  return {
+    ...frontSummon.decision,
+    reason:
+      `${frontSummon.decision.reason} / 白ミラー中盤: ` +
+      "低変換の削りより前列ガードを先に作り、相手の高レベル展開を遅らせる",
+  };
+}
+
+function isWhiteMirrorFrontGuardBeforeLowChipFallback(
+  state: GameState,
+  perspective: PlayerId,
+  fallback: EvaluatedDecision,
+): boolean {
+  const decision = fallback.decision;
+  if (
+    !isWhiteMirrorState(state, perspective) ||
+    state.turnNumber < 10 ||
+    state.turnNumber > 12 ||
+    decision.type !== "attack" ||
+    decision.action.target.kind !== "monster" ||
+    fallback.after.winner ||
+    fallback.after.pendingLevelUp ||
+    state.players[perspective].stones < 5 ||
+    state.players[opponentOf(perspective)].stones > 1 ||
+    state.players[perspective].masterHp < state.players[opponentOf(perspective)].masterHp + 1 ||
+    enemyReadyBacklineThreatCount(state, perspective) <= 0 ||
+    enemyLeveledFrontThreatCount(state, perspective) <= 0
+  ) {
+    return false;
+  }
+
+  const attackerSlot = state.slots[decision.action.attackerSlotKey];
+  const attacker = attackerSlot.monster;
+  const targetSlotKey = decision.action.target.slotKey;
+  const targetBefore = state.slots[targetSlotKey].monster;
+  const targetAfter = fallback.after.slots[targetSlotKey].monster;
+  if (
+    !attacker ||
+    attacker.owner !== perspective ||
+    attackerSlot.owner !== perspective ||
+    !targetBefore ||
+    targetBefore.owner !== opponentOf(perspective) ||
+    !targetAfter ||
+    targetAfter.owner !== targetBefore.owner ||
+    targetAfter.instanceId !== targetBefore.instanceId ||
+    targetAfter.hp >= targetBefore.hp ||
+    removesEnemyMonster(state, fallback.after, targetSlotKey, perspective) ||
+    targetAfter.hp <= 3
+  ) {
+    return false;
+  }
+
+  return attackerSlot.row === "back" || attacker.actionLimit > 1 || getMonsterAiTrait(attacker.cardId).role === "back";
+}
+
+function isWhiteMirrorFrontGuardBeforeLowChipCandidate(
+  state: GameState,
+  perspective: PlayerId,
+  candidate: EvaluatedDecision,
+): boolean {
+  const decision = candidate.decision;
+  if (decision.type !== "summon" || summonWakeCreatesImmediateWork(state, decision.handInstanceId, decision.slotKey)) {
+    return false;
+  }
+
+  const beforeSlot = state.slots[decision.slotKey];
+  const afterSlot = candidate.after.slots[decision.slotKey];
+  const summoned = afterSlot.monster;
+  if (
+    beforeSlot.owner !== perspective ||
+    beforeSlot.row !== "front" ||
+    beforeSlot.monster ||
+    !summoned ||
+    summoned.owner !== perspective
+  ) {
+    return false;
+  }
+
+  const trait = getMonsterAiTrait(summoned.cardId);
+  return trait.role === "front" || summoned.hp >= 5;
 }
 
 function selectWhiteMirrorBackThreatAttackBeforeRetreatDecision(
