@@ -1,0 +1,43 @@
+{
+  "generatedAt": "2026-07-07T02:15:07.692Z",
+  "options": {
+    "seed": 994339,
+    "direction": "challenger-as-player",
+    "deckPreset": "master-lab-white-1377-death-sheep3",
+    "step": 13,
+    "markdownPath": "docs/master_lab/results/2026-07-07_white_planner_994339_step13_terminal_plan.md",
+    "jsonPath": "docs/master_lab/results/2026-07-07_white_planner_994339_step13_terminal_plan.json"
+  },
+  "state": "turn 2 / current player / HP player/cpu 10/9 / stones player/cpu 2/1 / deck player/cpu 24/24 / hand player/cpu 2/3",
+  "board": "player_front_left:PF:ボムゾウ Lv1 HP6 act1/1 focus | player_front_right:PF:ポリスピナー Lv1 HP3 act2/2 | player_back_left:PB:ヤンバル Lv1 HP3 act1/1 focus | player_back_right:PB:ポリスピナー Lv1 HP3 prep | cpu_front_left:CF:ボムゾウ Lv1 HP6 prep | cpu_front_right:CF:ドノマンティス Lv1 HP5 prep | cpu_back_left:CB:真勇者ダイン Lv1 HP6 prep",
+  "fallback": "master:shield->monster:player_front_left",
+  "fallbackScore": -347.7,
+  "selected": "master:shield->monster:player_front_right",
+  "selectedPlannerScore": -58.3,
+  "runnerUpPlannerScore": -63.9,
+  "adopted": false,
+  "rejectedReason": "terminal plan candidate did not pass adoption gate",
+  "candidates": [
+    {
+      "rank": 1,
+      "selected": true,
+      "decision": "master:shield->monster:player_front_right",
+      "rootScore": 50.5,
+      "plannerScore": -58.3
+    },
+    {
+      "rank": 2,
+      "selected": false,
+      "decision": "master:shield->monster:player_front_left",
+      "rootScore": 57,
+      "plannerScore": -63.9
+    },
+    {
+      "rank": 3,
+      "selected": false,
+      "decision": "end_turn",
+      "rootScore": -174.2,
+      "plannerScore": -186.3
+    }
+  ]
+}

@@ -2735,6 +2735,63 @@ describe("cpu ai", () => {
     expect(decision.reason).toContain("低変換の削りより前列ガード");
   });
 
+  it("shields a fragile early multi-action front over a durable focused front in a white mirror", () => {
+    const game = createPlayerAutoGame([]);
+    game.turnNumber = 2;
+    game.players.player.masterId = "white";
+    game.players.cpu.masterId = "white";
+    game.players.player.masterHp = 10;
+    game.players.cpu.masterHp = 9;
+    game.players.player.stones = 2;
+    game.players.cpu.stones = 1;
+    game.players.player.deck = createHand("player_early_shield_deck", 24);
+    game.players.cpu.deck = createHand("cpu_early_shield_deck", 24);
+    game.players.player.hand = createHand("player_early_shield_hand", 2);
+    game.players.cpu.hand = createHand("cpu_early_shield_hand", 3);
+    for (const slot of Object.values(game.slots)) {
+      delete slot.monster;
+    }
+    game.slots.player_front_left.monster = createActiveMonster("bomuzo", "player", {
+      instanceId: "player_early_shield_bomuzo",
+      hp: 6,
+      actionCount: 1,
+      focused: true,
+    });
+    game.slots.player_front_right.monster = createActiveMonster("polyspinner", "player", {
+      instanceId: "player_early_shield_poly",
+      hp: 3,
+      actionCount: 2,
+      actionLimit: 2,
+    });
+    game.slots.player_back_left.monster = createActiveMonster("yanbaru", "player", {
+      instanceId: "player_early_shield_yanbaru",
+      hp: 3,
+      actionCount: 1,
+      focused: true,
+    });
+    game.slots.player_back_right.monster = createActiveMonster("polyspinner", "player", {
+      instanceId: "player_early_shield_back_poly",
+      status: "prepared",
+    });
+    game.slots.cpu_front_left.monster = createActiveMonster("bomuzo", "cpu", {
+      instanceId: "cpu_early_shield_bomuzo",
+      status: "prepared",
+    });
+    game.slots.cpu_front_right.monster = createActiveMonster("card_037", "cpu", {
+      instanceId: "cpu_early_shield_donomantis",
+      status: "prepared",
+    });
+    game.slots.cpu_back_left.monster = createActiveMonster("card_047", "cpu", {
+      instanceId: "cpu_early_shield_dyne",
+      status: "prepared",
+    });
+
+    const decision = chooseCpuDecision(game, { profiles: { player: "white_planner", cpu: "white" } });
+
+    expect(decisionTestSignature(decision)).toBe("master_action:shield:player_front_right");
+    expect(decision.reason).toContain("複数行動前衛を盾対象");
+  });
+
   it("holds late white mirror non-lethal face damage when it would give stone at zero stones", () => {
     const game = createCpuGame();
     game.turnNumber = 18;

@@ -566,6 +566,18 @@ export function chooseCpuDecision(state: GameState, options: CpuAiOptions = {}):
     return midgameOverprotectShieldHoldEndTurnDecision;
   }
 
+  if (profile === "white_planner" || profile === "white_rollout") {
+    const earlyShieldTargetQualityDecision = selectWhiteMirrorEarlyShieldTargetQualityDecision(
+      state,
+      perspective,
+      best,
+      evaluated,
+    );
+    if (earlyShieldTargetQualityDecision) {
+      return earlyShieldTargetQualityDecision;
+    }
+  }
+
   const backlineMoveBeforeSummonDecision = selectWhiteMirrorBacklineMoveBeforeBackSummonDecision(
     state,
     perspective,
@@ -2349,6 +2361,141 @@ function isWhiteMirrorMidgameOverprotectShieldFallback(
 
   const masterThreat = buildThreatModel(state, opponent).masterDamage[perspective];
   return masterThreat < own.masterHp;
+}
+
+function selectWhiteMirrorEarlyShieldTargetQualityDecision(
+  state: GameState,
+  perspective: PlayerId,
+  fallback: EvaluatedDecision | undefined,
+  evaluated: readonly EvaluatedDecision[],
+): CpuDecision | undefined {
+  if (!fallback || !isWhiteMirrorEarlyShieldTargetQualityFallback(state, perspective, fallback)) {
+    return undefined;
+  }
+
+  const betterTarget = evaluated
+    .filter((candidate) => isWhiteMirrorEarlyShieldTargetQualityCandidate(state, perspective, fallback, candidate))
+    .sort(
+      (a, b) =>
+        whiteMirrorEarlyShieldTargetQualityScore(state, perspective, b) -
+          whiteMirrorEarlyShieldTargetQualityScore(state, perspective, a) ||
+        b.totalScore - a.totalScore ||
+        compareTieBreak(a.decision, b.decision, a.index, b.index),
+    )[0];
+  if (!betterTarget) {
+    return undefined;
+  }
+
+  return {
+    ...betterTarget.decision,
+    reason:
+      `${betterTarget.decision.reason} / 白ミラー序盤: ` +
+      "耐久十分な前衛より、次ターン以降の制圧源になる複数行動前衛を盾対象にする",
+  };
+}
+
+function isWhiteMirrorEarlyShieldTargetQualityFallback(
+  state: GameState,
+  perspective: PlayerId,
+  fallback: EvaluatedDecision,
+): boolean {
+  if (
+    !isWhiteMirrorState(state, perspective) ||
+    state.turnNumber < 2 ||
+    state.turnNumber > 4 ||
+    !isShieldDecision(fallback.decision) ||
+    fallback.decision.target.kind !== "monster" ||
+    fallback.after.winner ||
+    fallback.after.pendingLevelUp ||
+    state.players[perspective].stones > 2 ||
+    state.players[opponentOf(perspective)].stones > 1 ||
+    fallback.after.players[perspective].stones > 0 ||
+    currentTurnSpentMonsterActionCount(state, perspective) < 2 ||
+    !hasPreparedMultiActionBackline(state, perspective)
+  ) {
+    return false;
+  }
+
+  const targetSlot = state.slots[fallback.decision.target.slotKey];
+  const target = targetSlot.monster;
+  return !!(
+    targetSlot.owner === perspective &&
+    targetSlot.row === "front" &&
+    target &&
+    target.owner === perspective &&
+    !target.shielded &&
+    target.hp >= 5 &&
+    target.focused &&
+    target.actionCount >= target.actionLimit
+  );
+}
+
+function hasPreparedMultiActionBackline(state: GameState, perspective: PlayerId): boolean {
+  return Object.values(state.slots).some((slot) => {
+    const monster = slot.monster;
+    return !!(
+      slot.owner === perspective &&
+      slot.row === "back" &&
+      monster &&
+      monster.owner === perspective &&
+      monster.status === "prepared" &&
+      monster.actionLimit > 1
+    );
+  });
+}
+
+function isWhiteMirrorEarlyShieldTargetQualityCandidate(
+  state: GameState,
+  perspective: PlayerId,
+  fallback: EvaluatedDecision,
+  candidate: EvaluatedDecision,
+): boolean {
+  const decision = candidate.decision;
+  const fallbackDecision = fallback.decision;
+  if (
+    !isShieldDecision(decision) ||
+    !isShieldDecision(fallbackDecision) ||
+    decision.target.kind !== "monster" ||
+    fallbackDecision.target.kind !== "monster" ||
+    decision.target.slotKey === fallbackDecision.target.slotKey ||
+    fallback.totalScore - candidate.totalScore > 24
+  ) {
+    return false;
+  }
+
+  const targetSlot = state.slots[decision.target.slotKey];
+  const target = targetSlot.monster;
+  return !!(
+    targetSlot.owner === perspective &&
+    targetSlot.row === "front" &&
+    target &&
+    target.owner === perspective &&
+    !target.shielded &&
+    target.hp <= 3 &&
+    target.actionLimit > 1 &&
+    target.actionCount >= target.actionLimit
+  );
+}
+
+function whiteMirrorEarlyShieldTargetQualityScore(
+  state: GameState,
+  perspective: PlayerId,
+  candidate: EvaluatedDecision,
+): number {
+  const decision = candidate.decision;
+  if (!isShieldDecision(decision) || decision.target.kind !== "monster") {
+    return Number.NEGATIVE_INFINITY;
+  }
+  const target = state.slots[decision.target.slotKey].monster;
+  if (!target || target.owner !== perspective) {
+    return Number.NEGATIVE_INFINITY;
+  }
+  return (
+    candidate.totalScore +
+    target.actionLimit * 42 +
+    Math.max(0, 4 - target.hp) * 35 +
+    target.level * 18
+  );
 }
 
 function selectWhiteMirrorBacklineMoveBeforeBackSummonDecision(
