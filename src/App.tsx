@@ -55,6 +55,7 @@ import {
 import { HAND_LIMIT } from "./game/ruleEngine/constants";
 import { getMasterActionDef, getMasterActionMagicCardId, getMasterIconUrl, getMasterName, MASTER_IDS } from "./game/masters";
 import { CPU_AI_PROFILES, type CpuAiProfile, type CpuAiProfiles } from "./game/cpuAi";
+import { createDefaultAiProfiles } from "./game/defaultAiProfiles";
 import {
   buildDeckPresetCardIds,
   DEFAULT_DECK_PRESET_FILTERS,
@@ -396,10 +397,6 @@ interface MasterDamageFlash extends DamageFlash {
   playerId: PlayerId;
 }
 
-function createDefaultAiProfiles(): CpuAiProfiles {
-  return { player: "stable", cpu: "stable" };
-}
-
 function cloneAiProfiles(profiles: CpuAiProfiles): CpuAiProfiles {
   return normalizeAiProfiles(profiles);
 }
@@ -532,7 +529,7 @@ const BUILT_IN_MATCH_PRESETS: BuiltInMatchPreset[] = [
   {
     id: "standard-random",
     name: "白デフォルト戦",
-    description: "Playerは投稿Pro白8なし #1377。CPUは白vs白選出の投稿Pro白8あり #1339。ホワイト同士、stable AI。",
+    description: "Player/CPUとも投稿Pro白8なし #1377 デスシープ型。CPUはWhite Planner AI。",
     create: () => {
       const seed = createRandomBattleSeed();
       return {
