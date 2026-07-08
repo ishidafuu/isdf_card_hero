@@ -3481,6 +3481,7 @@ export function App() {
                     <textarea
                       value={selectedLogComment}
                       onChange={(event) => handleBattleLogCommentChange(selectedLogIndex!, event.target.value)}
+                      placeholder="例: 倒せない攻撃で反撃を許している / 盤面処理より顔を殴っている"
                       rows={3}
                     />
                   </label>
@@ -6132,6 +6133,8 @@ interface CpuDecisionEntry {
   actor: string;
   selected: string;
   rejected?: string;
+  evaluation?: string;
+  alternatives?: string;
 }
 
 function CpuDecisionHistoryPanel({ game, onClose }: { game: GameState; onClose: () => void }) {
@@ -6159,7 +6162,9 @@ function CpuDecisionHistoryPanel({ game, onClose }: { game: GameState; onClose: 
               <span className="zone-card-index">{decision.index + 1}</span>
               <span className="cpu-decision-actor">{decision.actor}</span>
               <span className="cpu-decision-main"><Icon icon="✅" /> {decision.selected}</span>
+              {decision.evaluation && <span className="cpu-decision-evaluation"><Icon icon="📈" /> {decision.evaluation}</span>}
               {decision.rejected && <span className="cpu-decision-rejected"><Icon icon="↩️" /> {decision.rejected}</span>}
+              {decision.alternatives && <span className="cpu-decision-alternatives"><Icon icon="🔍" /> {decision.alternatives}</span>}
             </li>
           ))}
         </ol>
@@ -6176,13 +6181,25 @@ function parseCpuDecisionEntry(entry: string, index: number): CpuDecisionEntry |
   }
   const actor = entry.slice(0, markerIndex).trim() || "CPU";
   const detail = entry.slice(markerIndex + marker.length).trim();
-  const [selected, rejected] = detail.split(" / 見送り: ");
+  const [beforeEvaluation, evaluationBlock] = splitOnce(detail, " / 評価: ");
+  const [selected, rejected] = splitOnce(beforeEvaluation, " / 見送り: ");
+  const [evaluation, alternatives] = splitOnce(evaluationBlock ?? "", " / 見送り候補: ");
   return {
     index,
     actor,
     selected: selected.trim(),
     rejected: rejected?.trim(),
+    evaluation: evaluation?.trim(),
+    alternatives: alternatives?.trim(),
   };
+}
+
+function splitOnce(value: string, separator: string): [string, string | undefined] {
+  const index = value.indexOf(separator);
+  if (index < 0) {
+    return [value, undefined];
+  }
+  return [value.slice(0, index), value.slice(index + separator.length)];
 }
 
 function EffectHistoryPanel({ game, onClose }: { game: GameState; onClose: () => void }) {

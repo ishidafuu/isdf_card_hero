@@ -278,7 +278,7 @@ button:disabled {
   grid-template-areas:
     "battle side"
     "info side";
-  grid-template-columns: minmax(640px, 1fr) minmax(280px, 360px);
+  grid-template-columns: minmax(620px, 1fr) minmax(340px, 430px);
   justify-content: stretch;
   min-height: 0;
   min-width: 0;
@@ -1264,8 +1264,8 @@ button:disabled {
   gap: 12px;
   grid-area: side;
   grid-template-rows: minmax(0, 1fr);
-  height: clamp(360px, calc(100vh - 136px), 720px);
-  max-height: clamp(360px, calc(100vh - 136px), 720px);
+  height: clamp(440px, calc(100vh - 108px), 860px);
+  max-height: clamp(440px, calc(100vh - 108px), 860px);
   min-height: 0;
   min-width: 0;
   overflow-y: hidden;
@@ -2102,11 +2102,11 @@ button:disabled {
   grid-template-rows: auto auto auto minmax(0, 1fr) auto;
   align-self: stretch;
   height: auto;
-  min-height: 360px;
+  min-height: 440px;
 }
 
 .log-heading {
-  align-items: center;
+  align-items: flex-start;
   display: flex;
   justify-content: space-between;
   gap: 8px;
@@ -2179,6 +2179,8 @@ button:disabled {
 
 .log-entry.commented {
   border-left-color: #397367;
+  background: #eef6ef;
+  border-radius: 6px;
 }
 
 .log-entry-button {
@@ -2189,9 +2191,9 @@ button:disabled {
   color: inherit;
   display: grid;
   gap: 4px;
-  grid-template-columns: auto auto minmax(0, 1fr);
+  grid-template-columns: auto minmax(42px, auto) minmax(0, 1fr);
   min-height: 0;
-  padding: 3px 4px;
+  padding: 5px 6px;
   text-align: left;
   width: 100%;
 }
@@ -2278,10 +2280,10 @@ button:disabled {
   border-left-width: 4px;
   border-radius: 6px;
   display: grid;
-  gap: 4px;
-  max-height: 220px;
+  gap: 8px;
+  max-height: min(38vh, 340px);
   overflow: auto;
-  padding: 6px 7px;
+  padding: 8px;
 }
 
 .log-detail strong {
@@ -2313,8 +2315,8 @@ button:disabled {
   color: #24312d;
   font: inherit;
   line-height: 1.4;
-  min-height: 72px;
-  padding: 6px;
+  min-height: 116px;
+  padding: 8px;
   resize: vertical;
   width: 100%;
 }
@@ -4132,7 +4134,9 @@ button:disabled {
 }
 
 .cpu-decision-main,
-.cpu-decision-rejected {
+.cpu-decision-rejected,
+.cpu-decision-evaluation,
+.cpu-decision-alternatives {
   color: #3f4946;
   font-size: 13px;
   line-height: 1.35;
@@ -4141,6 +4145,21 @@ button:disabled {
 
 .cpu-decision-rejected {
   color: #7a5b1d;
+  grid-column: 3;
+}
+
+.cpu-decision-evaluation {
+  background: #eef4f9;
+  border: 1px solid #c8d8e8;
+  border-radius: 6px;
+  color: #29445a;
+  font-weight: 800;
+  grid-column: 3;
+  padding: 4px 6px;
+}
+
+.cpu-decision-alternatives {
+  color: #5d4b16;
   grid-column: 3;
 }
 
@@ -4532,7 +4551,7 @@ button:disabled {
   }
 
   .log-panel.open {
-    min-height: 260px;
+    min-height: 360px;
   }
 
   .side-panel.context-only .side-context-panel {

@@ -148,8 +148,18 @@ export interface CpuAiOptions {
   tunings?: Partial<Record<PlayerId, CpuAiTuning>>;
 }
 
-export type CpuDecision =
-  | {
+export interface CpuDecisionTrace {
+  totalScore?: number;
+  baseScore?: number;
+  alternatives?: Array<{
+    label: string;
+    totalScore: number;
+    scoreGap: number;
+  }>;
+}
+
+export type CpuDecision = (
+  {
       type: "attack";
       action: CommandAction;
       reason: string;
@@ -192,7 +202,10 @@ export type CpuDecision =
       type: "end_turn";
       reason: string;
       score: number;
-    };
+    }
+) & {
+  trace?: CpuDecisionTrace;
+};
 
 export interface CpuDecisionEvaluation {
   decision: CpuDecision;

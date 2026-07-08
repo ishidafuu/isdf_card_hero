@@ -1003,6 +1003,10 @@ function withMasterDamagePlanReason(
   return {
     ...decision,
     reason: `${prefix}${masterDamagePlanDecisionReasonSuffix(decision)}`,
+    trace: {
+      ...decision.trace,
+      baseScore: decision.score,
+    },
   } as CpuDecision;
 }
 
@@ -3423,6 +3427,19 @@ function withTerminalPlanReason(decision: CpuDecision, selection: TerminalPlanSe
   return {
     ...decision,
     reason: `${decision.reason} / ターンプラン探索: 返し込み最終盤面${scoreText}点${runnerUpText}${rolloutText}`,
+    trace: {
+      ...decision.trace,
+      totalScore: selection.candidate.totalScore,
+      baseScore: decision.score,
+      alternatives: selection.runnerUpScore === undefined ? decision.trace?.alternatives : [
+        ...(decision.trace?.alternatives ?? []),
+        {
+          label: "ターンプラン次点",
+          totalScore: selection.runnerUpScore,
+          scoreGap: Math.max(0, selection.plannerScore - selection.runnerUpScore),
+        },
+      ],
+    },
   } as CpuDecision;
 }
 
@@ -7749,7 +7766,7 @@ function applyCpuDecisionForPlanning(state: GameState, decision: CpuDecision): G
 function appendDecisionReasonLog(state: GameState, decision: CpuDecision): GameState {
   const next = structuredClone(state) as GameState;
   const actor = next.currentPlayer === "cpu" ? "CPU" : "プレイヤーAI";
-  appendLog(next, `${actor}判断: ${decision.reason}`);
+  appendLog(next, `${actor}判断: ${decision.reason}${formatDecisionTraceLog(decision)}`);
   if (decision.reason.includes("ターンプラン探索") && decision.reason.includes("rollout")) {
     next.turnAiRolloutDecisionHistory = [
       ...(next.turnAiRolloutDecisionHistory ?? []),
@@ -7757,6 +7774,23 @@ function appendDecisionReasonLog(state: GameState, decision: CpuDecision): GameS
     ];
   }
   return next;
+}
+
+function formatDecisionTraceLog(decision: CpuDecision): string {
+  const trace = decision.trace;
+  const selectedScore = Math.round(trace?.totalScore ?? decision.score);
+  const baseScore = Math.round(trace?.baseScore ?? decision.score);
+  const scoreText = trace?.totalScore === undefined || selectedScore === baseScore
+    ? `選択${selectedScore}点`
+    : `選択${selectedScore}点/単手${baseScore}点`;
+  const alternatives = trace?.alternatives?.length
+    ? ` / 見送り候補: ${trace.alternatives
+        .slice(0, 2)
+        .map((candidate) =>
+          `${candidate.label}${Math.round(candidate.totalScore)}点(${Math.max(0, Math.round(candidate.scoreGap))}点差)`)
+        .join("、")}`
+    : "";
+  return ` / 評価: ${scoreText}${alternatives}`;
 }
 
 export function evaluateState(
@@ -9969,7 +10003,14 @@ function attachDecisionTrace(
     .sort((a, b) => b.totalScore - a.totalScore || a.index - b.index)
     .slice(0, 2);
   if (rejected.length === 0) {
-    return selected.decision;
+    return {
+      ...selected.decision,
+      trace: {
+        ...selected.decision.trace,
+        totalScore: selected.totalScore,
+        baseScore: selected.decision.score,
+      },
+    } as CpuDecision;
   }
 
   const rejectedText = rejected
@@ -9978,6 +10019,16 @@ function attachDecisionTrace(
   return {
     ...selected.decision,
     reason: `${selected.decision.reason} / 見送り: ${rejectedText}`,
+    trace: {
+      ...selected.decision.trace,
+      totalScore: selected.totalScore,
+      baseScore: selected.decision.score,
+      alternatives: rejected.map((candidate) => ({
+        label: decisionShortLabel(candidate.decision),
+        totalScore: candidate.totalScore,
+        scoreGap: selected.totalScore - candidate.totalScore,
+      })),
+    },
   } as CpuDecision;
 }
 
