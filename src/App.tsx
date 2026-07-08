@@ -145,6 +145,7 @@ const AUTO_STEP_DELAY_STORAGE_KEY = "card-hero:auto-step-delay-ms:v2";
 const BATTLE_HISTORY_STORAGE_KEY = "card-hero:battle-history:v1";
 const BATTLE_PRESETS_STORAGE_KEY = "card-hero:battle-presets:v1";
 const BATTLE_REPORT_LOCAL_ENDPOINT = "http://127.0.0.1:8787/battle-report";
+const REVIEW_HIDDEN_INFO_VISIBLE = true;
 const BATTLE_HISTORY_LIMIT = 20;
 const CARD_BACK_IMAGE_URL = "/game-icons/card-back.jpg";
 const FIELD_BASE_IMAGE_URLS: Record<PlayerId, Record<Row, string>> = {
@@ -932,11 +933,47 @@ function createBattleDebugReport(
     },
     deckSettings,
     stateSummary: summarizeGameState(game),
+    reviewHiddenInfo: createBattleReviewHiddenInfo(game),
     comments,
     log: game.log,
     eventLog: game.eventLog,
   };
   return JSON.stringify(report, null, 2);
+}
+
+function createBattleReviewHiddenInfo(game: GameState) {
+  return {
+    hands: {
+      player: createCardListSnapshot(game.players.player.hand),
+      cpu: createCardListSnapshot(game.players.cpu.hand),
+    },
+    deckTop: {
+      player: createCardListSnapshot(game.players.player.deck.slice(0, 10)),
+      cpu: createCardListSnapshot(game.players.cpu.deck.slice(0, 10)),
+    },
+    preparedSlots: Object.values(game.slots)
+      .filter((slot) => slot.monster?.status === "prepared")
+      .map((slot) => {
+        const monster = slot.monster!;
+        return {
+          slotKey: slot.key,
+          owner: monster.owner,
+          cardId: monster.cardId,
+          name: getCardName(monster.cardId),
+          hp: monster.hp,
+          level: monster.level,
+        };
+      }),
+  };
+}
+
+function createCardListSnapshot(cards: CardInstance[]) {
+  return cards.map((card, index) => ({
+    index: index + 1,
+    cardId: card.cardId,
+    name: getCardName(card.cardId),
+    type: cardTypeLabel(card.cardId),
+  }));
 }
 
 function getBattleLogCommentStamp(comment: string): BattleLogCommentStamp | undefined {
@@ -3301,6 +3338,13 @@ export function App() {
                   </button>
                   <button
                     type="button"
+                    className={isZoneView(zoneView, "cpu", "hand") ? "selected" : ""}
+                    onClick={() => toggleInfoZoneView({ kind: "playerZone", playerId: "cpu", zone: "hand" })}
+                  >
+                    <Icon icon="🃏" /> CPU Hand {game.players.cpu.hand.length}
+                  </button>
+                  <button
+                    type="button"
                     className={isZoneView(zoneView, "cpu", "discard") ? "selected" : ""}
                     onClick={() => toggleInfoZoneView({ kind: "playerZone", playerId: "cpu", zone: "discard" })}
                   >
@@ -3503,7 +3547,7 @@ export function App() {
             {renderBattleControlPanel()}
             <section className="hand-area">
             <div className="hand-heading">
-              <h2>Hand</h2>
+              <h2>{game.currentPlayer === "cpu" ? "CPU Hand" : "Hand"}</h2>
               <div className="hand-tools">
                 <StatusIconCount label="Cards" icon="🃏" amount={currentPlayer.hand.length} cap={MAX_VISIBLE_RESOURCE_ICONS} />
               </div>
@@ -6254,7 +6298,11 @@ function CardZonePanel({ game, view, onClose }: CardZonePanelProps) {
   const cards = game.players[view.playerId][view.zone];
   const title = `${playerLabel(view.playerId)} ${zoneLabel(view.zone)}`;
   const hideCardFaces = view.zone === "hand" && !canRevealHand(view.playerId);
-  const helpText = hideCardFaces ? "相手の手札は非公開です。" : zoneHelpText(view.zone);
+  const helpText = hideCardFaces
+    ? "相手の手札は非公開です。"
+    : view.zone === "hand" && view.playerId === "cpu" && REVIEW_HIDDEN_INFO_VISIBLE
+      ? "レビュー用にCPU手札を公開しています。"
+      : zoneHelpText(view.zone);
 
   return (
     <section className="zone-panel">
@@ -6815,11 +6863,11 @@ function BoardSlot({
   const slot = game.slots[slotKey];
   const monster = slot.monster;
   const prepared = monster?.status === "prepared";
-  const hidePreparedInfo = prepared && monster.owner !== "player";
+  const hidePreparedInfo = Boolean(monster && prepared && !canRevealPreparedMonster(monster));
   const label = slotLabel(slotKey);
   const visibleMonster = monster && !hidePreparedInfo ? monster : undefined;
-  const visibleMonsterCardId = visibleMonster && !prepared ? visibleMonster.cardId : undefined;
-  const showCardBack = Boolean(monster && prepared);
+  const visibleMonsterCardId = visibleMonster ? visibleMonster.cardId : undefined;
+  const showCardBack = Boolean(monster && prepared && hidePreparedInfo);
   const monsterStatusBadges = visibleMonster ? getBoardStatusBadges(visibleMonster) : [];
   const visibleStatusBadges = monsterStatusBadges.slice(0, 4);
   const hiddenStatusBadgeCount = monsterStatusBadges.length - visibleStatusBadges.length;
@@ -6860,6 +6908,7 @@ function BoardSlot({
           className="monster-card board-monster-summary"
           aria-label={`${getMonsterDisplayName(visibleMonster)} Lv${visibleMonster.level} HP ${visibleMonster.hp}${actionSpent ? " 行動済み" : ""}`}
         >
+          <span className="board-monster-name">{getMonsterDisplayName(visibleMonster)}</span>
           <span className="board-vitals">
             <span className="board-vital-chip"><Icon icon="✨" /> Lv{visibleMonster.level}</span>
             <span className="board-vital-chip"><Icon icon="❤️" /> HP {visibleMonster.hp}</span>
@@ -7159,7 +7208,7 @@ function MonsterCommands({
   if (!monster) {
     return null;
   }
-  const hidePreparedInfo = monster.status === "prepared" && monster.owner !== "player";
+  const hidePreparedInfo = monster.status === "prepared" && !canRevealPreparedMonster(monster);
   const detailStatusBadges = hidePreparedInfo
     ? []
     : [
@@ -7699,7 +7748,11 @@ function isZoneView(view: ZoneView | undefined, playerId: PlayerId, zone: Extrac
 }
 
 function canRevealHand(playerId: PlayerId): boolean {
-  return playerId === "player";
+  return REVIEW_HIDDEN_INFO_VISIBLE || playerId === "player";
+}
+
+function canRevealPreparedMonster(monster: MonsterState): boolean {
+  return REVIEW_HIDDEN_INFO_VISIBLE || monster.owner === "player";
 }
 
 function isInfoWorkspaceView(view: ZoneView | undefined): boolean {
