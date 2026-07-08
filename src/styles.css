@@ -2177,6 +2177,10 @@ button:disabled {
   padding-left: 6px;
 }
 
+.log-entry.commented {
+  border-left-color: #397367;
+}
+
 .log-entry-button {
   align-items: flex-start;
   background: transparent;
@@ -2208,6 +2212,12 @@ button:disabled {
   font-size: 11px;
   font-weight: 800;
   line-height: 1.3;
+}
+
+.log-comment-marker {
+  color: #397367;
+  display: inline-block;
+  margin-left: 3px;
 }
 
 .log-entry-text {
@@ -2269,7 +2279,7 @@ button:disabled {
   border-radius: 6px;
   display: grid;
   gap: 4px;
-  max-height: 58px;
+  max-height: 220px;
   overflow: auto;
   padding: 6px 7px;
 }
@@ -2283,6 +2293,30 @@ button:disabled {
   font-size: 12px;
   line-height: 1.35;
   overflow-wrap: anywhere;
+}
+
+.log-comment-editor {
+  display: grid;
+  gap: 4px;
+}
+
+.log-comment-editor span {
+  color: #56615d;
+  font-size: 11px;
+  font-weight: 800;
+}
+
+.log-comment-editor textarea {
+  background: rgba(255, 255, 255, 0.82);
+  border: 1px solid #cbd7ce;
+  border-radius: 6px;
+  color: #24312d;
+  font: inherit;
+  line-height: 1.4;
+  min-height: 72px;
+  padding: 6px;
+  resize: vertical;
+  width: 100%;
 }
 
 .latest-event {

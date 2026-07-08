@@ -881,7 +881,23 @@ function createBattleResultKey(game: GameState, settings: BattleSettings): strin
   ].join("|");
 }
 
-function createBattleDebugReport(game: GameState, settings: BattleSettings, deckSettings: DeckSettings, sourceUrl = ""): string {
+function createBattleDebugReport(
+  game: GameState,
+  settings: BattleSettings,
+  deckSettings: DeckSettings,
+  logComments: Record<number, string>,
+  sourceUrl = "",
+): string {
+  const comments = Object.entries(logComments)
+    .map(([indexText, comment]) => {
+      const index = Number(indexText);
+      return {
+        logIndex: index + 1,
+        entry: game.log[index] ?? "",
+        comment: comment.trim(),
+      };
+    })
+    .filter((entry) => entry.comment && entry.entry);
   const report = {
     generatedAt: new Date().toISOString(),
     sourceUrl,
@@ -894,6 +910,7 @@ function createBattleDebugReport(game: GameState, settings: BattleSettings, deck
     },
     deckSettings,
     stateSummary: summarizeGameState(game),
+    comments,
     log: game.log,
     eventLog: game.eventLog,
   };
@@ -1104,6 +1121,7 @@ export function App() {
   const [infoToolsOpen, setInfoToolsOpen] = useState(false);
   const [logFilter, setLogFilter] = useState<LogFilter>("all");
   const [selectedLogIndex, setSelectedLogIndex] = useState<number | undefined>();
+  const [battleLogComments, setBattleLogComments] = useState<Record<number, string>>({});
   const [battleReportCopied, setBattleReportCopied] = useState(false);
   const [seEnabled, setSeEnabled] = useState(() => loadBooleanSetting(SE_ENABLED_STORAGE_KEY, true));
   const [seVolume, setSeVolume] = useState(() => loadNumberSetting(SE_VOLUME_STORAGE_KEY, 0.55, 0, 1));
@@ -1252,6 +1270,11 @@ export function App() {
     [game.log, logFilter],
   );
   const selectedLogEntry = selectedLogIndex !== undefined ? game.log[selectedLogIndex] : undefined;
+  const selectedLogComment = selectedLogIndex !== undefined ? battleLogComments[selectedLogIndex] ?? "" : "";
+  const battleLogCommentCount = useMemo(
+    () => Object.values(battleLogComments).filter((comment) => comment.trim()).length,
+    [battleLogComments],
+  );
   const latestSpectatorAttention = useMemo(() => findLatestSpectatorAttention(game.log), [game.log]);
   const effectiveAutoStepDelayMs =
     game.currentPlayer === "cpu" && !cpuVsCpu
@@ -1999,6 +2022,7 @@ export function App() {
     setManualUndoStack([]);
     setSelection(undefined);
     setPendingDropAction(undefined);
+    setBattleLogComments({});
     clearHandLimitDiscardMode();
     setZoneView(undefined);
     setInfoToolsOpen(false);
@@ -2126,7 +2150,7 @@ export function App() {
     try {
       const sourceUrl = typeof window === "undefined" ? "" : window.location.href;
       await navigator.clipboard.writeText(
-        createBattleDebugReport(game, activeBattleSettingsRef.current, activeDeckSettingsRef.current, sourceUrl),
+        createBattleDebugReport(game, activeBattleSettingsRef.current, activeDeckSettingsRef.current, battleLogComments, sourceUrl),
       );
       setBattleReportCopied(true);
       setError("");
@@ -2134,6 +2158,18 @@ export function App() {
     } catch {
       setError("クリップボードへコピーできませんでした");
     }
+  }
+
+  function handleBattleLogCommentChange(index: number, value: string) {
+    setBattleLogComments((previous) => {
+      const next = { ...previous };
+      if (value.trim()) {
+        next[index] = value;
+      } else {
+        delete next[index];
+      }
+      return next;
+    });
   }
 
   function handleBattleFirstPlayerChange(value: string) {
@@ -3402,7 +3438,7 @@ export function App() {
               <div className="log-heading">
                 <div>
                   <h2><Icon icon="📜" /> Battle Log</h2>
-                  <span>{`${visibleLogEntries.length}/${game.log.length}`}</span>
+                  <span>{`${visibleLogEntries.length}/${game.log.length}${battleLogCommentCount > 0 ? ` / Comments ${battleLogCommentCount}` : ""}`}</span>
                 </div>
                 <button type="button" onClick={handleCopyBattleReport}>
                   <Icon icon="📋" /> {battleReportCopied ? "Copied" : "Copy Report"}
@@ -3423,14 +3459,14 @@ export function App() {
               </div>
               <ol ref={logListRef}>
                 {visibleLogEntries.map(({ entry, index }) => (
-                  <li className={`log-entry ${logTone(entry)}`} key={`${entry}_${index}`}>
+                  <li className={`log-entry ${logTone(entry)} ${battleLogComments[index]?.trim() ? "commented" : ""}`} key={`${entry}_${index}`}>
                     <button
                       type="button"
                       className={`log-entry-button ${selectedLogIndex === index ? "selected" : ""}`}
                       onClick={() => setSelectedLogIndex(selectedLogIndex === index ? undefined : index)}
                     >
                       <span className="log-entry-kind"><Icon icon={logIcon(entry)} /></span>
-                      <span className="log-entry-index">#{index + 1}</span>
+                      <span className="log-entry-index">#{index + 1}{battleLogComments[index]?.trim() ? <span className="log-comment-marker">✎</span> : null}</span>
                       <LogEventContent entry={entry} />
                     </button>
                   </li>
@@ -3440,6 +3476,14 @@ export function App() {
                 <div className={`log-detail ${logTone(selectedLogEntry)}`}>
                   <strong><Icon icon={logIcon(selectedLogEntry)} /> #{selectedLogIndex! + 1} {logCategoryLabel(selectedLogEntry)}</strong>
                   <LogEventContent entry={selectedLogEntry} />
+                  <label className="log-comment-editor">
+                    <span><Icon icon="✎" /> Comment</span>
+                    <textarea
+                      value={selectedLogComment}
+                      onChange={(event) => handleBattleLogCommentChange(selectedLogIndex!, event.target.value)}
+                      rows={3}
+                    />
+                  </label>
                 </div>
               )}
             </section>
