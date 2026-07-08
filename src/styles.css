@@ -2191,6 +2191,21 @@ button:disabled {
   border-radius: 6px;
 }
 
+.log-entry.comment-stamp-good {
+  border-left-color: #2f7d58;
+  background: #edf8f0;
+}
+
+.log-entry.comment-stamp-bad {
+  border-left-color: #b9534e;
+  background: #fbefee;
+}
+
+.log-entry.comment-stamp-question {
+  border-left-color: #4d6f9f;
+  background: #edf3fb;
+}
+
 .log-entry-button {
   align-items: flex-start;
   background: transparent;
@@ -2228,6 +2243,18 @@ button:disabled {
   color: #397367;
   display: inline-block;
   margin-left: 3px;
+}
+
+.comment-stamp-good .log-comment-marker {
+  color: #2f7d58;
+}
+
+.comment-stamp-bad .log-comment-marker {
+  color: #b9534e;
+}
+
+.comment-stamp-question .log-comment-marker {
+  color: #4d6f9f;
 }
 
 .log-entry-text {
@@ -2303,6 +2330,23 @@ button:disabled {
   font-size: 12px;
   line-height: 1.35;
   overflow-wrap: anywhere;
+}
+
+.log-comment-stamp-row {
+  display: grid;
+  gap: 5px;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.log-comment-stamp-row button {
+  font-size: 11px;
+  min-height: 28px;
+  padding: 4px 6px;
+}
+
+.log-comment-stamp-row button.selected {
+  border-color: #397367;
+  background: #e7f1ea;
 }
 
 .log-comment-editor {

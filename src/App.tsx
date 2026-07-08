@@ -202,6 +202,21 @@ type CatalogCategoryFilter = "all" | "front" | "back" | "magic";
 type CatalogSortKey = "source" | "evaluation" | "proBlack" | "proWhite" | "name" | "offense" | "defense" | "synergy" | "hp" | "cost";
 type DeckPresetSortKey = "source" | "battle" | "winRate" | "stability" | "speed" | "vsBlack" | "vsWhite";
 type BattleReportSaveStatus = "idle" | "saving" | "saved" | "error";
+type BattleLogCommentStamp = "good" | "bad" | "question";
+
+interface BattleLogCommentStampDef {
+  id: BattleLogCommentStamp;
+  token: string;
+  label: string;
+  icon: string;
+  title: string;
+}
+
+const BATTLE_LOG_COMMENT_STAMPS: BattleLogCommentStampDef[] = [
+  { id: "good", token: "GOOD:", label: "Good", icon: "✓", title: "よい手として記録" },
+  { id: "bad", token: "BAD:", label: "Bad", icon: "!", title: "悪手として記録" },
+  { id: "question", token: "QUESTION:", label: "Question", icon: "?", title: "判断保留として記録" },
+];
 
 interface BattleSettings {
   seed: number;
@@ -895,9 +910,11 @@ function createBattleDebugReport(
   const comments = Object.entries(logComments)
     .map(([indexText, comment]) => {
       const index = Number(indexText);
+      const stamp = getBattleLogCommentStamp(comment);
       return {
         logIndex: index + 1,
         entry: game.log[index] ?? "",
+        stamp,
         comment: comment.trim(),
       };
     })
@@ -920,6 +937,33 @@ function createBattleDebugReport(
     eventLog: game.eventLog,
   };
   return JSON.stringify(report, null, 2);
+}
+
+function getBattleLogCommentStamp(comment: string): BattleLogCommentStamp | undefined {
+  const normalized = comment.trimStart().toUpperCase();
+  return BATTLE_LOG_COMMENT_STAMPS.find((stamp) => normalized.startsWith(stamp.token))?.id;
+}
+
+function getBattleLogCommentStampDef(stampId: BattleLogCommentStamp | undefined): BattleLogCommentStampDef | undefined {
+  return BATTLE_LOG_COMMENT_STAMPS.find((stamp) => stamp.id === stampId);
+}
+
+function stripBattleLogCommentStamp(comment: string): string {
+  const trimmed = comment.trimStart();
+  const stamp = BATTLE_LOG_COMMENT_STAMPS.find((candidate) => trimmed.toUpperCase().startsWith(candidate.token));
+  if (!stamp) {
+    return comment;
+  }
+  return trimmed.slice(stamp.token.length).trimStart();
+}
+
+function applyBattleLogCommentStamp(comment: string, stampId: BattleLogCommentStamp): string {
+  const stamp = getBattleLogCommentStampDef(stampId);
+  const body = stripBattleLogCommentStamp(comment);
+  if (!stamp) {
+    return comment;
+  }
+  return body ? `${stamp.token} ${body}` : `${stamp.token} `;
 }
 
 function createBattleReportSessionId(): string {
@@ -2250,6 +2294,21 @@ export function App() {
     });
   }
 
+  function handleBattleLogCommentStamp(index: number, stampId: BattleLogCommentStamp) {
+    setBattleLogComments((previous) => {
+      const current = previous[index] ?? "";
+      const currentStamp = getBattleLogCommentStamp(current);
+      const nextComment = currentStamp === stampId ? stripBattleLogCommentStamp(current) : applyBattleLogCommentStamp(current, stampId);
+      const next = { ...previous };
+      if (nextComment.trim()) {
+        next[index] = nextComment;
+      } else {
+        delete next[index];
+      }
+      return next;
+    });
+  }
+
   function handleBattleFirstPlayerChange(value: string) {
     if (value !== "player" && value !== "cpu") {
       return;
@@ -3546,24 +3605,48 @@ export function App() {
                 ))}
               </div>
               <ol ref={logListRef}>
-                {visibleLogEntries.map(({ entry, index }) => (
-                  <li className={`log-entry ${logTone(entry)} ${battleLogComments[index]?.trim() ? "commented" : ""}`} key={`${entry}_${index}`}>
-                    <button
-                      type="button"
-                      className={`log-entry-button ${selectedLogIndex === index ? "selected" : ""}`}
-                      onClick={() => setSelectedLogIndex(selectedLogIndex === index ? undefined : index)}
+                {visibleLogEntries.map(({ entry, index }) => {
+                  const comment = battleLogComments[index] ?? "";
+                  const commentStamp = getBattleLogCommentStamp(comment);
+                  const commentStampDef = getBattleLogCommentStampDef(commentStamp);
+                  return (
+                    <li
+                      className={`log-entry ${logTone(entry)} ${comment.trim() ? "commented" : ""} ${commentStamp ? `comment-stamp-${commentStamp}` : ""}`}
+                      key={`${entry}_${index}`}
                     >
-                      <span className="log-entry-kind"><Icon icon={logIcon(entry)} /></span>
-                      <span className="log-entry-index">#{index + 1}{battleLogComments[index]?.trim() ? <span className="log-comment-marker">✎</span> : null}</span>
-                      <LogEventContent entry={entry} />
-                    </button>
-                  </li>
-                ))}
+                      <button
+                        type="button"
+                        className={`log-entry-button ${selectedLogIndex === index ? "selected" : ""}`}
+                        onClick={() => setSelectedLogIndex(selectedLogIndex === index ? undefined : index)}
+                      >
+                        <span className="log-entry-kind"><Icon icon={logIcon(entry)} /></span>
+                        <span className="log-entry-index">
+                          #{index + 1}
+                          {comment.trim() ? <span className="log-comment-marker">{commentStampDef?.icon ?? "✎"}</span> : null}
+                        </span>
+                        <LogEventContent entry={entry} />
+                      </button>
+                    </li>
+                  );
+                })}
               </ol>
               {selectedLogEntry && (
                 <div className={`log-detail ${logTone(selectedLogEntry)}`}>
                   <strong><Icon icon={logIcon(selectedLogEntry)} /> #{selectedLogIndex! + 1} {logCategoryLabel(selectedLogEntry)}</strong>
                   <LogEventContent entry={selectedLogEntry} />
+                  <div className="log-comment-stamp-row" aria-label="comment stamps">
+                    {BATTLE_LOG_COMMENT_STAMPS.map((stamp) => (
+                      <button
+                        type="button"
+                        className={getBattleLogCommentStamp(selectedLogComment) === stamp.id ? "selected" : ""}
+                        title={stamp.title}
+                        onClick={() => handleBattleLogCommentStamp(selectedLogIndex!, stamp.id)}
+                        key={stamp.id}
+                      >
+                        <Icon icon={stamp.icon} /> {stamp.label}
+                      </button>
+                    ))}
+                  </div>
                   <label className="log-comment-editor">
                     <span><Icon icon="✎" /> Comment</span>
                     <textarea
