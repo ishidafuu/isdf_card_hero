@@ -8,6 +8,7 @@
     "build": "tsc -b && vite build",
     "preview": "vite preview",
     "test": "vitest run --environment jsdom",
+    "collect:battle-reports": "vite-node scripts/battle-report-inbox.ts",
     "benchmark:ai": "vite-node scripts/ai-benchmark.ts",
     "benchmark:deck-suite": "vite-node scripts/deck-suite-benchmark.ts",
     "score:deck-battles": "vite-node scripts/deck-battle-score.ts",

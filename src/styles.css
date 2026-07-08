@@ -2124,7 +2124,15 @@ button:disabled {
   font-weight: 800;
 }
 
-.log-heading button {
+.log-heading-actions {
+  display: flex;
+  flex: 0 0 auto;
+  flex-wrap: wrap;
+  gap: 6px;
+  justify-content: flex-end;
+}
+
+.log-heading-actions button {
   flex: 0 0 auto;
   min-height: 30px;
   padding: 4px 8px;

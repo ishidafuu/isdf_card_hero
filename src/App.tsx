@@ -131,6 +131,7 @@ const AUTO_STEP_DELAY_MIN_MS = 100;
 const AUTO_STEP_DELAY_MAX_MS = 4000;
 const AUTO_STEP_DELAY_STEP_MS = 50;
 const AUTO_STEP_DELAY_DEFAULT_MS = 1400;
+const BATTLE_REPORT_AUTOSAVE_DELAY_MS = 900;
 const AUTO_SPEED_PRESETS = [
   { label: "Watch", delayMs: 1800 },
   { label: "Normal", delayMs: 1400 },
@@ -143,6 +144,7 @@ const DEFAULT_BATTLE_SEED = 20260612;
 const AUTO_STEP_DELAY_STORAGE_KEY = "card-hero:auto-step-delay-ms:v2";
 const BATTLE_HISTORY_STORAGE_KEY = "card-hero:battle-history:v1";
 const BATTLE_PRESETS_STORAGE_KEY = "card-hero:battle-presets:v1";
+const BATTLE_REPORT_LOCAL_ENDPOINT = "http://127.0.0.1:8787/battle-report";
 const BATTLE_HISTORY_LIMIT = 20;
 const CARD_BACK_IMAGE_URL = "/game-icons/card-back.jpg";
 const FIELD_BASE_IMAGE_URLS: Record<PlayerId, Record<Row, string>> = {
@@ -199,6 +201,7 @@ type BoardAnchor =
 type CatalogCategoryFilter = "all" | "front" | "back" | "magic";
 type CatalogSortKey = "source" | "evaluation" | "proBlack" | "proWhite" | "name" | "offense" | "defense" | "synergy" | "hp" | "cost";
 type DeckPresetSortKey = "source" | "battle" | "winRate" | "stability" | "speed" | "vsBlack" | "vsWhite";
+type BattleReportSaveStatus = "idle" | "saving" | "saved" | "error";
 
 interface BattleSettings {
   seed: number;
@@ -886,6 +889,7 @@ function createBattleDebugReport(
   settings: BattleSettings,
   deckSettings: DeckSettings,
   logComments: Record<number, string>,
+  reportId: string,
   sourceUrl = "",
 ): string {
   const comments = Object.entries(logComments)
@@ -899,6 +903,7 @@ function createBattleDebugReport(
     })
     .filter((entry) => entry.comment && entry.entry);
   const report = {
+    reportId,
     generatedAt: new Date().toISOString(),
     sourceUrl,
     settings: {
@@ -915,6 +920,29 @@ function createBattleDebugReport(
     eventLog: game.eventLog,
   };
   return JSON.stringify(report, null, 2);
+}
+
+function createBattleReportSessionId(): string {
+  const timestamp = new Date().toISOString().replace(/[^a-zA-Z0-9_-]+/g, "-").replace(/^-+|-+$/g, "");
+  const random =
+    typeof crypto !== "undefined" && "randomUUID" in crypto
+      ? crypto.randomUUID().slice(0, 8)
+      : Math.random().toString(36).slice(2, 10);
+  return `battle-${timestamp}-${random}`;
+}
+
+function battleReportSaveLabel(status: BattleReportSaveStatus): string {
+  switch (status) {
+    case "saving":
+      return "Saving";
+    case "saved":
+      return "Saved";
+    case "error":
+      return "Save Failed";
+    case "idle":
+    default:
+      return "Save Local";
+  }
 }
 
 function loadBattleHistory(): BattleHistoryEntry[] {
@@ -1123,6 +1151,7 @@ export function App() {
   const [selectedLogIndex, setSelectedLogIndex] = useState<number | undefined>();
   const [battleLogComments, setBattleLogComments] = useState<Record<number, string>>({});
   const [battleReportCopied, setBattleReportCopied] = useState(false);
+  const [battleReportSaveStatus, setBattleReportSaveStatus] = useState<BattleReportSaveStatus>("idle");
   const [seEnabled, setSeEnabled] = useState(() => loadBooleanSetting(SE_ENABLED_STORAGE_KEY, true));
   const [seVolume, setSeVolume] = useState(() => loadNumberSetting(SE_VOLUME_STORAGE_KEY, 0.55, 0, 1));
   const [bgmEnabled, setBgmEnabled] = useState(() => loadBooleanSetting(BGM_ENABLED_STORAGE_KEY, true));
@@ -1145,6 +1174,7 @@ export function App() {
   const visualEffectIdRef = useRef(0);
   const recordedResultKeyRef = useRef<string | undefined>(undefined);
   const logListRef = useRef<HTMLOListElement | null>(null);
+  const battleReportSessionIdRef = useRef(createBattleReportSessionId());
   const activeBattleSettingsRef = useRef<BattleSettings>(cloneBattleSettings(battleSettings));
   const activeDeckSettingsRef = useRef<DeckSettings>(cloneDeckSettings(deckSettings));
   const pointerDragRef = useRef<{
@@ -1401,6 +1431,17 @@ export function App() {
       setHandLimitDiscardSelection([]);
     }
   }, [autoPlayEnabled, cpuVsCpu, game, handLimitDiscardMode]);
+
+  useEffect(() => {
+    if (battleLogCommentCount <= 0) {
+      return undefined;
+    }
+    const timer = window.setTimeout(() => {
+      void saveBattleReportLocal();
+    }, BATTLE_REPORT_AUTOSAVE_DELAY_MS);
+
+    return () => window.clearTimeout(timer);
+  }, [battleLogCommentCount, battleLogComments, game.eventLog?.length, game.log.length, game.turnNumber, game.winner]);
 
   useEffect(() => {
     const previous = previousGameRef.current;
@@ -2015,6 +2056,7 @@ export function App() {
     }
 
     const next = createGameFromSettings(settings, decks);
+    battleReportSessionIdRef.current = createBattleReportSessionId();
     activeBattleSettingsRef.current = cloneBattleSettings(settings);
     activeDeckSettingsRef.current = cloneDeckSettings(decks);
     previousGameRef.current = next;
@@ -2023,6 +2065,7 @@ export function App() {
     setSelection(undefined);
     setPendingDropAction(undefined);
     setBattleLogComments({});
+    setBattleReportSaveStatus("idle");
     clearHandLimitDiscardMode();
     setZoneView(undefined);
     setInfoToolsOpen(false);
@@ -2142,6 +2185,17 @@ export function App() {
     setBattleSettings({ ...battleSettings, seedInput: value, seed: parsed });
   }
 
+  function createCurrentBattleDebugReport(sourceUrl = ""): string {
+    return createBattleDebugReport(
+      game,
+      activeBattleSettingsRef.current,
+      activeDeckSettingsRef.current,
+      battleLogComments,
+      battleReportSessionIdRef.current,
+      sourceUrl,
+    );
+  }
+
   async function handleCopyBattleReport() {
     if (typeof navigator === "undefined" || !navigator.clipboard) {
       setError("クリップボードへコピーできませんでした");
@@ -2149,15 +2203,39 @@ export function App() {
     }
     try {
       const sourceUrl = typeof window === "undefined" ? "" : window.location.href;
-      await navigator.clipboard.writeText(
-        createBattleDebugReport(game, activeBattleSettingsRef.current, activeDeckSettingsRef.current, battleLogComments, sourceUrl),
-      );
+      await navigator.clipboard.writeText(createCurrentBattleDebugReport(sourceUrl));
       setBattleReportCopied(true);
       setError("");
       window.setTimeout(() => setBattleReportCopied(false), 1400);
     } catch {
       setError("クリップボードへコピーできませんでした");
     }
+  }
+
+  async function saveBattleReportLocal() {
+    setBattleReportSaveStatus("saving");
+    try {
+      const sourceUrl = typeof window === "undefined" ? "" : window.location.href;
+      const response = await fetch(BATTLE_REPORT_LOCAL_ENDPOINT, {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: createCurrentBattleDebugReport(sourceUrl),
+      });
+      if (!response.ok) {
+        throw new Error(`status ${response.status}`);
+      }
+      setBattleReportSaveStatus("saved");
+      setError("");
+      window.setTimeout(() => setBattleReportSaveStatus("idle"), 1400);
+    } catch {
+      setBattleReportSaveStatus("error");
+      setError("ローカル保存サーバーに接続できません。npm run collect:battle-reports を起動してください");
+      window.setTimeout(() => setBattleReportSaveStatus("idle"), 2200);
+    }
+  }
+
+  function handleSaveBattleReportLocal() {
+    void saveBattleReportLocal();
   }
 
   function handleBattleLogCommentChange(index: number, value: string) {
@@ -3440,9 +3518,19 @@ export function App() {
                   <h2><Icon icon="📜" /> Battle Log</h2>
                   <span>{`${visibleLogEntries.length}/${game.log.length}${battleLogCommentCount > 0 ? ` / Comments ${battleLogCommentCount}` : ""}`}</span>
                 </div>
-                <button type="button" onClick={handleCopyBattleReport}>
-                  <Icon icon="📋" /> {battleReportCopied ? "Copied" : "Copy Report"}
-                </button>
+                <div className="log-heading-actions">
+                  <button
+                    type="button"
+                    data-testid="battle-report-save-local"
+                    onClick={handleSaveBattleReportLocal}
+                    disabled={battleReportSaveStatus === "saving"}
+                  >
+                    <Icon icon="💾" /> {battleReportSaveLabel(battleReportSaveStatus)}
+                  </button>
+                  <button type="button" onClick={handleCopyBattleReport}>
+                    <Icon icon="📋" /> {battleReportCopied ? "Copied" : "Copy Report"}
+                  </button>
+                </div>
               </div>
               <LatestEventSummary log={game.log} />
               <div className="log-filter-row" aria-label="log filters">
@@ -3479,6 +3567,7 @@ export function App() {
                   <label className="log-comment-editor">
                     <span><Icon icon="✎" /> Comment</span>
                     <textarea
+                      data-testid="battle-log-comment-input"
                       value={selectedLogComment}
                       onChange={(event) => handleBattleLogCommentChange(selectedLogIndex!, event.target.value)}
                       placeholder="例: 倒せない攻撃で反撃を許している / 盤面処理より顔を殴っている"
