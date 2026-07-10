@@ -6918,6 +6918,7 @@ function BoardSlot({
   const hidePreparedInfo = Boolean(monster && prepared && !canRevealPreparedMonster(monster));
   const label = slotLabel(slotKey);
   const visibleMonster = monster && !hidePreparedInfo ? monster : undefined;
+  const revealedPrepared = Boolean(visibleMonster && prepared);
   const visibleMonsterCardId = visibleMonster ? visibleMonster.cardId : undefined;
   const showCardBack = Boolean(monster && prepared && hidePreparedInfo);
   const monsterStatusBadges = visibleMonster ? getBoardStatusBadges(visibleMonster) : [];
@@ -6937,6 +6938,7 @@ function BoardSlot({
         targetable ? "targetable" : "",
         targetRole ? `target-${targetRole}` : "",
         monster?.status === "prepared" ? "prepared" : "",
+        revealedPrepared ? "prepared-revealed" : "",
         actionSpent ? "action-spent" : "",
         effectKind ? `effect-active effect-${effectKind}` : "",
         damageFlash?.defeated ? "effect-defeated" : "",
@@ -6953,12 +6955,17 @@ function BoardSlot({
     >
       <FieldBaseArt slotKey={slotKey} cardId={visibleMonsterCardId} showCardBack={showCardBack} />
       <span className="slot-label">{label}</span>
+      {revealedPrepared && (
+        <span className="prepared-state-badge" title="伏せ状態" aria-label="伏せ状態">
+          <Icon icon="🂠" /> 伏せ
+        </span>
+      )}
       {targetRole && <span className="target-badge">{targetRoleLabel(targetRole)}</span>}
       {preview?.badge && <span className="target-preview-badge">{preview.badge}</span>}
       {visibleMonster ? (
         <span
           className="monster-card board-monster-summary"
-          aria-label={`${getMonsterDisplayName(visibleMonster)} Lv${visibleMonster.level} HP ${visibleMonster.hp}${actionSpent ? " 行動済み" : ""}`}
+          aria-label={`${getMonsterDisplayName(visibleMonster)} Lv${visibleMonster.level} HP ${visibleMonster.hp}${revealedPrepared ? " 伏せ" : ""}${actionSpent ? " 行動済み" : ""}`}
         >
           <span className="board-monster-name">{getMonsterDisplayName(visibleMonster)}</span>
           <span className="board-vitals">

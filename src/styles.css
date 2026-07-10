@@ -1014,6 +1014,42 @@ button:disabled {
   background: #f4f0db;
 }
 
+.board-slot.prepared-revealed {
+  border-color: #8b7440;
+  border-style: dashed;
+  box-shadow: inset 0 0 0 2px rgba(139, 116, 64, 0.18);
+}
+
+.board-slot.prepared-revealed .field-unit-icon {
+  filter: saturate(0.38) brightness(0.82);
+  opacity: 0.72;
+  outline: 2px dashed rgba(72, 58, 28, 0.82);
+  outline-offset: -4px;
+}
+
+.board-slot > .prepared-state-badge {
+  align-items: center;
+  background: #4a4027;
+  border: 1px solid #f3e4b3;
+  border-radius: 4px;
+  box-shadow: 0 3px 8px rgba(31, 35, 34, 0.22);
+  color: #fff7dc;
+  display: inline-flex;
+  font-size: 10px;
+  font-weight: 900;
+  gap: 3px;
+  line-height: 1;
+  padding: 3px 5px;
+  position: absolute;
+  right: 10px;
+  top: 24px;
+  z-index: 4;
+}
+
+.prepared-state-badge .ui-icon {
+  margin-right: 0;
+}
+
 .slot-label {
   color: #65716c;
   font-size: 12px;
