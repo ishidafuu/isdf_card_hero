@@ -124,6 +124,7 @@ export function createInitialGame(seed = Date.now(), options: CreateInitialGameO
     turnNumber: 0,
     randomSeed: seed >>> 0,
     log: initialLog,
+    logOffset: 0,
   };
   if (options.trackEventLog) {
     state.eventLog = [...initialLog];

@@ -83,6 +83,14 @@ import type { CardInstance, CardPool, CommandDef, GameState, MagicAction, MagicC
 import type { DeckValidationSummary } from "./game/cards";
 import { BGM_SOURCES, SE_SOURCES, type BgmId, type SeId } from "./audio";
 import {
+  getBattleLogComment,
+  getDisplayLogId,
+  listBattleLogComments,
+  pruneBattleLogCommentsForGame,
+  updateBattleLogComment,
+  type BattleLogComments,
+} from "./battleLogComments";
+import {
   isRandomResultLog,
   logCategoryLabel,
   logFilterIcon,
@@ -144,7 +152,8 @@ const DEFAULT_BATTLE_SEED = 20260612;
 const AUTO_STEP_DELAY_STORAGE_KEY = "card-hero:auto-step-delay-ms:v2";
 const BATTLE_HISTORY_STORAGE_KEY = "card-hero:battle-history:v1";
 const BATTLE_PRESETS_STORAGE_KEY = "card-hero:battle-presets:v1";
-const BATTLE_REPORT_LOCAL_ENDPOINT = "http://127.0.0.1:8787/battle-report";
+const BATTLE_REPORT_LOCAL_ENDPOINT =
+  import.meta.env.VITE_BATTLE_REPORT_LOCAL_ENDPOINT ?? "http://127.0.0.1:8787/battle-report";
 const REVIEW_HIDDEN_INFO_VISIBLE = true;
 const BATTLE_HISTORY_LIMIT = 20;
 const CARD_BACK_IMAGE_URL = "/game-icons/card-back.jpg";
@@ -904,19 +913,18 @@ function createBattleDebugReport(
   game: GameState,
   settings: BattleSettings,
   deckSettings: DeckSettings,
-  logComments: Record<number, string>,
+  logComments: BattleLogComments,
   reportId: string,
   sourceUrl = "",
 ): string {
-  const comments = Object.entries(logComments)
-    .map(([indexText, comment]) => {
-      const index = Number(indexText);
-      const stamp = getBattleLogCommentStamp(comment);
+  const comments = listBattleLogComments(logComments)
+    .map((record) => {
+      const stamp = getBattleLogCommentStamp(record.comment);
       return {
-        logIndex: index + 1,
-        entry: game.log[index] ?? "",
+        logIndex: record.logId + 1,
+        entry: record.entry,
         stamp,
-        comment: comment.trim(),
+        comment: record.comment.trim(),
       };
     })
     .filter((entry) => entry.comment && entry.entry);
@@ -1230,9 +1238,10 @@ export function App() {
   const [infoToolsOpen, setInfoToolsOpen] = useState(false);
   const [logFilter, setLogFilter] = useState<LogFilter>("all");
   const [selectedLogIndex, setSelectedLogIndex] = useState<number | undefined>();
-  const [battleLogComments, setBattleLogComments] = useState<Record<number, string>>({});
+  const [battleLogComments, setBattleLogComments] = useState<BattleLogComments>({});
   const [battleReportCopied, setBattleReportCopied] = useState(false);
   const [battleReportSaveStatus, setBattleReportSaveStatus] = useState<BattleReportSaveStatus>("idle");
+  const [battleReportSaveError, setBattleReportSaveError] = useState("");
   const [seEnabled, setSeEnabled] = useState(() => loadBooleanSetting(SE_ENABLED_STORAGE_KEY, true));
   const [seVolume, setSeVolume] = useState(() => loadNumberSetting(SE_VOLUME_STORAGE_KEY, 0.55, 0, 1));
   const [bgmEnabled, setBgmEnabled] = useState(() => loadBooleanSetting(BGM_ENABLED_STORAGE_KEY, true));
@@ -1256,6 +1265,9 @@ export function App() {
   const recordedResultKeyRef = useRef<string | undefined>(undefined);
   const logListRef = useRef<HTMLOListElement | null>(null);
   const battleReportSessionIdRef = useRef(createBattleReportSessionId());
+  const battleReportSaveQueueRef = useRef<Promise<void>>(Promise.resolve());
+  const battleReportSaveRequestIdRef = useRef(0);
+  const battleReportSaveStatusTimerRef = useRef<number | undefined>(undefined);
   const activeBattleSettingsRef = useRef<BattleSettings>(cloneBattleSettings(battleSettings));
   const activeDeckSettingsRef = useRef<DeckSettings>(cloneDeckSettings(deckSettings));
   const pointerDragRef = useRef<{
@@ -1381,9 +1393,11 @@ export function App() {
     [game.log, logFilter],
   );
   const selectedLogEntry = selectedLogIndex !== undefined ? game.log[selectedLogIndex] : undefined;
-  const selectedLogComment = selectedLogIndex !== undefined ? battleLogComments[selectedLogIndex] ?? "" : "";
+  const selectedLogComment = selectedLogIndex !== undefined
+    ? getBattleLogComment(battleLogComments, game, selectedLogIndex)
+    : "";
   const battleLogCommentCount = useMemo(
-    () => Object.values(battleLogComments).filter((comment) => comment.trim()).length,
+    () => Object.values(battleLogComments).filter((record) => record.comment.trim()).length,
     [battleLogComments],
   );
   const latestSpectatorAttention = useMemo(() => findLatestSpectatorAttention(game.log), [game.log]);
@@ -1523,6 +1537,12 @@ export function App() {
 
     return () => window.clearTimeout(timer);
   }, [battleLogCommentCount, battleLogComments, game.eventLog?.length, game.log.length, game.turnNumber, game.winner]);
+
+  useEffect(() => () => {
+    if (battleReportSaveStatusTimerRef.current !== undefined) {
+      window.clearTimeout(battleReportSaveStatusTimerRef.current);
+    }
+  }, []);
 
   useEffect(() => {
     const previous = previousGameRef.current;
@@ -1756,6 +1776,7 @@ export function App() {
     clearPointerDrag();
     setManualUndoStack((previous) => previous.slice(0, -1));
     setGame(previousGame);
+    setBattleLogComments((previous) => pruneBattleLogCommentsForGame(previous, previousGame));
     setSelection(undefined);
     setPendingDropAction(undefined);
     clearHandLimitDiscardMode();
@@ -2137,6 +2158,11 @@ export function App() {
     }
 
     const next = createGameFromSettings(settings, decks);
+    battleReportSaveRequestIdRef.current += 1;
+    if (battleReportSaveStatusTimerRef.current !== undefined) {
+      window.clearTimeout(battleReportSaveStatusTimerRef.current);
+      battleReportSaveStatusTimerRef.current = undefined;
+    }
     battleReportSessionIdRef.current = createBattleReportSessionId();
     activeBattleSettingsRef.current = cloneBattleSettings(settings);
     activeDeckSettingsRef.current = cloneDeckSettings(decks);
@@ -2145,8 +2171,10 @@ export function App() {
     setManualUndoStack([]);
     setSelection(undefined);
     setPendingDropAction(undefined);
+    setSelectedLogIndex(undefined);
     setBattleLogComments({});
     setBattleReportSaveStatus("idle");
+    setBattleReportSaveError("");
     clearHandLimitDiscardMode();
     setZoneView(undefined);
     setInfoToolsOpen(false);
@@ -2294,24 +2322,52 @@ export function App() {
   }
 
   async function saveBattleReportLocal() {
+    const requestId = battleReportSaveRequestIdRef.current + 1;
+    battleReportSaveRequestIdRef.current = requestId;
+    const sourceUrl = typeof window === "undefined" ? "" : window.location.href;
+    const body = createCurrentBattleDebugReport(sourceUrl);
     setBattleReportSaveStatus("saving");
-    try {
-      const sourceUrl = typeof window === "undefined" ? "" : window.location.href;
-      const response = await fetch(BATTLE_REPORT_LOCAL_ENDPOINT, {
-        method: "POST",
-        headers: { "content-type": "application/json" },
-        body: createCurrentBattleDebugReport(sourceUrl),
+    setBattleReportSaveError("");
+    if (battleReportSaveStatusTimerRef.current !== undefined) {
+      window.clearTimeout(battleReportSaveStatusTimerRef.current);
+      battleReportSaveStatusTimerRef.current = undefined;
+    }
+
+    const request = battleReportSaveQueueRef.current
+      .catch(() => undefined)
+      .then(async () => {
+        const response = await fetch(BATTLE_REPORT_LOCAL_ENDPOINT, {
+          method: "POST",
+          headers: { "content-type": "application/json" },
+          body,
+        });
+        if (!response.ok) {
+          throw new Error(`status ${response.status}`);
+        }
       });
-      if (!response.ok) {
-        throw new Error(`status ${response.status}`);
+    battleReportSaveQueueRef.current = request.then(() => undefined, () => undefined);
+
+    try {
+      await request;
+      if (battleReportSaveRequestIdRef.current !== requestId) {
+        return;
       }
       setBattleReportSaveStatus("saved");
-      setError("");
-      window.setTimeout(() => setBattleReportSaveStatus("idle"), 1400);
+      setBattleReportSaveError("");
+      battleReportSaveStatusTimerRef.current = window.setTimeout(() => {
+        setBattleReportSaveStatus("idle");
+        battleReportSaveStatusTimerRef.current = undefined;
+      }, 1400);
     } catch {
+      if (battleReportSaveRequestIdRef.current !== requestId) {
+        return;
+      }
       setBattleReportSaveStatus("error");
-      setError("ローカル保存サーバーに接続できません。npm run collect:battle-reports を起動してください");
-      window.setTimeout(() => setBattleReportSaveStatus("idle"), 2200);
+      setBattleReportSaveError("ローカル保存サーバーに接続できません。npm run collect:battle-reports を起動してください");
+      battleReportSaveStatusTimerRef.current = window.setTimeout(() => {
+        setBattleReportSaveStatus("idle");
+        battleReportSaveStatusTimerRef.current = undefined;
+      }, 2200);
     }
   }
 
@@ -2320,29 +2376,15 @@ export function App() {
   }
 
   function handleBattleLogCommentChange(index: number, value: string) {
-    setBattleLogComments((previous) => {
-      const next = { ...previous };
-      if (value.trim()) {
-        next[index] = value;
-      } else {
-        delete next[index];
-      }
-      return next;
-    });
+    setBattleLogComments((previous) => updateBattleLogComment(previous, game, index, value));
   }
 
   function handleBattleLogCommentStamp(index: number, stampId: BattleLogCommentStamp) {
     setBattleLogComments((previous) => {
-      const current = previous[index] ?? "";
+      const current = getBattleLogComment(previous, game, index);
       const currentStamp = getBattleLogCommentStamp(current);
       const nextComment = currentStamp === stampId ? stripBattleLogCommentStamp(current) : applyBattleLogCommentStamp(current, stampId);
-      const next = { ...previous };
-      if (nextComment.trim()) {
-        next[index] = nextComment;
-      } else {
-        delete next[index];
-      }
-      return next;
+      return updateBattleLogComment(previous, game, index, nextComment);
     });
   }
 
@@ -3620,6 +3662,11 @@ export function App() {
                 <div>
                   <h2><Icon icon="📜" /> Battle Log</h2>
                   <span>{`${visibleLogEntries.length}/${game.log.length}${battleLogCommentCount > 0 ? ` / Comments ${battleLogCommentCount}` : ""}`}</span>
+                  {battleReportSaveError && (
+                    <span className="battle-report-save-error" role="status" data-testid="battle-report-save-error">
+                      {battleReportSaveError}
+                    </span>
+                  )}
                 </div>
                 <div className="log-heading-actions">
                   <button
@@ -3650,13 +3697,14 @@ export function App() {
               </div>
               <ol ref={logListRef}>
                 {visibleLogEntries.map(({ entry, index }) => {
-                  const comment = battleLogComments[index] ?? "";
+                  const logId = getDisplayLogId(game, index);
+                  const comment = getBattleLogComment(battleLogComments, game, index);
                   const commentStamp = getBattleLogCommentStamp(comment);
                   const commentStampDef = getBattleLogCommentStampDef(commentStamp);
                   return (
                     <li
                       className={`log-entry ${logTone(entry)} ${comment.trim() ? "commented" : ""} ${commentStamp ? `comment-stamp-${commentStamp}` : ""}`}
-                      key={`${entry}_${index}`}
+                      key={logId}
                     >
                       <button
                         type="button"
@@ -3665,7 +3713,7 @@ export function App() {
                       >
                         <span className="log-entry-kind"><Icon icon={logIcon(entry)} /></span>
                         <span className="log-entry-index">
-                          #{index + 1}
+                          #{logId + 1}
                           {comment.trim() ? <span className="log-comment-marker">{commentStampDef?.icon ?? "✎"}</span> : null}
                         </span>
                         <LogEventContent entry={entry} />
@@ -3676,7 +3724,7 @@ export function App() {
               </ol>
               {selectedLogEntry && (
                 <div className={`log-detail ${logTone(selectedLogEntry)}`}>
-                  <strong><Icon icon={logIcon(selectedLogEntry)} /> #{selectedLogIndex! + 1} {logCategoryLabel(selectedLogEntry)}</strong>
+                  <strong><Icon icon={logIcon(selectedLogEntry)} /> #{getDisplayLogId(game, selectedLogIndex!) + 1} {logCategoryLabel(selectedLogEntry)}</strong>
                   <LogEventContent entry={selectedLogEntry} />
                   <div className="log-comment-stamp-row" aria-label="comment stamps">
                     {BATTLE_LOG_COMMENT_STAMPS.map((stamp) => (
@@ -4660,7 +4708,7 @@ function previewBadgeForTarget(previous: GameState, next: GameState, target: Tar
 }
 
 function BattleResultSummary({ game }: { game: GameState }) {
-  const deckout = game.log.some((entry) => entry.includes("山札切れ"));
+  const deckout = !!game.deckoutOccurred || game.log.some((entry) => entry.includes("山札切れ"));
   const longGame = game.turnNumber >= 25;
   return (
     <div className="battle-result-summary">

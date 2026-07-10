@@ -200,6 +200,7 @@ export interface GameState {
   turnNumber: number;
   randomSeed: number;
   log: string[];
+  logOffset?: number;
   eventLog?: string[];
   deckoutOccurred?: boolean;
   winner?: PlayerId;

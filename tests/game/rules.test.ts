@@ -328,6 +328,7 @@ describe("battle prototype rules", () => {
     }
 
     expect(game.log).toHaveLength(120);
+    expect(game.logOffset).toBe(initialEventLogLength + 10);
     expect(game.log[0]).toBe("event 10");
     expect(game.eventLog).toHaveLength(initialEventLogLength + 130);
     expect(game.eventLog?.[0]).toBe("バトル開始");

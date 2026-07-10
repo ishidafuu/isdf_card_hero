@@ -23,6 +23,14 @@
 
 同じ対戦中は同じJSONへ上書き保存します。`Save Local` は明示保存用、`Copy Report` は従来どおり手動共有用として残しています。
 
+受信サーバーは既定で `localhost` / `127.0.0.1` / `::1` からの保存だけを許可します。公開URLからローカル受信する場合は、起動時に許可するOriginを明示してください。
+
+```sh
+BATTLE_REPORT_ALLOWED_ORIGINS=https://isdf-card-hero.vercel.app npm run collect:battle-reports
+```
+
+受信ポートを変える場合は、ゲーム側の `VITE_BATTLE_REPORT_LOCAL_ENDPOINT` も同じポートへ合わせます。
+
 スタンプを押すとコメント先頭に `GOOD:` / `BAD:` / `QUESTION:` が入り、JSONのコメント項目にも `stamp` が出力されます。
 
 レビュー用に、画面上ではCPU手札と伏せカードの中身を表示します。保存JSONにも `reviewHiddenInfo` として両者の手札、デッキ上部、伏せスロットを出力します。

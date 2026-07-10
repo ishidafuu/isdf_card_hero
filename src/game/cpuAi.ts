@@ -552,7 +552,7 @@ export function chooseCpuDecision(state: GameState, options: CpuAiOptions = {}):
     evaluated,
   );
   if (shieldHoldEndTurnDecision) {
-    return shieldHoldEndTurnDecision;
+    return finalizeDecisionTrace(shieldHoldEndTurnDecision, evaluated);
   }
 
   const midgameOverprotectShieldHoldEndTurnDecision =
@@ -563,7 +563,7 @@ export function chooseCpuDecision(state: GameState, options: CpuAiOptions = {}):
       evaluated,
     );
   if (midgameOverprotectShieldHoldEndTurnDecision) {
-    return midgameOverprotectShieldHoldEndTurnDecision;
+    return finalizeDecisionTrace(midgameOverprotectShieldHoldEndTurnDecision, evaluated);
   }
 
   if (profile === "white_planner" || profile === "white_rollout") {
@@ -574,7 +574,7 @@ export function chooseCpuDecision(state: GameState, options: CpuAiOptions = {}):
       evaluated,
     );
     if (earlyShieldTargetQualityDecision) {
-      return earlyShieldTargetQualityDecision;
+      return finalizeDecisionTrace(earlyShieldTargetQualityDecision, evaluated);
     }
   }
 
@@ -585,7 +585,7 @@ export function chooseCpuDecision(state: GameState, options: CpuAiOptions = {}):
     evaluated,
   );
   if (backlineMoveBeforeSummonDecision) {
-    return backlineMoveBeforeSummonDecision;
+    return finalizeDecisionTrace(backlineMoveBeforeSummonDecision, evaluated);
   }
 
   const frontReachRetreatBeforeBackSummonDecision =
@@ -596,7 +596,7 @@ export function chooseCpuDecision(state: GameState, options: CpuAiOptions = {}):
       evaluated,
     );
   if (frontReachRetreatBeforeBackSummonDecision) {
-    return frontReachRetreatBeforeBackSummonDecision;
+    return finalizeDecisionTrace(frontReachRetreatBeforeBackSummonDecision, evaluated);
   }
 
   const frontGuardBeforeLowChipDecision = selectWhiteMirrorFrontGuardBeforeLowChipDecision(
@@ -606,7 +606,7 @@ export function chooseCpuDecision(state: GameState, options: CpuAiOptions = {}):
     evaluated,
   );
   if (frontGuardBeforeLowChipDecision) {
-    return frontGuardBeforeLowChipDecision;
+    return finalizeDecisionTrace(frontGuardBeforeLowChipDecision, evaluated);
   }
 
   const backThreatAttackBeforeRetreatDecision =
@@ -617,7 +617,7 @@ export function chooseCpuDecision(state: GameState, options: CpuAiOptions = {}):
       evaluated,
     );
   if (backThreatAttackBeforeRetreatDecision) {
-    return backThreatAttackBeforeRetreatDecision;
+    return finalizeDecisionTrace(backThreatAttackBeforeRetreatDecision, evaluated);
   }
 
   const earlyHoldEndTurnDecision = selectWhiteMirrorEarlyHoldEndTurnDecision(
@@ -627,7 +627,7 @@ export function chooseCpuDecision(state: GameState, options: CpuAiOptions = {}):
     evaluated,
   );
   if (earlyHoldEndTurnDecision) {
-    return earlyHoldEndTurnDecision;
+    return finalizeDecisionTrace(earlyHoldEndTurnDecision, evaluated);
   }
 
   const frontClogHoldEndTurnDecision = selectWhiteMirrorFrontClogHoldEndTurnDecision(
@@ -637,7 +637,7 @@ export function chooseCpuDecision(state: GameState, options: CpuAiOptions = {}):
     evaluated,
   );
   if (frontClogHoldEndTurnDecision) {
-    return frontClogHoldEndTurnDecision;
+    return finalizeDecisionTrace(frontClogHoldEndTurnDecision, evaluated);
   }
 
   const lateNoStoneFaceHoldEndTurnDecision = selectWhiteMirrorLateNoStoneFaceHoldEndTurnDecision(
@@ -647,7 +647,7 @@ export function chooseCpuDecision(state: GameState, options: CpuAiOptions = {}):
     evaluated,
   );
   if (lateNoStoneFaceHoldEndTurnDecision) {
-    return lateNoStoneFaceHoldEndTurnDecision;
+    return finalizeDecisionTrace(lateNoStoneFaceHoldEndTurnDecision, evaluated);
   }
 
   const skipTerminalPlanRoot = shouldSkipTerminalPlanRootForShieldOnlyRoot(
@@ -667,17 +667,17 @@ export function chooseCpuDecision(state: GameState, options: CpuAiOptions = {}):
         500,
       );
       if (lateNoStoneFaceHold) {
-        return lateNoStoneFaceHold;
+        return finalizeDecisionTrace(lateNoStoneFaceHold, evaluated);
       }
       if (shouldAdoptTerminalPlanRootSelection(state, perspective, selection, best, config)) {
-        return withTerminalPlanReason(selection.candidate.decision, selection);
+        return finalizeDecisionTrace(withTerminalPlanReason(selection.candidate.decision, selection), evaluated);
       }
     }
   }
 
   const shieldTargetTieDecision = selectShieldTargetTieRootDecision(state, perspective, config, options, best, evaluated);
   if (shieldTargetTieDecision) {
-    return shieldTargetTieDecision;
+    return finalizeDecisionTrace(shieldTargetTieDecision, evaluated);
   }
 
   return best ? attachDecisionTrace(best, evaluated) : createEndTurnDecision();
@@ -1005,6 +1005,7 @@ function withMasterDamagePlanReason(
     reason: `${prefix}${masterDamagePlanDecisionReasonSuffix(decision)}`,
     trace: {
       ...decision.trace,
+      totalScore: decision.trace?.totalScore ?? decision.score,
       baseScore: decision.score,
     },
   } as CpuDecision;
@@ -7787,7 +7788,7 @@ function formatDecisionTraceLog(decision: CpuDecision): string {
     ? ` / 見送り候補: ${trace.alternatives
         .slice(0, 2)
         .map((candidate) =>
-          `${candidate.label}${Math.round(candidate.totalScore)}点(${Math.max(0, Math.round(candidate.scoreGap))}点差)`)
+          `${candidate.label}${Math.round(candidate.totalScore)}点(${decisionScoreGapLabel(candidate.scoreGap)})`)
         .join("、")}`
     : "";
   return ` / 評価: ${scoreText}${alternatives}`;
@@ -10014,7 +10015,7 @@ function attachDecisionTrace(
   }
 
   const rejectedText = rejected
-    .map((candidate) => `${decisionShortLabel(candidate.decision)}は${Math.max(1, Math.round(selected.totalScore - candidate.totalScore))}点差で見送り`)
+    .map((candidate) => `${decisionShortLabel(candidate.decision)}は${decisionScoreGapLabel(selected.totalScore - candidate.totalScore)}で見送り`)
     .join("、");
   return {
     ...selected.decision,
@@ -10030,6 +10031,39 @@ function attachDecisionTrace(
       })),
     },
   } as CpuDecision;
+}
+
+function finalizeDecisionTrace(
+  decision: CpuDecision,
+  evaluated: readonly EvaluatedDecision[],
+): CpuDecision {
+  if (decision.trace?.totalScore !== undefined) {
+    return decision;
+  }
+  const selected = evaluated.find((candidate) => cpuDecisionKey(candidate.decision) === cpuDecisionKey(decision));
+  if (!selected) {
+    return {
+      ...decision,
+      trace: {
+        ...decision.trace,
+        totalScore: decision.score,
+        baseScore: decision.score,
+      },
+    } as CpuDecision;
+  }
+  return attachDecisionTrace(
+    {
+      decision,
+      totalScore: selected.totalScore,
+      index: selected.index,
+    },
+    [...evaluated],
+  );
+}
+
+function decisionScoreGapLabel(scoreGap: number): string {
+  const rounded = Math.round(scoreGap);
+  return rounded < 0 ? `${Math.abs(rounded)}点上` : `${rounded}点差`;
 }
 
 function decisionShortLabel(decision: CpuDecision): string {

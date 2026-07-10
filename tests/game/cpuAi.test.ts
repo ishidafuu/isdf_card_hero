@@ -261,6 +261,31 @@ describe("cpu ai", () => {
 
     expect(decision.type).toBe("end_turn");
     expect(decision.reason).toContain("白ミラー序盤");
+    expect(decision.trace?.totalScore).toBeDefined();
+    expect(decision.trace?.totalScore).not.toBe(decision.score);
+    expect(decision.trace?.alternatives?.length).toBeGreaterThan(0);
+    const firstAlternative = decision.trace?.alternatives?.[0];
+    if (firstAlternative) {
+      const roundedGap = Math.round(firstAlternative.scoreGap);
+      const gapLabel = roundedGap < 0 ? `${Math.abs(roundedGap)}点上` : `${roundedGap}点差`;
+      expect(decision.reason).toContain(`${gapLabel}で見送り`);
+    }
+  });
+
+  it("uses the same rounded score gap in the reason and decision trace", () => {
+    for (let seed = 1; seed <= 40; seed += 1) {
+      const game = createInitialGame(seed, { firstPlayer: "cpu" });
+      const decision = chooseCpuDecision(game, { profile: "stable" });
+      const firstAlternative = decision.trace?.alternatives?.[0];
+      const reasonGap = decision.reason.match(/は(\d+)点差で見送り/)?.[1];
+      if (!firstAlternative || reasonGap === undefined) {
+        continue;
+      }
+
+      expect(Number(reasonGap)).toBe(Math.round(firstAlternative.scoreGap));
+      return;
+    }
+    throw new Error("score gap fixture was not found");
   });
 
   it("uses response reading to break low-stone white mirror shield target ties", () => {

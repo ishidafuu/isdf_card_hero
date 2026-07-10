@@ -1,25 +1,43 @@
 import { createServer, type IncomingMessage, type ServerResponse } from "node:http";
 import { mkdir, writeFile } from "node:fs/promises";
 import { join, resolve } from "node:path";
+import {
+  isAllowedBattleReportOrigin,
+  isJsonContentType,
+  parseBattleReportAllowedOrigins,
+} from "./lib/battleReportInboxPolicy";
 
 const DEFAULT_PORT = 8787;
 const MAX_BODY_BYTES = 5 * 1024 * 1024;
 const OUT_DIR = resolve(process.cwd(), "docs/ai_playtest_reports/inbox");
 const PORT = Number(process.env.BATTLE_REPORT_INBOX_PORT ?? DEFAULT_PORT);
+const ALLOWED_ORIGINS = parseBattleReportAllowedOrigins(process.env.BATTLE_REPORT_ALLOWED_ORIGINS);
 
 function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === "object" && value !== null && !Array.isArray(value);
 }
 
-function setCorsHeaders(res: ServerResponse) {
-  res.setHeader("Access-Control-Allow-Origin", "*");
-  res.setHeader("Access-Control-Allow-Methods", "POST, OPTIONS, GET");
-  res.setHeader("Access-Control-Allow-Headers", "content-type");
-  res.setHeader("Access-Control-Allow-Private-Network", "true");
+function requestOrigin(req: IncomingMessage): string | undefined {
+  const origin = req.headers.origin;
+  return Array.isArray(origin) ? origin[0] : origin;
 }
 
-function sendJson(res: ServerResponse, statusCode: number, payload: Record<string, unknown>) {
-  setCorsHeaders(res);
+function setCorsHeaders(req: IncomingMessage, res: ServerResponse) {
+  const origin = requestOrigin(req);
+  const originAllowed = isAllowedBattleReportOrigin(origin, ALLOWED_ORIGINS);
+  if (origin && originAllowed) {
+    res.setHeader("Access-Control-Allow-Origin", origin);
+    res.setHeader("Vary", "Origin");
+  }
+  res.setHeader("Access-Control-Allow-Methods", "POST, OPTIONS, GET");
+  res.setHeader("Access-Control-Allow-Headers", "content-type");
+  if (originAllowed && req.headers["access-control-request-private-network"] === "true") {
+    res.setHeader("Access-Control-Allow-Private-Network", "true");
+  }
+}
+
+function sendJson(req: IncomingMessage, res: ServerResponse, statusCode: number, payload: Record<string, unknown>) {
+  setCorsHeaders(req, res);
   res.writeHead(statusCode, { "content-type": "application/json; charset=utf-8" });
   res.end(`${JSON.stringify(payload, null, 2)}\n`);
 }
@@ -104,7 +122,13 @@ async function saveBattleReport(report: Record<string, unknown>) {
 }
 
 const server = createServer(async (req, res) => {
-  setCorsHeaders(res);
+  const origin = requestOrigin(req);
+  if (!isAllowedBattleReportOrigin(origin, ALLOWED_ORIGINS)) {
+    sendJson(req, res, 403, { ok: false, error: "origin is not allowed" });
+    return;
+  }
+
+  setCorsHeaders(req, res);
 
   if (req.method === "OPTIONS") {
     res.writeHead(204);
@@ -113,12 +137,20 @@ const server = createServer(async (req, res) => {
   }
 
   if (req.method === "GET" && req.url === "/health") {
-    sendJson(res, 200, { ok: true, outDir: OUT_DIR });
+    sendJson(req, res, 200, { ok: true, outDir: OUT_DIR });
     return;
   }
 
   if (req.method !== "POST" || req.url !== "/battle-report") {
-    sendJson(res, 404, { ok: false, error: "not found" });
+    sendJson(req, res, 404, { ok: false, error: "not found" });
+    return;
+  }
+
+  const contentType = Array.isArray(req.headers["content-type"])
+    ? req.headers["content-type"][0]
+    : req.headers["content-type"];
+  if (!isJsonContentType(contentType)) {
+    sendJson(req, res, 415, { ok: false, error: "content-type must be application/json" });
     return;
   }
 
@@ -127,9 +159,9 @@ const server = createServer(async (req, res) => {
     const parsed: unknown = JSON.parse(body);
     assertBattleReport(parsed);
     const saved = await saveBattleReport(parsed);
-    sendJson(res, 200, { ok: true, ...saved, comments: countComments(parsed) });
+    sendJson(req, res, 200, { ok: true, ...saved, comments: countComments(parsed) });
   } catch (error) {
-    sendJson(res, 400, { ok: false, error: error instanceof Error ? error.message : String(error) });
+    sendJson(req, res, 400, { ok: false, error: error instanceof Error ? error.message : String(error) });
   }
 });
 
