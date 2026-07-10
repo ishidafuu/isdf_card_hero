@@ -1,5 +1,14 @@
 import type { AiEvaluationWeights } from "./aiWeights";
-import type { CommandAction, MagicAction, MasterActionId, PlayerId, SlotKey, Target } from "./types";
+import type {
+  AiDecisionTraceSnapshot,
+  AiTurnPlanTrace,
+  CommandAction,
+  MagicAction,
+  MasterActionId,
+  PlayerId,
+  SlotKey,
+  Target,
+} from "./types";
 
 export const CPU_AI_PROFILES = [
   "stable",
@@ -8,6 +17,7 @@ export const CPU_AI_PROFILES = [
   "defensive",
   "white",
   "white_planner",
+  "white_v2",
   "white_rollout",
   "omniscient",
 ] as const;
@@ -148,15 +158,9 @@ export interface CpuAiOptions {
   tunings?: Partial<Record<PlayerId, CpuAiTuning>>;
 }
 
-export interface CpuDecisionTrace {
-  totalScore?: number;
-  baseScore?: number;
-  alternatives?: Array<{
-    label: string;
-    totalScore: number;
-    scoreGap: number;
-  }>;
-}
+export interface CpuDecisionTrace extends AiDecisionTraceSnapshot {}
+
+export type CpuTurnPlanTrace = AiTurnPlanTrace;
 
 export type CpuDecision = (
   {

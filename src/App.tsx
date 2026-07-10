@@ -453,6 +453,9 @@ function aiProfileLabel(profile: CpuAiProfile): string {
   if (profile === "white_planner") {
     return "White Planner";
   }
+  if (profile === "white_v2") {
+    return "White V2";
+  }
   if (profile === "white_rollout") {
     return "White Rollout";
   }
@@ -942,6 +945,7 @@ function createBattleDebugReport(
     deckSettings,
     stateSummary: summarizeGameState(game),
     reviewHiddenInfo: createBattleReviewHiddenInfo(game),
+    aiDecisionHistory: game.aiDecisionHistory,
     comments,
     log: game.log,
     eventLog: game.eventLog,

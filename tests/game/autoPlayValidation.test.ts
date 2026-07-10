@@ -17,6 +17,7 @@ describe("auto play validation", () => {
     expect(result.ok).toBe(true);
     expect(result.seeds).toEqual([410, 411]);
     expect(result.games).toHaveLength(2);
+    expect(result.games[0].stateSummary?.slots).toHaveLength(8);
     expect(result.summary.failures).toBe(0);
   }, AUTO_PLAY_TEST_TIMEOUT_MS);
 

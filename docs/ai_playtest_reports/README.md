@@ -34,3 +34,13 @@ BATTLE_REPORT_ALLOWED_ORIGINS=https://isdf-card-hero.vercel.app npm run collect:
 スタンプを押すとコメント先頭に `GOOD:` / `BAD:` / `QUESTION:` が入り、JSONのコメント項目にも `stamp` が出力されます。
 
 レビュー用に、画面上ではCPU手札と伏せカードの中身を表示します。保存JSONにも `reviewHiddenInfo` として両者の手札、デッキ上部、伏せスロットを出力します。
+
+保存JSONの `aiDecisionHistory` には、各AI判断直前の復元可能な完全状態、構造化された採用行動、評価値を保存します。`white_v2` では自ターンの採用手順と、比較に使った相手の最悪応答手順も `decision.trace.turnPlan` に含まれます。
+
+保存済みレポートの `BAD` / `QUESTION` を旧AIとV2で自動再検討するには、次を実行します。
+
+```sh
+npm run analyze:battle-report -- --report docs/ai_playtest_reports/inbox/<report>.json
+```
+
+結果は既定で `docs/ai_playtest_reports/analysis/` にMarkdownとして出力されます。`--include-good` を付けると `GOOD` も再確認対象に含めます。

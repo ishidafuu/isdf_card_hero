@@ -1,7 +1,15 @@
-import { chooseCpuDecision, CPU_AI_PROFILES, type CpuAiProfile, type CpuAiProfiles, type CpuDecision } from "../src/game/cpuAi";
+import {
+  applyCpuDecision,
+  chooseCpuDecision,
+  CPU_AI_PROFILES,
+  type CpuAiProfile,
+  type CpuAiProfiles,
+  type CpuDecision,
+} from "../src/game/cpuAi";
 import { getCardName } from "../src/game/cards";
 import { buildDeckPresetCardIds, deckPresetAllowsSpecial, DECK_PRESET_IDS, getDeckPreset, type DeckPresetId } from "../src/game/deckPresets";
 import { MASTER_IDS } from "../src/game/masters";
+import { clearTurnPlannerV2Cache } from "../src/game/cpuAiV2/turnPlanner";
 import { createInitialGame, runAutoStep } from "../src/game/rules";
 import type { GameState, MasterId, PlayerId, SlotKey, Target } from "../src/game/types";
 
@@ -77,14 +85,22 @@ function runDecisionDiff(options: Options, profiles: CpuAiProfiles, challengerPl
   let step = 0;
 
   for (; step < options.maxSteps && !game.winner; step += 1) {
+    let inspectedChallengerDecision: CpuDecision | undefined;
     if (
       !game.pendingLevelUp &&
       game.currentPlayer === challengerPlayer &&
       diffs.length < options.maxDiffs &&
       isTurnInRange(game.turnNumber, options)
     ) {
+      if (options.baselineProfile === "white_v2") {
+        clearTurnPlannerV2Cache();
+      }
       const baseline = chooseCpuDecision(game, { profile: options.baselineProfile });
+      if (options.baselineProfile === "white_v2") {
+        clearTurnPlannerV2Cache();
+      }
       const challenger = chooseCpuDecision(game, { profile: options.challengerProfile });
+      inspectedChallengerDecision = challenger;
       if (decisionKey(baseline) !== decisionKey(challenger)) {
         const baselineSummary = summarizeDecision(baseline);
         const challengerSummary = summarizeDecision(challenger);
@@ -105,7 +121,9 @@ function runDecisionDiff(options: Options, profiles: CpuAiProfiles, challengerPl
         });
       }
     }
-    game = runAutoStep(game, { profiles });
+    game = inspectedChallengerDecision
+      ? applyCpuDecision(game, inspectedChallengerDecision)
+      : runAutoStep(game, { profiles });
   }
 
   return { winner: game.winner, steps: step, turnNumber: game.turnNumber, diffs };

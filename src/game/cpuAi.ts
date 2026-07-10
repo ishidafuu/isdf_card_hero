@@ -64,6 +64,9 @@ import type {
   Target,
 } from "./types";
 import { drillBreakPartnerSlotKey, isPrimaryDrillBreakAttacker } from "./ruleEngine/drillBreak";
+import { chooseTurnPlannerV2Decision } from "./cpuAiV2/turnPlanner";
+import { determinizeOpponentPrivateZones } from "./cpuAiV2/opponentKnowledge";
+import { appendAiDecisionReviewEntry } from "./aiReviewTrace";
 
 export { CPU_AI_PROFILES } from "./cpuAiTypes";
 export type {
@@ -422,6 +425,21 @@ const CPU_AI_PROFILE_CONFIG: Record<CpuAiProfile, CpuAiProfileConfig> = {
     terminalPlanRolloutShieldTargetTieSteps: 16,
     terminalPlanRolloutOncePerTurn: 1,
   },
+  white_v2: {
+    detailedWidth: 4,
+    sameTurnSearchDepth: 0,
+    sameTurnSearchWidth: 0,
+    sameTurnSearchDiscount: 0,
+    sameTurnTerminalPlanDepth: 0,
+    sameTurnTerminalPlanWidth: 0,
+    sameTurnTerminalPlanWeight: 0,
+    sameTurnOpponentTerminalPlanDepth: 0,
+    sameTurnOpponentTerminalPlanWidth: 0,
+    sameTurnOpponentTerminalPlanWeight: 0,
+    beamScoreThreshold: 0,
+    weights: AI_EVALUATION_WEIGHTS.white,
+    tuning: WHITE_AI_BASE_TUNING,
+  },
   white_rollout: {
     detailedWidth: 4,
     sameTurnSearchDepth: 3,
@@ -526,6 +544,27 @@ export function chooseCpuDecision(state: GameState, options: CpuAiOptions = {}):
   const masterDamagePlan = findMasterDamagePlan(state, perspective, config.weights);
   if (shouldForceMasterDamagePlan(state, perspective, masterDamagePlan, config)) {
     return withMasterDamagePlanReason(masterDamagePlan.firstDecision, masterDamagePlan);
+  }
+  if (profile === "white_v2") {
+    const decision = chooseTurnPlannerV2Decision(state, {
+      evaluateDecisions: (planningState, planningPerspective) => {
+        const planningConfig = resolveCpuAiConfigForProfile(planningState, options, "white");
+        return evaluateImmediateCpuDecisions(planningState, planningPerspective, planningConfig);
+      },
+      evaluatePosition: (planningState, planningPerspective) => {
+        const planningConfig = resolveCpuAiConfigForProfile(planningState, options, "white");
+        return evaluateState(planningState, planningPerspective, planningConfig.weights) +
+          evaluateConfiguredFutureTacticalValue(planningState, planningPerspective, true, planningConfig);
+      },
+      stateKey: terminalPlanStateKey,
+      decisionKey: cpuDecisionKey,
+      prepareOpponentResponseStates: (responseState, responsePerspective) => [0, 1].map((sampleIndex) =>
+        determinizeOpponentPrivateZones(responseState, responsePerspective, sampleIndex)),
+      opponentKnowledgeLabel: "known-deck-determinization-x2",
+    });
+    if (decision) {
+      return decision;
+    }
   }
   let best: EvaluatedDecision | undefined;
   const fallbackConfig = profile === "white_planner" || profile === "white_rollout"
@@ -1296,14 +1335,14 @@ function resolveCpuAiMatchupTuning(state: GameState, profile: CpuAiProfile): Cpu
   const perspective = state.currentPlayer;
   const opponent = opponentOf(perspective);
   if (
-    (profile === "white" || profile === "white_planner" || profile === "white_rollout" || profile === "omniscient") &&
+    (profile === "white" || profile === "white_planner" || profile === "white_v2" || profile === "white_rollout" || profile === "omniscient") &&
     state.players[perspective].masterId === "white" &&
     state.players[opponent].masterId === "black"
   ) {
     return WHITE_VS_BLACK_MATCHUP_TUNING;
   }
   if (
-    (profile === "white" || profile === "white_planner" || profile === "white_rollout" || profile === "omniscient") &&
+    (profile === "white" || profile === "white_planner" || profile === "white_v2" || profile === "white_rollout" || profile === "omniscient") &&
     state.players[perspective].masterId === "white" &&
     state.players[opponent].masterId === "white"
   ) {
@@ -7440,7 +7479,11 @@ function terminalPlanPlayerStateKey(player: PlayerState): object {
   };
 }
 
-function evaluateImmediateCpuDecisions(state: GameState, perspective: PlayerId, config: CpuAiProfileConfig): EvaluatedDecision[] {
+function evaluateImmediateCpuDecisions(
+  state: GameState,
+  perspective: PlayerId,
+  config: CpuAiProfileConfig,
+): EvaluatedDecision[] {
   const beforeScore = evaluateState(state, perspective, config.weights);
   const beforeFutureScore = evaluateConfiguredFutureTacticalValue(state, perspective, false, config);
   return listCpuDecisions(state, config.weights).flatMap((decision, index) => {
@@ -7449,7 +7492,10 @@ function evaluateImmediateCpuDecisions(state: GameState, perspective: PlayerId, 
   });
 }
 
-export function listCpuDecisions(state: GameState, weights: AiEvaluationWeights = DEFAULT_AI_EVALUATION_WEIGHTS): CpuDecision[] {
+export function listCpuDecisions(
+  state: GameState,
+  weights: AiEvaluationWeights = DEFAULT_AI_EVALUATION_WEIGHTS,
+): CpuDecision[] {
   if (state.winner || state.pendingLevelUp) {
     return [createEndTurnDecision()];
   }
@@ -7768,6 +7814,7 @@ function appendDecisionReasonLog(state: GameState, decision: CpuDecision): GameS
   const next = structuredClone(state) as GameState;
   const actor = next.currentPlayer === "cpu" ? "CPU" : "プレイヤーAI";
   appendLog(next, `${actor}判断: ${decision.reason}${formatDecisionTraceLog(decision)}`);
+  appendAiDecisionReviewEntry(next, state, decision, cpuDecisionKey(decision));
   if (decision.reason.includes("ターンプラン探索") && decision.reason.includes("rollout")) {
     next.turnAiRolloutDecisionHistory = [
       ...(next.turnAiRolloutDecisionHistory ?? []),

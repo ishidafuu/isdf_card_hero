@@ -224,6 +224,22 @@ describe("cpu ai", () => {
     expect(decision.type).not.toBe("end_turn");
   });
 
+  it("exposes white v2 as a full-turn response profile", () => {
+    const game = createCpuGame();
+    game.players.cpu.masterId = "white";
+    game.players.player.masterId = "white";
+    game.players.cpu.hand = [];
+    game.players.player.hand = [];
+    game.players.cpu.deck = [];
+    game.players.player.deck = [];
+
+    const decision = chooseCpuDecision(game, { profile: "white_v2" });
+
+    expect(CPU_AI_PROFILES).toContain("white_v2");
+    expect(decision.trace?.turnPlan).toBeDefined();
+    expect(decision.reason).toContain("V2ターンプラン");
+  });
+
   it("tracks rollout-confirmed decisions only for the current turn", () => {
     const game = createCpuGame();
     game.slots.cpu_front_left.monster = createActiveMonster("takokke", "cpu");

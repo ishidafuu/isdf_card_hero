@@ -1,0 +1,102 @@
+{
+  "generatedAt": "2026-07-10T16:44:11.565Z",
+  "options": {
+    "seedStart": 995000,
+    "count": 2,
+    "deckPreset": "master-lab-white-1377-death-sheep3",
+    "masterIds": {
+      "player": "white",
+      "cpu": "white"
+    },
+    "maxSteps": 500,
+    "maxTurns": 120,
+    "baselineProfile": "white_planner",
+    "challengerProfile": "white_v2"
+  },
+  "pairs": [
+    {
+      "seed": 995000,
+      "classification": "challenger_profile_sweep",
+      "challengerAsCpu": {
+        "winner": "cpu",
+        "winnerProfile": "white_v2",
+        "steps": 102,
+        "turns": 11,
+        "playerHp": 0,
+        "cpuHp": 8,
+        "playerStones": 11,
+        "cpuStones": 4,
+        "playerUnits": 3,
+        "cpuUnits": 3,
+        "playerLevelSum": 4,
+        "cpuLevelSum": 5,
+        "issueCount": 0,
+        "warningCount": 1
+      },
+      "challengerAsPlayer": {
+        "winner": "player",
+        "winnerProfile": "white_v2",
+        "steps": 192,
+        "turns": 26,
+        "playerHp": 6,
+        "cpuHp": 0,
+        "playerStones": 45,
+        "cpuStones": 15,
+        "playerUnits": 2,
+        "cpuUnits": 2,
+        "playerLevelSum": 2,
+        "cpuLevelSum": 2,
+        "issueCount": 0,
+        "warningCount": 0
+      }
+    },
+    {
+      "seed": 995001,
+      "classification": "cpu_seat_sweep",
+      "challengerAsCpu": {
+        "winner": "cpu",
+        "winnerProfile": "white_v2",
+        "steps": 105,
+        "turns": 13,
+        "playerHp": 0,
+        "cpuHp": 10,
+        "playerStones": 14,
+        "cpuStones": 9,
+        "playerUnits": 1,
+        "cpuUnits": 4,
+        "playerLevelSum": 1,
+        "cpuLevelSum": 7,
+        "issueCount": 0,
+        "warningCount": 1
+      },
+      "challengerAsPlayer": {
+        "winner": "cpu",
+        "winnerProfile": "white_planner",
+        "steps": 185,
+        "turns": 19,
+        "playerHp": 0,
+        "cpuHp": 7,
+        "playerStones": 12,
+        "cpuStones": 8,
+        "playerUnits": 2,
+        "cpuUnits": 3,
+        "playerLevelSum": 4,
+        "cpuLevelSum": 6,
+        "issueCount": 0,
+        "warningCount": 0
+      }
+    }
+  ],
+  "summary": {
+    "challenger_profile_sweep": 1,
+    "baseline_profile_sweep": 0,
+    "player_seat_sweep": 0,
+    "cpu_seat_sweep": 1,
+    "split_or_draw": 0,
+    "seeds": 2,
+    "challengerPairedScore": 1,
+    "baselinePairedScore": 0,
+    "seatBiasSeeds": 1,
+    "splitOrDraw": 0
+  }
+}

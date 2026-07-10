@@ -332,10 +332,10 @@ function runAutoPlayGame(
       winner: game.winner,
       issueCount,
       warningCount,
+      stateSummary: summarizeGameState(game),
       ...(options.includeGameHistory
         ? {
             logTail: game.log.slice(-20),
-            stateSummary: summarizeGameState(game),
             history: [...context.history],
           }
         : {}),

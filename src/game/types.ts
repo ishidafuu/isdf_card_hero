@@ -208,6 +208,7 @@ export interface GameState {
   turnMoveHistory?: MoveHistoryEntry[];
   turnMasterActionHistory?: MasterActionHistoryEntry[];
   turnAiRolloutDecisionHistory?: AiRolloutDecisionHistoryEntry[];
+  aiDecisionHistory?: AiDecisionHistoryEntry[];
   masterActionsExchangeExpiresOnStartOf?: PlayerId;
 }
 
@@ -235,3 +236,60 @@ export interface MagicAction {
 }
 
 export type MasterActionId = "master_attack" | "wake_up" | "shield" | "berserk_power" | "earth_anger";
+
+export interface AiTurnPlanTrace {
+  planId: string;
+  phase: "root" | "continuation";
+  step: number;
+  length: number;
+  ownHandoffScore: number;
+  responseScore: number;
+  generatedPlanCount: number;
+  comparedRootCount: number;
+  opponentPlanCount: number;
+  opponentSampleCount?: number;
+  opponentWorstResponseScore?: number;
+  opponentKnowledge?: string;
+  actions: string[];
+  opponentActions: string[];
+}
+
+export interface AiDecisionTraceSnapshot {
+  totalScore?: number;
+  baseScore?: number;
+  alternatives?: Array<{
+    label: string;
+    totalScore: number;
+    scoreGap: number;
+  }>;
+  turnPlan?: AiTurnPlanTrace;
+}
+
+export type AiDecisionSnapshot = (
+  | { type: "attack"; action: CommandAction }
+  | { type: "master_action"; actionId: MasterActionId; target: Target }
+  | { type: "summon"; handInstanceId: string; slotKey: SlotKey }
+  | { type: "magic"; action: MagicAction }
+  | { type: "move"; fromSlotKey: SlotKey; toSlotKey: SlotKey }
+  | { type: "focus"; slotKey: SlotKey }
+  | { type: "end_turn" }
+) & {
+  reason: string;
+  score: number;
+  trace?: AiDecisionTraceSnapshot;
+};
+
+export type AiDecisionStateSnapshot = Omit<
+  GameState,
+  "log" | "logOffset" | "eventLog" | "aiDecisionHistory"
+>;
+
+export interface AiDecisionHistoryEntry {
+  sequence: number;
+  logIndex: number;
+  playerId: PlayerId;
+  turnNumber: number;
+  decisionKey: string;
+  decision: AiDecisionSnapshot;
+  stateBefore: AiDecisionStateSnapshot;
+}

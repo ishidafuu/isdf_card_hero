@@ -40,6 +40,12 @@ interface PairedGameLine {
   turns: number;
   playerHp?: number;
   cpuHp?: number;
+  playerStones?: number;
+  cpuStones?: number;
+  playerUnits?: number;
+  cpuUnits?: number;
+  playerLevelSum?: number;
+  cpuLevelSum?: number;
   issueCount: number;
   warningCount: number;
 }
@@ -159,13 +165,22 @@ function classifyPair(
 }
 
 function gameLine(outcome: AiBenchmarkGameOutcome): PairedGameLine {
+  const summary = outcome.stateSummary;
+  const playerSlots = summary?.slots.filter((slot) => slot.owner === "player") ?? [];
+  const cpuSlots = summary?.slots.filter((slot) => slot.owner === "cpu") ?? [];
   return {
     winner: outcome.winner,
     winnerProfile: outcome.winnerProfile,
     steps: outcome.steps,
     turns: outcome.turns,
-    playerHp: outcome.stateSummary?.players.player.hp,
-    cpuHp: outcome.stateSummary?.players.cpu.hp,
+    playerHp: summary?.players.player.hp,
+    cpuHp: summary?.players.cpu.hp,
+    playerStones: summary?.players.player.stones,
+    cpuStones: summary?.players.cpu.stones,
+    playerUnits: playerSlots.length,
+    cpuUnits: cpuSlots.length,
+    playerLevelSum: playerSlots.reduce((total, slot) => total + (slot.level ?? 0), 0),
+    cpuLevelSum: cpuSlots.reduce((total, slot) => total + (slot.level ?? 0), 0),
     issueCount: outcome.issueCount,
     warningCount: outcome.warningCount,
   };
@@ -225,8 +240,14 @@ function formatMarkdown(report: PairedReport): string {
 
 function formatGameLine(line: PairedGameLine): string {
   const hp = line.playerHp === undefined || line.cpuHp === undefined ? "" : `, HP P${line.playerHp}/C${line.cpuHp}`;
+  const stones = line.playerStones === undefined || line.cpuStones === undefined
+    ? ""
+    : `, stones P${line.playerStones}/C${line.cpuStones}`;
+  const board = line.playerUnits === undefined || line.cpuUnits === undefined
+    ? ""
+    : `, board P${line.playerUnits}/Lv${line.playerLevelSum ?? 0} C${line.cpuUnits}/Lv${line.cpuLevelSum ?? 0}`;
   const issues = line.issueCount > 0 || line.warningCount > 0 ? `, ${line.issueCount}F/${line.warningCount}W` : "";
-  return `${line.winnerProfile ?? "draw"}/${line.winner ?? "-"} (${line.steps} steps / ${line.turns} turns${hp}${issues})`;
+  return `${line.winnerProfile ?? "draw"}/${line.winner ?? "-"} (${line.steps} steps / ${line.turns} turns${hp}${stones}${board}${issues})`;
 }
 
 function parseArgs(args: string[]): CliOptions {

@@ -14,6 +14,7 @@ describe("ai benchmark", () => {
     expect(result.options.baselineProfile).toBe("stable");
     expect(result.options.challengerProfile).toBe("strong");
     expect(result.summary.games).toBe(2);
+    expect(result.runs[0].outcomes[0].stateSummary?.players.player.hp).toBeDefined();
     expect(result.summary.profileWins.stable + result.summary.profileWins.strong + result.summary.undecided).toBe(2);
     expect(result.summary.failures).toBeGreaterThan(0);
   });
