@@ -1,7 +1,9 @@
 import { describe, expect, it } from "vitest";
 import {
   appendAiDecisionReviewEntry,
+  appendHumanActionReviewEntry,
   createAiDecisionStateSnapshot,
+  humanActionReviewKey,
   restoreAiDecisionStateSnapshot,
 } from "../../src/game/aiReviewTrace";
 import { createInitialGame } from "../../src/game/rules";
@@ -57,6 +59,25 @@ describe("ai review trace", () => {
     }, "end_turn");
 
     expect(target.aiDecisionHistory).toBeUndefined();
+  });
+
+  it("records structured human actions with their pre-action state", () => {
+    const before = createInitialGame(12348, { firstPlayer: "player", trackEventLog: true });
+    const target = structuredClone(before);
+    const action = { type: "summon" as const, handInstanceId: "player_card", slotKey: "player_back_left" as const };
+
+    appendHumanActionReviewEntry(target, before, action);
+
+    expect(target.humanActionHistory).toHaveLength(1);
+    expect(target.humanActionHistory?.[0]).toMatchObject({
+      playerId: "player",
+      turnNumber: before.turnNumber,
+      actionKey: "summon:player_card:player_back_left",
+      action,
+    });
+    expect(target.humanActionHistory?.[0]?.stateBefore).not.toHaveProperty("humanActionHistory");
+    expect(humanActionReviewKey({ type: "end_turn", discardHandInstanceIds: ["a", "b"] }))
+      .toBe("end_turn:a,b");
   });
 
   it("continues the sequence after retained history has been truncated", () => {

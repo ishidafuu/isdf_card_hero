@@ -209,6 +209,7 @@ export interface GameState {
   turnMasterActionHistory?: MasterActionHistoryEntry[];
   turnAiRolloutDecisionHistory?: AiRolloutDecisionHistoryEntry[];
   aiDecisionHistory?: AiDecisionHistoryEntry[];
+  humanActionHistory?: HumanActionHistoryEntry[];
   masterActionsExchangeExpiresOnStartOf?: PlayerId;
 }
 
@@ -281,7 +282,7 @@ export type AiDecisionSnapshot = (
 
 export type AiDecisionStateSnapshot = Omit<
   GameState,
-  "log" | "logOffset" | "eventLog" | "aiDecisionHistory"
+  "log" | "logOffset" | "eventLog" | "aiDecisionHistory" | "humanActionHistory"
 >;
 
 export interface AiDecisionHistoryEntry {
@@ -291,5 +292,27 @@ export interface AiDecisionHistoryEntry {
   turnNumber: number;
   decisionKey: string;
   decision: AiDecisionSnapshot;
+  stateBefore: AiDecisionStateSnapshot;
+}
+
+export type HumanActionSnapshot =
+  | { type: "attack"; action: CommandAction }
+  | { type: "master_action"; actionId: MasterActionId; target: Target }
+  | { type: "summon"; handInstanceId: string; slotKey: SlotKey }
+  | { type: "magic"; action: MagicAction }
+  | { type: "move"; fromSlotKey: SlotKey; toSlotKey: SlotKey }
+  | { type: "focus"; slotKey: SlotKey }
+  | { type: "master_hp_draw" }
+  | { type: "discard_hand"; handInstanceId: string }
+  | { type: "resolve_level_up"; levels: number; superHandInstanceId?: string }
+  | { type: "end_turn"; discardHandInstanceIds?: string[] };
+
+export interface HumanActionHistoryEntry {
+  sequence: number;
+  logIndex: number;
+  playerId: PlayerId;
+  turnNumber: number;
+  actionKey: string;
+  action: HumanActionSnapshot;
   stateBefore: AiDecisionStateSnapshot;
 }

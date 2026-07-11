@@ -56,6 +56,7 @@ import { HAND_LIMIT } from "./game/ruleEngine/constants";
 import { getMasterActionDef, getMasterActionMagicCardId, getMasterIconUrl, getMasterName, MASTER_IDS } from "./game/masters";
 import { CPU_AI_PROFILES, type CpuAiProfile, type CpuAiProfiles } from "./game/cpuAi";
 import { createDefaultAiProfiles } from "./game/defaultAiProfiles";
+import { appendHumanActionReviewEntry } from "./game/aiReviewTrace";
 import {
   buildDeckPresetCardIds,
   DEFAULT_DECK_PRESET_FILTERS,
@@ -79,7 +80,7 @@ import {
 } from "./game/deckBattleScoreSnapshots";
 import { summarizeGameState } from "./game/autoPlayValidation";
 import { evaluateCard } from "./game/unitEvaluation";
-import type { CardInstance, CardPool, CommandDef, GameState, MagicAction, MagicCardDef, MagicTargetKind, MasterActionId, MasterId, MonsterState, PlayerId, Row, SlotKey, Target } from "./game/types";
+import type { CardInstance, CardPool, CommandDef, GameState, HumanActionSnapshot, MagicAction, MagicCardDef, MagicTargetKind, MasterActionId, MasterId, MonsterState, PlayerId, Row, SlotKey, Target } from "./game/types";
 import type { DeckValidationSummary } from "./game/cards";
 import { BGM_SOURCES, SE_SOURCES, type BgmId, type SeId } from "./audio";
 import {
@@ -946,6 +947,7 @@ function createBattleDebugReport(
     stateSummary: summarizeGameState(game),
     reviewHiddenInfo: createBattleReviewHiddenInfo(game),
     aiDecisionHistory: game.aiDecisionHistory,
+    humanActionHistory: game.humanActionHistory,
     comments,
     log: game.log,
     eventLog: game.eventLog,
@@ -1711,9 +1713,16 @@ export function App() {
     }
   }
 
-  function applyChange(change: (state: GameState) => GameState, keepSelection = false): GameState | undefined {
+  function applyChange(
+    change: (state: GameState) => GameState,
+    keepSelection = false,
+    humanAction?: HumanActionSnapshot,
+  ): GameState | undefined {
     try {
       const next = change(game);
+      if (humanAction) {
+        appendHumanActionReviewEntry(next, game, humanAction);
+      }
       if (next !== game) {
         setManualUndoStack((previous) => [...previous, game].slice(-20));
       }
@@ -1728,6 +1737,14 @@ export function App() {
       setError(caught instanceof Error ? caught.message : "操作に失敗しました");
       return undefined;
     }
+  }
+
+  function applyHumanAction(
+    action: HumanActionSnapshot,
+    change: (state: GameState) => GameState,
+    keepSelection = false,
+  ): GameState | undefined {
+    return applyChange(change, keepSelection, action);
   }
 
   function clearHandLimitDiscardMode() {
@@ -1763,7 +1780,10 @@ export function App() {
       setError(`捨てるカードを${handLimitDiscardNeeded}枚選んでください`);
       return;
     }
-    const next = applyChange((state) => endTurnWithHandLimitDiscards(state, selectedHandLimitDiscardIds));
+    const next = applyHumanAction(
+      { type: "end_turn", discardHandInstanceIds: selectedHandLimitDiscardIds },
+      (state) => endTurnWithHandLimitDiscards(state, selectedHandLimitDiscardIds),
+    );
     if (next) {
       clearHandLimitDiscardMode();
     }
@@ -1851,7 +1871,8 @@ export function App() {
       return;
     }
 
-    applyChange((state) => playMagic(state, { handInstanceId, target }));
+    const action: MagicAction = { handInstanceId, target };
+    applyHumanAction({ type: "magic", action }, (state) => playMagic(state, action));
   }
 
   function resolveCommandPrimaryTarget(attackerSlotKey: SlotKey, commandId: string, target: Target) {
@@ -1871,19 +1892,18 @@ export function App() {
       return;
     }
 
-    applyChange((state) =>
-      attackWithCommand(state, {
-        attackerSlotKey,
-        commandId,
-        target,
-      }),
-    );
+    const action = { attackerSlotKey, commandId, target };
+    applyHumanAction({ type: "attack", action }, (state) => attackWithCommand(state, action));
   }
 
   function handleAdditionalHandChoice(instanceId: string): boolean {
     const superOption = game.pendingLevelUp?.superOptions?.find((option) => option.handInstanceId === instanceId);
     if (game.pendingLevelUp && superOption) {
-      applyChange((state) => resolveLevelUp(state, state.pendingLevelUp!.maxLevels, instanceId));
+      const levels = game.pendingLevelUp.maxLevels;
+      applyHumanAction(
+        { type: "resolve_level_up", levels, superHandInstanceId: instanceId },
+        (state) => resolveLevelUp(state, levels, instanceId),
+      );
       return true;
     }
 
@@ -1892,25 +1912,23 @@ export function App() {
     }
 
     if (selection.kind === "magicHandChoice" && selection.choices.some((card) => card.instanceId === instanceId)) {
-      applyChange((state) =>
-        playMagic(state, {
-          handInstanceId: selection.handInstanceId,
-          target: selection.target,
-          secondaryHandInstanceId: instanceId,
-        }),
-      );
+      const action: MagicAction = {
+        handInstanceId: selection.handInstanceId,
+        target: selection.target,
+        secondaryHandInstanceId: instanceId,
+      };
+      applyHumanAction({ type: "magic", action }, (state) => playMagic(state, action));
       return true;
     }
 
     if (selection.kind === "commandHandChoice" && selection.choices.some((card) => card.instanceId === instanceId)) {
-      applyChange((state) =>
-        attackWithCommand(state, {
-          attackerSlotKey: selection.attackerSlotKey,
-          commandId: selection.commandId,
-          target: selection.target,
-          secondaryHandInstanceId: instanceId,
-        }),
-      );
+      const action = {
+        attackerSlotKey: selection.attackerSlotKey,
+        commandId: selection.commandId,
+        target: selection.target,
+        secondaryHandInstanceId: instanceId,
+      };
+      applyHumanAction({ type: "attack", action }, (state) => attackWithCommand(state, action));
       return true;
     }
 
@@ -1958,7 +1976,10 @@ export function App() {
       const target: Target = { kind: "monster", slotKey };
       const handCard = getHandCard(game, selection.instanceId);
       if (handCard && getCardDef(handCard.cardId).type === "monster" && canSummonTo(game, selection.instanceId, slotKey)) {
-        applyChange((state) => summonMonster(state, selection.instanceId, slotKey));
+        applyHumanAction(
+          { type: "summon", handInstanceId: selection.instanceId, slotKey },
+          (state) => summonMonster(state, selection.instanceId, slotKey),
+        );
         return;
       }
       if (targetKeys.has(targetToKey(target))) {
@@ -1978,13 +1999,12 @@ export function App() {
     if (selection?.kind === "magicSecondaryTarget") {
       const target: Target = { kind: "monster", slotKey };
       if (targetKeys.has(targetToKey(target))) {
-        applyChange((state) =>
-          playMagic(state, {
-            handInstanceId: selection.handInstanceId,
-            target: selection.target,
-            secondaryTarget: target,
-          }),
-        );
+        const action: MagicAction = {
+          handInstanceId: selection.handInstanceId,
+          target: selection.target,
+          secondaryTarget: target,
+        };
+        applyHumanAction({ type: "magic", action }, (state) => playMagic(state, action));
         return;
       }
     }
@@ -1992,14 +2012,13 @@ export function App() {
     if (selection?.kind === "commandSecondaryTarget") {
       const target: Target = { kind: "monster", slotKey };
       if (targetKeys.has(targetToKey(target))) {
-        applyChange((state) =>
-          attackWithCommand(state, {
-            attackerSlotKey: selection.attackerSlotKey,
-            commandId: selection.commandId,
-            target: selection.target,
-            secondaryTarget: target,
-          }),
-        );
+        const action = {
+          attackerSlotKey: selection.attackerSlotKey,
+          commandId: selection.commandId,
+          target: selection.target,
+          secondaryTarget: target,
+        };
+        applyHumanAction({ type: "attack", action }, (state) => attackWithCommand(state, action));
         return;
       }
     }
@@ -2007,13 +2026,19 @@ export function App() {
     if (selection?.kind === "masterAction") {
       const target: Target = { kind: "monster", slotKey };
       if (targetKeys.has(targetToKey(target))) {
-        applyChange((state) => useMasterAction(state, selection.actionId, target));
+        applyHumanAction(
+          { type: "master_action", actionId: selection.actionId, target },
+          (state) => useMasterAction(state, selection.actionId, target),
+        );
         return;
       }
     }
 
     if (selection?.kind === "move" && targetKeys.has(`monster:${slotKey}`)) {
-      applyChange((state) => moveMonster(state, selection.fromSlotKey, slotKey));
+      applyHumanAction(
+        { type: "move", fromSlotKey: selection.fromSlotKey, toSlotKey: slotKey },
+        (state) => moveMonster(state, selection.fromSlotKey, slotKey),
+      );
       return;
     }
 
@@ -2031,7 +2056,7 @@ export function App() {
     if (!canManualFocusMonster(game, slotKey)) {
       return;
     }
-    applyChange((state) => focusMonster(state, slotKey));
+    applyHumanAction({ type: "focus", slotKey }, (state) => focusMonster(state, slotKey));
   }
 
   function handleTargetSelection(target: Target): boolean {
@@ -2043,7 +2068,10 @@ export function App() {
     if (selection.kind === "hand") {
       const handCard = getHandCard(game, selection.instanceId);
       if (handCard && getCardDef(handCard.cardId).type === "monster" && target.kind === "monster" && canSummonTo(game, selection.instanceId, target.slotKey)) {
-        applyChange((state) => summonMonster(state, selection.instanceId, target.slotKey));
+        applyHumanAction(
+          { type: "summon", handInstanceId: selection.instanceId, slotKey: target.slotKey },
+          (state) => summonMonster(state, selection.instanceId, target.slotKey),
+        );
         return true;
       }
       if (targetKeys.has(key)) {
@@ -2058,35 +2086,39 @@ export function App() {
     }
 
     if (selection.kind === "masterAction" && targetKeys.has(key)) {
-      applyChange((state) => useMasterAction(state, selection.actionId, target));
+      applyHumanAction(
+        { type: "master_action", actionId: selection.actionId, target },
+        (state) => useMasterAction(state, selection.actionId, target),
+      );
       return true;
     }
 
     if (selection.kind === "move" && target.kind === "monster" && targetKeys.has(key)) {
-      applyChange((state) => moveMonster(state, selection.fromSlotKey, target.slotKey));
+      applyHumanAction(
+        { type: "move", fromSlotKey: selection.fromSlotKey, toSlotKey: target.slotKey },
+        (state) => moveMonster(state, selection.fromSlotKey, target.slotKey),
+      );
       return true;
     }
 
     if (selection.kind === "magicSecondaryTarget" && targetKeys.has(key)) {
-      applyChange((state) =>
-        playMagic(state, {
-          handInstanceId: selection.handInstanceId,
-          target: selection.target,
-          secondaryTarget: target,
-        }),
-      );
+      const action: MagicAction = {
+        handInstanceId: selection.handInstanceId,
+        target: selection.target,
+        secondaryTarget: target,
+      };
+      applyHumanAction({ type: "magic", action }, (state) => playMagic(state, action));
       return true;
     }
 
     if (selection.kind === "commandSecondaryTarget" && targetKeys.has(key)) {
-      applyChange((state) =>
-        attackWithCommand(state, {
-          attackerSlotKey: selection.attackerSlotKey,
-          commandId: selection.commandId,
-          target: selection.target,
-          secondaryTarget: target,
-        }),
-      );
+      const action = {
+        attackerSlotKey: selection.attackerSlotKey,
+        commandId: selection.commandId,
+        target: selection.target,
+        secondaryTarget: target,
+      };
+      applyHumanAction({ type: "attack", action }, (state) => attackWithCommand(state, action));
       return true;
     }
 
@@ -2118,7 +2150,10 @@ export function App() {
     }
     if (!game.winner && !game.pendingLevelUp) {
       if (selection?.kind === "masterAction" && targetKeys.has(targetToKey(target))) {
-        applyChange((state) => useMasterAction(state, selection.actionId, target));
+        applyHumanAction(
+          { type: "master_action", actionId: selection.actionId, target },
+          (state) => useMasterAction(state, selection.actionId, target),
+        );
         return;
       }
       if (selection?.kind === "command" && targetKeys.has(targetToKey(target))) {
@@ -2148,7 +2183,7 @@ export function App() {
       setError("");
       return;
     }
-    applyChange(endTurn);
+    applyHumanAction({ type: "end_turn" }, endTurn);
   }
 
   function startNewGame(settings: BattleSettings, decks: DeckSettings) {
@@ -2763,7 +2798,10 @@ export function App() {
 
     const def = getCardDef(handCard.cardId);
     if (def.type === "monster" && canSummonTo(game, payload.instanceId, target.slotKey)) {
-      applyChange((state) => summonMonster(state, payload.instanceId, target.slotKey));
+      applyHumanAction(
+        { type: "summon", handInstanceId: payload.instanceId, slotKey: target.slotKey },
+        (state) => summonMonster(state, payload.instanceId, target.slotKey),
+      );
       return true;
     }
 
@@ -2844,11 +2882,17 @@ export function App() {
       return;
     }
     if (pendingDropAction.kind === "move") {
-      applyChange((state) => moveMonster(state, pendingDropAction.fromSlotKey, pendingDropAction.toSlotKey));
+      applyHumanAction(
+        { type: "move", fromSlotKey: pendingDropAction.fromSlotKey, toSlotKey: pendingDropAction.toSlotKey },
+        (state) => moveMonster(state, pendingDropAction.fromSlotKey, pendingDropAction.toSlotKey),
+      );
       return;
     }
     if (pendingDropAction.kind === "focus") {
-      applyChange((state) => focusMonster(state, pendingDropAction.slotKey));
+      applyHumanAction(
+        { type: "focus", slotKey: pendingDropAction.slotKey },
+        (state) => focusMonster(state, pendingDropAction.slotKey),
+      );
       return;
     }
   }
@@ -2864,7 +2908,10 @@ export function App() {
     if (!pendingDropAction || pendingDropAction.kind !== "masterTarget") {
       return;
     }
-    applyChange((state) => useMasterAction(state, actionId, pendingDropAction.target));
+    applyHumanAction(
+      { type: "master_action", actionId, target: pendingDropAction.target },
+      (state) => useMasterAction(state, actionId, pendingDropAction.target),
+    );
   }
 
   function handleCancelInteraction() {
@@ -2976,50 +3023,46 @@ export function App() {
         onCancel={handleCancelInteraction}
         onSecondaryTarget={(target) => {
           if (selection.kind === "magicSecondaryTarget") {
-            applyChange((state) =>
-              playMagic(state, {
-                handInstanceId: selection.handInstanceId,
-                target: selection.target,
-                secondaryTarget: target,
-              }),
-            );
+            const action: MagicAction = {
+              handInstanceId: selection.handInstanceId,
+              target: selection.target,
+              secondaryTarget: target,
+            };
+            applyHumanAction({ type: "magic", action }, (state) => playMagic(state, action));
             return;
           }
           if (selection.kind === "commandSecondaryTarget") {
-            applyChange((state) =>
-              attackWithCommand(state, {
-                attackerSlotKey: selection.attackerSlotKey,
-                commandId: selection.commandId,
-                target: selection.target,
-                secondaryTarget: target,
-              }),
-            );
+            const action = {
+              attackerSlotKey: selection.attackerSlotKey,
+              commandId: selection.commandId,
+              target: selection.target,
+              secondaryTarget: target,
+            };
+            applyHumanAction({ type: "attack", action }, (state) => attackWithCommand(state, action));
           }
         }}
         onMagicHand={(instanceId) => {
           if (selection.kind !== "magicHandChoice") {
             return;
           }
-          applyChange((state) =>
-            playMagic(state, {
-              handInstanceId: selection.handInstanceId,
-              target: selection.target,
-              secondaryHandInstanceId: instanceId,
-            }),
-          );
+          const action: MagicAction = {
+            handInstanceId: selection.handInstanceId,
+            target: selection.target,
+            secondaryHandInstanceId: instanceId,
+          };
+          applyHumanAction({ type: "magic", action }, (state) => playMagic(state, action));
         }}
         onCommandHand={(instanceId) => {
           if (selection.kind !== "commandHandChoice") {
             return;
           }
-          applyChange((state) =>
-            attackWithCommand(state, {
-              attackerSlotKey: selection.attackerSlotKey,
-              commandId: selection.commandId,
-              target: selection.target,
-              secondaryHandInstanceId: instanceId,
-            }),
-          );
+          const action = {
+            attackerSlotKey: selection.attackerSlotKey,
+            commandId: selection.commandId,
+            target: selection.target,
+            secondaryHandInstanceId: instanceId,
+          };
+          applyHumanAction({ type: "attack", action }, (state) => attackWithCommand(state, action));
         }}
         onRefreshToggle={(instanceId) => {
           if (selection.kind !== "magicRefresh") {
@@ -3036,37 +3079,34 @@ export function App() {
           if (selection.kind !== "magicRefresh") {
             return;
           }
-          applyChange((state) =>
-            playMagic(state, {
-              handInstanceId: selection.handInstanceId,
-              target: selection.target,
-              selectedHandInstanceIds: selection.selectedIds,
-            }),
-          );
+          const action: MagicAction = {
+            handInstanceId: selection.handInstanceId,
+            target: selection.target,
+            selectedHandInstanceIds: selection.selectedIds,
+          };
+          applyHumanAction({ type: "magic", action }, (state) => playMagic(state, action));
         }}
         onSearch={(category) => {
           if (selection.kind !== "magicSearch") {
             return;
           }
-          applyChange((state) =>
-            playMagic(state, {
-              handInstanceId: selection.handInstanceId,
-              target: selection.target,
-              searchCategory: category,
-            }),
-          );
+          const action: MagicAction = {
+            handInstanceId: selection.handInstanceId,
+            target: selection.target,
+            searchCategory: category,
+          };
+          applyHumanAction({ type: "magic", action }, (state) => playMagic(state, action));
         }}
         onRotationDirection={(rotationDirection) => {
           if (selection.kind !== "magicRotationDirection") {
             return;
           }
-          applyChange((state) =>
-            playMagic(state, {
-              handInstanceId: selection.handInstanceId,
-              target: selection.target,
-              rotationDirection,
-            }),
-          );
+          const action: MagicAction = {
+            handInstanceId: selection.handInstanceId,
+            target: selection.target,
+            rotationDirection,
+          };
+          applyHumanAction({ type: "magic", action }, (state) => playMagic(state, action));
         }}
       />
     );
@@ -3145,9 +3185,21 @@ export function App() {
               <div className="turn-flow-choice level-up-decision-panel">
                 <LevelUpDecisionPanel
                   game={game}
-                  onAccept={() => applyChange((state) => resolveLevelUp(state, 1))}
-                  onDecline={() => applyChange((state) => resolveLevelUp(state, 0))}
-                  onSuper={(handInstanceId) => applyChange((state) => resolveLevelUp(state, game.pendingLevelUp!.maxLevels, handInstanceId))}
+                  onAccept={() => applyHumanAction(
+                    { type: "resolve_level_up", levels: 1 },
+                    (state) => resolveLevelUp(state, 1),
+                  )}
+                  onDecline={() => applyHumanAction(
+                    { type: "resolve_level_up", levels: 0 },
+                    (state) => resolveLevelUp(state, 0),
+                  )}
+                  onSuper={(handInstanceId) => {
+                    const levels = game.pendingLevelUp!.maxLevels;
+                    applyHumanAction(
+                      { type: "resolve_level_up", levels, superHandInstanceId: handInstanceId },
+                      (state) => resolveLevelUp(state, levels, handInstanceId),
+                    );
+                  }}
                 />
               </div>
             ) : isHandLimitDiscarding ? (
@@ -3781,7 +3833,7 @@ export function App() {
                   setSelection({ kind: "masterAction", actionId, targets });
                   setError("");
                 }}
-                onHpDraw={() => applyChange(useMasterHpDraw)}
+                onHpDraw={() => applyHumanAction({ type: "master_hp_draw" }, useMasterHpDraw)}
               />
               <ActionDetailContext
                 game={game}
@@ -3802,7 +3854,10 @@ export function App() {
                   setPendingDropAction(undefined);
                   setSelection({ kind: "command", attackerSlotKey: selection.slotKey, commandId, targets });
                 }}
-                onFocus={() => applyChange((state) => focusMonster(state, selection.slotKey))}
+                onFocus={() => applyHumanAction(
+                  { type: "focus", slotKey: selection.slotKey },
+                  (state) => focusMonster(state, selection.slotKey),
+                )}
                 onMove={(targets) => {
                   setPendingDropAction(undefined);
                   setSelection({ kind: "move", fromSlotKey: selection.slotKey, targets });
@@ -3825,7 +3880,10 @@ export function App() {
                 card={selectedHand}
                 game={game}
                 disabled={controlsDisabled}
-                onDiscard={() => applyChange((state) => discardHandCard(state, selectedHand.instanceId))}
+                onDiscard={() => applyHumanAction(
+                  { type: "discard_hand", handInstanceId: selectedHand.instanceId },
+                  (state) => discardHandCard(state, selectedHand.instanceId),
+                )}
               />
               <ActionDetailContext
                 game={game}

@@ -10,6 +10,7 @@
     "test": "vitest run --environment jsdom",
     "collect:battle-reports": "vite-node scripts/battle-report-inbox.ts",
     "analyze:battle-report": "vite-node scripts/analyze-battle-report.ts",
+    "audit:human-turns": "vite-node scripts/analyze-human-turns.ts",
     "benchmark:ai": "vite-node scripts/ai-benchmark.ts",
     "benchmark:deck-suite": "vite-node scripts/deck-suite-benchmark.ts",
     "score:deck-battles": "vite-node scripts/deck-battle-score.ts",
