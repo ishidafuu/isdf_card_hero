@@ -7500,14 +7500,20 @@ export function listCpuDecisions(
     return [createEndTurnDecision()];
   }
 
+  const attackDecisions = listAttackDecisions(state, weights);
+  const mustUseSafeBacklineFollowThrough = attackDecisions.some(
+    (decision) =>
+      decision.type === "attack" &&
+      hasWhiteMirrorSafeBacklineFollowThroughFrontChip(state, decision.action.attackerSlotKey),
+  );
   return [
-    ...listAttackDecisions(state, weights),
+    ...attackDecisions,
     ...listMasterActionDecisions(state, weights),
     ...listMagicDecisions(state, weights),
     ...listSummonDecisions(state),
     ...listMoveDecisions(state),
     ...listFocusDecisions(state),
-    createEndTurnDecision(),
+    ...(mustUseSafeBacklineFollowThrough ? [] : [createEndTurnDecision()]),
   ];
 }
 
@@ -8457,11 +8463,49 @@ function whiteFrontChipResponseDecisionPenalty(
   }
   if (
     decision.type === "attack" &&
-    isWhiteMirrorSafeBacklineFocusStripFrontChip(before, after, decision.action, targetSlotKey, targetAfter)
+    (isWhiteMirrorSafeBacklineFocusStripFrontChip(before, after, decision.action, targetSlotKey, targetAfter) ||
+      isWhiteMirrorSafeBacklineFollowThroughFrontChip(before, after, decision.action, targetSlotKey, targetAfter))
   ) {
     return 0;
   }
   return whiteMirrorNonConvertingFrontThreatChipPenalty(before, after, targetSlotKey, targetAfter, value);
+}
+
+function isWhiteMirrorSafeBacklineFollowThroughFrontChip(
+  state: GameState,
+  after: GameState,
+  action: CommandAction,
+  targetSlotKey: SlotKey,
+  targetAfter: MonsterState,
+): boolean {
+  const perspective = state.currentPlayer;
+  const targetBefore = state.slots[targetSlotKey].monster;
+  const attackerBefore = state.slots[action.attackerSlotKey].monster;
+  const attackerAfter = after.slots[action.attackerSlotKey].monster;
+  if (
+    !isWhiteMirrorState(state, perspective) ||
+    state.slots[action.attackerSlotKey].row !== "back" ||
+    state.slots[targetSlotKey].row !== "front" ||
+    !targetBefore ||
+    !attackerBefore ||
+    !attackerAfter ||
+    targetBefore.owner !== opponentOf(perspective) ||
+    targetAfter.owner !== targetBefore.owner ||
+    targetAfter.instanceId !== targetBefore.instanceId ||
+    targetAfter.hp >= targetBefore.hp ||
+    attackerBefore.owner !== perspective ||
+    attackerAfter.owner !== perspective ||
+    attackerAfter.instanceId !== attackerBefore.instanceId ||
+    attackerBefore.actionLimit <= 1 ||
+    attackerBefore.actionCount <= 0
+  ) {
+    return false;
+  }
+
+  // A backliner that already spent one action is not newly exposed by using its
+  // remaining action. Preserve focus only when the chip itself creates concrete harm.
+  return whiteMirrorUnsafeMasterResponseScore(after, targetSlotKey, perspective) <= 0 &&
+    opponentLevelFeedValue(after, action.attackerSlotKey) <= 0;
 }
 
 function isWhiteMirrorSafeBacklineFocusStripFrontChip(
@@ -9262,6 +9306,9 @@ function createMasterAttackDecision(state: GameState, target: Target): CpuDecisi
   if (!targetBefore || target.kind !== "monster") {
     return undefined;
   }
+  if (shouldSkipWhiteLowValueMultiMasterAttack(state, target.slotKey, targetBefore)) {
+    return undefined;
+  }
 
   if (!targetAfter) {
     return {
@@ -9286,6 +9333,40 @@ function createMasterAttackDecision(state: GameState, target: Target): CpuDecisi
     reason: "ストーンに余裕があり敵を削れるためマスターアタック",
     score,
   };
+}
+
+function shouldSkipWhiteLowValueMultiMasterAttack(
+  state: GameState,
+  targetSlotKey: SlotKey,
+  target: MonsterState,
+): boolean {
+  const perspective = state.currentPlayer;
+  if (
+    !isWhiteMirrorState(state, perspective) ||
+    isCloseoutState(state, perspective) ||
+    target.level > 1 ||
+    target.investedStones > 1 ||
+    currentTurnMasterActionCount(state, perspective, "master_attack") > 0
+  ) {
+    return false;
+  }
+
+  let current = state;
+  for (let count = 1; count <= 3; count += 1) {
+    if (current.players[perspective].stones < getMasterActionCost("master_attack")) {
+      return false;
+    }
+    try {
+      current = useMasterAction(current, "master_attack", { kind: "monster", slotKey: targetSlotKey });
+    } catch {
+      return false;
+    }
+    const remaining = current.slots[targetSlotKey].monster;
+    if (!remaining || remaining.instanceId !== target.instanceId || remaining.owner !== target.owner) {
+      return count >= 3;
+    }
+  }
+  return true;
 }
 
 function listWakeUpDecisions(state: GameState): CpuDecision[] {
@@ -9622,6 +9703,12 @@ function listSummonDecisions(state: GameState): CpuDecision[] {
       if (shouldSkipLoneFrontSummonWithoutWakeFinish(state, card.instanceId, slotKey)) {
         continue;
       }
+      if (shouldSkipWhiteMirrorRoleSaturatedBacklinerSummon(state, card)) {
+        continue;
+      }
+      if (shouldSkipWhiteMirrorWakeExposedFrontSummon(state, card, slotKey)) {
+        continue;
+      }
       const score = scoreSummon(state, card, slotKey);
       if (shouldPruneCloseoutNonProgressActions(state, playerId) && score <= 20) {
         continue;
@@ -9636,6 +9723,85 @@ function listSummonDecisions(state: GameState): CpuDecision[] {
     }
   }
   return decisions;
+}
+
+function shouldSkipWhiteMirrorWakeExposedFrontSummon(
+  state: GameState,
+  card: CardInstance,
+  slotKey: SlotKey,
+): boolean {
+  const playerId = state.currentPlayer;
+  if (
+    !isWhiteMirrorState(state, playerId) ||
+    state.slots[slotKey].row !== "front" ||
+    isCloseoutState(state, playerId) ||
+    FIELD_ORDER_BY_PLAYER[playerId].some(
+      (key) => state.slots[key].row === "back" && state.slots[key].monster?.owner === playerId,
+    )
+  ) {
+    return false;
+  }
+  const hasSafeBackPlacement = SUMMON_SLOT_ORDER_BY_PLAYER[playerId].some(
+    (candidateSlotKey) =>
+      state.slots[candidateSlotKey].row === "back" &&
+      canSummonTo(state, card.instanceId, candidateSlotKey),
+  );
+  if (!hasSafeBackPlacement) {
+    return false;
+  }
+
+  try {
+    const summoned = summonMonster(state, card.instanceId, slotKey);
+    const response = endTurn(summoned);
+    const opponent = response.currentPlayer;
+    const target: Target = { kind: "monster", slotKey };
+    if (
+      !getCurrentMasterActionIds(response).includes("wake_up") ||
+      !getMasterActionTargets(response, "wake_up").some((candidate) => isSameTargetForAi(candidate, target))
+    ) {
+      return false;
+    }
+    const woken = useMasterAction(response, "wake_up", target);
+    return canDefeatEnemyMonsterWithCurrentAttacks(woken, slotKey, opponent);
+  } catch {
+    return false;
+  }
+}
+
+function shouldSkipWhiteMirrorRoleSaturatedBacklinerSummon(
+  state: GameState,
+  card: CardInstance,
+): boolean {
+  const playerId = state.currentPlayer;
+  if (
+    state.players[playerId].masterId !== "white" ||
+    state.players[opponentOf(playerId)].masterId !== "white" ||
+    state.players[playerId].hand.length >= 6 ||
+    isCloseoutState(state, playerId)
+  ) {
+    return false;
+  }
+
+  const trait = getMonsterAiTrait(card.cardId);
+  if (trait.role !== "back" && !monsterHasBacklineAttackPattern(card.cardId)) {
+    return false;
+  }
+
+  const sameCardOnField = FIELD_ORDER_BY_PLAYER[playerId].filter(
+    (key) => state.slots[key].monster?.cardId === card.cardId,
+  ).length;
+  if (sameCardOnField < 2) {
+    return false;
+  }
+
+  return state.players[playerId].deck.some((deckCard) => {
+    try {
+      const def = getCardDef(deckCard.cardId);
+      return def.type === "monster" && inferMonsterAiTrait(def).role === "front";
+    } catch {
+      return false;
+    }
+  });
 }
 
 function scoreSummon(state: GameState, card: CardInstance, slotKey: SlotKey): number {
@@ -9751,7 +9917,10 @@ function listMoveDecisions(state: GameState): CpuDecision[] {
 
 function createMoveDecision(state: GameState, fromSlotKey: SlotKey, toSlotKey: SlotKey): CpuDecision | undefined {
   const after = moveMonster(state, fromSlotKey, toSlotKey);
-  const score = scoreMoveDecision(state, after, fromSlotKey, toSlotKey);
+  const isSurvivalRetreat = isWhiteMirrorFragileFrontSurvivalRetreat(state, after, fromSlotKey, toSlotKey);
+  const score = isSurvivalRetreat
+    ? Math.max(160, scoreMoveDecision(state, after, fromSlotKey, toSlotKey))
+    : scoreMoveDecision(state, after, fromSlotKey, toSlotKey);
   if (score <= 14) {
     return undefined;
   }
@@ -9904,6 +10073,9 @@ function shouldPruneCloseoutMove(
 }
 
 function moveReason(state: GameState, after: GameState, fromSlotKey: SlotKey, toSlotKey: SlotKey): string {
+  if (isWhiteMirrorFragileFrontSurvivalRetreat(state, after, fromSlotKey, toSlotKey)) {
+    return "致死圏の前衛を後列へ退避して相手のレベルアップを防ぐため移動";
+  }
   if (moveCreatesStrongerAttackLane(state, after, fromSlotKey, toSlotKey)) {
     return "移動後に強い攻撃筋を作れるため移動";
   }
@@ -9916,6 +10088,35 @@ function moveReason(state: GameState, after: GameState, fromSlotKey: SlotKey, to
     return "後衛カードを後列へ戻して射程を活かすため移動";
   }
   return "配置評価を改善できるため移動";
+}
+
+function isWhiteMirrorFragileFrontSurvivalRetreat(
+  state: GameState,
+  after: GameState,
+  fromSlotKey: SlotKey,
+  toSlotKey: SlotKey,
+): boolean {
+  const perspective = state.currentPlayer;
+  const mover = state.slots[fromSlotKey].monster;
+  const moved = after.slots[toSlotKey].monster;
+  if (
+    !isWhiteMirrorState(state, perspective) ||
+    state.slots[fromSlotKey].row !== "front" ||
+    state.slots[toSlotKey].row !== "back" ||
+    state.slots[toSlotKey].monster ||
+    !mover ||
+    !moved ||
+    mover.owner !== perspective ||
+    moved.instanceId !== mover.instanceId ||
+    mover.hp > 2 ||
+    mover.cardId === "bomuzo"
+  ) {
+    return false;
+  }
+
+  const beforeFeed = opponentLevelFeedValue(state, fromSlotKey);
+  const afterFeed = opponentLevelFeedValue(after, toSlotKey);
+  return beforeFeed > 0 && afterFeed < beforeFeed;
 }
 
 function moveCreatesStrongerAttackLane(
@@ -9978,7 +10179,7 @@ function listFocusDecisions(state: GameState): CpuDecision[] {
     return [];
   }
   return FIELD_ORDER_BY_PLAYER[state.currentPlayer]
-    .filter((slotKey) => canFocusMonster(state, slotKey))
+    .filter((slotKey) => canFocusMonster(state, slotKey) && !hasWhiteMirrorSafeBacklineFollowThroughFrontChip(state, slotKey))
     .flatMap((slotKey) => {
       const score = scoreFocus(state, slotKey);
       const monster = state.slots[slotKey].monster;
@@ -9993,6 +10194,45 @@ function listFocusDecisions(state: GameState): CpuDecision[] {
         score,
       }];
     });
+}
+
+function hasWhiteMirrorSafeBacklineFollowThroughFrontChip(state: GameState, attackerSlotKey: SlotKey): boolean {
+  const attacker = state.slots[attackerSlotKey].monster;
+  if (
+    !attacker ||
+    !isWhiteMirrorState(state, state.currentPlayer) ||
+    state.slots[attackerSlotKey].row !== "back" ||
+    attacker.owner !== state.currentPlayer ||
+    attacker.status !== "active" ||
+    attacker.actionLimit <= 1 ||
+    attacker.actionCount <= 0 ||
+    attacker.actionCount >= attacker.actionLimit
+  ) {
+    return false;
+  }
+
+  for (const command of getMonsterCommands(attacker)) {
+    for (const target of getCommandTargets(state, attackerSlotKey, command.id)) {
+      if (target.kind !== "monster" || state.slots[target.slotKey].row !== "front") {
+        continue;
+      }
+      for (const action of expandCommandActions(state, { attackerSlotKey, commandId: command.id, target })) {
+        try {
+          const after = attackWithCommand(state, action);
+          const targetAfter = after.slots[target.slotKey].monster;
+          if (
+            targetAfter &&
+            isWhiteMirrorSafeBacklineFollowThroughFrontChip(state, after, action, target.slotKey, targetAfter)
+          ) {
+            return true;
+          }
+        } catch {
+          // Ignore command variants that are not legal in this exact state.
+        }
+      }
+    }
+  }
+  return false;
 }
 
 function scoreFocus(state: GameState, slotKey: SlotKey): number {
@@ -10342,7 +10582,113 @@ function scoreMagicDecision(
     return scoreRefreshMagicDecision(state, after, action, beforeScore, def.cost, weights);
   }
 
-  return evaluateState(after, state.currentPlayer, weights) - beforeScore - def.cost * weights.genericMagicCost;
+  const stateDeltaScore = evaluateState(after, state.currentPlayer, weights) - beforeScore - def.cost * weights.genericMagicCost;
+  const clearFinishScore = clearMagicFinishConversionScore(state, after, def.id);
+  return Math.max(stateDeltaScore, clearFinishScore);
+}
+
+function clearMagicFinishConversionScore(state: GameState, after: GameState, cardId: string): number {
+  const targetSlotKey = clearMagicFinishConversionTarget(state, after, cardId);
+  if (!targetSlotKey) {
+    return 0;
+  }
+  const target = state.slots[targetSlotKey].monster;
+  return target ? 220 + target.level * 60 + monsterValue(state, targetSlotKey) * 0.35 : 220;
+}
+
+function clearMagicFinishConversionTarget(
+  state: GameState,
+  after: GameState,
+  cardId: string,
+): SlotKey | undefined {
+  if (cardId !== "card_064") {
+    return undefined;
+  }
+  const perspective = state.currentPlayer;
+  for (const slotKey of FIELD_ORDER_BY_PLAYER[opponentOf(perspective)]) {
+    const beforeTarget = state.slots[slotKey].monster;
+    const afterTarget = after.slots[slotKey].monster;
+    if (
+      !beforeTarget ||
+      !afterTarget ||
+      beforeTarget.instanceId !== afterTarget.instanceId ||
+      beforeTarget.owner !== opponentOf(perspective) ||
+      beforeTarget.shielded === afterTarget.shielded ||
+      !beforeTarget.shielded ||
+      afterTarget.shielded
+    ) {
+      continue;
+    }
+    if (
+      !canDefeatEnemyMonsterWithCurrentAttacks(state, slotKey, perspective) &&
+      canDefeatEnemyMonsterWithCurrentAttacks(after, slotKey, perspective)
+    ) {
+      return slotKey;
+    }
+  }
+  return undefined;
+}
+
+function canDefeatEnemyMonsterWithCurrentAttacks(
+  state: GameState,
+  targetSlotKey: SlotKey,
+  perspective: PlayerId,
+): boolean {
+  if (state.currentPlayer !== perspective || state.pendingLevelUp) {
+    return false;
+  }
+
+  let current = state;
+  for (let step = 0; step < 8; step += 1) {
+    const target = current.slots[targetSlotKey].monster;
+    if (!target || target.owner === perspective) {
+      return true;
+    }
+
+    let bestTransition: { state: GameState; damage: number } | undefined;
+    for (const attackerSlotKey of FIELD_ORDER_BY_PLAYER[perspective]) {
+      const attacker = current.slots[attackerSlotKey].monster;
+      if (
+        !attacker ||
+        attacker.owner !== perspective ||
+        attacker.status !== "active" ||
+        attacker.actionCount >= attacker.actionLimit
+      ) {
+        continue;
+      }
+      for (const command of getMonsterCommands(attacker)) {
+        if (!getCommandTargets(current, attackerSlotKey, command.id).some(
+          (candidate) => candidate.kind === "monster" && candidate.slotKey === targetSlotKey,
+        )) {
+          continue;
+        }
+        for (const attack of expandCommandActions(current, {
+          attackerSlotKey,
+          commandId: command.id,
+          target: { kind: "monster", slotKey: targetSlotKey },
+        })) {
+          try {
+            const attacked = attackWithCommand(current, attack);
+            const targetAfter = attacked.slots[targetSlotKey].monster;
+            if (!targetAfter || targetAfter.instanceId !== target.instanceId || targetAfter.owner !== target.owner) {
+              return true;
+            }
+            const damage = target.hp - targetAfter.hp;
+            if (damage > 0 && (!bestTransition || damage > bestTransition.damage)) {
+              bestTransition = { state: attacked, damage };
+            }
+          } catch {
+            // Ignore command variants that become illegal for this simulated order.
+          }
+        }
+      }
+    }
+    if (!bestTransition) {
+      return false;
+    }
+    current = bestTransition.state;
+  }
+  return false;
 }
 
 function scoreShiftChangeMagicDecision(
@@ -10560,6 +10906,9 @@ function magicReason(state: GameState, after: GameState, action: MagicAction): s
   const name = card ? getCardName(card.cardId) : "マジック";
   if (after.winner === state.currentPlayer) {
     return `${name}で相手マスターを倒せるため使用`;
+  }
+  if (card && clearMagicFinishConversionTarget(state, after, card.cardId)) {
+    return `${name}でシールドを外し同ターンの撃破圏を作れるため使用`;
   }
   if (action.searchCategory) {
     return `${name}で${searchCategoryReasonLabel(action.searchCategory)}を探せるため使用`;

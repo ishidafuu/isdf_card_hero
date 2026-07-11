@@ -240,6 +240,155 @@ describe("cpu ai", () => {
     expect(decision.reason).toContain("V2ターンプラン");
   });
 
+  it("uses the remaining action of an already-committed safe backline Pygmy against an enemy front", () => {
+    const game = createCpuGame();
+    game.players.cpu.masterId = "white";
+    game.players.player.masterId = "white";
+    game.players.cpu.hand = [];
+    game.players.cpu.stones = 0;
+    for (const slot of Object.values(game.slots)) {
+      delete slot.monster;
+    }
+    game.slots.cpu_front_left.monster = createActiveMonster("card_133", "cpu", { actionCount: 1, focused: true });
+    game.slots.cpu_front_right.monster = createActiveMonster("yanbaru", "cpu", { actionCount: 1, level: 2 });
+    game.slots.cpu_back_left.monster = createActiveMonster("card_051", "cpu", {
+      actionCount: 1,
+      actionLimit: 2,
+    });
+    game.slots.player_front_right.monster = createActiveMonster("card_047", "player", { hp: 5 });
+
+    const evaluations = inspectCpuDecisionEvaluations(game, {
+      profile: "white",
+      search: { sameTurnSearchDepth: 0 },
+    });
+    const attack = evaluations.find(
+      (candidate) =>
+        candidate.decision.type === "attack" &&
+        candidate.decision.action.attackerSlotKey === "cpu_back_left" &&
+        candidate.decision.action.target.kind === "monster" &&
+        candidate.decision.action.target.slotKey === "player_front_right",
+    );
+    const focus = evaluations.find(
+      (candidate) => candidate.decision.type === "focus" && candidate.decision.slotKey === "cpu_back_left",
+    );
+
+    expect(attack).toBeDefined();
+    expect(focus).toBeUndefined();
+  });
+
+  it("holds the last back slot instead of fielding a third copy of the same backliner", () => {
+    const game = createCpuGame([{ cardId: "card_051", instanceId: "cpu_third_pygmy" }]);
+    game.players.cpu.masterId = "white";
+    game.players.player.masterId = "white";
+    game.players.cpu.stones = 8;
+    game.players.cpu.deck = [{ cardId: "card_047", instanceId: "cpu_future_dyne" }];
+    for (const slot of Object.values(game.slots)) {
+      delete slot.monster;
+    }
+    game.slots.cpu_front_left.monster = createActiveMonster("card_051", "cpu", {
+      instanceId: "cpu_front_pygmy",
+      focused: true,
+    });
+    game.slots.cpu_front_right.monster = createActiveMonster("card_037", "cpu", {
+      instanceId: "cpu_front_donomantis",
+    });
+    game.slots.cpu_back_right.monster = createActiveMonster("card_051", "cpu", {
+      instanceId: "cpu_back_pygmy",
+    });
+
+    expect(listCpuDecisions(game).some(
+      (decision) => decision.type === "summon" && decision.handInstanceId === "cpu_third_pygmy",
+    )).toBe(false);
+  });
+
+  it("keeps Twilight Wind as a candidate when clearing a shield creates an exact front kill", () => {
+    const game = createCpuGame([{ cardId: "card_064", instanceId: "cpu_twilight_wind" }]);
+    game.players.cpu.masterId = "white";
+    game.players.player.masterId = "white";
+    game.players.cpu.stones = 10;
+    for (const slot of Object.values(game.slots)) {
+      delete slot.monster;
+    }
+    game.slots.cpu_front_left.monster = createActiveMonster("card_051", "cpu", {
+      focused: true,
+      actionLimit: 2,
+    });
+    game.slots.cpu_front_right.monster = createActiveMonster("card_037", "cpu");
+    game.slots.cpu_back_right.monster = createActiveMonster("card_051", "cpu", {
+      actionLimit: 2,
+    });
+    game.slots.player_front_right.monster = createActiveMonster("card_047", "player", {
+      level: 2,
+      hp: 6,
+      investedStones: 2,
+      shielded: true,
+      actionCount: 1,
+    });
+
+    const twilight = listCpuDecisions(game).find(
+      (decision) => decision.type === "magic" && decision.action.handInstanceId === "cpu_twilight_wind",
+    );
+
+    expect(twilight).toBeDefined();
+    expect(twilight?.reason).toContain("シールドを外し同ターンの撃破圏");
+  });
+
+  it("keeps a fragile front survival retreat when moving back denies the opponent level-up", () => {
+    const game = createCpuGame();
+    game.players.cpu.masterId = "white";
+    game.players.player.masterId = "white";
+    game.players.cpu.hand = [];
+    game.players.player.stones = 2;
+    for (const slot of Object.values(game.slots)) {
+      delete slot.monster;
+    }
+    game.slots.cpu_front_right.monster = createActiveMonster("polyspinner", "cpu", { hp: 2 });
+    game.slots.player_front_right.monster = createActiveMonster("card_047", "player");
+
+    const retreat = listCpuDecisions(game).find(
+      (decision) =>
+        decision.type === "move" &&
+        decision.fromSlotKey === "cpu_front_right" &&
+        decision.toSlotKey === "cpu_back_right",
+    );
+
+    expect(retreat).toBeDefined();
+    expect(retreat?.reason).toContain("相手のレベルアップを防ぐ");
+  });
+
+  it("uses a safe back slot when a prepared front summon can be woken and defeated", () => {
+    const game = createCpuGame([{ cardId: "card_133", instanceId: "cpu_exposed_death_sheep" }]);
+    game.players.cpu.masterId = "white";
+    game.players.player.masterId = "white";
+    game.players.cpu.stones = 5;
+    game.players.player.stones = 3;
+    for (const slot of Object.values(game.slots)) {
+      delete slot.monster;
+    }
+    game.slots.cpu_front_left.monster = createActiveMonster("polyspinner", "cpu", { actionCount: 1 });
+    game.slots.player_front_left.monster = createActiveMonster("polyspinner", "player", {
+      level: 2,
+      actionCount: 2,
+      actionLimit: 2,
+      investedStones: 2,
+    });
+    game.slots.player_back_left.monster = createActiveMonster("morgan", "player", {
+      level: 2,
+      hp: 4,
+    });
+    game.slots.player_back_right.monster = createActiveMonster("morgan", "player", {
+      level: 2,
+      hp: 4,
+    });
+
+    const summons = listCpuDecisions(game).filter(
+      (decision) => decision.type === "summon" && decision.handInstanceId === "cpu_exposed_death_sheep",
+    );
+
+    expect(summons.some((decision) => decision.type === "summon" && decision.slotKey === "cpu_front_right")).toBe(false);
+    expect(summons.some((decision) => decision.type === "summon" && decision.slotKey.startsWith("cpu_back_"))).toBe(true);
+  });
+
   it("tracks rollout-confirmed decisions only for the current turn", () => {
     const game = createCpuGame();
     game.slots.cpu_front_left.monster = createActiveMonster("takokke", "cpu");
@@ -721,6 +870,31 @@ describe("cpu ai", () => {
       expect(decision.actionId).toBe("master_attack");
       expect(decision.target).toEqual({ kind: "monster", slotKey: "player_front_left" });
     }
+  });
+
+  it("does not start a three-master-attack sequence against a low-value level 1 target", () => {
+    const game = createCpuGame();
+    game.players.cpu.masterId = "white";
+    game.players.player.masterId = "white";
+    game.players.cpu.stones = 9;
+    game.players.cpu.hand = [];
+    for (const slot of Object.values(game.slots)) {
+      delete slot.monster;
+    }
+    game.slots.player_front_right.monster = createActiveMonster("card_047", "player", {
+      hp: 6,
+      level: 1,
+      investedStones: 1,
+      actionCount: 1,
+    });
+
+    expect(listCpuDecisions(game).some(
+      (decision) =>
+        decision.type === "master_action" &&
+        decision.actionId === "master_attack" &&
+        decision.target.kind === "monster" &&
+        decision.target.slotKey === "player_front_right",
+    )).toBe(false);
   });
 
   it("applies per-seat action tuning to evaluation scores", () => {
@@ -2773,7 +2947,7 @@ describe("cpu ai", () => {
     const decision = chooseCpuDecision(game, { profiles: { cpu: "white_planner", player: "white" } });
 
     expect(decisionTestSignature(decision)).toBe("summon:cpu_hand_donomantis_guard:cpu_front_right");
-    expect(decision.reason).toContain("低変換の削りより前列ガード");
+    expect(decision.reason).toContain("前衛カードを前列右へ召喚");
   });
 
   it("shields a fragile early multi-action front over a durable focused front in a white mirror", () => {
