@@ -96,6 +96,15 @@ export interface MagicCardDef {
 
 export type CardDef = MonsterCardDef | MagicCardDef;
 
+export interface MirroredFormSnapshot {
+  cardId: string;
+  level: number;
+  actionLimit: number;
+  revivedOnce?: boolean;
+  usedCommandIds?: string[];
+  hollow?: boolean;
+}
+
 export interface MonsterState {
   instanceId: string;
   cardId: string;
@@ -136,6 +145,7 @@ export interface MonsterState {
   masterAttackBlockedUntilTurnEnd?: boolean;
   revivedOnce?: boolean;
   usedCommandIds?: string[];
+  mirroredFormOriginal?: MirroredFormSnapshot;
 }
 
 export interface SlotState {

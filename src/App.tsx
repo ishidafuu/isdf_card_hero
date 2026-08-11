@@ -41,12 +41,9 @@ import {
   getMonsterDisplayName,
   getMovableTargets,
   moveMonster,
-  opponentOf,
   playMagic,
   playerLabel,
   resolveLevelUp,
-  runAutoStep,
-  runCpuStep,
   summonMonster,
   targetToKey,
   useMasterAction,
@@ -55,7 +52,7 @@ import {
 import { HAND_LIMIT } from "./game/ruleEngine/constants";
 import { getMasterActionDef, getMasterActionMagicCardId, getMasterIconUrl, getMasterName, MASTER_IDS } from "./game/masters";
 import { CPU_AI_PROFILES, type CpuAiProfile, type CpuAiProfiles } from "./game/cpuAi";
-import { createDefaultAiProfiles } from "./game/defaultAiProfiles";
+import { createDefaultAiProfiles, DEFAULT_CPU_AI_PROFILE } from "./game/defaultAiProfiles";
 import { appendHumanActionReviewEntry } from "./game/aiReviewTrace";
 import {
   buildDeckPresetCardIds,
@@ -83,6 +80,20 @@ import { evaluateCard } from "./game/unitEvaluation";
 import type { CardInstance, CardPool, CommandDef, GameState, HumanActionSnapshot, MagicAction, MagicCardDef, MagicTargetKind, MasterActionId, MasterId, MonsterState, PlayerId, Row, SlotKey, Target } from "./game/types";
 import type { DeckValidationSummary } from "./game/cards";
 import { BGM_SOURCES, SE_SOURCES, type BgmId, type SeId } from "./audio";
+import {
+  canResolveLevelUpManually,
+  isManualBattleActionAllowed,
+  shouldAutoResolveBattle,
+  type BattleAutomationState,
+} from "./uiBattleGuards";
+import {
+  isAutoStepWorkerResponse,
+  matchesAutoStepRequest,
+  tryCreateAutoStepWorker,
+  type AutoStepRequestToken,
+  type AutoStepWorkerMode,
+  type AutoStepWorkerRequest,
+} from "./autoStepWorkerProtocol";
 import {
   getBattleLogComment,
   getDisplayLogId,
@@ -150,6 +161,9 @@ const AUTO_SPEED_PRESETS = [
 const MAX_VISIBLE_RESOURCE_ICONS = 10;
 const STONE_ICON = "💎";
 const DEFAULT_BATTLE_SEED = 20260612;
+const DECK_TEXT_MAX_LENGTH = 20_000;
+const BATTLE_PRESET_NAME_MAX_LENGTH = 120;
+const BATTLE_LOG_COMMENT_MAX_LENGTH = 4_000;
 const AUTO_STEP_DELAY_STORAGE_KEY = "card-hero:auto-step-delay-ms:v2";
 const BATTLE_HISTORY_STORAGE_KEY = "card-hero:battle-history:v1";
 const BATTLE_PRESETS_STORAGE_KEY = "card-hero:battle-presets:v1";
@@ -229,7 +243,7 @@ const BATTLE_LOG_COMMENT_STAMPS: BattleLogCommentStampDef[] = [
   { id: "question", token: "QUESTION:", label: "Question", icon: "?", title: "判断保留として記録" },
 ];
 
-interface BattleSettings {
+export interface BattleSettings {
   seed: number;
   seedInput: string;
   firstPlayer: PlayerId;
@@ -238,7 +252,7 @@ interface BattleSettings {
   aiProfiles: CpuAiProfiles;
 }
 
-interface DeckSettings {
+export interface DeckSettings {
   fixed: Record<PlayerId, boolean>;
   allowSpecial: Record<PlayerId, boolean>;
   text: Record<PlayerId, string>;
@@ -284,7 +298,7 @@ interface BattleReplaySummary {
   turns: BattleReplayTurn[];
 }
 
-interface SavedBattlePreset {
+export interface SavedBattlePreset {
   id: string;
   name: string;
   createdAt: string;
@@ -558,11 +572,14 @@ function createDeckSettingsFromPreset(playerPresetId: DeckPresetId, cpuPresetId 
   };
 }
 
+export const DEFAULT_WHITE_MATCH_DESCRIPTION =
+  `Player/CPUとも投稿Pro白8なし #1377 デスシープ型。CPUは${aiProfileLabel(DEFAULT_CPU_AI_PROFILE)} AI。`;
+
 const BUILT_IN_MATCH_PRESETS: BuiltInMatchPreset[] = [
   {
     id: "standard-random",
     name: "白デフォルト戦",
-    description: "Player/CPUとも投稿Pro白8なし #1377 デスシープ型。CPUはWhite Planner AI。",
+    description: DEFAULT_WHITE_MATCH_DESCRIPTION,
     create: () => {
       const seed = createRandomBattleSeed();
       return {
@@ -656,26 +673,43 @@ function normalizeDeckSettings(settings: Partial<DeckSettings> | undefined): Dec
   const fallback = createDeckSettings(DEFAULT_BATTLE_SEED);
   return {
     fixed: {
-      player: !!settings?.fixed?.player,
-      cpu: !!settings?.fixed?.cpu,
+      player: settings?.fixed?.player === true,
+      cpu: settings?.fixed?.cpu === true,
     },
     allowSpecial: {
-      player: !!settings?.allowSpecial?.player,
-      cpu: !!settings?.allowSpecial?.cpu,
+      player: settings?.allowSpecial?.player === true,
+      cpu: settings?.allowSpecial?.cpu === true,
     },
     text: {
-      player: typeof settings?.text?.player === "string" ? settings.text.player : fallback.text.player,
-      cpu: typeof settings?.text?.cpu === "string" ? settings.text.cpu : fallback.text.cpu,
+      player: typeof settings?.text?.player === "string"
+        ? normalizeDeckTextInput(settings.text.player)
+        : fallback.text.player,
+      cpu: typeof settings?.text?.cpu === "string"
+        ? normalizeDeckTextInput(settings.text.cpu)
+        : fallback.text.cpu,
     },
   };
 }
 
-function cloneBattleSettings(settings: BattleSettings): BattleSettings {
+export function normalizeDeckTextInput(text: string): string {
+  return text.slice(0, DECK_TEXT_MAX_LENGTH);
+}
+
+function normalizeBattleSettings(settings: unknown): BattleSettings {
+  const candidate = isRecord(settings) ? settings as Partial<BattleSettings> : undefined;
+  const seed = normalizeSeedInput(String(candidate?.seed ?? DEFAULT_BATTLE_SEED), DEFAULT_BATTLE_SEED);
   return {
-    ...settings,
-    masterIds: { ...settings.masterIds },
-    aiProfiles: cloneAiProfiles(settings.aiProfiles),
+    seed,
+    seedInput: String(seed),
+    firstPlayer: isPlayerId(candidate?.firstPlayer) ? candidate.firstPlayer : "player",
+    mode: normalizeBattleMode(candidate?.mode),
+    masterIds: normalizeMasterIds(candidate?.masterIds),
+    aiProfiles: normalizeAiProfiles(candidate?.aiProfiles),
   };
+}
+
+function cloneBattleSettings(settings: BattleSettings): BattleSettings {
+  return normalizeBattleSettings(settings);
 }
 
 function createBattleHistoryEntry(
@@ -951,6 +985,7 @@ function createBattleDebugReport(
     comments,
     log: game.log,
     eventLog: game.eventLog,
+    eventLogOffset: Math.max(0, (game.logOffset ?? 0) + game.log.length - (game.eventLog?.length ?? game.log.length)),
   };
   return JSON.stringify(report, null, 2);
 }
@@ -1083,7 +1118,48 @@ function normalizeHistoryNumber(value: unknown, fallback: number): number {
 }
 
 function loadSavedBattlePresets(): SavedBattlePreset[] {
-  return loadJsonArray<SavedBattlePreset>(BATTLE_PRESETS_STORAGE_KEY);
+  return normalizeSavedBattlePresets(loadJsonArray<unknown>(BATTLE_PRESETS_STORAGE_KEY));
+}
+
+export function normalizeSavedBattlePresets(values: unknown[]): SavedBattlePreset[] {
+  const seenIds = new Set<string>();
+  const presets: SavedBattlePreset[] = [];
+  for (const value of values) {
+    const preset = normalizeSavedBattlePreset(value);
+    if (!preset || seenIds.has(preset.id)) {
+      continue;
+    }
+    seenIds.add(preset.id);
+    presets.push(preset);
+    if (presets.length >= 20) {
+      break;
+    }
+  }
+  return presets;
+}
+
+export function normalizeSavedBattlePreset(value: unknown): SavedBattlePreset | undefined {
+  if (!isRecord(value)) {
+    return undefined;
+  }
+  const id = typeof value.id === "string" ? value.id.trim().slice(0, 160) : "";
+  const name = typeof value.name === "string"
+    ? value.name.trim().slice(0, BATTLE_PRESET_NAME_MAX_LENGTH)
+    : "";
+  if (!id || !name || !isRecord(value.settings) || !isRecord(value.deckSettings)) {
+    return undefined;
+  }
+  return {
+    id,
+    name,
+    createdAt: typeof value.createdAt === "string" ? value.createdAt : "",
+    settings: normalizeBattleSettings(value.settings),
+    deckSettings: normalizeDeckSettings(value.deckSettings as Partial<DeckSettings>),
+  };
+}
+
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return typeof value === "object" && value !== null && !Array.isArray(value);
 }
 
 function saveJsonArray<T>(key: string, value: T[]): void {
@@ -1119,6 +1195,29 @@ function loadBooleanSetting(key: string, fallback: boolean): boolean {
     return raw === null ? fallback : raw === "true";
   } catch {
     return fallback;
+  }
+}
+
+export function saveLocalStorageSetting(key: string, value: string): void {
+  if (typeof window === "undefined") {
+    return;
+  }
+  try {
+    saveStorageSetting(window.localStorage, key, value);
+  } catch {
+    // Settings are optional; restricted or full storage must not stop gameplay.
+  }
+}
+
+export function saveStorageSetting(
+  storage: Pick<Storage, "setItem"> | undefined,
+  key: string,
+  value: string,
+): void {
+  try {
+    storage?.setItem(key, value);
+  } catch {
+    // The caller may be using restricted, disabled, or full browser storage.
   }
 }
 
@@ -1238,6 +1337,8 @@ export function App() {
   const [manualUndoStack, setManualUndoStack] = useState<GameState[]>([]);
   const [autoPlayEnabled, setAutoPlayEnabled] = useState(false);
   const [autoStepDelayMs, setAutoStepDelayMs] = useState(() => loadAutoStepDelayMs());
+  const [autoStepBusy, setAutoStepBusy] = useState(false);
+  const [autoStepError, setAutoStepError] = useState("");
   const [spectatorPauseOnAttention, setSpectatorPauseOnAttention] = useState(true);
   const [spectatorPaused, setSpectatorPaused] = useState(false);
   const [zoneView, setZoneView] = useState<ZoneView | undefined>();
@@ -1293,6 +1394,11 @@ export function App() {
   const bgmVolumeRef = useRef(bgmVolume);
   const bgmAudioRef = useRef<HTMLAudioElement | undefined>(undefined);
   const bgmTrackRef = useRef<BgmId | undefined>(undefined);
+  const autoStepWorkerRef = useRef<Worker | undefined>(undefined);
+  const activeAutoStepRequestRef = useRef<AutoStepRequestToken | undefined>(undefined);
+  const autoStepRequestIdRef = useRef(0);
+  const battleGenerationRef = useRef(0);
+  const gameVersionRef = useRef(0);
 
   const deckDrafts = useMemo(() => createDeckDrafts(battleSettings, deckSettings), [battleSettings, deckSettings]);
   const deckCardOptions = useMemo(
@@ -1321,8 +1427,18 @@ export function App() {
     !game.pendingLevelUp &&
     handLimitDiscardNeeded > 0;
   const spectatorAutoPaused = cpuVsCpu && spectatorPaused;
-  const isAutoResolving =
-    !game.winner && !spectatorAutoPaused && (cpuVsCpu || autoPlayEnabled || (game.currentPlayer === "cpu" && !game.pendingLevelUp));
+  const automationState: BattleAutomationState = {
+    autoPlayEnabled,
+    cpuVsCpu,
+    currentPlayer: game.currentPlayer,
+    hasPendingLevelUp: Boolean(game.pendingLevelUp),
+    hasWinner: Boolean(game.winner),
+    handLimitDiscarding: isHandLimitDiscarding,
+    spectatorPaused: spectatorAutoPaused,
+    workerError: Boolean(autoStepError),
+  };
+  const isAutoResolving = shouldAutoResolveBattle(automationState);
+  const canManuallyResolveLevelUp = canResolveLevelUpManually(automationState);
   const controlsDisabled = cpuVsCpu || autoPlayEnabled || game.currentPlayer !== "player" || !!game.winner || !!game.pendingLevelUp || isHandLimitDiscarding;
   const hasOperationContext = Boolean(selection || pendingDropAction || error || isHandLimitDiscarding);
   const hasSideContext = Boolean(!pendingDropAction && !game.pendingLevelUp && !isAdditionalChoiceSelection(selection) && (selection || error));
@@ -1335,7 +1451,9 @@ export function App() {
     !isAutoResolving &&
     game.currentPlayer === "player" &&
     !game.winner;
-  const turnStatus = game.winner
+  const turnStatus = autoStepError
+    ? "CPU処理を停止しました"
+    : game.winner
     ? `${playerLabel(game.winner)} win`
     : cpuVsCpu
       ? spectatorPaused
@@ -1422,6 +1540,94 @@ export function App() {
   const recentSpectatorAttention = useMemo(() => findRecentSpectatorAttention(game.log, 4), [game.log]);
   const activeBgmId = game.winner ? undefined : bgmForTurn(game.currentPlayer);
 
+  function commitGame(next: GameState): void {
+    gameVersionRef.current += 1;
+    setGame(next);
+  }
+
+  function getOrCreateAutoStepWorker(): Worker | undefined {
+    const existing = autoStepWorkerRef.current;
+    if (existing) {
+      return existing;
+    }
+    const creation = tryCreateAutoStepWorker(() => {
+      if (typeof Worker === "undefined") {
+        throw new Error("このブラウザーはWeb Workerに対応していないため、CPU処理を開始できません");
+      }
+      return new Worker(new URL("./autoStepWorker.ts", import.meta.url), { type: "module" });
+    });
+    if (!creation.ok) {
+      handleAutoStepWorkerFailure(creation.error);
+      return undefined;
+    }
+    const worker = creation.worker;
+    worker.onmessage = (event: MessageEvent<unknown>) => {
+      const response = event.data;
+      if (!isAutoStepWorkerResponse(response)) {
+        handleAutoStepWorkerFailure("CPU処理Workerから不正な結果を受信しました", worker);
+        return;
+      }
+      const activeRequest = activeAutoStepRequestRef.current;
+      if (!matchesAutoStepRequest(response, activeRequest)) {
+        return;
+      }
+      activeAutoStepRequestRef.current = undefined;
+      setAutoStepBusy(false);
+      if (response.type === "error") {
+        handleAutoStepWorkerFailure(response.error, worker);
+        return;
+      }
+      if (
+        response.battleGeneration !== battleGenerationRef.current ||
+        response.gameVersion !== gameVersionRef.current
+      ) {
+        return;
+      }
+      setManualUndoStack([]);
+      commitGame(response.game);
+      if (response.game.winner) {
+        terminateAutoStepWorker();
+      }
+    };
+    worker.onerror = (event) => {
+      event.preventDefault();
+      handleAutoStepWorkerFailure(event.message || "CPU処理Workerの起動に失敗しました", worker);
+    };
+    worker.onmessageerror = () => {
+      handleAutoStepWorkerFailure("CPU処理結果を読み取れませんでした", worker);
+    };
+    autoStepWorkerRef.current = worker;
+    return worker;
+  }
+
+  function handleAutoStepWorkerFailure(message: string, worker?: Worker): void {
+    if (worker && autoStepWorkerRef.current !== worker) {
+      return;
+    }
+    worker?.terminate();
+    autoStepWorkerRef.current = undefined;
+    activeAutoStepRequestRef.current = undefined;
+    autoStepRequestIdRef.current += 1;
+    setAutoStepBusy(false);
+    setAutoStepError(message || "CPU処理に失敗しました");
+  }
+
+  function terminateAutoStepWorker({
+    clearError = false,
+    updateState = true,
+  }: { clearError?: boolean; updateState?: boolean } = {}): void {
+    autoStepRequestIdRef.current += 1;
+    activeAutoStepRequestRef.current = undefined;
+    autoStepWorkerRef.current?.terminate();
+    autoStepWorkerRef.current = undefined;
+    if (updateState) {
+      setAutoStepBusy(false);
+      if (clearError) {
+        setAutoStepError("");
+      }
+    }
+  }
+
   useEffect(() => {
     if (selectedLogIndex === undefined) {
       return;
@@ -1434,23 +1640,17 @@ export function App() {
 
   useEffect(() => {
     seEnabledRef.current = seEnabled;
-    if (typeof window !== "undefined") {
-      window.localStorage.setItem(SE_ENABLED_STORAGE_KEY, String(seEnabled));
-    }
+    saveLocalStorageSetting(SE_ENABLED_STORAGE_KEY, String(seEnabled));
   }, [seEnabled]);
 
   useEffect(() => {
     seVolumeRef.current = seVolume;
-    if (typeof window !== "undefined") {
-      window.localStorage.setItem(SE_VOLUME_STORAGE_KEY, String(seVolume));
-    }
+    saveLocalStorageSetting(SE_VOLUME_STORAGE_KEY, String(seVolume));
   }, [seVolume]);
 
   useEffect(() => {
     bgmEnabledRef.current = bgmEnabled;
-    if (typeof window !== "undefined") {
-      window.localStorage.setItem(BGM_ENABLED_STORAGE_KEY, String(bgmEnabled));
-    }
+    saveLocalStorageSetting(BGM_ENABLED_STORAGE_KEY, String(bgmEnabled));
     if (!bgmEnabled) {
       pauseBgm();
     }
@@ -1461,9 +1661,7 @@ export function App() {
     if (bgmAudioRef.current) {
       bgmAudioRef.current.volume = bgmVolume;
     }
-    if (typeof window !== "undefined") {
-      window.localStorage.setItem(BGM_VOLUME_STORAGE_KEY, String(bgmVolume));
-    }
+    saveLocalStorageSetting(BGM_VOLUME_STORAGE_KEY, String(bgmVolume));
   }, [bgmVolume]);
 
   useEffect(() => {
@@ -1548,6 +1746,7 @@ export function App() {
     if (battleReportSaveStatusTimerRef.current !== undefined) {
       window.clearTimeout(battleReportSaveStatusTimerRef.current);
     }
+    terminateAutoStepWorker({ updateState: false });
   }, []);
 
   useEffect(() => {
@@ -1564,23 +1763,51 @@ export function App() {
       return undefined;
     }
 
+    const battleGeneration = battleGenerationRef.current;
+    const gameVersion = gameVersionRef.current;
+    let dispatchedRequest: AutoStepRequestToken | undefined;
     const timer = window.setTimeout(() => {
+      if (
+        battleGeneration !== battleGenerationRef.current ||
+        gameVersion !== gameVersionRef.current ||
+        activeAutoStepRequestRef.current
+      ) {
+        return;
+      }
+      const requestId = autoStepRequestIdRef.current + 1;
+      autoStepRequestIdRef.current = requestId;
+      dispatchedRequest = { requestId, battleGeneration, gameVersion };
+      activeAutoStepRequestRef.current = dispatchedRequest;
       setManualUndoStack([]);
-      setGame((previous) => {
-        if (previous.winner) {
-          return previous;
-        }
-        if (cpuVsCpu || autoPlayEnabled) {
-          return runAutoStep(previous, { profiles: activeBattleSettingsRef.current.aiProfiles });
-        }
-        if (previous.currentPlayer === "cpu" && !previous.pendingLevelUp) {
-          return runCpuStep(previous, { profiles: activeBattleSettingsRef.current.aiProfiles });
-        }
-        return previous;
-      });
+      setAutoStepBusy(true);
+      const mode: AutoStepWorkerMode = cpuVsCpu || autoPlayEnabled || Boolean(game.pendingLevelUp) ? "auto" : "cpu";
+      const request: AutoStepWorkerRequest = {
+        type: "step",
+        ...dispatchedRequest,
+        mode,
+        game,
+        aiProfiles: cloneAiProfiles(activeBattleSettingsRef.current.aiProfiles),
+      };
+      const worker = getOrCreateAutoStepWorker();
+      if (!worker) {
+        return;
+      }
+      try {
+        worker.postMessage(request);
+      } catch (caught) {
+        handleAutoStepWorkerFailure(caught instanceof Error ? caught.message : "CPU処理を開始できませんでした", worker);
+      }
     }, effectiveAutoStepDelayMs);
 
-    return () => window.clearTimeout(timer);
+    return () => {
+      window.clearTimeout(timer);
+      if (dispatchedRequest && matchesAutoStepRequest(dispatchedRequest, activeAutoStepRequestRef.current)) {
+        terminateAutoStepWorker();
+      } else if (!dispatchedRequest && autoStepWorkerRef.current) {
+        // A non-result dependency change (pause/delay/mode) invalidates an idle cached Worker too.
+        terminateAutoStepWorker();
+      }
+    };
   }, [autoPlayEnabled, cpuVsCpu, effectiveAutoStepDelayMs, game, isAutoResolving]);
 
   useEffect(() => {
@@ -1726,7 +1953,7 @@ export function App() {
       if (next !== game) {
         setManualUndoStack((previous) => [...previous, game].slice(-20));
       }
-      setGame(next);
+      commitGame(next);
       setError("");
       setPendingDropAction(undefined);
       if (!keepSelection) {
@@ -1744,6 +1971,9 @@ export function App() {
     change: (state: GameState) => GameState,
     keepSelection = false,
   ): GameState | undefined {
+    if (!isManualBattleActionAllowed(action.type, automationState)) {
+      return undefined;
+    }
     return applyChange(change, keepSelection, action);
   }
 
@@ -1799,7 +2029,8 @@ export function App() {
     }
     clearPointerDrag();
     setManualUndoStack((previous) => previous.slice(0, -1));
-    setGame(previousGame);
+    terminateAutoStepWorker({ clearError: true });
+    commitGame(previousGame);
     setBattleLogComments((previous) => pruneBattleLogCommentsForGame(previous, previousGame));
     setSelection(undefined);
     setPendingDropAction(undefined);
@@ -1898,7 +2129,7 @@ export function App() {
 
   function handleAdditionalHandChoice(instanceId: string): boolean {
     const superOption = game.pendingLevelUp?.superOptions?.find((option) => option.handInstanceId === instanceId);
-    if (game.pendingLevelUp && superOption) {
+    if (canManuallyResolveLevelUp && game.pendingLevelUp && superOption) {
       const levels = game.pendingLevelUp.maxLevels;
       applyHumanAction(
         { type: "resolve_level_up", levels, superHandInstanceId: instanceId },
@@ -1953,7 +2184,7 @@ export function App() {
     if (isHandLimitDiscarding) {
       return;
     }
-    if (game.currentPlayer !== "player" || game.winner || game.pendingLevelUp) {
+    if (controlsDisabled) {
       selectSlotForInfo(slotKey);
       return;
     }
@@ -2060,7 +2291,7 @@ export function App() {
   }
 
   function handleTargetSelection(target: Target): boolean {
-    if (!selection) {
+    if (controlsDisabled || !selection) {
       return false;
     }
     const key = targetToKey(target);
@@ -2197,6 +2428,9 @@ export function App() {
     }
 
     const next = createGameFromSettings(settings, decks);
+    terminateAutoStepWorker({ clearError: true });
+    battleGenerationRef.current += 1;
+    gameVersionRef.current = 0;
     battleReportSaveRequestIdRef.current += 1;
     if (battleReportSaveStatusTimerRef.current !== undefined) {
       window.clearTimeout(battleReportSaveStatusTimerRef.current);
@@ -2206,7 +2440,7 @@ export function App() {
     activeBattleSettingsRef.current = cloneBattleSettings(settings);
     activeDeckSettingsRef.current = cloneDeckSettings(decks);
     previousGameRef.current = next;
-    setGame(next);
+    commitGame(next);
     setManualUndoStack([]);
     setSelection(undefined);
     setPendingDropAction(undefined);
@@ -2266,7 +2500,7 @@ export function App() {
   }
 
   function handleSaveBattlePreset() {
-    const name = battlePresetName.trim() || "Battle Preset";
+    const name = battlePresetName.trim().slice(0, BATTLE_PRESET_NAME_MAX_LENGTH) || "Battle Preset";
     const now = new Date().toISOString();
     const preset: SavedBattlePreset = {
       id: `preset_${Date.now()}`,
@@ -2415,7 +2649,9 @@ export function App() {
   }
 
   function handleBattleLogCommentChange(index: number, value: string) {
-    setBattleLogComments((previous) => updateBattleLogComment(previous, game, index, value));
+    setBattleLogComments((previous) =>
+      updateBattleLogComment(previous, game, index, value.slice(0, BATTLE_LOG_COMMENT_MAX_LENGTH)),
+    );
   }
 
   function handleBattleLogCommentStamp(index: number, stampId: BattleLogCommentStamp) {
@@ -2467,6 +2703,7 @@ export function App() {
 
   function handleAutoSpeedPreset(delayMs: number) {
     const nextDelayMs = normalizeAutoStepDelayMs(delayMs);
+    terminateAutoStepWorker({ clearError: true });
     setAutoStepDelayMs(nextDelayMs);
     saveAutoStepDelayMs(nextDelayMs);
     if (cpuVsCpu) {
@@ -2500,10 +2737,15 @@ export function App() {
   }
 
   function handleDeckTextChange(playerId: PlayerId, text: string) {
+    const normalizedText = normalizeDeckTextInput(text);
     setDeckSettings((previous) => ({
       ...previous,
-      text: { ...previous.text, [playerId]: text },
+      text: { ...previous.text, [playerId]: normalizedText },
     }));
+  }
+
+  function handleBattlePresetNameChange(name: string) {
+    setBattlePresetName(name.slice(0, BATTLE_PRESET_NAME_MAX_LENGTH));
   }
 
   function handleUseGeneratedDeckAsFixed(playerId: PlayerId) {
@@ -2554,6 +2796,7 @@ export function App() {
       return;
     }
     const nextDelayMs = normalizeAutoStepDelayMs(parsed);
+    terminateAutoStepWorker({ clearError: true });
     setAutoStepDelayMs(nextDelayMs);
     saveAutoStepDelayMs(nextDelayMs);
   }
@@ -2926,6 +3169,16 @@ export function App() {
     handleCancelInteraction();
   }
 
+  function handleAutoPlayToggle() {
+    terminateAutoStepWorker({ clearError: true });
+    handleCancelInteraction();
+    setAutoPlayEnabled((enabled) => !enabled);
+  }
+
+  function handleRetryAutoStep() {
+    terminateAutoStepWorker({ clearError: true });
+  }
+
   const selectedMonster =
     selection?.kind === "monster" ? game.slots[selection.slotKey].monster : undefined;
   const selectedMasterPlayerId = selection?.kind === "master" ? selection.playerId : undefined;
@@ -2943,7 +3196,8 @@ export function App() {
           <button
             type="button"
             className={autoPlayEnabled ? "selected" : ""}
-            onClick={() => setAutoPlayEnabled((enabled) => !enabled)}
+            onClick={handleAutoPlayToggle}
+            aria-pressed={autoPlayEnabled}
           >
             <Icon icon={autoPlayEnabled ? "⏸️" : "▶️"} /> {autoPlayEnabled ? "Auto Stop" : "Auto Play"}
           </button>
@@ -3140,7 +3394,7 @@ export function App() {
     }
 
     return (
-      <section className={`battle-control-panel ${cpuVsCpu ? "spectator" : ""}`}>
+      <section className={`battle-control-panel ${cpuVsCpu ? "spectator" : ""}`} aria-busy={autoStepBusy}>
         <div className="battle-control-heading">
           <div>
             <h2>{cpuVsCpu ? <><Icon icon="👁️" /> Spectator</> : <><Icon icon="🎮" /> Turn Flow</>}</h2>
@@ -3174,6 +3428,16 @@ export function App() {
             </div>
           )}
           <div className="battle-control-status">
+            {autoStepError ? (
+              <div className="auto-step-error" role="alert">
+                <span><Icon icon="⚠️" /> {autoStepError}</span>
+                <button type="button" onClick={handleRetryAutoStep}>再試行</button>
+              </div>
+            ) : autoStepBusy ? (
+              <p className="auto-step-status" role="status" aria-live="polite">
+                <Icon icon="🧠" /> CPU思考中…
+              </p>
+            ) : null}
             {cpuVsCpu && (
               <SpectatorReviewPanel
                 recent={recentSpectatorAttention}
@@ -3181,7 +3445,7 @@ export function App() {
                 onOpenEffects={() => showInfoZoneView({ kind: "effects" })}
               />
             )}
-            {game.pendingLevelUp ? (
+            {game.pendingLevelUp && canManuallyResolveLevelUp ? (
               <div className="turn-flow-choice level-up-decision-panel">
                 <LevelUpDecisionPanel
                   game={game}
@@ -3202,6 +3466,10 @@ export function App() {
                   }}
                 />
               </div>
+            ) : game.pendingLevelUp ? (
+              <p className="auto-step-status" role="status" aria-live="polite">
+                <Icon icon="✨" /> CPUがレベルアップを解決中…
+              </p>
             ) : isHandLimitDiscarding ? (
               <div className="turn-flow-choice">
                 <HandLimitDiscardPanel
@@ -3347,6 +3615,7 @@ export function App() {
             className={seEnabled ? "selected" : ""}
             onClick={() => setSeEnabled((enabled) => !enabled)}
             title={seEnabled ? "SEをオフ" : "SEをオン"}
+            aria-pressed={seEnabled}
           >
             <Icon icon={seEnabled ? "🔊" : "🔇"} /> SE
           </button>
@@ -3366,6 +3635,7 @@ export function App() {
             className={bgmEnabled ? "selected" : ""}
             onClick={handleBgmEnabledToggle}
             title={bgmEnabled ? "BGMをオフ" : "BGMをオン"}
+            aria-pressed={bgmEnabled}
           >
             <Icon icon={bgmEnabled ? "🎵" : "🔇"} /> BGM
           </button>
@@ -3519,7 +3789,7 @@ export function App() {
                   onClose={() => setZoneView(undefined)}
                   onBuiltInMatchPresetChange={handleApplyBuiltInMatchPreset}
                   onSavedPresetChange={handleLoadSavedBattlePreset}
-                  onBattlePresetNameChange={setBattlePresetName}
+                  onBattlePresetNameChange={handleBattlePresetNameChange}
                   onSaveBattlePreset={handleSaveBattlePreset}
                   onDeleteSavedBattlePreset={handleDeleteSavedBattlePreset}
                   onFixedChange={handleDeckFixedChange}
@@ -3665,7 +3935,8 @@ export function App() {
                 }
                 const handChoiceState = handChoiceStateFor(game, selection, card.instanceId);
                 const isSelectedForHandLimitDiscard = isHandLimitDiscarding && selectedHandLimitDiscardIds.includes(card.instanceId);
-                const selectableDuringInterrupt = handChoiceState === "level-up-super" || isHandLimitDiscarding;
+                const selectableDuringInterrupt =
+                  (handChoiceState === "level-up-super" && canManuallyResolveLevelUp) || isHandLimitDiscarding;
                 return (
                   <button
                     type="button"
@@ -3746,6 +4017,7 @@ export function App() {
                     key={filter}
                     className={filter === logFilter ? "selected" : ""}
                     onClick={() => setLogFilter(filter)}
+                    aria-pressed={filter === logFilter}
                   >
                     <Icon icon={logFilterIcon(filter)} /> {logFilterLabel(filter)}
                   </button>
@@ -3801,6 +4073,7 @@ export function App() {
                       data-testid="battle-log-comment-input"
                       value={selectedLogComment}
                       onChange={(event) => handleBattleLogCommentChange(selectedLogIndex!, event.target.value)}
+                      maxLength={BATTLE_LOG_COMMENT_MAX_LENGTH}
                       placeholder="例: 倒せない攻撃で反撃を許している / 盤面処理より顔を殴っている"
                       rows={3}
                     />
@@ -3850,6 +4123,7 @@ export function App() {
                 game={game}
                 pendingDropAction={pendingDropAction}
                 slotKey={selection.slotKey}
+                disabled={controlsDisabled}
                 onCommand={(commandId, targets) => {
                   setPendingDropAction(undefined);
                   setSelection({ kind: "command", attackerSlotKey: selection.slotKey, commandId, targets });
@@ -5739,6 +6013,7 @@ function DeckSetupPanel({
                   className="deck-editor-textarea"
                   value={deckSettings.text[playerId]}
                   onChange={(event) => onTextChange(playerId, event.target.value)}
+                  maxLength={DECK_TEXT_MAX_LENGTH}
                   spellCheck={false}
                 />
               </details>
@@ -5812,6 +6087,7 @@ function MatchPresetPanel({
             type="text"
             value={battlePresetName}
             onChange={(event) => onBattlePresetNameChange(event.target.value)}
+            maxLength={BATTLE_PRESET_NAME_MAX_LENGTH}
           />
         </label>
         <button type="button" onClick={onSaveBattlePreset}>
@@ -7153,6 +7429,7 @@ interface MonsterCommandsProps {
   game: GameState;
   pendingDropAction?: PendingDropAction;
   slotKey: SlotKey;
+  disabled: boolean;
   onCommand: (commandId: string, targets: Target[]) => void;
   onFocus: () => void;
   onMove: (targets: SlotKey[]) => void;
@@ -7315,6 +7592,7 @@ function MonsterCommands({
   game,
   pendingDropAction,
   slotKey,
+  disabled,
   onCommand,
   onFocus,
   onMove,
@@ -7341,14 +7619,14 @@ function MonsterCommands({
       ? pendingDropAction
       : undefined;
   const moveTargets = getMovableTargets(game, slotKey);
-  const moveDisabledReason = getMoveDisabledReason(game, slotKey, moveTargets);
+  const moveDisabledReason = getMoveDisabledReason(game, slotKey, moveTargets, disabled);
   const showFocusAction = canShowManualFocusAction(game, slotKey);
-  const focusDisabledReason = getFocusDisabledReason(game, slotKey);
+  const focusDisabledReason = getFocusDisabledReason(game, slotKey, disabled);
   const commandActions: UnitActionItem[] = hidePreparedInfo
     ? []
     : getMonsterCommands(monster).map((command, index) => {
         const targets = getCommandTargets(game, slotKey, command.id);
-        const disabledReason = getCommandDisabledReason(game, slotKey, command, targets);
+        const disabledReason = getCommandDisabledReason(game, slotKey, command, targets, disabled);
         const selected = pendingAttackAction?.commandIds.includes(command.id) ?? false;
         return {
           key: `command_${command.id}_${index}`,
@@ -7452,8 +7730,14 @@ function MonsterCommands({
   );
 }
 
-function getCommandDisabledReason(game: GameState, slotKey: SlotKey, command: CommandDef, targets: Target[]): string | undefined {
-  const actionReason = getMonsterActionDisabledReason(game, slotKey);
+function getCommandDisabledReason(
+  game: GameState,
+  slotKey: SlotKey,
+  command: CommandDef,
+  targets: Target[],
+  controlsDisabled = false,
+): string | undefined {
+  const actionReason = getMonsterActionDisabledReason(game, slotKey, controlsDisabled);
   if (actionReason) {
     return actionReason;
   }
@@ -7469,8 +7753,13 @@ function getCommandDisabledReason(game: GameState, slotKey: SlotKey, command: Co
   return undefined;
 }
 
-function getMoveDisabledReason(game: GameState, slotKey: SlotKey, targets: SlotKey[]): string | undefined {
-  const actionReason = getMonsterActionDisabledReason(game, slotKey);
+function getMoveDisabledReason(
+  game: GameState,
+  slotKey: SlotKey,
+  targets: SlotKey[],
+  controlsDisabled = false,
+): string | undefined {
+  const actionReason = getMonsterActionDisabledReason(game, slotKey, controlsDisabled);
   if (actionReason) {
     return actionReason;
   }
@@ -7480,8 +7769,8 @@ function getMoveDisabledReason(game: GameState, slotKey: SlotKey, targets: SlotK
   return undefined;
 }
 
-function getFocusDisabledReason(game: GameState, slotKey: SlotKey): string | undefined {
-  const actionReason = getMonsterActionDisabledReason(game, slotKey);
+function getFocusDisabledReason(game: GameState, slotKey: SlotKey, controlsDisabled = false): string | undefined {
+  const actionReason = getMonsterActionDisabledReason(game, slotKey, controlsDisabled);
   if (actionReason) {
     return actionReason;
   }
@@ -7504,7 +7793,7 @@ function canManualFocusMonster(game: GameState, slotKey: SlotKey): boolean {
   return canShowManualFocusAction(game, slotKey) && canFocusMonster(game, slotKey);
 }
 
-function getMonsterActionDisabledReason(game: GameState, slotKey: SlotKey): string | undefined {
+function getMonsterActionDisabledReason(game: GameState, slotKey: SlotKey, controlsDisabled = false): string | undefined {
   if (game.winner) {
     return "勝敗決定済み";
   }
@@ -7513,6 +7802,9 @@ function getMonsterActionDisabledReason(game: GameState, slotKey: SlotKey): stri
   }
   if (game.currentPlayer !== "player") {
     return "CPUターン中";
+  }
+  if (controlsDisabled) {
+    return "操作できない状態です";
   }
 
   const monster = game.slots[slotKey].monster;
@@ -8650,30 +8942,6 @@ function CardNotes({ card, compact = false }: { card: ReturnType<typeof getCardD
       ))}
     </span>
   );
-}
-
-function MonsterTraitSummary({ cardId }: { cardId: string }) {
-  const def = getCardDef(cardId);
-  if (def.type !== "monster") {
-    return null;
-  }
-
-  const traitNotes = getCardNoteDisplays(def)
-    .filter((note) => note.kind === "personality")
-    .map((note) => note.summary);
-  if (traitNotes.length === 0) {
-    return null;
-  }
-
-  return (
-    <span className="monster-trait-line" title={traitNotes.join("\n")}>
-      <Icon icon="🧬" /> {traitNotes.map(compactTraitSummary).join(" / ")}
-    </span>
-  );
-}
-
-function compactTraitSummary(summary: string): string {
-  return summary.split(/\s+/)[0] ?? summary;
 }
 
 function commandSummary(command: CommandDef): string {

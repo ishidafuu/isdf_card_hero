@@ -12,7 +12,7 @@ export function resolveLevelUpChoice(
   levels: number,
   superHandInstanceId?: string,
 ): LevelUpChoice {
-  if (levels < 0 || levels > pending.maxLevels) {
+  if (!Number.isInteger(levels) || levels < 0 || levels > pending.maxLevels) {
     throw new Error("選択できないレベルアップ数です");
   }
 

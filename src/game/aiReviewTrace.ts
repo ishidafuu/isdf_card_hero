@@ -23,7 +23,7 @@ export function appendAiDecisionReviewEntry(
     ...previous,
     {
       sequence,
-      logIndex: (before.eventLog?.length ?? before.log.length) + 1,
+      logIndex: nextAbsoluteLogIndex(before),
       playerId: before.currentPlayer,
       turnNumber: before.turnNumber,
       decisionKey,
@@ -59,7 +59,7 @@ export function appendHumanActionReviewEntry(
     ...previous,
     {
       sequence,
-      logIndex: (before.eventLog?.length ?? before.log.length) + 1,
+      logIndex: nextAbsoluteLogIndex(before),
       playerId: before.currentPlayer,
       turnNumber: before.turnNumber,
       actionKey: humanActionReviewKey(action),
@@ -67,6 +67,13 @@ export function appendHumanActionReviewEntry(
       stateBefore: createAiDecisionStateSnapshot(before),
     },
   ].slice(-HUMAN_ACTION_HISTORY_LIMIT);
+}
+
+function nextAbsoluteLogIndex(state: GameState): number {
+  if (state.logOffset !== undefined) {
+    return state.logOffset + state.log.length + 1;
+  }
+  return (state.eventLog?.length ?? state.log.length) + 1;
 }
 
 export function humanActionReviewKey(action: HumanActionSnapshot): string {

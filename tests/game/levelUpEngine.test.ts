@@ -18,6 +18,8 @@ describe("level-up rule engine helpers", () => {
 
   it("rejects illegal level counts and unlisted super cards", () => {
     expect(() => resolveLevelUpChoice(pendingLevelUp, 3)).toThrow("選択できないレベルアップ数です");
+    expect(() => resolveLevelUpChoice(pendingLevelUp, 0.5)).toThrow("選択できないレベルアップ数です");
+    expect(() => resolveLevelUpChoice(pendingLevelUp, Number.NaN)).toThrow("選択できないレベルアップ数です");
     expect(() => resolveLevelUpChoice(pendingLevelUp, 1, "missing_super")).toThrow("選択できないスーパーカードです");
   });
 });

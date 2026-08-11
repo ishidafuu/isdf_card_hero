@@ -7,7 +7,7 @@ import {
   getMagicTargets,
   playMagic,
 } from "../../src/game/rules";
-import type { CardInstance, GameState, MonsterState, PlayerId, SlotKey } from "../../src/game/types";
+import type { GameState, MonsterState, PlayerId, SlotKey } from "../../src/game/types";
 
 let monsterInstanceSequence = 0;
 
@@ -36,7 +36,15 @@ describe("card effect resolution coverage", () => {
     for (const card of monsterCards) {
       for (const level of card.levels) {
         for (const command of level.commands) {
-          const { game, attackerSlotKey } = createCommandResolutionGame(card.id, level.level, level.maxHp);
+          const formIndex = card.levels
+            .filter((candidate) => candidate.level === level.level)
+            .indexOf(level);
+          const { game, attackerSlotKey } = createCommandResolutionGame(
+            card.id,
+            level.level,
+            level.maxHp,
+            formIndex,
+          );
           const targets = getCommandTargets(game, attackerSlotKey, command.id);
           const label = `${card.name} Lv${level.level} ${command.name}`;
           expect(targets.length, label).toBeGreaterThan(0);
@@ -77,6 +85,7 @@ function createCommandResolutionGame(
   cardId: string,
   level: number,
   maxHp: number,
+  formIndex: number,
 ): { game: GameState; attackerSlotKey: SlotKey } {
   const game = createInitialGame(311);
   game.players.player.stones = 99;
@@ -90,6 +99,8 @@ function createCommandResolutionGame(
     hp: maxHp,
     level,
     investedStones: level,
+    revivedOnce: (cardId === "card_035" || cardId === "card_067") && formIndex > 0,
+    usedCommandIds: cardId === "card_045" && formIndex > 0 ? ["飛竜ロロ"] : undefined,
   });
 
   if (cardId === "card_107") {

@@ -1274,6 +1274,12 @@ describe("battle prototype rules", () => {
             hp: level.maxHp,
             level: level.level,
             investedStones: level.level,
+            revivedOnce: (card.id === "card_035" || card.id === "card_067") &&
+              card.levels.filter((candidate) => candidate.level === level.level).indexOf(level) > 0,
+            usedCommandIds: card.id === "card_045" &&
+              card.levels.filter((candidate) => candidate.level === level.level).indexOf(level) > 0
+              ? ["飛竜ロロ"]
+              : undefined,
           });
           game.slots.player_front_right.monster = createActiveMonster("takokke", "player", { level: 2, investedStones: 2 });
           game.slots.player_front_left.monster = createActiveMonster("card_084", "player");
@@ -1958,7 +1964,7 @@ describe("battle prototype rules", () => {
     expect(copied?.level).toBe(2);
     expect(copied?.hp).toBe(2);
     expect(copied?.actionLimit).toBe(2);
-    expect(copied?.revivedOnce).toBe(false);
+    expect(copied?.revivedOnce).toBeUndefined();
     expect(copied?.usedCommandIds).toBeUndefined();
   });
 

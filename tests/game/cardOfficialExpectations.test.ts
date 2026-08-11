@@ -1208,7 +1208,9 @@ describe("official card effect expectations", () => {
   it("card_035 バルバス＆パフ levels up a target with 福音の花 and then leaves without defeat revival", () => {
     let game = createGameWithPlayerHand([]);
     game.players.player.stones = 4;
-    game.slots.player_back_left.monster = createActiveMonster("card_035", "player");
+    game.slots.player_back_left.monster = createActiveMonster("card_035", "player", {
+      revivedOnce: true,
+    });
     game.slots.player_front_left.monster = createActiveMonster("takokke", "player", { hp: 1 });
 
     game = attackWithCommand(game, {

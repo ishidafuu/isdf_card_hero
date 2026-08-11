@@ -21,6 +21,7 @@ export type HumanTurnAuditClassification =
 export interface HumanTurnAuditReportInput {
   reportId: string;
   generatedAt?: string;
+  eventLogOffset?: number;
   eventLog?: string[];
   aiDecisionHistory?: AiDecisionHistoryEntry[];
   humanActionHistory?: HumanActionHistoryEntry[];
@@ -105,9 +106,14 @@ export function extractLegacyHumanTurns(report: HumanTurnAuditReportInput): Huma
     const nextCpuDecision = decisions.find(
       (candidate) => candidate.logIndex > entry.logIndex && candidate.playerId === "cpu",
     );
+    const eventLogOffset = normalizeEventLogOffset(report.eventLogOffset);
+    const segmentStart = Math.max(0, entry.logIndex - eventLogOffset);
+    const segmentEnd = nextCpuDecision
+      ? Math.max(segmentStart, nextCpuDecision.logIndex - 1 - eventLogOffset)
+      : undefined;
     const segment = (report.eventLog ?? []).slice(
-      entry.logIndex,
-      nextCpuDecision ? Math.max(entry.logIndex, nextCpuDecision.logIndex - 1) : undefined,
+      segmentStart,
+      segmentEnd,
     );
     const observedActions = legacyPlayerActionLogs(segment);
     const v2 = inspectV2Turn(start);
@@ -119,6 +125,10 @@ export function extractLegacyHumanTurns(report: HumanTurnAuditReportInput): Huma
       classification: "legacy_observation_only" as const,
     }];
   });
+}
+
+function normalizeEventLogOffset(value: number | undefined): number {
+  return Number.isInteger(value) && value !== undefined && value >= 0 ? value : 0;
 }
 
 function inspectV2Turn(state: ReturnType<typeof restoreAiDecisionStateSnapshot>) {

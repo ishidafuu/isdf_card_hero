@@ -274,7 +274,7 @@ const MASTER_DAMAGE_PLAN_MAX_DEPTH = 8;
 const OPPONENT_MASTER_DAMAGE_RESPONSE_MAX_DEPTH = 5;
 const MASTER_DAMAGE_PLAN_MAX_BRANCHES = 10;
 const MASTER_DAMAGE_PLAN_CLOSEOUT_HP = 6;
-const MASTER_DAMAGE_PLAN_GLOBAL_CACHE_LIMIT = 5_000;
+const MASTER_DAMAGE_PLAN_GLOBAL_CACHE_LIMIT = 512;
 const masterDamagePlanGlobalCache = new Map<string, MasterDamagePlan>();
 
 const WHITE_AI_BASE_TUNING = {
@@ -895,8 +895,8 @@ function findMasterDamagePlan(
     return createEmptyMasterDamagePlan();
   }
 
-  const rootCacheKey = `${perspective}:${maxDepth}:${masterDamagePlanStateKey(state, perspective)}`;
-  const rootCached = masterDamagePlanGlobalCache.get(rootCacheKey);
+  const rootCacheKey = masterDamagePlanGlobalCacheKey(state, perspective, weights, maxDepth);
+  const rootCached = readMasterDamagePlan(rootCacheKey);
   if (rootCached) {
     return rootCached;
   }
@@ -919,7 +919,7 @@ function findMasterDamagePlan(
       return baseline;
     }
 
-    const cacheKey = `${depth}:${masterDamagePlanStateKey(current, perspective)}`;
+    const cacheKey = `${depth}:${terminalPlanStateKey(current)}`;
     const cached = cache.get(cacheKey);
     if (cached) {
       return cached;
@@ -956,10 +956,25 @@ function findMasterDamagePlan(
 }
 
 function rememberMasterDamagePlan(key: string, plan: MasterDamagePlan): void {
-  if (masterDamagePlanGlobalCache.size >= MASTER_DAMAGE_PLAN_GLOBAL_CACHE_LIMIT) {
-    masterDamagePlanGlobalCache.clear();
-  }
+  masterDamagePlanGlobalCache.delete(key);
   masterDamagePlanGlobalCache.set(key, plan);
+  while (masterDamagePlanGlobalCache.size > MASTER_DAMAGE_PLAN_GLOBAL_CACHE_LIMIT) {
+    const oldest = masterDamagePlanGlobalCache.keys().next();
+    if (oldest.done) {
+      break;
+    }
+    masterDamagePlanGlobalCache.delete(oldest.value);
+  }
+}
+
+function readMasterDamagePlan(key: string): MasterDamagePlan | undefined {
+  const plan = masterDamagePlanGlobalCache.get(key);
+  if (!plan) {
+    return undefined;
+  }
+  masterDamagePlanGlobalCache.delete(key);
+  masterDamagePlanGlobalCache.set(key, plan);
+  return plan;
 }
 
 function createEmptyMasterDamagePlan(): MasterDamagePlan {
@@ -3507,7 +3522,7 @@ function shouldAdoptTerminalPlanRootSelection(
   if (shouldAdoptBacklineReserveSummonOverFocusSelection(state, perspective, selection, fallback, rootScoreGap)) {
     return true;
   }
-  if (shouldAdoptFrontPressureEscapeOverFocusSelection(state, perspective, selection, fallback, rootScoreGap)) {
+  if (shouldAdoptFrontPressureEscapeOverFocusSelection(state, selection, fallback, rootScoreGap)) {
     return true;
   }
   const maxRootScoreGap = config.terminalPlanAdoptionMaxRootScoreGap ?? Number.POSITIVE_INFINITY;
@@ -3595,7 +3610,6 @@ function shouldAdoptBacklineReserveSummonOverFocusSelection(
 
 function shouldAdoptFrontPressureEscapeOverFocusSelection(
   state: GameState,
-  perspective: PlayerId,
   selection: TerminalPlanSelection,
   fallback: EvaluatedDecision,
   rootScoreGap: number,
@@ -3603,7 +3617,7 @@ function shouldAdoptFrontPressureEscapeOverFocusSelection(
   if (
     fallback.decision.type !== "focus" ||
     rootScoreGap > 280 ||
-    whiteMirrorFrontPressureEscapePlannerBonus(state, selection.candidate, fallback, perspective) < 120
+    whiteMirrorFrontPressureEscapePlannerBonus(state, selection.candidate, fallback) < 120
   ) {
     return false;
   }
@@ -3688,7 +3702,6 @@ function terminalPlanRootPlannerScore(
     rootState,
     candidate,
     fallback,
-    perspective,
   );
   const backlineReserveSummonBonus = backlineReserveSummonOverFocusPlannerBonus(
     rootState,
@@ -5573,40 +5586,6 @@ function maxEnemyFrontMasterDamagePotential(state: GameState, perspective: Playe
   );
 }
 
-function findSafeBackRoleRetreat(state: GameState, fromSlotKey: SlotKey, perspective: PlayerId): GameState | undefined {
-  const mover = state.slots[fromSlotKey].monster;
-  if (
-    !mover ||
-    mover.owner !== perspective ||
-    mover.status !== "active" ||
-    mover.actionCount >= mover.actionLimit ||
-    state.slots[fromSlotKey].row !== "front" ||
-    getMonsterAiTrait(mover.cardId).role !== "back"
-  ) {
-    return undefined;
-  }
-  const beforeThreat = incomingThreat(state, fromSlotKey);
-  if (!beforeThreat.threatened && !isLethalIncomingThreat(beforeThreat)) {
-    return undefined;
-  }
-
-  for (const toSlotKey of getMovableTargets(state, fromSlotKey)) {
-    if (state.slots[toSlotKey].row !== "back") {
-      continue;
-    }
-    let after: GameState;
-    try {
-      after = moveMonster(state, fromSlotKey, toSlotKey);
-    } catch {
-      continue;
-    }
-    if (isSafeBackRoleRetreat(state, after, fromSlotKey, perspective)) {
-      return after;
-    }
-  }
-  return undefined;
-}
-
 function isSafeBackRoleRetreat(
   before: GameState,
   after: GameState,
@@ -7382,7 +7361,6 @@ function whiteMirrorFrontPressureEscapePlannerBonus(
   state: GameState,
   candidate: EvaluatedDecision,
   fallback: EvaluatedDecision | undefined,
-  perspective: PlayerId,
 ): number {
   if (fallback?.decision.type !== "focus") {
     return 0;
@@ -10437,45 +10415,16 @@ function masterDamagePlanDecisionPriority(decision: CpuDecision): number {
   return decisionPriority(decision);
 }
 
-function masterDamagePlanStateKey(state: GameState, perspective: PlayerId): string {
-  const player = state.players[perspective];
-  const opponent = state.players[opponentOf(perspective)];
-  return JSON.stringify({
-    currentPlayer: state.currentPlayer,
-    player: {
-      hp: player.masterHp,
-      stones: player.stones,
-      masterPowerBonus: player.masterPowerBonus ?? 0,
-      masterFrozen: player.masterFrozen ?? false,
-      masterActionsExchanged: player.masterActionsExchanged ?? false,
-      hand: player.hand.map((card) => `${card.instanceId}:${card.cardId}`),
-    },
-    opponent: {
-      hp: opponent.masterHp,
-      masterActionsExchanged: opponent.masterActionsExchanged ?? false,
-    },
-    slots: ALL_FIELD_ORDER.map((slotKey) => {
-      const monster = state.slots[slotKey].monster;
-      return [
-        slotKey,
-        monster
-          ? {
-              id: monster.instanceId,
-              cardId: monster.cardId,
-              hp: monster.hp,
-              level: monster.level,
-              status: monster.status,
-              actionCount: monster.actionCount,
-              actionLimit: monster.actionLimit,
-              focused: monster.focused,
-              powerUp: monster.powerUp,
-              berserkPower: monster.berserkPower,
-              usedCommandIds: monster.usedCommandIds ?? [],
-            }
-          : null,
-      ];
-    }),
-  });
+function masterDamagePlanGlobalCacheKey(
+  state: GameState,
+  perspective: PlayerId,
+  weights: AiEvaluationWeights,
+  maxDepth: number,
+): string {
+  const weightsKey = JSON.stringify(
+    Object.entries(weights).sort(([left], [right]) => left < right ? -1 : left > right ? 1 : 0),
+  );
+  return `${perspective}:${maxDepth}:${weightsKey.length}:${weightsKey}${terminalPlanStateKey(state)}`;
 }
 
 function decisionPriority(decision: CpuDecision): number {

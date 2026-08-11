@@ -280,7 +280,7 @@ function runGameAudit(
       const evaluations = shouldInspectSelectedDecision(game, decision, candidateSeat)
         ? inspectCpuDecisionEvaluations(game, aiOptions)
         : [];
-      const choice = attachEvaluationScore(game, decision, evaluations);
+      const choice = attachEvaluationScore(decision, evaluations);
       metrics.candidateDecisionSteps += 1;
       const turnActionIndex = turnActions.length;
       recordTurnAction(turnActions, choice.decision);
@@ -478,7 +478,6 @@ function shouldInspectSelectedDecision(
 }
 
 function attachEvaluationScore(
-  game: GameState,
   decision: CpuDecision,
   evaluations: readonly CpuDecisionEvaluation[],
 ): { decision: CpuDecision; totalScore: number } {

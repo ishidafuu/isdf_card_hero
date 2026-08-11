@@ -101,4 +101,20 @@ describe("ai review trace", () => {
 
     expect(target.aiDecisionHistory?.at(-1)?.sequence).toBe(241);
   });
+
+  it("keeps absolute log indices after the retained event log reaches its cap", () => {
+    const before = createInitialGame(12349, { firstPlayer: "cpu", trackEventLog: true });
+    before.log = Array.from({ length: 120 }, (_, index) => `display ${index}`);
+    before.logOffset = 1_080;
+    before.eventLog = Array.from({ length: 1_000 }, (_, index) => `retained ${index}`);
+    const target = structuredClone(before);
+
+    appendAiDecisionReviewEntry(target, before, {
+      type: "end_turn",
+      reason: "long battle",
+      score: 0,
+    }, "end_turn");
+
+    expect(target.aiDecisionHistory?.at(-1)?.logIndex).toBe(1_201);
+  });
 });

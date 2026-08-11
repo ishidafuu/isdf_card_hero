@@ -16,6 +16,7 @@ import type {
   Target,
 } from "../types";
 import { FIELD_ORDER, PLAYER_SLOT_ORDER } from "./constants";
+import { isDamageCommand } from "./commands";
 import { drillBreakPartnerSlotKey } from "./drillBreak";
 import { isOpponentMasterInCommandRange, isTargetInCommandRange } from "./field";
 import { opponentOf } from "./players";
@@ -40,7 +41,10 @@ export function getCommandTargets(
     return [];
   }
 
-  const command = getCommandForTargeting(monster, commandId);
+  const command = findCommandForTargeting(monster, commandId);
+  if (!command) {
+    return [];
+  }
   if (monster.cannotActUntilDamaged) {
     return [];
   }
@@ -52,7 +56,12 @@ export function getCommandTargets(
     return [];
   }
 
-  return applyProvokeRestriction(state, attackerSlotKey, command, getCommandTargetsUnchecked(state, attackerSlotKey, command));
+  return applyProvokeRestriction(
+    state,
+    attackerSlotKey,
+    command,
+    getCommandTargetsUnchecked(state, attackerSlotKey, command),
+  );
 }
 
 export function getCommandTargetsUnchecked(
@@ -307,7 +316,10 @@ export function getCommandSecondaryTargets(
     return [];
   }
   const primarySlotKey = action.target.slotKey;
-  const command = getCommandForTargeting(monster, action.commandId);
+  const command = findCommandForTargeting(monster, action.commandId);
+  if (!command) {
+    return [];
+  }
   if (command.name !== "ワープ") {
     if (command.name === "レベルムーブ") {
       return monsterTargets(state, { excludeSlotKey: primarySlotKey, activeOnly: true }).filter((target) => {
@@ -341,7 +353,10 @@ export function getCommandHandChoices(state: GameState, attackerSlotKey: SlotKey
   if (!monster) {
     return [];
   }
-  const command = getCommandForTargeting(monster, commandId);
+  const command = findCommandForTargeting(monster, commandId);
+  if (!command) {
+    return [];
+  }
   if (command.name !== "ソウルスイッチ") {
     return [];
   }
@@ -379,19 +394,8 @@ export function isSameTarget(a: Target, b: Target): boolean {
   return false;
 }
 
-export function getCommandForTargeting(monster: MonsterState, commandId: string): CommandDef {
-  const command = getMonsterCommandsForTargeting(monster).find((item) => item.id === commandId);
-  if (command) {
-    return command;
-  }
-  const fallback = getMonsterDef(monster.cardId).levels
-    .filter((level) => level.level === monster.level)
-    .flatMap((level) => level.commands)
-    .find((item) => item.id === commandId);
-  if (!fallback) {
-    throw new Error("指定したコマンドがありません");
-  }
-  return fallback;
+function findCommandForTargeting(monster: MonsterState, commandId: string): CommandDef | undefined {
+  return getMonsterCommandsForTargeting(monster).find((item) => item.id === commandId);
 }
 
 function getMagicTargetsByCardId(state: GameState, cardId: string): Target[] {
@@ -415,8 +419,13 @@ function getMagicTargetsByCardId(state: GameState, cardId: string): Target[] {
   if (cardId === "power_up") {
     return allyActive.filter((target) => target.kind === "monster" && !state.slots[target.slotKey].monster?.powerUp);
   }
-  if (cardId === "card_025" || cardId === "card_055" || cardId === "card_062" || cardId === "card_088" || cardId === "card_089" || cardId === "card_091") {
+  if (cardId === "card_025" || cardId === "card_055" || cardId === "card_088" || cardId === "card_089" || cardId === "card_091") {
     return activeTargets;
+  }
+  if (cardId === "card_062") {
+    return activeTargets.filter((target) =>
+      target.kind === "monster" && state.slots[target.slotKey].monster?.actionCount === 0
+    );
   }
   if (cardId === "card_030") {
     return activeTargets.filter((target) => target.kind === "monster" && findFirstOtherActiveSlot(state, target.slotKey));
@@ -586,16 +595,40 @@ function applyProvokeRestriction(
 ): Target[] {
   const monster = state.slots[attackerSlotKey].monster;
   const provokeTargetSlotKey = monster?.provokeTargetSlotKey;
-  if (!monster || !provokeTargetSlotKey || isSelfTargetCommand(command)) {
+  if (!monster || !provokeTargetSlotKey) {
     return targets;
   }
   if (!state.slots[provokeTargetSlotKey].monster) {
-    monster.provokeTargetSlotKey = undefined;
     return targets;
+  }
+  if (!canMonsterAttackProvokeTarget(state, attackerSlotKey)) {
+    return targets;
+  }
+  if (!isDamageCommand(command)) {
+    return [];
   }
   return targets.some((target) => target.kind === "monster" && target.slotKey === provokeTargetSlotKey)
     ? [{ kind: "monster", slotKey: provokeTargetSlotKey }]
-    : targets;
+    : [];
+}
+
+export function canMonsterAttackProvokeTarget(state: GameState, attackerSlotKey: SlotKey): boolean {
+  const monster = state.slots[attackerSlotKey].monster;
+  const provokeTargetSlotKey = monster?.provokeTargetSlotKey;
+  if (!monster || !provokeTargetSlotKey || !state.slots[provokeTargetSlotKey].monster) {
+    return false;
+  }
+  return getMonsterCommandsForTargeting(monster).some((candidateCommand) => {
+    if (
+      !isDamageCommand(candidateCommand) ||
+      isSpecialCommandSealed(state, attackerSlotKey, candidateCommand) ||
+      getCommandStoneCost(monster, candidateCommand) + getMonsterActionExtraCost(monster) > state.players[monster.owner].stones
+    ) {
+      return false;
+    }
+    return getCommandTargetsUnchecked(state, attackerSlotKey, candidateCommand)
+      .some((target) => target.kind === "monster" && target.slotKey === provokeTargetSlotKey);
+  });
 }
 
 function isUpperCommand(monster: MonsterState, command: CommandDef): boolean {

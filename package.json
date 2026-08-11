@@ -3,11 +3,14 @@
   "private": true,
   "version": "0.1.0",
   "type": "module",
+  "engines": {
+    "node": "^20.19.0 || >=22.12.0"
+  },
   "scripts": {
     "dev": "vite",
     "build": "tsc -b && vite build",
     "preview": "vite preview",
-    "test": "vitest run --environment jsdom",
+    "test": "vitest run",
     "collect:battle-reports": "vite-node scripts/battle-report-inbox.ts",
     "analyze:battle-report": "vite-node scripts/analyze-battle-report.ts",
     "audit:human-turns": "vite-node scripts/analyze-human-turns.ts",
@@ -84,6 +87,7 @@
     "jsdom": "^27.0.1",
     "typescript": "^6.0.3",
     "vite": "^8.0.16",
+    "vite-node": "^3.2.4",
     "vitest": "^3.2.6"
   }
 }

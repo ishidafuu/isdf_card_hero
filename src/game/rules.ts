@@ -20,6 +20,7 @@ import {
   PLAYER_SLOT_ORDER,
   ROW_ORDER,
 } from "./ruleEngine/constants";
+import { isDamageCommand, isUtilityCommand } from "./ruleEngine/commands";
 import {
   rangedDistanceBetweenSlots,
 } from "./ruleEngine/field";
@@ -35,13 +36,17 @@ import {
 import { removeDefeatedMonster, type DefeatedMonster } from "./ruleEngine/defeat";
 import { resolveLevelUpChoice } from "./ruleEngine/levelUp";
 import { opponentOf, playerLabel } from "./ruleEngine/players";
-import { randomChance, randomInt, shuffle } from "./ruleEngine/random";
+import { randomChance, randomInt, shuffle, shuffleWithState } from "./ruleEngine/random";
+import {
+  clearInboundMonsterSlotReferences,
+  remapMonsterSlotReferences,
+  type MonsterSlotMove,
+} from "./ruleEngine/slotReferences";
 import { cloneState } from "./ruleEngine/state";
 import {
   getCommandHandChoices as getCommandHandChoicesFromTargeting,
   getCommandSecondaryTargets as getCommandSecondaryTargetsFromTargeting,
   getCommandTargets as getCommandTargetsFromTargeting,
-  getCommandTargetsUnchecked as getCommandTargetsUncheckedFromTargeting,
   getMagicHandChoices as getMagicHandChoicesFromTargeting,
   getMagicSearchCategories as getMagicSearchCategoriesFromTargeting,
   getMagicSecondaryTargets as getMagicSecondaryTargetsFromTargeting,
@@ -49,6 +54,7 @@ import {
   getMasterActionCost as getMasterActionCostFromTargeting,
   getMasterActionIdsForPlayer as getMasterActionIdsForPlayerFromTargeting,
   getMasterActionTargets as getMasterActionTargetsFromTargeting,
+  canMonsterAttackProvokeTarget,
   isSameTarget as isSameTargetFromTargeting,
   targetToKey as targetToKeyFromTargeting,
 } from "./ruleEngine/targeting";
@@ -79,6 +85,8 @@ const ROTATION_SLOT_ORDER: Record<PlayerId, SlotKey[]> = {
   player: ["player_front_left", "player_front_right", "player_back_right", "player_back_left"],
   cpu: ["cpu_front_left", "cpu_front_right", "cpu_back_right", "cpu_back_left"],
 };
+
+const MAGIC_SECONDARY_EFFECT_CARD_IDS = new Set(["card_031", "card_061", "card_098"]);
 
 export interface CreateInitialGameOptions {
   firstPlayer?: PlayerId;
@@ -222,7 +230,7 @@ export function runAutoStep(state: GameState, aiOptions: CpuAiOptions = {}): Gam
     return resolveLevelUp(
       state,
       state.pendingLevelUp.maxLevels,
-      chooseSuperLevelUpOption(state, state.pendingLevelUp)?.handInstanceId,
+      chooseSuperLevelUpOption(state.pendingLevelUp)?.handInstanceId,
     );
   }
 
@@ -292,6 +300,9 @@ export function moveMonster(
   if (isMonsterActionBlocked(next, fromSlotKey)) {
     throw new Error("このモンスターは行動できません");
   }
+  if (mover.cannotMove) {
+    throw new Error("このモンスターは移動できません");
+  }
   const actionCost = getMonsterActionExtraCost(mover);
   if (next.players[mover.owner].stones < actionCost) {
     throw new Error("ストーン呪の追加コストが足りません");
@@ -317,6 +328,9 @@ export function moveMonster(
   }
   mover.focused = false;
   clearDarkHoleIfMoved(mover, toSlotKey);
+  if (other) {
+    clearDarkHoleIfMoved(other, fromSlotKey);
+  }
   recordMoveHistory(next, mover, fromSlotKey, toSlotKey, other);
 
   if (other) {
@@ -328,6 +342,9 @@ export function moveMonster(
     delete from.monster;
     appendLog(next, `${monsterName(mover)}を移動した`);
   }
+  remapMonsterSlotReferences(next, other
+    ? [[fromSlotKey, toSlotKey], [toSlotKey, fromSlotKey]]
+    : [[fromSlotKey, toSlotKey]]);
 
   applyDamageCurseAfterAction(next, toSlotKey);
   return next;
@@ -371,6 +388,7 @@ export function attackWithCommand(state: GameState, action: CommandAction): Game
   if (!validTargets.some((target) => isSameTarget(target, action.target))) {
     throw new Error("その対象には攻撃できません");
   }
+  validateCommandActionSelections(state, action);
 
   const next = cloneState(state);
   ensureActionAllowed(next);
@@ -388,6 +406,7 @@ export function attackWithCommand(state: GameState, action: CommandAction): Game
     throw new Error("特技に必要なストーンが足りません");
   }
 
+  consumeOneShotCommandMarkers(attacker, command, action.target);
   actor.stones -= cost;
   attacker.actionCount += 1;
   const hadBerserkPower = !!attacker.berserkPower;
@@ -485,14 +504,24 @@ export function resolveLevelUp(state: GameState, levels: number, superHandInstan
   } else if (choice.kind === "level") {
     const raisedLevels = performLevelUp(next, pending.attackerSlotKey, choice.levels);
     const remainingLevels = pending.maxLevels - raisedLevels;
-    if (raisedLevels > 0 && choice.levels < pending.maxLevels && remainingLevels > 0 && next.slots[pending.attackerSlotKey].monster) {
+    const remainingMonster = next.slots[pending.attackerSlotKey].monster;
+    if (remainingLevels > 0 && remainingMonster) {
       const superOptions = getSuperLevelUpOptions(next, pending.attackerSlotKey, remainingLevels);
-      next.pendingLevelUp = {
-        ...pending,
-        maxLevels: remainingLevels,
-        superOptions: superOptions.length > 0 ? superOptions : undefined,
-      };
-      return next;
+      const normalLevels = remainingMonster.levelFixed
+        ? 0
+        : Math.min(
+          remainingLevels,
+          next.players[remainingMonster.owner].stones,
+          Math.max(0, getMonsterDef(remainingMonster.cardId).maxLevel - remainingMonster.level),
+        );
+      if (normalLevels > 0 || superOptions.length > 0) {
+        next.pendingLevelUp = {
+          ...pending,
+          maxLevels: remainingLevels,
+          superOptions: superOptions.length > 0 ? superOptions : undefined,
+        };
+        return next;
+      }
     }
   } else {
     appendLog(next, "レベルアップしなかった");
@@ -508,6 +537,7 @@ export function playMagic(state: GameState, action: MagicAction): GameState {
   if (!validTargets.some((target) => isSameTarget(target, action.target))) {
     throw new Error("その対象にはマジックを使えません");
   }
+  validateMagicActionSelections(state, action);
 
   const next = cloneState(state);
   ensureActionAllowed(next);
@@ -666,14 +696,6 @@ export function getCommandTargets(
   return getCommandTargetsFromTargeting(state, attackerSlotKey, commandId);
 }
 
-function getCommandTargetsUnchecked(
-  state: GameState,
-  attackerSlotKey: SlotKey,
-  command: CommandDef,
-): Target[] {
-  return getCommandTargetsUncheckedFromTargeting(state, attackerSlotKey, command);
-}
-
 export function getMasterActionTargets(state: GameState, actionId: MasterActionId): Target[] {
   return getMasterActionTargetsFromTargeting(state, actionId);
 }
@@ -705,11 +727,135 @@ export function getMagicSearchCategories(state: GameState, handInstanceId: strin
   return getMagicSearchCategoriesFromTargeting(state, handInstanceId);
 }
 
+function validateCommandActionSelections(state: GameState, action: CommandAction): void {
+  if (action.secondaryTarget) {
+    const validSecondaryTargets = getCommandSecondaryTargets(state, action);
+    if (!validSecondaryTargets.some((target) => isSameTarget(target, action.secondaryTarget as Target))) {
+      throw new Error("コマンドの二次対象が不正です");
+    }
+  }
+  if (action.secondaryHandInstanceId !== undefined) {
+    const validHandChoices = getCommandHandChoices(state, action.attackerSlotKey, action.commandId);
+    if (!validHandChoices.some((card) => card.instanceId === action.secondaryHandInstanceId)) {
+      throw new Error("コマンドの手札選択が不正です");
+    }
+  }
+}
+
+function validateMagicActionSelections(state: GameState, action: MagicAction): void {
+  const player = state.players[state.currentPlayer];
+  const card = player.hand.find((candidate) => candidate.instanceId === action.handInstanceId);
+  if (!card) {
+    throw new Error("選択したカードが手札にありません");
+  }
+
+  if (action.secondaryTarget) {
+    const validSecondaryTargets = getMagicSecondaryTargets(state, action);
+    if (!validSecondaryTargets.some((target) => isSameTarget(target, action.secondaryTarget as Target))) {
+      throw new Error("マジックの二次対象が不正です");
+    }
+  }
+  if (action.secondaryHandInstanceId !== undefined) {
+    if (card.cardId !== "card_065") {
+      throw new Error("マジックの手札選択が不正です");
+    }
+    const validHandChoices = getMagicHandChoices(state, action.handInstanceId);
+    if (!validHandChoices.some((candidate) => candidate.instanceId === action.secondaryHandInstanceId)) {
+      throw new Error("マジックの手札選択が不正です");
+    }
+  }
+  if (action.selectedHandInstanceIds !== undefined) {
+    if (card.cardId !== "card_116") {
+      throw new Error("手札のリフレッシュ指定が不正です");
+    }
+    const validIds = new Set(getMagicHandChoices(state, action.handInstanceId).map((candidate) => candidate.instanceId));
+    const selectedIds = new Set(action.selectedHandInstanceIds);
+    if (
+      selectedIds.size !== action.selectedHandInstanceIds.length ||
+      action.selectedHandInstanceIds.some((instanceId) => !validIds.has(instanceId))
+    ) {
+      throw new Error("手札のリフレッシュ指定が不正です");
+    }
+  }
+  if (action.deckTopOrderInstanceIds !== undefined) {
+    if (card.cardId !== "card_115") {
+      throw new Error("山札の並べ替え指定が不正です");
+    }
+    const topCards = player.deck.slice(0, 5);
+    const requestedIds = action.deckTopOrderInstanceIds;
+    if (requestedIds.length > 0) {
+      const topIds = new Set(topCards.map((candidate) => candidate.instanceId));
+      const uniqueRequestedIds = new Set(requestedIds);
+      if (
+        requestedIds.length !== topCards.length ||
+        uniqueRequestedIds.size !== topCards.length ||
+        requestedIds.some((instanceId) => !topIds.has(instanceId))
+      ) {
+        throw new Error("山札の並べ替え指定が不正です");
+      }
+    }
+  }
+  if (action.searchCategory !== undefined) {
+    if (!getMagicSearchCategories(state, action.handInstanceId).includes(action.searchCategory)) {
+      throw new Error("カードサーチのカテゴリ指定が不正です");
+    }
+  }
+  if (action.rotationDirection !== undefined) {
+    if (
+      card.cardId !== "card_093" ||
+      (action.rotationDirection !== "clockwise" && action.rotationDirection !== "counterclockwise")
+    ) {
+      throw new Error("ローテーション方向の指定が不正です");
+    }
+  }
+}
+
+function consumeOneShotCommandMarkers(monster: MonsterState, command: CommandDef, target: Target): void {
+  if (
+    isDamageCommand(command) &&
+    monster.provokeTargetSlotKey &&
+    target.kind === "monster" &&
+    target.slotKey === monster.provokeTargetSlotKey
+  ) {
+    monster.provokeTargetSlotKey = undefined;
+  }
+  if (monster.canAttackAnywhere && command.id === "attack") {
+    monster.canAttackAnywhere = false;
+  }
+}
+
+function guardedMagicSecondaryMonster(
+  state: GameState,
+  cardId: string,
+  action: MagicAction,
+): MonsterState | undefined {
+  if (!MAGIC_SECONDARY_EFFECT_CARD_IDS.has(cardId) || action.target.kind !== "monster") {
+    return undefined;
+  }
+  let secondarySlotKey = action.secondaryTarget?.kind === "monster"
+    ? action.secondaryTarget.slotKey
+    : undefined;
+  if (!secondarySlotKey && cardId === "card_031") {
+    secondarySlotKey = findSwapPartnerSlot(state, action.target.slotKey);
+  } else if (!secondarySlotKey && cardId === "card_061") {
+    secondarySlotKey = firstActiveSlotOf(state, opponentOf(state.slots[action.target.slotKey].owner));
+  } else if (!secondarySlotKey && cardId === "card_098") {
+    secondarySlotKey = firstActiveSlotOf(state, state.currentPlayer);
+  }
+  const secondaryMonster = secondarySlotKey ? state.slots[secondarySlotKey].monster : undefined;
+  return secondaryMonster?.damageGuarded ? secondaryMonster : undefined;
+}
+
 function applyMagicEffect(state: GameState, cardId: string, action: MagicAction): void {
   const { target } = action;
   const guardedMonster = target.kind === "monster" ? state.slots[target.slotKey].monster : undefined;
   if (guardedMonster?.damageGuarded) {
     appendLog(state, `${monsterName(guardedMonster)}は仮死状態で効果を受けつけなかった`);
+    return;
+  }
+  const guardedSecondaryMonster = guardedMagicSecondaryMonster(state, cardId, action);
+  if (guardedSecondaryMonster) {
+    appendLog(state, `${monsterName(guardedSecondaryMonster)}は仮死状態で効果を受けつけなかった`);
     return;
   }
   if (cardId === "healing" && target.kind === "monster") {
@@ -739,7 +885,12 @@ function applyMagicEffect(state: GameState, cardId: string, action: MagicAction)
         ? action.secondaryTarget.slotKey
         : findFirstOtherActiveSlot(state, target.slotKey);
       if (second) {
-        applyShieldMagic(state, { kind: "monster", slotKey: second }, 1);
+        const secondMonster = state.slots[second].monster;
+        if (secondMonster?.damageGuarded) {
+          appendLog(state, `${monsterName(secondMonster)}は仮死状態で効果を受けつけなかった`);
+        } else {
+          applyShieldMagic(state, { kind: "monster", slotKey: second }, 1);
+        }
       }
     }
     if (cardId === "card_089" && target.kind === "monster") {
@@ -1169,8 +1320,11 @@ function swapMonsters(state: GameState, aSlotKey: SlotKey, bSlotKey: SlotKey): v
   if (!aMonster || !bMonster) {
     throw new Error("入れ替え対象がいません");
   }
+  clearDarkHoleIfMoved(aMonster, bSlotKey);
+  clearDarkHoleIfMoved(bMonster, aSlotKey);
   a.monster = bMonster;
   b.monster = aMonster;
+  remapMonsterSlotReferences(state, [[aSlotKey, bSlotKey], [bSlotKey, aSlotKey]]);
   appendLog(state, `${monsterName(aMonster)}と${monsterName(bMonster)}の位置を入れ替えた`);
 }
 
@@ -1228,9 +1382,10 @@ function shiftChangeWithHandMonster(state: GameState, slotKey: SlotKey, handInst
     throw new Error("手札にモンスターがありません");
   }
   const [handMonster] = player.hand.splice(handIndex, 1);
-  player.hand.push({ cardId: current.cardId, instanceId: current.instanceId });
+  player.hand.push({ cardId: persistentMonsterCardId(current), instanceId: current.instanceId });
   const def = getMonsterDef(handMonster.cardId);
   const firstLevel = def.levels[0];
+  clearInboundMonsterSlotReferences(state, slotKey);
   slot.monster = {
     instanceId: handMonster.instanceId,
     cardId: handMonster.cardId,
@@ -1251,6 +1406,7 @@ function shiftChangeWithHandMonster(state: GameState, slotKey: SlotKey, handInst
 }
 
 function transformMonsterKeepingHp(state: GameState, slotKey: SlotKey, nextCardId: string): void {
+  restoreMirroredForm(state, slotKey);
   const monster = requireTargetMonster(state, slotKey);
   const previousName = monsterName(monster);
   const nextDef = getMonsterDef(nextCardId);
@@ -1302,17 +1458,21 @@ function rotatePlayerMonsters(
 ): void {
   const order = ROTATION_SLOT_ORDER[playerId];
   const monsters = order.map((slotKey) => state.slots[slotKey].monster);
+  const moves: MonsterSlotMove[] = [];
   for (let i = 0; i < order.length; i += 1) {
     const fromIndex = direction === "clockwise"
       ? (i - 1 + order.length) % order.length
       : (i + 1) % order.length;
     const nextMonster = monsters[fromIndex];
     if (nextMonster) {
+      clearDarkHoleIfMoved(nextMonster, order[i]);
       state.slots[order[i]].monster = nextMonster;
+      moves.push([order[fromIndex], order[i]]);
     } else {
       delete state.slots[order[i]].monster;
     }
   }
+  remapMonsterSlotReferences(state, moves);
   if (withLog) {
     appendLog(state, `${playerLabel(playerId)}フィールドのモンスターを${rotationDirectionLabel(direction)}にローテーションした`);
   }
@@ -1325,7 +1485,7 @@ function rotationDirectionLabel(direction: NonNullable<MagicAction["rotationDire
 function reshuffleHand(state: GameState, playerId: PlayerId): void {
   const player = state.players[playerId];
   const redrawCount = player.hand.length;
-  player.deck = shuffle([...player.deck, ...player.hand], state.turnNumber + redrawCount);
+  player.deck = shuffleWithState(state, [...player.deck, ...player.hand]);
   player.hand = [];
   for (let i = 0; i < redrawCount; i += 1) {
     if (player.deck.length === 0) {
@@ -1352,7 +1512,7 @@ function refreshHand(state: GameState, playerId: PlayerId): void {
 }
 
 function refreshSelectedHand(state: GameState, playerId: PlayerId, selectedHandInstanceIds?: string[]): void {
-  if (!selectedHandInstanceIds || selectedHandInstanceIds.length === 0) {
+  if (!selectedHandInstanceIds) {
     refreshHand(state, playerId);
     return;
   }
@@ -1458,12 +1618,14 @@ function returnPreparedMonsterToDeck(state: GameState, slotKey: SlotKey): void {
   }
   const owner = state.players[monster.owner];
   owner.stones += monster.investedStones;
-  owner.deck.push({ cardId: monster.cardId, instanceId: monster.instanceId });
+  owner.deck.push({ cardId: persistentMonsterCardId(monster), instanceId: monster.instanceId });
+  clearInboundMonsterSlotReferences(state, slotKey);
   delete slot.monster;
   appendLog(state, `${monsterName(monster)}を山札の最後に戻した`);
 }
 
 function resetMonsterToEntry(state: GameState, slotKey: SlotKey): void {
+  restoreMirroredForm(state, slotKey);
   const monster = requireTargetMonster(state, slotKey);
   const def = getMonsterDef(monster.cardId);
   const firstLevel = def.levels[0];
@@ -1491,15 +1653,62 @@ function mirrorMonster(state: GameState, slotKey: SlotKey, sourceTarget?: Target
     appendLog(state, "コピーできる相手モンスターがいない");
     return;
   }
+  target.mirroredFormOriginal ??= {
+    cardId: target.cardId,
+    level: target.level,
+    actionLimit: target.actionLimit,
+    revivedOnce: target.revivedOnce,
+    usedCommandIds: target.usedCommandIds ? [...target.usedCommandIds] : undefined,
+    hollow: target.hollow,
+  };
   const currentHp = target.hp;
   target.cardId = source.cardId;
   target.level = Math.min(source.level, getMonsterDef(source.cardId).maxLevel);
   target.actionLimit = getMonsterDef(source.cardId).actionLimit ?? 1;
   target.hp = currentHp;
-  target.revivedOnce = false;
-  target.usedCommandIds = undefined;
-  target.hollow = source.cardId === "card_144" ? true : undefined;
+  target.revivedOnce = source.revivedOnce;
+  target.usedCommandIds = source.usedCommandIds ? [...source.usedCommandIds] : undefined;
+  target.hollow = source.hollow;
   appendLog(state, `${monsterName(target)}は${monsterName(source)}の姿を写した`);
+}
+
+function restoreMirroredForm(state: GameState, slotKey: SlotKey): void {
+  const monster = state.slots[slotKey].monster;
+  const original = monster?.mirroredFormOriginal;
+  if (!monster || !original) {
+    return;
+  }
+  const mirroredName = monsterName(monster);
+  monster.cardId = original.cardId;
+  monster.level = original.level;
+  monster.actionLimit = original.actionLimit;
+  monster.revivedOnce = original.revivedOnce;
+  monster.usedCommandIds = original.usedCommandIds ? [...original.usedCommandIds] : undefined;
+  monster.hollow = original.hollow;
+  monster.mirroredFormOriginal = undefined;
+  monster.hp = Math.min(monster.hp, getMonsterMaxHp(monster));
+  appendLog(state, `${mirroredName}は${monsterName(monster)}の姿に戻った`);
+}
+
+function persistentMonsterCardId(monster: MonsterState): string {
+  return monster.mirroredFormOriginal?.cardId ?? monster.cardId;
+}
+
+function monsterWithPersistentForm(monster: MonsterState): MonsterState {
+  const original = monster.mirroredFormOriginal;
+  if (!original) {
+    return monster;
+  }
+  return {
+    ...monster,
+    cardId: original.cardId,
+    level: original.level,
+    actionLimit: original.actionLimit,
+    revivedOnce: original.revivedOnce,
+    usedCommandIds: original.usedCommandIds ? [...original.usedCommandIds] : undefined,
+    hollow: original.hollow,
+    mirroredFormOriginal: undefined,
+  };
 }
 
 export function getMovableTargets(state: GameState, fromSlotKey: SlotKey): SlotKey[] {
@@ -1693,8 +1902,10 @@ function autoAdvanceBackRow(state: GameState, playerId: PlayerId): void {
     const front = state.slots[frontKey];
     if (back.monster?.status === "active" && !front.monster) {
       const monster = back.monster;
+      clearDarkHoleIfMoved(monster, frontKey);
       front.monster = monster;
       delete back.monster;
+      remapMonsterSlotReferences(state, [[backKey, frontKey]]);
       appendLog(state, `${monsterName(monster)}が前衛へ自動移動した`);
     }
   }
@@ -1778,6 +1989,7 @@ function clearExpiredEndTurnEffects(state: GameState, playerId: PlayerId): void 
   for (const slotKey of PLAYER_SLOT_ORDER[playerId]) {
     const monster = state.slots[slotKey].monster;
     if (monster) {
+      restoreMirroredForm(state, slotKey);
       monster.powerUp = false;
       monster.powerModifier = 0;
       monster.powerOverride = undefined;
@@ -1936,7 +2148,7 @@ function decreaseMasterHp(state: GameState, playerId: PlayerId, amount: number, 
   }
   player.stones += actual;
   appendLog(state, `${playerLabel(playerId)}のマスターHPが${actual}減った（${source}）。ストーン+${actual}`);
-  if (player.masterHp <= 0) {
+  if (player.masterHp <= 0 && !state.winner) {
     state.winner = opponentOf(playerId);
     appendLog(state, `${playerLabel(opponentOf(playerId))}の勝利`);
   }
@@ -1998,7 +2210,11 @@ function damageMonster(
     applyDeathChainDamage(state, targetSlotKey, power, context);
   }
 
-  if (monster.hp > 0) {
+  const resolvedMonster = slot.monster;
+  if (!resolvedMonster || resolvedMonster.instanceId !== monster.instanceId) {
+    return undefined;
+  }
+  if (resolvedMonster.hp > 0) {
     applyAfterDamageTraits(state, targetSlotKey, damage, context);
     return undefined;
   }
@@ -2061,7 +2277,8 @@ function removeMonsterFromField(state: GameState, slotKey: SlotKey, source: stri
   const owner = state.players[monster.owner];
   const returnedStones = monster.investedStones;
   owner.stones += returnedStones;
-  owner.discard.push({ cardId: monster.cardId, instanceId: monster.instanceId });
+  owner.discard.push({ cardId: persistentMonsterCardId(monster), instanceId: monster.instanceId });
+  clearInboundMonsterSlotReferences(state, slotKey);
   delete slot.monster;
   appendLog(state, `${monsterName(monster)}はフィールドを去り、${playerLabel(monster.owner)}にストーン${returnedStones}個が戻った（${source}）`);
   if (monster.shadowCursed) {
@@ -2071,7 +2288,13 @@ function removeMonsterFromField(state: GameState, slotKey: SlotKey, source: stri
 
 function getLevelUpCapacity(state: GameState, attackerSlotKey: SlotKey, defeatedLevel: number): number {
   const attacker = state.slots[attackerSlotKey].monster;
-  return levelUpCapacityForMonster(state, attacker, defeatedLevel, attacker ? getPotentialMaxLevel(state, attacker) : 0);
+  const persistentAttacker = attacker ? monsterWithPersistentForm(attacker) : undefined;
+  return levelUpCapacityForMonster(
+    state,
+    persistentAttacker,
+    defeatedLevel,
+    persistentAttacker ? getPotentialMaxLevel(state, persistentAttacker) : 0,
+  );
 }
 
 function getPotentialMaxLevel(state: GameState, monster: MonsterState): number {
@@ -2084,6 +2307,7 @@ function getPotentialMaxLevel(state: GameState, monster: MonsterState): number {
 }
 
 function performLevelUp(state: GameState, attackerSlotKey: SlotKey, levels: number): number {
+  restoreMirroredForm(state, attackerSlotKey);
   const monster = state.slots[attackerSlotKey].monster;
   if (!monster || levels <= 0) {
     return 0;
@@ -2107,7 +2331,8 @@ function performLevelUp(state: GameState, attackerSlotKey: SlotKey, levels: numb
 }
 
 function getSuperLevelUpOptions(state: GameState, slotKey: SlotKey, maxLevels: number): SuperLevelUpOption[] {
-  const monster = state.slots[slotKey].monster;
+  const currentMonster = state.slots[slotKey].monster;
+  const monster = currentMonster ? monsterWithPersistentForm(currentMonster) : undefined;
   if (!monster || monster.levelFixed) {
     return [];
   }
@@ -2125,7 +2350,6 @@ function getSuperLevelUpOptions(state: GameState, slotKey: SlotKey, maxLevels: n
 }
 
 function chooseSuperLevelUpOption(
-  state: GameState,
   pending: Pick<NonNullable<GameState["pendingLevelUp"]>, "superOptions">,
 ): SuperLevelUpOption | undefined {
   return [...(pending.superOptions ?? [])]
@@ -2133,6 +2357,7 @@ function chooseSuperLevelUpOption(
 }
 
 function performSuperLevelUp(state: GameState, slotKey: SlotKey, handInstanceId: string): void {
+  restoreMirroredForm(state, slotKey);
   const slot = state.slots[slotKey];
   const monster = slot.monster;
   if (!monster) {
@@ -2222,6 +2447,36 @@ function getCommandBasePower(
   return command.power;
 }
 
+function guardedUtilityCommandMonster(
+  state: GameState,
+  command: CommandDef,
+  target: Target,
+  action: CommandAction,
+): MonsterState | undefined {
+  if (!isUtilityCommand(command)) {
+    return undefined;
+  }
+  const targetSlotKeys: SlotKey[] = target.kind === "monster" ? [target.slotKey] : [];
+  if (command.name === "レベルムーブ" && target.kind === "monster") {
+    const secondarySlotKey = action.secondaryTarget?.kind === "monster"
+      ? action.secondaryTarget.slotKey
+      : firstLevelUpCandidateSlot(state, target.slotKey);
+    if (secondarySlotKey) {
+      targetSlotKeys.push(secondarySlotKey);
+    }
+  } else if (command.name === "ワープ" && target.kind === "monster") {
+    const secondarySlotKey = action.secondaryTarget?.kind === "monster"
+      ? action.secondaryTarget.slotKey
+      : findSwapPartnerSlot(state, target.slotKey);
+    if (secondarySlotKey) {
+      targetSlotKeys.push(secondarySlotKey);
+    }
+  }
+  return targetSlotKeys
+    .map((slotKey) => state.slots[slotKey].monster)
+    .find((monster): monster is MonsterState => !!monster?.damageGuarded);
+}
+
 function applyUtilityCommandEffect(
   state: GameState,
   attackerSlotKey: SlotKey,
@@ -2233,6 +2488,12 @@ function applyUtilityCommandEffect(
   const attacker = state.slots[attackerSlotKey].monster;
   if (!attacker) {
     return false;
+  }
+
+  const guardedEffectMonster = guardedUtilityCommandMonster(state, command, target, action);
+  if (guardedEffectMonster) {
+    appendLog(state, `${monsterName(guardedEffectMonster)}は仮死状態で効果を受けつけなかった`);
+    return true;
   }
 
   if (command.name === "レベルダウン" && target.kind === "monster") {
@@ -2457,11 +2718,11 @@ function applyPostDamageCommandEffect(
   if (command.name === "吸血") {
     healMonster(state, attackerSlotKey, Math.min(1, power));
   }
-  if (command.name === "パワーホーン") {
+  if (command.name === "パワーホーン" && !targetMonster.damageGuarded) {
     targetMonster.powerModifier = (targetMonster.powerModifier ?? 0) + 1;
     appendLog(state, `${monsterName(targetMonster)}のパワーが1上がった`);
   }
-  if (attacker.cardId === "card_052") {
+  if (attacker.cardId === "card_052" && !targetMonster.damageGuarded) {
     clearMonsterEffects(state, target.slotKey, true, { preserveFocus: true });
   }
   if (command.name === "爆裂キノコ") {
@@ -2478,7 +2739,7 @@ function applyPostDamageCommandEffect(
   if (command.range === "piercing") {
     damagePiercedTarget(state, target.slotKey, power, command.name, attackerSlotKey);
   }
-  if (attacker.cardId === "card_101") {
+  if (attacker.cardId === "card_101" && !targetMonster.damageGuarded) {
     targetMonster.damageCurse = true;
     appendLog(state, `${monsterName(targetMonster)}はダメージ呪を受けた`);
   }
@@ -2547,7 +2808,7 @@ function resolveCommandDefeat(
 
   const updatedMaxLevels = state.winner ? 0 : getLevelUpCapacity(state, levelUpSlotKey, defeated.level);
   if (updatedMaxLevels > 0) {
-    const superOption = chooseSuperLevelUpOption(state, { superOptions: getSuperLevelUpOptions(state, levelUpSlotKey, updatedMaxLevels) });
+    const superOption = chooseSuperLevelUpOption({ superOptions: getSuperLevelUpOptions(state, levelUpSlotKey, updatedMaxLevels) });
     if (superOption) {
       performSuperLevelUp(state, levelUpSlotKey, superOption.handInstanceId);
     } else {
@@ -2707,6 +2968,7 @@ function applyDeathChainDamage(
   if (!linkedSlotKey || !state.slots[linkedSlotKey].monster) {
     return;
   }
+  clearDeathChain(state, targetSlotKey);
   damageMonster(state, linkedSlotKey, power, {
     ...context,
     source: "デスチェーン",
@@ -2802,10 +3064,7 @@ function isMonsterActionBlocked(state: GameState, slotKey: SlotKey): boolean {
   if (!monster.provokeTargetSlotKey) {
     return false;
   }
-  return getMonsterCommands(monster).some((command) =>
-    getCommandTargetsUnchecked(state, slotKey, command)
-      .some((target) => target.kind === "monster" && target.slotKey === monster.provokeTargetSlotKey),
-  );
+  return canMonsterAttackProvokeTarget(state, slotKey);
 }
 
 function applyDamageCurseAfterAction(state: GameState, slotKey: SlotKey): void {
@@ -2828,6 +3087,7 @@ function retreatBackward(state: GameState, slotKey: SlotKey): void {
   state.slots[backSlotKey].monster = monster;
   delete state.slots[slotKey].monster;
   clearDarkHoleIfMoved(monster, backSlotKey);
+  remapMonsterSlotReferences(state, [[slotKey, backSlotKey]]);
   appendLog(state, `${monsterName(monster)}は後退した`);
 }
 
@@ -2914,12 +3174,6 @@ function consumeDrillBreakPartnerAction(state: GameState, attackerSlot: SlotStat
   partner.focused = false;
 }
 
-function sweepingAttackSlot(state: GameState, attackerSlotKey: SlotKey): SlotState {
-  const attackerSlot = state.slots[attackerSlotKey];
-  const destinationSlotKey = sweepingDestinationSlotKey(attackerSlot);
-  return destinationSlotKey ? state.slots[destinationSlotKey] : attackerSlot;
-}
-
 function advanceSweepingAttacker(state: GameState, attackerSlotKey: SlotKey): SlotKey {
   const from = state.slots[attackerSlotKey];
   const attacker = from.monster;
@@ -2935,10 +3189,15 @@ function advanceSweepingAttacker(state: GameState, attackerSlotKey: SlotKey): Sl
     clearDarkHoleIfMoved(other, attackerSlotKey);
     to.monster = attacker;
     from.monster = other;
+    remapMonsterSlotReferences(state, [
+      [attackerSlotKey, destinationSlotKey],
+      [destinationSlotKey, attackerSlotKey],
+    ]);
     appendLog(state, `${monsterName(attacker)}は前方へ瞬間移動し、${monsterName(other)}と入れ替わった`);
   } else {
     to.monster = attacker;
     delete from.monster;
+    remapMonsterSlotReferences(state, [[attackerSlotKey, destinationSlotKey]]);
     appendLog(state, `${monsterName(attacker)}は前方へ瞬間移動した`);
   }
   return destinationSlotKey;
@@ -2952,6 +3211,7 @@ function sweepingDestinationSlotKey(attackerSlot: SlotState): SlotKey | undefine
 }
 
 function levelDownMonster(state: GameState, slotKey: SlotKey): void {
+  restoreMirroredForm(state, slotKey);
   const monster = state.slots[slotKey].monster;
   if (!monster) {
     throw new Error("レベルダウン対象がいません");
@@ -2980,6 +3240,10 @@ function healMonster(state: GameState, slotKey: SlotKey, amount: number): void {
   if (!monster) {
     throw new Error("回復対象がいません");
   }
+  if (monster.damageGuarded) {
+    appendLog(state, `${monsterName(monster)}は仮死状態で効果を受けつけなかった`);
+    return;
+  }
   const before = monster.hp;
   monster.hp = Math.min(getMonsterMaxHp(monster), monster.hp + amount);
   appendLog(state, `${monsterName(monster)}を${monster.hp - before}回復した`);
@@ -3006,6 +3270,7 @@ function clearMonsterEffects(
   if (!monster) {
     throw new Error("効果解除対象がいません");
   }
+  restoreMirroredForm(state, slotKey);
   if (!options.preserveFocus) {
     monster.focused = false;
   }
@@ -3055,10 +3320,11 @@ function switchWithHandMonster(state: GameState, slotKey: SlotKey, handInstanceI
     return;
   }
   const [nextCard] = player.hand.splice(handIndex, 1);
-  player.discard.push({ cardId: current.cardId, instanceId: current.instanceId });
+  player.discard.push({ cardId: persistentMonsterCardId(current), instanceId: current.instanceId });
   const def = getMonsterDef(nextCard.cardId);
   const level = Math.min(current.level, def.maxLevel);
   const levelDef = def.levels.find((item) => item.level === level) ?? def.levels[0];
+  clearInboundMonsterSlotReferences(state, slotKey);
   slot.monster = {
     instanceId: nextCard.instanceId,
     cardId: nextCard.cardId,
@@ -3109,17 +3375,10 @@ function isUpperCommand(monster: MonsterState, command: CommandDef): boolean {
 
 function getCommand(monster: MonsterState, commandId: string): CommandDef {
   const command = getMonsterCommands(monster).find((item) => item.id === commandId);
-  if (command) {
-    return command;
-  }
-  const fallback = getMonsterDef(monster.cardId).levels
-    .filter((level) => level.level === monster.level)
-    .flatMap((level) => level.commands)
-    .find((item) => item.id === commandId);
-  if (!fallback) {
+  if (!command) {
     throw new Error("指定したコマンドがありません");
   }
-  return fallback;
+  return command;
 }
 
 function getCommandStoneCost(monster: MonsterState, command: CommandDef): number {

@@ -92,4 +92,65 @@ describe("human turn audit", () => {
     expect(formatHumanTurnAuditMarkdown([{ reportId: "legacy-fixture", entries }]))
       .toContain("legacy observation turns: 1");
   });
+
+  it("uses the retained event-log offset when absolute log indices exceed the cap", () => {
+    const state = createInitialGame(81003, { firstPlayer: "cpu", trackEventLog: true });
+    state.players.player.hand = [];
+    state.players.player.deck = [{ cardId: "card_064", instanceId: "player_twilight" }];
+    state.players.cpu.hand = [];
+    state.players.cpu.deck = [{ cardId: "card_064", instanceId: "cpu_twilight" }];
+    for (const slot of Object.values(state.slots)) {
+      delete slot.monster;
+    }
+    const endEntry: AiDecisionHistoryEntry = {
+      sequence: 1,
+      logIndex: 1_001,
+      playerId: "cpu",
+      turnNumber: state.turnNumber,
+      decisionKey: "end_turn",
+      decision: { type: "end_turn", reason: "fixture", score: 0 },
+      stateBefore: createAiDecisionStateSnapshot(state),
+    };
+    const nextEntry: AiDecisionHistoryEntry = {
+      ...endEntry,
+      sequence: 2,
+      logIndex: 1_007,
+      turnNumber: state.turnNumber + 1,
+      decisionKey: "focus:cpu_front_left",
+      decision: { type: "focus", slotKey: "cpu_front_left", reason: "fixture", score: 0 },
+    };
+
+    const entries = extractLegacyHumanTurns({
+      reportId: "truncated-legacy-fixture",
+      eventLogOffset: 1_000,
+      aiDecisionHistory: [endEntry, nextEntry],
+      eventLog: [
+        "CPU判断: ターン終了",
+        "プレイヤーのターン開始",
+        "プレイヤーはストーンを3個得た",
+        "プレイヤーはカードを引いた",
+        "ピグミィ Lv1は気合いだめした",
+        "CPUのターン開始",
+        "CPU判断: 次の行動",
+      ],
+    });
+
+    expect(entries[0]?.observedActions).toEqual(["ピグミィ Lv1は気合いだめした"]);
+
+    const expiredEntries = extractLegacyHumanTurns({
+      reportId: "expired-legacy-fixture",
+      eventLogOffset: 1_000,
+      aiDecisionHistory: [
+        { ...endEntry, logIndex: 998 },
+        { ...nextEntry, logIndex: 1_000 },
+      ],
+      eventLog: [
+        "プレイヤーのターン開始",
+        "ピグミィ Lv1は気合いだめした",
+        "CPUのターン開始",
+      ],
+    });
+
+    expect(expiredEntries[0]?.observedActions).toEqual([]);
+  });
 });

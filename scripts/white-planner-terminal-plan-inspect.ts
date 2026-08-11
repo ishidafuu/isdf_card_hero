@@ -4,7 +4,6 @@ import { mkdir } from "node:fs/promises";
 import {
   inspectCpuTerminalPlan,
   type CpuAiOptions,
-  type CpuAiProfile,
   type CpuDecision,
   type CpuTerminalPlanInspection,
 } from "../src/game/cpuAi";

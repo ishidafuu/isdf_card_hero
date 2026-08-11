@@ -78,7 +78,7 @@ describe("master lab decoy scenarios", () => {
       kind: "master",
       playerId: "player",
     });
-    expect(game.slots.cpu_front_left.monster?.provokeTargetSlotKey).toBeUndefined();
+    expect(game.slots.cpu_front_left.monster?.provokeTargetSlotKey).toBe("player_front_left");
   });
 });
 

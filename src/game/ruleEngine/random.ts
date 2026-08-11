@@ -18,6 +18,15 @@ export function shuffle(deck: CardInstance[], seed: number): CardInstance[] {
   return result;
 }
 
+export function shuffleWithState(state: GameState, deck: CardInstance[]): CardInstance[] {
+  const result = [...deck];
+  for (let i = result.length - 1; i > 0; i -= 1) {
+    const j = randomInt(state, 0, i);
+    [result[i], result[j]] = [result[j], result[i]];
+  }
+  return result;
+}
+
 function nextRandom(state: GameState): number {
   state.randomSeed = (state.randomSeed + 0x6d2b79f5) >>> 0;
   let next = state.randomSeed;

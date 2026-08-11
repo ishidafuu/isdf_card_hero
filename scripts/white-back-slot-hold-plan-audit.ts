@@ -1,5 +1,4 @@
 import { getCardName, getMonsterDef } from "../src/game/cards";
-import { getMonsterAiTrait } from "../src/game/aiUnitTraits";
 import {
   CURRENT_WHITE_AI_BLACK_1375_PRESSURE_OPPONENT,
   CURRENT_WHITE_AI_BLACK_PRESSURE_STRONG_OPPONENT,
@@ -11,7 +10,6 @@ import {
   runWhiteAiTuningLoop,
   type WhiteAiTuningLoopOptions,
   type WhiteAiTuningOpponent,
-  type WhiteAiTuningVariant,
 } from "../src/game/whiteAiTuningLoop";
 import type {
   MasterLabCpuDecisionEvaluation,
@@ -832,14 +830,6 @@ function safeCardName(cardId: string): string {
     return getCardName(cardId);
   } catch {
     return cardId;
-  }
-}
-
-function safeMonsterRole(cardId: string): string {
-  try {
-    return getMonsterAiTrait(cardId).role;
-  } catch {
-    return "unknown";
   }
 }
 

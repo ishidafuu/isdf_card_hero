@@ -1,4 +1,5 @@
 import type { GameState, MonsterState, PlayerId, SlotKey } from "../types";
+import { clearInboundMonsterSlotReferences } from "./slotReferences";
 
 export interface DefeatedMonster {
   owner: PlayerId;
@@ -25,7 +26,11 @@ export function removeDefeatedMonster(state: GameState, slotKey: SlotKey): Monst
   const returnedStones = monster.investedStones;
   owner.stones += returnedStones;
 
-  const defeatedCard = { cardId: monster.cardId, instanceId: monster.instanceId };
+  const defeatedCardId = monster.mirroredFormOriginal?.cardId ?? monster.cardId;
+  const defeatedCard = {
+    cardId: defeatedCardId,
+    instanceId: monster.instanceId,
+  };
   if (monster.reviveOnDefeat) {
     owner.deck.unshift(defeatedCard);
   } else {
@@ -34,10 +39,11 @@ export function removeDefeatedMonster(state: GameState, slotKey: SlotKey): Monst
 
   const defeated: DefeatedMonster = {
     owner: monster.owner,
-    cardId: monster.cardId,
+    cardId: defeatedCardId,
     level: monster.level,
     investedStones: monster.investedStones,
   };
+  clearInboundMonsterSlotReferences(state, slotKey);
   delete slot.monster;
 
   return {

@@ -13,7 +13,6 @@ import { getCardName } from "../src/game/cards";
 import {
   buildDeckPresetCardIds,
   deckPresetAllowsSpecial,
-  type DeckPresetId,
 } from "../src/game/deckPresets";
 import { DEFAULT_WHITE_AI_TUNING_OPPONENTS, DEFAULT_WHITE_AI_TUNING_VARIANTS, type WhiteAiTuningOpponent, type WhiteAiTuningVariant } from "../src/game/whiteAiTuningLoop";
 import { createInitialGame, runAutoStep, targetToKey } from "../src/game/rules";

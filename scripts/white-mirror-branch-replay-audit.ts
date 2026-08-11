@@ -14,7 +14,7 @@ import {
   runAutoStep,
   targetToKey,
 } from "../src/game/rules";
-import type { GameState, PlayerId, SlotKey } from "../src/game/types";
+import type { GameState, PlayerId } from "../src/game/types";
 import { escapeMarkdownTableCell, readInteger, readString, round, writeReport } from "./lib/cli";
 
 type BranchKind = "selected" | "same_card_different_slot" | "attack_first" | "focus_only" | "end_turn";

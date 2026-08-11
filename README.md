@@ -25,8 +25,11 @@
 
 ## Development
 
+Node.js 22 系を推奨します（`.node-version` で指定）。依存関係は
+`package-lock.json` どおりに再現するため、初回も `npm ci` を使用します。
+
 ```sh
-npm install
+npm ci
 npm run dev
 npm test
 npm run validate:auto-play -- --seed-start 400 --count 100
@@ -34,3 +37,4 @@ npm run build
 ```
 
 ローカル開発サーバーは通常 `http://localhost:5173/` で起動します。
+`npm test` は CPU 負荷の高い AI 回帰検証を含むため、完了まで数分かかります。

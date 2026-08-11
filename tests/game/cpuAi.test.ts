@@ -3379,6 +3379,46 @@ describe("cpu ai", () => {
     expect(game.winner).toBe("cpu");
   });
 
+  it("does not reuse a master damage plan across different random seeds", () => {
+    const hitState = createCenturiasMasterCacheGame(1, "random-seed-cache");
+    const hitDecision = chooseCpuDecision(hitState, { profile: "stable" });
+    expect(hitDecision.type).toBe("attack");
+    expect(hitDecision.reason).toContain("最大打点で相手マスターを倒せる");
+
+    const missState = createCenturiasMasterCacheGame(0, "random-seed-cache");
+    const missDecision = chooseCpuDecision(missState, { profile: "stable" });
+    expect(missDecision.type).toBe("end_turn");
+  });
+
+  it("does not reuse an illegal master damage plan after a command is sealed", () => {
+    const unsealedState = createCenturiasMasterCacheGame(1, "command-seal-cache");
+    const unsealedDecision = chooseCpuDecision(unsealedState, { profile: "stable" });
+    expect(unsealedDecision.type).toBe("attack");
+
+    const sealedState = createCenturiasMasterCacheGame(1, "command-seal-cache");
+    const sealedMonster = sealedState.slots.cpu_front_left.monster;
+    expect(sealedMonster).toBeDefined();
+    if (sealedMonster) {
+      sealedMonster.commandSealed = true;
+    }
+    const sealedDecision = chooseCpuDecision(sealedState, { profile: "stable" });
+    expect(sealedDecision.type).toBe("end_turn");
+  });
+
+  it("separates master damage plans by evaluation weights", () => {
+    const defaultState = createCenturiasMasterCacheGame(5, "weight-cache", 2);
+    const defaultDecision = chooseCpuDecision(defaultState, { profile: "stable" });
+    expect(defaultDecision.type).toBe("attack");
+    expect(defaultDecision.reason).toContain("最大打点2点");
+
+    const tunedState = createCenturiasMasterCacheGame(5, "weight-cache", 2);
+    const tunedDecision = chooseCpuDecision(tunedState, {
+      profile: "stable",
+      tuning: { weights: { masterDamageBase: -1_000 } },
+    });
+    expect(tunedDecision.type).toBe("end_turn");
+  });
+
   it("uses hand wake-up when it is part of the master lethal line", () => {
     const game = createCpuGame([{ cardId: "card_117", instanceId: "cpu_hand_wake_closeout" }]);
     game.players.cpu.masterId = "white";
@@ -4357,6 +4397,31 @@ function createActiveMonster(
     shielded: false,
     ...overrides,
   };
+}
+
+function createCenturiasMasterCacheGame(seed: number, instancePrefix: string, attackerCount = 1): GameState {
+  const game = createCpuGame([]);
+  game.randomSeed = seed;
+  game.players.cpu.masterId = "white";
+  game.players.player.masterId = "white";
+  game.players.cpu.stones = 0;
+  game.players.cpu.deck = [];
+  game.players.cpu.discard = [];
+  game.players.player.masterHp = attackerCount === 1 ? 1 : 3;
+  game.players.player.deck = [];
+  game.players.player.discard = [];
+  for (const slot of Object.values(game.slots)) {
+    delete slot.monster;
+  }
+  game.slots.cpu_front_left.monster = createActiveMonster("card_039", "cpu", {
+    instanceId: `${instancePrefix}-left`,
+  });
+  if (attackerCount > 1) {
+    game.slots.cpu_front_right.monster = createActiveMonster("card_039", "cpu", {
+      instanceId: `${instancePrefix}-right`,
+    });
+  }
+  return game;
 }
 
 function progressSignature(game: GameState): string {

@@ -2,5 +2,6 @@ node_modules
 dist
 coverage
 artifacts
+.idea/
 .DS_Store
 *.local

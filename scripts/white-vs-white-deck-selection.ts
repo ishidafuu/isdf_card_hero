@@ -1,5 +1,5 @@
 import { mkdir, writeFile } from "node:fs/promises";
-import { dirname, join } from "node:path";
+import { dirname } from "node:path";
 import { getDeckPreset, type DeckPresetId } from "../src/game/deckPresets";
 import { analyzeDeckSubmissions } from "../src/game/deckTemplateAnalysis";
 import { validateMasterLabAutoPlay, type MasterLabAutoPlayResult } from "../src/game/masterLabAutoPlay";

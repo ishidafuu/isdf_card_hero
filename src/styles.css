@@ -13,7 +13,7 @@
 
 body {
   margin: 0;
-  min-width: 320px;
+  min-width: 0;
   min-height: 100vh;
 }
 
@@ -1476,6 +1476,42 @@ button:disabled {
 
 .battle-control-status .target-summary {
   margin-top: 0;
+}
+
+.auto-step-status,
+.auto-step-error {
+  border-radius: 6px;
+  font-size: 12px;
+  line-height: 1.4;
+  margin: 0 0 8px;
+  padding: 7px 9px;
+}
+
+.auto-step-status {
+  background: #eef4f9;
+  border: 1px solid #c7d6e4;
+  color: #29445a;
+}
+
+.auto-step-error {
+  align-items: center;
+  background: #fff1f1;
+  border: 1px solid #d99595;
+  color: #8f1d1d;
+  display: flex;
+  gap: 8px;
+  justify-content: space-between;
+}
+
+.auto-step-error span {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+.auto-step-error button {
+  flex: 0 0 auto;
+  min-height: 28px;
+  padding: 3px 7px;
 }
 
 .action-detail-context {
@@ -4798,6 +4834,55 @@ button:disabled {
     padding: 6px;
   }
 
+  .master {
+    overflow: hidden;
+    padding: 4px;
+  }
+
+  .master-resource-display {
+    gap: 3px;
+    grid-template-columns: 30px minmax(0, 1fr);
+  }
+
+  .master-portrait {
+    height: 28px;
+    width: 28px;
+  }
+
+  .master-resource-main {
+    gap: 2px;
+    overflow: hidden;
+    width: 100%;
+  }
+
+  .master-name {
+    font-size: 9px;
+    justify-content: flex-start;
+  }
+
+  .master-black .master-name::before {
+    font-size: 7px;
+    margin-right: 2px;
+  }
+
+  .master .resource-row {
+    gap: 2px;
+    grid-template-columns: minmax(0, 1fr) auto;
+  }
+
+  .master .resource-label {
+    font-size: 7px;
+    letter-spacing: 0;
+  }
+
+  .master .resource-number {
+    font-size: 9px;
+  }
+
+  .master .resource-number .ui-icon {
+    margin-right: 1px;
+  }
+
   .hand-list {
     overflow-x: auto;
   }
@@ -4982,5 +5067,16 @@ button:disabled {
   to {
     opacity: 1;
     transform: translateX(0);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    scroll-behavior: auto !important;
+    transition-duration: 0.01ms !important;
   }
 }

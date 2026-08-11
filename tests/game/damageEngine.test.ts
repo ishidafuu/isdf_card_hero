@@ -109,6 +109,22 @@ describe("damage rule engine helpers", () => {
     expect(game.players.cpu.deck[1]).toEqual({ cardId: "morgan", instanceId: "cpu_deck_top_before" });
     expect(game.players.cpu.discard).not.toContainEqual({ cardId: "card_031", instanceId: "reviving_monster" });
   });
+
+  it("clears inbound provoke and death-chain references in the low-level defeat helper", () => {
+    const game = createInitialGame(20260613);
+    game.slots.player_front_left.monster = createMonster("takokke", "player", {
+      deathChainSlotKey: "cpu_front_left",
+    });
+    game.slots.cpu_front_left.monster = createMonster("sigma", "cpu", {
+      provokeTargetSlotKey: "player_front_left",
+      deathChainSlotKey: "player_front_left",
+    });
+
+    removeDefeatedMonster(game, "player_front_left");
+
+    expect(game.slots.cpu_front_left.monster?.provokeTargetSlotKey).toBeUndefined();
+    expect(game.slots.cpu_front_left.monster?.deathChainSlotKey).toBeUndefined();
+  });
 });
 
 function createMonster(cardId: string, owner: PlayerId, overrides: Partial<MonsterState> = {}): MonsterState {
