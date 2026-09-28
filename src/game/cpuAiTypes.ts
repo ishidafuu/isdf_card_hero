@@ -92,7 +92,9 @@ export type CpuAiDecisionBiasId =
   | "summon"
   | "move"
   | "focus"
-  | "end_turn";
+  | "end_turn"
+  | "master_hp_draw"
+  | "resolve_level_up";
 
 export interface CpuAiTuning {
   weights?: Partial<AiEvaluationWeights>;
@@ -204,6 +206,19 @@ export type CpuDecision = (
     }
   | {
       type: "end_turn";
+      discardHandInstanceIds?: string[];
+      reason: string;
+      score: number;
+    }
+  | {
+      type: "master_hp_draw";
+      reason: string;
+      score: number;
+    }
+  | {
+      type: "resolve_level_up";
+      levels: number;
+      superHandInstanceId?: string;
       reason: string;
       score: number;
     }

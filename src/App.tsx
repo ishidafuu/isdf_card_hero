@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from "react";
-import type { CSSProperties, DragEvent, PointerEvent as ReactPointerEvent } from "react";
+import type { CSSProperties, DragEvent, KeyboardEvent as ReactKeyboardEvent, PointerEvent as ReactPointerEvent } from "react";
 import { getCardNoteDisplays } from "./game/cardAnnotations";
 import {
   buildDeckCardIds,
@@ -112,6 +112,9 @@ import {
   tokenizeLogEntry,
   type LogFilter,
 } from "./logDisplay";
+import { ModeNavigation } from "./ui/ModeNavigation";
+import { canRevealHand, canRevealPreparedCard, displayLogEntry, handCardCostLabel, hidePrivateTargetPreviewDetails, shouldHideHandList, sortDeckForDisplay, type BattleWorkspaceMode } from "./ui/modes";
+import { updateDiagnosticContext } from "./diagnostics/diagnosticReport";
 
 type BoardCell =
   | { kind: "slot"; slotKey: SlotKey }
@@ -169,7 +172,6 @@ const BATTLE_HISTORY_STORAGE_KEY = "card-hero:battle-history:v1";
 const BATTLE_PRESETS_STORAGE_KEY = "card-hero:battle-presets:v1";
 const BATTLE_REPORT_LOCAL_ENDPOINT =
   import.meta.env.VITE_BATTLE_REPORT_LOCAL_ENDPOINT ?? "http://127.0.0.1:8787/battle-report";
-const REVIEW_HIDDEN_INFO_VISIBLE = true;
 const BATTLE_HISTORY_LIMIT = 20;
 const CARD_BACK_IMAGE_URL = "/game-icons/card-back.jpg";
 const FIELD_BASE_IMAGE_URLS: Record<PlayerId, Record<Row, string>> = {
@@ -399,6 +401,7 @@ interface BoardActionEffect {
 interface ActionPreview {
   key: string;
   targetKey?: string;
+  relatedTargetKeys?: string[];
   icon: string;
   iconCardId?: string;
   label: string;
@@ -1341,6 +1344,7 @@ export function App() {
   const [autoStepError, setAutoStepError] = useState("");
   const [spectatorPauseOnAttention, setSpectatorPauseOnAttention] = useState(true);
   const [spectatorPaused, setSpectatorPaused] = useState(false);
+  const [cpuTurnPaused, setCpuTurnPaused] = useState(false);
   const [zoneView, setZoneView] = useState<ZoneView | undefined>();
   const [infoToolsOpen, setInfoToolsOpen] = useState(false);
   const [logFilter, setLogFilter] = useState<LogFilter>("all");
@@ -1356,6 +1360,14 @@ export function App() {
   const [battleHistory, setBattleHistory] = useState<BattleHistoryEntry[]>(() => loadBattleHistory());
   const [savedBattlePresets, setSavedBattlePresets] = useState<SavedBattlePreset[]>(() => loadSavedBattlePresets());
   const [matchPresetId, setMatchPresetId] = useState<string>(BUILT_IN_MATCH_PRESETS[0]?.id ?? "");
+  const [workspaceMode, setWorkspaceMode] = useState<BattleWorkspaceMode>("play");
+  const [battleSettingsOpen, setBattleSettingsOpen] = useState(false);
+  const [handSheetOpen, setHandSheetOpen] = useState(true);
+  const [isMobileViewport, setIsMobileViewport] = useState(() =>
+    typeof window !== "undefined" && window.matchMedia("(max-width: 720px)").matches,
+  );
+  const [battleLogAutoFollow, setBattleLogAutoFollow] = useState(true);
+  const [spectatorStepRequested, setSpectatorStepRequested] = useState(false);
   const [savedPresetId, setSavedPresetId] = useState<string>("");
   const [battlePresetName, setBattlePresetName] = useState("My Battle Preset");
   const [deckPresetPickerIds, setDeckPresetPickerIds] = useState<Record<PlayerId, DeckPresetId>>({
@@ -1371,6 +1383,9 @@ export function App() {
   const visualEffectIdRef = useRef(0);
   const recordedResultKeyRef = useRef<string | undefined>(undefined);
   const logListRef = useRef<HTMLOListElement | null>(null);
+  const battleSettingsTriggerRef = useRef<HTMLButtonElement | null>(null);
+  const battleSettingsDialogRef = useRef<HTMLDivElement | null>(null);
+  const spectatorStepRequestedRef = useRef(false);
   const battleReportSessionIdRef = useRef(createBattleReportSessionId());
   const battleReportSaveQueueRef = useRef<Promise<void>>(Promise.resolve());
   const battleReportSaveRequestIdRef = useRef(0);
@@ -1411,7 +1426,8 @@ export function App() {
   const fixedDeckError = PLAYER_IDS.some((playerId) => deckSettings.fixed[playerId] && !deckDrafts[playerId].summary.valid);
   const activeBattleSettings = activeBattleSettingsRef.current;
   const currentPlayer = game.players[game.currentPlayer];
-  const cpuVsCpu = activeBattleSettings.mode === "cpu-vs-cpu";
+  const cpuVsCpu = workspaceMode === "spectate";
+  const analyzing = workspaceMode === "analyze";
   const handLimitDiscardNeeded = Math.max(0, currentPlayer.hand.length - HAND_LIMIT);
   const handLimitDiscardableIds = useMemo(
     () => new Set(currentPlayer.hand.map((card) => card.instanceId)),
@@ -1420,13 +1436,14 @@ export function App() {
   const selectedHandLimitDiscardIds = handLimitDiscardSelection.filter((instanceId) => handLimitDiscardableIds.has(instanceId));
   const isHandLimitDiscarding =
     handLimitDiscardMode &&
+    !analyzing &&
     game.currentPlayer === "player" &&
     !cpuVsCpu &&
     !autoPlayEnabled &&
     !game.winner &&
     !game.pendingLevelUp &&
     handLimitDiscardNeeded > 0;
-  const spectatorAutoPaused = cpuVsCpu && spectatorPaused;
+  const autoPlaybackPaused = (cpuVsCpu && spectatorPaused) || (!cpuVsCpu && game.currentPlayer === "cpu" && cpuTurnPaused);
   const automationState: BattleAutomationState = {
     autoPlayEnabled,
     cpuVsCpu,
@@ -1434,18 +1451,19 @@ export function App() {
     hasPendingLevelUp: Boolean(game.pendingLevelUp),
     hasWinner: Boolean(game.winner),
     handLimitDiscarding: isHandLimitDiscarding,
-    spectatorPaused: spectatorAutoPaused,
+    spectatorPaused: autoPlaybackPaused && !spectatorStepRequested,
     workerError: Boolean(autoStepError),
   };
-  const isAutoResolving = shouldAutoResolveBattle(automationState);
-  const canManuallyResolveLevelUp = canResolveLevelUpManually(automationState);
-  const controlsDisabled = cpuVsCpu || autoPlayEnabled || game.currentPlayer !== "player" || !!game.winner || !!game.pendingLevelUp || isHandLimitDiscarding;
+  const isAutoResolving = !analyzing && shouldAutoResolveBattle(automationState);
+  const canManuallyResolveLevelUp = !analyzing && canResolveLevelUpManually(automationState);
+  const controlsDisabled = analyzing || cpuVsCpu || autoPlayEnabled || game.currentPlayer !== "player" || !!game.winner || !!game.pendingLevelUp || isHandLimitDiscarding;
   const hasOperationContext = Boolean(selection || pendingDropAction || error || isHandLimitDiscarding);
   const hasSideContext = Boolean(!pendingDropAction && !game.pendingLevelUp && !isAdditionalChoiceSelection(selection) && (selection || error));
   const showBattleLog = !hasSideContext;
   const canCancelInteraction = Boolean(selection || pendingDropAction || error || dragPayload || isHandLimitDiscarding) && !game.pendingLevelUp;
   const canUndoManualAction =
     manualUndoStack.length > 0 &&
+    !analyzing &&
     !cpuVsCpu &&
     !autoPlayEnabled &&
     !isAutoResolving &&
@@ -1513,10 +1531,13 @@ export function App() {
       game.log
         .map((entry, index) => ({ entry, index }))
         .filter(({ entry }) => logMatchesFilter(entry, logFilter))
-        .slice(-24),
-    [game.log, logFilter],
+        .slice(-24)
+        .map(({ entry, index }) => ({ entry: displayLogEntry(entry, workspaceMode), index })),
+    [game.log, logFilter, workspaceMode],
   );
-  const selectedLogEntry = selectedLogIndex !== undefined ? game.log[selectedLogIndex] : undefined;
+  const selectedLogEntry = selectedLogIndex !== undefined && game.log[selectedLogIndex]
+    ? displayLogEntry(game.log[selectedLogIndex], workspaceMode)
+    : undefined;
   const selectedLogComment = selectedLogIndex !== undefined
     ? getBattleLogComment(battleLogComments, game, selectedLogIndex)
     : "";
@@ -1530,8 +1551,8 @@ export function App() {
       ? Math.max(autoStepDelayMs, CPU_READABLE_STEP_DELAY_MS)
       : autoStepDelayMs;
   const actionPreviews = useMemo(
-    () => getActionPreviews(game, selection, pendingDropAction),
-    [game, pendingDropAction, selection],
+    () => maskPrivateActionPreviews(getActionPreviews(game, selection, pendingDropAction), game, workspaceMode),
+    [game, pendingDropAction, selection, workspaceMode],
   );
   const previewByTargetKey = useMemo(() => {
     const entries = actionPreviews.flatMap((preview) => preview.targetKey ? [[preview.targetKey, preview] as const] : []);
@@ -1585,6 +1606,15 @@ export function App() {
       }
       setManualUndoStack([]);
       commitGame(response.game);
+      if (spectatorStepRequestedRef.current) {
+        spectatorStepRequestedRef.current = false;
+        setSpectatorStepRequested(false);
+        if (cpuVsCpu) {
+          setSpectatorPaused(true);
+        } else {
+          setCpuTurnPaused(true);
+        }
+      }
       if (response.game.winner) {
         terminateAutoStepWorker();
       }
@@ -1610,6 +1640,8 @@ export function App() {
     autoStepRequestIdRef.current += 1;
     setAutoStepBusy(false);
     setAutoStepError(message || "CPU処理に失敗しました");
+    spectatorStepRequestedRef.current = false;
+    setSpectatorStepRequested(false);
   }
 
   function terminateAutoStepWorker({
@@ -1637,6 +1669,25 @@ export function App() {
       setSelectedLogIndex(undefined);
     }
   }, [game.log, logFilter, selectedLogIndex]);
+
+  useEffect(() => {
+    const mediaQuery = window.matchMedia("(max-width: 720px)");
+    const syncViewport = () => setIsMobileViewport(mediaQuery.matches);
+    syncViewport();
+    mediaQuery.addEventListener("change", syncViewport);
+    return () => mediaQuery.removeEventListener("change", syncViewport);
+  }, []);
+
+  useEffect(() => {
+    updateDiagnosticContext({
+      mode: workspaceMode,
+      activeBattleSettings: activeBattleSettingsRef.current,
+      activeDeckSettings: activeDeckSettingsRef.current,
+      pendingBattleSettings: battleSettings,
+      pendingDeckSettings: deckSettings,
+      game,
+    });
+  }, [battleSettings, deckSettings, game, workspaceMode]);
 
   useEffect(() => {
     seEnabledRef.current = seEnabled;
@@ -1689,7 +1740,7 @@ export function App() {
   }, [error]);
 
   useEffect(() => {
-    if (!showBattleLog) {
+    if (!showBattleLog || !battleLogAutoFollow) {
       return;
     }
     const list = logListRef.current;
@@ -1697,11 +1748,29 @@ export function App() {
       return;
     }
     list.scrollTop = list.scrollHeight;
-  }, [logFilter, showBattleLog, visibleLogEntries]);
+  }, [battleLogAutoFollow, logFilter, showBattleLog, visibleLogEntries]);
 
   useEffect(() => {
-    if (!cpuVsCpu || !spectatorPauseOnAttention) {
+    if (!battleSettingsOpen) {
+      return undefined;
+    }
+    const firstControl = battleSettingsDialogRef.current?.querySelector<HTMLElement>(
+      'button:not([disabled]), input:not([disabled]), select:not([disabled])',
+    );
+    firstControl?.focus();
+    return () => battleSettingsTriggerRef.current?.focus();
+  }, [battleSettingsOpen]);
+
+  useEffect(() => {
+    if (!cpuVsCpu) {
       setSpectatorPaused(false);
+      lastSpectatorAttentionIndexRef.current = latestSpectatorAttention?.index;
+      if (game.currentPlayer !== "cpu") {
+        setCpuTurnPaused(false);
+      }
+      return;
+    }
+    if (!spectatorPauseOnAttention) {
       lastSpectatorAttentionIndexRef.current = latestSpectatorAttention?.index;
       return;
     }
@@ -1712,7 +1781,7 @@ export function App() {
       lastSpectatorAttentionIndexRef.current = latestSpectatorAttention.index;
       setSpectatorPaused(true);
     }
-  }, [cpuVsCpu, latestSpectatorAttention, spectatorPauseOnAttention]);
+  }, [cpuVsCpu, game.currentPlayer, latestSpectatorAttention, spectatorPauseOnAttention]);
 
   useEffect(() => {
     if (!handLimitDiscardMode) {
@@ -2439,6 +2508,7 @@ export function App() {
     battleReportSessionIdRef.current = createBattleReportSessionId();
     activeBattleSettingsRef.current = cloneBattleSettings(settings);
     activeDeckSettingsRef.current = cloneDeckSettings(decks);
+    setWorkspaceMode(settings.mode === "cpu-vs-cpu" ? "spectate" : "play");
     previousGameRef.current = next;
     commitGame(next);
     setManualUndoStack([]);
@@ -2451,10 +2521,14 @@ export function App() {
     clearHandLimitDiscardMode();
     setZoneView(undefined);
     setInfoToolsOpen(false);
+    setBattleSettingsOpen(false);
     setError("");
     setVisualEffect(undefined);
     setAutoPlayEnabled(false);
     setSpectatorPaused(false);
+    setCpuTurnPaused(false);
+    spectatorStepRequestedRef.current = false;
+    setSpectatorStepRequested(false);
     lastSpectatorAttentionIndexRef.current = undefined;
   }
 
@@ -2802,7 +2876,7 @@ export function App() {
   }
 
   function handleHandDragStart(event: DragEvent<HTMLButtonElement>, instanceId: string) {
-    if (!canRevealHand(game.currentPlayer)) {
+    if (!canRevealHand(game.currentPlayer, workspaceMode)) {
       event.preventDefault();
       return;
     }
@@ -2840,7 +2914,7 @@ export function App() {
   }
 
   function handleHandPointerDown(event: ReactPointerEvent<HTMLButtonElement>, instanceId: string) {
-    if (!canRevealHand(game.currentPlayer)) {
+    if (!canRevealHand(game.currentPlayer, workspaceMode)) {
       return;
     }
     startPointerDrag(event, { kind: "hand", instanceId });
@@ -3182,14 +3256,80 @@ export function App() {
   const selectedMonster =
     selection?.kind === "monster" ? game.slots[selection.slotKey].monster : undefined;
   const selectedMasterPlayerId = selection?.kind === "master" ? selection.playerId : undefined;
-  const canRevealCurrentHand = canRevealHand(game.currentPlayer);
+  const handPlayerId: PlayerId = cpuVsCpu ? game.currentPlayer : "player";
+  const handPlayer = game.players[handPlayerId];
+  const canRevealCurrentHand = canRevealHand(handPlayerId, workspaceMode);
   const selectedHand =
-    selection?.kind === "hand" && canRevealCurrentHand ? currentPlayer.hand.find((card) => card.instanceId === selection.instanceId) : undefined;
+    selection?.kind === "hand" && canRevealCurrentHand ? handPlayer.hand.find((card) => card.instanceId === selection.instanceId) : undefined;
   const infoWorkspaceOpen = isInfoWorkspaceView(zoneView);
   const infoPanelOpen = infoToolsOpen || Boolean(zoneView);
-  const showBattleActionControls = !cpuVsCpu;
+  const showBattleActionControls = !cpuVsCpu && !analyzing;
+  const analysisMode = analyzing;
+
+  function handleWorkspaceModeSelect(mode: BattleWorkspaceMode) {
+    terminateAutoStepWorker();
+    setWorkspaceMode(mode);
+    if (mode === "analyze") {
+      setAutoPlayEnabled(false);
+      setSpectatorPaused(true);
+      setCpuTurnPaused(false);
+      spectatorStepRequestedRef.current = false;
+      setSpectatorStepRequested(false);
+      setSelection(undefined);
+      setPendingDropAction(undefined);
+      clearHandLimitDiscardMode();
+      setError("");
+      setBattleSettingsOpen(false);
+      setZoneView({ kind: "battleHistory" });
+      setInfoToolsOpen(true);
+      return;
+    }
+    setZoneView(undefined);
+    setInfoToolsOpen(false);
+    setSelectedLogIndex(undefined);
+    spectatorStepRequestedRef.current = false;
+    setSpectatorStepRequested(false);
+    setSpectatorPaused(false);
+    setCpuTurnPaused(false);
+    if (mode === "spectate") {
+      setAutoPlayEnabled(false);
+    }
+  }
+
+  function handleBattleSettingsKeyDown(event: ReactKeyboardEvent<HTMLDivElement>) {
+    if (event.key === "Escape") {
+      event.preventDefault();
+      setBattleSettingsOpen(false);
+      return;
+    }
+    if (event.key !== "Tab") {
+      return;
+    }
+    const dialog = battleSettingsDialogRef.current;
+    if (!dialog) {
+      return;
+    }
+    const focusable = [...dialog.querySelectorAll<HTMLElement>(
+      'button:not([disabled]), input:not([disabled]), select:not([disabled]), [tabindex]:not([tabindex="-1"])',
+    )];
+    if (focusable.length === 0) {
+      event.preventDefault();
+      dialog.focus();
+      return;
+    }
+    const first = focusable[0];
+    const last = focusable[focusable.length - 1];
+    if (event.shiftKey && (document.activeElement === first || !dialog.contains(document.activeElement))) {
+      event.preventDefault();
+      last.focus();
+    } else if (!event.shiftKey && (document.activeElement === last || !dialog.contains(document.activeElement))) {
+      event.preventDefault();
+      first.focus();
+    }
+  }
 
   function renderAutoPlaybackControls() {
+    const cpuPlaybackPaused = cpuVsCpu ? spectatorPaused : cpuTurnPaused;
     return (
       <div className="topbar-playback-controls" aria-label="Auto playback controls">
         {!cpuVsCpu && (
@@ -3202,10 +3342,40 @@ export function App() {
             <Icon icon={autoPlayEnabled ? "⏸️" : "▶️"} /> {autoPlayEnabled ? "Auto Stop" : "Auto Play"}
           </button>
         )}
-        {cpuVsCpu && spectatorPaused && (
-          <button type="button" onClick={() => setSpectatorPaused(false)}>
-            <Icon icon="▶️" /> Resume
-          </button>
+        {(cpuVsCpu || game.currentPlayer === "cpu") && (
+          <>
+            <button
+              type="button"
+              onClick={() => {
+                spectatorStepRequestedRef.current = false;
+                setSpectatorStepRequested(false);
+                if (cpuVsCpu) {
+                  setSpectatorPaused((paused) => !paused);
+                } else {
+                  setCpuTurnPaused((paused) => !paused);
+                }
+              }}
+              aria-pressed={cpuPlaybackPaused}
+            >
+              <Icon icon={cpuPlaybackPaused ? "▶️" : "⏸️"} /> {cpuPlaybackPaused ? "再生" : "一時停止"}
+            </button>
+            <button
+              type="button"
+              onClick={() => {
+                spectatorStepRequestedRef.current = true;
+                setSpectatorStepRequested(true);
+                if (cpuVsCpu) {
+                  setSpectatorPaused(false);
+                } else {
+                  setCpuTurnPaused(false);
+                }
+              }}
+              disabled={autoStepBusy || Boolean(autoStepError) || Boolean(game.winner)}
+              title="CPUの行動を1回だけ進めて停止します"
+            >
+              <Icon icon="⏭️" /> 1手送り
+            </button>
+          </>
         )}
         <label className="auto-delay-control">
           Wait
@@ -3274,6 +3444,7 @@ export function App() {
       <AdditionalChoicePanel
         selection={selection}
         game={game}
+        workspaceMode={workspaceMode}
         onCancel={handleCancelInteraction}
         onSecondaryTarget={(target) => {
           if (selection.kind === "magicSecondaryTarget") {
@@ -3486,6 +3657,7 @@ export function App() {
                 <PendingDropActionPanel
                   action={pendingDropAction}
                   game={game}
+                  workspaceMode={workspaceMode}
                   onAttackCommand={handlePendingAttackCommand}
                   onMasterAction={handlePendingMasterAction}
                   onConfirm={handleConfirmPendingDropAction}
@@ -3524,6 +3696,46 @@ export function App() {
           <p>Turn {game.turnNumber} / {turnStatus}</p>
         </div>
         <div className="topbar-actions">
+          <ModeNavigation mode={workspaceMode} onSelect={handleWorkspaceModeSelect} />
+          {!analysisMode && (
+            <div className="topbar-quick-actions">
+              {renderUndoControl()}
+              {renderAutoPlaybackControls()}
+            </div>
+          )}
+          {!analysisMode && <button
+            type="button"
+            className="battle-settings-trigger"
+            ref={battleSettingsTriggerRef}
+            onClick={() => setBattleSettingsOpen(true)}
+            aria-haspopup="dialog"
+            aria-expanded={battleSettingsOpen}
+          >
+            <Icon icon="⚙️" /> 次の対戦設定
+          </button>}
+          {battleSettingsOpen && (
+            <div className="battle-settings-backdrop" onMouseDown={(event) => {
+              if (event.target === event.currentTarget) {
+                setBattleSettingsOpen(false);
+              }
+            }}>
+              <div
+                className="battle-settings-dialog"
+                ref={battleSettingsDialogRef}
+                role="dialog"
+                aria-modal="true"
+                aria-labelledby="battle-settings-title"
+                tabIndex={-1}
+                onKeyDown={handleBattleSettingsKeyDown}
+              >
+                <div className="battle-settings-dialog-heading">
+                  <div>
+                    <h2 id="battle-settings-title">次の対戦設定</h2>
+                    <p>ここでの変更は「新しい対戦」を開始した時に適用されます。</p>
+                  </div>
+                  <button type="button" onClick={() => setBattleSettingsOpen(false)} aria-label="対戦設定を閉じる">✕</button>
+                </div>
+                <div className="battle-settings-grid">
           <label className="battle-setting-control">
             Seed
             <input
@@ -3650,8 +3862,28 @@ export function App() {
               onChange={(event) => handleBgmVolumeChange(event.target.value)}
             />
           </label>
-          {renderUndoControl()}
-          {renderAutoPlaybackControls()}
+                </div>
+              </div>
+            </div>
+          )}
+          <div className="next-match-summary" aria-live="polite">
+            <strong>次の対戦</strong>
+            <span>{battleSettings.mode === "cpu-vs-cpu" ? "Spectate / CPU vs CPU" : "Play / Player vs CPU"}</span>
+            <span>Seed {battleSettings.seed}</span>
+            <span>先攻 {playerLabel(battleSettings.firstPlayer)}</span>
+            <span>{getMasterName(battleSettings.masterIds.player)} vs {getMasterName(battleSettings.masterIds.cpu)}</span>
+            <span>AI {aiProfileLabel(battleSettings.aiProfiles.player)} / {aiProfileLabel(battleSettings.aiProfiles.cpu)}</span>
+            <span>Deck P {deckSettings.fixed.player ? "固定" : "自動"} {deckDrafts.player.summary.total}/30 · C {deckSettings.fixed.cpu ? "固定" : "自動"} {deckDrafts.cpu.summary.total}/30</span>
+            {activeBattleSettingsRef.current.mode !== battleSettings.mode ||
+             activeBattleSettingsRef.current.seed !== battleSettings.seed ||
+             activeBattleSettingsRef.current.firstPlayer !== battleSettings.firstPlayer ||
+             activeBattleSettingsRef.current.masterIds.player !== battleSettings.masterIds.player ||
+             activeBattleSettingsRef.current.masterIds.cpu !== battleSettings.masterIds.cpu ||
+             activeBattleSettingsRef.current.aiProfiles.player !== battleSettings.aiProfiles.player ||
+             activeBattleSettingsRef.current.aiProfiles.cpu !== battleSettings.aiProfiles.cpu ? (
+              <span className="next-match-pending">未適用 · 新しい対戦で反映</span>
+            ) : null}
+          </div>
         </div>
       </header>
 
@@ -3734,6 +3966,7 @@ export function App() {
                   </button>
                 </div>
                 <div className="info-tools info-tools-research">
+                  {workspaceMode !== "play" && (
                   <button
                     type="button"
                     className={zoneView?.kind === "cpuHistory" ? "selected" : ""}
@@ -3741,6 +3974,7 @@ export function App() {
                   >
                     <Icon icon="🧠" /> CPU AI
                   </button>
+                  )}
                   <button
                     type="button"
                     aria-label="Battle History"
@@ -3816,6 +4050,7 @@ export function App() {
                 <CardZonePanel
                   game={game}
                   view={zoneView}
+                  workspaceMode={workspaceMode}
                   onClose={() => setZoneView(undefined)}
                 />
               ) : null}
@@ -3826,8 +4061,8 @@ export function App() {
         <div className="battle-area">
           <div className="battle-primary">
             <div className="board" aria-label="field">
-              {visualEffect?.action && <BoardActionOverlay action={visualEffect.action} effectId={visualEffect.id} />}
-              {visualEffect && <ResolutionFeed effect={visualEffect} />}
+              {visualEffect?.action && <BoardActionOverlay action={maskHiddenPreparedBoardAction(visualEffect.action, game, workspaceMode)} effectId={visualEffect.id} />}
+              {visualEffect && <ResolutionFeed effect={visualEffect} workspaceMode={workspaceMode} />}
               {BOARD_CELLS.map((row, rowIndex) => (
                 <div className="board-row" key={rowIndex}>
                   {row.map((cell) => {
@@ -3837,6 +4072,7 @@ export function App() {
                           key={cell.slotKey}
                           slotKey={cell.slotKey}
                           game={game}
+                          workspaceMode={workspaceMode}
                           selected={isSelectedSourceSlot(selection, pendingDropAction, cell.slotKey) || dragPayload?.kind === "monster" && dragPayload.slotKey === cell.slotKey}
                           targetable={activeTargetKeys.has(`monster:${cell.slotKey}`)}
                           targetRole={targetRoleForTarget(game, { kind: "monster", slotKey: cell.slotKey }, activeTargetKeys, selection, pendingDropAction, dragPayload)}
@@ -3913,15 +4149,30 @@ export function App() {
               ))}
             </div>
             {renderBattleControlPanel()}
-            <section className="hand-area">
+            <section className={`hand-area hand-bottom-sheet ${handSheetOpen ? "open" : "collapsed"}`}>
             <div className="hand-heading">
-              <h2>{game.currentPlayer === "cpu" ? "CPU Hand" : "Hand"}</h2>
+              <div>
+                <h2>{handPlayerId === "cpu" ? "CPU Hand" : "Your Hand"}</h2>
+                <span className="hand-visibility-note">
+                  {workspaceMode === "spectate" ? "観戦 · 両者の手札を公開" : workspaceMode === "analyze" ? "分析レビュー · 手札公開" : "あなたの手札 · 相手ターンも表示"}
+                </span>
+              </div>
               <div className="hand-tools">
-                <StatusIconCount label="Cards" icon="🃏" amount={currentPlayer.hand.length} cap={MAX_VISIBLE_RESOURCE_ICONS} />
+                <StatusIconCount label="Cards" icon="🃏" amount={handPlayer.hand.length} cap={MAX_VISIBLE_RESOURCE_ICONS} />
+                <button
+                  type="button"
+                  className="hand-sheet-toggle"
+                  onClick={() => setHandSheetOpen((open) => !open)}
+                  aria-expanded={!isMobileViewport || handSheetOpen}
+                  aria-controls="visible-hand-cards"
+                  aria-label={!isMobileViewport || handSheetOpen ? "手札を閉じる" : "手札を開く"}
+                >
+                  <Icon icon={!isMobileViewport || handSheetOpen ? "▾" : "▴"} />
+                </button>
               </div>
             </div>
-            <div className="hand-list">
-              {currentPlayer.hand.map((card, index) => {
+            <div className="hand-list" id="visible-hand-cards" hidden={shouldHideHandList(isMobileViewport, handSheetOpen)}>
+              {handPlayer.hand.map((card, index) => {
                 if (!canRevealCurrentHand) {
                   return (
                     <div
@@ -3970,8 +4221,8 @@ export function App() {
                       playSe("select");
                     }}
                     disabled={controlsDisabled && !selectableDuringInterrupt}
-                    aria-label={getCardName(card.cardId)}
-                    title={getCardName(card.cardId)}
+                    aria-label={`${getCardName(card.cardId)}${cardCostLabel(card.cardId) ? `、${cardCostLabel(card.cardId)}` : ""}`}
+                    title={`${getCardName(card.cardId)}${cardCostLabel(card.cardId) ? ` / ${cardCostLabel(card.cardId)}` : ""}`}
                   >
                     <HandCardContent cardId={card.cardId} />
                   </button>
@@ -3996,6 +4247,18 @@ export function App() {
                   )}
                 </div>
                 <div className="log-heading-actions">
+                  <label className="log-follow-toggle">
+                    <input
+                      type="checkbox"
+                      checked={battleLogAutoFollow}
+                      onChange={(event) => setBattleLogAutoFollow(event.target.checked)}
+                    />
+                    最新へ追従
+                  </label>
+                  {workspaceMode === "play" ? (
+                    <span className="battle-report-private-note">詳細情報を含むためAnalyze/Spectateから保存</span>
+                  ) : (
+                    <>
                   <button
                     type="button"
                     data-testid="battle-report-save-local"
@@ -4007,9 +4270,11 @@ export function App() {
                   <button type="button" onClick={handleCopyBattleReport}>
                     <Icon icon="📋" /> {battleReportCopied ? "Copied" : "Copy Report"}
                   </button>
+                    </>
+                  )}
                 </div>
               </div>
-              <LatestEventSummary log={game.log} />
+              <LatestEventSummary log={game.log.map((entry) => displayLogEntry(entry, workspaceMode))} />
               <div className="log-filter-row" aria-label="log filters">
                 {LOG_FILTERS.map((filter) => (
                   <button
@@ -4087,6 +4352,7 @@ export function App() {
             <section className="side-context-panel card-info-panel">
               <ActionDetailContext
                 game={game}
+                workspaceMode={workspaceMode}
                 selection={selection}
                 pendingDropAction={pendingDropAction}
                 previews={actionPreviews}
@@ -4110,6 +4376,7 @@ export function App() {
               />
               <ActionDetailContext
                 game={game}
+                workspaceMode={workspaceMode}
                 selection={selection}
                 pendingDropAction={pendingDropAction}
                 previews={actionPreviews}
@@ -4121,6 +4388,7 @@ export function App() {
             <section className="side-context-panel card-info-panel">
               <MonsterCommands
                 game={game}
+                workspaceMode={workspaceMode}
                 pendingDropAction={pendingDropAction}
                 slotKey={selection.slotKey}
                 disabled={controlsDisabled}
@@ -4141,6 +4409,7 @@ export function App() {
               />
               <ActionDetailContext
                 game={game}
+                workspaceMode={workspaceMode}
                 selection={selection}
                 pendingDropAction={pendingDropAction}
                 previews={actionPreviews}
@@ -4161,6 +4430,7 @@ export function App() {
               />
               <ActionDetailContext
                 game={game}
+                workspaceMode={workspaceMode}
                 selection={selection}
                 pendingDropAction={pendingDropAction}
                 previews={actionPreviews}
@@ -4172,6 +4442,7 @@ export function App() {
             <section className="side-context-panel card-info-panel">
               <ActionDetailContext
                 game={game}
+                workspaceMode={workspaceMode}
                 selection={selection}
                 pendingDropAction={pendingDropAction}
                 previews={actionPreviews}
@@ -4190,10 +4461,12 @@ export function App() {
 function TargetSelectionSummary({
   selection,
   game,
+  workspaceMode,
   onTargetClick,
 }: {
   selection: Selection | undefined;
   game: GameState;
+  workspaceMode: BattleWorkspaceMode;
   onTargetClick?: (target: Target) => void;
 }) {
   if (selection?.kind === "hand") {
@@ -4219,7 +4492,7 @@ function TargetSelectionSummary({
         <div className="target-summary">
           <strong><CardIcon cardId={card.cardId} /> {getCardName(card.cardId)}</strong>
           <span>召喚 / Cost 1</span>
-          <TargetChipList game={game} targets={targets} onTargetClick={onTargetClick} />
+          <TargetChipList game={game} workspaceMode={workspaceMode} targets={targets} onTargetClick={onTargetClick} />
         </div>
       );
     }
@@ -4228,7 +4501,7 @@ function TargetSelectionSummary({
       <div className="target-summary">
         <strong><CardIcon cardId={card.cardId} /> {getCardName(card.cardId)}</strong>
         <span>マジック / Cost {def.cost}</span>
-        <TargetChipList game={game} targets={targets} onTargetClick={onTargetClick} />
+        <TargetChipList game={game} workspaceMode={workspaceMode} targets={targets} onTargetClick={onTargetClick} />
       </div>
     );
   }
@@ -4242,9 +4515,9 @@ function TargetSelectionSummary({
     return (
       <div className="target-summary">
         <strong><Icon icon={commandIcon(command)} /> {command.name} {command.power}P</strong>
-        <span>{slotMonsterLabel(game, selection.attackerSlotKey)}</span>
+        <span>{slotMonsterLabel(game, selection.attackerSlotKey, workspaceMode)}</span>
         <span>{commandActionSummary(command)}</span>
-        <TargetChipList game={game} targets={selection.targets} onTargetClick={onTargetClick} />
+        <TargetChipList game={game} workspaceMode={workspaceMode} targets={selection.targets} onTargetClick={onTargetClick} />
       </div>
     );
   }
@@ -4253,9 +4526,9 @@ function TargetSelectionSummary({
     return (
       <div className="target-summary">
         <strong><Icon icon="🧭" /> Move / Swap</strong>
-        <span>{slotMonsterLabel(game, selection.fromSlotKey)}</span>
+        <span>{slotMonsterLabel(game, selection.fromSlotKey, workspaceMode)}</span>
         <span>自陣内の空き枠または味方と入れ替え</span>
-        <TargetChipList game={game} targets={selection.targets.map((slotKey) => ({ kind: "monster", slotKey }))} onTargetClick={onTargetClick} />
+        <TargetChipList game={game} workspaceMode={workspaceMode} targets={selection.targets.map((slotKey) => ({ kind: "monster", slotKey }))} onTargetClick={onTargetClick} />
       </div>
     );
   }
@@ -4265,7 +4538,7 @@ function TargetSelectionSummary({
       <div className="target-summary">
         <strong><MasterActionVisual actionId={selection.actionId} /> {masterActionLabel(selection.actionId)}</strong>
         <span>Cost {getMasterActionCost(selection.actionId)}</span>
-        <TargetChipList game={game} targets={selection.targets} onTargetClick={onTargetClick} />
+        <TargetChipList game={game} workspaceMode={workspaceMode} targets={selection.targets} onTargetClick={onTargetClick} />
       </div>
     );
   }
@@ -4274,8 +4547,8 @@ function TargetSelectionSummary({
     return (
       <div className="target-summary">
         <strong><Icon icon="🎯" /> 追加対象</strong>
-        <span>第一対象: {targetLabel(game, selection.target)}</span>
-        <TargetChipList game={game} targets={selection.targets} onTargetClick={onTargetClick} />
+        <span>第一対象: {targetLabel(game, selection.target, workspaceMode)}</span>
+        <TargetChipList game={game} workspaceMode={workspaceMode} targets={selection.targets} onTargetClick={onTargetClick} />
       </div>
     );
   }
@@ -4285,10 +4558,12 @@ function TargetSelectionSummary({
 
 function TargetChipList({
   game,
+  workspaceMode,
   targets,
   onTargetClick,
 }: {
   game: GameState;
+  workspaceMode: BattleWorkspaceMode;
   targets: Target[];
   onTargetClick?: (target: Target) => void;
 }) {
@@ -4299,10 +4574,10 @@ function TargetChipList({
       {visibleTargets.map((target) => (
         onTargetClick ? (
           <button type="button" className="target-chip target-chip-button" key={targetToKey(target)} onClick={() => onTargetClick(target)}>
-            {targetLabel(game, target)}
+            {targetLabel(game, target, workspaceMode)}
           </button>
         ) : (
-          <span className="target-chip" key={targetToKey(target)}>{targetLabel(game, target)}</span>
+          <span className="target-chip" key={targetToKey(target)}>{targetLabel(game, target, workspaceMode)}</span>
         )
       ))}
       {targets.length > visibleTargets.length && <span className="target-chip">+{targets.length - visibleTargets.length}</span>}
@@ -4318,6 +4593,7 @@ function isTargetActionSelection(selection: Selection | undefined): selection is
 
 interface ActionDetailContextProps {
   game: GameState;
+  workspaceMode: BattleWorkspaceMode;
   selection: Selection | undefined;
   pendingDropAction: PendingDropAction | undefined;
   previews: ActionPreview[];
@@ -4326,7 +4602,7 @@ interface ActionDetailContextProps {
   onTargetClick?: (target: Target) => void;
 }
 
-function ActionDetailContext({ game, selection, pendingDropAction, previews, error, onCancel, onTargetClick }: ActionDetailContextProps) {
+function ActionDetailContext({ game, workspaceMode, selection, pendingDropAction, previews, error, onCancel, onTargetClick }: ActionDetailContextProps) {
   if (!selection && !pendingDropAction && !error && previews.length === 0) {
     return null;
   }
@@ -4334,7 +4610,7 @@ function ActionDetailContext({ game, selection, pendingDropAction, previews, err
 
   return (
     <div className="action-detail-context">
-      <TargetSelectionSummary selection={selection} game={game} onTargetClick={onTargetClick} />
+      <TargetSelectionSummary selection={selection} game={game} workspaceMode={workspaceMode} onTargetClick={onTargetClick} />
       <ActionPreviewPanel previews={previews} />
       {showReason && (
         <OperationReasonPanel
@@ -4742,6 +5018,7 @@ function getActionPreviews(
         game,
         key: `magic_secondary_${selection.handInstanceId}_${targetToKey(target)}`,
         target,
+        relatedTargetKeys: [targetToKey(selection.target)],
         icon: "✨",
         label: `${handCardLabel(game, selection.handInstanceId)} -> ${targetLabel(game, selection.target)} + ${targetLabel(game, target)}`,
         fallback: "追加対象を含めてマジックを解決します。",
@@ -4755,6 +5032,7 @@ function getActionPreviews(
         game,
         key: `command_secondary_${selection.commandId}_${targetToKey(target)}`,
         target,
+        relatedTargetKeys: [targetToKey(selection.target)],
         icon: "⚔️",
         label: `${targetLabel(game, selection.target)} + ${targetLabel(game, target)}`,
         fallback: "追加対象を含めて攻撃を解決します。",
@@ -4769,6 +5047,47 @@ function getActionPreviews(
     );
   }
   return [];
+}
+
+function maskPrivateActionPreviews(
+  previews: ActionPreview[],
+  game: GameState,
+  workspaceMode: BattleWorkspaceMode,
+): ActionPreview[] {
+  if (workspaceMode !== "play") {
+    return previews;
+  }
+  const hiddenTargetKeys = new Set(BOARD_SLOT_KEYS.flatMap((slotKey) => {
+    const monster = game.slots[slotKey].monster;
+    return monster?.owner === "cpu" && monster.status === "prepared"
+      ? [targetToKey({ kind: "monster", slotKey })]
+      : [];
+  }));
+  const privateNames = BOARD_SLOT_KEYS.flatMap((slotKey) => {
+    const monster = game.slots[slotKey].monster;
+    if (monster?.owner !== "cpu" || monster.status !== "prepared") {
+      return [];
+    }
+    return [monster.cardId, getMonsterDisplayName(monster)];
+  });
+  const previewsWithHiddenResults = hidePrivateTargetPreviewDetails(previews, hiddenTargetKeys, workspaceMode);
+  const redact = (value: string | undefined) => {
+    if (value === undefined) {
+      return undefined;
+    }
+    return privateNames.reduce(
+      (safeValue, privateName) => safeValue.replaceAll(privateName, "相手の裏向きカード"),
+      displayLogEntry(value, workspaceMode),
+    );
+  };
+  return previewsWithHiddenResults.map((preview) => ({
+    ...preview,
+    label: redact(preview.label)!,
+    summary: redact(preview.summary)!,
+    detail: redact(preview.detail),
+    badge: redact(preview.badge),
+    logs: preview.logs.map((entry) => redact(entry)!),
+  }));
 }
 
 function getPendingDropActionPreviews(game: GameState, action: PendingDropAction): ActionPreview[] {
@@ -4930,6 +5249,7 @@ function previewStateChange({
   target,
   icon,
   iconCardId,
+  relatedTargetKeys,
   label,
   fallback,
   apply,
@@ -4939,6 +5259,7 @@ function previewStateChange({
   target?: Target;
   icon: string;
   iconCardId?: string;
+  relatedTargetKeys?: string[];
   label: string;
   fallback: string;
   apply: () => GameState;
@@ -4950,6 +5271,7 @@ function previewStateChange({
     return {
       key,
       targetKey: target ? targetToKey(target) : undefined,
+      relatedTargetKeys,
       icon,
       iconCardId,
       label,
@@ -4963,6 +5285,7 @@ function previewStateChange({
     return {
       key,
       targetKey: target ? targetToKey(target) : undefined,
+      relatedTargetKeys,
       icon: "⚠️",
       label,
       summary: caught instanceof Error ? caught.message : "プレビューできません",
@@ -5328,20 +5651,21 @@ function ResourceNumberRow({ label, icon, amount }: ResourceNumberRowProps) {
 interface PendingDropActionPanelProps {
   action: PendingDropAction;
   game: GameState;
+  workspaceMode: BattleWorkspaceMode;
   onAttackCommand: (commandId: string) => void;
   onMasterAction: (actionId: MasterActionId) => void;
   onConfirm: () => void;
   onCancel: () => void;
 }
 
-function PendingDropActionPanel({ action, game, onAttackCommand, onMasterAction, onConfirm, onCancel }: PendingDropActionPanelProps) {
+function PendingDropActionPanel({ action, game, workspaceMode, onAttackCommand, onMasterAction, onConfirm, onCancel }: PendingDropActionPanelProps) {
   const attackCommands = action.kind === "attackTarget" ? getPendingAttackCommands(game, action) : [];
   const masterActions = action.kind === "masterTarget" ? getPendingMasterActions(game, action) : [];
 
   return (
     <div className="pending-action">
       <h3><Icon icon={pendingDropActionIcon(action)} /> 選択中: {pendingDropActionTitle(action)}</h3>
-      <p>{pendingDropActionDescription(action, game)}</p>
+      <p>{pendingDropActionDescription(action, game, workspaceMode)}</p>
       {action.kind === "attackTarget" ? (
         <div className="button-stack">
           {attackCommands.map((command, index) => (
@@ -5404,6 +5728,7 @@ function isAdditionalChoiceSelection(selection: Selection | undefined): selectio
 interface AdditionalChoicePanelProps {
   selection: AdditionalChoiceSelection;
   game: GameState;
+  workspaceMode: BattleWorkspaceMode;
   onCancel: () => void;
   onSecondaryTarget: (target: Target) => void;
   onMagicHand: (instanceId: string) => void;
@@ -5417,6 +5742,7 @@ interface AdditionalChoicePanelProps {
 function AdditionalChoicePanel({
   selection,
   game,
+  workspaceMode,
   onCancel,
   onSecondaryTarget,
   onMagicHand,
@@ -5432,13 +5758,13 @@ function AdditionalChoicePanel({
         <h3><Icon icon="🎯" /> 追加対象を選択</h3>
         <p className="hint">候補マス、または下の対象チップをクリックして確定します。</p>
         <div className="card-meta-row">
-          <span>第一対象: {targetLabel(game, selection.target)}</span>
+          <span>第一対象: {targetLabel(game, selection.target, workspaceMode)}</span>
           <span>候補 {selection.targets.length}</span>
         </div>
         <div className="button-stack">
           {selection.targets.map((target) => (
             <button type="button" key={targetToKey(target)} onClick={() => onSecondaryTarget(target)}>
-              <Icon icon="🎯" /> {targetLabel(game, target)}
+              <Icon icon="🎯" /> {targetLabel(game, target, workspaceMode)}
             </button>
           ))}
           <button type="button" onClick={onCancel}><Icon icon="✕" /> キャンセル</button>
@@ -5451,7 +5777,7 @@ function AdditionalChoicePanel({
     return (
       <div className="selected-detail">
         <h3><Icon icon="🃏" /> 入れ替える手札</h3>
-        <p className="hint">{targetLabel(game, selection.target)} と入れ替えるカードを選びます。手札カード本体からも選べます。</p>
+        <p className="hint">{targetLabel(game, selection.target, workspaceMode)} と入れ替えるカードを選びます。手札カード本体からも選べます。</p>
         <div className="button-stack">
           {selection.choices.map((card) => (
             <button type="button" key={card.instanceId} onClick={() => onMagicHand(card.instanceId)}>
@@ -5710,6 +6036,7 @@ function HandCardPanel({ card, game, disabled, onDiscard }: HandCardPanelProps) 
 interface CardZonePanelProps {
   game: GameState;
   view: Exclude<ZoneView, { kind: "deckSetup" } | { kind: "aiLab" } | { kind: "battleHistory" }>;
+  workspaceMode: BattleWorkspaceMode;
   onClose: () => void;
 }
 
@@ -6670,12 +6997,12 @@ function DeckCardList({
   );
 }
 
-function CardZonePanel({ game, view, onClose }: CardZonePanelProps) {
+function CardZonePanel({ game, view, workspaceMode, onClose }: CardZonePanelProps) {
   if (view.kind === "catalog") {
     return <CardCatalogPanel game={game} onClose={onClose} />;
   }
   if (view.kind === "effects") {
-    return <EffectHistoryPanel game={game} onClose={onClose} />;
+    return <EffectHistoryPanel game={game} workspaceMode={workspaceMode} onClose={onClose} />;
   }
   if (view.kind === "cpuHistory") {
     return <CpuDecisionHistoryPanel game={game} onClose={onClose} />;
@@ -6683,11 +7010,16 @@ function CardZonePanel({ game, view, onClose }: CardZonePanelProps) {
 
   const cards = game.players[view.playerId][view.zone];
   const title = `${playerLabel(view.playerId)} ${zoneLabel(view.zone)}`;
-  const hideCardFaces = view.zone === "hand" && !canRevealHand(view.playerId);
-  const helpText = hideCardFaces
+  const hideCardFaces = view.zone === "hand" && !canRevealHand(view.playerId, workspaceMode);
+  const hideDeckOrder = view.zone === "deck" && workspaceMode === "play";
+  const helpText = hideDeckOrder
+    ? "自分/相手の山札順は対戦中非公開です。カード内容は順序を隠して表示しています。"
+    : hideCardFaces
     ? "相手の手札は非公開です。"
-    : view.zone === "hand" && view.playerId === "cpu" && REVIEW_HIDDEN_INFO_VISIBLE
+    : view.zone === "hand" && view.playerId === "cpu" && workspaceMode === "analyze"
       ? "レビュー用にCPU手札を公開しています。"
+      : view.zone === "hand" && workspaceMode === "spectate"
+        ? "観戦モードでは両者の手札を公開しています。"
       : zoneHelpText(view.zone);
 
   return (
@@ -6715,7 +7047,7 @@ function CardZonePanel({ game, view, onClose }: CardZonePanelProps) {
         </div>
       ) : (
         <div className="zone-card-list">
-          {cards.map((card, index) => (
+          {(view.zone === "deck" ? sortDeckForDisplay(cards, workspaceMode) : cards).map((card, index) => (
             <details className="zone-card-row" key={`${card.instanceId}_${index}`}>
               <summary>
                 <span className="zone-card-index">{index + 1}</span>
@@ -6808,7 +7140,7 @@ function splitOnce(value: string, separator: string): [string, string | undefine
   return [value.slice(0, index), value.slice(index + separator.length)];
 }
 
-function EffectHistoryPanel({ game, onClose }: { game: GameState; onClose: () => void }) {
+function EffectHistoryPanel({ game, workspaceMode, onClose }: { game: GameState; workspaceMode: BattleWorkspaceMode; onClose: () => void }) {
   const effectEntries = game.log
     .map((entry, index) => ({ entry, index }))
     .filter(({ entry }) => logCategoryLabel(entry) !== "通常");
@@ -6832,7 +7164,7 @@ function EffectHistoryPanel({ game, onClose }: { game: GameState; onClose: () =>
             <li className={`effect-history-row ${logTone(entry)}`} key={`${entry}_${index}`}>
               <span className="zone-card-index">{index + 1}</span>
               <span className="effect-history-kind"><Icon icon={logIcon(entry)} /> {logCategoryLabel(entry)}</span>
-              <span className="effect-history-text">{entry}</span>
+              <span className="effect-history-text">{displayLogEntry(entry, workspaceMode)}</span>
             </li>
           ))}
         </ol>
@@ -7145,6 +7477,7 @@ function sourceOrder(card: ReturnType<typeof getCardDef>): number {
 interface BoardSlotProps {
   slotKey: SlotKey;
   game: GameState;
+  workspaceMode: BattleWorkspaceMode;
   selected: boolean;
   targetable: boolean;
   targetRole?: TargetRole;
@@ -7211,7 +7544,7 @@ function BoardActionOverlay({ action, effectId }: { action: BoardActionEffect; e
   );
 }
 
-function ResolutionFeed({ effect }: { effect: VisualEffect }) {
+function ResolutionFeed({ effect, workspaceMode }: { effect: VisualEffect; workspaceMode: BattleWorkspaceMode }) {
   if (effect.logs.length === 0) {
     return null;
   }
@@ -7220,7 +7553,7 @@ function ResolutionFeed({ effect }: { effect: VisualEffect }) {
     <div className="resolution-feed" aria-live="polite">
       {effect.logs.map((entry, index) => (
         <span className={`resolution-feed-item ${logTone(entry)}`} key={`${effect.id}_${index}_${entry}`}>
-          <Icon icon={logIcon(entry)} /> {entry}
+          <Icon icon={logIcon(entry)} /> {displayLogEntry(entry, workspaceMode)}
         </span>
       ))}
     </div>
@@ -7230,6 +7563,7 @@ function ResolutionFeed({ effect }: { effect: VisualEffect }) {
 function BoardSlot({
   slotKey,
   game,
+  workspaceMode,
   selected,
   targetable,
   targetRole,
@@ -7249,7 +7583,7 @@ function BoardSlot({
   const slot = game.slots[slotKey];
   const monster = slot.monster;
   const prepared = monster?.status === "prepared";
-  const hidePreparedInfo = Boolean(monster && prepared && !canRevealPreparedMonster(monster));
+  const hidePreparedInfo = Boolean(monster && prepared && !canRevealPreparedCard(monster.owner, workspaceMode));
   const label = slotLabel(slotKey);
   const visibleMonster = monster && !hidePreparedInfo ? monster : undefined;
   const revealedPrepared = Boolean(visibleMonster && prepared);
@@ -7427,6 +7761,7 @@ function CardBackArt() {
 
 interface MonsterCommandsProps {
   game: GameState;
+  workspaceMode: BattleWorkspaceMode;
   pendingDropAction?: PendingDropAction;
   slotKey: SlotKey;
   disabled: boolean;
@@ -7590,6 +7925,7 @@ function getMasterHpDrawDisabledReason(game: GameState, playerId: PlayerId, cont
 
 function MonsterCommands({
   game,
+  workspaceMode,
   pendingDropAction,
   slotKey,
   disabled,
@@ -7603,7 +7939,7 @@ function MonsterCommands({
   if (!monster) {
     return null;
   }
-  const hidePreparedInfo = monster.status === "prepared" && !canRevealPreparedMonster(monster);
+  const hidePreparedInfo = monster.status === "prepared" && !canRevealPreparedCard(monster.owner, workspaceMode);
   const detailStatusBadges = hidePreparedInfo
     ? []
     : [
@@ -7950,21 +8286,21 @@ function pendingDropActionTitle(action: PendingDropAction): string {
   return "技を選択";
 }
 
-function pendingDropActionDescription(action: PendingDropAction, game: GameState): string {
+function pendingDropActionDescription(action: PendingDropAction, game: GameState, workspaceMode?: BattleWorkspaceMode): string {
   if (action.kind === "magic") {
-    return `${handCardLabel(game, action.handInstanceId)} -> ${targetLabel(game, action.target)}`;
+    return `${handCardLabel(game, action.handInstanceId)} -> ${targetLabel(game, action.target, workspaceMode)}`;
   }
   if (action.kind === "masterTarget") {
     const masterActionCount = getPendingMasterActions(game, action).length;
-    return `${targetLabel(game, action.target)}を対象に、マスター特技${masterActionCount}件から選べます。`;
+    return `${targetLabel(game, action.target, workspaceMode)}を対象に、マスター特技${masterActionCount}件から選べます。`;
   }
   if (action.kind === "move") {
-    return `${slotMonsterLabel(game, action.fromSlotKey)} -> ${targetLabel(game, { kind: "monster", slotKey: action.toSlotKey })}`;
+    return `${slotMonsterLabel(game, action.fromSlotKey, workspaceMode)} -> ${targetLabel(game, { kind: "monster", slotKey: action.toSlotKey }, workspaceMode)}`;
   }
   if (action.kind === "focus") {
-    return `${slotMonsterLabel(game, action.slotKey)}がためます。`;
+    return `${slotMonsterLabel(game, action.slotKey, workspaceMode)}がためます。`;
   }
-  return `${slotMonsterLabel(game, action.attackerSlotKey)} -> ${targetLabel(game, action.target)}`;
+  return `${slotMonsterLabel(game, action.attackerSlotKey, workspaceMode)} -> ${targetLabel(game, action.target, workspaceMode)}`;
 }
 
 function getPendingAttackCommands(game: GameState, action: Extract<PendingDropAction, { kind: "attackTarget" }>): CommandDef[] {
@@ -8057,16 +8393,19 @@ function handCardLabel(game: GameState, instanceId: string): string {
   return card ? getCardName(card.cardId) : "カード";
 }
 
-function slotMonsterLabel(game: GameState, slotKey: SlotKey): string {
+function slotMonsterLabel(game: GameState, slotKey: SlotKey, workspaceMode?: BattleWorkspaceMode): string {
   const monster = game.slots[slotKey].monster;
+  if (workspaceMode === "play" && monster?.owner === "cpu" && monster.status === "prepared") {
+    return `${slotLabel(slotKey)} 相手の裏向きカード`;
+  }
   return monster ? `${slotLabel(slotKey)} ${getMonsterDisplayName(monster)}` : slotLabel(slotKey);
 }
 
-function targetLabel(game: GameState, target: Target): string {
+function targetLabel(game: GameState, target: Target, workspaceMode?: BattleWorkspaceMode): string {
   if (target.kind === "master") {
     return `${playerLabel(target.playerId)}マスター`;
   }
-  return slotMonsterLabel(game, target.slotKey);
+  return slotMonsterLabel(game, target.slotKey, workspaceMode);
 }
 
 function targetRoleForTarget(
@@ -8154,14 +8493,6 @@ function targetRoleLabel(role: TargetRole): string {
 
 function isZoneView(view: ZoneView | undefined, playerId: PlayerId, zone: Extract<ZoneView, { kind: "playerZone" }>["zone"]): boolean {
   return view?.kind === "playerZone" && view.playerId === playerId && view.zone === zone;
-}
-
-function canRevealHand(playerId: PlayerId): boolean {
-  return REVIEW_HIDDEN_INFO_VISIBLE || playerId === "player";
-}
-
-function canRevealPreparedMonster(monster: MonsterState): boolean {
-  return REVIEW_HIDDEN_INFO_VISIBLE || monster.owner === "player";
 }
 
 function isInfoWorkspaceView(view: ZoneView | undefined): boolean {
@@ -8632,6 +8963,29 @@ function boardAnchorLabel(previous: GameState, next: GameState, anchor: BoardAnc
   return monster ? `${slotLabel(anchor.slotKey)} ${getMonsterDisplayName(monster)}` : slotLabel(anchor.slotKey);
 }
 
+function maskHiddenPreparedBoardAction(
+  action: BoardActionEffect,
+  game: GameState,
+  workspaceMode: BattleWorkspaceMode,
+): BoardActionEffect {
+  if (workspaceMode !== "play") {
+    return action;
+  }
+  const anchors = [action.source, action.target, ...action.targets].filter(
+    (anchor): anchor is BoardAnchor => Boolean(anchor),
+  );
+  const involvesHiddenPreparedCard = anchors.some((anchor) => {
+    if (anchor.kind !== "slot") {
+      return false;
+    }
+    const monster = game.slots[anchor.slotKey].monster;
+    return monster?.owner === "cpu" && monster.status === "prepared";
+  });
+  return involvesHiddenPreparedCard
+    ? { ...action, label: "相手の裏向きカードが関与する行動", detail: undefined }
+    : action;
+}
+
 function boardAnchorKey(anchor: BoardAnchor): string {
   return anchor.kind === "slot" ? `slot:${anchor.slotKey}` : `master:${anchor.playerId}`;
 }
@@ -8822,14 +9176,22 @@ interface HandCardContentProps {
   cardId: string;
 }
 
+function cardCostLabel(cardId: string): string {
+  return handCardCostLabel(getCardDef(cardId));
+}
+
 function HandCardContent({ cardId }: HandCardContentProps) {
   const def = getCardDef(cardId);
 
   if (def.type === "magic") {
     return (
-      <span className="hand-card-visual">
-        <CardIcon cardId={def.id} />
-      </span>
+      <>
+        <span className="hand-card-visual">
+          <CardIcon cardId={def.id} />
+        </span>
+        <strong className="hand-card-name">{def.name}</strong>
+        <span className="hand-card-cost"><Icon icon="💎" /> {handCardCostLabel(def)}</span>
+      </>
     );
   }
 
@@ -8839,6 +9201,8 @@ function HandCardContent({ cardId }: HandCardContentProps) {
       <span className="hand-card-visual">
         <CardIcon cardId={def.id} />
       </span>
+      <strong className="hand-card-name">{def.name}</strong>
+      <span className="hand-card-cost"><Icon icon="💎" /> {handCardCostLabel(def)}</span>
       <span className="hand-card-hp"><Icon icon="❤️" /> {hpText}</span>
     </>
   );

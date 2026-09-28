@@ -283,7 +283,9 @@ export type AiDecisionSnapshot = (
   | { type: "magic"; action: MagicAction }
   | { type: "move"; fromSlotKey: SlotKey; toSlotKey: SlotKey }
   | { type: "focus"; slotKey: SlotKey }
-  | { type: "end_turn" }
+  | { type: "end_turn"; discardHandInstanceIds?: string[] }
+  | { type: "master_hp_draw" }
+  | { type: "resolve_level_up"; levels: number; superHandInstanceId?: string }
 ) & {
   reason: string;
   score: number;

@@ -216,7 +216,11 @@ export function endTurnWithHandLimitDiscards(state: GameState, handInstanceIds: 
 
 export function runCpuStep(state: GameState, aiOptions: CpuAiOptions = {}): GameState {
   const next = cloneState(state);
-  if (next.currentPlayer !== "cpu" || next.winner || next.pendingLevelUp) {
+  if (
+    next.currentPlayer !== "cpu" ||
+    next.winner ||
+    (next.pendingLevelUp && next.pendingLevelUp.playerId !== "cpu")
+  ) {
     return next;
   }
   return applyCpuDecision(next, chooseCpuDecision(next, aiOptions));
@@ -226,14 +230,6 @@ export function runAutoStep(state: GameState, aiOptions: CpuAiOptions = {}): Gam
   if (state.winner) {
     return cloneState(state);
   }
-  if (state.pendingLevelUp) {
-    return resolveLevelUp(
-      state,
-      state.pendingLevelUp.maxLevels,
-      chooseSuperLevelUpOption(state.pendingLevelUp)?.handInstanceId,
-    );
-  }
-
   const next = cloneState(state);
   return applyCpuDecision(next, chooseCpuDecision(next, aiOptions));
 }
@@ -2349,13 +2345,6 @@ function getSuperLevelUpOptions(state: GameState, slotKey: SlotKey, maxLevels: n
     .map((card) => ({ handInstanceId: card.instanceId, cardId: card.cardId }));
 }
 
-function chooseSuperLevelUpOption(
-  pending: Pick<NonNullable<GameState["pendingLevelUp"]>, "superOptions">,
-): SuperLevelUpOption | undefined {
-  return [...(pending.superOptions ?? [])]
-    .sort((a, b) => superLevelUpScore(b.cardId) - superLevelUpScore(a.cardId) || getCardName(a.cardId).localeCompare(getCardName(b.cardId), "ja"))[0];
-}
-
 function performSuperLevelUp(state: GameState, slotKey: SlotKey, handInstanceId: string): void {
   restoreMirroredForm(state, slotKey);
   const slot = state.slots[slotKey];
@@ -2396,16 +2385,6 @@ function performSuperLevelUp(state: GameState, slotKey: SlotKey, handInstanceId:
 
 function superEntryLevel(def: MonsterCardDef): number {
   return Math.min(...def.levels.map((level) => level.level));
-}
-
-function superLevelUpScore(cardId: string): number {
-  const def = getMonsterDef(cardId);
-  return Math.max(
-    ...def.levels.map((level) =>
-      level.maxHp * 8 +
-      level.commands.reduce((total, command) => total + command.power * 12 + (command.stoneCost ? -command.stoneCost * 4 : 0), 0),
-    ),
-  ) + (def.rarity ?? 0);
 }
 
 function applyRecoil(state: GameState, slotKey: SlotKey, damage: number): void {
@@ -2778,7 +2757,7 @@ function resolveCommandDefeat(
 
   const levelUpSlotKey = getLevelUpRecipientSlotKey(state, attackerSlotKey, defeated.level);
   const maxLevels = getLevelUpCapacity(state, levelUpSlotKey, defeated.level);
-  if (maxLevels > 0 && state.currentPlayer === "player") {
+  if (maxLevels > 0) {
     finishCommandSideEffects(state, attackerSlotKey, command, hadBerserkPower, hadDamageCurse);
     const recoilDamage = getCommandRecoilDamage(command, basePower, power);
     if (!state.winner && recoilDamage) {
@@ -2791,7 +2770,7 @@ function resolveCommandDefeat(
     }
     const superOptions = getSuperLevelUpOptions(state, levelUpSlotKey, updatedMaxLevels);
     state.pendingLevelUp = {
-      playerId: "player",
+      playerId: levelUpMonster.owner,
       attackerSlotKey: levelUpSlotKey,
       maxLevels: updatedMaxLevels,
       superOptions: superOptions.length > 0 ? superOptions : undefined,
@@ -2806,15 +2785,6 @@ function resolveCommandDefeat(
     applyRecoil(state, attackerSlotKey, recoilDamage);
   }
 
-  const updatedMaxLevels = state.winner ? 0 : getLevelUpCapacity(state, levelUpSlotKey, defeated.level);
-  if (updatedMaxLevels > 0) {
-    const superOption = chooseSuperLevelUpOption({ superOptions: getSuperLevelUpOptions(state, levelUpSlotKey, updatedMaxLevels) });
-    if (superOption) {
-      performSuperLevelUp(state, levelUpSlotKey, superOption.handInstanceId);
-    } else {
-      performLevelUp(state, levelUpSlotKey, updatedMaxLevels);
-    }
-  }
 }
 
 function finishCommandSideEffects(

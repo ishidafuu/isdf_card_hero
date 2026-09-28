@@ -4,6 +4,7 @@ import {
   canFocusMonster,
   canSummonTo,
   endTurn,
+  endTurnWithHandLimitDiscards,
   focusMonster,
   getCommandHandChoices,
   getCommandSecondaryTargets,
@@ -23,6 +24,7 @@ import {
   resolveLevelUp,
   runAutoStep,
   summonMonster,
+  useMasterHpDraw,
   useMasterAction,
 } from "./rules";
 import {
@@ -67,6 +69,7 @@ import { drillBreakPartnerSlotKey, isPrimaryDrillBreakAttacker } from "./ruleEng
 import { chooseTurnPlannerV2Decision } from "./cpuAiV2/turnPlanner";
 import { determinizeOpponentPrivateZones } from "./cpuAiV2/opponentKnowledge";
 import { appendAiDecisionReviewEntry } from "./aiReviewTrace";
+import { HAND_LIMIT } from "./ruleEngine/constants";
 
 export { CPU_AI_PROFILES } from "./cpuAiTypes";
 export type {
@@ -541,9 +544,12 @@ export function chooseCpuDecision(state: GameState, options: CpuAiOptions = {}):
   const perspective = state.currentPlayer;
   const profile = resolveCpuAiProfile(state, options);
   const config = resolveCpuAiConfigForProfile(state, options, profile);
+  if (state.pendingLevelUp?.playerId === perspective) {
+    return chooseCpuLevelUpDecision(state, config.weights);
+  }
   const masterDamagePlan = findMasterDamagePlan(state, perspective, config.weights);
   if (shouldForceMasterDamagePlan(state, perspective, masterDamagePlan, config)) {
-    return withMasterDamagePlanReason(masterDamagePlan.firstDecision, masterDamagePlan);
+    return withMasterDamagePlanReason(state, masterDamagePlan.firstDecision, masterDamagePlan);
   }
   if (profile === "white_v2") {
     const decision = chooseTurnPlannerV2Decision(state, {
@@ -719,7 +725,7 @@ export function chooseCpuDecision(state: GameState, options: CpuAiOptions = {}):
     return finalizeDecisionTrace(shieldTargetTieDecision, evaluated);
   }
 
-  return best ? attachDecisionTrace(best, evaluated) : createEndTurnDecision();
+  return best ? attachDecisionTrace(best, evaluated) : createEndTurnDecision(state);
 }
 
 export function inspectCpuDecisionEvaluations(
@@ -1045,11 +1051,12 @@ function shouldForceWhiteMirrorDeckRaceDamage(
 }
 
 function withMasterDamagePlanReason(
+  state: GameState,
   decision: CpuDecision | undefined,
   plan: MasterDamagePlan,
 ): CpuDecision {
   if (!decision) {
-    return createEndTurnDecision();
+    return createEndTurnDecision(state);
   }
   const prefix = plan.lethal
     ? "ターン開始時の最大打点で相手マスターを倒せるため"
@@ -7475,7 +7482,9 @@ export function listCpuDecisions(
   weights: AiEvaluationWeights = DEFAULT_AI_EVALUATION_WEIGHTS,
 ): CpuDecision[] {
   if (state.winner || state.pendingLevelUp) {
-    return [createEndTurnDecision()];
+    return state.pendingLevelUp
+      ? [chooseCpuLevelUpDecision(state, weights)]
+      : [createEndTurnDecision(state)];
   }
 
   const attackDecisions = listAttackDecisions(state, weights);
@@ -7484,15 +7493,96 @@ export function listCpuDecisions(
       decision.type === "attack" &&
       hasWhiteMirrorSafeBacklineFollowThroughFrontChip(state, decision.action.attackerSlotKey),
   );
-  return [
+  const actionDecisions = [
     ...attackDecisions,
     ...listMasterActionDecisions(state, weights),
     ...listMagicDecisions(state, weights),
     ...listSummonDecisions(state),
     ...listMoveDecisions(state),
     ...listFocusDecisions(state),
-    ...(mustUseSafeBacklineFollowThrough ? [] : [createEndTurnDecision()]),
   ];
+  return [
+    ...actionDecisions,
+    ...listMasterHpDrawDecisions(state, actionDecisions.length === 0),
+    ...(mustUseSafeBacklineFollowThrough ? [] : [createEndTurnDecision(state)]),
+  ];
+}
+
+function listMasterHpDrawDecisions(state: GameState, noOtherAction: boolean): CpuDecision[] {
+  const player = state.players[state.currentPlayer];
+  if (
+    !noOtherAction || player.masterFrozen || player.masterHp <= 3 ||
+    player.deck.length === 0 || player.hand.length > 1
+  ) {
+    return [];
+  }
+  const opponent = opponentOf(state.currentPlayer);
+  const publicThreatState: GameState = {
+    ...state,
+    players: {
+      ...state.players,
+      [opponent]: { ...state.players[opponent], hand: [] },
+    },
+  };
+  const incomingMasterDamage = buildThreatModel(publicThreatState, opponent).masterDamage[state.currentPlayer];
+  if (incomingMasterDamage >= player.masterHp - 1) {
+    return [];
+  }
+  const handNeedBonus = player.hand.length === 0 ? 80 : 70;
+  return [{
+    type: "master_hp_draw",
+    reason: player.hand.length === 0
+      ? "手札がなく他の行動もないため、HPに余裕があるうちにドロー"
+      : "手札が残り1枚で他の行動もないため、HPに余裕があるうちにドロー",
+    score: handNeedBonus,
+  }];
+}
+
+function chooseCpuLevelUpDecision(
+  state: GameState,
+  weights: AiEvaluationWeights,
+): Extract<CpuDecision, { type: "resolve_level_up" }> | Extract<CpuDecision, { type: "end_turn" }> {
+  const pending = state.pendingLevelUp;
+  if (!pending) {
+    return createEndTurnDecision(state);
+  }
+
+  const choices: Array<{ levels: number; superHandInstanceId?: string }> = [{ levels: 0 }];
+  for (let levels = 1; levels <= pending.maxLevels; levels += 1) {
+    choices.push({ levels });
+  }
+  for (const option of pending.superOptions ?? []) {
+    choices.push({ levels: 1, superHandInstanceId: option.handInstanceId });
+  }
+
+  const scored = choices.map((choice, index) => {
+    const after = resolveLevelUp(state, choice.levels, choice.superHandInstanceId);
+    const player = state.players[state.currentPlayer];
+    const afterPlayer = after.players[state.currentPlayer];
+    const blocksThresholdMagic = !choice.superHandInstanceId && player.hand.some((card) => {
+      const def = getCardDef(card.cardId);
+      return def.type === "magic" &&
+        def.cost > afterPlayer.stones + 3 &&
+        def.cost <= player.stones + 3;
+    });
+    const score = evaluateState(after, state.currentPlayer, weights) +
+      (blocksThresholdMagic ? -110 : 0) +
+      (after.pendingLevelUp ? -12 : 0);
+    return { choice, score, index };
+  });
+  scored.sort((a, b) => b.score - a.score || a.index - b.index);
+  const selected = scored[0] ?? { choice: { levels: 0 }, score: 0 };
+  const raises = selected.choice.superHandInstanceId
+    ? "スーパー化"
+    : selected.choice.levels > 0
+      ? `${selected.choice.levels}レベル上げる`
+      : "ストーンを温存して見送る";
+  return {
+    type: "resolve_level_up",
+    ...selected.choice,
+    reason: `撃破後の成長を比較し、${raises}`,
+    score: selected.score,
+  };
 }
 
 function listMasterDamagePlanDecisions(state: GameState, weights: AiEvaluationWeights): CpuDecision[] {
@@ -7751,6 +7841,12 @@ function summonWakeCreatesMasterPressure(state: GameState, handInstanceId: strin
 
 export function applyCpuDecision(state: GameState, decision: CpuDecision): GameState {
   const stateWithReason = appendDecisionReasonLog(state, decision);
+  if (decision.type === "resolve_level_up") {
+    return resolveLevelUp(stateWithReason, decision.levels, decision.superHandInstanceId);
+  }
+  if (decision.type === "master_hp_draw") {
+    return useMasterHpDraw(stateWithReason);
+  }
   if (decision.type === "attack") {
     return attackWithCommand(stateWithReason, decision.action);
   }
@@ -7769,10 +7865,18 @@ export function applyCpuDecision(state: GameState, decision: CpuDecision): GameS
   if (decision.type === "move") {
     return moveMonster(stateWithReason, decision.fromSlotKey, decision.toSlotKey);
   }
-  return endTurn(stateWithReason);
+  return decision.discardHandInstanceIds?.length
+    ? endTurnWithHandLimitDiscards(stateWithReason, decision.discardHandInstanceIds)
+    : endTurn(stateWithReason);
 }
 
 function applyCpuDecisionForPlanning(state: GameState, decision: CpuDecision): GameState {
+  if (decision.type === "resolve_level_up") {
+    return resolveLevelUp(state, decision.levels, decision.superHandInstanceId);
+  }
+  if (decision.type === "master_hp_draw") {
+    return useMasterHpDraw(state);
+  }
   if (decision.type === "attack") {
     return attackWithCommand(state, decision.action);
   }
@@ -7791,7 +7895,9 @@ function applyCpuDecisionForPlanning(state: GameState, decision: CpuDecision): G
   if (decision.type === "move") {
     return moveMonster(state, decision.fromSlotKey, decision.toSlotKey);
   }
-  return endTurn(state);
+  return decision.discardHandInstanceIds?.length
+    ? endTurnWithHandLimitDiscards(state, decision.discardHandInstanceIds)
+    : endTurn(state);
 }
 
 function appendDecisionReasonLog(state: GameState, decision: CpuDecision): GameState {
@@ -8347,7 +8453,7 @@ function scoreAttackDecision(state: GameState, after: GameState, action: Command
   }
 
   if (!targetAfter) {
-    const afterLevelUp = resolvePendingLevelUpForAttackScore(after, action.attackerSlotKey);
+    const afterLevelUp = resolvePendingLevelUpForAttackScore(after, action.attackerSlotKey, weights);
     const levelGain = attackerLevelGain(state, afterLevelUp, action.attackerSlotKey);
     return (
       weights.monsterKillBase +
@@ -10252,10 +10358,24 @@ function scoreFocus(state: GameState, slotKey: SlotKey): number {
   return score;
 }
 
-function createEndTurnDecision(): CpuDecision {
+function createEndTurnDecision(
+  state?: GameState,
+): Extract<CpuDecision, { type: "end_turn" }> {
+  const player = state?.players[state.currentPlayer];
+  const discardCount = player ? Math.max(0, player.hand.length - HAND_LIMIT) : 0;
+  const discardHandInstanceIds = player && discardCount > 0
+    ? [...player.hand]
+        .map((card, index) => ({ card, index, value: handCardKeepValue(state!, card) }))
+        .sort((a, b) => a.value - b.value || a.index - b.index)
+        .slice(0, discardCount)
+        .map(({ card }) => card.instanceId)
+    : undefined;
   return {
     type: "end_turn",
-    reason: "有効な行動がないためターン終了",
+    ...(discardHandInstanceIds ? { discardHandInstanceIds } : {}),
+    reason: discardCount > 0
+      ? `手札上限のため、価値の低い${discardCount}枚を捨ててターン終了`
+      : "有効な行動がないためターン終了",
     score: 0,
   };
 }
@@ -10350,6 +10470,12 @@ function decisionShortLabel(decision: CpuDecision): string {
   if (decision.type === "focus") {
     return "ためる";
   }
+  if (decision.type === "master_hp_draw") {
+    return "HPドロー";
+  }
+  if (decision.type === "resolve_level_up") {
+    return decision.levels > 0 || decision.superHandInstanceId ? "レベルアップ" : "レベルアップ見送り";
+  }
   return "ターン終了";
 }
 
@@ -10379,6 +10505,15 @@ function cpuDecisionKey(decision: CpuDecision): string {
   }
   if (decision.type === "focus") {
     return `focus:${decision.slotKey}`;
+  }
+  if (decision.type === "master_hp_draw") {
+    return "master_hp_draw";
+  }
+  if (decision.type === "resolve_level_up") {
+    return `resolve_level_up:${decision.levels}:${decision.superHandInstanceId ?? ""}`;
+  }
+  if (decision.type === "end_turn" && decision.discardHandInstanceIds?.length) {
+    return `end_turn:${decision.discardHandInstanceIds.join(",")}`;
   }
   return "end_turn";
 }
@@ -10481,11 +10616,15 @@ function attackerLevelGain(state: GameState, after: GameState, attackerSlotKey: 
   return Math.max(0, current.level - before.level);
 }
 
-function resolvePendingLevelUpForAttackScore(state: GameState, attackerSlotKey: SlotKey): GameState {
+function resolvePendingLevelUpForAttackScore(state: GameState, attackerSlotKey: SlotKey, weights: AiEvaluationWeights): GameState {
   if (!state.pendingLevelUp || state.pendingLevelUp.attackerSlotKey !== attackerSlotKey) {
     return state;
   }
-  return resolveLevelUp(state, state.pendingLevelUp.maxLevels);
+  const decision = chooseCpuLevelUpDecision(state, weights);
+  if (decision.type !== "resolve_level_up") {
+    return state;
+  }
+  return resolveLevelUp(state, decision.levels, decision.superHandInstanceId);
 }
 
 function scoreMagicDecision(

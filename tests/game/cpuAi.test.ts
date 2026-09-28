@@ -6,6 +6,104 @@ import { attackWithCommand, createInitialGame, endTurn, runAutoStep, runCpuStep 
 import type { CardInstance, GameState, MonsterState, PlayerId } from "../../src/game/types";
 
 describe("cpu ai", () => {
+  it("uses a safe HP draw only after exhausting other actions, and avoids it near defeat", () => {
+    const game = createCpuGame();
+    game.players.cpu.masterHp = 8;
+
+    const decision = chooseCpuDecision(game);
+    expect(decision.type).toBe("master_hp_draw");
+    const hpDrawScore = listCpuDecisions(game).find((candidate) => candidate.type === "master_hp_draw")?.score;
+    game.players.cpu.deck[0] = { cardId: "thunder", instanceId: "different_top" };
+    expect(listCpuDecisions(game).find((candidate) => candidate.type === "master_hp_draw")?.score).toBe(hpDrawScore);
+
+    game.players.cpu.masterHp = 3;
+    expect(listCpuDecisions(game).some((candidate) => candidate.type === "master_hp_draw")).toBe(false);
+
+    game.players.cpu.masterHp = 5;
+    game.slots.player_front_left.monster = createActiveMonster("card_006", "player", { level: 3, hp: 4 });
+    expect(listCpuDecisions(game).some((candidate) => candidate.type === "master_hp_draw")).toBe(false);
+  });
+
+  it("declines a level-up when the stone preserves next-turn access to a held magic", () => {
+    const game = createCpuGame([{ cardId: "thunder", instanceId: "cpu_thunder" }]);
+    game.players.cpu.stones = 1;
+    game.slots.cpu_front_left.monster = createActiveMonster("takokke", "cpu");
+    game.slots.player_front_left.monster = createActiveMonster("takokke", "player", { hp: 2 });
+    const pending = attackWithCommand(game, {
+      attackerSlotKey: "cpu_front_left",
+      commandId: "attack",
+      target: { kind: "monster", slotKey: "player_front_left" },
+    });
+
+    expect(pending.pendingLevelUp?.playerId).toBe("cpu");
+    const decision = chooseCpuDecision(pending);
+    expect(decision).toMatchObject({ type: "resolve_level_up", levels: 0 });
+
+    const resolved = applyCpuDecision(pending, decision);
+    expect(resolved.pendingLevelUp).toBeUndefined();
+    expect(resolved.slots.cpu_front_left.monster?.level).toBe(1);
+  });
+
+  it("takes a level-up that restores a damaged CPU unit", () => {
+    const game = createCpuGame();
+    game.players.cpu.stones = 1;
+    game.slots.cpu_front_left.monster = createActiveMonster("takokke", "cpu", { hp: 1 });
+    game.slots.player_front_left.monster = createActiveMonster("takokke", "player", { hp: 2 });
+    const pending = attackWithCommand(game, {
+      attackerSlotKey: "cpu_front_left",
+      commandId: "attack",
+      target: { kind: "monster", slotKey: "player_front_left" },
+    });
+
+    const decision = chooseCpuDecision(pending);
+    expect(decision).toMatchObject({ type: "resolve_level_up", levels: 1 });
+    const resolved = applyCpuDecision(pending, decision);
+    expect(resolved.slots.cpu_front_left.monster?.level).toBe(2);
+    expect(resolved.slots.cpu_front_left.monster?.hp).toBeGreaterThan(1);
+  });
+
+  it("records the player-side AI level-up choice in decision history", () => {
+    const game = createPlayerAutoGame([{ cardId: "thunder", instanceId: "player_thunder" }]);
+    game.eventLog = [...game.log];
+    game.players.player.stones = 1;
+    game.slots.player_front_left.monster = createActiveMonster("takokke", "player");
+    game.slots.cpu_front_left.monster = createActiveMonster("takokke", "cpu", { hp: 2 });
+    const pending = attackWithCommand(game, {
+      attackerSlotKey: "player_front_left",
+      commandId: "attack",
+      target: { kind: "monster", slotKey: "cpu_front_left" },
+    });
+
+    const decision = chooseCpuDecision(pending);
+    expect(decision.type).toBe("resolve_level_up");
+    const resolved = applyCpuDecision(pending, decision);
+    expect(resolved.pendingLevelUp).toBeUndefined();
+    expect(resolved.aiDecisionHistory?.at(-1)?.decision.type).toBe("resolve_level_up");
+  });
+
+  it("discards the least useful card when the CPU ends above the hand limit", () => {
+    const game = createCpuGame([
+      ...createHand("cpu_yanbaru", 5),
+      { cardId: "card_006", instanceId: "cpu_super_without_seed" },
+    ]);
+    game.slots.cpu_front_left.monster = createActiveMonster("takokke", "cpu", { instanceId: "cpu_front_left_monster", actionCount: 1 });
+    game.slots.cpu_front_right.monster = createActiveMonster("takokke", "cpu", { instanceId: "cpu_front_right_monster", actionCount: 1 });
+    game.slots.cpu_back_left.monster = createActiveMonster("morgan", "cpu", { instanceId: "cpu_back_left_monster", actionCount: 1 });
+    game.slots.cpu_back_right.monster = createActiveMonster("morgan", "cpu", { instanceId: "cpu_back_right_monster", actionCount: 1 });
+    game.slots.cpu_front_left.monster!.focused = true;
+    game.slots.cpu_front_right.monster!.focused = true;
+    game.slots.cpu_back_left.monster!.focused = true;
+    game.slots.cpu_back_right.monster!.focused = true;
+
+    const decision = listCpuDecisions(game).find((candidate) => candidate.type === "end_turn");
+    if (!decision || decision.type !== "end_turn") {
+      throw new Error("expected an end-turn decision");
+    }
+    expect(decision.discardHandInstanceIds).toEqual(["cpu_super_without_seed"]);
+    const next = applyCpuDecision(game, decision);
+    expect(next.players.cpu.discard.some((card) => card.instanceId === "cpu_super_without_seed")).toBe(true);
+  });
+
   it("chooses a lethal master attack when one is available", () => {
     const game = createCpuGame();
     game.players.player.masterHp = 1;
@@ -453,7 +551,7 @@ describe("cpu ai", () => {
     throw new Error("score gap fixture was not found");
   });
 
-  it("uses response reading to break low-stone white mirror shield target ties", () => {
+  it("keeps the immediate-evaluation shield choice when level-up makes mirror responses tie", () => {
     const game = createCpuGame();
     game.turnNumber = 9;
     game.players.cpu.masterId = "white";
@@ -516,8 +614,9 @@ describe("cpu ai", () => {
 
     const decision = chooseCpuDecision(game, { profiles: { cpu: "white_planner", player: "white" } });
 
-    expect(decisionTestSignature(decision)).toBe("master_action:shield:cpu_front_right");
-    expect(decision.reason).toContain("盾対象応答評価");
+    expect(decisionTestSignature(decision)).toBe("master_action:shield:cpu_front_left");
+    expect(decision.reason).not.toContain("盾対象応答評価");
+
   });
 
   it("holds the late white mirror shield when it would spend down to one stone in the deck race", () => {
@@ -2486,9 +2585,9 @@ describe("cpu ai", () => {
     }
     game.slots.cpu_front_left.monster = createActiveMonster("takokke", "cpu", { status: "prepared" });
 
-    const decision = chooseCpuDecision(game, { profile: "white" });
-
-    expect(decision.type).toBe("end_turn");
+    const decisions = listCpuDecisions(game);
+    expect(decisions.some((decision) => decision.type === "master_action" && decision.actionId === "wake_up")).toBe(false);
+    expect(decisions.some((decision) => decision.type === "master_hp_draw")).toBe(true);
   });
 
   it("uses black master berserk power when it creates a monster kill", () => {
@@ -3243,6 +3342,9 @@ describe("cpu ai", () => {
 
     expect(decision.type).toBe("focus");
     expect(decision.reason).toContain("ためる");
+
+    const afterFocus = applyCpuDecision(game, decision);
+    expect(listCpuDecisions(afterFocus).some((candidate) => candidate.type === "master_hp_draw")).toBe(true);
   });
 
   it("does not spend closeout turns on focus-only actions", () => {
