@@ -1,0 +1,54 @@
+{
+  "format": "stone-tactics-native-ui-art",
+  "version": 1,
+  "productionAssets": [
+    {
+      "path": "public/art/ui/card-back.svg",
+      "source": "Repository-local original native SVG design",
+      "tool": "repository-authored native SVG",
+      "rightsStatus": "Original project design; trademark or third-party rights clearance is not asserted."
+    },
+    {
+      "path": "public/art/ui/master-white.svg",
+      "source": "Repository-local original native SVG design",
+      "tool": "repository-authored native SVG",
+      "rightsStatus": "Original project design; trademark or third-party rights clearance is not asserted."
+    },
+    {
+      "path": "public/art/ui/master-black.svg",
+      "source": "Repository-local original native SVG design",
+      "tool": "repository-authored native SVG",
+      "rightsStatus": "Original project design; trademark or third-party rights clearance is not asserted."
+    },
+    {
+      "path": "public/art/ui/seat-player-front.svg",
+      "source": "Repository-local original native SVG design",
+      "tool": "repository-authored native SVG",
+      "rightsStatus": "Original project design; trademark or third-party rights clearance is not asserted."
+    },
+    {
+      "path": "public/art/ui/seat-player-back.svg",
+      "source": "Repository-local original native SVG design",
+      "tool": "repository-authored native SVG",
+      "rightsStatus": "Original project design; trademark or third-party rights clearance is not asserted."
+    },
+    {
+      "path": "public/art/ui/seat-cpu-front.svg",
+      "source": "Repository-local original native SVG design",
+      "tool": "repository-authored native SVG",
+      "rightsStatus": "Original project design; trademark or third-party rights clearance is not asserted."
+    },
+    {
+      "path": "public/art/ui/seat-cpu-back.svg",
+      "source": "Repository-local original native SVG design",
+      "tool": "repository-authored native SVG",
+      "rightsStatus": "Original project design; trademark or third-party rights clearance is not asserted."
+    },
+    {
+      "path": "src/ui/StoneTacticsBrand.tsx",
+      "source": "Inline repository-local original native SVG brand mark and text treatment",
+      "tool": "repository-authored native SVG and React markup",
+      "rightsStatus": "Original project design; the Stone Tactics name and mark have no asserted trademark clearance."
+    }
+  ]
+}

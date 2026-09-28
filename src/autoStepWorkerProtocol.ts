@@ -1,5 +1,8 @@
 import type { CpuAiProfiles } from "./game/cpuAiTypes";
+import type { OpponentKnowledgePolicy } from "./game/cpuAiTypes";
+import type { ExperimentContextV1 } from "./game/experimentalContext";
 import type { GameState } from "./game/types";
+import type { SeatControllerBySeat } from "./game/seatControl";
 
 const REQUIRED_SLOT_KEYS = [
   "player_front_left",
@@ -25,6 +28,10 @@ export interface AutoStepWorkerRequest extends AutoStepRequestToken {
   mode: AutoStepWorkerMode;
   game: GameState;
   aiProfiles: Partial<CpuAiProfiles>;
+  /** Present only for fixed-seat v2 sessions; absence keeps legacy workspace takeover. */
+  controllerBySeat?: SeatControllerBySeat;
+  experimentalContext?: ExperimentContextV1;
+  opponentKnowledgePolicy?: OpponentKnowledgePolicy;
 }
 
 export type AutoStepWorkerResponse =

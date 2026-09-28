@@ -3,11 +3,11 @@
     "selector": ".app-shell",
     "rect": {
       "x": 0,
-      "y": -242,
+      "y": -329,
       "width": 1280,
-      "height": 747,
+      "height": 788,
       "widthRatio": 1,
-      "heightRatio": 1.0375
+      "heightRatio": 1.0944444444444446
     },
     "color": "rgb(29, 37, 39)",
     "backgroundColor": "rgba(0, 0, 0, 0)",
@@ -17,21 +17,21 @@
     "selector": ".topbar",
     "rect": {
       "x": 16,
-      "y": -226,
+      "y": -313,
       "width": 1248,
-      "height": 77,
+      "height": 118,
       "widthRatio": 0.975,
-      "heightRatio": 0.10694444444444444
+      "heightRatio": 0.1638888888888889
     },
     "color": "rgb(29, 37, 39)",
     "backgroundColor": "rgba(0, 0, 0, 0)",
-    "borderRadius": "0px"
+    "borderRadius": "12px"
   },
   {
     "selector": ".mode-navigation",
     "rect": {
-      "x": 993.4375,
-      "y": -224.5,
+      "x": 846.25,
+      "y": -291,
       "width": 270.5625,
       "height": 34,
       "widthRatio": 0.211376953125,
@@ -115,11 +115,11 @@
     "selector": ".battle-journal-panel",
     "rect": {
       "x": 16,
-      "y": 16,
+      "y": -30,
       "width": 1248,
-      "height": 704,
+      "height": 750,
       "widthRatio": 0.975,
-      "heightRatio": 0.9777777777777777
+      "heightRatio": 1.0416666666666667
     },
     "color": "rgb(29, 37, 39)",
     "backgroundColor": "rgb(241, 245, 236)",

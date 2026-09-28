@@ -122,9 +122,9 @@ describe("battle prototype rules", () => {
     expect(cards.filter((card) => card.type === "monster" && card.role === "front")).toHaveLength(46);
     expect(cards.filter((card) => card.type === "monster" && card.role === "back")).toHaveLength(26);
     expect(cards.filter((card) => card.type === "magic")).toHaveLength(54);
-    expect(getCardDefsByPool("all").every((card) => card.icon?.startsWith("/card-icons/co"))).toBe(true);
-    expect(getCardIconPath("takokke")).toBe("/card-icons/co004.jpg");
-    expect(getCardIconPath("card_006")).toBe("/card-icons/co006.jpg");
+    expect(getCardDefsByPool("all").every((card) => card.icon?.startsWith("/art/cards/card_"))).toBe(true);
+    expect(getCardIconPath("takokke")).toBe("/art/cards/card_004.png");
+    expect(getCardIconPath("card_006")).toBe("/art/cards/card_006.png");
   });
 
   it("keeps command ids unique within each monster level", () => {

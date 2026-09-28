@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import {
   appendAiDecisionReviewEntry,
+  appendControlledHumanActionReviewEntry,
   appendHumanActionReviewEntry,
   createAiDecisionStateSnapshot,
   humanActionReviewKey,
@@ -116,5 +117,29 @@ describe("ai review trace", () => {
     }, "end_turn");
 
     expect(target.aiDecisionHistory?.at(-1)?.logIndex).toBe(1_201);
+  });
+
+  it("keeps v1 player-only tracing while v2 follows pending owner and fixed seat controller", () => {
+    const before = createInitialGame(12350, { firstPlayer: "cpu", trackEventLog: true });
+    before.pendingLevelUp = {
+      playerId: "player",
+      attackerSlotKey: "player_front_left",
+      maxLevels: 1,
+    };
+    const action = { type: "resolve_level_up" as const, levels: 0 };
+    const legacy = structuredClone(before);
+    appendHumanActionReviewEntry(legacy, before, action);
+    expect(legacy.humanActionHistory).toBeUndefined();
+
+    const v2 = structuredClone(before);
+    appendControlledHumanActionReviewEntry(v2, before, action, { player: "human", cpu: "cpu" });
+    expect(v2.humanActionHistory?.at(-1)).toMatchObject({
+      playerId: "player",
+      actionKey: "level_up:0:",
+    });
+
+    const cpuOwned = structuredClone(before);
+    appendControlledHumanActionReviewEntry(cpuOwned, before, action, { player: "cpu", cpu: "human" });
+    expect(cpuOwned.humanActionHistory).toBeUndefined();
   });
 });

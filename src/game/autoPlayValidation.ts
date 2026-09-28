@@ -12,6 +12,7 @@ import {
 import { buildDeckPresetCardIds, deckPresetAllowsSpecial, type DeckPresetId } from "./deckPresets";
 import { createInitialGame, runAutoStep, targetToKey } from "./rules";
 import type { GameState, MasterId, PlayerId, SlotKey } from "./types";
+import type { ExperimentContextV1 } from "./experimentalContext";
 
 export type AutoPlayIssueKind =
   | "exception"
@@ -41,17 +42,20 @@ export interface AutoPlayValidationOptions {
   failOnWarnings?: boolean;
   aiProfile?: CpuAiProfile;
   aiProfiles?: Partial<CpuAiProfiles>;
+  /** Explicit v2 experimental master context for legal actual-command bench runs. */
+  experimentalContext?: ExperimentContextV1;
   includeGameHistory?: boolean;
   onGameResult?: (game: AutoPlayGameResult, issues: AutoPlayIssue[]) => void;
 }
 
 type ResolvedAutoPlayValidationOptions = Required<
-  Omit<AutoPlayValidationOptions, "seedEnd" | "failOnWarnings" | "masterIds" | "aiProfiles" | "onGameResult">
+  Omit<AutoPlayValidationOptions, "seedEnd" | "failOnWarnings" | "masterIds" | "aiProfiles" | "onGameResult" | "experimentalContext">
 > & {
   seedEnd: number;
   failOnWarnings: boolean;
   masterIds: Record<PlayerId, MasterId>;
   aiProfiles: CpuAiProfiles;
+  experimentalContext?: ExperimentContextV1;
 };
 
 export interface AutoPlayDecisionEvent {
@@ -256,6 +260,7 @@ function resolveOptions(options: AutoPlayValidationOptions): AutoPlayValidationR
     deckPreset: options.deckPreset ?? DEFAULT_OPTIONS.deckPreset,
     playerDeckPreset: options.playerDeckPreset ?? options.deckPreset ?? DEFAULT_OPTIONS.deckPreset,
     cpuDeckPreset: options.cpuDeckPreset ?? options.deckPreset ?? DEFAULT_OPTIONS.deckPreset,
+    experimentalContext: options.experimentalContext,
     aiProfile: fallbackAiProfile,
     aiProfiles: {
       player: options.aiProfiles?.player ?? fallbackAiProfile,
@@ -299,7 +304,11 @@ function runAutoPlayGame(
 
       if (game.pendingLevelUp) {
         const beforePendingSignature = progressSignature(game);
-        game = runAutoStep(game, { profiles: options.aiProfiles });
+        game = runAutoStep(game, {
+          profiles: options.aiProfiles,
+          experimentalContext: options.experimentalContext,
+          reviewActorByPendingOwner: options.experimentalContext ? true : undefined,
+        });
         if (game.pendingLevelUp) {
           context.partialLevelUpResolutionSteps += 1;
           consecutivePendingResolutions += 1;
@@ -399,16 +408,24 @@ function runDecisionStepWithTrace(
   options: AutoPlayValidationResult["options"],
   context: RunContext,
 ): GameState {
-  const decisions = listCpuDecisions(game);
-  const decision = chooseCpuDecision(game, { profiles: options.aiProfiles });
+  const aiOptions = {
+    profiles: options.aiProfiles,
+    experimentalContext: options.experimentalContext,
+    reviewActorByPendingOwner: options.experimentalContext ? true : undefined,
+  };
+  const decisions = listCpuDecisions(game, undefined, options.experimentalContext);
+  const decision = chooseCpuDecision(game, aiOptions);
   const hasRawEndTurnWarningCandidate =
     decision.type === "end_turn" && decisions.some((candidate) => candidate.type !== "end_turn" && candidate.score >= 200);
   const evaluatedDecisions =
-    hasRawEndTurnWarningCandidate ? inspectCpuDecisionEvaluations(game, { profiles: options.aiProfiles }) : undefined;
+    hasRawEndTurnWarningCandidate ? inspectCpuDecisionEvaluations(game, aiOptions) : undefined;
   const beforeSummary = summarizeGameState(game);
   const logBefore = game.log;
   const logOffsetBefore = game.logOffset ?? 0;
-  const next = applyCpuDecision(game, decision);
+  const next = applyCpuDecision(game, decision, {
+    experimentalContext: options.experimentalContext,
+    reviewActor: options.experimentalContext ? game.pendingLevelUp?.playerId ?? game.currentPlayer : game.currentPlayer,
+  });
   const event: AutoPlayDecisionEvent = {
     seed: context.seed,
     step,
@@ -593,6 +610,9 @@ function summarizePlayer(game: GameState, playerId: PlayerId): GameStateSummary[
 }
 
 function decisionToText(decision: CpuDecision): string {
+  if (decision.type === "experimental_master_action") {
+    return `experimental:${decision.master}:${decision.actionId}`;
+  }
   if (decision.type === "attack") {
     return `attack:${decision.action.attackerSlotKey}:${decision.action.commandId}->${targetToKey(decision.action.target)}`;
   }

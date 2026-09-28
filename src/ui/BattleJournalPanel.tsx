@@ -4,6 +4,12 @@ import { getCardName } from "../game/cards";
 import type { GameState, SlotKey } from "../game/types";
 import type { BattleJournal, BattleJournalResult, ReplaySnapshot } from "../replay/types";
 import type { BattleJournalWorkerOperation, BattleJournalWorkerStage } from "../replay/workerProtocol";
+import type { CpuAiProfiles } from "../game/cpuAiTypes";
+import type { PlayerId } from "../game/types";
+import type { BattleWorkspaceMode } from "./modes";
+import type { SessionControllers } from "../sessions/types";
+import { displaySessionLogEntry } from "./modes";
+import { BranchSessionSetup } from "./BranchSessionSetup";
 
 export interface BattleJournalOperationStatus {
   operation: BattleJournalWorkerOperation;
@@ -28,6 +34,13 @@ interface BattleJournalPanelProps {
   seekCancelled: boolean;
   onRetrySeek: () => void;
   renderCardIcon: (cardId: string) => ReactNode;
+  restrictedPrivateSession?: boolean;
+  privacyViewerSeat?: PlayerId | null;
+  workspaceMode: BattleWorkspaceMode;
+  branchDefaults?: { controllerBySeat: SessionControllers; profiles: CpuAiProfiles };
+  allowBranchDetached?: boolean;
+  sourceLabel?: string;
+  onStartBranch?: (cursor: number, controllers: SessionControllers, profiles: CpuAiProfiles) => void;
 }
 
 export function BattleJournalPanel({
@@ -46,8 +59,16 @@ export function BattleJournalPanel({
   seekCancelled,
   onRetrySeek,
   renderCardIcon,
+  restrictedPrivateSession = false,
+  privacyViewerSeat,
+  workspaceMode,
+  branchDefaults,
+  allowBranchDetached = false,
+  sourceLabel,
+  onStartBranch,
 }: BattleJournalPanelProps) {
   const [importText, setImportText] = useState("");
+  const [branchSetupCursor, setBranchSetupCursor] = useState<number | undefined>();
   const maximumCursor = journal?.completeness.status === "incomplete"
     ? Math.min(journal.commands.length, journal.completeness.afterSequence)
     : journal?.commands.length ?? 0;
@@ -59,7 +80,9 @@ export function BattleJournalPanel({
       <div className="zone-panel-heading">
         <div>
           <h3>対局Journal / Replay</h3>
-          <p>Analyze専用・読み取り専用です。再生位置の変更は現在の対局を変更しません。</p>
+          <p>{restrictedPrivateSession
+            ? "Play内の公開情報レビューです。未公開手札・準備中カード・相手の獲得情報は表示しません。再生位置の変更は現在の対局を変更しません。"
+            : "Analyze専用・読み取り専用です。再生位置の変更は現在の対局を変更しません。"}</p>
         </div>
         <div className="battle-journal-actions">
           <button type="button" onClick={onReturnToLive}>現在の対局</button>
@@ -75,7 +98,7 @@ export function BattleJournalPanel({
       ) : (
         <>
           <div className="battle-journal-status" role="status">
-            <strong>{imported ? "読み込みJournal" : "現在の対局"}</strong>
+            <strong>{sourceLabel ?? (imported ? "読み込みJournal" : "現在の対局")}</strong>
             <span>{cursor} / {journal.commands.length} commands</span>
             <span>{journal.completeness.status === "complete" ? "完全" : `不完全: ${journal.completeness.reason}`}</span>
           </div>
@@ -99,14 +122,29 @@ export function BattleJournalPanel({
             <span>このReplay再構築はキャンセルされました。現在の対局には影響していません。</span>
             <button type="button" onClick={onRetrySeek}>再試行</button>
           </div>}
-          {state && <JournalStateView state={state} renderCardIcon={renderCardIcon} />}
-          <label className="battle-journal-import">
+          {state && <JournalStateView state={state} renderCardIcon={renderCardIcon} privacyViewerSeat={privacyViewerSeat} workspaceMode={workspaceMode} />}
+          {onStartBranch && branchDefaults && (!imported || allowBranchDetached) && (
+            <div className="battle-journal-branch-action">
+              <button type="button" onClick={() => setBranchSetupCursor(cursor)} disabled={nonSeekBusy || !journal || journal.completeness.status !== "complete"}>
+                このJournal位置から分岐を準備
+              </button>
+              {branchSetupCursor !== undefined && <BranchSessionSetup
+                key={`${journal?.initialHash ?? "journal"}:${branchSetupCursor}`}
+                cursor={branchSetupCursor}
+                defaults={branchDefaults}
+                onStart={onStartBranch}
+                onCancel={() => setBranchSetupCursor(undefined)}
+                label="この位置"
+              />}
+            </div>
+          )}
+          {!restrictedPrivateSession && <label className="battle-journal-import">
             Journal JSONを貼り付けて読み込む
             <textarea value={importText} onChange={(event) => setImportText(event.target.value)} spellCheck={false} />
-          </label>
-          <button type="button" onClick={() => onImport(importText)} disabled={nonSeekBusy || !importText.trim()}>
+          </label>}
+          {!restrictedPrivateSession && <button type="button" onClick={() => onImport(importText)} disabled={nonSeekBusy || !importText.trim()}>
             JSONを読み込む
-          </button>
+          </button>}
           {message && <p className="battle-journal-message" role="status">{message}</p>}
         </>
       )}
@@ -121,12 +159,16 @@ export function JournalOperationNotice({ operation, onCancel }: { operation: Bat
     branch: "分岐位置を検証中",
     import: "Journalを読み込み・検証中",
     export: "Journalを書き出し・検証中",
+    coach: "対局コーチ分析中",
+    "restore-session": "セッションを検証・復帰中",
   };
   const stage: Record<BattleJournalWorkerStage, string> = {
     replaying: "状態を再生しています",
     "verifying-branch": "分岐を検証しています",
     "validating-import": "JSONと履歴を検証しています",
     "validating-export": "履歴の整合性を検証しています",
+    "analyzing-coach": "記録済みの局面を検証しています",
+    "restoring-session": "保存内容と対局履歴を検証しています",
   };
   return (
     <div className="journal-worker-notice" role="status" data-testid="journal-worker-status">
@@ -136,15 +178,23 @@ export function JournalOperationNotice({ operation, onCancel }: { operation: Bat
   );
 }
 
-function JournalStateView({ state, renderCardIcon }: { state: GameState; renderCardIcon: (cardId: string) => ReactNode }) {
+function JournalStateView({ state, renderCardIcon, privacyViewerSeat, workspaceMode }: { state: GameState; renderCardIcon: (cardId: string) => ReactNode; privacyViewerSeat?: PlayerId | null; workspaceMode: BattleWorkspaceMode }) {
   const player = state.players.player;
   const cpu = state.players.cpu;
   const slot = (slotKey: SlotKey) => {
     const monster = state.slots[slotKey].monster;
+    const hidePreparedIdentity = Boolean(monster && monster.status === "prepared" && privacyViewerSeat !== undefined &&
+      (privacyViewerSeat === null || monster.owner !== privacyViewerSeat));
     return (
       <div className={`battle-journal-slot ${monster ? "occupied" : "empty"}`} key={slotKey}>
         <small>{slotKey.replace("_", " ").replace("_", " ")}</small>
-        {monster ? (
+        {monster && hidePreparedIdentity ? (
+          <>
+            <span className="journal-private-card-back" aria-hidden="true">裏</span>
+            <strong>裏向き準備中カード</strong>
+            <span>HP・レベルは非公開</span>
+          </>
+        ) : monster ? (
           <>
             {renderCardIcon(monster.cardId)}
             <strong>{getCardName(monster.cardId)}</strong>
@@ -182,7 +232,7 @@ function JournalStateView({ state, renderCardIcon }: { state: GameState; renderC
       </div>
       <details>
         <summary>この位置までの最新ログ</summary>
-        <ol>{state.log.slice(-8).map((entry, index) => <li key={`${state.log.length - 8 + index}_${entry}`}>{entry}</li>)}</ol>
+        <ol>{state.log.slice(-8).map((entry, index) => <li key={`${state.log.length - 8 + index}_${entry}`}>{displaySessionLogEntry(entry, workspaceMode, privacyViewerSeat)}</li>)}</ol>
       </details>
     </div>
   );

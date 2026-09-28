@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" role="img" aria-labelledby="title">
+  <title id="title">Black master emblem</title>
+  <circle cx="64" cy="64" r="58" fill="#171c25" stroke="#c58d52" stroke-width="5"/>
+  <path d="M78 26c-24 1-41 18-41 40 0 23 18 40 41 39-13-6-21-20-21-39s8-34 21-40Z" fill="#d7bd8e"/>
+  <path d="m78 42 8 15 17 2-13 11 4 17-16-9-15 9 4-17-13-11 17-2z" fill="#4b8b81" stroke="#a86e42" stroke-width="3" stroke-linejoin="round"/>
+</svg>

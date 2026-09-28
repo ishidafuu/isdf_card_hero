@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { applyCpuDecision, applyStoredAiDecision, chooseCpuDecision } from "../../src/game/cpuAi";
-import { getCardDef, getCardPool, getMonsterDef } from "../../src/game/cards";
+import { getCardDef, getCardDefsByPool, getCardPool, getMonsterDef } from "../../src/game/cards";
 import {
   createPlanningState,
   createPublicInformationState,
@@ -8,6 +8,12 @@ import {
   publicInformationStateKey,
 } from "../../src/game/cpuAiV2/opponentKnowledge";
 import { createInitialGame } from "../../src/game/rules";
+import {
+  appendBattleCommand,
+  createBattleJournal,
+  extractAiDecisionCommand,
+  seekBattleJournal,
+} from "../../src/replay/battleJournal";
 import type { MonsterState } from "../../src/game/types";
 
 describe("white v2 opponent knowledge", () => {
@@ -163,6 +169,84 @@ describe("white v2 opponent knowledge", () => {
     }
   });
 
+  it("does not use a limited opponent's hidden composition under unknown-composition policy", () => {
+    const first = createInitialGame(78130, { firstPlayer: "cpu" });
+    first.currentPlayer = "cpu";
+    const second = structuredClone(first);
+    second.players.player.hand = second.players.player.hand.map((card, index) => ({
+      ...card,
+      cardId: index % 2 === 0 ? "card_001" : "card_047",
+    }));
+    second.players.player.deck = second.players.player.deck.map((card, index) => ({
+      ...card,
+      cardId: index % 2 === 0 ? "card_006" : "card_051",
+    })).reverse();
+    second.randomSeed ^= 0x5a5a5a5a;
+
+    expect(publicInformationStateKey(first, "cpu", "unknown_composition")).toBe(
+      publicInformationStateKey(second, "cpu", "unknown_composition"),
+    );
+    expect(createPublicInformationState(first, "cpu", 0, "unknown_composition")).toEqual(
+      createPublicInformationState(second, "cpu", 0, "unknown_composition"),
+    );
+    const limitedSample = createPublicInformationState(first, "cpu", 0, "unknown_composition");
+    expect([...limitedSample.players.player.hand, ...limitedSample.players.player.deck].every((card) =>
+      getCardPool(getCardDef(card.cardId)) === "normal",
+    )).toBe(true);
+    const profiles = ["stable", "strong", "pressure", "defensive", "white", "white_planner", "white_v2", "white_rollout", "omniscient"] as const;
+    for (const profile of profiles) {
+      expect(decisionPayloadKey(chooseCpuDecision(first, {
+        profile,
+        opponentKnowledgePolicy: "unknown_composition",
+      }))).toBe(decisionPayloadKey(chooseCpuDecision(second, {
+        profile,
+        opponentKnowledgePolicy: "unknown_composition",
+      })));
+    }
+  });
+
+  it("includes public exchanged-master capability state in the information key", () => {
+    const ordinary = createInitialGame(78131, { firstPlayer: "cpu" });
+    const exchanged = structuredClone(ordinary);
+    exchanged.players.cpu.masterActionsExchanged = true;
+    exchanged.players.player.masterActionsExchanged = true;
+    exchanged.masterActionsExchangeExpiresOnStartOf = "cpu";
+
+    expect(publicInformationStateKey(ordinary, "cpu")).not.toBe(publicInformationStateKey(exchanged, "cpu"));
+  });
+
+  it("resamples hidden prepared identities from public counts under unknown policy", () => {
+    const first = createInitialGame(78132, { firstPlayer: "cpu" });
+    const preparedIndex = first.players.player.deck.findIndex((card) => {
+      const definition = getCardDef(card.cardId);
+      return definition.type === "monster" && getCardPool(definition) === "normal";
+    });
+    expect(preparedIndex).toBeGreaterThanOrEqual(0);
+    const [preparedCard] = first.players.player.deck.splice(preparedIndex, 1);
+    first.slots.player_back_left.monster = createPreparedMonster(preparedCard.cardId, preparedCard.instanceId);
+    const firstSample = createPublicInformationState(first, "cpu", 1, "unknown_composition");
+    const sampledPreparedId = firstSample.slots.player_back_left.monster?.cardId;
+    const second = structuredClone(first);
+    const otherMonster = getCardDefsByPool("normal").find((definition) =>
+      definition.type === "monster" && definition.id !== preparedCard.cardId && definition.id !== sampledPreparedId,
+    );
+    expect(otherMonster).toBeDefined();
+    const secondPrepared = second.slots.player_back_left.monster!;
+    second.slots.player_back_left.monster = createPreparedMonster(otherMonster!.id, secondPrepared.instanceId, {
+      hp: getMonsterDef(otherMonster!.id).levels[0].maxHp,
+      focused: true,
+      shielded: true,
+    });
+    second.players.player.deck[0] = { ...second.players.player.deck[0], cardId: "card_047" };
+
+    expect(publicInformationStateKey(first, "cpu", "unknown_composition")).toBe(
+      publicInformationStateKey(second, "cpu", "unknown_composition"),
+    );
+    const secondSample = createPublicInformationState(second, "cpu", 1, "unknown_composition");
+    expect(firstSample).toEqual(secondSample);
+    expect(firstSample.slots.player_back_left.monster?.cardId).not.toBe(preparedCard.cardId);
+  });
+
   it("excludes verbose journals before planning clones without mutating the live state", () => {
     const state = createInitialGame(78129, { firstPlayer: "cpu", trackEventLog: true });
     state.currentPlayer = "cpu";
@@ -223,6 +307,52 @@ describe("white v2 opponent knowledge", () => {
     expect(stored.action.deckTopOrderInstanceIds).toHaveLength(5);
     expect(stored.action.deckTopOrderInstanceIds).not.toContain("info:cpu:deck:0:card_047");
     expect(applyStoredAiDecision(first, stored)).toEqual(applied);
+  });
+
+  it("strips unknown-composition omniscient Sort Card details before live apply and journal replay", () => {
+    const state = createInitialGame(78133, { firstPlayer: "cpu", trackEventLog: true });
+    state.currentPlayer = "cpu";
+    state.players.cpu.stones = 1;
+    state.players.cpu.masterHp = 1;
+    state.players.cpu.hand = [{ cardId: "card_115", instanceId: "cpu-unknown-sort" }];
+    state.players.cpu.deck = ["card_047", "card_001", "card_133", "card_051", "card_006"].map(
+      (cardId, index) => ({ cardId, instanceId: `cpu-unknown-top-${index}` }),
+    );
+    state.players.player.hand = [];
+    for (const slot of Object.values(state.slots)) delete slot.monster;
+
+    const decision = chooseCpuDecision(state, {
+      profile: "omniscient",
+      opponentKnowledgePolicy: "unknown_composition",
+      tuning: { weights: { genericMagicCost: -1000 } },
+    });
+    expect(decision.type).toBe("magic");
+    if (decision.type !== "magic") return;
+    expect(decision.action.handInstanceId).toBe("cpu-unknown-sort");
+    expect(decision.action.deckTopOrderInstanceIds).toBeUndefined();
+
+    const actual = applyCpuDecision(state, decision);
+    const stored = actual.aiDecisionHistory?.at(-1)?.decision;
+    expect(stored?.type).toBe("magic");
+    if (stored?.type !== "magic") return;
+    expect(stored.action.deckTopOrderInstanceIds).toEqual(
+      actual.players.cpu.deck.slice(0, 5).map((card) => card.instanceId),
+    );
+    expect(stored.action.deckTopOrderInstanceIds).not.toContain("info:cpu:deck:0:card_047");
+    expect(applyStoredAiDecision(state, stored)).toEqual(actual);
+
+    const created = createBattleJournal(state);
+    expect(created.ok).toBe(true);
+    if (!created.ok) return;
+    const payload = extractAiDecisionCommand(state, actual);
+    expect(payload.ok).toBe(true);
+    if (!payload.ok) return;
+    const appended = appendBattleCommand(created.value, state, actual, payload.value);
+    expect(appended.ok).toBe(true);
+    if (!appended.ok) return;
+    const replay = seekBattleJournal(appended.value, 1);
+    expect(replay.ok).toBe(true);
+    if (replay.ok) expect(replay.value.state).toEqual(actual);
   });
 });
 

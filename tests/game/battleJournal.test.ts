@@ -1,7 +1,9 @@
 import { describe, expect, it } from "vitest";
 import { applyCpuDecision, applyStoredAiDecision, chooseCpuDecision } from "../../src/game/cpuAi";
-import { appendAiDecisionReviewEntry, appendHumanActionReviewEntry } from "../../src/game/aiReviewTrace";
-import { getCardDef, getMonsterDef } from "../../src/game/cards";
+import { appendAiDecisionReviewEntry, appendControlledHumanActionReviewEntry, appendHumanActionReviewEntry } from "../../src/game/aiReviewTrace";
+import { getCardDef, getCardPool, getMonsterDef } from "../../src/game/cards";
+import { listExperimentalMasterActionCommands } from "../../src/game/experimentalMasters";
+import type { ExperimentContextV1 } from "../../src/game/experimentalContext";
 import {
   attackWithCommand,
   createInitialGame,
@@ -25,11 +27,13 @@ import {
   markBattleJournalIncomplete,
   parseBattleJournal,
   seekBattleJournal,
+  seekBattleJournalAtCursors,
   serializeBattleJournal,
 } from "../../src/replay/battleJournal";
 import { isValidHumanAction } from "../../src/replay/schema";
 import type { GameState, HumanActionSnapshot, MonsterState, PlayerId } from "../../src/game/types";
 import type { BattleJournal } from "../../src/replay/types";
+import type { BattleJournalMetadataV2 } from "../../src/replay/types";
 
 function initialState(firstPlayer: "player" | "cpu" = "player"): GameState {
   return createInitialGame(12345, { firstPlayer, trackEventLog: true });
@@ -95,6 +99,199 @@ function verifyHumanCommandRoundTrip(before: GameState, action: HumanActionSnaps
 }
 
 describe("battle command journal", () => {
+  it("keeps v1 legacy shape while v2 records fixed controllers and controlled-seat human history", () => {
+    const before = initialState("player");
+    const metadata: BattleJournalMetadataV2 = {
+      controllerBySeat: { player: "human", cpu: "cpu" },
+      opponentKnowledgePolicy: "known_deck",
+    };
+    const v1 = createBattleJournal(before);
+    const v2 = createBattleJournal(before, metadata);
+    expect(v1.ok && v1.value.schemaVersion).toBe(1);
+    expect(v2.ok && v2.value.schemaVersion).toBe(2);
+    if (!v2.ok) return;
+    expect(v2.value.metadata).toEqual(metadata);
+
+    const action: HumanActionSnapshot = { type: "end_turn" };
+    const after = endTurn(before);
+    appendControlledHumanActionReviewEntry(after, before, action, metadata.controllerBySeat);
+    const appended = appendBattleCommand(v2.value, before, after, { controller: "human", action });
+    expect(appended.ok, appended.ok ? "" : appended.error.message).toBe(true);
+    if (!appended.ok) return;
+    const replay = seekBattleJournal(appended.value, 1);
+    expect(replay.ok, replay.ok ? "" : replay.error.message).toBe(true);
+    if (replay.ok) expect(replay.value.state).toEqual(after);
+
+    const wrongController = appendBattleCommand(v2.value, before, after, { controller: "ai", decision: {
+      type: "end_turn", reason: "wrong seat controller", score: 0,
+    } });
+    expect(wrongController).toMatchObject({ ok: false, error: { code: "INVALID_COMMAND" } });
+    if (appended.ok) {
+      const imported = parseBattleJournal(JSON.stringify(appended.value));
+      expect(imported.ok, imported.ok ? "" : imported.error.message).toBe(true);
+    }
+  });
+
+  it("replays v2 CPU commands using the CPU-to-ai command mapping", () => {
+    const before = initialState("cpu");
+    const metadata: BattleJournalMetadataV2 = {
+      controllerBySeat: { player: "human", cpu: "cpu" },
+      opponentKnowledgePolicy: "known_deck",
+    };
+    const created = createBattleJournal(before, metadata);
+    expect(created.ok && created.value.schemaVersion).toBe(2);
+    if (!created.ok) return;
+    const decision = { type: "end_turn" as const, reason: "v2 CPU mapping", score: 1 };
+    const after = applyCpuDecision(before, decision, { reviewActor: "cpu" });
+    const extracted = extractAiDecisionCommand(before, after, metadata);
+    expect(extracted.ok, extracted.ok ? "" : extracted.error.message).toBe(true);
+    if (!extracted.ok) return;
+    const appended = appendBattleCommand(created.value, before, after, extracted.value);
+    expect(appended.ok, appended.ok ? "" : appended.error.message).toBe(true);
+    if (!appended.ok) return;
+    expect(appended.value.commands[0]).toMatchObject({ controller: "ai", playerId: "cpu" });
+    const replay = seekBattleJournal(appended.value, 1);
+    expect(replay.ok, replay.ok ? "" : replay.error.message).toBe(true);
+    if (replay.ok) expect(replay.value.state).toEqual(after);
+  });
+
+  it("records and replays a concrete experimental CPU action without re-running its chooser", () => {
+    const context: ExperimentContextV1 = {
+      format: "isdf-card-hero-experiment-context",
+      version: 1,
+      rulesProfileId: "experimental-decoy-timing-v1",
+      masterOverlayBySeat: { cpu: "timing" },
+    };
+    const metadata: BattleJournalMetadataV2 = {
+      controllerBySeat: { player: "human", cpu: "cpu" },
+      experimentalContext: context,
+      opponentKnowledgePolicy: "known_deck",
+    };
+    const before = initialState("cpu");
+    before.players.cpu.stones = 5;
+    const cardIndex = before.players.cpu.deck.findIndex((card) => {
+      const definition = getCardDef(card.cardId);
+      return definition.type === "monster" && getCardPool(definition) === "normal";
+    });
+    expect(cardIndex).toBeGreaterThanOrEqual(0);
+    const [card] = before.players.cpu.deck.splice(cardIndex, 1);
+    const definition = getMonsterDef(card.cardId);
+    before.slots.cpu_back_left.monster = {
+      ...activeMonster(card.cardId, "cpu", { hp: definition.levels[0].maxHp, actionLimit: definition.actionLimit ?? 1 }),
+      status: "prepared",
+    };
+
+    const option = listExperimentalMasterActionCommands(before, context).find((candidate) => candidate.actionId === "quick_call");
+    expect(option).toBeDefined();
+    const created = createBattleJournal(before, metadata);
+    expect(created.ok).toBe(true);
+    if (!created.ok || !option) return;
+    const decision = {
+      type: "experimental_master_action" as const,
+      ...option,
+      reason: "stored experimental Quick Call",
+      score: 7,
+    };
+    const after = applyCpuDecision(before, decision, { experimentalContext: context, reviewActor: "cpu" });
+    const concrete = extractAiDecisionCommand(before, after, metadata);
+    expect(concrete.ok).toBe(true);
+    if (!concrete.ok) return;
+    const appended = appendBattleCommand(created.value, before, after, concrete.value);
+    expect(appended.ok, appended.ok ? "" : appended.error.message).toBe(true);
+    if (!appended.ok) return;
+    const serialized = serializeBattleJournal(appended.value);
+    expect(serialized.ok).toBe(true);
+    if (!serialized.ok) return;
+    const parsed = parseBattleJournal(serialized.value);
+    expect(parsed.ok, parsed.ok ? "" : parsed.error.message).toBe(true);
+    if (!parsed.ok) return;
+    const replay = seekBattleJournal(parsed.value, 1);
+    expect(replay.ok, replay.ok ? "" : replay.error.message).toBe(true);
+    if (replay.ok) expect(replay.value.state).toEqual(after);
+    expect(() => applyCpuDecision(before, {
+      ...decision,
+      master: "decoy",
+      actionId: "provoke",
+    }, { experimentalContext: context, reviewActor: "cpu" })).toThrow();
+  });
+
+  it("keeps the legacy pending-owner/current-player AI replay hash exact", () => {
+    const before = createInitialGame(7001, { firstPlayer: "cpu", trackEventLog: true });
+    const cpuCard = before.players.cpu.hand.find((card) => card.cardId === "card_046");
+    expect(cpuCard?.instanceId).toBe("cpu_card_046_2");
+    if (!cpuCard) return;
+    let pending = summonMonster(before, cpuCard.instanceId, "cpu_front_left");
+    pending.slots.cpu_front_left.monster!.status = "active";
+    pending.currentPlayer = "player";
+    pending.pendingLevelUp = { playerId: "cpu", attackerSlotKey: "cpu_front_left", maxLevels: 1 };
+    const decision = { type: "resolve_level_up" as const, levels: 0, reason: "legacy pending owner mismatch", score: 0 };
+    const after = applyStoredAiDecision(pending, decision);
+    expect(hashBattleState(pending)).toBe("dual32-v2:884f55c699db5714");
+    expect(hashBattleState(after)).toBe("dual32-v2:263a693370572b83");
+    const created = createBattleJournal(pending);
+    expect(created.ok).toBe(true);
+    if (!created.ok) return;
+    const appended = appendBattleCommand(created.value, pending, after, { controller: "ai", decision });
+    expect(appended.ok, appended.ok ? "" : appended.error.message).toBe(true);
+    if (!appended.ok) return;
+    expect(appended.value.commands[0].playerId).toBe("player");
+    const replay = seekBattleJournal(appended.value, 1);
+    expect(replay.ok, replay.ok ? "" : replay.error.message).toBe(true);
+    if (replay.ok) expect(replay.value.state).toEqual(after);
+  });
+
+  it("replays v2 pending-owner actions by effective seat for both human and CPU controllers", () => {
+    const makePending = () => {
+      const state = createInitialGame(7001, { firstPlayer: "cpu", trackEventLog: true });
+      const card = state.players.cpu.hand.find((entry) => entry.cardId === "card_046");
+      if (!card) throw new Error("Expected CPU card_046 fixture.");
+      const pending = summonMonster(state, card.instanceId, "cpu_front_left");
+      pending.slots.cpu_front_left.monster!.status = "active";
+      pending.currentPlayer = "player";
+      pending.pendingLevelUp = { playerId: "cpu", attackerSlotKey: "cpu_front_left", maxLevels: 1 };
+      return pending;
+    };
+    const action: HumanActionSnapshot = { type: "resolve_level_up", levels: 0 };
+    const humanMeta: BattleJournalMetadataV2 = {
+      controllerBySeat: { player: "cpu", cpu: "human" },
+      opponentKnowledgePolicy: "known_deck",
+    };
+    const humanBefore = makePending();
+    const humanJournal = createBattleJournal(humanBefore, humanMeta);
+    expect(humanJournal.ok).toBe(true);
+    if (!humanJournal.ok) return;
+    const humanAfter = resolveLevelUp(humanBefore, 0);
+    appendControlledHumanActionReviewEntry(humanAfter, humanBefore, action, humanMeta.controllerBySeat);
+    const humanAppend = appendBattleCommand(humanJournal.value, humanBefore, humanAfter, { controller: "human", action });
+    expect(humanAppend.ok, humanAppend.ok ? "" : humanAppend.error.message).toBe(true);
+    if (!humanAppend.ok) return;
+    expect(humanAppend.value.commands[0].playerId).toBe("cpu");
+    const humanReplay = seekBattleJournal(humanAppend.value, 1);
+    expect(humanReplay.ok, humanReplay.ok ? "" : humanReplay.error.message).toBe(true);
+    if (humanReplay.ok) expect(humanReplay.value.state).toEqual(humanAfter);
+
+    const cpuMeta: BattleJournalMetadataV2 = {
+      controllerBySeat: { player: "human", cpu: "cpu" },
+      opponentKnowledgePolicy: "known_deck",
+    };
+    const cpuBefore = makePending();
+    const cpuJournal = createBattleJournal(cpuBefore, cpuMeta);
+    expect(cpuJournal.ok).toBe(true);
+    if (!cpuJournal.ok) return;
+    const decision = { type: "resolve_level_up" as const, levels: 0, reason: "v2 pending-owner", score: 0 };
+    const cpuAfter = applyCpuDecision(cpuBefore, decision, { reviewActor: "cpu" });
+    const cpuPayload = extractAiDecisionCommand(cpuBefore, cpuAfter, cpuMeta);
+    expect(cpuPayload.ok, cpuPayload.ok ? "" : cpuPayload.error.message).toBe(true);
+    if (!cpuPayload.ok) return;
+    const cpuAppend = appendBattleCommand(cpuJournal.value, cpuBefore, cpuAfter, cpuPayload.value);
+    expect(cpuAppend.ok, cpuAppend.ok ? "" : cpuAppend.error.message).toBe(true);
+    if (!cpuAppend.ok) return;
+    expect(cpuAppend.value.commands[0].playerId).toBe("cpu");
+    const cpuReplay = seekBattleJournal(cpuAppend.value, 1);
+    expect(cpuReplay.ok, cpuReplay.ok ? "" : cpuReplay.error.message).toBe(true);
+    if (cpuReplay.ok) expect(cpuReplay.value.state).toEqual(cpuAfter);
+  });
+
   it("round-trips concrete human commands through the actual rules dispatcher", () => {
     const attack = initialState();
     attack.slots.player_front_left.monster = activeMonster("polyspinner", "player");
@@ -406,6 +603,38 @@ describe("battle command journal", () => {
     expect(replay.value.state.aiDecisionHistory).toEqual(actualAfterAi.aiDecisionHistory);
   });
 
+  it("returns multiple cursor snapshots from one fully validated replay pass", () => {
+    const start = initialState();
+    const created = createBattleJournal(start);
+    expect(created.ok).toBe(true);
+    if (!created.ok) return;
+    const first = appendHumanEndTurn(created.value, start);
+    const decision = { type: "end_turn" as const, reason: "multi cursor", score: 0 };
+    const secondAfter = applyStoredAiDecision(first.state, decision);
+    const payload = extractAiDecisionCommand(first.state, secondAfter);
+    expect(payload.ok).toBe(true);
+    if (!payload.ok) return;
+    const second = appendBattleCommand(first.journal, first.state, secondAfter, payload.value);
+    expect(second.ok).toBe(true);
+    if (!second.ok) return;
+    const snapshots = seekBattleJournalAtCursors(second.value, [2, 0, 1]);
+    expect(snapshots.ok, snapshots.ok ? "" : snapshots.error.message).toBe(true);
+    if (!snapshots.ok) return;
+    expect(snapshots.value.get(0)?.state).toEqual(start);
+    expect(snapshots.value.get(1)?.state).toEqual(first.state);
+    expect(snapshots.value.get(2)?.state).toEqual(secondAfter);
+    for (const cursor of [0, 1, 2]) {
+      const single = seekBattleJournal(second.value, cursor);
+      expect(single.ok).toBe(true);
+      if (single.ok) expect(snapshots.value.get(cursor)).toEqual(single.value);
+    }
+    const malformed = structuredClone(second.value);
+    malformed.commands[0].sequence = 99;
+    expect(seekBattleJournalAtCursors(malformed, [0, 1])).toMatchObject({ ok: false, error: { code: "INVALID_JOURNAL" } });
+    const unknownRoot = { ...second.value, stateSummary: "unexpected" };
+    expect(seekBattleJournalAtCursors(unknownRoot, [0, 1])).toMatchObject({ ok: false, error: { code: "INVALID_JOURNAL" } });
+  });
+
   it("keeps seek and branch pure and leaves the original journal unchanged", () => {
     const start = initialState();
     const created = createBattleJournal(start);
@@ -424,6 +653,17 @@ describe("battle command journal", () => {
     expect(branch.value.commands).toHaveLength(0);
     expect(one.journal).toEqual(beforeBranch);
     expect(one.journal.commands).toHaveLength(1);
+  });
+
+  it("rejects a branch when a semantically corrupt command exists after the selected cursor", () => {
+    const start = initialState();
+    const created = createBattleJournal(start);
+    expect(created.ok).toBe(true);
+    if (!created.ok) return;
+    const one = appendHumanEndTurn(created.value, start);
+    const corrupted = structuredClone(one.journal);
+    corrupted.commands[0].afterHash = "dual32-v2:0000000000000000";
+    expect(branchBattleJournal(corrupted, 0)).toMatchObject({ ok: false, error: { code: "HASH_MISMATCH" } });
   });
 
   it("imports only complete valid journals and rejects corrupt state, unknown actions, and legacy reports", () => {

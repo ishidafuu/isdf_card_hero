@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" role="img" aria-labelledby="title">
+  <title id="title">Seat two sigil</title>
+  <circle cx="64" cy="64" r="58" fill="#202127" stroke="#d09a59" stroke-width="5"/>
+  <path d="M64 23 98 42v44l-34 19-34-19V42z" fill="#553c32" stroke="#69b9a9" stroke-width="4"/>
+  <path d="m47 49 17 10 17-10v25L64 86 47 74z" fill="#182d36" stroke="#e0bd7c" stroke-width="4" stroke-linejoin="round"/>
+</svg>

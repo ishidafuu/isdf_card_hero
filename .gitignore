@@ -7,3 +7,7 @@ playwright-report
 .idea/
 .DS_Store
 *.local
+# Local-only generated art source files and private provenance; publish only the
+# reviewed, normalized card-art manifest and selected assets under public/art/.
+/output/card-art-staging/
+/docs/art-staging/

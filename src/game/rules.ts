@@ -26,6 +26,7 @@ import {
 } from "./ruleEngine/field";
 import { drillBreakPartnerSlotKey } from "./ruleEngine/drillBreak";
 import { appendLog, appendRandomResultLog } from "./ruleEngine/log";
+import { getEffectiveActor } from "./seatControl";
 import {
   createDamageContext,
   levelUpCapacityForMonster,
@@ -217,13 +218,15 @@ export function endTurnWithHandLimitDiscards(state: GameState, handInstanceIds: 
 export function runCpuStep(state: GameState, aiOptions: CpuAiOptions = {}): GameState {
   const next = cloneState(state);
   if (
-    next.currentPlayer !== "cpu" ||
-    next.winner ||
-    (next.pendingLevelUp && next.pendingLevelUp.playerId !== "cpu")
+    getEffectiveActor(next) !== "cpu" ||
+    next.winner
   ) {
     return next;
   }
-  return applyCpuDecision(next, chooseCpuDecision(next, aiOptions));
+  return applyCpuDecision(next, chooseCpuDecision(next, aiOptions), {
+    experimentalContext: aiOptions.experimentalContext,
+    reviewActor: aiOptions.reviewActorByPendingOwner ? getEffectiveActor(next) : next.currentPlayer,
+  });
 }
 
 export function runAutoStep(state: GameState, aiOptions: CpuAiOptions = {}): GameState {
@@ -231,7 +234,10 @@ export function runAutoStep(state: GameState, aiOptions: CpuAiOptions = {}): Gam
     return cloneState(state);
   }
   const next = cloneState(state);
-  return applyCpuDecision(next, chooseCpuDecision(next, aiOptions));
+  return applyCpuDecision(next, chooseCpuDecision(next, aiOptions), {
+    experimentalContext: aiOptions.experimentalContext,
+    reviewActor: aiOptions.reviewActorByPendingOwner ? getEffectiveActor(next) : next.currentPlayer,
+  });
 }
 
 export function summonMonster(

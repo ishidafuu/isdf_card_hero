@@ -5,9 +5,9 @@
       "x": 0,
       "y": 0,
       "width": 1280,
-      "height": 1028.09375,
+      "height": 1114.09375,
       "widthRatio": 1,
-      "heightRatio": 1.427907986111111
+      "heightRatio": 1.5473524305555555
     },
     "color": "rgb(29, 37, 39)",
     "backgroundColor": "rgba(0, 0, 0, 0)",
@@ -19,19 +19,19 @@
       "x": 16,
       "y": 16,
       "width": 1248,
-      "height": 94,
+      "height": 180,
       "widthRatio": 0.975,
-      "heightRatio": 0.13055555555555556
+      "heightRatio": 0.25
     },
     "color": "rgb(29, 37, 39)",
     "backgroundColor": "rgba(0, 0, 0, 0)",
-    "borderRadius": "0px"
+    "borderRadius": "12px"
   },
   {
     "selector": ".mode-navigation",
     "rect": {
-      "x": 262.640625,
-      "y": 24,
+      "x": 846.25,
+      "y": 47,
       "width": 270.5625,
       "height": 34,
       "widthRatio": 0.211376953125,
@@ -45,7 +45,7 @@
     "selector": ".battle-area",
     "rect": {
       "x": 16,
-      "y": 124,
+      "y": 210,
       "width": 808,
       "height": 826.09375,
       "widthRatio": 0.63125,
@@ -59,7 +59,7 @@
     "selector": ".battle-primary",
     "rect": {
       "x": 16,
-      "y": 124,
+      "y": 210,
       "width": 808,
       "height": 826.09375,
       "widthRatio": 0.63125,
@@ -73,7 +73,7 @@
     "selector": ".board",
     "rect": {
       "x": 90,
-      "y": 124,
+      "y": 210,
       "width": 660,
       "height": 396.34375,
       "widthRatio": 0.515625,
@@ -87,7 +87,7 @@
     "selector": ".battle-control-panel",
     "rect": {
       "x": 16,
-      "y": 532.34375,
+      "y": 618.34375,
       "width": 808,
       "height": 183.171875,
       "widthRatio": 0.63125,
@@ -101,7 +101,7 @@
     "selector": ".hand-list",
     "rect": {
       "x": 29,
-      "y": 795.515625,
+      "y": 881.515625,
       "width": 782,
       "height": 141.578125,
       "widthRatio": 0.6109375,

@@ -3,6 +3,7 @@ import { evaluateState } from "./cpuAi";
 import { MASTER_ACTION_DEFS } from "./masters";
 import { PLAYER_SLOT_ORDER } from "./ruleEngine/constants";
 import { cloneState } from "./ruleEngine/state";
+import { appendLog } from "./ruleEngine/log";
 import {
   getMagicSecondaryTargets,
   getMagicTargets,
@@ -750,7 +751,7 @@ function playTempoQuickCall(
   monster.actionCount = 0;
   monster.actionLimit = getMonsterDef(monster.cardId).actionLimit ?? 1;
   monster.masterAttackBlockedUntilTurnEnd = true;
-  next.log.push(`${labPlayerLabel(playerId)}のクイックコール: ${getCardName(monster.cardId)}が登場した`);
+  appendLog(next, `${labPlayerLabel(playerId)}のクイックコール: ${getCardName(monster.cardId)}が登場した`);
   return next;
 }
 
@@ -799,11 +800,11 @@ function playTempoShift(
   if (swapTarget) {
     toSlot.monster = mover;
     fromSlot.monster = swapTarget;
-    next.log.push(`${labPlayerLabel(playerId)}のシフト: ${getCardName(mover.cardId)}と${getCardName(swapTarget.cardId)}を入れ替えた`);
+    appendLog(next, `${labPlayerLabel(playerId)}のシフト: ${getCardName(mover.cardId)}と${getCardName(swapTarget.cardId)}を入れ替えた`);
   } else {
     toSlot.monster = mover;
     delete fromSlot.monster;
-    next.log.push(`${labPlayerLabel(playerId)}のシフト: ${getCardName(mover.cardId)}を移動した`);
+    appendLog(next, `${labPlayerLabel(playerId)}のシフト: ${getCardName(mover.cardId)}を移動した`);
   }
 
   return next;

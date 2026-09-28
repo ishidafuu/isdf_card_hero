@@ -1,0 +1,5282 @@
+{
+  "generatedAt": "2026-09-28T15:28:25.262Z",
+  "options": {
+    "seedStart": 400,
+    "count": 10,
+    "maxSteps": 500,
+    "maxTurns": 120,
+    "markdownPath": "docs/ai_playtest_reports/analysis/2026-09-28_white_v2_seat_benchmark.md",
+    "jsonPath": "docs/ai_playtest_reports/analysis/2026-09-28_white_v2_seat_benchmark.json",
+    "candidateProfile": "white_v2",
+    "whiteBaselineProfile": "white",
+    "blackProfile": "strong",
+    "whiteDeckPreset": "master-lab-white-1377-death-sheep3",
+    "blackDeckPreset": "black-pressure",
+    "games": 40
+  },
+  "games": [
+    {
+      "matchup": "white-baseline",
+      "seed": 400,
+      "candidateSeat": "cpu",
+      "playerProfile": "white",
+      "cpuProfile": "white_v2",
+      "playerMaster": "white",
+      "cpuMaster": "white",
+      "playerDeckPreset": "master-lab-white-1377-death-sheep3",
+      "cpuDeckPreset": "master-lab-white-1377-death-sheep3",
+      "winner": "cpu",
+      "winnerProfile": "white_v2",
+      "status": "completed",
+      "steps": 222,
+      "turns": 24,
+      "elapsedMs": 164563,
+      "partialLevelUpResolutionSteps": 0,
+      "issueCount": 0,
+      "warningCount": 10,
+      "issues": [
+        {
+          "kind": "suspicious_decision",
+          "severity": "warning",
+          "step": 24,
+          "turnNumber": 4,
+          "message": "ended turn despite strong candidate: attack:cpu_front_right:self_bomb->monster:player_front_right"
+        },
+        {
+          "kind": "suspicious_decision",
+          "severity": "warning",
+          "step": 33,
+          "turnNumber": 5,
+          "message": "ended turn despite strong candidate: attack:cpu_back_left:スパイクボール->monster:player_front_right"
+        },
+        {
+          "kind": "suspicious_decision",
+          "severity": "warning",
+          "step": 42,
+          "turnNumber": 6,
+          "message": "ended turn despite strong candidate: attack:cpu_front_left:attack->monster:player_front_left"
+        },
+        {
+          "kind": "suspicious_decision",
+          "severity": "warning",
+          "step": 50,
+          "turnNumber": 7,
+          "message": "ended turn despite strong candidate: attack:cpu_back_left:スパイクボール->monster:player_front_left"
+        },
+        {
+          "kind": "suspicious_decision",
+          "severity": "warning",
+          "step": 55,
+          "turnNumber": 8,
+          "message": "ended turn despite strong candidate: attack:cpu_back_left:スパイクボール->monster:player_front_left"
+        },
+        {
+          "kind": "suspicious_decision",
+          "severity": "warning",
+          "step": 76,
+          "turnNumber": 10,
+          "message": "ended turn despite strong candidate: attack:cpu_front_right:wild_claw->monster:player_back_right"
+        },
+        {
+          "kind": "suspicious_decision",
+          "severity": "warning",
+          "step": 88,
+          "turnNumber": 11,
+          "message": "ended turn despite strong candidate: attack:cpu_front_left:attack->monster:player_front_left"
+        },
+        {
+          "kind": "suspicious_decision",
+          "severity": "warning",
+          "step": 96,
+          "turnNumber": 12,
+          "message": "ended turn despite strong candidate: attack:cpu_front_right:self_bomb->monster:player_front_right"
+        },
+        {
+          "kind": "suspicious_decision",
+          "severity": "warning",
+          "step": 101,
+          "turnNumber": 13,
+          "message": "ended turn despite strong candidate: attack:cpu_back_right:wild_claw->monster:player_front_left"
+        },
+        {
+          "kind": "suspicious_decision",
+          "severity": "warning",
+          "step": 106,
+          "turnNumber": 14,
+          "message": "ended turn despite strong candidate: attack:cpu_back_left:スパイクボール->monster:player_front_left"
+        }
+      ],
+      "stateSummary": {
+        "currentPlayer": "cpu",
+        "turnNumber": 24,
+        "winner": "cpu",
+        "pendingLevelUp": false,
+        "players": {
+          "player": {
+            "masterId": "white",
+            "hp": 0,
+            "stones": 12,
+            "hand": 5,
+            "deck": 2,
+            "discard": 20
+          },
+          "cpu": {
+            "masterId": "white",
+            "hp": 9,
+            "stones": 17,
+            "hand": 6,
+            "deck": 1,
+            "discard": 20
+          }
+        },
+        "slots": [
+          {
+            "slotKey": "player_front_left",
+            "card": "card_133",
+            "name": "デスシープ",
+            "owner": "player",
+            "hp": 5,
+            "level": 1,
+            "status": "active",
+            "actions": "0/1",
+            "focused": true,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "player_front_right",
+            "card": "card_051",
+            "name": "ピグミィ",
+            "owner": "player",
+            "hp": 3,
+            "level": 2,
+            "status": "active",
+            "actions": "0/2",
+            "focused": true,
+            "berserkPower": false,
+            "shielded": true
+          },
+          {
+            "slotKey": "player_back_left",
+            "card": "bomuzo",
+            "name": "ボムゾウ",
+            "owner": "player",
+            "hp": 6,
+            "level": 1,
+            "status": "active",
+            "actions": "0/1",
+            "focused": true,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "player_back_right"
+          },
+          {
+            "slotKey": "cpu_front_left",
+            "card": "card_051",
+            "name": "ピグミィ",
+            "owner": "cpu",
+            "hp": 3,
+            "level": 1,
+            "status": "active",
+            "actions": "0/2",
+            "focused": true,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "cpu_front_right",
+            "card": "card_047",
+            "name": "真勇者ダイン",
+            "owner": "cpu",
+            "hp": 4,
+            "level": 3,
+            "status": "active",
+            "actions": "1/1",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "cpu_back_left"
+          },
+          {
+            "slotKey": "cpu_back_right",
+            "card": "yanbaru",
+            "name": "ヤンバル",
+            "owner": "cpu",
+            "hp": 3,
+            "level": 1,
+            "status": "active",
+            "actions": "0/1",
+            "focused": true,
+            "berserkPower": false,
+            "shielded": false
+          }
+        ]
+      }
+    },
+    {
+      "matchup": "white-baseline",
+      "seed": 401,
+      "candidateSeat": "cpu",
+      "playerProfile": "white",
+      "cpuProfile": "white_v2",
+      "playerMaster": "white",
+      "cpuMaster": "white",
+      "playerDeckPreset": "master-lab-white-1377-death-sheep3",
+      "cpuDeckPreset": "master-lab-white-1377-death-sheep3",
+      "winner": "player",
+      "winnerProfile": "white",
+      "status": "completed",
+      "steps": 219,
+      "turns": 26,
+      "elapsedMs": 148360,
+      "partialLevelUpResolutionSteps": 0,
+      "issueCount": 0,
+      "warningCount": 1,
+      "issues": [
+        {
+          "kind": "suspicious_decision",
+          "severity": "warning",
+          "step": 161,
+          "turnNumber": 15,
+          "message": "ended turn despite strong candidate: attack:cpu_front_left:attack->monster:player_front_left"
+        }
+      ],
+      "stateSummary": {
+        "currentPlayer": "player",
+        "turnNumber": 26,
+        "winner": "player",
+        "pendingLevelUp": false,
+        "players": {
+          "player": {
+            "masterId": "white",
+            "hp": 9,
+            "stones": 25,
+            "hand": 6,
+            "deck": 0,
+            "discard": 20
+          },
+          "cpu": {
+            "masterId": "white",
+            "hp": 0,
+            "stones": 35,
+            "hand": 5,
+            "deck": 0,
+            "discard": 24
+          }
+        },
+        "slots": [
+          {
+            "slotKey": "player_front_left",
+            "card": "card_047",
+            "name": "真勇者ダイン",
+            "owner": "player",
+            "hp": 6,
+            "level": 1,
+            "status": "active",
+            "actions": "1/1",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "player_front_right",
+            "card": "card_133",
+            "name": "デスシープ",
+            "owner": "player",
+            "hp": 6,
+            "level": 1,
+            "status": "active",
+            "actions": "1/1",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "player_back_left",
+            "card": "card_051",
+            "name": "ピグミィ",
+            "owner": "player",
+            "hp": 3,
+            "level": 2,
+            "status": "active",
+            "actions": "0/2",
+            "focused": true,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "player_back_right",
+            "card": "card_051",
+            "name": "ピグミィ",
+            "owner": "player",
+            "hp": 3,
+            "level": 1,
+            "status": "active",
+            "actions": "0/2",
+            "focused": true,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "cpu_front_left",
+            "card": "bomuzo",
+            "name": "ボムゾウ",
+            "owner": "cpu",
+            "hp": 6,
+            "level": 1,
+            "status": "active",
+            "actions": "0/1",
+            "focused": true,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "cpu_front_right"
+          },
+          {
+            "slotKey": "cpu_back_left"
+          },
+          {
+            "slotKey": "cpu_back_right"
+          }
+        ]
+      }
+    },
+    {
+      "matchup": "white-baseline",
+      "seed": 402,
+      "candidateSeat": "cpu",
+      "playerProfile": "white",
+      "cpuProfile": "white_v2",
+      "playerMaster": "white",
+      "cpuMaster": "white",
+      "playerDeckPreset": "master-lab-white-1377-death-sheep3",
+      "cpuDeckPreset": "master-lab-white-1377-death-sheep3",
+      "winner": "cpu",
+      "winnerProfile": "white_v2",
+      "status": "completed",
+      "steps": 282,
+      "turns": 27,
+      "elapsedMs": 205196,
+      "partialLevelUpResolutionSteps": 0,
+      "issueCount": 0,
+      "warningCount": 3,
+      "issues": [
+        {
+          "kind": "suspicious_decision",
+          "severity": "warning",
+          "step": 109,
+          "turnNumber": 10,
+          "message": "ended turn despite strong candidate: attack:cpu_front_left:attack->monster:player_front_left"
+        },
+        {
+          "kind": "suspicious_decision",
+          "severity": "warning",
+          "step": 123,
+          "turnNumber": 11,
+          "message": "ended turn despite strong candidate: attack:cpu_front_right:self_bomb->monster:player_front_right"
+        },
+        {
+          "kind": "suspicious_decision",
+          "severity": "warning",
+          "step": 145,
+          "turnNumber": 13,
+          "message": "ended turn despite strong candidate: attack:cpu_front_right:self_bomb->monster:player_front_right"
+        }
+      ],
+      "stateSummary": {
+        "currentPlayer": "player",
+        "turnNumber": 27,
+        "winner": "cpu",
+        "pendingLevelUp": false,
+        "players": {
+          "player": {
+            "masterId": "white",
+            "hp": 0,
+            "stones": 31,
+            "hand": 5,
+            "deck": 0,
+            "discard": 24
+          },
+          "cpu": {
+            "masterId": "white",
+            "hp": 6,
+            "stones": 15,
+            "hand": 5,
+            "deck": 0,
+            "discard": 23
+          }
+        },
+        "slots": [
+          {
+            "slotKey": "player_front_left",
+            "card": "bomuzo",
+            "name": "ボムゾウ",
+            "owner": "player",
+            "hp": 2,
+            "level": 2,
+            "status": "active",
+            "actions": "0/1",
+            "focused": true,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "player_front_right"
+          },
+          {
+            "slotKey": "player_back_left"
+          },
+          {
+            "slotKey": "player_back_right"
+          },
+          {
+            "slotKey": "cpu_front_left"
+          },
+          {
+            "slotKey": "cpu_front_right",
+            "card": "polyspinner",
+            "name": "ポリスピナー",
+            "owner": "cpu",
+            "hp": 3,
+            "level": 1,
+            "status": "active",
+            "actions": "1/2",
+            "focused": true,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "cpu_back_left"
+          },
+          {
+            "slotKey": "cpu_back_right",
+            "card": "card_051",
+            "name": "ピグミィ",
+            "owner": "cpu",
+            "hp": 3,
+            "level": 2,
+            "status": "active",
+            "actions": "0/2",
+            "focused": true,
+            "berserkPower": false,
+            "shielded": false
+          }
+        ]
+      }
+    },
+    {
+      "matchup": "white-baseline",
+      "seed": 403,
+      "candidateSeat": "cpu",
+      "playerProfile": "white",
+      "cpuProfile": "white_v2",
+      "playerMaster": "white",
+      "cpuMaster": "white",
+      "playerDeckPreset": "master-lab-white-1377-death-sheep3",
+      "cpuDeckPreset": "master-lab-white-1377-death-sheep3",
+      "winner": "player",
+      "winnerProfile": "white",
+      "status": "completed",
+      "steps": 182,
+      "turns": 17,
+      "elapsedMs": 104570,
+      "partialLevelUpResolutionSteps": 0,
+      "issueCount": 0,
+      "warningCount": 1,
+      "issues": [
+        {
+          "kind": "suspicious_decision",
+          "severity": "warning",
+          "step": 118,
+          "turnNumber": 9,
+          "message": "ended turn despite strong candidate: attack:cpu_back_right:スパイクボール->monster:player_front_left"
+        }
+      ],
+      "stateSummary": {
+        "currentPlayer": "player",
+        "turnNumber": 17,
+        "winner": "player",
+        "pendingLevelUp": false,
+        "players": {
+          "player": {
+            "masterId": "white",
+            "hp": 9,
+            "stones": 6,
+            "hand": 6,
+            "deck": 9,
+            "discard": 11
+          },
+          "cpu": {
+            "masterId": "white",
+            "hp": 0,
+            "stones": 23,
+            "hand": 5,
+            "deck": 9,
+            "discard": 15
+          }
+        },
+        "slots": [
+          {
+            "slotKey": "player_front_left",
+            "card": "card_037",
+            "name": "ドノマンティス",
+            "owner": "player",
+            "hp": 5,
+            "level": 2,
+            "status": "active",
+            "actions": "1/1",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "player_front_right",
+            "card": "card_047",
+            "name": "真勇者ダイン",
+            "owner": "player",
+            "hp": 6,
+            "level": 1,
+            "status": "active",
+            "actions": "0/1",
+            "focused": true,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "player_back_left",
+            "card": "card_037",
+            "name": "ドノマンティス",
+            "owner": "player",
+            "hp": 5,
+            "level": 1,
+            "status": "active",
+            "actions": "0/1",
+            "focused": true,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "player_back_right",
+            "card": "card_051",
+            "name": "ピグミィ",
+            "owner": "player",
+            "hp": 3,
+            "level": 2,
+            "status": "active",
+            "actions": "0/2",
+            "focused": true,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "cpu_front_left",
+            "card": "card_047",
+            "name": "真勇者ダイン",
+            "owner": "cpu",
+            "hp": 6,
+            "level": 1,
+            "status": "active",
+            "actions": "0/1",
+            "focused": true,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "cpu_front_right"
+          },
+          {
+            "slotKey": "cpu_back_left"
+          },
+          {
+            "slotKey": "cpu_back_right"
+          }
+        ]
+      }
+    },
+    {
+      "matchup": "white-baseline",
+      "seed": 404,
+      "candidateSeat": "cpu",
+      "playerProfile": "white",
+      "cpuProfile": "white_v2",
+      "playerMaster": "white",
+      "cpuMaster": "white",
+      "playerDeckPreset": "master-lab-white-1377-death-sheep3",
+      "cpuDeckPreset": "master-lab-white-1377-death-sheep3",
+      "winner": "player",
+      "winnerProfile": "white",
+      "status": "completed",
+      "steps": 271,
+      "turns": 30,
+      "elapsedMs": 173152,
+      "partialLevelUpResolutionSteps": 0,
+      "issueCount": 0,
+      "warningCount": 0,
+      "issues": [],
+      "stateSummary": {
+        "currentPlayer": "cpu",
+        "turnNumber": 30,
+        "winner": "player",
+        "pendingLevelUp": false,
+        "players": {
+          "player": {
+            "masterId": "white",
+            "hp": 6,
+            "stones": 40,
+            "hand": 5,
+            "deck": 0,
+            "discard": 21
+          },
+          "cpu": {
+            "masterId": "white",
+            "hp": 0,
+            "stones": 31,
+            "hand": 5,
+            "deck": 0,
+            "discard": 24
+          }
+        },
+        "slots": [
+          {
+            "slotKey": "player_front_left",
+            "card": "card_047",
+            "name": "真勇者ダイン",
+            "owner": "player",
+            "hp": 6,
+            "level": 1,
+            "status": "active",
+            "actions": "0/1",
+            "focused": true,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "player_front_right",
+            "card": "yanbaru",
+            "name": "ヤンバル",
+            "owner": "player",
+            "hp": 3,
+            "level": 1,
+            "status": "active",
+            "actions": "0/1",
+            "focused": true,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "player_back_left",
+            "card": "yanbaru",
+            "name": "ヤンバル",
+            "owner": "player",
+            "hp": 3,
+            "level": 1,
+            "status": "active",
+            "actions": "0/1",
+            "focused": true,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "player_back_right",
+            "card": "card_047",
+            "name": "真勇者ダイン",
+            "owner": "player",
+            "hp": 6,
+            "level": 1,
+            "status": "active",
+            "actions": "0/1",
+            "focused": true,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "cpu_front_left"
+          },
+          {
+            "slotKey": "cpu_front_right",
+            "card": "card_051",
+            "name": "ピグミィ",
+            "owner": "cpu",
+            "hp": 3,
+            "level": 2,
+            "status": "active",
+            "actions": "0/2",
+            "focused": true,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "cpu_back_left"
+          },
+          {
+            "slotKey": "cpu_back_right"
+          }
+        ]
+      }
+    },
+    {
+      "matchup": "white-baseline",
+      "seed": 405,
+      "candidateSeat": "cpu",
+      "playerProfile": "white",
+      "cpuProfile": "white_v2",
+      "playerMaster": "white",
+      "cpuMaster": "white",
+      "playerDeckPreset": "master-lab-white-1377-death-sheep3",
+      "cpuDeckPreset": "master-lab-white-1377-death-sheep3",
+      "winner": "cpu",
+      "winnerProfile": "white_v2",
+      "status": "completed",
+      "steps": 175,
+      "turns": 17,
+      "elapsedMs": 90360,
+      "partialLevelUpResolutionSteps": 0,
+      "issueCount": 0,
+      "warningCount": 2,
+      "issues": [
+        {
+          "kind": "suspicious_decision",
+          "severity": "warning",
+          "step": 100,
+          "turnNumber": 10,
+          "message": "ended turn despite strong candidate: attack:cpu_back_right:スパイクボール->monster:player_front_left"
+        },
+        {
+          "kind": "suspicious_decision",
+          "severity": "warning",
+          "step": 127,
+          "turnNumber": 12,
+          "message": "ended turn despite strong candidate: attack:cpu_front_left:attack->monster:player_front_left"
+        }
+      ],
+      "stateSummary": {
+        "currentPlayer": "cpu",
+        "turnNumber": 17,
+        "winner": "cpu",
+        "pendingLevelUp": false,
+        "players": {
+          "player": {
+            "masterId": "white",
+            "hp": 0,
+            "stones": 13,
+            "hand": 5,
+            "deck": 9,
+            "discard": 15
+          },
+          "cpu": {
+            "masterId": "white",
+            "hp": 10,
+            "stones": 10,
+            "hand": 6,
+            "deck": 8,
+            "discard": 12
+          }
+        },
+        "slots": [
+          {
+            "slotKey": "player_front_left",
+            "card": "card_047",
+            "name": "真勇者ダイン",
+            "owner": "player",
+            "hp": 6,
+            "level": 1,
+            "status": "active",
+            "actions": "0/1",
+            "focused": true,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "player_front_right"
+          },
+          {
+            "slotKey": "player_back_left"
+          },
+          {
+            "slotKey": "player_back_right"
+          },
+          {
+            "slotKey": "cpu_front_left",
+            "card": "card_133",
+            "name": "デスシープ",
+            "owner": "cpu",
+            "hp": 6,
+            "level": 1,
+            "status": "active",
+            "actions": "0/1",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "cpu_front_right",
+            "card": "card_133",
+            "name": "デスシープ",
+            "owner": "cpu",
+            "hp": 2,
+            "level": 2,
+            "status": "active",
+            "actions": "1/1",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "cpu_back_left",
+            "card": "yanbaru",
+            "name": "ヤンバル",
+            "owner": "cpu",
+            "hp": 3,
+            "level": 2,
+            "status": "active",
+            "actions": "1/1",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "cpu_back_right",
+            "card": "card_051",
+            "name": "ピグミィ",
+            "owner": "cpu",
+            "hp": 3,
+            "level": 2,
+            "status": "active",
+            "actions": "0/2",
+            "focused": true,
+            "berserkPower": false,
+            "shielded": false
+          }
+        ]
+      }
+    },
+    {
+      "matchup": "white-baseline",
+      "seed": 406,
+      "candidateSeat": "cpu",
+      "playerProfile": "white",
+      "cpuProfile": "white_v2",
+      "playerMaster": "white",
+      "cpuMaster": "white",
+      "playerDeckPreset": "master-lab-white-1377-death-sheep3",
+      "cpuDeckPreset": "master-lab-white-1377-death-sheep3",
+      "winner": "cpu",
+      "winnerProfile": "white_v2",
+      "status": "completed",
+      "steps": 298,
+      "turns": 27,
+      "elapsedMs": 224717,
+      "partialLevelUpResolutionSteps": 0,
+      "issueCount": 0,
+      "warningCount": 0,
+      "issues": [],
+      "stateSummary": {
+        "currentPlayer": "cpu",
+        "turnNumber": 27,
+        "winner": "cpu",
+        "pendingLevelUp": false,
+        "players": {
+          "player": {
+            "masterId": "white",
+            "hp": 0,
+            "stones": 17,
+            "hand": 5,
+            "deck": 0,
+            "discard": 22
+          },
+          "cpu": {
+            "masterId": "white",
+            "hp": 2,
+            "stones": 19,
+            "hand": 5,
+            "deck": 0,
+            "discard": 23
+          }
+        },
+        "slots": [
+          {
+            "slotKey": "player_front_left",
+            "card": "card_037",
+            "name": "ドノマンティス",
+            "owner": "player",
+            "hp": 5,
+            "level": 1,
+            "status": "active",
+            "actions": "1/1",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "player_front_right",
+            "card": "card_051",
+            "name": "ピグミィ",
+            "owner": "player",
+            "hp": 3,
+            "level": 2,
+            "status": "active",
+            "actions": "0/2",
+            "focused": true,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "player_back_left",
+            "card": "card_051",
+            "name": "ピグミィ",
+            "owner": "player",
+            "hp": 3,
+            "level": 1,
+            "status": "active",
+            "actions": "0/2",
+            "focused": true,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "player_back_right"
+          },
+          {
+            "slotKey": "cpu_front_left",
+            "card": "card_133",
+            "name": "デスシープ",
+            "owner": "cpu",
+            "hp": 5,
+            "level": 1,
+            "status": "active",
+            "actions": "1/1",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "cpu_front_right",
+            "card": "card_047",
+            "name": "真勇者ダイン",
+            "owner": "cpu",
+            "hp": 6,
+            "level": 2,
+            "status": "active",
+            "actions": "1/1",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "cpu_back_left"
+          },
+          {
+            "slotKey": "cpu_back_right"
+          }
+        ]
+      }
+    },
+    {
+      "matchup": "white-baseline",
+      "seed": 407,
+      "candidateSeat": "cpu",
+      "playerProfile": "white",
+      "cpuProfile": "white_v2",
+      "playerMaster": "white",
+      "cpuMaster": "white",
+      "playerDeckPreset": "master-lab-white-1377-death-sheep3",
+      "cpuDeckPreset": "master-lab-white-1377-death-sheep3",
+      "winner": "cpu",
+      "winnerProfile": "white_v2",
+      "status": "completed",
+      "steps": 168,
+      "turns": 14,
+      "elapsedMs": 85049,
+      "partialLevelUpResolutionSteps": 0,
+      "issueCount": 0,
+      "warningCount": 0,
+      "issues": [],
+      "stateSummary": {
+        "currentPlayer": "cpu",
+        "turnNumber": 14,
+        "winner": "cpu",
+        "pendingLevelUp": false,
+        "players": {
+          "player": {
+            "masterId": "white",
+            "hp": 0,
+            "stones": 10,
+            "hand": 5,
+            "deck": 12,
+            "discard": 12
+          },
+          "cpu": {
+            "masterId": "white",
+            "hp": 9,
+            "stones": 7,
+            "hand": 5,
+            "deck": 11,
+            "discard": 10
+          }
+        },
+        "slots": [
+          {
+            "slotKey": "player_front_left"
+          },
+          {
+            "slotKey": "player_front_right",
+            "card": "card_051",
+            "name": "ピグミィ",
+            "owner": "player",
+            "hp": 3,
+            "level": 2,
+            "status": "active",
+            "actions": "0/2",
+            "focused": true,
+            "berserkPower": false,
+            "shielded": true
+          },
+          {
+            "slotKey": "player_back_left"
+          },
+          {
+            "slotKey": "player_back_right"
+          },
+          {
+            "slotKey": "cpu_front_left",
+            "card": "card_047",
+            "name": "真勇者ダイン",
+            "owner": "cpu",
+            "hp": 6,
+            "level": 1,
+            "status": "active",
+            "actions": "0/1",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "cpu_front_right",
+            "card": "card_133",
+            "name": "デスシープ",
+            "owner": "cpu",
+            "hp": 6,
+            "level": 2,
+            "status": "active",
+            "actions": "1/1",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "cpu_back_left",
+            "card": "bomuzo",
+            "name": "ボムゾウ",
+            "owner": "cpu",
+            "hp": 5,
+            "level": 2,
+            "status": "active",
+            "actions": "0/1",
+            "focused": true,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "cpu_back_right",
+            "card": "card_051",
+            "name": "ピグミィ",
+            "owner": "cpu",
+            "hp": 3,
+            "level": 2,
+            "status": "active",
+            "actions": "0/2",
+            "focused": true,
+            "berserkPower": false,
+            "shielded": false
+          }
+        ]
+      }
+    },
+    {
+      "matchup": "white-baseline",
+      "seed": 408,
+      "candidateSeat": "cpu",
+      "playerProfile": "white",
+      "cpuProfile": "white_v2",
+      "playerMaster": "white",
+      "cpuMaster": "white",
+      "playerDeckPreset": "master-lab-white-1377-death-sheep3",
+      "cpuDeckPreset": "master-lab-white-1377-death-sheep3",
+      "winner": "cpu",
+      "winnerProfile": "white_v2",
+      "status": "completed",
+      "steps": 187,
+      "turns": 26,
+      "elapsedMs": 115484,
+      "partialLevelUpResolutionSteps": 0,
+      "issueCount": 0,
+      "warningCount": 5,
+      "issues": [
+        {
+          "kind": "suspicious_decision",
+          "severity": "warning",
+          "step": 22,
+          "turnNumber": 4,
+          "message": "ended turn despite strong candidate: magic:cpu_card_064_1->master:cpu"
+        },
+        {
+          "kind": "suspicious_decision",
+          "severity": "warning",
+          "step": 33,
+          "turnNumber": 5,
+          "message": "ended turn despite strong candidate: attack:cpu_front_left:self_bomb->monster:player_front_left"
+        },
+        {
+          "kind": "suspicious_decision",
+          "severity": "warning",
+          "step": 87,
+          "turnNumber": 9,
+          "message": "ended turn despite strong candidate: attack:cpu_front_left:スパイクボール->monster:player_front_right"
+        },
+        {
+          "kind": "suspicious_decision",
+          "severity": "warning",
+          "step": 122,
+          "turnNumber": 12,
+          "message": "ended turn despite strong candidate: attack:cpu_back_right:スパイクボール->monster:player_front_left"
+        },
+        {
+          "kind": "suspicious_decision",
+          "severity": "warning",
+          "step": 183,
+          "turnNumber": 26,
+          "message": "ended turn despite strong candidate: attack:cpu_front_left:attack->monster:player_front_left"
+        }
+      ],
+      "stateSummary": {
+        "currentPlayer": "cpu",
+        "turnNumber": 26,
+        "winner": "cpu",
+        "pendingLevelUp": false,
+        "players": {
+          "player": {
+            "masterId": "white",
+            "hp": 0,
+            "stones": 54,
+            "hand": 5,
+            "deck": 0,
+            "discard": 21
+          },
+          "cpu": {
+            "masterId": "white",
+            "hp": 1,
+            "stones": 54,
+            "hand": 5,
+            "deck": 0,
+            "discard": 23
+          }
+        },
+        "slots": [
+          {
+            "slotKey": "player_front_left",
+            "card": "card_051",
+            "name": "ピグミィ",
+            "owner": "player",
+            "hp": 1,
+            "level": 2,
+            "status": "active",
+            "actions": "0/2",
+            "focused": true,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "player_front_right",
+            "card": "card_037",
+            "name": "ドノマンティス",
+            "owner": "player",
+            "hp": 5,
+            "level": 1,
+            "status": "active",
+            "actions": "0/1",
+            "focused": true,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "player_back_left",
+            "card": "polyspinner",
+            "name": "ポリスピナー",
+            "owner": "player",
+            "hp": 3,
+            "level": 1,
+            "status": "active",
+            "actions": "0/2",
+            "focused": true,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "player_back_right",
+            "card": "card_047",
+            "name": "真勇者ダイン",
+            "owner": "player",
+            "hp": 6,
+            "level": 1,
+            "status": "active",
+            "actions": "0/1",
+            "focused": true,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "cpu_front_left",
+            "card": "polyspinner",
+            "name": "ポリスピナー",
+            "owner": "cpu",
+            "hp": 3,
+            "level": 1,
+            "status": "active",
+            "actions": "1/2",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "cpu_front_right",
+            "card": "card_133",
+            "name": "デスシープ",
+            "owner": "cpu",
+            "hp": 6,
+            "level": 1,
+            "status": "active",
+            "actions": "1/1",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "cpu_back_left"
+          },
+          {
+            "slotKey": "cpu_back_right"
+          }
+        ]
+      }
+    },
+    {
+      "matchup": "white-baseline",
+      "seed": 409,
+      "candidateSeat": "cpu",
+      "playerProfile": "white",
+      "cpuProfile": "white_v2",
+      "playerMaster": "white",
+      "cpuMaster": "white",
+      "playerDeckPreset": "master-lab-white-1377-death-sheep3",
+      "cpuDeckPreset": "master-lab-white-1377-death-sheep3",
+      "winner": "cpu",
+      "winnerProfile": "white_v2",
+      "status": "completed",
+      "steps": 311,
+      "turns": 31,
+      "elapsedMs": 189001,
+      "partialLevelUpResolutionSteps": 0,
+      "issueCount": 0,
+      "warningCount": 1,
+      "issues": [
+        {
+          "kind": "long_game",
+          "severity": "warning",
+          "step": 311,
+          "turnNumber": 31,
+          "message": "long game finished after 311 steps / 31 turns"
+        }
+      ],
+      "stateSummary": {
+        "currentPlayer": "player",
+        "turnNumber": 31,
+        "winner": "cpu",
+        "pendingLevelUp": false,
+        "players": {
+          "player": {
+            "masterId": "white",
+            "hp": 0,
+            "stones": 32,
+            "hand": 5,
+            "deck": 0,
+            "discard": 24
+          },
+          "cpu": {
+            "masterId": "white",
+            "hp": 2,
+            "stones": 24,
+            "hand": 5,
+            "deck": 0,
+            "discard": 23
+          }
+        },
+        "slots": [
+          {
+            "slotKey": "player_front_left",
+            "card": "card_051",
+            "name": "ピグミィ",
+            "owner": "player",
+            "hp": 3,
+            "level": 2,
+            "status": "active",
+            "actions": "0/2",
+            "focused": true,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "player_front_right"
+          },
+          {
+            "slotKey": "player_back_left"
+          },
+          {
+            "slotKey": "player_back_right"
+          },
+          {
+            "slotKey": "cpu_front_left",
+            "card": "yanbaru",
+            "name": "ヤンバル",
+            "owner": "cpu",
+            "hp": 3,
+            "level": 1,
+            "status": "active",
+            "actions": "0/1",
+            "focused": true,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "cpu_front_right"
+          },
+          {
+            "slotKey": "cpu_back_left",
+            "card": "card_051",
+            "name": "ピグミィ",
+            "owner": "cpu",
+            "hp": 3,
+            "level": 2,
+            "status": "active",
+            "actions": "0/2",
+            "focused": true,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "cpu_back_right"
+          }
+        ]
+      }
+    },
+    {
+      "matchup": "white-baseline",
+      "seed": 400,
+      "candidateSeat": "player",
+      "playerProfile": "white_v2",
+      "cpuProfile": "white",
+      "playerMaster": "white",
+      "cpuMaster": "white",
+      "playerDeckPreset": "master-lab-white-1377-death-sheep3",
+      "cpuDeckPreset": "master-lab-white-1377-death-sheep3",
+      "winner": "player",
+      "winnerProfile": "white_v2",
+      "status": "completed",
+      "steps": 159,
+      "turns": 15,
+      "elapsedMs": 84004,
+      "partialLevelUpResolutionSteps": 0,
+      "issueCount": 0,
+      "warningCount": 3,
+      "issues": [
+        {
+          "kind": "suspicious_decision",
+          "severity": "warning",
+          "step": 85,
+          "turnNumber": 8,
+          "message": "ended turn despite strong candidate: attack:player_front_right:attack->monster:cpu_front_right"
+        },
+        {
+          "kind": "suspicious_decision",
+          "severity": "warning",
+          "step": 93,
+          "turnNumber": 9,
+          "message": "ended turn despite strong candidate: attack:player_front_right:attack->monster:cpu_front_right"
+        },
+        {
+          "kind": "suspicious_decision",
+          "severity": "warning",
+          "step": 105,
+          "turnNumber": 10,
+          "message": "ended turn despite strong candidate: attack:player_front_left:スパイクボール->monster:cpu_back_right"
+        }
+      ],
+      "stateSummary": {
+        "currentPlayer": "player",
+        "turnNumber": 15,
+        "winner": "player",
+        "pendingLevelUp": false,
+        "players": {
+          "player": {
+            "masterId": "white",
+            "hp": 9,
+            "stones": 4,
+            "hand": 5,
+            "deck": 11,
+            "discard": 10
+          },
+          "cpu": {
+            "masterId": "white",
+            "hp": 0,
+            "stones": 14,
+            "hand": 5,
+            "deck": 11,
+            "discard": 13
+          }
+        },
+        "slots": [
+          {
+            "slotKey": "player_front_left",
+            "card": "card_133",
+            "name": "デスシープ",
+            "owner": "player",
+            "hp": 6,
+            "level": 1,
+            "status": "active",
+            "actions": "0/1",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "player_front_right",
+            "card": "card_047",
+            "name": "真勇者ダイン",
+            "owner": "player",
+            "hp": 3,
+            "level": 3,
+            "status": "active",
+            "actions": "1/1",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "player_back_left",
+            "card": "card_037",
+            "name": "ドノマンティス",
+            "owner": "player",
+            "hp": 5,
+            "level": 1,
+            "status": "active",
+            "actions": "0/1",
+            "focused": true,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "player_back_right",
+            "card": "bomuzo",
+            "name": "ボムゾウ",
+            "owner": "player",
+            "hp": 6,
+            "level": 1,
+            "status": "active",
+            "actions": "0/1",
+            "focused": true,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "cpu_front_left"
+          },
+          {
+            "slotKey": "cpu_front_right"
+          },
+          {
+            "slotKey": "cpu_back_left",
+            "card": "yanbaru",
+            "name": "ヤンバル",
+            "owner": "cpu",
+            "hp": 2,
+            "level": 2,
+            "status": "active",
+            "actions": "1/1",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "cpu_back_right"
+          }
+        ]
+      }
+    },
+    {
+      "matchup": "white-baseline",
+      "seed": 401,
+      "candidateSeat": "player",
+      "playerProfile": "white_v2",
+      "cpuProfile": "white",
+      "playerMaster": "white",
+      "cpuMaster": "white",
+      "playerDeckPreset": "master-lab-white-1377-death-sheep3",
+      "cpuDeckPreset": "master-lab-white-1377-death-sheep3",
+      "winner": "player",
+      "winnerProfile": "white_v2",
+      "status": "completed",
+      "steps": 101,
+      "turns": 10,
+      "elapsedMs": 68004,
+      "partialLevelUpResolutionSteps": 0,
+      "issueCount": 0,
+      "warningCount": 0,
+      "issues": [],
+      "stateSummary": {
+        "currentPlayer": "player",
+        "turnNumber": 10,
+        "winner": "player",
+        "pendingLevelUp": false,
+        "players": {
+          "player": {
+            "masterId": "white",
+            "hp": 9,
+            "stones": 11,
+            "hand": 6,
+            "deck": 16,
+            "discard": 7
+          },
+          "cpu": {
+            "masterId": "white",
+            "hp": 0,
+            "stones": 7,
+            "hand": 5,
+            "deck": 16,
+            "discard": 5
+          }
+        },
+        "slots": [
+          {
+            "slotKey": "player_front_left"
+          },
+          {
+            "slotKey": "player_front_right",
+            "card": "polyspinner",
+            "name": "ポリスピナー",
+            "owner": "player",
+            "hp": 3,
+            "level": 1,
+            "status": "active",
+            "actions": "1/2",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "player_back_left"
+          },
+          {
+            "slotKey": "player_back_right"
+          },
+          {
+            "slotKey": "cpu_front_left",
+            "card": "card_133",
+            "name": "デスシープ",
+            "owner": "cpu",
+            "hp": 6,
+            "level": 2,
+            "status": "active",
+            "actions": "1/1",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "cpu_front_right",
+            "card": "bomuzo",
+            "name": "ボムゾウ",
+            "owner": "cpu",
+            "hp": 2,
+            "level": 2,
+            "status": "active",
+            "actions": "1/1",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": true
+          },
+          {
+            "slotKey": "cpu_back_left",
+            "card": "card_051",
+            "name": "ピグミィ",
+            "owner": "cpu",
+            "hp": 3,
+            "level": 2,
+            "status": "active",
+            "actions": "1/2",
+            "focused": true,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "cpu_back_right",
+            "card": "card_037",
+            "name": "ドノマンティス",
+            "owner": "cpu",
+            "hp": 5,
+            "level": 1,
+            "status": "active",
+            "actions": "0/1",
+            "focused": true,
+            "berserkPower": false,
+            "shielded": false
+          }
+        ]
+      }
+    },
+    {
+      "matchup": "white-baseline",
+      "seed": 402,
+      "candidateSeat": "player",
+      "playerProfile": "white_v2",
+      "cpuProfile": "white",
+      "playerMaster": "white",
+      "cpuMaster": "white",
+      "playerDeckPreset": "master-lab-white-1377-death-sheep3",
+      "cpuDeckPreset": "master-lab-white-1377-death-sheep3",
+      "winner": "player",
+      "winnerProfile": "white_v2",
+      "status": "completed",
+      "steps": 294,
+      "turns": 27,
+      "elapsedMs": 237360,
+      "partialLevelUpResolutionSteps": 0,
+      "issueCount": 0,
+      "warningCount": 0,
+      "issues": [],
+      "stateSummary": {
+        "currentPlayer": "player",
+        "turnNumber": 27,
+        "winner": "player",
+        "pendingLevelUp": false,
+        "players": {
+          "player": {
+            "masterId": "white",
+            "hp": 7,
+            "stones": 15,
+            "hand": 5,
+            "deck": 0,
+            "discard": 23
+          },
+          "cpu": {
+            "masterId": "white",
+            "hp": 0,
+            "stones": 18,
+            "hand": 5,
+            "deck": 0,
+            "discard": 23
+          }
+        },
+        "slots": [
+          {
+            "slotKey": "player_front_left"
+          },
+          {
+            "slotKey": "player_front_right",
+            "card": "card_133",
+            "name": "デスシープ",
+            "owner": "player",
+            "hp": 5,
+            "level": 1,
+            "status": "active",
+            "actions": "0/1",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "player_back_left"
+          },
+          {
+            "slotKey": "player_back_right",
+            "card": "yanbaru",
+            "name": "ヤンバル",
+            "owner": "player",
+            "hp": 3,
+            "level": 2,
+            "status": "active",
+            "actions": "1/1",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "cpu_front_left",
+            "card": "card_037",
+            "name": "ドノマンティス",
+            "owner": "cpu",
+            "hp": 5,
+            "level": 1,
+            "status": "active",
+            "actions": "1/1",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "cpu_front_right"
+          },
+          {
+            "slotKey": "cpu_back_left",
+            "card": "card_051",
+            "name": "ピグミィ",
+            "owner": "cpu",
+            "hp": 3,
+            "level": 2,
+            "status": "active",
+            "actions": "2/2",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "cpu_back_right"
+          }
+        ]
+      }
+    },
+    {
+      "matchup": "white-baseline",
+      "seed": 403,
+      "candidateSeat": "player",
+      "playerProfile": "white_v2",
+      "cpuProfile": "white",
+      "playerMaster": "white",
+      "cpuMaster": "white",
+      "playerDeckPreset": "master-lab-white-1377-death-sheep3",
+      "cpuDeckPreset": "master-lab-white-1377-death-sheep3",
+      "winner": "player",
+      "winnerProfile": "white_v2",
+      "status": "completed",
+      "steps": 296,
+      "turns": 26,
+      "elapsedMs": 212267,
+      "partialLevelUpResolutionSteps": 0,
+      "issueCount": 0,
+      "warningCount": 3,
+      "issues": [
+        {
+          "kind": "suspicious_decision",
+          "severity": "warning",
+          "step": 35,
+          "turnNumber": 4,
+          "message": "ended turn despite strong candidate: master:master_attack->monster:cpu_front_left"
+        },
+        {
+          "kind": "suspicious_decision",
+          "severity": "warning",
+          "step": 68,
+          "turnNumber": 6,
+          "message": "ended turn despite strong candidate: attack:player_back_right:スパイクボール->monster:cpu_front_left"
+        },
+        {
+          "kind": "suspicious_decision",
+          "severity": "warning",
+          "step": 211,
+          "turnNumber": 17,
+          "message": "ended turn despite strong candidate: master:master_attack->monster:cpu_front_right"
+        }
+      ],
+      "stateSummary": {
+        "currentPlayer": "player",
+        "turnNumber": 26,
+        "winner": "player",
+        "pendingLevelUp": false,
+        "players": {
+          "player": {
+            "masterId": "white",
+            "hp": 3,
+            "stones": 6,
+            "hand": 6,
+            "deck": 0,
+            "discard": 22
+          },
+          "cpu": {
+            "masterId": "white",
+            "hp": 0,
+            "stones": 21,
+            "hand": 5,
+            "deck": 0,
+            "discard": 23
+          }
+        },
+        "slots": [
+          {
+            "slotKey": "player_front_left",
+            "card": "card_037",
+            "name": "ドノマンティス",
+            "owner": "player",
+            "hp": 4,
+            "level": 2,
+            "status": "active",
+            "actions": "1/1",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "player_front_right",
+            "card": "card_133",
+            "name": "デスシープ",
+            "owner": "player",
+            "hp": 6,
+            "level": 1,
+            "status": "active",
+            "actions": "0/1",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "player_back_left"
+          },
+          {
+            "slotKey": "player_back_right"
+          },
+          {
+            "slotKey": "cpu_front_left",
+            "card": "card_047",
+            "name": "真勇者ダイン",
+            "owner": "cpu",
+            "hp": 6,
+            "level": 1,
+            "status": "active",
+            "actions": "1/1",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "cpu_front_right"
+          },
+          {
+            "slotKey": "cpu_back_left",
+            "card": "card_051",
+            "name": "ピグミィ",
+            "owner": "cpu",
+            "hp": 2,
+            "level": 2,
+            "status": "active",
+            "actions": "0/2",
+            "focused": true,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "cpu_back_right"
+          }
+        ]
+      }
+    },
+    {
+      "matchup": "white-baseline",
+      "seed": 404,
+      "candidateSeat": "player",
+      "playerProfile": "white_v2",
+      "cpuProfile": "white",
+      "playerMaster": "white",
+      "cpuMaster": "white",
+      "playerDeckPreset": "master-lab-white-1377-death-sheep3",
+      "cpuDeckPreset": "master-lab-white-1377-death-sheep3",
+      "winner": "player",
+      "winnerProfile": "white_v2",
+      "status": "completed",
+      "steps": 221,
+      "turns": 20,
+      "elapsedMs": 129078,
+      "partialLevelUpResolutionSteps": 0,
+      "issueCount": 0,
+      "warningCount": 2,
+      "issues": [
+        {
+          "kind": "suspicious_decision",
+          "severity": "warning",
+          "step": 40,
+          "turnNumber": 5,
+          "message": "ended turn despite strong candidate: master:master_attack->monster:cpu_front_left"
+        },
+        {
+          "kind": "suspicious_decision",
+          "severity": "warning",
+          "step": 177,
+          "turnNumber": 15,
+          "message": "ended turn despite strong candidate: attack:player_front_left:self_bomb->monster:cpu_front_left"
+        }
+      ],
+      "stateSummary": {
+        "currentPlayer": "player",
+        "turnNumber": 20,
+        "winner": "player",
+        "pendingLevelUp": false,
+        "players": {
+          "player": {
+            "masterId": "white",
+            "hp": 9,
+            "stones": 5,
+            "hand": 6,
+            "deck": 6,
+            "discard": 14
+          },
+          "cpu": {
+            "masterId": "white",
+            "hp": 0,
+            "stones": 13,
+            "hand": 5,
+            "deck": 6,
+            "discard": 19
+          }
+        },
+        "slots": [
+          {
+            "slotKey": "player_front_left",
+            "card": "card_047",
+            "name": "真勇者ダイン",
+            "owner": "player",
+            "hp": 4,
+            "level": 1,
+            "status": "active",
+            "actions": "1/1",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "player_front_right",
+            "card": "polyspinner",
+            "name": "ポリスピナー",
+            "owner": "player",
+            "hp": 3,
+            "level": 2,
+            "status": "active",
+            "actions": "2/2",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "player_back_left",
+            "card": "card_047",
+            "name": "真勇者ダイン",
+            "owner": "player",
+            "hp": 6,
+            "level": 1,
+            "status": "active",
+            "actions": "0/1",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "player_back_right",
+            "card": "card_037",
+            "name": "ドノマンティス",
+            "owner": "player",
+            "hp": 5,
+            "level": 1,
+            "status": "active",
+            "actions": "0/1",
+            "focused": true,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "cpu_front_left"
+          },
+          {
+            "slotKey": "cpu_front_right"
+          },
+          {
+            "slotKey": "cpu_back_left"
+          },
+          {
+            "slotKey": "cpu_back_right"
+          }
+        ]
+      }
+    },
+    {
+      "matchup": "white-baseline",
+      "seed": 405,
+      "candidateSeat": "player",
+      "playerProfile": "white_v2",
+      "cpuProfile": "white",
+      "playerMaster": "white",
+      "cpuMaster": "white",
+      "playerDeckPreset": "master-lab-white-1377-death-sheep3",
+      "cpuDeckPreset": "master-lab-white-1377-death-sheep3",
+      "winner": "cpu",
+      "winnerProfile": "white",
+      "status": "completed",
+      "steps": 243,
+      "turns": 28,
+      "elapsedMs": 174244,
+      "partialLevelUpResolutionSteps": 0,
+      "issueCount": 0,
+      "warningCount": 1,
+      "issues": [
+        {
+          "kind": "suspicious_decision",
+          "severity": "warning",
+          "step": 94,
+          "turnNumber": 9,
+          "message": "ended turn despite strong candidate: attack:player_back_left:スパイクボール->monster:cpu_front_left"
+        }
+      ],
+      "stateSummary": {
+        "currentPlayer": "player",
+        "turnNumber": 28,
+        "winner": "cpu",
+        "pendingLevelUp": false,
+        "players": {
+          "player": {
+            "masterId": "white",
+            "hp": 0,
+            "stones": 30,
+            "hand": 5,
+            "deck": 0,
+            "discard": 23
+          },
+          "cpu": {
+            "masterId": "white",
+            "hp": 3,
+            "stones": 35,
+            "hand": 5,
+            "deck": 0,
+            "discard": 21
+          }
+        },
+        "slots": [
+          {
+            "slotKey": "player_front_left"
+          },
+          {
+            "slotKey": "player_front_right",
+            "card": "yanbaru",
+            "name": "ヤンバル",
+            "owner": "player",
+            "hp": 3,
+            "level": 1,
+            "status": "active",
+            "actions": "0/1",
+            "focused": true,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "player_back_left"
+          },
+          {
+            "slotKey": "player_back_right",
+            "card": "card_051",
+            "name": "ピグミィ",
+            "owner": "player",
+            "hp": 3,
+            "level": 1,
+            "status": "active",
+            "actions": "0/2",
+            "focused": true,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "cpu_front_left",
+            "card": "card_133",
+            "name": "デスシープ",
+            "owner": "cpu",
+            "hp": 6,
+            "level": 1,
+            "status": "active",
+            "actions": "0/1",
+            "focused": true,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "cpu_front_right",
+            "card": "card_133",
+            "name": "デスシープ",
+            "owner": "cpu",
+            "hp": 6,
+            "level": 1,
+            "status": "active",
+            "actions": "0/1",
+            "focused": true,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "cpu_back_left",
+            "card": "card_051",
+            "name": "ピグミィ",
+            "owner": "cpu",
+            "hp": 3,
+            "level": 1,
+            "status": "active",
+            "actions": "0/2",
+            "focused": true,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "cpu_back_right",
+            "card": "card_051",
+            "name": "ピグミィ",
+            "owner": "cpu",
+            "hp": 3,
+            "level": 2,
+            "status": "active",
+            "actions": "0/2",
+            "focused": true,
+            "berserkPower": false,
+            "shielded": false
+          }
+        ]
+      }
+    },
+    {
+      "matchup": "white-baseline",
+      "seed": 406,
+      "candidateSeat": "player",
+      "playerProfile": "white_v2",
+      "cpuProfile": "white",
+      "playerMaster": "white",
+      "cpuMaster": "white",
+      "playerDeckPreset": "master-lab-white-1377-death-sheep3",
+      "cpuDeckPreset": "master-lab-white-1377-death-sheep3",
+      "winner": "player",
+      "winnerProfile": "white_v2",
+      "status": "completed",
+      "steps": 307,
+      "turns": 28,
+      "elapsedMs": 192073,
+      "partialLevelUpResolutionSteps": 0,
+      "issueCount": 0,
+      "warningCount": 2,
+      "issues": [
+        {
+          "kind": "suspicious_decision",
+          "severity": "warning",
+          "step": 262,
+          "turnNumber": 21,
+          "message": "ended turn despite strong candidate: attack:player_back_right:wild_claw->monster:cpu_front_left"
+        },
+        {
+          "kind": "long_game",
+          "severity": "warning",
+          "step": 307,
+          "turnNumber": 28,
+          "message": "long game finished after 307 steps / 28 turns"
+        }
+      ],
+      "stateSummary": {
+        "currentPlayer": "cpu",
+        "turnNumber": 28,
+        "winner": "player",
+        "pendingLevelUp": false,
+        "players": {
+          "player": {
+            "masterId": "white",
+            "hp": 1,
+            "stones": 18,
+            "hand": 5,
+            "deck": 0,
+            "discard": 23
+          },
+          "cpu": {
+            "masterId": "white",
+            "hp": 0,
+            "stones": 30,
+            "hand": 5,
+            "deck": 0,
+            "discard": 23
+          }
+        },
+        "slots": [
+          {
+            "slotKey": "player_front_left",
+            "card": "card_037",
+            "name": "ドノマンティス",
+            "owner": "player",
+            "hp": 5,
+            "level": 1,
+            "status": "active",
+            "actions": "0/1",
+            "focused": true,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "player_front_right"
+          },
+          {
+            "slotKey": "player_back_left",
+            "card": "card_037",
+            "name": "ドノマンティス",
+            "owner": "player",
+            "hp": 5,
+            "level": 1,
+            "status": "active",
+            "actions": "0/1",
+            "focused": true,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "player_back_right"
+          },
+          {
+            "slotKey": "cpu_front_left",
+            "card": "card_133",
+            "name": "デスシープ",
+            "owner": "cpu",
+            "hp": 6,
+            "level": 1,
+            "status": "active",
+            "actions": "0/1",
+            "focused": true,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "cpu_front_right"
+          },
+          {
+            "slotKey": "cpu_back_left",
+            "card": "card_047",
+            "name": "真勇者ダイン",
+            "owner": "cpu",
+            "hp": 6,
+            "level": 1,
+            "status": "active",
+            "actions": "0/1",
+            "focused": true,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "cpu_back_right"
+          }
+        ]
+      }
+    },
+    {
+      "matchup": "white-baseline",
+      "seed": 407,
+      "candidateSeat": "player",
+      "playerProfile": "white_v2",
+      "cpuProfile": "white",
+      "playerMaster": "white",
+      "cpuMaster": "white",
+      "playerDeckPreset": "master-lab-white-1377-death-sheep3",
+      "cpuDeckPreset": "master-lab-white-1377-death-sheep3",
+      "winner": "cpu",
+      "winnerProfile": "white",
+      "status": "completed",
+      "steps": 202,
+      "turns": 20,
+      "elapsedMs": 133726,
+      "partialLevelUpResolutionSteps": 0,
+      "issueCount": 0,
+      "warningCount": 2,
+      "issues": [
+        {
+          "kind": "suspicious_decision",
+          "severity": "warning",
+          "step": 75,
+          "turnNumber": 8,
+          "message": "ended turn despite strong candidate: attack:player_back_right:wild_claw->monster:cpu_front_right"
+        },
+        {
+          "kind": "suspicious_decision",
+          "severity": "warning",
+          "step": 108,
+          "turnNumber": 11,
+          "message": "ended turn despite strong candidate: attack:player_front_left:self_bomb->monster:cpu_front_left"
+        }
+      ],
+      "stateSummary": {
+        "currentPlayer": "cpu",
+        "turnNumber": 20,
+        "winner": "cpu",
+        "pendingLevelUp": false,
+        "players": {
+          "player": {
+            "masterId": "white",
+            "hp": 0,
+            "stones": 15,
+            "hand": 5,
+            "deck": 6,
+            "discard": 18
+          },
+          "cpu": {
+            "masterId": "white",
+            "hp": 9,
+            "stones": 14,
+            "hand": 6,
+            "deck": 5,
+            "discard": 15
+          }
+        },
+        "slots": [
+          {
+            "slotKey": "player_front_left"
+          },
+          {
+            "slotKey": "player_front_right",
+            "card": "card_051",
+            "name": "ピグミィ",
+            "owner": "player",
+            "hp": 3,
+            "level": 1,
+            "status": "active",
+            "actions": "1/2",
+            "focused": true,
+            "berserkPower": false,
+            "shielded": true
+          },
+          {
+            "slotKey": "player_back_left"
+          },
+          {
+            "slotKey": "player_back_right"
+          },
+          {
+            "slotKey": "cpu_front_left",
+            "card": "card_051",
+            "name": "ピグミィ",
+            "owner": "cpu",
+            "hp": 3,
+            "level": 2,
+            "status": "active",
+            "actions": "0/2",
+            "focused": true,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "cpu_front_right",
+            "card": "bomuzo",
+            "name": "ボムゾウ",
+            "owner": "cpu",
+            "hp": 4,
+            "level": 1,
+            "status": "active",
+            "actions": "0/1",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "cpu_back_left",
+            "card": "yanbaru",
+            "name": "ヤンバル",
+            "owner": "cpu",
+            "hp": 3,
+            "level": 2,
+            "status": "active",
+            "actions": "1/1",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "cpu_back_right",
+            "card": "card_133",
+            "name": "デスシープ",
+            "owner": "cpu",
+            "hp": 5,
+            "level": 2,
+            "status": "active",
+            "actions": "0/1",
+            "focused": true,
+            "berserkPower": false,
+            "shielded": false
+          }
+        ]
+      }
+    },
+    {
+      "matchup": "white-baseline",
+      "seed": 408,
+      "candidateSeat": "player",
+      "playerProfile": "white_v2",
+      "cpuProfile": "white",
+      "playerMaster": "white",
+      "cpuMaster": "white",
+      "playerDeckPreset": "master-lab-white-1377-death-sheep3",
+      "cpuDeckPreset": "master-lab-white-1377-death-sheep3",
+      "winner": "cpu",
+      "winnerProfile": "white",
+      "status": "completed",
+      "steps": 187,
+      "turns": 19,
+      "elapsedMs": 119629,
+      "partialLevelUpResolutionSteps": 0,
+      "issueCount": 0,
+      "warningCount": 1,
+      "issues": [
+        {
+          "kind": "suspicious_decision",
+          "severity": "warning",
+          "step": 37,
+          "turnNumber": 4,
+          "message": "ended turn despite strong candidate: attack:player_front_right:self_bomb->monster:cpu_front_right"
+        }
+      ],
+      "stateSummary": {
+        "currentPlayer": "cpu",
+        "turnNumber": 19,
+        "winner": "cpu",
+        "pendingLevelUp": false,
+        "players": {
+          "player": {
+            "masterId": "white",
+            "hp": 0,
+            "stones": 27,
+            "hand": 5,
+            "deck": 7,
+            "discard": 16
+          },
+          "cpu": {
+            "masterId": "white",
+            "hp": 2,
+            "stones": 24,
+            "hand": 6,
+            "deck": 6,
+            "discard": 15
+          }
+        },
+        "slots": [
+          {
+            "slotKey": "player_front_left"
+          },
+          {
+            "slotKey": "player_front_right",
+            "card": "card_133",
+            "name": "デスシープ",
+            "owner": "player",
+            "hp": 6,
+            "level": 1,
+            "status": "active",
+            "actions": "0/1",
+            "focused": true,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "player_back_left"
+          },
+          {
+            "slotKey": "player_back_right",
+            "card": "yanbaru",
+            "name": "ヤンバル",
+            "owner": "player",
+            "hp": 3,
+            "level": 1,
+            "status": "active",
+            "actions": "0/1",
+            "focused": true,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "cpu_front_left",
+            "card": "card_051",
+            "name": "ピグミィ",
+            "owner": "cpu",
+            "hp": 3,
+            "level": 2,
+            "status": "active",
+            "actions": "0/2",
+            "focused": true,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "cpu_front_right",
+            "card": "card_133",
+            "name": "デスシープ",
+            "owner": "cpu",
+            "hp": 6,
+            "level": 2,
+            "status": "active",
+            "actions": "1/1",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "cpu_back_left"
+          },
+          {
+            "slotKey": "cpu_back_right",
+            "card": "card_037",
+            "name": "ドノマンティス",
+            "owner": "cpu",
+            "hp": 5,
+            "level": 1,
+            "status": "active",
+            "actions": "0/1",
+            "focused": true,
+            "berserkPower": false,
+            "shielded": false
+          }
+        ]
+      }
+    },
+    {
+      "matchup": "white-baseline",
+      "seed": 409,
+      "candidateSeat": "player",
+      "playerProfile": "white_v2",
+      "cpuProfile": "white",
+      "playerMaster": "white",
+      "cpuMaster": "white",
+      "playerDeckPreset": "master-lab-white-1377-death-sheep3",
+      "cpuDeckPreset": "master-lab-white-1377-death-sheep3",
+      "winner": "player",
+      "winnerProfile": "white_v2",
+      "status": "completed",
+      "steps": 312,
+      "turns": 28,
+      "elapsedMs": 199238,
+      "partialLevelUpResolutionSteps": 0,
+      "issueCount": 0,
+      "warningCount": 2,
+      "issues": [
+        {
+          "kind": "suspicious_decision",
+          "severity": "warning",
+          "step": 54,
+          "turnNumber": 5,
+          "message": "ended turn despite strong candidate: attack:player_back_left:スパイクボール->monster:cpu_front_right"
+        },
+        {
+          "kind": "long_game",
+          "severity": "warning",
+          "step": 312,
+          "turnNumber": 28,
+          "message": "long game finished after 312 steps / 28 turns"
+        }
+      ],
+      "stateSummary": {
+        "currentPlayer": "cpu",
+        "turnNumber": 28,
+        "winner": "player",
+        "pendingLevelUp": false,
+        "players": {
+          "player": {
+            "masterId": "white",
+            "hp": 5,
+            "stones": 24,
+            "hand": 5,
+            "deck": 0,
+            "discard": 23
+          },
+          "cpu": {
+            "masterId": "white",
+            "hp": 0,
+            "stones": 18,
+            "hand": 5,
+            "deck": 0,
+            "discard": 23
+          }
+        },
+        "slots": [
+          {
+            "slotKey": "player_front_left"
+          },
+          {
+            "slotKey": "player_front_right",
+            "card": "card_037",
+            "name": "ドノマンティス",
+            "owner": "player",
+            "hp": 5,
+            "level": 1,
+            "status": "active",
+            "actions": "1/1",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "player_back_left"
+          },
+          {
+            "slotKey": "player_back_right",
+            "card": "bomuzo",
+            "name": "ボムゾウ",
+            "owner": "player",
+            "hp": 6,
+            "level": 1,
+            "status": "active",
+            "actions": "0/1",
+            "focused": true,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "cpu_front_left"
+          },
+          {
+            "slotKey": "cpu_front_right",
+            "card": "yanbaru",
+            "name": "ヤンバル",
+            "owner": "cpu",
+            "hp": 3,
+            "level": 2,
+            "status": "active",
+            "actions": "0/1",
+            "focused": true,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "cpu_back_left"
+          },
+          {
+            "slotKey": "cpu_back_right",
+            "card": "card_051",
+            "name": "ピグミィ",
+            "owner": "cpu",
+            "hp": 3,
+            "level": 2,
+            "status": "active",
+            "actions": "0/2",
+            "focused": true,
+            "berserkPower": false,
+            "shielded": false
+          }
+        ]
+      }
+    },
+    {
+      "matchup": "black-pressure",
+      "seed": 400,
+      "candidateSeat": "cpu",
+      "playerProfile": "strong",
+      "cpuProfile": "white_v2",
+      "playerMaster": "black",
+      "cpuMaster": "white",
+      "playerDeckPreset": "black-pressure",
+      "cpuDeckPreset": "master-lab-white-1377-death-sheep3",
+      "winner": "player",
+      "winnerProfile": "strong",
+      "status": "completed",
+      "steps": 115,
+      "turns": 14,
+      "elapsedMs": 47928,
+      "partialLevelUpResolutionSteps": 0,
+      "issueCount": 0,
+      "warningCount": 5,
+      "issues": [
+        {
+          "kind": "suspicious_decision",
+          "severity": "warning",
+          "step": 28,
+          "turnNumber": 4,
+          "message": "ended turn despite strong candidate: attack:cpu_front_right:storm_bomb->monster:player_back_right"
+        },
+        {
+          "kind": "suspicious_decision",
+          "severity": "warning",
+          "step": 48,
+          "turnNumber": 6,
+          "message": "ended turn despite strong candidate: attack:cpu_front_left:storm_bomb->monster:player_back_right"
+        },
+        {
+          "kind": "suspicious_decision",
+          "severity": "warning",
+          "step": 58,
+          "turnNumber": 7,
+          "message": "ended turn despite strong candidate: attack:cpu_front_left:self_bomb->monster:player_front_left"
+        },
+        {
+          "kind": "suspicious_decision",
+          "severity": "warning",
+          "step": 69,
+          "turnNumber": 8,
+          "message": "ended turn despite strong candidate: attack:cpu_front_left:storm_bomb->monster:player_back_left"
+        },
+        {
+          "kind": "suspicious_decision",
+          "severity": "warning",
+          "step": 78,
+          "turnNumber": 9,
+          "message": "ended turn despite strong candidate: attack:cpu_front_left:storm_bomb->monster:player_back_left"
+        }
+      ],
+      "stateSummary": {
+        "currentPlayer": "player",
+        "turnNumber": 14,
+        "winner": "player",
+        "pendingLevelUp": false,
+        "players": {
+          "player": {
+            "masterId": "black",
+            "hp": 4,
+            "stones": 1,
+            "hand": 4,
+            "deck": 11,
+            "discard": 11
+          },
+          "cpu": {
+            "masterId": "white",
+            "hp": 0,
+            "stones": 25,
+            "hand": 5,
+            "deck": 12,
+            "discard": 12
+          }
+        },
+        "slots": [
+          {
+            "slotKey": "player_front_left",
+            "card": "card_009",
+            "name": "神斬丸",
+            "owner": "player",
+            "hp": 3,
+            "level": 1,
+            "status": "active",
+            "actions": "1/1",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "player_front_right",
+            "card": "card_009",
+            "name": "神斬丸",
+            "owner": "player",
+            "hp": 3,
+            "level": 1,
+            "status": "active",
+            "actions": "0/1",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "player_back_left",
+            "card": "card_049",
+            "name": "バルキャノン",
+            "owner": "player",
+            "hp": 3,
+            "level": 1,
+            "status": "active",
+            "actions": "0/1",
+            "focused": true,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "player_back_right",
+            "card": "card_083",
+            "name": "フーヨウ",
+            "owner": "player",
+            "hp": 3,
+            "level": 1,
+            "status": "active",
+            "actions": "0/1",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "cpu_front_left",
+            "card": "bomuzo",
+            "name": "ボムゾウ",
+            "owner": "cpu",
+            "hp": 3,
+            "level": 1,
+            "status": "active",
+            "actions": "1/1",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "cpu_front_right"
+          },
+          {
+            "slotKey": "cpu_back_left"
+          },
+          {
+            "slotKey": "cpu_back_right"
+          }
+        ]
+      }
+    },
+    {
+      "matchup": "black-pressure",
+      "seed": 401,
+      "candidateSeat": "cpu",
+      "playerProfile": "strong",
+      "cpuProfile": "white_v2",
+      "playerMaster": "black",
+      "cpuMaster": "white",
+      "playerDeckPreset": "black-pressure",
+      "cpuDeckPreset": "master-lab-white-1377-death-sheep3",
+      "winner": "cpu",
+      "winnerProfile": "white_v2",
+      "status": "completed",
+      "steps": 139,
+      "turns": 13,
+      "elapsedMs": 59495,
+      "partialLevelUpResolutionSteps": 0,
+      "issueCount": 0,
+      "warningCount": 2,
+      "issues": [
+        {
+          "kind": "suspicious_decision",
+          "severity": "warning",
+          "step": 51,
+          "turnNumber": 6,
+          "message": "ended turn despite strong candidate: attack:cpu_front_right:storm_bomb->monster:player_back_left"
+        },
+        {
+          "kind": "suspicious_decision",
+          "severity": "warning",
+          "step": 73,
+          "turnNumber": 8,
+          "message": "ended turn despite strong candidate: attack:cpu_back_right:スパイクボール->monster:player_front_right"
+        }
+      ],
+      "stateSummary": {
+        "currentPlayer": "cpu",
+        "turnNumber": 13,
+        "winner": "cpu",
+        "pendingLevelUp": false,
+        "players": {
+          "player": {
+            "masterId": "black",
+            "hp": 0,
+            "stones": 2,
+            "hand": 5,
+            "deck": 12,
+            "discard": 11
+          },
+          "cpu": {
+            "masterId": "white",
+            "hp": 3,
+            "stones": 11,
+            "hand": 6,
+            "deck": 12,
+            "discard": 9
+          }
+        },
+        "slots": [
+          {
+            "slotKey": "player_front_left",
+            "card": "card_071",
+            "name": "アンノウン",
+            "owner": "player",
+            "hp": 2,
+            "level": 2,
+            "status": "active",
+            "actions": "1/1",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "player_front_right",
+            "card": "card_083",
+            "name": "フーヨウ",
+            "owner": "player",
+            "hp": 2,
+            "level": 1,
+            "status": "active",
+            "actions": "1/1",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "player_back_left"
+          },
+          {
+            "slotKey": "player_back_right"
+          },
+          {
+            "slotKey": "cpu_front_left",
+            "card": "card_037",
+            "name": "ドノマンティス",
+            "owner": "cpu",
+            "hp": 5,
+            "level": 1,
+            "status": "active",
+            "actions": "0/1",
+            "focused": true,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "cpu_front_right",
+            "card": "card_047",
+            "name": "真勇者ダイン",
+            "owner": "cpu",
+            "hp": 6,
+            "level": 3,
+            "status": "active",
+            "actions": "1/1",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "cpu_back_left"
+          },
+          {
+            "slotKey": "cpu_back_right",
+            "card": "card_051",
+            "name": "ピグミィ",
+            "owner": "cpu",
+            "hp": 3,
+            "level": 2,
+            "status": "active",
+            "actions": "0/2",
+            "focused": true,
+            "berserkPower": false,
+            "shielded": false
+          }
+        ]
+      }
+    },
+    {
+      "matchup": "black-pressure",
+      "seed": 402,
+      "candidateSeat": "cpu",
+      "playerProfile": "strong",
+      "cpuProfile": "white_v2",
+      "playerMaster": "black",
+      "cpuMaster": "white",
+      "playerDeckPreset": "black-pressure",
+      "cpuDeckPreset": "master-lab-white-1377-death-sheep3",
+      "winner": "cpu",
+      "winnerProfile": "white_v2",
+      "status": "completed",
+      "steps": 124,
+      "turns": 12,
+      "elapsedMs": 51640,
+      "partialLevelUpResolutionSteps": 0,
+      "issueCount": 0,
+      "warningCount": 0,
+      "issues": [],
+      "stateSummary": {
+        "currentPlayer": "cpu",
+        "turnNumber": 12,
+        "winner": "cpu",
+        "pendingLevelUp": false,
+        "players": {
+          "player": {
+            "masterId": "black",
+            "hp": 0,
+            "stones": 4,
+            "hand": 5,
+            "deck": 14,
+            "discard": 10
+          },
+          "cpu": {
+            "masterId": "white",
+            "hp": 3,
+            "stones": 9,
+            "hand": 6,
+            "deck": 13,
+            "discard": 8
+          }
+        },
+        "slots": [
+          {
+            "slotKey": "player_front_left",
+            "card": "card_044",
+            "name": "ヒートロン",
+            "owner": "player",
+            "hp": 4,
+            "level": 1,
+            "status": "active",
+            "actions": "1/1",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "player_front_right"
+          },
+          {
+            "slotKey": "player_back_left"
+          },
+          {
+            "slotKey": "player_back_right"
+          },
+          {
+            "slotKey": "cpu_front_left",
+            "card": "card_047",
+            "name": "真勇者ダイン",
+            "owner": "cpu",
+            "hp": 4,
+            "level": 3,
+            "status": "active",
+            "actions": "1/1",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "cpu_front_right",
+            "card": "yanbaru",
+            "name": "ヤンバル",
+            "owner": "cpu",
+            "hp": 3,
+            "level": 2,
+            "status": "active",
+            "actions": "0/1",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "cpu_back_left",
+            "card": "card_051",
+            "name": "ピグミィ",
+            "owner": "cpu",
+            "hp": 3,
+            "level": 2,
+            "status": "active",
+            "actions": "0/2",
+            "focused": true,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "cpu_back_right"
+          }
+        ]
+      }
+    },
+    {
+      "matchup": "black-pressure",
+      "seed": 403,
+      "candidateSeat": "cpu",
+      "playerProfile": "strong",
+      "cpuProfile": "white_v2",
+      "playerMaster": "black",
+      "cpuMaster": "white",
+      "playerDeckPreset": "black-pressure",
+      "cpuDeckPreset": "master-lab-white-1377-death-sheep3",
+      "winner": "cpu",
+      "winnerProfile": "white_v2",
+      "status": "completed",
+      "steps": 77,
+      "turns": 8,
+      "elapsedMs": 25506,
+      "partialLevelUpResolutionSteps": 0,
+      "issueCount": 0,
+      "warningCount": 1,
+      "issues": [
+        {
+          "kind": "suspicious_decision",
+          "severity": "warning",
+          "step": 28,
+          "turnNumber": 4,
+          "message": "ended turn despite strong candidate: attack:cpu_back_left:スパイクボール->monster:player_front_left"
+        }
+      ],
+      "stateSummary": {
+        "currentPlayer": "cpu",
+        "turnNumber": 8,
+        "winner": "cpu",
+        "pendingLevelUp": false,
+        "players": {
+          "player": {
+            "masterId": "black",
+            "hp": 0,
+            "stones": 4,
+            "hand": 5,
+            "deck": 18,
+            "discard": 5
+          },
+          "cpu": {
+            "masterId": "white",
+            "hp": 4,
+            "stones": 12,
+            "hand": 6,
+            "deck": 17,
+            "discard": 4
+          }
+        },
+        "slots": [
+          {
+            "slotKey": "player_front_left"
+          },
+          {
+            "slotKey": "player_front_right",
+            "card": "card_134",
+            "name": "ファントム",
+            "owner": "player",
+            "hp": 2,
+            "level": 1,
+            "status": "active",
+            "actions": "1/1",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "player_back_left"
+          },
+          {
+            "slotKey": "player_back_right",
+            "card": "card_049",
+            "name": "バルキャノン",
+            "owner": "player",
+            "hp": 3,
+            "level": 2,
+            "status": "active",
+            "actions": "1/1",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "cpu_front_left",
+            "card": "card_133",
+            "name": "デスシープ",
+            "owner": "cpu",
+            "hp": 3,
+            "level": 2,
+            "status": "active",
+            "actions": "0/1",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "cpu_front_right",
+            "card": "card_037",
+            "name": "ドノマンティス",
+            "owner": "cpu",
+            "hp": 5,
+            "level": 2,
+            "status": "active",
+            "actions": "1/1",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "cpu_back_left",
+            "card": "card_051",
+            "name": "ピグミィ",
+            "owner": "cpu",
+            "hp": 3,
+            "level": 1,
+            "status": "active",
+            "actions": "0/2",
+            "focused": true,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "cpu_back_right"
+          }
+        ]
+      }
+    },
+    {
+      "matchup": "black-pressure",
+      "seed": 404,
+      "candidateSeat": "cpu",
+      "playerProfile": "strong",
+      "cpuProfile": "white_v2",
+      "playerMaster": "black",
+      "cpuMaster": "white",
+      "playerDeckPreset": "black-pressure",
+      "cpuDeckPreset": "master-lab-white-1377-death-sheep3",
+      "winner": "cpu",
+      "winnerProfile": "white_v2",
+      "status": "completed",
+      "steps": 112,
+      "turns": 12,
+      "elapsedMs": 61564,
+      "partialLevelUpResolutionSteps": 0,
+      "issueCount": 0,
+      "warningCount": 2,
+      "issues": [
+        {
+          "kind": "suspicious_decision",
+          "severity": "warning",
+          "step": 83,
+          "turnNumber": 10,
+          "message": "ended turn despite strong candidate: attack:cpu_front_right:attack->monster:player_front_right"
+        },
+        {
+          "kind": "suspicious_decision",
+          "severity": "warning",
+          "step": 91,
+          "turnNumber": 11,
+          "message": "ended turn despite strong candidate: master:wake_up->monster:player_front_right"
+        }
+      ],
+      "stateSummary": {
+        "currentPlayer": "cpu",
+        "turnNumber": 12,
+        "winner": "cpu",
+        "pendingLevelUp": false,
+        "players": {
+          "player": {
+            "masterId": "black",
+            "hp": 0,
+            "stones": 3,
+            "hand": 4,
+            "deck": 14,
+            "discard": 9
+          },
+          "cpu": {
+            "masterId": "white",
+            "hp": 6,
+            "stones": 9,
+            "hand": 5,
+            "deck": 13,
+            "discard": 11
+          }
+        },
+        "slots": [
+          {
+            "slotKey": "player_front_left",
+            "card": "card_109",
+            "name": "ナッツロックル",
+            "owner": "player",
+            "hp": 5,
+            "level": 1,
+            "status": "active",
+            "actions": "1/1",
+            "focused": true,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "player_front_right"
+          },
+          {
+            "slotKey": "player_back_left",
+            "card": "beyond",
+            "name": "ビヨンド",
+            "owner": "player",
+            "hp": 2,
+            "level": 1,
+            "status": "active",
+            "actions": "1/1",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "player_back_right",
+            "card": "card_083",
+            "name": "フーヨウ",
+            "owner": "player",
+            "hp": 3,
+            "level": 1,
+            "status": "prepared",
+            "actions": "0/1",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "cpu_front_left"
+          },
+          {
+            "slotKey": "cpu_front_right",
+            "card": "polyspinner",
+            "name": "ポリスピナー",
+            "owner": "cpu",
+            "hp": 3,
+            "level": 2,
+            "status": "active",
+            "actions": "2/2",
+            "focused": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "cpu_back_left"
+          },
+          {
+            "slotKey": "cpu_back_right"
+          }
+        ]
+      }
+    },
+    {
+      "matchup": "black-pressure",
+      "seed": 405,
+      "candidateSeat": "cpu",
+      "playerProfile": "strong",
+      "cpuProfile": "white_v2",
+      "playerMaster": "black",
+      "cpuMaster": "white",
+      "playerDeckPreset": "black-pressure",
+      "cpuDeckPreset": "master-lab-white-1377-death-sheep3",
+      "winner": "player",
+      "winnerProfile": "strong",
+      "status": "completed",
+      "steps": 131,
+      "turns": 15,
+      "elapsedMs": 39377,
+      "partialLevelUpResolutionSteps": 0,
+      "issueCount": 0,
+      "warningCount": 1,
+      "issues": [
+        {
+          "kind": "suspicious_decision",
+          "severity": "warning",
+          "step": 75,
+          "turnNumber": 8,
+          "message": "ended turn despite strong candidate: master:wake_up->monster:player_back_right"
+        }
+      ],
+      "stateSummary": {
+        "currentPlayer": "player",
+        "turnNumber": 15,
+        "winner": "player",
+        "pendingLevelUp": false,
+        "players": {
+          "player": {
+            "masterId": "black",
+            "hp": 9,
+            "stones": 2,
+            "hand": 5,
+            "deck": 11,
+            "discard": 12
+          },
+          "cpu": {
+            "masterId": "white",
+            "hp": 0,
+            "stones": 20,
+            "hand": 5,
+            "deck": 11,
+            "discard": 13
+          }
+        },
+        "slots": [
+          {
+            "slotKey": "player_front_left",
+            "card": "card_076",
+            "name": "グングニエル",
+            "owner": "player",
+            "hp": 4,
+            "level": 1,
+            "status": "active",
+            "actions": "1/1",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "player_front_right",
+            "card": "card_053",
+            "name": "ラティーヌ",
+            "owner": "player",
+            "hp": 4,
+            "level": 2,
+            "status": "active",
+            "actions": "0/1",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "player_back_left"
+          },
+          {
+            "slotKey": "player_back_right"
+          },
+          {
+            "slotKey": "cpu_front_left",
+            "card": "bomuzo",
+            "name": "ボムゾウ",
+            "owner": "cpu",
+            "hp": 5,
+            "level": 2,
+            "status": "active",
+            "actions": "1/1",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "cpu_front_right"
+          },
+          {
+            "slotKey": "cpu_back_left"
+          },
+          {
+            "slotKey": "cpu_back_right"
+          }
+        ]
+      }
+    },
+    {
+      "matchup": "black-pressure",
+      "seed": 406,
+      "candidateSeat": "cpu",
+      "playerProfile": "strong",
+      "cpuProfile": "white_v2",
+      "playerMaster": "black",
+      "cpuMaster": "white",
+      "playerDeckPreset": "black-pressure",
+      "cpuDeckPreset": "master-lab-white-1377-death-sheep3",
+      "winner": "cpu",
+      "winnerProfile": "white_v2",
+      "status": "completed",
+      "steps": 121,
+      "turns": 13,
+      "elapsedMs": 68239,
+      "partialLevelUpResolutionSteps": 0,
+      "issueCount": 0,
+      "warningCount": 1,
+      "issues": [
+        {
+          "kind": "suspicious_decision",
+          "severity": "warning",
+          "step": 43,
+          "turnNumber": 6,
+          "message": "ended turn despite strong candidate: attack:cpu_back_right:スパイクボール->monster:player_back_left"
+        }
+      ],
+      "stateSummary": {
+        "currentPlayer": "cpu",
+        "turnNumber": 13,
+        "winner": "cpu",
+        "pendingLevelUp": false,
+        "players": {
+          "player": {
+            "masterId": "black",
+            "hp": 0,
+            "stones": 2,
+            "hand": 4,
+            "deck": 10,
+            "discard": 13
+          },
+          "cpu": {
+            "masterId": "white",
+            "hp": 5,
+            "stones": 14,
+            "hand": 6,
+            "deck": 12,
+            "discard": 10
+          }
+        },
+        "slots": [
+          {
+            "slotKey": "player_front_left",
+            "card": "card_043",
+            "name": "ガンプ",
+            "owner": "player",
+            "hp": 3,
+            "level": 1,
+            "status": "active",
+            "actions": "1/1",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "player_front_right",
+            "card": "card_144",
+            "name": "ホロウダイン",
+            "owner": "player",
+            "hp": 5,
+            "level": 1,
+            "status": "prepared",
+            "actions": "0/1",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "player_back_left",
+            "card": "card_047",
+            "name": "真勇者ダイン",
+            "owner": "player",
+            "hp": 6,
+            "level": 1,
+            "status": "active",
+            "actions": "0/1",
+            "focused": true,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "player_back_right"
+          },
+          {
+            "slotKey": "cpu_front_left",
+            "card": "card_051",
+            "name": "ピグミィ",
+            "owner": "cpu",
+            "hp": 3,
+            "level": 1,
+            "status": "active",
+            "actions": "0/2",
+            "focused": true,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "cpu_front_right",
+            "card": "card_047",
+            "name": "真勇者ダイン",
+            "owner": "cpu",
+            "hp": 6,
+            "level": 3,
+            "status": "active",
+            "actions": "1/1",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "cpu_back_left"
+          },
+          {
+            "slotKey": "cpu_back_right"
+          }
+        ]
+      }
+    },
+    {
+      "matchup": "black-pressure",
+      "seed": 407,
+      "candidateSeat": "cpu",
+      "playerProfile": "strong",
+      "cpuProfile": "white_v2",
+      "playerMaster": "black",
+      "cpuMaster": "white",
+      "playerDeckPreset": "black-pressure",
+      "cpuDeckPreset": "master-lab-white-1377-death-sheep3",
+      "winner": "player",
+      "winnerProfile": "strong",
+      "status": "completed",
+      "steps": 135,
+      "turns": 15,
+      "elapsedMs": 48724,
+      "partialLevelUpResolutionSteps": 0,
+      "issueCount": 0,
+      "warningCount": 4,
+      "issues": [
+        {
+          "kind": "suspicious_decision",
+          "severity": "warning",
+          "step": 41,
+          "turnNumber": 5,
+          "message": "ended turn despite strong candidate: master:wake_up->monster:player_front_left"
+        },
+        {
+          "kind": "suspicious_decision",
+          "severity": "warning",
+          "step": 83,
+          "turnNumber": 9,
+          "message": "ended turn despite strong candidate: attack:cpu_front_left:attack->monster:player_front_left"
+        },
+        {
+          "kind": "suspicious_decision",
+          "severity": "warning",
+          "step": 90,
+          "turnNumber": 10,
+          "message": "ended turn despite strong candidate: attack:cpu_front_left:attack->monster:player_front_left"
+        },
+        {
+          "kind": "suspicious_decision",
+          "severity": "warning",
+          "step": 111,
+          "turnNumber": 12,
+          "message": "ended turn despite strong candidate: master:master_attack->monster:player_front_right"
+        }
+      ],
+      "stateSummary": {
+        "currentPlayer": "player",
+        "turnNumber": 15,
+        "winner": "player",
+        "pendingLevelUp": false,
+        "players": {
+          "player": {
+            "masterId": "black",
+            "hp": 6,
+            "stones": 4,
+            "hand": 6,
+            "deck": 9,
+            "discard": 13
+          },
+          "cpu": {
+            "masterId": "white",
+            "hp": 0,
+            "stones": 22,
+            "hand": 5,
+            "deck": 11,
+            "discard": 13
+          }
+        },
+        "slots": [
+          {
+            "slotKey": "player_front_left",
+            "card": "card_009",
+            "name": "神斬丸",
+            "owner": "player",
+            "hp": 5,
+            "level": 1,
+            "status": "active",
+            "actions": "0/1",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "player_front_right"
+          },
+          {
+            "slotKey": "player_back_left",
+            "card": "card_050",
+            "name": "ゼック",
+            "owner": "player",
+            "hp": 2,
+            "level": 1,
+            "status": "active",
+            "actions": "1/1",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "player_back_right"
+          },
+          {
+            "slotKey": "cpu_front_left"
+          },
+          {
+            "slotKey": "cpu_front_right",
+            "card": "card_047",
+            "name": "真勇者ダイン",
+            "owner": "cpu",
+            "hp": 6,
+            "level": 2,
+            "status": "active",
+            "actions": "1/1",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "cpu_back_left"
+          },
+          {
+            "slotKey": "cpu_back_right"
+          }
+        ]
+      }
+    },
+    {
+      "matchup": "black-pressure",
+      "seed": 408,
+      "candidateSeat": "cpu",
+      "playerProfile": "strong",
+      "cpuProfile": "white_v2",
+      "playerMaster": "black",
+      "cpuMaster": "white",
+      "playerDeckPreset": "black-pressure",
+      "cpuDeckPreset": "master-lab-white-1377-death-sheep3",
+      "winner": "player",
+      "winnerProfile": "strong",
+      "status": "completed",
+      "steps": 146,
+      "turns": 17,
+      "elapsedMs": 45496,
+      "partialLevelUpResolutionSteps": 0,
+      "issueCount": 0,
+      "warningCount": 6,
+      "issues": [
+        {
+          "kind": "suspicious_decision",
+          "severity": "warning",
+          "step": 40,
+          "turnNumber": 5,
+          "message": "ended turn despite strong candidate: attack:cpu_front_right:self_bomb->master:player"
+        },
+        {
+          "kind": "suspicious_decision",
+          "severity": "warning",
+          "step": 50,
+          "turnNumber": 6,
+          "message": "ended turn despite strong candidate: attack:cpu_front_left:attack->monster:player_front_left"
+        },
+        {
+          "kind": "suspicious_decision",
+          "severity": "warning",
+          "step": 72,
+          "turnNumber": 8,
+          "message": "ended turn despite strong candidate: attack:cpu_front_right:self_bomb->monster:player_front_right"
+        },
+        {
+          "kind": "suspicious_decision",
+          "severity": "warning",
+          "step": 80,
+          "turnNumber": 9,
+          "message": "ended turn despite strong candidate: attack:cpu_front_right:storm_bomb->monster:player_back_right"
+        },
+        {
+          "kind": "suspicious_decision",
+          "severity": "warning",
+          "step": 100,
+          "turnNumber": 11,
+          "message": "ended turn despite strong candidate: attack:cpu_front_right:storm_bomb->monster:player_back_left"
+        },
+        {
+          "kind": "suspicious_decision",
+          "severity": "warning",
+          "step": 107,
+          "turnNumber": 12,
+          "message": "ended turn despite strong candidate: attack:cpu_front_right:self_bomb->master:player"
+        }
+      ],
+      "stateSummary": {
+        "currentPlayer": "player",
+        "turnNumber": 17,
+        "winner": "player",
+        "pendingLevelUp": false,
+        "players": {
+          "player": {
+            "masterId": "black",
+            "hp": 3,
+            "stones": 3,
+            "hand": 6,
+            "deck": 9,
+            "discard": 14
+          },
+          "cpu": {
+            "masterId": "white",
+            "hp": 0,
+            "stones": 18,
+            "hand": 5,
+            "deck": 9,
+            "discard": 15
+          }
+        },
+        "slots": [
+          {
+            "slotKey": "player_front_left",
+            "card": "card_043",
+            "name": "ガンプ",
+            "owner": "player",
+            "hp": 3,
+            "level": 2,
+            "status": "active",
+            "actions": "1/1",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "player_front_right"
+          },
+          {
+            "slotKey": "player_back_left"
+          },
+          {
+            "slotKey": "player_back_right"
+          },
+          {
+            "slotKey": "cpu_front_left"
+          },
+          {
+            "slotKey": "cpu_front_right",
+            "card": "card_051",
+            "name": "ピグミィ",
+            "owner": "cpu",
+            "hp": 3,
+            "level": 1,
+            "status": "active",
+            "actions": "0/2",
+            "focused": true,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "cpu_back_left"
+          },
+          {
+            "slotKey": "cpu_back_right"
+          }
+        ]
+      }
+    },
+    {
+      "matchup": "black-pressure",
+      "seed": 409,
+      "candidateSeat": "cpu",
+      "playerProfile": "strong",
+      "cpuProfile": "white_v2",
+      "playerMaster": "black",
+      "cpuMaster": "white",
+      "playerDeckPreset": "black-pressure",
+      "cpuDeckPreset": "master-lab-white-1377-death-sheep3",
+      "winner": "player",
+      "winnerProfile": "strong",
+      "status": "completed",
+      "steps": 131,
+      "turns": 17,
+      "elapsedMs": 52247,
+      "partialLevelUpResolutionSteps": 0,
+      "issueCount": 0,
+      "warningCount": 1,
+      "issues": [
+        {
+          "kind": "suspicious_decision",
+          "severity": "warning",
+          "step": 108,
+          "turnNumber": 13,
+          "message": "ended turn despite strong candidate: master:master_attack->monster:player_front_right"
+        }
+      ],
+      "stateSummary": {
+        "currentPlayer": "player",
+        "turnNumber": 17,
+        "winner": "player",
+        "pendingLevelUp": false,
+        "players": {
+          "player": {
+            "masterId": "black",
+            "hp": 3,
+            "stones": 0,
+            "hand": 5,
+            "deck": 9,
+            "discard": 13
+          },
+          "cpu": {
+            "masterId": "white",
+            "hp": 0,
+            "stones": 31,
+            "hand": 5,
+            "deck": 9,
+            "discard": 15
+          }
+        },
+        "slots": [
+          {
+            "slotKey": "player_front_left",
+            "card": "card_134",
+            "name": "ファントム",
+            "owner": "player",
+            "hp": 4,
+            "level": 1,
+            "status": "active",
+            "actions": "0/1",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "player_front_right",
+            "card": "card_009",
+            "name": "神斬丸",
+            "owner": "player",
+            "hp": 4,
+            "level": 1,
+            "status": "active",
+            "actions": "1/1",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "player_back_left",
+            "card": "card_099",
+            "name": "ゴーント",
+            "owner": "player",
+            "hp": 1,
+            "level": 1,
+            "status": "active",
+            "actions": "0/1",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "player_back_right"
+          },
+          {
+            "slotKey": "cpu_front_left"
+          },
+          {
+            "slotKey": "cpu_front_right",
+            "card": "card_133",
+            "name": "デスシープ",
+            "owner": "cpu",
+            "hp": 4,
+            "level": 1,
+            "status": "active",
+            "actions": "0/1",
+            "focused": true,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "cpu_back_left"
+          },
+          {
+            "slotKey": "cpu_back_right"
+          }
+        ]
+      }
+    },
+    {
+      "matchup": "black-pressure",
+      "seed": 400,
+      "candidateSeat": "player",
+      "playerProfile": "white_v2",
+      "cpuProfile": "strong",
+      "playerMaster": "white",
+      "cpuMaster": "black",
+      "playerDeckPreset": "master-lab-white-1377-death-sheep3",
+      "cpuDeckPreset": "black-pressure",
+      "winner": "player",
+      "winnerProfile": "white_v2",
+      "status": "completed",
+      "steps": 100,
+      "turns": 11,
+      "elapsedMs": 44475,
+      "partialLevelUpResolutionSteps": 0,
+      "issueCount": 0,
+      "warningCount": 0,
+      "issues": [],
+      "stateSummary": {
+        "currentPlayer": "player",
+        "turnNumber": 11,
+        "winner": "player",
+        "pendingLevelUp": false,
+        "players": {
+          "player": {
+            "masterId": "white",
+            "hp": 6,
+            "stones": 11,
+            "hand": 6,
+            "deck": 15,
+            "discard": 8
+          },
+          "cpu": {
+            "masterId": "black",
+            "hp": 0,
+            "stones": 1,
+            "hand": 3,
+            "deck": 14,
+            "discard": 12
+          }
+        },
+        "slots": [
+          {
+            "slotKey": "player_front_left",
+            "card": "card_047",
+            "name": "真勇者ダイン",
+            "owner": "player",
+            "hp": 1,
+            "level": 3,
+            "status": "active",
+            "actions": "1/1",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "player_front_right"
+          },
+          {
+            "slotKey": "player_back_left"
+          },
+          {
+            "slotKey": "player_back_right"
+          },
+          {
+            "slotKey": "cpu_front_left"
+          },
+          {
+            "slotKey": "cpu_front_right",
+            "card": "card_071",
+            "name": "アンノウン",
+            "owner": "cpu",
+            "hp": 5,
+            "level": 2,
+            "status": "active",
+            "actions": "1/1",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "cpu_back_left"
+          },
+          {
+            "slotKey": "cpu_back_right"
+          }
+        ]
+      }
+    },
+    {
+      "matchup": "black-pressure",
+      "seed": 401,
+      "candidateSeat": "player",
+      "playerProfile": "white_v2",
+      "cpuProfile": "strong",
+      "playerMaster": "white",
+      "cpuMaster": "black",
+      "playerDeckPreset": "master-lab-white-1377-death-sheep3",
+      "cpuDeckPreset": "black-pressure",
+      "winner": "cpu",
+      "winnerProfile": "strong",
+      "status": "completed",
+      "steps": 94,
+      "turns": 11,
+      "elapsedMs": 39919,
+      "partialLevelUpResolutionSteps": 0,
+      "issueCount": 0,
+      "warningCount": 3,
+      "issues": [
+        {
+          "kind": "suspicious_decision",
+          "severity": "warning",
+          "step": 29,
+          "turnNumber": 4,
+          "message": "ended turn despite strong candidate: master:wake_up->monster:cpu_back_left"
+        },
+        {
+          "kind": "suspicious_decision",
+          "severity": "warning",
+          "step": 50,
+          "turnNumber": 7,
+          "message": "ended turn despite strong candidate: attack:player_front_right:attack->master:cpu"
+        },
+        {
+          "kind": "suspicious_decision",
+          "severity": "warning",
+          "step": 91,
+          "turnNumber": 11,
+          "message": "ended turn despite strong candidate: master:master_attack->monster:cpu_front_left"
+        }
+      ],
+      "stateSummary": {
+        "currentPlayer": "cpu",
+        "turnNumber": 11,
+        "winner": "cpu",
+        "pendingLevelUp": false,
+        "players": {
+          "player": {
+            "masterId": "white",
+            "hp": 0,
+            "stones": 13,
+            "hand": 5,
+            "deck": 15,
+            "discard": 7
+          },
+          "cpu": {
+            "masterId": "black",
+            "hp": 2,
+            "stones": 4,
+            "hand": 5,
+            "deck": 14,
+            "discard": 8
+          }
+        },
+        "slots": [
+          {
+            "slotKey": "player_front_left",
+            "card": "card_037",
+            "name": "ドノマンティス",
+            "owner": "player",
+            "hp": 5,
+            "level": 2,
+            "status": "active",
+            "actions": "1/1",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "player_front_right",
+            "card": "card_133",
+            "name": "デスシープ",
+            "owner": "player",
+            "hp": 4,
+            "level": 2,
+            "status": "active",
+            "actions": "1/1",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "player_back_left",
+            "card": "card_037",
+            "name": "ドノマンティス",
+            "owner": "player",
+            "hp": 3,
+            "level": 1,
+            "status": "active",
+            "actions": "0/1",
+            "focused": true,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "player_back_right"
+          },
+          {
+            "slotKey": "cpu_front_left",
+            "card": "card_053",
+            "name": "ラティーヌ",
+            "owner": "cpu",
+            "hp": 1,
+            "level": 1,
+            "status": "active",
+            "actions": "1/1",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "cpu_front_right",
+            "card": "card_049",
+            "name": "バルキャノン",
+            "owner": "cpu",
+            "hp": 3,
+            "level": 2,
+            "status": "active",
+            "actions": "0/1",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "cpu_back_left",
+            "card": "card_043",
+            "name": "ガンプ",
+            "owner": "cpu",
+            "hp": 5,
+            "level": 1,
+            "status": "active",
+            "actions": "0/1",
+            "focused": true,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "cpu_back_right"
+          }
+        ]
+      }
+    },
+    {
+      "matchup": "black-pressure",
+      "seed": 402,
+      "candidateSeat": "player",
+      "playerProfile": "white_v2",
+      "cpuProfile": "strong",
+      "playerMaster": "white",
+      "cpuMaster": "black",
+      "playerDeckPreset": "master-lab-white-1377-death-sheep3",
+      "cpuDeckPreset": "black-pressure",
+      "winner": "player",
+      "winnerProfile": "white_v2",
+      "status": "completed",
+      "steps": 94,
+      "turns": 10,
+      "elapsedMs": 45248,
+      "partialLevelUpResolutionSteps": 0,
+      "issueCount": 0,
+      "warningCount": 4,
+      "issues": [
+        {
+          "kind": "suspicious_decision",
+          "severity": "warning",
+          "step": 10,
+          "turnNumber": 2,
+          "message": "ended turn despite strong candidate: master:wake_up->monster:cpu_front_right"
+        },
+        {
+          "kind": "suspicious_decision",
+          "severity": "warning",
+          "step": 20,
+          "turnNumber": 3,
+          "message": "ended turn despite strong candidate: attack:player_front_left:attack->monster:cpu_front_left"
+        },
+        {
+          "kind": "suspicious_decision",
+          "severity": "warning",
+          "step": 27,
+          "turnNumber": 4,
+          "message": "ended turn despite strong candidate: attack:player_back_left:スパイクボール->monster:cpu_front_left"
+        },
+        {
+          "kind": "suspicious_decision",
+          "severity": "warning",
+          "step": 52,
+          "turnNumber": 6,
+          "message": "ended turn despite strong candidate: attack:player_front_right:呪いの刃->master:cpu"
+        }
+      ],
+      "stateSummary": {
+        "currentPlayer": "player",
+        "turnNumber": 10,
+        "winner": "player",
+        "pendingLevelUp": false,
+        "players": {
+          "player": {
+            "masterId": "white",
+            "hp": 6,
+            "stones": 9,
+            "hand": 6,
+            "deck": 16,
+            "discard": 6
+          },
+          "cpu": {
+            "masterId": "black",
+            "hp": 0,
+            "stones": 1,
+            "hand": 4,
+            "deck": 16,
+            "discard": 8
+          }
+        },
+        "slots": [
+          {
+            "slotKey": "player_front_left"
+          },
+          {
+            "slotKey": "player_front_right",
+            "card": "card_133",
+            "name": "デスシープ",
+            "owner": "player",
+            "hp": 6,
+            "level": 2,
+            "status": "active",
+            "actions": "1/1",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "player_back_left"
+          },
+          {
+            "slotKey": "player_back_right",
+            "card": "card_051",
+            "name": "ピグミィ",
+            "owner": "player",
+            "hp": 3,
+            "level": 1,
+            "status": "active",
+            "actions": "0/2",
+            "focused": true,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "cpu_front_left",
+            "card": "card_076",
+            "name": "グングニエル",
+            "owner": "cpu",
+            "hp": 5,
+            "level": 2,
+            "status": "active",
+            "actions": "1/1",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "cpu_front_right"
+          },
+          {
+            "slotKey": "cpu_back_left",
+            "card": "card_049",
+            "name": "バルキャノン",
+            "owner": "cpu",
+            "hp": 3,
+            "level": 2,
+            "status": "active",
+            "actions": "1/1",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "cpu_back_right"
+          }
+        ]
+      }
+    },
+    {
+      "matchup": "black-pressure",
+      "seed": 403,
+      "candidateSeat": "player",
+      "playerProfile": "white_v2",
+      "cpuProfile": "strong",
+      "playerMaster": "white",
+      "cpuMaster": "black",
+      "playerDeckPreset": "master-lab-white-1377-death-sheep3",
+      "cpuDeckPreset": "black-pressure",
+      "winner": "cpu",
+      "winnerProfile": "strong",
+      "status": "completed",
+      "steps": 139,
+      "turns": 17,
+      "elapsedMs": 48641,
+      "partialLevelUpResolutionSteps": 0,
+      "issueCount": 0,
+      "warningCount": 9,
+      "issues": [
+        {
+          "kind": "suspicious_decision",
+          "severity": "warning",
+          "step": 52,
+          "turnNumber": 6,
+          "message": "ended turn despite strong candidate: attack:player_front_right:self_bomb->master:cpu"
+        },
+        {
+          "kind": "suspicious_decision",
+          "severity": "warning",
+          "step": 79,
+          "turnNumber": 9,
+          "message": "ended turn despite strong candidate: master:wake_up->monster:cpu_back_left"
+        },
+        {
+          "kind": "suspicious_decision",
+          "severity": "warning",
+          "step": 89,
+          "turnNumber": 10,
+          "message": "ended turn despite strong candidate: attack:player_front_right:self_bomb->master:cpu"
+        },
+        {
+          "kind": "suspicious_decision",
+          "severity": "warning",
+          "step": 94,
+          "turnNumber": 11,
+          "message": "ended turn despite strong candidate: attack:player_front_right:self_bomb->master:cpu"
+        },
+        {
+          "kind": "suspicious_decision",
+          "severity": "warning",
+          "step": 101,
+          "turnNumber": 12,
+          "message": "ended turn despite strong candidate: attack:player_front_right:self_bomb->master:cpu"
+        },
+        {
+          "kind": "suspicious_decision",
+          "severity": "warning",
+          "step": 105,
+          "turnNumber": 13,
+          "message": "ended turn despite strong candidate: attack:player_front_right:self_bomb->master:cpu"
+        },
+        {
+          "kind": "suspicious_decision",
+          "severity": "warning",
+          "step": 111,
+          "turnNumber": 14,
+          "message": "ended turn despite strong candidate: attack:player_front_right:storm_bomb->monster:cpu_back_left"
+        },
+        {
+          "kind": "suspicious_decision",
+          "severity": "warning",
+          "step": 117,
+          "turnNumber": 15,
+          "message": "ended turn despite strong candidate: attack:player_front_right:storm_bomb->monster:cpu_back_left"
+        },
+        {
+          "kind": "suspicious_decision",
+          "severity": "warning",
+          "step": 124,
+          "turnNumber": 16,
+          "message": "ended turn despite strong candidate: attack:player_front_right:storm_bomb->monster:cpu_back_left"
+        }
+      ],
+      "stateSummary": {
+        "currentPlayer": "cpu",
+        "turnNumber": 17,
+        "winner": "cpu",
+        "pendingLevelUp": false,
+        "players": {
+          "player": {
+            "masterId": "white",
+            "hp": 0,
+            "stones": 29,
+            "hand": 5,
+            "deck": 9,
+            "discard": 14
+          },
+          "cpu": {
+            "masterId": "black",
+            "hp": 4,
+            "stones": 4,
+            "hand": 6,
+            "deck": 8,
+            "discard": 13
+          }
+        },
+        "slots": [
+          {
+            "slotKey": "player_front_left"
+          },
+          {
+            "slotKey": "player_front_right",
+            "card": "bomuzo",
+            "name": "ボムゾウ",
+            "owner": "player",
+            "hp": 2,
+            "level": 2,
+            "status": "active",
+            "actions": "1/1",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": true
+          },
+          {
+            "slotKey": "player_back_left"
+          },
+          {
+            "slotKey": "player_back_right",
+            "card": "yanbaru",
+            "name": "ヤンバル",
+            "owner": "player",
+            "hp": 3,
+            "level": 2,
+            "status": "active",
+            "actions": "1/1",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "cpu_front_left",
+            "card": "card_067",
+            "name": "ゾンビ",
+            "owner": "cpu",
+            "hp": 3,
+            "level": 1,
+            "status": "active",
+            "actions": "1/1",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "cpu_front_right",
+            "card": "card_044",
+            "name": "ヒートロン",
+            "owner": "cpu",
+            "hp": 4,
+            "level": 1,
+            "status": "active",
+            "actions": "0/1",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "cpu_back_left"
+          },
+          {
+            "slotKey": "cpu_back_right",
+            "card": "card_043",
+            "name": "ガンプ",
+            "owner": "cpu",
+            "hp": 5,
+            "level": 1,
+            "status": "active",
+            "actions": "0/1",
+            "focused": true,
+            "berserkPower": false,
+            "shielded": false
+          }
+        ]
+      }
+    },
+    {
+      "matchup": "black-pressure",
+      "seed": 404,
+      "candidateSeat": "player",
+      "playerProfile": "white_v2",
+      "cpuProfile": "strong",
+      "playerMaster": "white",
+      "cpuMaster": "black",
+      "playerDeckPreset": "master-lab-white-1377-death-sheep3",
+      "cpuDeckPreset": "black-pressure",
+      "winner": "player",
+      "winnerProfile": "white_v2",
+      "status": "completed",
+      "steps": 238,
+      "turns": 25,
+      "elapsedMs": 76047,
+      "partialLevelUpResolutionSteps": 0,
+      "issueCount": 0,
+      "warningCount": 3,
+      "issues": [
+        {
+          "kind": "suspicious_decision",
+          "severity": "warning",
+          "step": 102,
+          "turnNumber": 10,
+          "message": "ended turn despite strong candidate: attack:player_front_left:attack->monster:cpu_front_left"
+        },
+        {
+          "kind": "suspicious_decision",
+          "severity": "warning",
+          "step": 176,
+          "turnNumber": 17,
+          "message": "ended turn despite strong candidate: attack:player_front_left:ダイン斬り->monster:cpu_front_left"
+        },
+        {
+          "kind": "suspicious_decision",
+          "severity": "warning",
+          "step": 181,
+          "turnNumber": 18,
+          "message": "ended turn despite strong candidate: attack:player_front_right:self_bomb->master:cpu"
+        }
+      ],
+      "stateSummary": {
+        "currentPlayer": "cpu",
+        "turnNumber": 25,
+        "winner": "player",
+        "pendingLevelUp": false,
+        "players": {
+          "player": {
+            "masterId": "white",
+            "hp": 3,
+            "stones": 16,
+            "hand": 5,
+            "deck": 1,
+            "discard": 21
+          },
+          "cpu": {
+            "masterId": "black",
+            "hp": 0,
+            "stones": 7,
+            "hand": 5,
+            "deck": 0,
+            "discard": 22
+          }
+        },
+        "slots": [
+          {
+            "slotKey": "player_front_left",
+            "card": "card_133",
+            "name": "デスシープ",
+            "owner": "player",
+            "hp": 6,
+            "level": 1,
+            "status": "active",
+            "actions": "0/1",
+            "focused": true,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "player_front_right",
+            "card": "card_037",
+            "name": "ドノマンティス",
+            "owner": "player",
+            "hp": 5,
+            "level": 1,
+            "status": "active",
+            "actions": "1/1",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "player_back_left",
+            "card": "yanbaru",
+            "name": "ヤンバル",
+            "owner": "player",
+            "hp": 3,
+            "level": 2,
+            "status": "active",
+            "actions": "1/1",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "player_back_right"
+          },
+          {
+            "slotKey": "cpu_front_left",
+            "card": "card_083",
+            "name": "フーヨウ",
+            "owner": "cpu",
+            "hp": 3,
+            "level": 1,
+            "status": "active",
+            "actions": "0/1",
+            "focused": true,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "cpu_front_right",
+            "card": "card_047",
+            "name": "真勇者ダイン",
+            "owner": "cpu",
+            "hp": 6,
+            "level": 1,
+            "status": "active",
+            "actions": "0/1",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "cpu_back_left",
+            "card": "card_076",
+            "name": "グングニエル",
+            "owner": "cpu",
+            "hp": 5,
+            "level": 1,
+            "status": "active",
+            "actions": "0/1",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "cpu_back_right"
+          }
+        ]
+      }
+    },
+    {
+      "matchup": "black-pressure",
+      "seed": 405,
+      "candidateSeat": "player",
+      "playerProfile": "white_v2",
+      "cpuProfile": "strong",
+      "playerMaster": "white",
+      "cpuMaster": "black",
+      "playerDeckPreset": "master-lab-white-1377-death-sheep3",
+      "cpuDeckPreset": "black-pressure",
+      "winner": "player",
+      "winnerProfile": "white_v2",
+      "status": "completed",
+      "steps": 94,
+      "turns": 11,
+      "elapsedMs": 41749,
+      "partialLevelUpResolutionSteps": 0,
+      "issueCount": 0,
+      "warningCount": 1,
+      "issues": [
+        {
+          "kind": "suspicious_decision",
+          "severity": "warning",
+          "step": 9,
+          "turnNumber": 2,
+          "message": "ended turn despite strong candidate: master:wake_up->monster:cpu_back_left"
+        }
+      ],
+      "stateSummary": {
+        "currentPlayer": "player",
+        "turnNumber": 11,
+        "winner": "player",
+        "pendingLevelUp": false,
+        "players": {
+          "player": {
+            "masterId": "white",
+            "hp": 4,
+            "stones": 16,
+            "hand": 6,
+            "deck": 15,
+            "discard": 8
+          },
+          "cpu": {
+            "masterId": "black",
+            "hp": 0,
+            "stones": 2,
+            "hand": 2,
+            "deck": 15,
+            "discard": 11
+          }
+        },
+        "slots": [
+          {
+            "slotKey": "player_front_left"
+          },
+          {
+            "slotKey": "player_front_right",
+            "card": "polyspinner",
+            "name": "ポリスピナー",
+            "owner": "player",
+            "hp": 1,
+            "level": 2,
+            "status": "active",
+            "actions": "2/2",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "player_back_left"
+          },
+          {
+            "slotKey": "player_back_right"
+          },
+          {
+            "slotKey": "cpu_front_left",
+            "card": "card_071",
+            "name": "アンノウン",
+            "owner": "cpu",
+            "hp": 5,
+            "level": 1,
+            "status": "prepared",
+            "actions": "0/1",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "cpu_front_right"
+          },
+          {
+            "slotKey": "cpu_back_left",
+            "card": "card_049",
+            "name": "バルキャノン",
+            "owner": "cpu",
+            "hp": 3,
+            "level": 2,
+            "status": "active",
+            "actions": "1/1",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "cpu_back_right"
+          }
+        ]
+      }
+    },
+    {
+      "matchup": "black-pressure",
+      "seed": 406,
+      "candidateSeat": "player",
+      "playerProfile": "white_v2",
+      "cpuProfile": "strong",
+      "playerMaster": "white",
+      "cpuMaster": "black",
+      "playerDeckPreset": "master-lab-white-1377-death-sheep3",
+      "cpuDeckPreset": "black-pressure",
+      "winner": "cpu",
+      "winnerProfile": "strong",
+      "status": "completed",
+      "steps": 143,
+      "turns": 16,
+      "elapsedMs": 65903,
+      "partialLevelUpResolutionSteps": 0,
+      "issueCount": 0,
+      "warningCount": 1,
+      "issues": [
+        {
+          "kind": "suspicious_decision",
+          "severity": "warning",
+          "step": 52,
+          "turnNumber": 6,
+          "message": "ended turn despite strong candidate: master:wake_up->monster:cpu_front_left"
+        }
+      ],
+      "stateSummary": {
+        "currentPlayer": "cpu",
+        "turnNumber": 16,
+        "winner": "cpu",
+        "pendingLevelUp": false,
+        "players": {
+          "player": {
+            "masterId": "white",
+            "hp": 0,
+            "stones": 21,
+            "hand": 5,
+            "deck": 10,
+            "discard": 14
+          },
+          "cpu": {
+            "masterId": "black",
+            "hp": 1,
+            "stones": 3,
+            "hand": 6,
+            "deck": 9,
+            "discard": 13
+          }
+        },
+        "slots": [
+          {
+            "slotKey": "player_front_left"
+          },
+          {
+            "slotKey": "player_front_right",
+            "card": "card_051",
+            "name": "ピグミィ",
+            "owner": "player",
+            "hp": 3,
+            "level": 1,
+            "status": "active",
+            "actions": "0/2",
+            "focused": true,
+            "berserkPower": false,
+            "shielded": true
+          },
+          {
+            "slotKey": "player_back_left"
+          },
+          {
+            "slotKey": "player_back_right"
+          },
+          {
+            "slotKey": "cpu_front_left",
+            "card": "card_047",
+            "name": "真勇者ダイン",
+            "owner": "cpu",
+            "hp": 5,
+            "level": 2,
+            "status": "active",
+            "actions": "1/1",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "cpu_front_right",
+            "card": "card_009",
+            "name": "神斬丸",
+            "owner": "cpu",
+            "hp": 5,
+            "level": 2,
+            "status": "active",
+            "actions": "1/1",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "cpu_back_left"
+          },
+          {
+            "slotKey": "cpu_back_right"
+          }
+        ]
+      }
+    },
+    {
+      "matchup": "black-pressure",
+      "seed": 407,
+      "candidateSeat": "player",
+      "playerProfile": "white_v2",
+      "cpuProfile": "strong",
+      "playerMaster": "white",
+      "cpuMaster": "black",
+      "playerDeckPreset": "master-lab-white-1377-death-sheep3",
+      "cpuDeckPreset": "black-pressure",
+      "winner": "player",
+      "winnerProfile": "white_v2",
+      "status": "completed",
+      "steps": 86,
+      "turns": 10,
+      "elapsedMs": 49396,
+      "partialLevelUpResolutionSteps": 0,
+      "issueCount": 0,
+      "warningCount": 0,
+      "issues": [],
+      "stateSummary": {
+        "currentPlayer": "player",
+        "turnNumber": 10,
+        "winner": "player",
+        "pendingLevelUp": false,
+        "players": {
+          "player": {
+            "masterId": "white",
+            "hp": 1,
+            "stones": 20,
+            "hand": 6,
+            "deck": 16,
+            "discard": 7
+          },
+          "cpu": {
+            "masterId": "black",
+            "hp": 0,
+            "stones": 2,
+            "hand": 2,
+            "deck": 16,
+            "discard": 8
+          }
+        },
+        "slots": [
+          {
+            "slotKey": "player_front_left"
+          },
+          {
+            "slotKey": "player_front_right",
+            "card": "polyspinner",
+            "name": "ポリスピナー",
+            "owner": "player",
+            "hp": 3,
+            "level": 2,
+            "status": "active",
+            "actions": "2/2",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "player_back_left"
+          },
+          {
+            "slotKey": "player_back_right"
+          },
+          {
+            "slotKey": "cpu_front_left",
+            "card": "card_076",
+            "name": "グングニエル",
+            "owner": "cpu",
+            "hp": 4,
+            "level": 2,
+            "status": "active",
+            "actions": "1/1",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "cpu_front_right",
+            "card": "card_009",
+            "name": "神斬丸",
+            "owner": "cpu",
+            "hp": 5,
+            "level": 1,
+            "status": "prepared",
+            "actions": "0/1",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "cpu_back_left",
+            "card": "card_112",
+            "name": "ロブーン",
+            "owner": "cpu",
+            "hp": 1,
+            "level": 1,
+            "status": "active",
+            "actions": "1/1",
+            "focused": true,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "cpu_back_right",
+            "card": "card_049",
+            "name": "バルキャノン",
+            "owner": "cpu",
+            "hp": 3,
+            "level": 1,
+            "status": "prepared",
+            "actions": "0/1",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          }
+        ]
+      }
+    },
+    {
+      "matchup": "black-pressure",
+      "seed": 408,
+      "candidateSeat": "player",
+      "playerProfile": "white_v2",
+      "cpuProfile": "strong",
+      "playerMaster": "white",
+      "cpuMaster": "black",
+      "playerDeckPreset": "master-lab-white-1377-death-sheep3",
+      "cpuDeckPreset": "black-pressure",
+      "winner": "cpu",
+      "winnerProfile": "strong",
+      "status": "completed",
+      "steps": 106,
+      "turns": 12,
+      "elapsedMs": 95977,
+      "partialLevelUpResolutionSteps": 0,
+      "issueCount": 0,
+      "warningCount": 1,
+      "issues": [
+        {
+          "kind": "suspicious_decision",
+          "severity": "warning",
+          "step": 9,
+          "turnNumber": 2,
+          "message": "ended turn despite strong candidate: master:wake_up->monster:cpu_back_left"
+        }
+      ],
+      "stateSummary": {
+        "currentPlayer": "cpu",
+        "turnNumber": 12,
+        "winner": "cpu",
+        "pendingLevelUp": false,
+        "players": {
+          "player": {
+            "masterId": "white",
+            "hp": 0,
+            "stones": 13,
+            "hand": 5,
+            "deck": 14,
+            "discard": 10
+          },
+          "cpu": {
+            "masterId": "black",
+            "hp": 2,
+            "stones": 0,
+            "hand": 6,
+            "deck": 13,
+            "discard": 10
+          }
+        },
+        "slots": [
+          {
+            "slotKey": "player_front_left",
+            "card": "card_037",
+            "name": "ドノマンティス",
+            "owner": "player",
+            "hp": 3,
+            "level": 1,
+            "status": "active",
+            "actions": "0/1",
+            "focused": true,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "player_front_right"
+          },
+          {
+            "slotKey": "player_back_left"
+          },
+          {
+            "slotKey": "player_back_right"
+          },
+          {
+            "slotKey": "cpu_front_left"
+          },
+          {
+            "slotKey": "cpu_front_right",
+            "card": "card_076",
+            "name": "グングニエル",
+            "owner": "cpu",
+            "hp": 4,
+            "level": 2,
+            "status": "active",
+            "actions": "1/1",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "cpu_back_left"
+          },
+          {
+            "slotKey": "cpu_back_right"
+          }
+        ]
+      }
+    },
+    {
+      "matchup": "black-pressure",
+      "seed": 409,
+      "candidateSeat": "player",
+      "playerProfile": "white_v2",
+      "cpuProfile": "strong",
+      "playerMaster": "white",
+      "cpuMaster": "black",
+      "playerDeckPreset": "master-lab-white-1377-death-sheep3",
+      "cpuDeckPreset": "black-pressure",
+      "winner": "cpu",
+      "winnerProfile": "strong",
+      "status": "completed",
+      "steps": 118,
+      "turns": 12,
+      "elapsedMs": 67235,
+      "partialLevelUpResolutionSteps": 0,
+      "issueCount": 0,
+      "warningCount": 4,
+      "issues": [
+        {
+          "kind": "suspicious_decision",
+          "severity": "warning",
+          "step": 9,
+          "turnNumber": 2,
+          "message": "ended turn despite strong candidate: master:wake_up->monster:cpu_front_right"
+        },
+        {
+          "kind": "suspicious_decision",
+          "severity": "warning",
+          "step": 67,
+          "turnNumber": 7,
+          "message": "ended turn despite strong candidate: master:wake_up->monster:cpu_back_left"
+        },
+        {
+          "kind": "suspicious_decision",
+          "severity": "warning",
+          "step": 88,
+          "turnNumber": 9,
+          "message": "ended turn despite strong candidate: master:wake_up->monster:cpu_back_left"
+        },
+        {
+          "kind": "suspicious_decision",
+          "severity": "warning",
+          "step": 94,
+          "turnNumber": 10,
+          "message": "ended turn despite strong candidate: attack:player_front_right:self_bomb->monster:cpu_front_right"
+        }
+      ],
+      "stateSummary": {
+        "currentPlayer": "cpu",
+        "turnNumber": 12,
+        "winner": "cpu",
+        "pendingLevelUp": false,
+        "players": {
+          "player": {
+            "masterId": "white",
+            "hp": 0,
+            "stones": 16,
+            "hand": 5,
+            "deck": 14,
+            "discard": 8
+          },
+          "cpu": {
+            "masterId": "black",
+            "hp": 4,
+            "stones": 0,
+            "hand": 4,
+            "deck": 10,
+            "discard": 14
+          }
+        },
+        "slots": [
+          {
+            "slotKey": "player_front_left",
+            "card": "card_133",
+            "name": "デスシープ",
+            "owner": "player",
+            "hp": 4,
+            "level": 2,
+            "status": "active",
+            "actions": "1/1",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": true
+          },
+          {
+            "slotKey": "player_front_right",
+            "card": "card_051",
+            "name": "ピグミィ",
+            "owner": "player",
+            "hp": 3,
+            "level": 2,
+            "status": "active",
+            "actions": "1/2",
+            "focused": true,
+            "berserkPower": false,
+            "shielded": true
+          },
+          {
+            "slotKey": "player_back_left",
+            "card": "card_051",
+            "name": "ピグミィ",
+            "owner": "player",
+            "hp": 3,
+            "level": 2,
+            "status": "active",
+            "actions": "1/2",
+            "focused": true,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "player_back_right"
+          },
+          {
+            "slotKey": "cpu_front_left",
+            "card": "card_109",
+            "name": "ナッツロックル",
+            "owner": "cpu",
+            "hp": 5,
+            "level": 1,
+            "status": "active",
+            "actions": "1/1",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "cpu_front_right",
+            "card": "card_071",
+            "name": "アンノウン",
+            "owner": "cpu",
+            "hp": 4,
+            "level": 1,
+            "status": "active",
+            "actions": "1/1",
+            "focused": false,
+            "berserkPower": false,
+            "shielded": false
+          },
+          {
+            "slotKey": "cpu_back_left"
+          },
+          {
+            "slotKey": "cpu_back_right"
+          }
+        ]
+      }
+    }
+  ],
+  "summary": {
+    "white-baseline": {
+      "games": 20,
+      "candidateWins": 14,
+      "opponentWins": 6,
+      "unfinished": 0,
+      "failures": 0,
+      "warnings": 39,
+      "averageElapsedMs": 152503.75
+    },
+    "black-pressure": {
+      "games": 20,
+      "candidateWins": 10,
+      "opponentWins": 10,
+      "unfinished": 0,
+      "failures": 0,
+      "warnings": 49,
+      "averageElapsedMs": 53740.3
+    }
+  },
+  "limitations": [
+    "同seed・両席を対にした機能/回帰スモークであり、少数試合は強さの証明ではない。",
+    "40試合でも採用判断は行わず、勝ち筋/警告/所要時間の追加調査に限定する。",
+    "時間値は環境依存の観測値で、seed再現性や勝敗の比較指標にしない。",
+    "whiteLowStoneFocusMissedAttackPenalty=8は候補defaultへ追加していない。"
+  ]
+}

@@ -227,6 +227,8 @@ function isHumanAction(value: unknown): value is HumanActionSnapshot {
       return hasOnlyKeys(value, ["type", "slotKey"]) && isSlotKey(value.slotKey);
     case "master_hp_draw":
       return hasOnlyKeys(value, ["type"]);
+    case "experimental_master_action":
+      return isExperimentalMasterAction(value);
     case "discard_hand":
       return hasOnlyKeys(value, ["type", "handInstanceId"]) && isString(value.handInstanceId, 256);
     case "resolve_level_up":
@@ -244,7 +246,7 @@ function isAiDecision(value: unknown): value is AiDecisionSnapshot {
   const optional = hasOnlyKeys(value, [
     "type", "reason", "score", "trace", "action", "actionId", "target", "handInstanceId", "slotKey",
     "fromSlotKey", "toSlotKey", "discardHandInstanceIds", "levels", "superHandInstanceId",
-    "searchCategory", "rotationDirection",
+    "searchCategory", "rotationDirection", "master", "secondaryTarget",
   ]);
   if (!optional || !isOptionalAiTrace(value.trace)) return false;
   const decision = { ...value } as JsonRecord;
@@ -277,6 +279,15 @@ function isOptionalAiTrace(value: unknown): boolean {
     isFiniteNumber(plan.responseScore) && isInteger(plan.generatedPlanCount) && isInteger(plan.comparedRootCount) &&
     isInteger(plan.opponentPlanCount) && optionalNumber(plan.opponentSampleCount) && optionalNumber(plan.opponentWorstResponseScore) &&
     isOptionalString(plan.opponentKnowledge, 4_000) && isStringArray(plan.actions, 500) && isStringArray(plan.opponentActions, 500);
+}
+
+function isExperimentalMasterAction(value: unknown): boolean {
+  if (!isRecord(value) || !hasOnlyKeys(value, ["type", "master", "actionId", "target", "secondaryTarget"]) ||
+    value.type !== "experimental_master_action" || (value.master !== "decoy" && value.master !== "timing") ||
+    !isString(value.actionId, 256) || !isTarget(value.target) ||
+    (value.secondaryTarget !== undefined && !isTarget(value.secondaryTarget))) return false;
+  const allowed = value.master === "decoy" ? new Set(["provoke", "scapegoat"]) : new Set(["quick_call", "shift"]);
+  return allowed.has(value.actionId);
 }
 
 function isStateSnapshot(value: unknown): boolean {

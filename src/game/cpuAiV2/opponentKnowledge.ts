@@ -1,5 +1,6 @@
-import { getCardDef, getCardPool, getMonsterDef } from "../cards";
+import { getCardDef, getCardDefsByPool, getCardPool, getMonsterDef } from "../cards";
 import { shuffle } from "../ruleEngine/random";
+import type { OpponentKnowledgePolicy } from "../cpuAiTypes";
 import type { CardInstance, GameState, MonsterState, PlayerId, SlotKey, SuperLevelUpOption } from "../types";
 
 /**
@@ -11,6 +12,7 @@ export function createPublicInformationState(
   state: GameState,
   perspective: PlayerId,
   sampleIndex = 0,
+  policy: OpponentKnowledgePolicy = "known_deck",
 ): GameState {
   const opponent = opponentOf(perspective);
   const next = createPlanningState(state);
@@ -20,17 +22,25 @@ export function createPublicInformationState(
       return monster?.owner === opponent && monster.status === "prepared";
     })
     .sort();
-  const hiddenPreparedCards = hiddenPreparedSlots.flatMap((slotKey) => {
-    const monster = state.slots[slotKey].monster;
-    return monster ? [{ cardId: monster.cardId, instanceId: monster.instanceId }] : [];
-  });
   const opponentPlayer = state.players[opponent];
-  const hiddenPool = stableCanonicalCards([
-    ...opponentPlayer.hand,
-    ...opponentPlayer.deck,
-    ...hiddenPreparedCards,
-  ]);
-  const publicSeed = publicInformationSeed(state, perspective, sampleIndex, hiddenPool);
+  const hiddenSize = opponentPlayer.hand.length + opponentPlayer.deck.length + hiddenPreparedSlots.length;
+  const knownHiddenPool = policy === "unknown_composition" ? [] : stableCanonicalCards([
+        ...opponentPlayer.hand,
+        ...opponentPlayer.deck,
+        ...hiddenPreparedSlots.flatMap((slotKey) => {
+          const monster = state.slots[slotKey].monster;
+          return monster ? [{ cardId: monster.cardId, instanceId: monster.instanceId }] : [];
+        }),
+      ]);
+  const publicSeed = publicInformationSeed(
+    state,
+    perspective,
+    sampleIndex,
+    policy === "unknown_composition" ? [] : knownHiddenPool,
+  );
+  const hiddenPool = policy === "unknown_composition"
+    ? createUnknownCompositionPool(state, opponent, hiddenSize, hiddenPreparedSlots.length, publicSeed)
+    : knownHiddenPool;
   const shuffledHiddenPool = shuffle(hiddenPool, publicSeed);
   const preparedCards = shuffle(
     shuffledHiddenPool.filter((card) => isLegalPreparedCard(card.cardId)),
@@ -45,6 +55,8 @@ export function createPublicInformationState(
     const original = state.slots[slotKey].monster;
     if (card && original) {
       next.slots[slotKey].monster = canonicalPreparedMonster(card.cardId, opponent, slotKey);
+    } else {
+      throw new Error("Unknown-composition sampler could not produce a legal prepared monster.");
     }
   }
 
@@ -105,11 +117,16 @@ export function determinizeOpponentPrivateZones(
   state: GameState,
   perspective: PlayerId,
   sampleIndex = 0,
+  policy: OpponentKnowledgePolicy = "known_deck",
 ): GameState {
-  return createPublicInformationState(state, perspective, sampleIndex);
+  return createPublicInformationState(state, perspective, sampleIndex, policy);
 }
 
-export function publicInformationStateKey(state: GameState, perspective: PlayerId): string {
+export function publicInformationStateKey(
+  state: GameState,
+  perspective: PlayerId,
+  policy: OpponentKnowledgePolicy = "known_deck",
+): string {
   const opponent = opponentOf(perspective);
   const hiddenPreparedSlots = (Object.keys(state.slots) as SlotKey[])
     .filter((slotKey) => {
@@ -117,14 +134,14 @@ export function publicInformationStateKey(state: GameState, perspective: PlayerI
       return monster?.owner === opponent && monster.status === "prepared";
     })
     .sort();
-  const hiddenPool = stableCanonicalCards([
-    ...state.players[opponent].hand,
-    ...state.players[opponent].deck,
-    ...hiddenPreparedSlots.flatMap((slotKey) => {
-      const monster = state.slots[slotKey].monster;
-      return monster ? [{ cardId: monster.cardId, instanceId: monster.instanceId }] : [];
-    }),
-  ]);
+  const hiddenPool = policy === "unknown_composition" ? [] : stableCanonicalCards([
+        ...state.players[opponent].hand,
+        ...state.players[opponent].deck,
+        ...hiddenPreparedSlots.flatMap((slotKey) => {
+          const monster = state.slots[slotKey].monster;
+          return monster ? [{ cardId: monster.cardId, instanceId: monster.instanceId }] : [];
+        }),
+      ]);
   return JSON.stringify({
     publicSeed: publicInformationSeed(state, perspective, 0, hiddenPool),
     currentPlayer: state.currentPlayer,
@@ -136,6 +153,7 @@ export function publicInformationStateKey(state: GameState, perspective: PlayerI
           maxLevels: state.pendingLevelUp.maxLevels,
         }
       : null,
+    ...publicMasterActionExchangeKey(state),
     players: Object.fromEntries((["player", "cpu"] as const).map((playerId) => {
       const player = state.players[playerId];
       return [playerId, {
@@ -160,9 +178,46 @@ export function publicInformationStateKey(state: GameState, perspective: PlayerI
       }
       return [slotKey, publicMonster(monster)];
     }),
-    hiddenPool: hiddenPool.map((card) => card.cardId).sort(),
+    hiddenPool: policy === "unknown_composition" ? undefined : hiddenPool.map((card) => card.cardId).sort(),
     hiddenPreparedSlots,
+    opponentKnowledgePolicy: policy,
   });
+}
+
+function createUnknownCompositionPool(
+  state: GameState,
+  opponent: PlayerId,
+  size: number,
+  preparedCount: number,
+  publicSeed: number,
+): CardInstance[] {
+  if (size <= 0) {
+    return [];
+  }
+  const counts = new Map<string, number>();
+  for (const definition of getCardDefsByPool("normal")) {
+    counts.set(definition.id, 3);
+  }
+  const publicKnown = [
+    ...state.players[opponent].discard,
+    ...(Object.values(state.slots).flatMap(({ monster }) =>
+      monster && monster.owner === opponent && monster.status !== "prepared"
+        ? [{ cardId: monster.cardId, instanceId: monster.instanceId }]
+        : [])),
+  ];
+  for (const card of publicKnown) {
+    counts.set(card.cardId, Math.max(0, (counts.get(card.cardId) ?? 0) - 1));
+  }
+  const candidatePool = [...counts.entries()].flatMap(([cardId, count]) =>
+    Array.from({ length: count }, (_, copy) => ({ cardId, instanceId: `unknown-pool:${cardId}:${copy}` })),
+  );
+  const shuffled = shuffle(candidatePool, hashString(`${publicSeed}:unknown-composition`));
+  const prepared = shuffled.filter((card) => isLegalPreparedCard(card.cardId)).slice(0, preparedCount);
+  const preparedIds = new Set(prepared.map((card) => card.instanceId));
+  const remainder = shuffled.filter((card) => !preparedIds.has(card.instanceId));
+  return [...prepared, ...remainder]
+    .slice(0, size)
+    .map((card, index) => ({ ...card, instanceId: `unknown:${index}:${card.cardId}` }));
 }
 
 function publicInformationSeed(
@@ -185,6 +240,7 @@ function publicInformationSeed(
           maxLevels: state.pendingLevelUp.maxLevels,
         }
       : null,
+    ...publicMasterActionExchangeKey(state),
     players: Object.fromEntries((["player", "cpu"] as const).map((playerId) => {
       const player = state.players[playerId];
       return [playerId, {
@@ -214,6 +270,23 @@ function publicInformationSeed(
     hiddenPool: hiddenPool.map((card) => card.cardId).sort(),
   };
   return hashString(JSON.stringify(publicState));
+}
+
+function publicMasterActionExchangeKey(state: GameState): {
+  masterActionsExchanged: { player: boolean; cpu: boolean };
+  masterActionsExchangeExpiresOnStartOf: PlayerId | null;
+} | Record<string, never> {
+  const player = state.players.player.masterActionsExchanged === true;
+  const cpu = state.players.cpu.masterActionsExchanged === true;
+  const expiresOnStartOf = state.masterActionsExchangeExpiresOnStartOf;
+  if (!player && !cpu && !expiresOnStartOf) {
+    // Preserve the established sampler seed for ordinary games with no exchange state.
+    return {};
+  }
+  return {
+    masterActionsExchanged: { player, cpu },
+    masterActionsExchangeExpiresOnStartOf: expiresOnStartOf ?? null,
+  };
 }
 
 function publicMonster(monster: MonsterState): Omit<MonsterState, "instanceId"> {

@@ -13,7 +13,9 @@ export type BattleJournalWorkerInput =
   | { operation: "undo"; journal: BattleJournal; cursor: number; expectedState: GameState }
   | { operation: "branch"; journal: BattleJournal; cursor: number }
   | { operation: "import"; json: string }
-  | { operation: "export"; journal: BattleJournal };
+  | { operation: "export"; journal: BattleJournal }
+  | { operation: "coach"; journal: BattleJournal; result: import("../sessions/types").SessionBattleResult; seat: import("../game/types").PlayerId }
+  | { operation: "restore-session"; json: string };
 
 export interface BattleJournalWorkerCompletion {
   requestId: number;
@@ -117,7 +119,9 @@ function addRequestMetadata(input: BattleJournalWorkerInput, requestId: number, 
     case "undo":
     case "branch": return { ...input, requestId, generation };
     case "import":
-    case "export": return { ...input, requestId, generation };
+    case "export":
+    case "coach":
+    case "restore-session": return { ...input, requestId, generation };
   }
 }
 
@@ -127,7 +131,8 @@ function isWorkerResponse(value: unknown): value is BattleJournalWorkerResponse 
   if (!hasRequestToken(value) || typeof response.operation !== "string") return false;
   if (response.type === "stage") {
     return response.stage === "replaying" || response.stage === "verifying-branch" ||
-      response.stage === "validating-import" || response.stage === "validating-export";
+      response.stage === "validating-import" || response.stage === "validating-export" ||
+      response.stage === "analyzing-coach" || response.stage === "restoring-session";
   }
   if (response.type !== "result" || typeof response.result !== "object" || response.result === null) return false;
   const result = response.result as { ok?: unknown; value?: unknown; error?: unknown };

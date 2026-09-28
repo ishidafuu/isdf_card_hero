@@ -1,4 +1,5 @@
 import type { AiEvaluationWeights } from "./aiWeights";
+import type { ExperimentContextV1 } from "./experimentalContext";
 import type {
   AiDecisionTraceSnapshot,
   AiTurnPlanTrace,
@@ -24,6 +25,7 @@ export const CPU_AI_PROFILES = [
 
 export type CpuAiProfile = (typeof CPU_AI_PROFILES)[number];
 export type CpuAiProfiles = Record<PlayerId, CpuAiProfile>;
+export type OpponentKnowledgePolicy = "known_deck" | "unknown_composition";
 
 export interface CpuAiSearchOptions {
   detailedWidth?: number;
@@ -88,6 +90,7 @@ export type CpuAiDecisionBiasId =
   | "attack_master"
   | "attack_monster"
   | "master_action"
+  | "experimental_master_action"
   | "magic"
   | "summon"
   | "move"
@@ -158,6 +161,10 @@ export interface CpuAiOptions {
   searches?: Partial<Record<PlayerId, CpuAiSearchOptions>>;
   tuning?: CpuAiTuning;
   tunings?: Partial<Record<PlayerId, CpuAiTuning>>;
+  experimentalContext?: ExperimentContextV1;
+  /** Opt-in for v2 sessions; v1 review history keeps currentPlayer semantics. */
+  reviewActorByPendingOwner?: boolean;
+  opponentKnowledgePolicy?: OpponentKnowledgePolicy;
 }
 
 export interface CpuDecisionTrace extends AiDecisionTraceSnapshot {}
@@ -219,6 +226,15 @@ export type CpuDecision = (
       type: "resolve_level_up";
       levels: number;
       superHandInstanceId?: string;
+      reason: string;
+      score: number;
+    }
+  | {
+      type: "experimental_master_action";
+      master: "decoy" | "timing";
+      actionId: string;
+      target: Target;
+      secondaryTarget?: Target;
       reason: string;
       score: number;
     }

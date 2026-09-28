@@ -1,6 +1,6 @@
 # プロダクト完成計画
 
-この文書は実装順と完了判定を管理する。チェックは実装・対象検証・フェイズレビューがすべて完了した項目だけに付ける。初回実装だけでは完了にしない。2026-09-28に短期フェイズの全8項目、2026-09-29に中期フェイズの全7項目をrootがレビュー承認済み。
+この文書は実装順と完了判定を管理する。チェックは実装・対象検証・フェイズレビューがすべて完了した項目だけに付ける。初回実装だけでは完了にしない。2026-09-28に短期フェイズの全8項目、2026-09-29に中期フェイズの全7項目、後段5項目をrootが最終レビュー承認済み。全20項目完了。
 
 ## 短期フェイズ
 
@@ -35,6 +35,8 @@
 
 中期最終証跡（2026-09-29、root実施・承認）: `npm test` は52 files / 729 tests pass（389.54秒）、`npm run build` pass（500KB超chunkのwarningあり）、local ChromiumでE2Eは9/9 pass（実stdout: `9 passed (1.8m)`）。GitHub CIは設定済みだが、remote runは未実行。axeはPlay/Spectate/Analyze、設定、DeckSetup basic/research、tutorial等の実画面検査で0 violations。画像decode完了を待つ検査後の4枚の固定seed PNGをrootが目視承認した。visual回帰はgeometry/color/radiusのJSON契約を比較し、PNGは目視補助でありpixel差分baselineではない。242 commands（review historyなし）のseek/parse測定と、別条件の482 command rollover stressは混同しない。後者は空の初期review history・eventLog有効からhuman/AI end_turn各241件を実記録し、482 commandsのseek後hash一致、human/AI history各240件・最新sequence 241を確認。再検証の記録43,093ms、seek 23,086.8ms。dual32-v2 hashと、検証済みstress journal（`output/replay-stress/482-command-journal.json`、98,462 bytes）をrootの実ブラウザー確認に使用した。worker経由の482-command import中は50msごとのresponsive probeが32回（約1.6秒）進行。cancel、Current game、New Gameによる後続意図の後に古い結果がlive header/journalを上書きせず、page errorsも0件。8 smoke benchmarkは失敗0（White 3–1、Black 2–2）だが、強さや採用可否の証明ではない。追加40件の追試は未完了であり、完了扱いしない。
 
+中期以後の追試（2026-09-29）: 上記「追加40件未完了」は中期ゲート時点の履歴として維持する。その後、中期コミット時点のソースで別途40局を完了し、failure/unfinished 0、partial 0を確認した。White-baseline 14–6、black-pressure 10–10。これは後段core変更前の追試で、最新版の戦略評価や強さの証明ではない。詳細は[40局ベンチマーク](ai_playtest_reports/analysis/2026-09-28_white_v2_seat_benchmark.md)。
+
 中期のjournal測定は負荷の大きい同期replayをWorkerへ移す判断の根拠にもなった。create/append/seek/parse/import/export/undo/branchの対象テスト、E2Eのread-only seek・JSON往復・undo分岐・cancel/stale抑止、型検査とbuildを確認済み。完全記録のschema検証とfull replayを通らない入力は完全journalとして扱わない。visual JSON契約は承認済みで、CIで自動更新しない。
 
 - [x] 1. AI hidden情報 / 乱数公平性 — CPU判断が非公開の相手情報へ不正アクセスせず、乱数源/seedの扱いが人間とCPUで公平であることをコード経路と再現可能なテストで証明する。
@@ -47,10 +49,14 @@
 
 ## 後段フェイズ
 
-フェイズ完了ゲート: 中期フェイズのレビュー承認後に着手する。オンライン/共有データやコンテンツ制作を伴う項目はスコープと保存形式を先にレビューし、5項目の受入証跡を揃えて最終レビューする。
+フェイズ完了ゲート: 中期フェイズのレビュー承認後に着手する。オンライン/共有データやコンテンツ制作を伴う項目はスコープと保存形式を先にレビューし、5項目の受入証跡を揃えて最終レビューする。状態: 完了・2026-09-29 root最終レビュー承認済み。
 
-- [ ] 1. 分岐再戦 / 対局後coach — 保存した局面から分岐して再戦でき、対局後に根拠付きの改善提案を表示する。元対局を変更せず、提案の正確性を代表局面で評価する。
-- [ ] 2. DailySeed / 戦術puzzle / Gauntlet — 日替わりseedの安定性、puzzleの正解/不正解判定、Gauntletの連戦状態と中断復帰をテストし、日付境界を含め再現可能にする。
-- [ ] 3. local人対人 / Draft / Sealed — 端末内2人対戦、Draft、Sealedの各ルール・設定・終了結果が独立して動作し、隠し情報と手番制御を守る。各モードのシナリオテストを用意する。
-- [ ] 4. Experimental masters — 実験用Masterを通常対局から分離し、明示的に選択した場合だけ利用可能にする。能力、対局保存、AI/人間双方の合法性とバランス評価を記録する。
-- [ ] 5. 自作カードアート / 正式ブランド — 全カードの独自アートを制作・配布し、旧画像への依存を外す。独自タイトル/ロゴ/配色/文言を画面全体に適用し、素材manifestに権利/出典を記録する。取り込み機能は本項目の必須条件ではない。原典のカード名/ルールの全面置換は未承認で、提供物は非公式互換として表示する。権利/商標クリア済みと断定せず、素材の権利状態をレビューする。
+後段の実装・途中検証の履歴（2026-09-29、最終gate以前）: DailyのJST日付・private handoverとJSON復帰競合、3 Puzzleの実操作による正解/不正解/reset、Gauntlet 3戦の実対局・各archive復帰・完了、Draftの途中pick保存復帰後30枚pickと実終局、Sealedのpool途中保存復帰・30枚deckと実終局、Local PvPの両席交代・情報遮断・69 commandの実終局とCoach、embedded Draft/GauntletのJournal/Coach/分岐、active Gauntlet過去戦からの分岐、Experimentals 16局smoke（errors/warnings 0）がそれぞれ報告された。Draft/Sealed途中保存から実終局のPlaywrightは2/2 pass。completed Draft/Gauntlet embedded Journal/Coach→nonzero branch→verified JSON E2Eは1/1 pass（17.8秒）、Hub/Experimental/Draft/Sealed axe・Sealed 390px overflow・3 Puzzle wrong/reset/correct/archive E2Eは1/1 pass（7.4秒）。CPU workerの遅延応答後もJournal/Coachの現在結果を維持する競合QA、Coach/Branch axe scan 0 violationsと390px横overflowなしもrootから報告された。この時点のunit gateは60 files / 788 tests pass（387.93秒）であり、最終統合の証跡とは区別する。当時はフェイズ最終gate未承認で、以下5項目はいずれも未完了としていた。
+
+後段最終gate（2026-09-29、root実施・承認）: `npm test` は63 files / 792 tests pass（394.47秒、開始04:36:05）。Playwrightは隔離output directoryで最終13/13 pass（実stdout: `13 passed (3.0m)`、visual baseline更新なし）。E2Eのlive turn assertionsはbrand説明文ではなく `Turn n / ...` の実段落を一意・visible確認してから比較するselectorへ修正し、対象手動End Turn testは単独で1/1 pass（11.1秒）。`npm run build`、App/Node TypeScript検査、`git diff --check`もpass。buildには既知の500KB超chunk warningがある。local production previewのPlay/Spectate/Analyze Journal/mobile 390pxの4画面はaxe violations 0、page errors 0、旧画像URL 0、表示画像decode完了を確認。Root承認済み4 PNGの目視後、承認済みvisual JSON baselineだけを1回更新し、その後の13件E2Eは更新なしでpassした。150アートすべてについてpublic manifestのSHA一致・unique 150・1254×1254を確認し、旧配布画像folderは0。manifestにはfull promptを含みprivate pathは0、旧素材157件はGit管理外で保全された。native SVG 7点もdecode pass。Rootは全後段項目をレビュー承認した。GitHub CIのremote runは未実行。権利/商標クリア済みとは主張しない。Experimental 16局smokeはerrors/warnings 0の動作確認であり、AIの強さやバランスを保証しない。実装は各担当Luna、統合/最終レビューはRootが行い、commitもRootが担当する。
+
+- [x] 1. 分岐再戦 / 対局後coach — 保存した局面から分岐して再戦でき、対局後に根拠付きの改善提案を表示する。元対局を変更せず、提案の正確性を代表局面で評価する。
+- [x] 2. DailySeed / 戦術puzzle / Gauntlet — 日替わりseedの安定性、puzzleの正解/不正解判定、Gauntletの連戦状態と中断復帰をテストし、日付境界を含め再現可能にする。
+- [x] 3. local人対人 / Draft / Sealed — 端末内2人対戦、Draft、Sealedの各ルール・設定・終了結果が独立して動作し、隠し情報と手番制御を守る。各モードのシナリオテストを用意する。
+- [x] 4. Experimental masters — 実験用Masterを通常対局から分離し、明示的に選択した場合だけ利用可能にする。能力、対局保存、AI/人間双方の合法性とバランス評価を記録する。
+- [x] 5. 自作カードアート / 正式ブランド — 全カードの独自アートを制作・配布し、旧画像への依存を外す。独自タイトル/ロゴ/配色/文言を画面全体に適用し、素材manifestに権利/出典を記録する。取り込み機能は本項目の必須条件ではない。原典のカード名/ルールの全面置換は未承認で、提供物は非公式互換として表示する。権利/商標クリア済みと断定せず、素材の権利状態をレビューする。

@@ -286,6 +286,7 @@ export type AiDecisionSnapshot = (
   | { type: "end_turn"; discardHandInstanceIds?: string[] }
   | { type: "master_hp_draw" }
   | { type: "resolve_level_up"; levels: number; superHandInstanceId?: string }
+  | { type: "experimental_master_action"; master: "decoy" | "timing"; actionId: string; target: Target; secondaryTarget?: Target }
 ) & {
   reason: string;
   score: number;
@@ -314,6 +315,7 @@ export type HumanActionSnapshot =
   | { type: "magic"; action: MagicAction }
   | { type: "move"; fromSlotKey: SlotKey; toSlotKey: SlotKey }
   | { type: "focus"; slotKey: SlotKey }
+  | { type: "experimental_master_action"; master: "decoy" | "timing"; actionId: string; target: Target; secondaryTarget?: Target }
   | { type: "master_hp_draw" }
   | { type: "discard_hand"; handInstanceId: string }
   | { type: "resolve_level_up"; levels: number; superHandInstanceId?: string }

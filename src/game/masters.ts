@@ -57,13 +57,13 @@ export const MASTER_DEFS: Record<MasterId, MasterDef> = {
     id: "white",
     name: "ホワイトマスター",
     actions: ["master_attack", "wake_up", "shield"],
-    iconUrl: "/game-icons/master-white.jpg",
+    iconUrl: "/art/ui/master-white.svg",
   },
   black: {
     id: "black",
     name: "ブラックマスター",
     actions: ["master_attack", "berserk_power", "earth_anger"],
-    iconUrl: "/game-icons/master-black.jpg",
+    iconUrl: "/art/ui/master-black.svg",
   },
 };
 

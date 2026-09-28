@@ -4,6 +4,7 @@ import type {
   GameState,
   HumanActionSnapshot,
 } from "./types";
+import { getEffectiveActor, type SeatControllerBySeat } from "./seatControl";
 
 const AI_DECISION_HISTORY_LIMIT = 240;
 const HUMAN_ACTION_HISTORY_LIMIT = 240;
@@ -13,6 +14,7 @@ export function appendAiDecisionReviewEntry(
   before: GameState,
   decision: AiDecisionSnapshot,
   decisionKey: string,
+  actor: GameState["currentPlayer"] = before.currentPlayer,
 ): void {
   if (!before.eventLog) {
     return;
@@ -24,7 +26,7 @@ export function appendAiDecisionReviewEntry(
     {
       sequence,
       logIndex: nextAbsoluteLogIndex(before),
-      playerId: before.currentPlayer,
+      playerId: actor,
       turnNumber: before.turnNumber,
       decisionKey,
       decision: structuredClone(decision),
@@ -69,6 +71,33 @@ export function appendHumanActionReviewEntry(
   ].slice(-HUMAN_ACTION_HISTORY_LIMIT);
 }
 
+/** Version-2 controlled-seat history; legacy v1 recorder above intentionally stays player-only. */
+export function appendControlledHumanActionReviewEntry(
+  target: GameState,
+  before: GameState,
+  action: HumanActionSnapshot,
+  controllerBySeat: SeatControllerBySeat,
+): void {
+  const actor = getEffectiveActor(before);
+  if (!before.eventLog || controllerBySeat[actor] !== "human") {
+    return;
+  }
+  const previous = before.humanActionHistory ?? [];
+  const sequence = (previous.at(-1)?.sequence ?? 0) + 1;
+  target.humanActionHistory = [
+    ...previous,
+    {
+      sequence,
+      logIndex: nextAbsoluteLogIndex(before),
+      playerId: actor,
+      turnNumber: before.turnNumber,
+      actionKey: humanActionReviewKey(action),
+      action: structuredClone(action),
+      stateBefore: createAiDecisionStateSnapshot(before),
+    },
+  ].slice(-HUMAN_ACTION_HISTORY_LIMIT);
+}
+
 function nextAbsoluteLogIndex(state: GameState): number {
   if (state.logOffset !== undefined) {
     return state.logOffset + state.log.length + 1;
@@ -77,6 +106,9 @@ function nextAbsoluteLogIndex(state: GameState): number {
 }
 
 export function humanActionReviewKey(action: HumanActionSnapshot): string {
+  if (action.type === "experimental_master_action") {
+    return `experimental:${action.master}:${action.actionId}:${reviewTargetKey(action.target)}:${action.secondaryTarget ? reviewTargetKey(action.secondaryTarget) : ""}`;
+  }
   if (action.type === "attack") {
     return `attack:${action.action.attackerSlotKey}:${action.action.commandId}:${reviewTargetKey(action.action.target)}`;
   }

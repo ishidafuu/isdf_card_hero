@@ -8,7 +8,7 @@ export const CARD_DEFS = {
     "name": "スパルタス",
     "sourceNo": 1,
     "sourceUrl": "https://www.cardhero-bu.com/card/detail.php?id=1",
-    "icon": "/card-icons/co001.jpg",
+    "icon": "/art/cards/card_001.png",
     "rarity": 1,
     "memberRatings": {
       "proBlack": {
@@ -59,7 +59,7 @@ export const CARD_DEFS = {
     "name": "マナトット",
     "sourceNo": 2,
     "sourceUrl": "https://www.cardhero-bu.com/card/detail.php?id=2",
-    "icon": "/card-icons/co002.jpg",
+    "icon": "/art/cards/card_002.png",
     "rarity": 1,
     "memberRatings": {
       "proBlack": {
@@ -110,7 +110,7 @@ export const CARD_DEFS = {
     "name": "ポップル",
     "sourceNo": 3,
     "sourceUrl": "https://www.cardhero-bu.com/card/detail.php?id=3",
-    "icon": "/card-icons/co003.jpg",
+    "icon": "/art/cards/card_003.png",
     "rarity": 1,
     "memberRatings": {
       "proBlack": {
@@ -161,7 +161,7 @@ export const CARD_DEFS = {
     "name": "タコッケー",
     "sourceNo": 4,
     "sourceUrl": "https://www.cardhero-bu.com/card/detail.php?id=4",
-    "icon": "/card-icons/co004.jpg",
+    "icon": "/art/cards/card_004.png",
     "rarity": 1,
     "memberRatings": {
       "proBlack": {
@@ -212,7 +212,7 @@ export const CARD_DEFS = {
     "name": "ボムゾウ",
     "sourceNo": 5,
     "sourceUrl": "https://www.cardhero-bu.com/card/detail.php?id=5",
-    "icon": "/card-icons/co005.jpg",
+    "icon": "/art/cards/card_005.png",
     "rarity": 2,
     "memberRatings": {
       "proBlack": {
@@ -287,7 +287,7 @@ export const CARD_DEFS = {
     ],
     "sourceNo": 6,
     "sourceUrl": "https://www.cardhero-bu.com/card/detail.php?id=6",
-    "icon": "/card-icons/co006.jpg",
+    "icon": "/art/cards/card_006.png",
     "rarity": 5,
     "memberRatings": {
       "proBlack": {
@@ -336,7 +336,7 @@ export const CARD_DEFS = {
     "name": "ゲイラ",
     "sourceNo": 7,
     "sourceUrl": "https://www.cardhero-bu.com/card/detail.php?id=7",
-    "icon": "/card-icons/co007.jpg",
+    "icon": "/art/cards/card_007.png",
     "rarity": 3,
     "memberRatings": {
       "proBlack": {
@@ -427,7 +427,7 @@ export const CARD_DEFS = {
     "name": "エル・ソル",
     "sourceNo": 8,
     "sourceUrl": "https://www.cardhero-bu.com/card/detail.php?id=8",
-    "icon": "/card-icons/co008.jpg",
+    "icon": "/art/cards/card_008.png",
     "rarity": 3,
     "memberRatings": {
       "proBlack": {
@@ -496,7 +496,7 @@ export const CARD_DEFS = {
     "name": "神斬丸",
     "sourceNo": 9,
     "sourceUrl": "https://www.cardhero-bu.com/card/detail.php?id=9",
-    "icon": "/card-icons/co009.jpg",
+    "icon": "/art/cards/card_009.png",
     "rarity": 5,
     "memberRatings": {
       "proBlack": {
@@ -569,7 +569,7 @@ export const CARD_DEFS = {
     ],
     "sourceNo": 10,
     "sourceUrl": "https://www.cardhero-bu.com/card/detail.php?id=10",
-    "icon": "/card-icons/co010.jpg",
+    "icon": "/art/cards/card_010.png",
     "rarity": 6,
     "memberRatings": {
       "proBlack": {
@@ -616,7 +616,7 @@ export const CARD_DEFS = {
     "name": "ポリスピナー",
     "sourceNo": 11,
     "sourceUrl": "https://www.cardhero-bu.com/card/detail.php?id=11",
-    "icon": "/card-icons/co011.jpg",
+    "icon": "/art/cards/card_011.png",
     "rarity": 5,
     "memberRatings": {
       "proBlack": {
@@ -674,7 +674,7 @@ export const CARD_DEFS = {
     ],
     "sourceNo": 12,
     "sourceUrl": "https://www.cardhero-bu.com/card/detail.php?id=12",
-    "icon": "/card-icons/co012.jpg",
+    "icon": "/art/cards/card_012.png",
     "rarity": 6,
     "memberRatings": {
       "proBlack": {
@@ -715,7 +715,7 @@ export const CARD_DEFS = {
     "name": "ラッフィー",
     "sourceNo": 13,
     "sourceUrl": "https://www.cardhero-bu.com/card/detail.php?id=13",
-    "icon": "/card-icons/co013.jpg",
+    "icon": "/art/cards/card_013.png",
     "rarity": 5,
     "memberRatings": {
       "proBlack": {
@@ -786,7 +786,7 @@ export const CARD_DEFS = {
     ],
     "sourceNo": 14,
     "sourceUrl": "https://www.cardhero-bu.com/card/detail.php?id=14",
-    "icon": "/card-icons/co014.jpg",
+    "icon": "/art/cards/card_014.png",
     "rarity": 6,
     "memberRatings": {
       "proBlack": {
@@ -832,7 +832,7 @@ export const CARD_DEFS = {
     "name": "ワイルドブル",
     "sourceNo": 15,
     "sourceUrl": "https://www.cardhero-bu.com/card/detail.php?id=15",
-    "icon": "/card-icons/co015.jpg",
+    "icon": "/art/cards/card_015.png",
     "rarity": 5,
     "memberRatings": {
       "proBlack": {
@@ -879,7 +879,7 @@ export const CARD_DEFS = {
     "name": "鉄拳シグマ",
     "sourceNo": 16,
     "sourceUrl": "https://www.cardhero-bu.com/card/detail.php?id=16",
-    "icon": "/card-icons/co016.jpg",
+    "icon": "/art/cards/card_016.png",
     "rarity": 6,
     "memberRatings": {
       "proBlack": {
@@ -943,7 +943,7 @@ export const CARD_DEFS = {
     "name": "ビヨンド",
     "sourceNo": 17,
     "sourceUrl": "https://www.cardhero-bu.com/card/detail.php?id=17",
-    "icon": "/card-icons/co017.jpg",
+    "icon": "/art/cards/card_017.png",
     "rarity": 1,
     "memberRatings": {
       "proBlack": {
@@ -1010,7 +1010,7 @@ export const CARD_DEFS = {
     "name": "ルージュ",
     "sourceNo": 18,
     "sourceUrl": "https://www.cardhero-bu.com/card/detail.php?id=18",
-    "icon": "/card-icons/co018.jpg",
+    "icon": "/art/cards/card_018.png",
     "rarity": 1,
     "memberRatings": {
       "proBlack": {
@@ -1101,7 +1101,7 @@ export const CARD_DEFS = {
     "name": "ヤンバル",
     "sourceNo": 19,
     "sourceUrl": "https://www.cardhero-bu.com/card/detail.php?id=19",
-    "icon": "/card-icons/co019.jpg",
+    "icon": "/art/cards/card_019.png",
     "rarity": 2,
     "memberRatings": {
       "proBlack": {
@@ -1168,7 +1168,7 @@ export const CARD_DEFS = {
     "name": "ガンタス",
     "sourceNo": 20,
     "sourceUrl": "https://www.cardhero-bu.com/card/detail.php?id=20",
-    "icon": "/card-icons/co020.jpg",
+    "icon": "/art/cards/card_020.png",
     "rarity": 2,
     "memberRatings": {
       "proBlack": {
@@ -1241,7 +1241,7 @@ export const CARD_DEFS = {
     ],
     "sourceNo": 21,
     "sourceUrl": "https://www.cardhero-bu.com/card/detail.php?id=21",
-    "icon": "/card-icons/co021.jpg",
+    "icon": "/art/cards/card_021.png",
     "rarity": 5,
     "memberRatings": {
       "proBlack": {
@@ -1287,7 +1287,7 @@ export const CARD_DEFS = {
     "name": "キラービ",
     "sourceNo": 22,
     "sourceUrl": "https://www.cardhero-bu.com/card/detail.php?id=22",
-    "icon": "/card-icons/co022.jpg",
+    "icon": "/art/cards/card_022.png",
     "rarity": 4,
     "memberRatings": {
       "proBlack": {
@@ -1376,7 +1376,7 @@ export const CARD_DEFS = {
     "name": "フェニックス",
     "sourceNo": 23,
     "sourceUrl": "https://www.cardhero-bu.com/card/detail.php?id=23",
-    "icon": "/card-icons/co023.jpg",
+    "icon": "/art/cards/card_023.png",
     "rarity": 6,
     "memberRatings": {
       "proBlack": {
@@ -1443,7 +1443,7 @@ export const CARD_DEFS = {
     "name": "ヒーリング",
     "sourceNo": 24,
     "sourceUrl": "https://www.cardhero-bu.com/card/detail.php?id=24",
-    "icon": "/card-icons/co024.jpg",
+    "icon": "/art/cards/card_024.png",
     "rarity": 1,
     "memberRatings": {
       "proBlack": {
@@ -1471,7 +1471,7 @@ export const CARD_DEFS = {
     "name": "鉄の盾",
     "sourceNo": 25,
     "sourceUrl": "https://www.cardhero-bu.com/card/detail.php?id=25",
-    "icon": "/card-icons/co025.jpg",
+    "icon": "/art/cards/card_025.png",
     "rarity": 1,
     "memberRatings": {
       "proBlack": {
@@ -1498,7 +1498,7 @@ export const CARD_DEFS = {
     "name": "スパーク",
     "sourceNo": 26,
     "sourceUrl": "https://www.cardhero-bu.com/card/detail.php?id=26",
-    "icon": "/card-icons/co026.jpg",
+    "icon": "/art/cards/card_026.png",
     "rarity": 1,
     "memberRatings": {
       "proBlack": {
@@ -1524,7 +1524,7 @@ export const CARD_DEFS = {
     "name": "パワーダウン",
     "sourceNo": 27,
     "sourceUrl": "https://www.cardhero-bu.com/card/detail.php?id=27",
-    "icon": "/card-icons/co027.jpg",
+    "icon": "/art/cards/card_027.png",
     "rarity": 2,
     "memberRatings": {
       "proBlack": {
@@ -1551,7 +1551,7 @@ export const CARD_DEFS = {
     "name": "レベルチェンジ",
     "sourceNo": 28,
     "sourceUrl": "https://www.cardhero-bu.com/card/detail.php?id=28",
-    "icon": "/card-icons/co028.jpg",
+    "icon": "/art/cards/card_028.png",
     "rarity": 3,
     "memberRatings": {
       "proBlack": {
@@ -1577,7 +1577,7 @@ export const CARD_DEFS = {
     "name": "悪魔のダンス",
     "sourceNo": 29,
     "sourceUrl": "https://www.cardhero-bu.com/card/detail.php?id=29",
-    "icon": "/card-icons/co029.jpg",
+    "icon": "/art/cards/card_029.png",
     "rarity": 4,
     "memberRatings": {
       "proBlack": {
@@ -1603,7 +1603,7 @@ export const CARD_DEFS = {
     "name": "二重の盾",
     "sourceNo": 30,
     "sourceUrl": "https://www.cardhero-bu.com/card/detail.php?id=30",
-    "icon": "/card-icons/co030.jpg",
+    "icon": "/art/cards/card_030.png",
     "rarity": 5,
     "memberRatings": {
       "proBlack": {
@@ -1630,7 +1630,7 @@ export const CARD_DEFS = {
     "name": "ワープ",
     "sourceNo": 31,
     "sourceUrl": "https://www.cardhero-bu.com/card/detail.php?id=31",
-    "icon": "/card-icons/co031.jpg",
+    "icon": "/art/cards/card_031.png",
     "rarity": 6,
     "memberRatings": {
       "proBlack": {
@@ -1656,7 +1656,7 @@ export const CARD_DEFS = {
     "name": "サンダー",
     "sourceNo": 32,
     "sourceUrl": "https://www.cardhero-bu.com/card/detail.php?id=32",
-    "icon": "/card-icons/co032.jpg",
+    "icon": "/art/cards/card_032.png",
     "rarity": 7,
     "memberRatings": {
       "proBlack": {
@@ -1685,7 +1685,7 @@ export const CARD_DEFS = {
     "name": "テトカ",
     "sourceNo": 33,
     "sourceUrl": "https://www.cardhero-bu.com/card/detail.php?id=33",
-    "icon": "/card-icons/co033.jpg",
+    "icon": "/art/cards/card_033.png",
     "rarity": 1,
     "memberRatings": {
       "proBlack": {
@@ -1758,7 +1758,7 @@ export const CARD_DEFS = {
     ],
     "sourceNo": 34,
     "sourceUrl": "https://www.cardhero-bu.com/card/detail.php?id=34",
-    "icon": "/card-icons/co034.jpg",
+    "icon": "/art/cards/card_034.png",
     "rarity": 5,
     "memberRatings": {
       "proBlack": {
@@ -1796,7 +1796,7 @@ export const CARD_DEFS = {
     "name": "バルバス＆パフ",
     "sourceNo": 35,
     "sourceUrl": "https://www.cardhero-bu.com/card/detail.php?id=35",
-    "icon": "/card-icons/co035.jpg",
+    "icon": "/art/cards/card_035.png",
     "rarity": 3,
     "memberRatings": {
       "proBlack": {
@@ -1898,7 +1898,7 @@ export const CARD_DEFS = {
     ],
     "sourceNo": 36,
     "sourceUrl": "https://www.cardhero-bu.com/card/detail.php?id=36",
-    "icon": "/card-icons/co036.jpg",
+    "icon": "/art/cards/card_036.png",
     "rarity": 5,
     "memberRatings": {
       "proBlack": {
@@ -1946,7 +1946,7 @@ export const CARD_DEFS = {
     "name": "ドノマンティス",
     "sourceNo": 37,
     "sourceUrl": "https://www.cardhero-bu.com/card/detail.php?id=37",
-    "icon": "/card-icons/co037.jpg",
+    "icon": "/art/cards/card_037.png",
     "rarity": 4,
     "memberRatings": {
       "proBlack": {
@@ -2009,7 +2009,7 @@ export const CARD_DEFS = {
     ],
     "sourceNo": 38,
     "sourceUrl": "https://www.cardhero-bu.com/card/detail.php?id=38",
-    "icon": "/card-icons/co038.jpg",
+    "icon": "/art/cards/card_038.png",
     "rarity": 5,
     "memberRatings": {
       "proBlack": {
@@ -2058,7 +2058,7 @@ export const CARD_DEFS = {
     "name": "ケントゥリアス",
     "sourceNo": 39,
     "sourceUrl": "https://www.cardhero-bu.com/card/detail.php?id=39",
-    "icon": "/card-icons/co039.jpg",
+    "icon": "/art/cards/card_039.png",
     "rarity": 4,
     "memberRatings": {
       "proBlack": {
@@ -2145,7 +2145,7 @@ export const CARD_DEFS = {
     "name": "ゴーストシープ",
     "sourceNo": 40,
     "sourceUrl": "https://www.cardhero-bu.com/card/detail.php?id=40",
-    "icon": "/card-icons/co040.jpg",
+    "icon": "/art/cards/card_040.png",
     "rarity": 4,
     "memberRatings": {
       "proBlack": {
@@ -2215,7 +2215,7 @@ export const CARD_DEFS = {
     "name": "ジャレス",
     "sourceNo": 41,
     "sourceUrl": "https://www.cardhero-bu.com/card/detail.php?id=41",
-    "icon": "/card-icons/co041.jpg",
+    "icon": "/art/cards/card_041.png",
     "rarity": 5,
     "memberRatings": {
       "proBlack": {
@@ -2279,7 +2279,7 @@ export const CARD_DEFS = {
     ],
     "sourceNo": 42,
     "sourceUrl": "https://www.cardhero-bu.com/card/detail.php?id=42",
-    "icon": "/card-icons/co042.jpg",
+    "icon": "/art/cards/card_042.png",
     "rarity": 6,
     "memberRatings": {
       "proBlack": {
@@ -2325,7 +2325,7 @@ export const CARD_DEFS = {
     "name": "ガンプ",
     "sourceNo": 43,
     "sourceUrl": "https://www.cardhero-bu.com/card/detail.php?id=43",
-    "icon": "/card-icons/co043.jpg",
+    "icon": "/art/cards/card_043.png",
     "rarity": 5,
     "memberRatings": {
       "proBlack": {
@@ -2385,7 +2385,7 @@ export const CARD_DEFS = {
     "name": "ヒートロン",
     "sourceNo": 44,
     "sourceUrl": "https://www.cardhero-bu.com/card/detail.php?id=44",
-    "icon": "/card-icons/co044.jpg",
+    "icon": "/art/cards/card_044.png",
     "rarity": 5,
     "memberRatings": {
       "proBlack": {
@@ -2438,7 +2438,7 @@ export const CARD_DEFS = {
     "name": "アーシュ＆ロロ",
     "sourceNo": 45,
     "sourceUrl": "https://www.cardhero-bu.com/card/detail.php?id=45",
-    "icon": "/card-icons/co045.jpg",
+    "icon": "/art/cards/card_045.png",
     "rarity": 5,
     "memberRatings": {
       "proBlack": {
@@ -2532,7 +2532,7 @@ export const CARD_DEFS = {
     "name": "シトラス",
     "sourceNo": 46,
     "sourceUrl": "https://www.cardhero-bu.com/card/detail.php?id=46",
-    "icon": "/card-icons/co046.jpg",
+    "icon": "/art/cards/card_046.png",
     "rarity": 6,
     "memberRatings": {
       "proBlack": {
@@ -2572,7 +2572,7 @@ export const CARD_DEFS = {
     "name": "真勇者ダイン",
     "sourceNo": 47,
     "sourceUrl": "https://www.cardhero-bu.com/card/detail.php?id=47",
-    "icon": "/card-icons/co047.jpg",
+    "icon": "/art/cards/card_047.png",
     "rarity": 7,
     "memberRatings": {
       "proBlack": {
@@ -2636,7 +2636,7 @@ export const CARD_DEFS = {
     "name": "グリフォン",
     "sourceNo": 48,
     "sourceUrl": "https://www.cardhero-bu.com/card/detail.php?id=48",
-    "icon": "/card-icons/co048.jpg",
+    "icon": "/art/cards/card_048.png",
     "rarity": 1,
     "memberRatings": {
       "proBlack": {
@@ -2705,7 +2705,7 @@ export const CARD_DEFS = {
     "name": "バルキャノン",
     "sourceNo": 49,
     "sourceUrl": "https://www.cardhero-bu.com/card/detail.php?id=49",
-    "icon": "/card-icons/co049.jpg",
+    "icon": "/art/cards/card_049.png",
     "rarity": 2,
     "memberRatings": {
       "proBlack": {
@@ -2772,7 +2772,7 @@ export const CARD_DEFS = {
     "name": "ゼック",
     "sourceNo": 50,
     "sourceUrl": "https://www.cardhero-bu.com/card/detail.php?id=50",
-    "icon": "/card-icons/co050.jpg",
+    "icon": "/art/cards/card_050.png",
     "rarity": 2,
     "memberRatings": {
       "proBlack": {
@@ -2818,7 +2818,7 @@ export const CARD_DEFS = {
     "name": "ピグミィ",
     "sourceNo": 51,
     "sourceUrl": "https://www.cardhero-bu.com/card/detail.php?id=51",
-    "icon": "/card-icons/co051.jpg",
+    "icon": "/art/cards/card_051.png",
     "rarity": 3,
     "memberRatings": {
       "proBlack": {
@@ -2888,7 +2888,7 @@ export const CARD_DEFS = {
     "name": "クレア",
     "sourceNo": 52,
     "sourceUrl": "https://www.cardhero-bu.com/card/detail.php?id=52",
-    "icon": "/card-icons/co052.jpg",
+    "icon": "/art/cards/card_052.png",
     "rarity": 5,
     "memberRatings": {
       "proBlack": {
@@ -2960,7 +2960,7 @@ export const CARD_DEFS = {
     "name": "ラティーヌ",
     "sourceNo": 53,
     "sourceUrl": "https://www.cardhero-bu.com/card/detail.php?id=53",
-    "icon": "/card-icons/co053.jpg",
+    "icon": "/art/cards/card_053.png",
     "rarity": 5,
     "memberRatings": {
       "proBlack": {
@@ -3035,7 +3035,7 @@ export const CARD_DEFS = {
     ],
     "sourceNo": 54,
     "sourceUrl": "https://www.cardhero-bu.com/card/detail.php?id=54",
-    "icon": "/card-icons/co054.jpg",
+    "icon": "/art/cards/card_054.png",
     "rarity": 6,
     "memberRatings": {
       "proBlack": {
@@ -3083,7 +3083,7 @@ export const CARD_DEFS = {
     "name": "ガラスの盾",
     "sourceNo": 55,
     "sourceUrl": "https://www.cardhero-bu.com/card/detail.php?id=55",
-    "icon": "/card-icons/co055.jpg",
+    "icon": "/art/cards/card_055.png",
     "rarity": 1,
     "memberRatings": {
       "proBlack": {
@@ -3110,7 +3110,7 @@ export const CARD_DEFS = {
     "name": "ブラックレイン",
     "sourceNo": 56,
     "sourceUrl": "https://www.cardhero-bu.com/card/detail.php?id=56",
-    "icon": "/card-icons/co056.jpg",
+    "icon": "/art/cards/card_056.png",
     "rarity": 1,
     "memberRatings": {
       "proBlack": {
@@ -3136,7 +3136,7 @@ export const CARD_DEFS = {
     "name": "エスケープ",
     "sourceNo": 57,
     "sourceUrl": "https://www.cardhero-bu.com/card/detail.php?id=57",
-    "icon": "/card-icons/co057.jpg",
+    "icon": "/art/cards/card_057.png",
     "rarity": 1,
     "memberRatings": {
       "proBlack": {
@@ -3162,7 +3162,7 @@ export const CARD_DEFS = {
     "name": "特技封じ",
     "sourceNo": 58,
     "sourceUrl": "https://www.cardhero-bu.com/card/detail.php?id=58",
-    "icon": "/card-icons/co058.jpg",
+    "icon": "/art/cards/card_058.png",
     "rarity": 2,
     "memberRatings": {
       "proBlack": {
@@ -3189,7 +3189,7 @@ export const CARD_DEFS = {
     "name": "パワー２",
     "sourceNo": 59,
     "sourceUrl": "https://www.cardhero-bu.com/card/detail.php?id=59",
-    "icon": "/card-icons/co059.jpg",
+    "icon": "/art/cards/card_059.png",
     "rarity": 2,
     "memberRatings": {
       "proBlack": {
@@ -3216,7 +3216,7 @@ export const CARD_DEFS = {
     "name": "レベル固定",
     "sourceNo": 60,
     "sourceUrl": "https://www.cardhero-bu.com/card/detail.php?id=60",
-    "icon": "/card-icons/co060.jpg",
+    "icon": "/art/cards/card_060.png",
     "rarity": 3,
     "memberRatings": {
       "proBlack": {
@@ -3243,7 +3243,7 @@ export const CARD_DEFS = {
     "name": "誘惑",
     "sourceNo": 61,
     "sourceUrl": "https://www.cardhero-bu.com/card/detail.php?id=61",
-    "icon": "/card-icons/co061.jpg",
+    "icon": "/art/cards/card_061.png",
     "rarity": 4,
     "memberRatings": {
       "proBlack": {
@@ -3269,7 +3269,7 @@ export const CARD_DEFS = {
     "name": "水晶の壁",
     "sourceNo": 62,
     "sourceUrl": "https://www.cardhero-bu.com/card/detail.php?id=62",
-    "icon": "/card-icons/co062.jpg",
+    "icon": "/art/cards/card_062.png",
     "rarity": 5,
     "memberRatings": {
       "proBlack": {
@@ -3296,7 +3296,7 @@ export const CARD_DEFS = {
     "name": "どこでも",
     "sourceNo": 63,
     "sourceUrl": "https://www.cardhero-bu.com/card/detail.php?id=63",
-    "icon": "/card-icons/co063.jpg",
+    "icon": "/art/cards/card_063.png",
     "rarity": 5,
     "memberRatings": {
       "proBlack": {
@@ -3323,7 +3323,7 @@ export const CARD_DEFS = {
     "name": "黄昏の風",
     "sourceNo": 64,
     "sourceUrl": "https://www.cardhero-bu.com/card/detail.php?id=64",
-    "icon": "/card-icons/co064.jpg",
+    "icon": "/art/cards/card_064.png",
     "rarity": 6,
     "memberRatings": {
       "proBlack": {
@@ -3349,7 +3349,7 @@ export const CARD_DEFS = {
     "name": "シフトチェンジ",
     "sourceNo": 65,
     "sourceUrl": "https://www.cardhero-bu.com/card/detail.php?id=65",
-    "icon": "/card-icons/co065.jpg",
+    "icon": "/art/cards/card_065.png",
     "rarity": 6,
     "memberRatings": {
       "proBlack": {
@@ -3375,7 +3375,7 @@ export const CARD_DEFS = {
     "name": "ディン",
     "sourceNo": 66,
     "sourceUrl": "https://www.cardhero-bu.com/card/detail.php?id=66",
-    "icon": "/card-icons/co066.jpg",
+    "icon": "/art/cards/card_066.png",
     "rarity": 1,
     "memberRatings": {
       "proBlack": {
@@ -3422,7 +3422,7 @@ export const CARD_DEFS = {
     "name": "ゾンビ",
     "sourceNo": 67,
     "sourceUrl": "https://www.cardhero-bu.com/card/detail.php?id=67",
-    "icon": "/card-icons/co067.jpg",
+    "icon": "/art/cards/card_067.png",
     "rarity": 1,
     "memberRatings": {
       "proBlack": {
@@ -3505,7 +3505,7 @@ export const CARD_DEFS = {
     ],
     "sourceNo": 68,
     "sourceUrl": "https://www.cardhero-bu.com/card/detail.php?id=68",
-    "icon": "/card-icons/co068.jpg",
+    "icon": "/art/cards/card_068.png",
     "rarity": 5,
     "memberRatings": {
       "proBlack": {
@@ -3551,7 +3551,7 @@ export const CARD_DEFS = {
     "name": "フール",
     "sourceNo": 69,
     "sourceUrl": "https://www.cardhero-bu.com/card/detail.php?id=69",
-    "icon": "/card-icons/co069.jpg",
+    "icon": "/art/cards/card_069.png",
     "rarity": 2,
     "memberRatings": {
       "proBlack": {
@@ -3621,7 +3621,7 @@ export const CARD_DEFS = {
     "name": "ラムダ",
     "sourceNo": 70,
     "sourceUrl": "https://www.cardhero-bu.com/card/detail.php?id=70",
-    "icon": "/card-icons/co070.jpg",
+    "icon": "/art/cards/card_070.png",
     "rarity": 2,
     "memberRatings": {
       "proBlack": {
@@ -3688,7 +3688,7 @@ export const CARD_DEFS = {
     "name": "アンノウン",
     "sourceNo": 71,
     "sourceUrl": "https://www.cardhero-bu.com/card/detail.php?id=71",
-    "icon": "/card-icons/co071.jpg",
+    "icon": "/art/cards/card_071.png",
     "rarity": 3,
     "memberRatings": {
       "proBlack": {
@@ -3739,7 +3739,7 @@ export const CARD_DEFS = {
     "name": "ブラッド伯爵",
     "sourceNo": 72,
     "sourceUrl": "https://www.cardhero-bu.com/card/detail.php?id=72",
-    "icon": "/card-icons/co072.jpg",
+    "icon": "/art/cards/card_072.png",
     "rarity": 5,
     "memberRatings": {
       "proBlack": {
@@ -3788,7 +3788,7 @@ export const CARD_DEFS = {
     "name": "アサシン",
     "sourceNo": 73,
     "sourceUrl": "https://www.cardhero-bu.com/card/detail.php?id=73",
-    "icon": "/card-icons/co073.jpg",
+    "icon": "/art/cards/card_073.png",
     "rarity": 5,
     "memberRatings": {
       "proBlack": {
@@ -3857,7 +3857,7 @@ export const CARD_DEFS = {
     "name": "アドラ",
     "sourceNo": 74,
     "sourceUrl": "https://www.cardhero-bu.com/card/detail.php?id=74",
-    "icon": "/card-icons/co074.jpg",
+    "icon": "/art/cards/card_074.png",
     "rarity": 5,
     "memberRatings": {
       "proBlack": {
@@ -3921,7 +3921,7 @@ export const CARD_DEFS = {
     ],
     "sourceNo": 75,
     "sourceUrl": "https://www.cardhero-bu.com/card/detail.php?id=75",
-    "icon": "/card-icons/co075.jpg",
+    "icon": "/art/cards/card_075.png",
     "rarity": 6,
     "memberRatings": {
       "proBlack": {
@@ -3959,7 +3959,7 @@ export const CARD_DEFS = {
     "name": "グングニエル",
     "sourceNo": 76,
     "sourceUrl": "https://www.cardhero-bu.com/card/detail.php?id=76",
-    "icon": "/card-icons/co076.jpg",
+    "icon": "/art/cards/card_076.png",
     "rarity": 6,
     "memberRatings": {
       "proBlack": {
@@ -4025,7 +4025,7 @@ export const CARD_DEFS = {
     "name": "ゼス",
     "sourceNo": 77,
     "sourceUrl": "https://www.cardhero-bu.com/card/detail.php?id=77",
-    "icon": "/card-icons/co077.jpg",
+    "icon": "/art/cards/card_077.png",
     "rarity": 6,
     "memberRatings": {
       "proBlack": {
@@ -4065,7 +4065,7 @@ export const CARD_DEFS = {
     "name": "オヤコダケ",
     "sourceNo": 78,
     "sourceUrl": "https://www.cardhero-bu.com/card/detail.php?id=78",
-    "icon": "/card-icons/co078.jpg",
+    "icon": "/art/cards/card_078.png",
     "rarity": 1,
     "memberRatings": {
       "proBlack": {
@@ -4137,7 +4137,7 @@ export const CARD_DEFS = {
     ],
     "sourceNo": 79,
     "sourceUrl": "https://www.cardhero-bu.com/card/detail.php?id=79",
-    "icon": "/card-icons/co079.jpg",
+    "icon": "/art/cards/card_079.png",
     "rarity": 6,
     "memberRatings": {
       "proBlack": {
@@ -4183,7 +4183,7 @@ export const CARD_DEFS = {
     "name": "マッド・ダミー",
     "sourceNo": 80,
     "sourceUrl": "https://www.cardhero-bu.com/card/detail.php?id=80",
-    "icon": "/card-icons/co080.jpg",
+    "icon": "/art/cards/card_080.png",
     "rarity": 2,
     "memberRatings": {
       "proBlack": {
@@ -4232,7 +4232,7 @@ export const CARD_DEFS = {
     "name": "マンクス",
     "sourceNo": 81,
     "sourceUrl": "https://www.cardhero-bu.com/card/detail.php?id=81",
-    "icon": "/card-icons/co081.jpg",
+    "icon": "/art/cards/card_081.png",
     "rarity": 3,
     "memberRatings": {
       "proBlack": {
@@ -4280,7 +4280,7 @@ export const CARD_DEFS = {
     "name": "マージス",
     "sourceNo": 82,
     "sourceUrl": "https://www.cardhero-bu.com/card/detail.php?id=82",
-    "icon": "/card-icons/co082.jpg",
+    "icon": "/art/cards/card_082.png",
     "rarity": 5,
     "memberRatings": {
       "proBlack": {
@@ -4328,7 +4328,7 @@ export const CARD_DEFS = {
     "name": "フーヨウ",
     "sourceNo": 83,
     "sourceUrl": "https://www.cardhero-bu.com/card/detail.php?id=83",
-    "icon": "/card-icons/co083.jpg",
+    "icon": "/art/cards/card_083.png",
     "rarity": 5,
     "memberRatings": {
       "proBlack": {
@@ -4396,7 +4396,7 @@ export const CARD_DEFS = {
     "name": "ムータン",
     "sourceNo": 84,
     "sourceUrl": "https://www.cardhero-bu.com/card/detail.php?id=84",
-    "icon": "/card-icons/co084.jpg",
+    "icon": "/art/cards/card_084.png",
     "rarity": 5,
     "memberRatings": {
       "proBlack": {
@@ -4464,7 +4464,7 @@ export const CARD_DEFS = {
     "name": "オーパス",
     "sourceNo": 85,
     "sourceUrl": "https://www.cardhero-bu.com/card/detail.php?id=85",
-    "icon": "/card-icons/co085.jpg",
+    "icon": "/art/cards/card_085.png",
     "rarity": 6,
     "memberRatings": {
       "proBlack": {
@@ -4512,7 +4512,7 @@ export const CARD_DEFS = {
     "name": "呪縛",
     "sourceNo": 86,
     "sourceUrl": "https://www.cardhero-bu.com/card/detail.php?id=86",
-    "icon": "/card-icons/co086.jpg",
+    "icon": "/art/cards/card_086.png",
     "rarity": 1,
     "memberRatings": {
       "proBlack": {
@@ -4539,7 +4539,7 @@ export const CARD_DEFS = {
     "name": "浄化",
     "sourceNo": 87,
     "sourceUrl": "https://www.cardhero-bu.com/card/detail.php?id=87",
-    "icon": "/card-icons/co087.jpg",
+    "icon": "/art/cards/card_087.png",
     "rarity": 2,
     "memberRatings": {
       "proBlack": {
@@ -4565,7 +4565,7 @@ export const CARD_DEFS = {
     "name": "鋼の盾",
     "sourceNo": 88,
     "sourceUrl": "https://www.cardhero-bu.com/card/detail.php?id=88",
-    "icon": "/card-icons/co088.jpg",
+    "icon": "/art/cards/card_088.png",
     "rarity": 3,
     "memberRatings": {
       "proBlack": {
@@ -4592,7 +4592,7 @@ export const CARD_DEFS = {
     "name": "竜の盾",
     "sourceNo": 89,
     "sourceUrl": "https://www.cardhero-bu.com/card/detail.php?id=89",
-    "icon": "/card-icons/co089.jpg",
+    "icon": "/art/cards/card_089.png",
     "rarity": 3,
     "memberRatings": {
       "proBlack": {
@@ -4619,7 +4619,7 @@ export const CARD_DEFS = {
     "name": "墓荒らし",
     "sourceNo": 90,
     "sourceUrl": "https://www.cardhero-bu.com/card/detail.php?id=90",
-    "icon": "/card-icons/co090.jpg",
+    "icon": "/art/cards/card_090.png",
     "rarity": 3,
     "memberRatings": {
       "proBlack": {
@@ -4645,7 +4645,7 @@ export const CARD_DEFS = {
     "name": "女神の加護",
     "sourceNo": 91,
     "sourceUrl": "https://www.cardhero-bu.com/card/detail.php?id=91",
-    "icon": "/card-icons/co091.jpg",
+    "icon": "/art/cards/card_091.png",
     "rarity": 4,
     "memberRatings": {
       "proBlack": {
@@ -4672,7 +4672,7 @@ export const CARD_DEFS = {
     "name": "マッドファイア",
     "sourceNo": 92,
     "sourceUrl": "https://www.cardhero-bu.com/card/detail.php?id=92",
-    "icon": "/card-icons/co092.jpg",
+    "icon": "/art/cards/card_092.png",
     "rarity": 4,
     "memberRatings": {
       "proBlack": {
@@ -4698,7 +4698,7 @@ export const CARD_DEFS = {
     "name": "ローテーション",
     "sourceNo": 93,
     "sourceUrl": "https://www.cardhero-bu.com/card/detail.php?id=93",
-    "icon": "/card-icons/co093.jpg",
+    "icon": "/art/cards/card_093.png",
     "rarity": 5,
     "memberRatings": {
       "proBlack": {
@@ -4724,7 +4724,7 @@ export const CARD_DEFS = {
     "name": "バーサクパワー",
     "sourceNo": 94,
     "sourceUrl": "https://www.cardhero-bu.com/card/detail.php?id=94",
-    "icon": "/card-icons/co094.jpg",
+    "icon": "/art/cards/card_094.png",
     "rarity": 5,
     "memberRatings": {
       "proBlack": {
@@ -4751,7 +4751,7 @@ export const CARD_DEFS = {
     "name": "ダークホール",
     "sourceNo": 95,
     "sourceUrl": "https://www.cardhero-bu.com/card/detail.php?id=95",
-    "icon": "/card-icons/co095.jpg",
+    "icon": "/art/cards/card_095.png",
     "rarity": 5,
     "memberRatings": {
       "proBlack": {
@@ -4778,7 +4778,7 @@ export const CARD_DEFS = {
     "name": "パワーアップ",
     "sourceNo": 96,
     "sourceUrl": "https://www.cardhero-bu.com/card/detail.php?id=96",
-    "icon": "/card-icons/co096.jpg",
+    "icon": "/art/cards/card_096.png",
     "rarity": 6,
     "memberRatings": {
       "proBlack": {
@@ -4807,7 +4807,7 @@ export const CARD_DEFS = {
     "name": "挑発",
     "sourceNo": 97,
     "sourceUrl": "https://www.cardhero-bu.com/card/detail.php?id=97",
-    "icon": "/card-icons/co097.jpg",
+    "icon": "/art/cards/card_097.png",
     "rarity": 6,
     "memberRatings": {
       "proBlack": {
@@ -4834,7 +4834,7 @@ export const CARD_DEFS = {
     "name": "デスチェーン",
     "sourceNo": 98,
     "sourceUrl": "https://www.cardhero-bu.com/card/detail.php?id=98",
-    "icon": "/card-icons/co098.jpg",
+    "icon": "/art/cards/card_098.png",
     "rarity": 6,
     "memberRatings": {
       "proBlack": {
@@ -4861,7 +4861,7 @@ export const CARD_DEFS = {
     "name": "ゴーント",
     "sourceNo": 99,
     "sourceUrl": "https://www.cardhero-bu.com/card/detail.php?id=99",
-    "icon": "/card-icons/co099.jpg",
+    "icon": "/art/cards/card_099.png",
     "rarity": 1,
     "memberRatings": {
       "proBlack": {
@@ -4914,7 +4914,7 @@ export const CARD_DEFS = {
     "name": "カムロ",
     "sourceNo": 100,
     "sourceUrl": "https://www.cardhero-bu.com/card/detail.php?id=100",
-    "icon": "/card-icons/co100.jpg",
+    "icon": "/art/cards/card_100.png",
     "rarity": 1,
     "memberRatings": {
       "proBlack": {
@@ -4971,7 +4971,7 @@ export const CARD_DEFS = {
     ],
     "sourceNo": 101,
     "sourceUrl": "https://www.cardhero-bu.com/card/detail.php?id=101",
-    "icon": "/card-icons/co101.jpg",
+    "icon": "/art/cards/card_101.png",
     "rarity": 5,
     "memberRatings": {
       "proBlack": {
@@ -5011,7 +5011,7 @@ export const CARD_DEFS = {
     "name": "赤竜キバ",
     "sourceNo": 102,
     "sourceUrl": "https://www.cardhero-bu.com/card/detail.php?id=102",
-    "icon": "/card-icons/co102.jpg",
+    "icon": "/art/cards/card_102.png",
     "rarity": 1,
     "memberRatings": {
       "proBlack": {
@@ -5068,7 +5068,7 @@ export const CARD_DEFS = {
     ],
     "sourceNo": 103,
     "sourceUrl": "https://www.cardhero-bu.com/card/detail.php?id=103",
-    "icon": "/card-icons/co103.jpg",
+    "icon": "/art/cards/card_103.png",
     "rarity": 6,
     "memberRatings": {
       "proBlack": {
@@ -5121,7 +5121,7 @@ export const CARD_DEFS = {
     "name": "ユニフォーン",
     "sourceNo": 104,
     "sourceUrl": "https://www.cardhero-bu.com/card/detail.php?id=104",
-    "icon": "/card-icons/co104.jpg",
+    "icon": "/art/cards/card_104.png",
     "rarity": 2,
     "memberRatings": {
       "proBlack": {
@@ -5190,7 +5190,7 @@ export const CARD_DEFS = {
     "name": "ヤミー",
     "sourceNo": 105,
     "sourceUrl": "https://www.cardhero-bu.com/card/detail.php?id=105",
-    "icon": "/card-icons/co105.jpg",
+    "icon": "/art/cards/card_105.png",
     "rarity": 3,
     "memberRatings": {
       "proBlack": {
@@ -5258,7 +5258,7 @@ export const CARD_DEFS = {
     "name": "ピュア",
     "sourceNo": 106,
     "sourceUrl": "https://www.cardhero-bu.com/card/detail.php?id=106",
-    "icon": "/card-icons/co106.jpg",
+    "icon": "/art/cards/card_106.png",
     "rarity": 4,
     "memberRatings": {
       "proBlack": {
@@ -5326,7 +5326,7 @@ export const CARD_DEFS = {
     "name": "ラオン",
     "sourceNo": 107,
     "sourceUrl": "https://www.cardhero-bu.com/card/detail.php?id=107",
-    "icon": "/card-icons/co107.jpg",
+    "icon": "/art/cards/card_107.png",
     "rarity": 5,
     "memberRatings": {
       "proBlack": {
@@ -5394,7 +5394,7 @@ export const CARD_DEFS = {
     "name": "レオン",
     "sourceNo": 108,
     "sourceUrl": "https://www.cardhero-bu.com/card/detail.php?id=108",
-    "icon": "/card-icons/co108.jpg",
+    "icon": "/art/cards/card_108.png",
     "rarity": 5,
     "memberRatings": {
       "proBlack": {
@@ -5462,7 +5462,7 @@ export const CARD_DEFS = {
     "name": "ナッツロックル",
     "sourceNo": 109,
     "sourceUrl": "https://www.cardhero-bu.com/card/detail.php?id=109",
-    "icon": "/card-icons/co109.jpg",
+    "icon": "/art/cards/card_109.png",
     "rarity": 6,
     "memberRatings": {
       "proBlack": {
@@ -5502,7 +5502,7 @@ export const CARD_DEFS = {
     "name": "マーベリック",
     "sourceNo": 110,
     "sourceUrl": "https://www.cardhero-bu.com/card/detail.php?id=110",
-    "icon": "/card-icons/co110.jpg",
+    "icon": "/art/cards/card_110.png",
     "rarity": 2,
     "memberRatings": {
       "proBlack": {
@@ -5549,7 +5549,7 @@ export const CARD_DEFS = {
     "name": "ダロス",
     "sourceNo": 111,
     "sourceUrl": "https://www.cardhero-bu.com/card/detail.php?id=111",
-    "icon": "/card-icons/co111.jpg",
+    "icon": "/art/cards/card_111.png",
     "rarity": 4,
     "memberRatings": {
       "proBlack": {
@@ -5596,7 +5596,7 @@ export const CARD_DEFS = {
     "name": "ロブーン",
     "sourceNo": 112,
     "sourceUrl": "https://www.cardhero-bu.com/card/detail.php?id=112",
-    "icon": "/card-icons/co112.jpg",
+    "icon": "/art/cards/card_112.png",
     "rarity": 4,
     "memberRatings": {
       "proBlack": {
@@ -5683,7 +5683,7 @@ export const CARD_DEFS = {
     "name": "ロストーン",
     "sourceNo": 113,
     "sourceUrl": "https://www.cardhero-bu.com/card/detail.php?id=113",
-    "icon": "/card-icons/co113.jpg",
+    "icon": "/art/cards/card_113.png",
     "rarity": 1,
     "memberRatings": {
       "proBlack": {
@@ -5709,7 +5709,7 @@ export const CARD_DEFS = {
     "name": "リ・シャッフル",
     "sourceNo": 114,
     "sourceUrl": "https://www.cardhero-bu.com/card/detail.php?id=114",
-    "icon": "/card-icons/co114.jpg",
+    "icon": "/art/cards/card_114.png",
     "rarity": 1,
     "memberRatings": {
       "proBlack": {
@@ -5735,7 +5735,7 @@ export const CARD_DEFS = {
     "name": "ソートカード",
     "sourceNo": 115,
     "sourceUrl": "https://www.cardhero-bu.com/card/detail.php?id=115",
-    "icon": "/card-icons/co115.jpg",
+    "icon": "/art/cards/card_115.png",
     "rarity": 1,
     "memberRatings": {
       "proBlack": {
@@ -5761,7 +5761,7 @@ export const CARD_DEFS = {
     "name": "リフレッシュ",
     "sourceNo": 116,
     "sourceUrl": "https://www.cardhero-bu.com/card/detail.php?id=116",
-    "icon": "/card-icons/co116.jpg",
+    "icon": "/art/cards/card_116.png",
     "rarity": 1,
     "memberRatings": {
       "proBlack": {
@@ -5787,7 +5787,7 @@ export const CARD_DEFS = {
     "name": "ウェイクアップ",
     "sourceNo": 117,
     "sourceUrl": "https://www.cardhero-bu.com/card/detail.php?id=117",
-    "icon": "/card-icons/co117.jpg",
+    "icon": "/art/cards/card_117.png",
     "rarity": 2,
     "memberRatings": {
       "proBlack": {
@@ -5813,7 +5813,7 @@ export const CARD_DEFS = {
     "name": "かまいたち",
     "sourceNo": 118,
     "sourceUrl": "https://www.cardhero-bu.com/card/detail.php?id=118",
-    "icon": "/card-icons/co118.jpg",
+    "icon": "/art/cards/card_118.png",
     "rarity": 2,
     "memberRatings": {
       "proBlack": {
@@ -5839,7 +5839,7 @@ export const CARD_DEFS = {
     "name": "バイストーン",
     "sourceNo": 119,
     "sourceUrl": "https://www.cardhero-bu.com/card/detail.php?id=119",
-    "icon": "/card-icons/co119.jpg",
+    "icon": "/art/cards/card_119.png",
     "rarity": 2,
     "memberRatings": {
       "proBlack": {
@@ -5866,7 +5866,7 @@ export const CARD_DEFS = {
     "name": "ドロー５",
     "sourceNo": 120,
     "sourceUrl": "https://www.cardhero-bu.com/card/detail.php?id=120",
-    "icon": "/card-icons/co120.jpg",
+    "icon": "/art/cards/card_120.png",
     "rarity": 3,
     "memberRatings": {
       "proBlack": {
@@ -5892,7 +5892,7 @@ export const CARD_DEFS = {
     "name": "プラストーン",
     "sourceNo": 121,
     "sourceUrl": "https://www.cardhero-bu.com/card/detail.php?id=121",
-    "icon": "/card-icons/co121.jpg",
+    "icon": "/art/cards/card_121.png",
     "rarity": 3,
     "memberRatings": {
       "proBlack": {
@@ -5918,7 +5918,7 @@ export const CARD_DEFS = {
     "name": "リターン",
     "sourceNo": 122,
     "sourceUrl": "https://www.cardhero-bu.com/card/detail.php?id=122",
-    "icon": "/card-icons/co122.jpg",
+    "icon": "/art/cards/card_122.png",
     "rarity": 4,
     "memberRatings": {
       "proBlack": {
@@ -5944,7 +5944,7 @@ export const CARD_DEFS = {
     "name": "カードサーチ",
     "sourceNo": 123,
     "sourceUrl": "https://www.cardhero-bu.com/card/detail.php?id=123",
-    "icon": "/card-icons/co123.jpg",
+    "icon": "/art/cards/card_123.png",
     "rarity": 4,
     "memberRatings": {
       "proBlack": {
@@ -5970,7 +5970,7 @@ export const CARD_DEFS = {
     "name": "エクスチェンジ",
     "sourceNo": 124,
     "sourceUrl": "https://www.cardhero-bu.com/card/detail.php?id=124",
-    "icon": "/card-icons/co124.jpg",
+    "icon": "/art/cards/card_124.png",
     "rarity": 5,
     "memberRatings": {
       "proBlack": {
@@ -5997,7 +5997,7 @@ export const CARD_DEFS = {
     "name": "かげ呪い",
     "sourceNo": 125,
     "sourceUrl": "https://www.cardhero-bu.com/card/detail.php?id=125",
-    "icon": "/card-icons/co125.jpg",
+    "icon": "/art/cards/card_125.png",
     "rarity": 5,
     "memberRatings": {
       "proBlack": {
@@ -6023,7 +6023,7 @@ export const CARD_DEFS = {
     "name": "大地の怒り",
     "sourceNo": 126,
     "sourceUrl": "https://www.cardhero-bu.com/card/detail.php?id=126",
-    "icon": "/card-icons/co126.jpg",
+    "icon": "/art/cards/card_126.png",
     "rarity": 5,
     "memberRatings": {
       "proBlack": {
@@ -6049,7 +6049,7 @@ export const CARD_DEFS = {
     "name": "癒しの光",
     "sourceNo": 127,
     "sourceUrl": "https://www.cardhero-bu.com/card/detail.php?id=127",
-    "icon": "/card-icons/co127.jpg",
+    "icon": "/art/cards/card_127.png",
     "rarity": 5,
     "memberRatings": {
       "proBlack": {
@@ -6075,7 +6075,7 @@ export const CARD_DEFS = {
     "name": "スケープゴート",
     "sourceNo": 128,
     "sourceUrl": "https://www.cardhero-bu.com/card/detail.php?id=128",
-    "icon": "/card-icons/co128.jpg",
+    "icon": "/art/cards/card_128.png",
     "rarity": 6,
     "memberRatings": {
       "proBlack": {
@@ -6102,7 +6102,7 @@ export const CARD_DEFS = {
     "name": "ソウルチャージ",
     "sourceNo": 129,
     "sourceUrl": "https://www.cardhero-bu.com/card/detail.php?id=129",
-    "icon": "/card-icons/co129.jpg",
+    "icon": "/art/cards/card_129.png",
     "rarity": 6,
     "memberRatings": {
       "proBlack": {
@@ -6128,7 +6128,7 @@ export const CARD_DEFS = {
     "name": "再生",
     "sourceNo": 130,
     "sourceUrl": "https://www.cardhero-bu.com/card/detail.php?id=130",
-    "icon": "/card-icons/co130.jpg",
+    "icon": "/art/cards/card_130.png",
     "rarity": 6,
     "memberRatings": {
       "proBlack": {
@@ -6158,7 +6158,7 @@ export const CARD_DEFS = {
     ],
     "sourceNo": 131,
     "sourceUrl": "https://www.cardhero-bu.com/card/detail.php?id=131",
-    "icon": "/card-icons/co131.jpg",
+    "icon": "/art/cards/card_131.png",
     "rarity": 5,
     "memberRatings": {
       "proBlack": {
@@ -6205,7 +6205,7 @@ export const CARD_DEFS = {
     "name": "オクトロス",
     "sourceNo": 132,
     "sourceUrl": "https://www.cardhero-bu.com/card/detail.php?id=132",
-    "icon": "/card-icons/co132.jpg",
+    "icon": "/art/cards/card_132.png",
     "rarity": 6,
     "memberRatings": {
       "proBlack": {
@@ -6258,7 +6258,7 @@ export const CARD_DEFS = {
     "name": "デスシープ",
     "sourceNo": 133,
     "sourceUrl": "https://www.cardhero-bu.com/card/detail.php?id=133",
-    "icon": "/card-icons/co133.jpg",
+    "icon": "/art/cards/card_133.png",
     "rarity": 6,
     "memberRatings": {
       "proBlack": {
@@ -6311,7 +6311,7 @@ export const CARD_DEFS = {
     "name": "ファントム",
     "sourceNo": 134,
     "sourceUrl": "https://www.cardhero-bu.com/card/detail.php?id=134",
-    "icon": "/card-icons/co134.jpg",
+    "icon": "/art/cards/card_134.png",
     "rarity": 6,
     "memberRatings": {
       "proBlack": {
@@ -6379,7 +6379,7 @@ export const CARD_DEFS = {
     "name": "ノワール",
     "sourceNo": 135,
     "sourceUrl": "https://www.cardhero-bu.com/card/detail.php?id=135",
-    "icon": "/card-icons/co135.jpg",
+    "icon": "/art/cards/card_135.png",
     "rarity": 6,
     "memberRatings": {
       "proBlack": {
@@ -6471,7 +6471,7 @@ export const CARD_DEFS = {
     ],
     "sourceNo": 136,
     "sourceUrl": "https://www.cardhero-bu.com/card/detail.php?id=136",
-    "icon": "/card-icons/co136.jpg",
+    "icon": "/art/cards/card_136.png",
     "rarity": 6,
     "memberRatings": {
       "proBlack": {
@@ -6522,7 +6522,7 @@ export const CARD_DEFS = {
     ],
     "sourceNo": 137,
     "sourceUrl": "https://www.cardhero-bu.com/card/detail.php?id=137",
-    "icon": "/card-icons/co137.jpg",
+    "icon": "/art/cards/card_137.png",
     "rarity": 6,
     "memberRatings": {
       "proBlack": {
@@ -6572,7 +6572,7 @@ export const CARD_DEFS = {
     ],
     "sourceNo": 138,
     "sourceUrl": "https://www.cardhero-bu.com/card/detail.php?id=138",
-    "icon": "/card-icons/co138.jpg",
+    "icon": "/art/cards/card_138.png",
     "rarity": 6,
     "memberRatings": {
       "proBlack": {
@@ -6624,7 +6624,7 @@ export const CARD_DEFS = {
     ],
     "sourceNo": 139,
     "sourceUrl": "https://www.cardhero-bu.com/card/detail.php?id=139",
-    "icon": "/card-icons/co139.jpg",
+    "icon": "/art/cards/card_139.png",
     "rarity": 6,
     "memberRatings": {
       "proBlack": {
@@ -6675,7 +6675,7 @@ export const CARD_DEFS = {
     ],
     "sourceNo": 140,
     "sourceUrl": "https://www.cardhero-bu.com/card/detail.php?id=140",
-    "icon": "/card-icons/co140.jpg",
+    "icon": "/art/cards/card_140.png",
     "rarity": 7,
     "memberRatings": {
       "proBlack": {
@@ -6727,7 +6727,7 @@ export const CARD_DEFS = {
     ],
     "sourceNo": 141,
     "sourceUrl": "https://www.cardhero-bu.com/card/detail.php?id=141",
-    "icon": "/card-icons/co141.jpg",
+    "icon": "/art/cards/card_141.png",
     "rarity": 6,
     "memberRatings": {
       "proBlack": {
@@ -6777,7 +6777,7 @@ export const CARD_DEFS = {
     ],
     "sourceNo": 142,
     "sourceUrl": "https://www.cardhero-bu.com/card/detail.php?id=142",
-    "icon": "/card-icons/co142.jpg",
+    "icon": "/art/cards/card_142.png",
     "rarity": 6,
     "memberRatings": {
       "proBlack": {
@@ -6821,7 +6821,7 @@ export const CARD_DEFS = {
     ],
     "sourceNo": 143,
     "sourceUrl": "https://www.cardhero-bu.com/card/detail.php?id=143",
-    "icon": "/card-icons/co143.jpg",
+    "icon": "/art/cards/card_143.png",
     "rarity": 8,
     "memberRatings": {
       "proBlack": {
@@ -6862,7 +6862,7 @@ export const CARD_DEFS = {
     "name": "ホロウダイン",
     "sourceNo": 144,
     "sourceUrl": "https://www.cardhero-bu.com/card/detail.php?id=144",
-    "icon": "/card-icons/co144.jpg",
+    "icon": "/art/cards/card_144.png",
     "rarity": 8,
     "memberRatings": {
       "proBlack": {
@@ -6928,7 +6928,7 @@ export const CARD_DEFS = {
     "name": "ヴァルテル",
     "sourceNo": 145,
     "sourceUrl": "https://www.cardhero-bu.com/card/detail.php?id=145",
-    "icon": "/card-icons/co145.jpg",
+    "icon": "/art/cards/card_145.png",
     "rarity": 8,
     "memberRatings": {
       "proBlack": {
@@ -6975,7 +6975,7 @@ export const CARD_DEFS = {
     "name": "シャムーラ",
     "sourceNo": 146,
     "sourceUrl": "https://www.cardhero-bu.com/card/detail.php?id=146",
-    "icon": "/card-icons/co146.jpg",
+    "icon": "/art/cards/card_146.png",
     "rarity": 8,
     "memberRatings": {
       "proBlack": {
@@ -7023,7 +7023,7 @@ export const CARD_DEFS = {
     "name": "モーガン",
     "sourceNo": 147,
     "sourceUrl": "https://www.cardhero-bu.com/card/detail.php?id=147",
-    "icon": "/card-icons/co147.jpg",
+    "icon": "/art/cards/card_147.png",
     "rarity": 8,
     "memberRatings": {
       "proBlack": {
@@ -7090,7 +7090,7 @@ export const CARD_DEFS = {
     "name": "幻影の鏡",
     "sourceNo": 148,
     "sourceUrl": "https://www.cardhero-bu.com/card/detail.php?id=148",
-    "icon": "/card-icons/co148.jpg",
+    "icon": "/art/cards/card_148.png",
     "rarity": 8,
     "memberRatings": {
       "proBlack": {
@@ -7117,7 +7117,7 @@ export const CARD_DEFS = {
     "name": "福音の鐘",
     "sourceNo": 149,
     "sourceUrl": "https://www.cardhero-bu.com/card/detail.php?id=149",
-    "icon": "/card-icons/co149.jpg",
+    "icon": "/art/cards/card_149.png",
     "rarity": 8,
     "memberRatings": {
       "proBlack": {
@@ -7143,7 +7143,7 @@ export const CARD_DEFS = {
     "name": "スパルタス覚醒",
     "sourceNo": 150,
     "sourceUrl": "https://www.cardhero-bu.com/card/detail.php?id=150",
-    "icon": "/card-icons/co150.jpg",
+    "icon": "/art/cards/card_150.png",
     "rarity": 8,
     "memberRatings": {
       "proBlack": {

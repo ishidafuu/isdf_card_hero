@@ -76,6 +76,12 @@ import {
 } from "./cpuAiV2/opponentKnowledge";
 import { appendAiDecisionReviewEntry } from "./aiReviewTrace";
 import { HAND_LIMIT } from "./ruleEngine/constants";
+import { getEffectiveActor } from "./seatControl";
+import {
+  applyExperimentalMasterAction,
+  isExperimentalSessionMasterActionAllowed,
+  listExperimentalMasterActionCommands,
+} from "./experimentalMasters";
 
 export { CPU_AI_PROFILES } from "./cpuAiTypes";
 export type {
@@ -543,17 +549,28 @@ const WHITE_VS_WHITE_MATCHUP_TUNING = {
 
 export function runCpuDecisionStep(state: GameState, options: CpuAiOptions = {}): GameState {
   const decision = chooseCpuDecision(state, options);
-  return applyCpuDecision(state, decision);
+  return applyCpuDecision(state, decision, {
+    experimentalContext: options.experimentalContext,
+    reviewActor: options.reviewActorByPendingOwner ? getEffectiveActor(state) : state.currentPlayer,
+  });
 }
 
 export function chooseCpuDecision(originalState: GameState, options: CpuAiOptions = {}): CpuDecision {
-  const perspective = originalState.currentPlayer;
-  const profile = resolveCpuAiProfile(originalState, options);
-  const state = profile === "omniscient"
-    ? createPlanningState(originalState)
-    : createPublicInformationState(originalState, perspective);
+  const perspective = getEffectiveActor(originalState);
+  const actorState = perspective === originalState.currentPlayer
+    ? originalState
+    : { ...originalState, currentPlayer: perspective };
+  const profile = resolveCpuAiProfile(actorState, options);
+  const state = profile === "omniscient" && options.opponentKnowledgePolicy !== "unknown_composition"
+    ? createPlanningState(actorState)
+    : createPublicInformationState(actorState, perspective, 0, options.opponentKnowledgePolicy);
   const decision = chooseCpuDecisionFromInformationState(state, options, profile);
-  return stripPlanningOnlyDecisionDetails(originalState, decision, profile);
+  return stripPlanningOnlyDecisionDetails(
+    originalState,
+    decision,
+    profile,
+    profile === "omniscient" && options.opponentKnowledgePolicy !== "unknown_composition",
+  );
 }
 
 function chooseCpuDecisionFromInformationState(
@@ -563,7 +580,9 @@ function chooseCpuDecisionFromInformationState(
 ): CpuDecision {
   const perspective = state.currentPlayer;
   const config = resolveCpuAiConfigForProfile(state, options, profile);
-  const masterDamagePlan = findMasterDamagePlan(state, perspective, config.weights);
+  const masterDamagePlan = options.experimentalContext
+    ? createEmptyMasterDamagePlan()
+    : findMasterDamagePlan(state, perspective, config.weights);
   if (
     shouldForceMasterDamagePlan(state, perspective, masterDamagePlan, config) &&
     (profile !== "white_v2" || immediateMasterDamagePlanWinner(state, masterDamagePlan))
@@ -577,18 +596,29 @@ function chooseCpuDecisionFromInformationState(
         if (planningState.pendingLevelUp?.playerId === planningPerspective) {
           return evaluatePendingLevelUpCandidates(planningState, planningPerspective, planningConfig);
         }
-        return evaluateImmediateCpuDecisions(planningState, planningPerspective, planningConfig);
+        return evaluateImmediateCpuDecisions(planningState, planningPerspective, planningConfig, options.experimentalContext);
       },
       evaluatePosition: (planningState, planningPerspective) => {
         const planningConfig = resolveCpuAiConfigForProfile(planningState, options, "white");
         return evaluateState(planningState, planningPerspective, planningConfig.weights) +
           evaluateConfiguredFutureTacticalValue(planningState, planningPerspective, true, planningConfig);
       },
-      stateKey: (planningState) => publicInformationStateKey(planningState, planningState.currentPlayer),
+      stateKey: (planningState) => publicInformationStateKey(
+        planningState,
+        planningState.currentPlayer,
+        options.opponentKnowledgePolicy,
+      ),
       decisionKey: cpuDecisionKey,
       prepareOpponentResponseStates: (responseState, responsePerspective) => [0, 1].map((sampleIndex) =>
-        determinizeOpponentPrivateZones(responseState, opponentOf(responsePerspective), sampleIndex)),
-      opponentKnowledgeLabel: "known-deck-determinization-x2",
+        determinizeOpponentPrivateZones(
+          responseState,
+          opponentOf(responsePerspective),
+          sampleIndex,
+          options.opponentKnowledgePolicy,
+        )),
+      opponentKnowledgeLabel: options.opponentKnowledgePolicy === "unknown_composition"
+        ? "unknown-composition-determinization-x2"
+        : "known-deck-determinization-x2",
       cacheNamespace: cpuTurnPlannerCacheNamespace(profile, state, options),
     });
     if (decision) {
@@ -602,7 +632,7 @@ function chooseCpuDecisionFromInformationState(
   const fallbackConfig = profile === "white_planner" || profile === "white_rollout"
     ? resolveCpuAiConfigForProfile(state, options, "white")
     : config;
-  const evaluated = evaluateCpuDecisions(state, perspective, fallbackConfig);
+  const evaluated = evaluateCpuDecisions(state, perspective, fallbackConfig, options.experimentalContext);
 
   evaluated.forEach((candidate) => {
     if (
@@ -727,7 +757,7 @@ function chooseCpuDecisionFromInformationState(
     config,
     best,
   );
-  if (!skipTerminalPlanRoot && shouldSelectTerminalPlanRoot(state, perspective, config)) {
+  if (!options.experimentalContext && !skipTerminalPlanRoot && shouldSelectTerminalPlanRoot(state, perspective, config)) {
     const selection = selectTerminalPlanRootDecision(state, perspective, config, options, best);
     if (selection) {
       const lateNoStoneFaceHold = selectWhiteMirrorLateNoStoneFaceHoldEndTurnDecision(
@@ -772,8 +802,9 @@ function stripPlanningOnlyDecisionDetails(
   originalState: GameState,
   decision: CpuDecision,
   profile: CpuAiProfile,
+  retainKnownDeckSortOrder: boolean,
 ): CpuDecision {
-  if (profile === "omniscient" || decision.type !== "magic") {
+  if ((profile === "omniscient" && retainKnownDeckSortOrder) || decision.type !== "magic") {
     return decision;
   }
   const handCard = originalState.players[originalState.currentPlayer].hand.find(
@@ -793,7 +824,7 @@ export function inspectCpuDecisionEvaluations(
 ): CpuDecisionEvaluation[] {
   const perspective = state.currentPlayer;
   const config = resolveCpuAiConfig(state, options);
-  return evaluateCpuDecisions(state, perspective, config).map(({ decision, totalScore, index }) => ({
+  return evaluateCpuDecisions(state, perspective, config, options.experimentalContext).map(({ decision, totalScore, index }) => ({
     decision,
     totalScore,
     index,
@@ -810,12 +841,22 @@ export function inspectCpuTerminalPlan(
   const fallbackConfig = profile === "white_planner" || profile === "white_rollout"
     ? resolveCpuAiConfigForProfile(state, options, "white")
     : config;
-  const fallback = bestEvaluatedDecision(evaluateCpuDecisions(state, perspective, fallbackConfig));
+  const fallback = bestEvaluatedDecision(evaluateCpuDecisions(state, perspective, fallbackConfig, options.experimentalContext));
   const base = {
     perspective,
     profile,
     ...(fallback ? { fallbackDecision: fallback.decision, fallbackScore: fallback.totalScore } : {}),
   };
+
+  if (options.experimentalContext) {
+    return {
+      ...base,
+      enabled: false,
+      adopted: false,
+      rejectedReason: "legacy terminal-plan root is disabled for experimental master overlays",
+      candidates: [],
+    };
+  }
 
   if (!shouldSelectTerminalPlanRoot(state, perspective, config)) {
     return {
@@ -1452,14 +1493,15 @@ function evaluateCpuDecisions(
   state: GameState,
   perspective: PlayerId,
   config: CpuAiProfileConfig,
+  experimentalContext?: import("./experimentalContext").ExperimentContextV1,
 ): EvaluatedDecision[] {
   const beforeScore = evaluateState(state, perspective, config.weights);
   const beforeFutureScore = evaluateConfiguredFutureTacticalValue(state, perspective, false, config);
   const beforeFollowUpScore = bestAttackOpportunityScore(state);
-  const decisions = listCpuDecisions(state, config.weights);
+  const decisions = listCpuDecisions(state, config.weights, experimentalContext);
 
   const evaluated = decisions.flatMap((decision, index) => {
-    const transition = evaluateDecisionTransition(state, decision, perspective, beforeScore, beforeFutureScore, false, config);
+    const transition = evaluateDecisionTransition(state, decision, perspective, beforeScore, beforeFutureScore, false, config, experimentalContext);
     if (!transition) {
       return [];
     }
@@ -1584,6 +1626,7 @@ function selectTerminalPlanRootDecision(
   options: CpuAiOptions,
   fallback: EvaluatedDecision | undefined,
 ): TerminalPlanSelection | undefined {
+  if (options.experimentalContext) return undefined;
   const baselineScore = evaluateState(state, perspective, config.weights);
   const context = createTerminalPlanEvaluationContext(baselineScore);
   const candidates = withWhiteMirrorHoldFallbackCandidates(
@@ -4114,10 +4157,11 @@ function evaluateDecisionTransition(
   beforeFutureScore: number,
   detailedFuture: boolean,
   config: CpuAiProfileConfig,
+  experimentalContext?: import("./experimentalContext").ExperimentContextV1,
 ): { after: GameState; totalScore: number } | undefined {
   let after: GameState;
   try {
-    after = applyCpuDecision(state, decision);
+    after = applyCpuDecision(state, decision, { experimentalContext });
   } catch {
     return undefined;
   }
@@ -7527,11 +7571,12 @@ function evaluateImmediateCpuDecisions(
   state: GameState,
   perspective: PlayerId,
   config: CpuAiProfileConfig,
+  experimentalContext?: import("./experimentalContext").ExperimentContextV1,
 ): EvaluatedDecision[] {
   const beforeScore = evaluateState(state, perspective, config.weights);
   const beforeFutureScore = evaluateConfiguredFutureTacticalValue(state, perspective, false, config);
-  return listCpuDecisions(state, config.weights).flatMap((decision, index) => {
-    const transition = evaluateDecisionTransition(state, decision, perspective, beforeScore, beforeFutureScore, false, config);
+  return listCpuDecisions(state, config.weights, experimentalContext).flatMap((decision, index) => {
+    const transition = evaluateDecisionTransition(state, decision, perspective, beforeScore, beforeFutureScore, false, config, experimentalContext);
     return transition ? [{ decision, totalScore: transition.totalScore, index, after: transition.after }] : [];
   });
 }
@@ -7566,6 +7611,8 @@ function cpuTurnPlannerCacheNamespace(
       tunings: options.tunings ?? null,
       search: options.search ?? null,
       searches: options.searches ?? null,
+      opponentKnowledgePolicy: options.opponentKnowledgePolicy ?? "known_deck",
+      experimentalContext: options.experimentalContext ?? null,
     },
   });
 }
@@ -7573,6 +7620,7 @@ function cpuTurnPlannerCacheNamespace(
 export function listCpuDecisions(
   state: GameState,
   weights: AiEvaluationWeights = DEFAULT_AI_EVALUATION_WEIGHTS,
+  experimentalContext?: import("./experimentalContext").ExperimentContextV1,
 ): CpuDecision[] {
   if (state.winner || state.pendingLevelUp) {
     return state.pendingLevelUp
@@ -7588,11 +7636,17 @@ export function listCpuDecisions(
   );
   const actionDecisions = [
     ...attackDecisions,
-    ...listMasterActionDecisions(state, weights),
+    ...listMasterActionDecisions(state, weights, experimentalContext),
     ...listMagicDecisions(state, weights),
     ...listSummonDecisions(state),
     ...listMoveDecisions(state),
     ...listFocusDecisions(state),
+    ...listExperimentalMasterActionCommands(state, experimentalContext).map((command) => ({
+      type: "experimental_master_action" as const,
+      ...command,
+      reason: `実験マスター特技 ${command.master}/${command.actionId} の合法候補を評価`,
+      score: 0,
+    })),
   ];
   return [
     ...actionDecisions,
@@ -7937,23 +7991,51 @@ function summonWakeCreatesMasterPressure(state: GameState, handInstanceId: strin
   }
 }
 
-export function applyCpuDecision(state: GameState, decision: CpuDecision): GameState {
-  return applyCpuDecisionInternal(state, decision, true);
+export function applyCpuDecision(
+  state: GameState,
+  decision: CpuDecision,
+  options: {
+    experimentalContext?: import("./experimentalContext").ExperimentContextV1;
+    reviewActor?: PlayerId;
+  } = {},
+): GameState {
+  return applyCpuDecisionInternal(
+    state,
+    decision,
+    true,
+    options.experimentalContext,
+    options.reviewActor ?? state.currentPlayer,
+  );
 }
 
-function applyCpuDecisionInternal(state: GameState, decision: CpuDecision, resolveSortOrder: boolean): GameState {
+function applyCpuDecisionInternal(
+  state: GameState,
+  decision: CpuDecision,
+  resolveSortOrder: boolean,
+  experimentalContext?: import("./experimentalContext").ExperimentContextV1,
+  reviewActor: PlayerId = state.currentPlayer,
+): GameState {
   const appliedDecision = resolveSortOrder ? resolveLiveSortCardAction(state, decision) : decision;
-  const stateWithReason = appendDecisionReasonLog(state, appliedDecision);
+  const stateWithReason = appendDecisionReasonLog(state, appliedDecision, reviewActor);
   if (appliedDecision.type === "resolve_level_up") {
     return resolveLevelUp(stateWithReason, appliedDecision.levels, appliedDecision.superHandInstanceId);
   }
   if (appliedDecision.type === "master_hp_draw") {
     return useMasterHpDraw(stateWithReason);
   }
+  if (appliedDecision.type === "experimental_master_action") {
+    if (!experimentalContext) {
+      throw new Error("実験マスター行動にはexperimental session contextが必要です");
+    }
+    return applyExperimentalMasterAction(stateWithReason, experimentalContext, appliedDecision);
+  }
   if (appliedDecision.type === "attack") {
     return attackWithCommand(stateWithReason, appliedDecision.action);
   }
   if (appliedDecision.type === "master_action") {
+    if (!isExperimentalSessionMasterActionAllowed(state, experimentalContext, appliedDecision.actionId, reviewActor)) {
+      throw new Error("この実験マスターでは使用できない通常特技です");
+    }
     return useMasterAction(stateWithReason, appliedDecision.actionId, appliedDecision.target);
   }
   if (appliedDecision.type === "summon") {
@@ -7974,12 +8056,19 @@ function applyCpuDecisionInternal(state: GameState, decision: CpuDecision, resol
 }
 
 /** Replays a previously stored CPU payload without asking the chooser to decide again. */
-export function applyStoredAiDecision(state: GameState, snapshot: AiDecisionSnapshot): GameState {
+export function applyStoredAiDecision(
+  state: GameState,
+  snapshot: AiDecisionSnapshot,
+  options: {
+    experimentalContext?: import("./experimentalContext").ExperimentContextV1;
+    reviewActor?: PlayerId;
+  } = {},
+): GameState {
   const decision: CpuDecision = {
     ...snapshot,
     ...(snapshot.trace ? { trace: snapshot.trace } : {}),
   };
-  return applyCpuDecisionInternal(state, decision, false);
+  return applyCpuDecisionInternal(state, decision, false, options.experimentalContext, options.reviewActor ?? state.currentPlayer);
 }
 
 function resolveLiveSortCardAction(state: GameState, decision: CpuDecision): CpuDecision {
@@ -8008,17 +8097,30 @@ function resolveLiveSortCardAction(state: GameState, decision: CpuDecision): Cpu
   };
 }
 
-function applyCpuDecisionForPlanning(state: GameState, decision: CpuDecision): GameState {
+function applyCpuDecisionForPlanning(
+  state: GameState,
+  decision: CpuDecision,
+  experimentalContext?: import("./experimentalContext").ExperimentContextV1,
+): GameState {
   if (decision.type === "resolve_level_up") {
     return resolveLevelUp(state, decision.levels, decision.superHandInstanceId);
   }
   if (decision.type === "master_hp_draw") {
     return useMasterHpDraw(state);
   }
+  if (decision.type === "experimental_master_action") {
+    if (!experimentalContext) {
+      throw new Error("実験マスター行動にはexperimental session contextが必要です");
+    }
+    return applyExperimentalMasterAction(state, experimentalContext, decision);
+  }
   if (decision.type === "attack") {
     return attackWithCommand(state, decision.action);
   }
   if (decision.type === "master_action") {
+    if (!isExperimentalSessionMasterActionAllowed(state, experimentalContext, decision.actionId)) {
+      throw new Error("この実験マスターでは使用できない通常特技です");
+    }
     return useMasterAction(state, decision.actionId, decision.target);
   }
   if (decision.type === "summon") {
@@ -8038,15 +8140,19 @@ function applyCpuDecisionForPlanning(state: GameState, decision: CpuDecision): G
     : endTurn(state);
 }
 
-function appendDecisionReasonLog(state: GameState, decision: CpuDecision): GameState {
+function appendDecisionReasonLog(
+  state: GameState,
+  decision: CpuDecision,
+  reviewActor: PlayerId = state.currentPlayer,
+): GameState {
   const next = structuredClone(state) as GameState;
-  const actor = next.currentPlayer === "cpu" ? "CPU" : "プレイヤーAI";
+  const actor = reviewActor === "cpu" ? "CPU" : "プレイヤーAI";
   appendLog(next, `${actor}判断: ${decision.reason}${formatDecisionTraceLog(decision)}`);
-  appendAiDecisionReviewEntry(next, state, decision, cpuDecisionKey(decision));
+  appendAiDecisionReviewEntry(next, state, decision, cpuDecisionKey(decision), reviewActor);
   if (decision.reason.includes("ターンプラン探索") && decision.reason.includes("rollout")) {
     next.turnAiRolloutDecisionHistory = [
       ...(next.turnAiRolloutDecisionHistory ?? []),
-      { playerId: next.currentPlayer, turnNumber: next.turnNumber },
+      { playerId: reviewActor, turnNumber: next.turnNumber },
     ];
   }
   return next;
@@ -9476,8 +9582,14 @@ function attackReason(state: GameState, after: GameState, action: CommandAction)
   return target ? `${getCardName(target.cardId)}を削れるため攻撃` : "有効ダメージを与えられるため攻撃";
 }
 
-function listMasterActionDecisions(state: GameState, weights: AiEvaluationWeights): CpuDecision[] {
-  return getCurrentMasterActionIds(state).flatMap((actionId) => {
+function listMasterActionDecisions(
+  state: GameState,
+  weights: AiEvaluationWeights,
+  experimentalContext?: import("./experimentalContext").ExperimentContextV1,
+): CpuDecision[] {
+  return getCurrentMasterActionIds(state).filter((actionId) =>
+    isExperimentalSessionMasterActionAllowed(state, experimentalContext, actionId),
+  ).flatMap((actionId) => {
     if (actionId === "master_attack") {
       return listMasterAttackDecisions(state);
     }
@@ -10626,6 +10738,9 @@ function compareTieBreak(a: CpuDecision, b: CpuDecision, aIndex: number, bIndex:
 }
 
 function cpuDecisionKey(decision: CpuDecision): string {
+  if (decision.type === "experimental_master_action") {
+    return `experimental:${decision.master}:${decision.actionId}:${targetKey(decision.target)}:${targetKey(decision.secondaryTarget)}`;
+  }
   if (decision.type === "attack") {
     return `attack:${decision.action.attackerSlotKey}:${decision.action.commandId}:${targetKey(decision.action.target)}:${targetKey(decision.action.secondaryTarget)}:${decision.action.secondaryHandInstanceId ?? ""}`;
   }

@@ -1,5 +1,4 @@
 import {
-  branchBattleJournal,
   branchBattleJournalWithSnapshot,
   hashBattleState,
   parseBattleJournal,
@@ -7,9 +6,13 @@ import {
   serializeBattleJournal,
 } from "./battleJournal";
 import type { BattleJournal, BattleJournalBranchSnapshot, BattleJournalError, BattleJournalResult, ReplaySnapshot } from "./types";
+import { createPostgameCoachReport, type PostgameCoachReport } from "../sessions/coach";
+import type { SessionBattleResult } from "../sessions/types";
+import { parseSessionArchiveEnvelope, verifySessionArchiveReplayHeads } from "../sessions/archive";
+import type { VerifiedSessionArchive } from "../sessions/archive";
 
-export type BattleJournalWorkerOperation = "seek" | "undo" | "branch" | "import" | "export";
-export type BattleJournalWorkerStage = "replaying" | "verifying-branch" | "validating-import" | "validating-export";
+export type BattleJournalWorkerOperation = "seek" | "undo" | "branch" | "import" | "export" | "coach" | "restore-session";
+export type BattleJournalWorkerStage = "replaying" | "verifying-branch" | "validating-import" | "validating-export" | "analyzing-coach" | "restoring-session";
 
 interface WorkerRequestBase {
   requestId: number;
@@ -21,9 +24,11 @@ export type BattleJournalWorkerRequest =
   | (WorkerRequestBase & { operation: "undo"; journal: BattleJournal; cursor: number; expectedState: import("../game/types").GameState })
   | (WorkerRequestBase & { operation: "branch"; journal: BattleJournal; cursor: number })
   | (WorkerRequestBase & { operation: "import"; json: string })
-  | (WorkerRequestBase & { operation: "export"; journal: BattleJournal });
+  | (WorkerRequestBase & { operation: "export"; journal: BattleJournal })
+  | (WorkerRequestBase & { operation: "coach"; journal: BattleJournal; result: SessionBattleResult; seat: import("../game/types").PlayerId })
+  | (WorkerRequestBase & { operation: "restore-session"; json: string });
 
-export type BattleJournalWorkerValue = ReplaySnapshot | BattleJournal | BattleJournalBranchSnapshot | string;
+export type BattleJournalWorkerValue = ReplaySnapshot | BattleJournal | BattleJournalBranchSnapshot | PostgameCoachReport | VerifiedSessionArchive | string;
 
 export type BattleJournalWorkerResponse =
   | (WorkerRequestBase & { type: "stage"; operation: BattleJournalWorkerOperation; stage: BattleJournalWorkerStage })
@@ -69,7 +74,7 @@ export function* executeBattleJournalWorkerRequest(request: BattleJournalWorkerR
         break;
       }
       case "branch":
-        result = branchBattleJournal(request.journal, request.cursor);
+        result = branchBattleJournalWithSnapshot(request.journal, request.cursor);
         break;
       case "import":
         result = parseBattleJournal(request.json);
@@ -77,6 +82,25 @@ export function* executeBattleJournalWorkerRequest(request: BattleJournalWorkerR
       case "export":
         result = serializeBattleJournal(request.journal);
         break;
+      case "coach": {
+        const report = createPostgameCoachReport({ journal: request.journal, result: request.result, seat: request.seat });
+        result = report.ok
+          ? { ok: true, value: report.value }
+          : { ok: false, error: { code: "EXECUTION_FAILED", message: report.error.message } };
+        break;
+      }
+      case "restore-session": {
+        const parsed = parseSessionArchiveEnvelope(request.json);
+        if (!parsed.ok) {
+          result = { ok: false, error: { code: "EXECUTION_FAILED", message: parsed.error.message } };
+          break;
+        }
+        const verified = verifySessionArchiveReplayHeads(parsed.value);
+        result = verified.ok
+          ? { ok: true, value: verified.value }
+          : { ok: false, error: { code: "EXECUTION_FAILED", message: verified.error.message } };
+        break;
+      }
     }
   } catch (cause) {
     result = {
@@ -119,5 +143,7 @@ function stageForOperation(operation: BattleJournalWorkerOperation): BattleJourn
     case "undo": return "verifying-branch";
     case "import": return "validating-import";
     case "export": return "validating-export";
+    case "coach": return "analyzing-coach";
+    case "restore-session": return "restoring-session";
   }
 }

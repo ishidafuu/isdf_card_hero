@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" role="img" aria-labelledby="title">
+  <title id="title">Seat one sigil</title>
+  <circle cx="64" cy="64" r="58" fill="#10212b" stroke="#69b9a9" stroke-width="5"/>
+  <path d="m64 19 11 27 28 2-21 18 7 28-25-15-25 15 7-28-21-18 28-2z" fill="#397a73" stroke="#d2ad70" stroke-width="4" stroke-linejoin="round"/>
+  <circle cx="64" cy="63" r="9" fill="#f1d39a"/>
+</svg>

@@ -53,7 +53,17 @@ import { HAND_LIMIT } from "./game/ruleEngine/constants";
 import { getMasterActionDef, getMasterActionMagicCardId, getMasterIconUrl, getMasterName, MASTER_IDS } from "./game/masters";
 import { CPU_AI_PROFILES, type CpuAiProfile, type CpuAiProfiles } from "./game/cpuAi";
 import { createDefaultAiProfiles, DEFAULT_CPU_AI_PROFILE } from "./game/defaultAiProfiles";
-import { appendHumanActionReviewEntry } from "./game/aiReviewTrace";
+import { appendControlledHumanActionReviewEntry, appendHumanActionReviewEntry } from "./game/aiReviewTrace";
+import { getEffectiveActor, shouldRunAutoStep } from "./game/seatControl";
+import {
+  applyExperimentalMasterAction,
+  applySessionNativeMasterAction,
+  experimentalMasterCandidateName,
+  getExperimentalNativeMasterActionIds,
+  listExperimentalMasterActionCommands,
+} from "./game/experimentalMasters";
+import type { ExperimentContextV1 } from "./game/experimentalContext";
+import type { ExperimentalMasterActionCommand } from "./game/experimentalMasters";
 import {
   buildDeckPresetCardIds,
   DEFAULT_DECK_PRESET_FILTERS,
@@ -113,13 +123,18 @@ import {
   type LogFilter,
 } from "./logDisplay";
 import { ModeNavigation } from "./ui/ModeNavigation";
-import { canRevealHand, canRevealPreparedCard, canRevealRemainingDeck, displayLogEntry, handCardCostLabel, hidePrivateTargetPreviewDetails, shouldHideHandList, sortDeckForDisplay, type BattleWorkspaceMode } from "./ui/modes";
+import { canRevealHand, canRevealPreparedCard, canRevealRemainingDeck, displaySessionLogEntry, handCardCostLabel, hidePrivateTargetPreviewDetails, isLivePrivateHumanBattle, shouldHideHandList, sortDeckForDisplay, type BattleWorkspaceMode } from "./ui/modes";
 import { TutorialPanel } from "./ui/TutorialPanel";
 import { BattleJournalPanel, JournalOperationNotice } from "./ui/BattleJournalPanel";
+import { PostgameCoachPanel } from "./ui/PostgameCoachPanel";
+import { SessionLauncherPanel, type SessionLauncherKind } from "./ui/SessionLauncherPanel";
+import type { ExperimentalLaunchOptions } from "./ui/ExperimentalSessionSetup";
+import { LimitedSessionPanel } from "./ui/LimitedSessionPanel";
+import { GauntletResultSummary } from "./ui/GauntletResultSummary";
 import {
   appendBattleCommand,
-  createBattleJournal,
   extractAiDecisionCommand,
+  hashBattleState,
   markBattleJournalIncomplete,
 } from "./replay/battleJournal";
 import type { BattleCommandPayload, BattleJournal, BattleJournalBranchSnapshot, BattleJournalResult, ReplaySnapshot } from "./replay/types";
@@ -127,6 +142,15 @@ import { createBattleJournalWorkerClient, type BattleJournalWorkerClient, type B
 import type { BattleJournalWorkerOperation, BattleJournalWorkerStage } from "./replay/workerProtocol";
 import { advanceTutorialStep, isTutorialVersionComplete, saveTutorialCompletion, tutorialStepForGame, TUTORIAL_STORAGE_KEY, type TutorialStep } from "./ui/tutorial";
 import { updateDiagnosticContext } from "./diagnostics/diagnosticReport";
+import { StoneTacticsBrand } from "./ui/StoneTacticsBrand";
+import { createBattleBranchPlan, startSession } from "./sessions/plans";
+import { applyPuzzleAction, completeDailyChallenge, completeGauntletStageWithVerifiedHead, createDailyChallengeSession, createExperimentalSession, createGauntletSession, createPuzzleSession, listPuzzleCatalog, resetPuzzle } from "./sessions/challenges";
+import { completeDraftBattleWithVerifiedHead, completeSealedBattleWithVerifiedHead, createDraftSession, createSealedSession, pickDraftCard, selectSealedDeck, startDraftBattle, startSealedBattle, updateSealedDeckSelection } from "./sessions/limited";
+import { MAX_SESSION_ARCHIVE_BYTES, restoreSessionArchiveWithVerifiedHeads, serializeTrustedSessionRuntime } from "./sessions/archive";
+import type { VerifiedSessionArchive } from "./sessions/archive";
+import { loadSessionArchive, saveSessionRuntime } from "./sessions/storage";
+import type { SessionBattleResult, SessionBranchProvenance, SessionControllers, SessionManifest, SessionPlan, SessionProgress, SessionRuntime } from "./sessions/types";
+import type { PostgameCoachReport } from "./sessions/coach";
 
 type BoardCell =
   | { kind: "slot"; slotKey: SlotKey }
@@ -150,6 +174,16 @@ interface JournalWorkerRequestState {
   mutation: boolean;
 }
 
+interface EmbeddedBattleReviewSource {
+  readonly runtimeId: string;
+  readonly manifest: SessionManifest;
+  readonly progress: SessionProgress;
+  readonly journal: BattleJournal;
+  readonly result: SessionBattleResult;
+  readonly branchSource?: SessionBranchProvenance;
+  readonly label: string;
+}
+
 function initialWorkerStage(operation: BattleJournalWorkerOperation): BattleJournalWorkerStage {
   switch (operation) {
     case "seek":
@@ -157,6 +191,8 @@ function initialWorkerStage(operation: BattleJournalWorkerOperation): BattleJour
     case "branch": return "verifying-branch";
     case "import": return "validating-import";
     case "export": return "validating-export";
+    case "coach": return "analyzing-coach";
+    case "restore-session": return "restoring-session";
   }
 }
 
@@ -167,7 +203,29 @@ function workerOperationLabel(operation: BattleJournalWorkerOperation): string {
     case "branch": return "分岐検証";
     case "import": return "Journal読み込み";
     case "export": return "Journal書き出し";
+    case "coach": return "対局コーチ分析";
+    case "restore-session": return "セッション復帰";
   }
+}
+
+function sessionProgressLabel(progress: SessionProgress): string {
+  switch (progress.kind) {
+    case "battle": return progress.status === "completed" ? "対局完了" : "対局中";
+    case "local-pvp": return progress.status === "completed" ? "対局完了" : "対局中";
+    case "daily": return progress.status === "completed" ? `Daily完了 · ${progress.dateJst ?? ""}` : `Daily進行中 · ${progress.dateJst ?? ""}`;
+    case "puzzle": return progress.status === "solved" ? "Puzzle達成" : progress.status === "failed" ? "Puzzle再挑戦可能" : "Puzzle挑戦中";
+    case "gauntlet": return progress.status === "completed" ? "3戦完了" : `Gauntlet ${progress.stageIndex + 1}/3`;
+    case "draft": return progress.status === "completed" ? "Draft対局完了" : `Draft · ${progress.status}`;
+    case "sealed": return progress.status === "completed" ? "Sealed対局完了" : `Sealed · ${progress.status}`;
+    default: return "進行状況を確認中";
+  }
+}
+
+function isBattleJournalBranchSnapshot(value: unknown): value is BattleJournalBranchSnapshot {
+  if (!value || typeof value !== "object") return false;
+  const candidate = value as Partial<BattleJournalBranchSnapshot>;
+  return Boolean(candidate.journal && candidate.snapshot && candidate.snapshot.state &&
+    Number.isSafeInteger(candidate.snapshot.cursor) && Number.isSafeInteger(candidate.snapshot.totalCommands));
 }
 
 const BOARD_CELLS: BoardCell[][] = [
@@ -234,15 +292,15 @@ const BATTLE_PRESETS_STORAGE_KEY = "card-hero:battle-presets:v1";
 const BATTLE_REPORT_LOCAL_ENDPOINT =
   import.meta.env.VITE_BATTLE_REPORT_LOCAL_ENDPOINT ?? "http://127.0.0.1:8787/battle-report";
 const BATTLE_HISTORY_LIMIT = 20;
-const CARD_BACK_IMAGE_URL = "/game-icons/card-back.jpg";
+const CARD_BACK_IMAGE_URL = "/art/ui/card-back.svg";
 const FIELD_BASE_IMAGE_URLS: Record<PlayerId, Record<Row, string>> = {
   cpu: {
-    front: "/game-icons/cpu-front.jpg",
-    back: "/game-icons/cpu-back.jpg",
+    front: "/art/ui/seat-cpu-front.svg",
+    back: "/art/ui/seat-cpu-back.svg",
   },
   player: {
-    front: "/game-icons/player-front.jpg",
-    back: "/game-icons/player-back.jpg",
+    front: "/art/ui/seat-player-front.svg",
+    back: "/art/ui/seat-player-back.svg",
   },
 };
 
@@ -254,6 +312,7 @@ type Selection =
   | { kind: "commandSecondaryTarget"; attackerSlotKey: SlotKey; commandId: string; target: Target; targets: Target[] }
   | { kind: "commandHandChoice"; attackerSlotKey: SlotKey; commandId: string; target: Target; choices: CardInstance[] }
   | { kind: "masterAction"; actionId: MasterActionId; targets: Target[] }
+  | { kind: "experimentalMasterAction"; master: "decoy" | "timing"; actionId: string; target: Target; secondaryTarget?: Target }
   | { kind: "magicSecondaryTarget"; handInstanceId: string; target: Target; targets: Target[] }
   | { kind: "magicHandChoice"; handInstanceId: string; target: Target; choices: CardInstance[] }
   | { kind: "magicRefresh"; handInstanceId: string; target: Target; choices: CardInstance[]; selectedIds: string[] }
@@ -280,6 +339,7 @@ type ZoneView =
   | { kind: "cpuHistory" }
   | { kind: "battleHistory" }
   | { kind: "battleJournal" }
+  | { kind: "coach" }
   | { kind: "deckSetup" }
   | { kind: "aiLab" };
 type BattleMode = "player-vs-cpu" | "cpu-vs-cpu";
@@ -700,6 +760,32 @@ function createGameFromSettings(settings: BattleSettings, deckSettings: DeckSett
     cpuDeckCardIds: deckSettings.fixed.cpu ? cpuDeck.cardIds : undefined,
     allowSpecialDecks: deckSettings.allowSpecial,
     trackEventLog: true,
+  });
+}
+
+function createBattleSessionFromSettings(settings: BattleSettings, deckSettings: DeckSettings, kind: "battle" | "local-pvp" = "battle") {
+  const drafts = createDeckDrafts(settings, deckSettings);
+  const base = {
+    seed: settings.seed,
+    firstPlayer: settings.firstPlayer,
+    profiles: cloneAiProfiles(settings.aiProfiles),
+    masters: { ...settings.masterIds },
+    decks: {
+      player: { cardIds: [...drafts.player.cardIds], allowSpecial: deckSettings.allowSpecial.player },
+      cpu: { cardIds: [...drafts.cpu.cardIds], allowSpecial: deckSettings.allowSpecial.cpu },
+    },
+  };
+  const plan: SessionPlan = kind === "local-pvp"
+    ? { kind, ...base, controllerBySeat: { player: "human", cpu: "human" } }
+    : {
+        kind,
+        ...base,
+        controllerBySeat: settings.mode === "cpu-vs-cpu"
+          ? { player: "cpu", cpu: "cpu" }
+          : { player: "human", cpu: "cpu" },
+      };
+  return startSession(plan, {
+    createInitialGame: () => createGameFromSettings(settings, deckSettings),
   });
 }
 
@@ -1402,9 +1488,18 @@ export function App() {
   const [initialBattleSeed] = useState(() => createRandomBattleSeed());
   const [battleSettings, setBattleSettings] = useState<BattleSettings>(() => createBattleSettings(initialBattleSeed));
   const [deckSettings, setDeckSettings] = useState<DeckSettings>(() => createDefaultDeckSettings(initialBattleSeed));
+  const [initialSessionRuntime] = useState(() => {
+    const initialSettings = createBattleSettings(initialBattleSeed);
+    const initialDeckSettings = createDefaultDeckSettings(initialBattleSeed);
+    const initialSession = createBattleSessionFromSettings(initialSettings, initialDeckSettings);
+    if (!initialSession.ok || !initialSession.value.game || !initialSession.value.journal) {
+      throw new Error(initialSession.ok ? "初期セッションにGameStateまたはJournalがありません。" : initialSession.error.message);
+    }
+    return initialSession.value;
+  });
   const [deckPickerIds, setDeckPickerIds] = useState<Record<PlayerId, string>>(() => createDeckPickerIds());
   const [game, setGame] = useState<GameState>(() =>
-    createGameFromSettings(createBattleSettings(initialBattleSeed), createDefaultDeckSettings(initialBattleSeed)),
+    initialSessionRuntime.game!,
   );
   const [selection, setSelection] = useState<Selection | undefined>();
   const [pendingDropAction, setPendingDropAction] = useState<PendingDropAction | undefined>();
@@ -1438,6 +1533,7 @@ export function App() {
   const [savedBattlePresets, setSavedBattlePresets] = useState<SavedBattlePreset[]>(() => loadSavedBattlePresets());
   const [matchPresetId, setMatchPresetId] = useState<string>(BUILT_IN_MATCH_PRESETS[0]?.id ?? "");
   const [workspaceMode, setWorkspaceMode] = useState<BattleWorkspaceMode>("play");
+  const [viewerSeat, setViewerSeat] = useState<PlayerId>("player");
   const [tutorialActive, setTutorialActive] = useState(() => !loadTutorialCompletion());
   const [tutorialStep, setTutorialStep] = useState<TutorialStep>(0);
   const [journalRevision, setJournalRevision] = useState(0);
@@ -1445,9 +1541,22 @@ export function App() {
   const [analyzeJournalCursor, setAnalyzeJournalCursor] = useState<number | null>(null);
   const [importedJournal, setImportedJournal] = useState<BattleJournal | null>(null);
   const [importedJournalCursor, setImportedJournalCursor] = useState(0);
+  const [embeddedReviewSource, setEmbeddedReviewSource] = useState<EmbeddedBattleReviewSource | undefined>();
   const [journalUiMessage, setJournalUiMessage] = useState("");
   const [journalWorkerUiState, setJournalWorkerUiState] = useState<JournalWorkerUiState | undefined>();
   const [journalWorkerError, setJournalWorkerError] = useState("");
+  const [sessionLauncherOpen, setSessionLauncherOpen] = useState(false);
+  const [sessionLauncherError, setSessionLauncherError] = useState("");
+  const [sessionRestoreTarget, setSessionRestoreTarget] = useState<string | undefined>();
+  const [challengeFinalizeRetry, setChallengeFinalizeRetry] = useState(0);
+  const [sessionAutosaveEnabled, setSessionAutosaveEnabled] = useState(false);
+  const [sessionAutosaveStatus, setSessionAutosaveStatus] = useState("");
+  const sessionRestoreIntentRef = useRef(0);
+  const [seatHandoverConfirmationRequired, setSeatHandoverConfirmationRequired] = useState(false);
+  const [postgameCoachReport, setPostgameCoachReport] = useState<PostgameCoachReport | undefined>();
+  const [postgameCoachSeat, setPostgameCoachSeat] = useState<PlayerId>("player");
+  const [postgameCoachSourceJournal, setPostgameCoachSourceJournal] = useState<BattleJournal | undefined>();
+  const [postgameCoachBinding, setPostgameCoachBinding] = useState<EmbeddedBattleReviewSource | undefined>();
   const [workerReplaySnapshot, setWorkerReplaySnapshot] = useState<{
     journal: BattleJournal;
     cursor: number;
@@ -1475,9 +1584,11 @@ export function App() {
   const lastSpectatorAttentionIndexRef = useRef<number | undefined>(undefined);
   const visualEffectIdRef = useRef(0);
   const recordedResultKeyRef = useRef<string | undefined>(undefined);
+  const challengeFinalizeKeyRef = useRef<string | undefined>(undefined);
   const logListRef = useRef<HTMLOListElement | null>(null);
   const battleSettingsTriggerRef = useRef<HTMLButtonElement | null>(null);
-  const battleJournalRef = useRef<BattleJournal | null>(null);
+  const battleJournalRef = useRef<BattleJournal | null>(initialSessionRuntime.journal);
+  const sessionRuntimeRef = useRef<SessionRuntime | undefined>(initialSessionRuntime);
   const liveJournalCursorRef = useRef(0);
   const journalBranchesRef = useRef<BattleJournal[]>([]);
   const journalWorkerClientRef = useRef<BattleJournalWorkerClient | undefined>(undefined);
@@ -1520,13 +1631,6 @@ export function App() {
     journalWorkerClientRef.current = createBattleJournalWorkerClient();
   }
 
-  if (!battleJournalRef.current) {
-    const initialJournal = createBattleJournal(game);
-    if (initialJournal.ok) {
-      battleJournalRef.current = initialJournal.value;
-    }
-  }
-
   const deckDrafts = useMemo(() => createDeckDrafts(battleSettings, deckSettings), [battleSettings, deckSettings]);
   const deckCardOptions = useMemo(
     () => ({
@@ -1537,12 +1641,17 @@ export function App() {
   );
   const fixedDeckError = PLAYER_IDS.some((playerId) => deckSettings.fixed[playerId] && !deckDrafts[playerId].summary.valid);
   const activeBattleSettings = activeBattleSettingsRef.current;
-  const selectedReviewJournal = importedJournal ?? battleJournalRef.current;
-  const journalPanelOpen = workspaceMode === "analyze" && zoneView?.kind === "battleJournal";
+  const selectedReviewJournal = importedJournal ?? embeddedReviewSource?.journal ?? battleJournalRef.current;
+  const selectedReviewDetached = Boolean(importedJournal || embeddedReviewSource);
+  const runtimeForJournalView = sessionRuntimeRef.current;
+  const privateSeatJournalOpen = workspaceMode === "play"
+    && Boolean(runtimeForJournalView?.game && !game.winner && runtimeForJournalView.manifest.controlPolicy === "fixed-seat")
+    && !(runtimeForJournalView?.manifest.controllerBySeat.player === "human" && runtimeForJournalView.manifest.controllerBySeat.cpu === "human");
+  const journalPanelOpen = zoneView?.kind === "battleJournal" && (workspaceMode === "analyze" || privateSeatJournalOpen);
   const selectedReviewMaximumCursor = selectedReviewJournal?.completeness.status === "incomplete"
     ? Math.min(selectedReviewJournal.commands.length, selectedReviewJournal.completeness.afterSequence)
     : selectedReviewJournal?.commands.length ?? 0;
-  const selectedReviewCursor = importedJournal
+  const selectedReviewCursor = selectedReviewDetached
     ? Math.min(importedJournalCursor, selectedReviewMaximumCursor)
     : Math.min(analyzeJournalCursor ?? liveJournalCursor, selectedReviewMaximumCursor);
   const selectedReviewSeekCancelled = Boolean(
@@ -1555,7 +1664,7 @@ export function App() {
       }
       // The live head is already the verified committed state. Avoid replaying and
       // hashing the whole journal whenever a normal game command is committed.
-      if (!importedJournal && selectedReviewCursor === liveJournalCursor) {
+      if (!selectedReviewDetached && selectedReviewCursor === liveJournalCursor) {
         return {
           ok: true,
           value: {
@@ -1573,10 +1682,54 @@ export function App() {
       }
       return undefined;
     },
-    [game, importedJournal, journalPanelOpen, liveJournalCursor, selectedReviewCursor, selectedReviewJournal, workerReplaySnapshot],
+    [game, importedJournal, selectedReviewDetached, journalPanelOpen, liveJournalCursor, selectedReviewCursor, selectedReviewJournal, workerReplaySnapshot],
   );
-  const currentPlayer = game.players[game.currentPlayer];
-  const cpuVsCpu = workspaceMode === "spectate";
+  const effectiveActor = getEffectiveActor(game);
+  const currentPlayer = game.players[effectiveActor];
+  const sessionKind = sessionRuntimeRef.current?.manifest.kind ?? "battle";
+  const activeSessionProgress = sessionRuntimeRef.current?.progress;
+  const fixedSeatControl = sessionKind !== "battle" || sessionRuntimeRef.current?.manifest.controlPolicy === "fixed-seat";
+  const controllerBySeat = fixedSeatControl ? sessionRuntimeRef.current?.manifest.controllerBySeat : undefined;
+  const experimentContext = sessionRuntimeRef.current?.manifest.experimentalContext;
+  const isHumanControlledTurn = controllerBySeat
+    ? controllerBySeat[effectiveActor] === "human"
+    : effectiveActor === "player";
+  const runtimeHasBattle = sessionRuntimeRef.current?.game !== null && sessionRuntimeRef.current?.game !== undefined;
+  const puzzleTerminal = activeSessionProgress?.kind === "puzzle"
+    && (activeSessionProgress.status === "solved" || activeSessionProgress.status === "failed");
+  const challengeTerminal = puzzleTerminal || (activeSessionProgress?.kind !== undefined
+    && "status" in activeSessionProgress
+    && activeSessionProgress.status === "completed");
+  const challengeFinalizeCanRetry = Boolean(game.winner && (
+    (activeSessionProgress?.kind === "daily" && activeSessionProgress.status === "active")
+    || (activeSessionProgress?.kind === "gauntlet" && activeSessionProgress.status === "active")
+    || (activeSessionProgress?.kind === "draft" && activeSessionProgress.status === "battle")
+    || (activeSessionProgress?.kind === "sealed" && activeSessionProgress.status === "battle")
+  ));
+  const sessionFileReadBusy = Boolean(sessionRestoreTarget);
+  const humanVsHumanSession = sessionRuntimeRef.current?.manifest.controlPolicy === "fixed-seat"
+    && sessionRuntimeRef.current.manifest.controllerBySeat.player === "human"
+    && sessionRuntimeRef.current.manifest.controllerBySeat.cpu === "human"
+    && runtimeHasBattle;
+  const humanSeatSessionLabel = sessionKind === "local-pvp"
+    ? "LOCAL PvP"
+    : sessionKind === "battle"
+      ? "分岐対戦"
+      : sessionKind.toUpperCase();
+  const livePrivateHumanBattle = isLivePrivateHumanBattle({
+    hasCurrentBattle: runtimeHasBattle,
+    unfinished: !game.winner,
+    controlPolicy: sessionRuntimeRef.current?.manifest.controlPolicy,
+    controllerBySeat: sessionRuntimeRef.current?.manifest.controllerBySeat,
+  });
+  const fixedSeatInformationRestricted = Boolean(runtimeHasBattle && fixedSeatControl && !game.winner &&
+    sessionRuntimeRef.current?.manifest.controlPolicy === "fixed-seat");
+  const handoverPending = livePrivateHumanBattle && (seatHandoverConfirmationRequired || sessionLauncherOpen || viewerSeat !== effectiveActor);
+  const restrictedViewerSeat = fixedSeatInformationRestricted
+    ? (livePrivateHumanBattle && handoverPending ? null : viewerSeat)
+    : undefined;
+  const privateLogViewerSeat = restrictedViewerSeat;
+  const cpuVsCpu = workspaceMode === "spectate" && !fixedSeatControl;
   const analyzing = workspaceMode === "analyze";
   const handLimitDiscardNeeded = Math.max(0, currentPlayer.hand.length - HAND_LIMIT);
   const handLimitDiscardableIds = useMemo(
@@ -1585,29 +1738,38 @@ export function App() {
   );
   const selectedHandLimitDiscardIds = handLimitDiscardSelection.filter((instanceId) => handLimitDiscardableIds.has(instanceId));
   const isHandLimitDiscarding =
+    runtimeHasBattle &&
+    !challengeTerminal &&
     handLimitDiscardMode &&
     !analyzing &&
-    game.currentPlayer === "player" &&
+    isHumanControlledTurn &&
     !cpuVsCpu &&
     !autoPlayEnabled &&
     !game.winner &&
     !game.pendingLevelUp &&
     handLimitDiscardNeeded > 0;
-  const autoPlaybackPaused = (cpuVsCpu && spectatorPaused) || (!cpuVsCpu && game.currentPlayer === "cpu" && cpuTurnPaused);
+  const isCpuPlaybackTurn = controllerBySeat
+    ? controllerBySeat[effectiveActor] === "cpu"
+    : effectiveActor === "cpu";
+  const autoPlaybackPaused = (cpuVsCpu && spectatorPaused) || (isCpuPlaybackTurn && cpuTurnPaused);
   const automationState: BattleAutomationState = {
     autoPlayEnabled,
     cpuVsCpu,
-    currentPlayer: game.currentPlayer,
+    currentPlayer: effectiveActor,
     hasPendingLevelUp: Boolean(game.pendingLevelUp),
     hasWinner: Boolean(game.winner),
     handLimitDiscarding: isHandLimitDiscarding,
     spectatorPaused: autoPlaybackPaused && !spectatorStepRequested,
     workerError: Boolean(autoStepError),
   };
-  const isAutoResolving = !analyzing && shouldAutoResolveBattle(automationState);
-  const canManuallyResolveLevelUp = !analyzing && canResolveLevelUpManually(automationState);
+  const isAutoResolving = runtimeHasBattle && !sessionFileReadBusy && !challengeTerminal && !analyzing && (controllerBySeat
+    ? shouldRunAutoStep(game, controllerBySeat) && (!autoPlaybackPaused || spectatorStepRequested)
+    : shouldAutoResolveBattle(automationState));
+  const canManuallyResolveLevelUp = runtimeHasBattle && !challengeTerminal && !analyzing && (controllerBySeat
+    ? workspaceMode === "play" && !handoverPending && isHumanControlledTurn && Boolean(game.pendingLevelUp)
+    : canResolveLevelUpManually(automationState));
   const journalMutationPending = Boolean(journalWorkerUiState?.mutation);
-  const controlsDisabled = analyzing || cpuVsCpu || autoPlayEnabled || journalMutationPending || game.currentPlayer !== "player" || !!game.winner || !!game.pendingLevelUp || isHandLimitDiscarding;
+  const controlsDisabled = !runtimeHasBattle || sessionFileReadBusy || challengeTerminal || analyzing || cpuVsCpu || (fixedSeatControl && workspaceMode !== "play") || handoverPending || autoPlayEnabled || journalMutationPending || !isHumanControlledTurn || !!game.winner || !!game.pendingLevelUp || isHandLimitDiscarding;
   const hasOperationContext = Boolean(selection || pendingDropAction || error || isHandLimitDiscarding);
   const hasSideContext = Boolean(!pendingDropAction && !game.pendingLevelUp && !isAdditionalChoiceSelection(selection) && (selection || error));
   const showBattleLog = !hasSideContext;
@@ -1619,7 +1781,9 @@ export function App() {
     !autoPlayEnabled &&
     !journalMutationPending &&
     !isAutoResolving &&
-    game.currentPlayer === "player" &&
+    runtimeHasBattle &&
+    !challengeTerminal &&
+    isHumanControlledTurn &&
     !game.winner;
   const turnStatus = autoStepError
     ? "CPU処理を停止しました"
@@ -1684,11 +1848,11 @@ export function App() {
         .map((entry, index) => ({ entry, index }))
         .filter(({ entry }) => logMatchesFilter(entry, logFilter))
         .slice(-24)
-        .map(({ entry, index }) => ({ entry: displayLogEntry(entry, workspaceMode), index })),
-    [game.log, logFilter, workspaceMode],
+        .map(({ entry, index }) => ({ entry: displaySessionLogEntry(entry, workspaceMode, privateLogViewerSeat), index })),
+    [game.log, logFilter, privateLogViewerSeat, workspaceMode],
   );
   const selectedLogEntry = selectedLogIndex !== undefined && game.log[selectedLogIndex]
-    ? displayLogEntry(game.log[selectedLogIndex], workspaceMode)
+    ? displaySessionLogEntry(game.log[selectedLogIndex], workspaceMode, privateLogViewerSeat)
     : undefined;
   const selectedLogComment = selectedLogIndex !== undefined
     ? getBattleLogComment(battleLogComments, game, selectedLogIndex)
@@ -1699,12 +1863,12 @@ export function App() {
   );
   const latestSpectatorAttention = useMemo(() => findLatestSpectatorAttention(game.log), [game.log]);
   const effectiveAutoStepDelayMs =
-    game.currentPlayer === "cpu" && !cpuVsCpu
+    isCpuPlaybackTurn && !cpuVsCpu
       ? Math.max(autoStepDelayMs, CPU_READABLE_STEP_DELAY_MS)
       : autoStepDelayMs;
   const actionPreviews = useMemo(
-    () => maskPrivateActionPreviews(getActionPreviews(game, selection, pendingDropAction), game, workspaceMode),
-    [game, pendingDropAction, selection, workspaceMode],
+    () => maskPrivateActionPreviews(getActionPreviews(game, selection, pendingDropAction), game, workspaceMode, privateLogViewerSeat),
+    [game, pendingDropAction, privateLogViewerSeat, selection, workspaceMode],
   );
   const previewByTargetKey = useMemo(() => {
     const entries = actionPreviews.flatMap((preview) => preview.targetKey ? [[preview.targetKey, preview] as const] : []);
@@ -1715,6 +1879,9 @@ export function App() {
 
   function commitGame(next: GameState): void {
     gameVersionRef.current += 1;
+    if (sessionRuntimeRef.current) {
+      sessionRuntimeRef.current = { ...sessionRuntimeRef.current, game: next };
+    }
     setGame(next);
   }
 
@@ -1809,6 +1976,9 @@ export function App() {
     const incomplete = markBattleJournalIncomplete(journal, reason);
     if (incomplete !== journal) {
       battleJournalRef.current = incomplete;
+      if (sessionRuntimeRef.current) {
+        sessionRuntimeRef.current = { ...sessionRuntimeRef.current, journal: incomplete };
+      }
       setJournalRevision((revision) => revision + 1);
     }
   }
@@ -1828,6 +1998,9 @@ export function App() {
       return;
     }
     battleJournalRef.current = appended.value;
+    if (sessionRuntimeRef.current) {
+      sessionRuntimeRef.current = { ...sessionRuntimeRef.current, journal: appended.value };
+    }
     liveJournalCursorRef.current = appended.value.commands.length;
     setLiveJournalCursor(appended.value.commands.length);
     setAnalyzeJournalCursor(null);
@@ -1836,7 +2009,7 @@ export function App() {
 
   function handleSeekJournal(cursor: number): void {
     setCancelledReview(undefined);
-    if (importedJournal) {
+    if (selectedReviewDetached) {
       setImportedJournalCursor(cursor);
     } else {
       setAnalyzeJournalCursor(cursor);
@@ -1852,12 +2025,265 @@ export function App() {
     cancelJournalWorkerOperation();
     setCancelledReview(undefined);
     setImportedJournal(null);
+    setEmbeddedReviewSource(undefined);
     setAnalyzeJournalCursor(null);
     setWorkerReplaySnapshot(undefined);
     setJournalUiMessage("現在の対局Journalに戻りました。ゲーム状態は変更されていません。");
+    if (!runtimeHasBattle) setZoneView(undefined);
+  }
+
+  function sourceForEmbeddedBattle(index: number): EmbeddedBattleReviewSource | undefined {
+    const runtime = sessionRuntimeRef.current;
+    if (!runtime) return undefined;
+    if (runtime.progress.kind === "draft" && runtime.progress.status === "completed" && runtime.progress.result && index === 0) {
+      return {
+        runtimeId: runtime.manifest.id,
+        manifest: runtime.manifest,
+        progress: runtime.progress,
+        journal: runtime.progress.result.journal,
+        result: runtime.progress.result.result,
+        ...(runtime.branchSource ? { branchSource: runtime.branchSource } : {}),
+        label: "Draft 完了対局",
+      };
+    }
+    if (runtime.progress.kind === "gauntlet" && runtime.progress.completedBattles[index]) {
+      const completed = runtime.progress.completedBattles[index];
+      return {
+        runtimeId: runtime.manifest.id,
+        manifest: runtime.manifest,
+        progress: runtime.progress,
+        journal: completed.journal,
+        result: completed.result,
+        ...(runtime.branchSource ? { branchSource: runtime.branchSource } : {}),
+        label: `Gauntlet 第${index + 1}戦 · Seed ${runtime.manifest.seed + index}`,
+      };
+    }
+    return undefined;
+  }
+
+  function isEmbeddedBattleSourceCurrent(source: EmbeddedBattleReviewSource, runtime: SessionRuntime): boolean {
+    if (runtime.manifest.id !== source.runtimeId || runtime.manifest !== source.manifest || runtime.progress !== source.progress) return false;
+    if (runtime.journal === source.journal && runtime.game && hashBattleState(runtime.game) === source.result.headHash) return true;
+    if (source.progress.kind === "draft") {
+      return source.progress.result?.journal === source.journal && source.progress.result.result === source.result;
+    }
+    if (source.progress.kind === "gauntlet") {
+      return source.progress.completedBattles.some((battle) => battle.journal === source.journal && battle.result === source.result);
+    }
+    return false;
+  }
+
+  function prepareForDetachedReview(): void {
+    // The live CPU worker can resolve a turn before React's passive effect cleanup
+    // runs after switching to Analyze. Invalidate it synchronously at the entry
+    // point so a past battle review never advances the live session.
+    terminateAutoStepWorker({ clearError: true });
+    setAutoPlayEnabled(false);
+    setSpectatorPaused(true);
+    setCpuTurnPaused(false);
+    spectatorStepRequestedRef.current = false;
+    setSpectatorStepRequested(false);
+    handleCancelInteraction();
+  }
+
+  function handleOpenEmbeddedBattle(index: number): void {
+    const source = sourceForEmbeddedBattle(index);
+    if (!source) {
+      setSessionLauncherError("完了対局のJournalを特定できません。元セッションの結果は変更していません。");
+      return;
+    }
+    prepareForDetachedReview();
+    setEmbeddedReviewSource(source);
+    setImportedJournal(null);
+    setImportedJournalCursor(source.journal.commands.length);
+    setAnalyzeJournalCursor(null);
+    setWorkerReplaySnapshot(undefined);
+    setCancelledReview(undefined);
+    setPostgameCoachReport(undefined);
+    setZoneView({ kind: "battleJournal" });
+    setWorkspaceMode("analyze");
+    setInfoToolsOpen(true);
+    setJournalUiMessage(`${source.label}の保存済みJournalを読み取り専用で表示します。現在の対局盤面は置き換えません。`);
+  }
+
+  function handleOpenPostgameCoach(seat: PlayerId, embeddedIndex?: number): void {
+    const runtime = sessionRuntimeRef.current;
+    const embeddedSource = embeddedIndex === undefined ? undefined : sourceForEmbeddedBattle(embeddedIndex);
+    const journal = embeddedSource?.journal ?? battleJournalRef.current;
+    const result = embeddedSource?.result ?? (game.winner ? {
+      winner: game.winner,
+      turns: game.turnNumber,
+      completedAt: new Date().toISOString(),
+      headHash: hashBattleState(game),
+    } satisfies SessionBattleResult : undefined);
+    if (!runtime || !journal || !result || (!embeddedSource && !game.winner)) {
+      setError("完了した対局Journalがありません。");
+      return;
+    }
+    prepareForDetachedReview();
+    const source: EmbeddedBattleReviewSource = embeddedSource ?? {
+      runtimeId: runtime.manifest.id,
+      manifest: runtime.manifest,
+      progress: runtime.progress,
+      journal,
+      result,
+      ...(runtime.branchSource ? { branchSource: runtime.branchSource } : {}),
+      label: "現在の完了対局",
+    };
+    setPostgameCoachReport(undefined);
+    setPostgameCoachSourceJournal(journal);
+    setPostgameCoachBinding(source);
+    setPostgameCoachSeat(seat);
+    setWorkspaceMode("analyze");
+    setInfoToolsOpen(true);
+    setZoneView({ kind: "coach" });
+    void runJournalWorker({ operation: "coach", journal, result, seat }, `${seatHumanLabel(seat)}の振り返り`, {
+      expectedGameVersion: gameVersionRef.current,
+    }).then((completion) => {
+      if (!completion) return;
+      const report = completion.result as BattleJournalResult<PostgameCoachReport>;
+      if (!report.ok) {
+        setJournalUiMessage(`コーチ分析に失敗しました: ${report.error.message}`);
+        setJournalWorkerError(report.error.message);
+        return;
+      }
+      setPostgameCoachReport(report.value);
+      setJournalUiMessage("完了Journalの再生検証に基づく振り返りです。");
+    });
+  }
+
+  function handleReviewCoachObservation(cursor: number): void {
+    const runtime = sessionRuntimeRef.current;
+    if (!postgameCoachReport || !postgameCoachSourceJournal || !postgameCoachBinding || !runtime ||
+      !isEmbeddedBattleSourceCurrent(postgameCoachBinding, runtime) ||
+      postgameCoachBinding.journal !== postgameCoachSourceJournal ||
+      postgameCoachBinding.result.headHash !== postgameCoachReport.verifiedHeadHash) {
+      setJournalUiMessage("振り返り元の対局が変わりました。別Journalの盤面を開かないよう、コーチ分析をやり直してください。");
+      setPostgameCoachReport(undefined);
+      return;
+    }
+    setZoneView({ kind: "battleJournal" });
+    if (postgameCoachBinding.journal === battleJournalRef.current) {
+      setEmbeddedReviewSource(undefined);
+      setAnalyzeJournalCursor(cursor);
+    } else {
+      setEmbeddedReviewSource(postgameCoachBinding);
+      setImportedJournalCursor(cursor);
+      setAnalyzeJournalCursor(null);
+    }
+    setImportedJournal(null);
+    setWorkerReplaySnapshot(undefined);
+    setCancelledReview(undefined);
+  }
+
+  function handleOpenBoundJournal(): void {
+    if (!fixedSeatInformationRestricted || livePrivateHumanBattle || !battleJournalRef.current) return;
+    setImportedJournal(null);
+    setEmbeddedReviewSource(undefined);
+    setAnalyzeJournalCursor(null);
+    setWorkerReplaySnapshot(undefined);
+    setCancelledReview(undefined);
+    setZoneView({ kind: "battleJournal" });
+    setInfoToolsOpen(true);
+    setJournalUiMessage("現在の対局Journalを公開情報のみで表示します。元の対局と保存記録は変更されません。");
+  }
+
+  function handleReviewBranchSource(): void {
+    const source = sessionRuntimeRef.current?.branchSource;
+    if (!source || livePrivateHumanBattle) return;
+    setImportedJournal(source.sourceJournal);
+    setImportedJournalCursor(source.sourceCursor);
+    setAnalyzeJournalCursor(null);
+    setCancelledReview(undefined);
+    setWorkerReplaySnapshot(undefined);
+    setZoneView({ kind: "battleJournal" });
+    setInfoToolsOpen(true);
+    setWorkspaceMode("analyze");
+    setJournalUiMessage("分岐元Journalを読み取り専用で表示します。現在の分岐対局は変更されません。");
+  }
+
+  function handleStartJournalBranch(
+    cursor: number,
+    controllers: SessionControllers,
+    profiles: CpuAiProfiles,
+    sourceJournal = battleJournalRef.current,
+    expectedHeadHash?: string,
+    explicitSource?: EmbeddedBattleReviewSource,
+  ): void {
+    const runtime = sessionRuntimeRef.current;
+    const embeddedSource = explicitSource?.journal === sourceJournal
+      ? explicitSource
+      : embeddedReviewSource?.journal === sourceJournal ? embeddedReviewSource : undefined;
+    const validSource = embeddedSource
+      ? Boolean(runtime && isEmbeddedBattleSourceCurrent(embeddedSource, runtime) && embeddedSource.result.headHash === (expectedHeadHash ?? embeddedSource.result.headHash))
+      : Boolean(runtime?.game && sourceJournal === battleJournalRef.current && runtime.journal === sourceJournal &&
+        (expectedHeadHash === undefined || expectedHeadHash === hashBattleState(runtime.game)));
+    if (!runtime || !sourceJournal || !validSource || (!embeddedSource && livePrivateHumanBattle)) {
+      setJournalUiMessage("分岐元の対局が変わったか、現在の権限では分岐できません。Journalを再確認してください。");
+      return;
+    }
+    const expectedGeneration = battleGenerationRef.current;
+    const expectedGameVersion = gameVersionRef.current;
+    terminateAutoStepWorker({ clearError: true });
+    void runJournalWorker({ operation: "branch", journal: sourceJournal, cursor }, `分岐位置 ${cursor} を検証`, {
+      expectedGameVersion,
+      mutation: true,
+    }).then((completion) => {
+      if (!completion || sessionRuntimeRef.current !== runtime || battleGenerationRef.current !== expectedGeneration || gameVersionRef.current !== expectedGameVersion) return;
+      if (completion.operation !== "branch") return;
+      const branchResult = completion.result;
+      if (!branchResult.ok) {
+        setJournalWorkerError(branchResult.error.message);
+        setJournalUiMessage(`分岐できませんでした: ${branchResult.error.message}`);
+        return;
+      }
+      if (!isBattleJournalBranchSnapshot(branchResult.value)) {
+        setJournalWorkerError("分岐Workerから検証済み局面が返りませんでした。");
+        setJournalUiMessage("分岐位置を安全に特定できないため開始しませんでした。");
+        return;
+      }
+      const branch = branchResult.value;
+      const branchSourceManifest = embeddedSource?.manifest ?? runtime.manifest;
+      const branchSourceProgress = embeddedSource?.progress ?? runtime.progress;
+      const plan = createBattleBranchPlan({
+        sourceManifest: branchSourceManifest,
+        sourceJournal,
+        sourceProgress: branchSourceProgress,
+        ...((embeddedSource?.branchSource ?? runtime.branchSource) ? { sourceBranchSource: embeddedSource?.branchSource ?? runtime.branchSource } : {}),
+        sourceCursor: cursor,
+        verifiedSourceSnapshot: branch.snapshot,
+        controllerBySeat: controllers,
+        profiles,
+      });
+      if (!plan.ok) {
+        setJournalWorkerError(plan.error.message);
+        setJournalUiMessage(`分岐設定を検証できませんでした: ${plan.error.message}`);
+        return;
+      }
+      const started = startSession(plan.value, { createInitialGame: () => branch.snapshot.state });
+      if (!started.ok) {
+        setJournalWorkerError(started.error.message);
+        setJournalUiMessage(`分岐対局を開始できませんでした: ${started.error.message}`);
+        return;
+      }
+      setJournalUiMessage("元Journalを保持したまま、検証済み局面から新しい分岐対局を開始しました。");
+      adoptSessionRuntime(started.value);
+    });
+  }
+
+  function handleStartCoachBranch(cursor: number, controllers: SessionControllers, profiles: CpuAiProfiles): void {
+    const runtime = sessionRuntimeRef.current;
+    if (!postgameCoachReport || !postgameCoachBinding || !postgameCoachSourceJournal || !runtime ||
+      !isEmbeddedBattleSourceCurrent(postgameCoachBinding, runtime) || postgameCoachSourceJournal !== postgameCoachBinding.journal ||
+      postgameCoachReport.verifiedHeadHash !== postgameCoachBinding.result.headHash) {
+      setJournalUiMessage("振り返り元の対局が変わりました。コーチ分析を更新してから再試行してください。");
+      return;
+    }
+    handleStartJournalBranch(cursor, controllers, profiles, postgameCoachSourceJournal, postgameCoachReport.verifiedHeadHash, postgameCoachBinding);
   }
 
   function handleImportJournal(json: string): void {
+    setEmbeddedReviewSource(undefined);
     void runJournalWorker({ operation: "import", json }, "貼り付けたJournal JSON").then((completion) => {
       if (!completion) return;
       const parsed = completion.result as BattleJournalResult<BattleJournal>;
@@ -1878,6 +2304,10 @@ export function App() {
 
   function handleExportJournal(): void {
     if (!selectedReviewJournal) {
+      return;
+    }
+    if (fixedSeatInformationRestricted && !window.confirm("このJournal JSONには対局中の両席の手札・山札順・準備中カードなどの非公開情報が含まれます。対局画面では非公開ですが、保存ファイルを共有すると情報が開示されます。安全に保存しますか？")) {
+      setJournalUiMessage("Journal書き出しをキャンセルしました。現在の対局は変更されていません。");
       return;
     }
     const journal = selectedReviewJournal;
@@ -1915,7 +2345,7 @@ export function App() {
   }
 
   function recordTutorialAction(action: HumanActionSnapshot): void {
-    if (!tutorialActive || workspaceMode !== "play") {
+    if (!tutorialActive || workspaceMode !== "play" || action.type === "experimental_master_action") {
       return;
     }
     const nextStep = advanceTutorialStep(tutorialStep, action.type);
@@ -1974,7 +2404,12 @@ export function App() {
       if (!hasMatchingBefore || !requestBefore) {
         markCurrentJournalIncomplete("CPU Worker応答に対応する要求前GameStateが見つかりません。");
       } else {
-        const extractedCommand = extractAiDecisionCommand(requestBefore.state, response.game);
+        const journal = battleJournalRef.current;
+        const extractedCommand = extractAiDecisionCommand(
+          requestBefore.state,
+          response.game,
+          journal?.schemaVersion === 2 ? journal.metadata : undefined,
+        );
         if (extractedCommand.ok) {
           appendCurrentJournalCommand(requestBefore.state, response.game, extractedCommand.value);
         } else {
@@ -2050,10 +2485,10 @@ export function App() {
   }, [game.log, logFilter, selectedLogIndex]);
 
   useEffect(() => {
-    if (tutorialActive && tutorialStep === 2 && workspaceMode === "play" && game.currentPlayer === "player") {
+    if (tutorialActive && tutorialStep === 2 && workspaceMode === "play" && effectiveActor === "player") {
       setTutorialStep(tutorialStepForGameState(game));
     }
-  }, [game, tutorialActive, tutorialStep, workspaceMode]);
+  }, [effectiveActor, game, tutorialActive, tutorialStep, workspaceMode]);
 
   useEffect(() => {
     const mediaQuery = window.matchMedia("(max-width: 720px)");
@@ -2064,8 +2499,13 @@ export function App() {
   }, []);
 
   useEffect(() => {
-    if (!journalPanelOpen || !selectedReviewJournal || (!importedJournal && selectedReviewCursor === liveJournalCursor)) {
-      if (activeJournalWorkerRef.current && activeJournalWorkerRef.current.requestId === journalWorkerUiState?.requestId && journalWorkerUiState?.operation === "seek") {
+    // Mutating replay work (undo, finalization, branch, restore) owns the worker.
+    // The passive display-seek effect must never cancel or replace it.
+    if (journalWorkerUiState?.mutation) {
+      return;
+    }
+    if (!journalPanelOpen || !selectedReviewJournal || (!selectedReviewDetached && selectedReviewCursor === liveJournalCursor)) {
+      if (activeJournalWorkerRef.current && activeJournalWorkerRef.current.requestId === journalWorkerUiState?.requestId && journalWorkerUiState?.operation === "seek" && !journalWorkerUiState.mutation) {
         cancelJournalWorkerOperation();
       }
       return;
@@ -2093,7 +2533,7 @@ export function App() {
         result: completion.result as BattleJournalResult<ReplaySnapshot>,
       });
     });
-  }, [cancelledReview, importedJournal, journalPanelOpen, journalWorkerUiState?.operation, journalWorkerUiState?.target, liveJournalCursor, selectedReviewCursor, selectedReviewJournal, workerReplaySnapshot]);
+  }, [cancelledReview, importedJournal, journalPanelOpen, journalWorkerUiState?.operation, journalWorkerUiState?.target, liveJournalCursor, selectedReviewCursor, selectedReviewDetached, selectedReviewJournal, workerReplaySnapshot]);
 
   useEffect(() => {
     if (!journalWorkerUiState) return undefined;
@@ -2111,22 +2551,66 @@ export function App() {
   }, []);
 
   useEffect(() => {
+    const journalSummary = {
+      status: battleJournalRef.current?.completeness.status ?? "unavailable",
+      commandCount: battleJournalRef.current?.commands.length ?? 0,
+      liveCursor: liveJournalCursor,
+      reviewCursor: selectedReviewCursor,
+      reviewingImportedJournal: !!importedJournal,
+    };
+    if (fixedSeatInformationRestricted) {
+      updateDiagnosticContext({
+        mode: workspaceMode,
+        battleKind: sessionKind,
+        viewerSeat,
+        handoverPending,
+        game: {
+          turnNumber: game.turnNumber,
+          currentPlayer: game.currentPlayer,
+          winner: game.winner ?? null,
+          pendingLevelUp: Boolean(game.pendingLevelUp),
+          players: Object.fromEntries(PLAYER_IDS.map((playerId) => [playerId, {
+            masterId: game.players[playerId].masterId,
+            masterHp: game.players[playerId].masterHp,
+            stones: game.players[playerId].stones,
+            handCount: game.players[playerId].hand.length,
+            deckCount: game.players[playerId].deck.length,
+            discardCount: game.players[playerId].discard.length,
+          }])),
+          slots: BOARD_SLOT_KEYS.map((slotKey) => ({
+            owner: game.slots[slotKey].owner,
+            row: game.slots[slotKey].row,
+            lane: game.slots[slotKey].lane,
+            occupied: Boolean(game.slots[slotKey].monster),
+            prepared: game.slots[slotKey].monster?.status === "prepared",
+          })),
+        },
+        journal: journalSummary,
+      });
+      return;
+    }
+    if (!runtimeHasBattle) {
+      const progress = sessionRuntimeRef.current?.progress;
+      updateDiagnosticContext({
+        mode: workspaceMode,
+        battleKind: sessionKind,
+        progress: progress ? { kind: progress.kind, status: "status" in progress ? progress.status : "active" } : null,
+        game: null,
+        journal: journalSummary,
+      });
+      return;
+    }
     updateDiagnosticContext({
       mode: workspaceMode,
+        battleKind: sessionKind,
       activeBattleSettings: activeBattleSettingsRef.current,
       activeDeckSettings: activeDeckSettingsRef.current,
       pendingBattleSettings: battleSettings,
       pendingDeckSettings: deckSettings,
       game,
-      journal: {
-        status: battleJournalRef.current?.completeness.status ?? "unavailable",
-        commandCount: battleJournalRef.current?.commands.length ?? 0,
-        liveCursor: liveJournalCursor,
-        reviewCursor: selectedReviewCursor,
-        reviewingImportedJournal: !!importedJournal,
-      },
+      journal: journalSummary,
     });
-  }, [battleSettings, deckSettings, game, importedJournal, journalRevision, liveJournalCursor, selectedReviewCursor, workspaceMode]);
+  }, [battleSettings, deckSettings, fixedSeatInformationRestricted, game, handoverPending, importedJournal, journalRevision, liveJournalCursor, livePrivateHumanBattle, runtimeHasBattle, selectedReviewCursor, sessionKind, viewerSeat, workspaceMode]);
 
   useEffect(() => {
     seEnabledRef.current = seEnabled;
@@ -2204,7 +2688,7 @@ export function App() {
     if (!cpuVsCpu) {
       setSpectatorPaused(false);
       lastSpectatorAttentionIndexRef.current = latestSpectatorAttention?.index;
-      if (game.currentPlayer !== "cpu") {
+      if (!isCpuPlaybackTurn) {
         setCpuTurnPaused(false);
       }
       return;
@@ -2220,24 +2704,24 @@ export function App() {
       lastSpectatorAttentionIndexRef.current = latestSpectatorAttention.index;
       setSpectatorPaused(true);
     }
-  }, [cpuVsCpu, game.currentPlayer, latestSpectatorAttention, spectatorPauseOnAttention]);
+  }, [cpuVsCpu, game.currentPlayer, isCpuPlaybackTurn, latestSpectatorAttention, spectatorPauseOnAttention]);
 
   useEffect(() => {
     if (!handLimitDiscardMode) {
       return;
     }
     if (
-      game.currentPlayer !== "player" ||
+      !isHumanControlledTurn ||
       cpuVsCpu ||
       autoPlayEnabled ||
       game.winner ||
       game.pendingLevelUp ||
-      game.players[game.currentPlayer].hand.length <= HAND_LIMIT
+        game.players[effectiveActor].hand.length <= HAND_LIMIT
     ) {
       setHandLimitDiscardMode(false);
       setHandLimitDiscardSelection([]);
     }
-  }, [autoPlayEnabled, cpuVsCpu, game, handLimitDiscardMode]);
+  }, [autoPlayEnabled, cpuVsCpu, effectiveActor, game, handLimitDiscardMode, isHumanControlledTurn]);
 
   useEffect(() => {
     if (battleLogCommentCount <= 0) {
@@ -2296,6 +2780,11 @@ export function App() {
         mode,
         game,
         aiProfiles: cloneAiProfiles(activeBattleSettingsRef.current.aiProfiles),
+        ...(controllerBySeat ? {
+          controllerBySeat,
+          experimentalContext: sessionRuntimeRef.current?.manifest.experimentalContext,
+          opponentKnowledgePolicy: sessionRuntimeRef.current?.manifest.opponentKnowledgePolicy,
+        } : {}),
       };
       const worker = getOrCreateAutoStepWorker();
       if (!worker) {
@@ -2317,7 +2806,7 @@ export function App() {
         terminateAutoStepWorker();
       }
     };
-  }, [autoPlayEnabled, cpuVsCpu, effectiveAutoStepDelayMs, game, isAutoResolving, journalWorkerUiState?.mutation]);
+  }, [autoPlayEnabled, controllerBySeat, cpuVsCpu, effectiveAutoStepDelayMs, game, isAutoResolving, journalWorkerUiState?.mutation]);
 
   useEffect(() => {
     if (!visualEffect) {
@@ -2340,6 +2829,81 @@ export function App() {
     recordedResultKeyRef.current = resultKey;
     setBattleHistory((previous) => [entry, ...previous].slice(0, BATTLE_HISTORY_LIMIT));
   }, [game]);
+
+  useEffect(() => {
+    const runtime = sessionRuntimeRef.current;
+    if (!runtimeHasBattle || !game.winner || !runtime?.journal || !runtime.game) return;
+    const shouldCompleteDaily = runtime.manifest.kind === "daily"
+      && runtime.progress.kind === "daily"
+      && runtime.progress.status === "active";
+    const shouldCompleteGauntlet = runtime.manifest.kind === "gauntlet"
+      && runtime.progress.kind === "gauntlet"
+      && runtime.progress.status === "active";
+    const shouldCompleteDraft = runtime.manifest.kind === "draft"
+      && runtime.progress.kind === "draft"
+      && runtime.progress.status === "battle";
+    const shouldCompleteSealed = runtime.manifest.kind === "sealed"
+      && runtime.progress.kind === "sealed"
+      && runtime.progress.status === "battle";
+    if (!shouldCompleteDaily && !shouldCompleteGauntlet && !shouldCompleteDraft && !shouldCompleteSealed) return;
+    const key = `${runtime.manifest.id}:${runtime.progress.kind}:${"stageIndex" in runtime.progress ? runtime.progress.stageIndex : 0}:${hashBattleState(game)}`;
+    if (challengeFinalizeKeyRef.current === key) return;
+    challengeFinalizeKeyRef.current = key;
+    terminateAutoStepWorker();
+    const expectedVersion = gameVersionRef.current;
+    const expectedGeneration = battleGenerationRef.current;
+    const journal = runtime.journal;
+    void runJournalWorker(
+      { operation: "seek", journal, cursor: journal.commands.length },
+      `${runtime.manifest.kind}終局を検証`,
+      { mutation: true, expectedGameVersion: expectedVersion },
+    ).then((completion) => {
+      if (!completion) {
+        challengeFinalizeKeyRef.current = undefined;
+        setJournalRevision((revision) => revision + 1);
+        return;
+      }
+      if (sessionRuntimeRef.current !== runtime || battleGenerationRef.current !== expectedGeneration) return;
+      const replay = completion.result as BattleJournalResult<ReplaySnapshot>;
+      if (!replay.ok) {
+        challengeFinalizeKeyRef.current = undefined;
+        setSessionLauncherError(`終局を確定できませんでした: ${replay.error.message}`);
+        setJournalRevision((revision) => revision + 1);
+        return;
+      }
+      const finalized = shouldCompleteDaily
+        ? completeDailyChallenge(runtime, new Date().toISOString(), replay.value)
+        : shouldCompleteGauntlet
+          ? completeGauntletStageWithVerifiedHead(runtime, replay.value)
+          : shouldCompleteDraft
+            ? completeDraftBattleWithVerifiedHead(runtime, replay.value)
+            : completeSealedBattleWithVerifiedHead(runtime, replay.value);
+      if (!finalized.ok) {
+        challengeFinalizeKeyRef.current = undefined;
+        setSessionLauncherError(`チャレンジの結果を記録できませんでした: ${finalized.error.message}`);
+        setJournalRevision((revision) => revision + 1);
+        return;
+      }
+      if (shouldCompleteGauntlet || shouldCompleteDraft) {
+        adoptSessionRuntime(finalized.value);
+      } else {
+        sessionRuntimeRef.current = finalized.value;
+        setJournalRevision((revision) => revision + 1);
+        setSessionLauncherError("");
+      }
+    });
+  }, [challengeFinalizeRetry, game, runtimeHasBattle, sessionKind]);
+
+  useEffect(() => {
+    if (!sessionAutosaveEnabled) return;
+    const runtime = sessionRuntimeRef.current;
+    if (!runtime) return;
+    const timer = window.setTimeout(() => {
+      const saved = saveSessionRuntime(runtime);
+      setSessionAutosaveStatus(saved.ok ? `端末autosave更新済み · ${runtime.manifest.kind}` : `autosave失敗: ${saved.error.message}`);
+    }, 400);
+    return () => window.clearTimeout(timer);
+  }, [game, journalRevision, sessionAutosaveEnabled]);
 
   useEffect(() => {
     saveJsonArray(BATTLE_HISTORY_STORAGE_KEY, battleHistory);
@@ -2455,12 +3019,30 @@ export function App() {
     humanAction?: HumanActionSnapshot,
   ): GameState | undefined {
     try {
-      const next = change(game);
-      if (humanAction) {
-        appendHumanActionReviewEntry(next, game, humanAction);
+      let next: GameState;
+      if (humanAction && sessionRuntimeRef.current?.manifest.kind === "puzzle") {
+        const puzzleAction = applyPuzzleAction(sessionRuntimeRef.current, humanAction);
+        if (!puzzleAction.ok || !puzzleAction.value.game || !puzzleAction.value.journal) {
+          throw new Error(puzzleAction.ok ? "Puzzleの盤面またはJournalがありません。" : puzzleAction.error.message);
+        }
+        sessionRuntimeRef.current = puzzleAction.value;
+        battleJournalRef.current = puzzleAction.value.journal;
+        liveJournalCursorRef.current = puzzleAction.value.journal.commands.length;
+        setLiveJournalCursor(liveJournalCursorRef.current);
+        setJournalRevision((revision) => revision + 1);
+        next = puzzleAction.value.game;
+      } else {
+        next = change(game);
+      }
+      if (humanAction && sessionRuntimeRef.current?.manifest.kind !== "puzzle") {
+        if (controllerBySeat) {
+          appendControlledHumanActionReviewEntry(next, game, humanAction, controllerBySeat);
+        } else {
+          appendHumanActionReviewEntry(next, game, humanAction);
+        }
       }
       if (next !== game) {
-        if (humanAction) {
+        if (humanAction && sessionRuntimeRef.current?.manifest.kind !== "puzzle") {
           recordTutorialAction(humanAction);
           appendCurrentJournalCommand(game, next, { controller: "human", action: humanAction });
         }
@@ -2484,10 +3066,463 @@ export function App() {
     change: (state: GameState) => GameState,
     keepSelection = false,
   ): GameState | undefined {
-    if (journalMutationBusyRef.current || !isManualBattleActionAllowed(action.type, automationState)) {
+    const allowedForFixedHuman = runtimeHasBattle && !challengeTerminal && (controllerBySeat
+      ? workspaceMode === "play" && !handoverPending && isHumanControlledTurn && !game.winner &&
+        (game.pendingLevelUp
+          ? action.type === "resolve_level_up"
+          : isHandLimitDiscarding
+            ? action.type === "end_turn"
+            : action.type !== "resolve_level_up")
+      : isManualBattleActionAllowed(action.type, automationState));
+    if (journalMutationBusyRef.current || !allowedForFixedHuman) {
       return undefined;
     }
     return applyChange(change, keepSelection, action);
+  }
+
+  function confirmSessionReplacement(): boolean {
+    const current = sessionRuntimeRef.current;
+    if (!current) return true;
+    if (!window.confirm("現在のセッションを切り替えます。未完了の対局や進行状況は自動では引き継がれません。続けますか？")) {
+      return false;
+    }
+    return true;
+  }
+
+  function adoptSessionRuntime(runtime: SessionRuntime): void {
+    sessionRestoreIntentRef.current += 1;
+    setSessionRestoreTarget(undefined);
+    terminateAutoStepWorker({ clearError: true });
+    cancelJournalWorkerOperation();
+    battleGenerationRef.current += 1;
+    gameVersionRef.current = 0;
+    sessionRuntimeRef.current = runtime;
+    battleJournalRef.current = runtime.journal;
+    journalBranchesRef.current = [];
+    liveJournalCursorRef.current = runtime.journal?.commands.length ?? 0;
+    setLiveJournalCursor(liveJournalCursorRef.current);
+    setAnalyzeJournalCursor(null);
+    setImportedJournal(null);
+    setImportedJournalCursor(0);
+    setEmbeddedReviewSource(undefined);
+    setCancelledReview(undefined);
+    setWorkerReplaySnapshot(undefined);
+    setJournalWorkerError("");
+    setJournalUiMessage("");
+    setJournalRevision((revision) => revision + 1);
+    setPostgameCoachReport(undefined);
+    setPostgameCoachSourceJournal(undefined);
+    setPostgameCoachBinding(undefined);
+    setZoneView(undefined);
+    setInfoToolsOpen(false);
+    setManualUndoStack([]);
+    setSelection(undefined);
+    setPendingDropAction(undefined);
+    setVisualEffect(undefined);
+    clearHandLimitDiscardMode();
+    setError("");
+    setAutoPlayEnabled(false);
+    setSpectatorPaused(false);
+    setCpuTurnPaused(false);
+    spectatorStepRequestedRef.current = false;
+    setSpectatorStepRequested(false);
+    setWorkspaceMode(runtime.manifest.controlPolicy === "fixed-seat" ? "play" : runtime.manifest.controllerBySeat.player === "cpu" && runtime.manifest.controllerBySeat.cpu === "cpu" ? "spectate" : "play");
+    const nextGame = runtime.game;
+    if (nextGame) {
+      setGame(nextGame);
+      previousGameRef.current = nextGame;
+      const controllers = runtime.manifest.controllerBySeat;
+      const humanSeats = PLAYER_IDS.filter((playerId) => controllers[playerId] === "human");
+      setViewerSeat(humanSeats.length === 1 ? humanSeats[0] : getEffectiveActor(nextGame));
+    }
+    const needsPrivateSeatConfirmation = runtime.manifest.controlPolicy === "fixed-seat"
+      && runtime.manifest.controllerBySeat.player === "human"
+      && runtime.manifest.controllerBySeat.cpu === "human"
+      && Boolean(nextGame && !nextGame.winner);
+    setSeatHandoverConfirmationRequired(needsPrivateSeatConfirmation);
+    const manifest = runtime.manifest;
+    const actualSettings: BattleSettings = {
+      ...cloneBattleSettings(battleSettings),
+      seed: manifest.seed,
+      seedInput: String(manifest.seed),
+      firstPlayer: manifest.firstPlayer,
+      mode: manifest.controllerBySeat.player === "cpu" && manifest.controllerBySeat.cpu === "cpu" ? "cpu-vs-cpu" : "player-vs-cpu",
+      masterIds: { ...manifest.masters },
+      aiProfiles: cloneAiProfiles(manifest.profiles),
+    };
+    activeBattleSettingsRef.current = actualSettings;
+    const actualDecks: DeckSettings = {
+      fixed: { player: true, cpu: true },
+      allowSpecial: { player: manifest.decks.player.allowSpecial, cpu: manifest.decks.cpu.allowSpecial },
+      text: {
+        player: deckTextFromCardIds([...manifest.decks.player.cardIds]),
+        cpu: deckTextFromCardIds([...manifest.decks.cpu.cardIds]),
+      },
+    };
+    activeDeckSettingsRef.current = actualDecks;
+    const journalSummary = {
+      status: runtime.journal?.completeness.status ?? "unavailable",
+      commandCount: runtime.journal?.commands.length ?? 0,
+      liveCursor: runtime.journal?.commands.length ?? 0,
+      reviewCursor: runtime.journal?.commands.length ?? 0,
+      reviewingImportedJournal: false,
+    };
+    if (nextGame && runtime.manifest.controlPolicy === "fixed-seat" && runtime.manifest.controllerBySeat.player === "human" && runtime.manifest.controllerBySeat.cpu === "human" && !nextGame.winner) {
+      updateDiagnosticContext({
+        mode: "play",
+        battleKind: runtime.manifest.kind,
+        viewerSeat: null,
+        handoverPending: true,
+        game: {
+          turnNumber: nextGame.turnNumber,
+          currentPlayer: nextGame.currentPlayer,
+          winner: nextGame.winner ?? null,
+          pendingLevelUp: Boolean(nextGame.pendingLevelUp),
+          players: Object.fromEntries(PLAYER_IDS.map((playerId) => [playerId, {
+            masterId: nextGame.players[playerId].masterId,
+            masterHp: nextGame.players[playerId].masterHp,
+            stones: nextGame.players[playerId].stones,
+            handCount: nextGame.players[playerId].hand.length,
+            deckCount: nextGame.players[playerId].deck.length,
+            discardCount: nextGame.players[playerId].discard.length,
+          }])),
+          slots: BOARD_SLOT_KEYS.map((slotKey) => ({
+            owner: nextGame.slots[slotKey].owner,
+            row: nextGame.slots[slotKey].row,
+            lane: nextGame.slots[slotKey].lane,
+            occupied: Boolean(nextGame.slots[slotKey].monster),
+            prepared: nextGame.slots[slotKey].monster?.status === "prepared",
+          })),
+        },
+        journal: journalSummary,
+      });
+    } else {
+      updateDiagnosticContext({
+        mode: "play",
+        battleKind: manifest.kind,
+        progress: { kind: runtime.progress.kind, status: runtime.progress.status },
+        game: nextGame ? { turnNumber: nextGame.turnNumber, winner: nextGame.winner ?? null } : null,
+        journal: journalSummary,
+      });
+    }
+    setSessionLauncherOpen(false);
+    setSessionLauncherError("");
+  }
+
+  function launchSession(kind: SessionLauncherKind, puzzleId?: string): void {
+    if (!confirmSessionReplacement()) return;
+    setSessionLauncherError("");
+    if (kind === "battle" || kind === "local-pvp") {
+      startNewGame(battleSettings, deckSettings, kind);
+      return;
+    }
+    const options = {
+      firstPlayer: "player" as const,
+      profiles: cloneAiProfiles(battleSettings.aiProfiles),
+      masters: { ...battleSettings.masterIds },
+    };
+    const started = kind === "daily"
+      ? createDailyChallengeSession(new Date(), options)
+      : kind === "gauntlet"
+        ? createGauntletSession({ ...options, seed: battleSettings.seed })
+        : kind === "puzzle" && puzzleId
+          ? createPuzzleSession(puzzleId, { ...options, seed: battleSettings.seed })
+          : kind === "draft"
+            ? createDraftSession({ seed: battleSettings.seed, masters: options.masters })
+            : kind === "sealed"
+              ? createSealedSession({ seed: battleSettings.seed, masters: options.masters })
+          : undefined;
+    if (!started) {
+      setSessionLauncherError("Puzzleを選択してください。");
+      return;
+    }
+    if (!started.ok) {
+      setSessionLauncherError(started.error.message);
+      return;
+    }
+    adoptSessionRuntime(started.value);
+  }
+
+  function launchExperimentalSession(options: ExperimentalLaunchOptions): void {
+    if (!confirmSessionReplacement()) return;
+    setSessionLauncherError("");
+    const started = createExperimentalSession(options);
+    if (!started.ok) {
+      setSessionLauncherError(started.error.message);
+      return;
+    }
+    adoptSessionRuntime(started.value);
+  }
+
+  function updatePrebattleSession(next: SessionRuntime): void {
+    if (next.game || next.journal) {
+      setSessionLauncherError("準備中セッションの状態が不正です。");
+      return;
+    }
+    sessionRuntimeRef.current = next;
+    setJournalRevision((revision) => revision + 1);
+    setSessionLauncherError("");
+    updateDiagnosticContext({
+      mode: "play",
+      battleKind: next.manifest.kind,
+      progress: { kind: next.progress.kind, status: "status" in next.progress ? next.progress.status : "active" },
+      game: null,
+      journal: { status: "unavailable", commandCount: 0, liveCursor: 0, reviewCursor: 0, reviewingImportedJournal: false },
+    });
+  }
+
+  function handleDraftPick(pickId: string): void {
+    const runtime = sessionRuntimeRef.current;
+    if (!runtime || runtime.manifest.kind !== "draft") return;
+    const picked = pickDraftCard(runtime, pickId);
+    if (!picked.ok) {
+      setSessionLauncherError(picked.error.message);
+      return;
+    }
+    updatePrebattleSession(picked.value);
+  }
+
+  function handleSealedSelection(instanceIds: readonly string[]): void {
+    const runtime = sessionRuntimeRef.current;
+    if (!runtime || runtime.manifest.kind !== "sealed") return;
+    const selected = selectSealedDeck(runtime, instanceIds);
+    if (!selected.ok) {
+      setSessionLauncherError(selected.error.message);
+      return;
+    }
+    updatePrebattleSession(selected.value);
+  }
+
+  function handleSealedSelectionDraft(instanceIds: readonly string[]): void {
+    const runtime = sessionRuntimeRef.current;
+    if (!runtime || runtime.manifest.kind !== "sealed") return;
+    const updated = updateSealedDeckSelection(runtime, instanceIds);
+    if (!updated.ok) {
+      setSessionLauncherError(updated.error.message);
+      return;
+    }
+    updatePrebattleSession(updated.value);
+  }
+
+  function handleStartLimitedBattle(): void {
+    const runtime = sessionRuntimeRef.current;
+    if (!runtime) return;
+    const started = runtime.manifest.kind === "draft"
+      ? startDraftBattle(runtime)
+      : runtime.manifest.kind === "sealed"
+        ? startSealedBattle(runtime)
+        : undefined;
+    if (!started) return;
+    if (!started.ok) {
+      setSessionLauncherError(started.error.message);
+      return;
+    }
+    adoptSessionRuntime(started.value);
+  }
+
+  async function restoreSessionFile(file: File): Promise<void> {
+    if (!confirmSessionReplacement()) return;
+    const intent = sessionRestoreIntentRef.current + 1;
+    sessionRestoreIntentRef.current = intent;
+    terminateAutoStepWorker({ clearError: true });
+    cancelJournalWorkerOperation();
+    const startGeneration = battleGenerationRef.current;
+    const startGameVersion = gameVersionRef.current;
+    setSessionRestoreTarget(file.name);
+    setSessionLauncherError("");
+    if (file.size > MAX_SESSION_ARCHIVE_BYTES) {
+      setSessionLauncherError(`ファイルサイズが上限（${MAX_SESSION_ARCHIVE_BYTES.toLocaleString()} byte）を超えています。`);
+      setSessionRestoreTarget(undefined);
+      return;
+    }
+    try {
+      const json = await file.text();
+      if (intent !== sessionRestoreIntentRef.current || startGeneration !== battleGenerationRef.current || startGameVersion !== gameVersionRef.current) return;
+      const completion = await runJournalWorker(
+        { operation: "restore-session", json },
+        `セッション復帰: ${file.name}`,
+        { mutation: true, expectedGameVersion: startGameVersion },
+      );
+      if (!completion || intent !== sessionRestoreIntentRef.current) return;
+      const workerResult = completion.result as BattleJournalResult<VerifiedSessionArchive>;
+      if (!workerResult.ok) {
+        setSessionLauncherError(`復帰できませんでした: ${workerResult.error.message}`);
+        return;
+      }
+      const restored = restoreSessionArchiveWithVerifiedHeads(workerResult.value.archive, workerResult.value.replayHeads);
+      if (!restored.ok) {
+        setSessionLauncherError(`復帰できませんでした: ${restored.error.message}`);
+        return;
+      }
+      adoptSessionRuntime(restored.value);
+    } catch (cause) {
+      if (intent === sessionRestoreIntentRef.current) {
+        setSessionLauncherError(`保存ファイルを読み込めませんでした: ${cause instanceof Error ? cause.message : String(cause)}`);
+      }
+    } finally {
+      if (intent === sessionRestoreIntentRef.current) setSessionRestoreTarget(undefined);
+    }
+  }
+
+  async function handleSaveSessionArchive(): Promise<void> {
+    const runtime = sessionRuntimeRef.current;
+    if (!runtime) return;
+    const liveHumanBattle = isLivePrivateHumanBattle({
+      hasCurrentBattle: Boolean(runtime.game && !runtime.game.winner),
+      unfinished: Boolean(runtime.game && !runtime.game.winner),
+      controlPolicy: runtime.manifest.controlPolicy,
+      controllerBySeat: runtime.manifest.controllerBySeat,
+    });
+    const limitedUnfinished = (runtime.progress.kind === "draft" && runtime.progress.status !== "completed")
+      || (runtime.progress.kind === "sealed" && runtime.progress.status !== "completed");
+    const containsPrivateArchiveState = liveHumanBattle || limitedUnfinished;
+    if (containsPrivateArchiveState && !window.confirm(
+      "この保存JSONには両席の手札・山札順・準備中カードや、未公開のDraft pick／Sealed poolが含まれます。ファイルを共有せず安全に保管しますか？"
+    )) {
+      setSessionLauncherError("保存をキャンセルしました。現在のセッションは変更していません。");
+      return;
+    }
+    const serialized = serializeTrustedSessionRuntime(runtime);
+    if (!serialized.ok) {
+      setSessionLauncherError(`保存用JSONを作れませんでした: ${serialized.error.message}`);
+      return;
+    }
+    const startGeneration = battleGenerationRef.current;
+    const startGameVersion = gameVersionRef.current;
+    setSessionLauncherError("");
+    const completion = await runJournalWorker(
+      { operation: "restore-session", json: serialized.value },
+      `セッション保存を検証: ${runtime.manifest.kind}`,
+      { expectedGameVersion: startGameVersion },
+    );
+    if (!completion || sessionRuntimeRef.current !== runtime || battleGenerationRef.current !== startGeneration || gameVersionRef.current !== startGameVersion) return;
+    const verified = completion.result as BattleJournalResult<VerifiedSessionArchive>;
+    if (!verified.ok) {
+      setSessionLauncherError(`保存前の検証に失敗しました: ${verified.error.message}`);
+      return;
+    }
+    try {
+      const json = JSON.stringify(verified.value.archive, null, 2);
+      const blob = new Blob([json], { type: "application/json" });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.href = url;
+      link.download = `stone-tactics-${runtime.manifest.kind}-${runtime.manifest.seed}.json`;
+      link.click();
+      window.setTimeout(() => URL.revokeObjectURL(url), 0);
+      setSessionLauncherError("検証済みセッションをJSON保存しました。");
+    } catch (cause) {
+      setSessionLauncherError(`JSON保存に失敗しました: ${cause instanceof Error ? cause.message : String(cause)}`);
+    }
+  }
+
+  function toggleSessionAutosave(): void {
+    if (sessionAutosaveEnabled) {
+      setSessionAutosaveEnabled(false);
+      setSessionAutosaveStatus("以後の自動保存を停止しました。既存autosaveは復帰用に保持します。");
+      return;
+    }
+    if (!sessionRuntimeRef.current) return;
+    if (!window.confirm("この端末のlocalStorageに、今後のセッション全体を自動保存します。双方の手札・山札順・準備中カード、およびDraft/Sealedの非公開情報も含みます。端末を共有する場合は有効化しないでください。")) return;
+    setSessionAutosaveEnabled(true);
+    const saved = saveSessionRuntime(sessionRuntimeRef.current);
+    setSessionAutosaveStatus(saved.ok ? "現在のセッションを端末へ保存しました。以後の進行も自動保存します。" : saved.error.message);
+  }
+
+  function resumeSessionAutosave(): void {
+    const loaded = loadSessionArchive();
+    if (!loaded.ok) {
+      setSessionLauncherError(`端末autosaveを読み込めませんでした: ${loaded.error.message}`);
+      return;
+    }
+    if (!loaded.value) {
+      setSessionLauncherError("端末autosaveはありません。");
+      return;
+    }
+    const json = JSON.stringify(loaded.value);
+    const file = new File([json], "terminal-autosave.json", { type: "application/json" });
+    void restoreSessionFile(file);
+  }
+
+  function cancelSessionRestore(): void {
+    sessionRestoreIntentRef.current += 1;
+    setSessionRestoreTarget(undefined);
+    if (journalWorkerUiState?.operation === "restore-session") cancelJournalWorkerOperation();
+    setSessionLauncherError("セッション復帰をキャンセルしました。現在の対局は変更していません。");
+  }
+
+  function renderSessionLauncher(asPage = false) {
+    const runtime = sessionRuntimeRef.current;
+    const sessionLabel = runtime ? `${runtime.manifest.kind.toUpperCase()} · seed ${runtime.manifest.seed}` : "対局なし";
+    return (
+      <SessionLauncherPanel
+        asPage={asPage}
+        sessionLabel={sessionLabel}
+        progressLabel={runtime ? sessionProgressLabel(runtime.progress) : undefined}
+        busy={Boolean(journalWorkerUiState) || Boolean(sessionRestoreTarget)}
+        operation={journalWorkerUiState}
+        readTarget={sessionRestoreTarget}
+        error={sessionLauncherError || undefined}
+        puzzles={listPuzzleCatalog()}
+        onLaunch={launchSession}
+        onLaunchExperimental={launchExperimentalSession}
+        experimentalDefaults={{
+          seed: battleSettings.seed,
+          profiles: cloneAiProfiles(battleSettings.aiProfiles),
+          masters: { ...battleSettings.masterIds },
+        }}
+        onLaunchPuzzle={(puzzleId) => launchSession("puzzle", puzzleId)}
+        onRestore={(file) => { void restoreSessionFile(file); }}
+        onCancelRestore={cancelSessionRestore}
+        onCancelOperation={cancelVisibleJournalOperation}
+        onSaveArchive={() => { void handleSaveSessionArchive(); }}
+        canSaveArchive={Boolean(runtime)}
+        autosaveEnabled={sessionAutosaveEnabled}
+        autosaveStatus={sessionAutosaveStatus}
+        onResumeAutosave={resumeSessionAutosave}
+        onToggleAutosave={toggleSessionAutosave}
+        onClose={asPage ? undefined : () => setSessionLauncherOpen(false)}
+        children={runtime ? <>
+          {(runtime.manifest.kind === "draft" || runtime.manifest.kind === "sealed") && (
+            <LimitedSessionPanel
+              runtime={runtime}
+              error={sessionLauncherError || undefined}
+              busy={Boolean(journalWorkerUiState?.mutation)}
+              onPickDraft={handleDraftPick}
+              onUpdateSealedSelection={handleSealedSelectionDraft}
+              onSelectSealed={handleSealedSelection}
+              onStartBattle={handleStartLimitedBattle}
+              onReviewCompletedBattle={() => handleOpenEmbeddedBattle(0)}
+              onCoachCompletedBattle={(seat) => handleOpenPostgameCoach(seat, 0)}
+            />
+          )}
+          {runtime.progress.kind === "gauntlet" && <GauntletResultSummary
+            progress={runtime.progress}
+            seed={runtime.manifest.seed}
+            onReviewBattle={handleOpenEmbeddedBattle}
+            onCoachBattle={(stage, seat) => handleOpenPostgameCoach(seat, stage)}
+          />}
+        </> : undefined}
+      />
+    );
+  }
+
+  function handleResetPuzzle(): void {
+    const runtime = sessionRuntimeRef.current;
+    if (!runtime) return;
+    const reset = resetPuzzle(runtime);
+    if (!reset.ok) {
+      setSessionLauncherError(reset.error.message);
+      return;
+    }
+    adoptSessionRuntime(reset.value);
+  }
+
+  function retryChallengeFinalization(): void {
+    if (!challengeFinalizeCanRetry || journalWorkerUiState?.mutation) return;
+    challengeFinalizeKeyRef.current = undefined;
+    setSessionLauncherError("");
+    setChallengeFinalizeRetry((attempt) => attempt + 1);
   }
 
   function clearHandLimitDiscardMode() {
@@ -2566,6 +3601,9 @@ export function App() {
       journalBranchesRef.current.push(journal);
       if (journalBranchesRef.current.length > 10) journalBranchesRef.current.shift();
       battleJournalRef.current = replay.value.journal;
+      if (sessionRuntimeRef.current) {
+        sessionRuntimeRef.current = { ...sessionRuntimeRef.current, journal: replay.value.journal };
+      }
       setManualUndoStack((previous) => previous.slice(0, -1));
       if (tutorialActive) setTutorialStep(tutorialStepForGameState(replayedGame));
       liveJournalCursorRef.current = targetCursor;
@@ -2592,11 +3630,19 @@ export function App() {
   }
 
   function toggleInfoZoneView(view: ZoneView) {
+    if (fixedSeatInformationRestricted && (view.kind === "battleJournal" || view.kind === "battleHistory" || view.kind === "cpuHistory" || view.kind === "aiLab" || view.kind === "deckSetup" || view.kind === "coach")) {
+      setError("情報制限中の対局では研究用の履歴・設定へアクセスできません。対局終了後に利用できます。");
+      return;
+    }
     setInfoToolsOpen(true);
     setZoneView((current) => toggleZoneView(current, view));
   }
 
   function showInfoZoneView(view: ZoneView) {
+    if (fixedSeatInformationRestricted && (view.kind === "battleJournal" || view.kind === "battleHistory" || view.kind === "cpuHistory" || view.kind === "aiLab" || view.kind === "deckSetup" || view.kind === "coach")) {
+      setError("情報制限中の対局では研究用の履歴・設定へアクセスできません。対局終了後に利用できます。");
+      return;
+    }
     setInfoToolsOpen(true);
     setZoneView(view);
   }
@@ -2803,7 +3849,7 @@ export function App() {
       if (targetKeys.has(targetToKey(target))) {
         applyHumanAction(
           { type: "master_action", actionId: selection.actionId, target },
-          (state) => useMasterAction(state, selection.actionId, target),
+          (state) => applySessionNativeMasterAction(state, experimentContext, selection.actionId, target),
         );
         return;
       }
@@ -2821,7 +3867,7 @@ export function App() {
   }
 
   function handleSlotDoubleClick(slotKey: SlotKey) {
-    if (controlsDisabled || game.currentPlayer !== "player" || game.winner || game.pendingLevelUp) {
+    if (controlsDisabled || !isHumanControlledTurn || game.winner || game.pendingLevelUp) {
       return;
     }
     const monster = game.slots[slotKey].monster;
@@ -2863,7 +3909,7 @@ export function App() {
     if (selection.kind === "masterAction" && targetKeys.has(key)) {
       applyHumanAction(
         { type: "master_action", actionId: selection.actionId, target },
-        (state) => useMasterAction(state, selection.actionId, target),
+        (state) => applySessionNativeMasterAction(state, experimentContext, selection.actionId, target),
       );
       return true;
     }
@@ -2927,7 +3973,7 @@ export function App() {
       if (selection?.kind === "masterAction" && targetKeys.has(targetToKey(target))) {
         applyHumanAction(
           { type: "master_action", actionId: selection.actionId, target },
-          (state) => useMasterAction(state, selection.actionId, target),
+          (state) => applySessionNativeMasterAction(state, experimentContext, selection.actionId, target),
         );
         return;
       }
@@ -2950,7 +3996,7 @@ export function App() {
     if (controlsDisabled) {
       return;
     }
-    if (game.currentPlayer === "player" && handLimitDiscardNeeded > 0) {
+    if (isHumanControlledTurn && handLimitDiscardNeeded > 0) {
       setHandLimitDiscardMode(true);
       setHandLimitDiscardSelection([]);
       setPendingDropAction(undefined);
@@ -2961,7 +4007,9 @@ export function App() {
     applyHumanAction({ type: "end_turn" }, endTurn);
   }
 
-  function startNewGame(settings: BattleSettings, decks: DeckSettings) {
+  function startNewGame(settings: BattleSettings, decks: DeckSettings, kind: "battle" | "local-pvp" = "battle") {
+    sessionRestoreIntentRef.current += 1;
+    setSessionRestoreTarget(undefined);
     const drafts = createDeckDrafts(settings, decks);
     const invalidPlayer = PLAYER_IDS.find((playerId) => decks.fixed[playerId] && !drafts[playerId].summary.valid);
     if (invalidPlayer) {
@@ -2971,10 +4019,15 @@ export function App() {
       return;
     }
 
-    const next = createGameFromSettings(settings, decks);
+    const started = createBattleSessionFromSettings(settings, decks, kind);
+    if (!started.ok || !started.value.game || !started.value.journal) {
+      setError(started.ok ? "対局を開始できませんでした。初期ゲームまたはJournalがありません。" : started.error.message);
+      return;
+    }
+    const next = started.value.game;
     cancelJournalWorkerOperation();
-    const nextJournal = createBattleJournal(next);
-    battleJournalRef.current = nextJournal.ok ? nextJournal.value : null;
+    sessionRuntimeRef.current = started.value;
+    battleJournalRef.current = started.value.journal;
     journalBranchesRef.current = [];
     liveJournalCursorRef.current = 0;
     setLiveJournalCursor(0);
@@ -2984,7 +4037,9 @@ export function App() {
     setCancelledReview(undefined);
     setWorkerReplaySnapshot(undefined);
     setJournalWorkerError("");
-    setJournalUiMessage(nextJournal.ok ? "" : `Journal開始失敗: ${nextJournal.error.message}`);
+    setJournalUiMessage("");
+    setPostgameCoachReport(undefined);
+    setPostgameCoachSourceJournal(undefined);
     setJournalRevision((revision) => revision + 1);
     terminateAutoStepWorker({ clearError: true });
     battleGenerationRef.current += 1;
@@ -2997,7 +4052,39 @@ export function App() {
     battleReportSessionIdRef.current = createBattleReportSessionId();
     activeBattleSettingsRef.current = cloneBattleSettings(settings);
     activeDeckSettingsRef.current = cloneDeckSettings(decks);
-    setWorkspaceMode(settings.mode === "cpu-vs-cpu" ? "spectate" : "play");
+    setWorkspaceMode(kind === "local-pvp" ? "play" : settings.mode === "cpu-vs-cpu" ? "spectate" : "play");
+    if (kind === "local-pvp") {
+      const nextViewerSeat = getEffectiveActor(next);
+      setViewerSeat(nextViewerSeat);
+      updateDiagnosticContext({
+        mode: "play",
+        sessionKind: "local-pvp",
+        viewerSeat: nextViewerSeat,
+        handoverPending: false,
+        game: {
+          turnNumber: next.turnNumber,
+          currentPlayer: next.currentPlayer,
+          winner: next.winner ?? null,
+          pendingLevelUp: Boolean(next.pendingLevelUp),
+          players: Object.fromEntries(PLAYER_IDS.map((playerId) => [playerId, {
+            masterId: next.players[playerId].masterId,
+            masterHp: next.players[playerId].masterHp,
+            stones: next.players[playerId].stones,
+            handCount: next.players[playerId].hand.length,
+            deckCount: next.players[playerId].deck.length,
+            discardCount: next.players[playerId].discard.length,
+          }])),
+          slots: BOARD_SLOT_KEYS.map((slotKey) => ({
+            owner: next.slots[slotKey].owner,
+            row: next.slots[slotKey].row,
+            lane: next.slots[slotKey].lane,
+            occupied: Boolean(next.slots[slotKey].monster),
+            prepared: next.slots[slotKey].monster?.status === "prepared",
+          })),
+        },
+        journal: { status: "complete", commandCount: 0, liveCursor: 0, reviewCursor: 0, reviewingImportedJournal: false },
+      });
+    }
     if (tutorialActive) {
       setTutorialStep(0);
     }
@@ -3022,10 +4109,15 @@ export function App() {
     spectatorStepRequestedRef.current = false;
     setSpectatorStepRequested(false);
     lastSpectatorAttentionIndexRef.current = undefined;
+    setSessionLauncherOpen(false);
   }
 
   function handleNewGame() {
     startNewGame(battleSettings, deckSettings);
+  }
+
+  function handleStartLocalPvp() {
+    startNewGame(battleSettings, deckSettings, "local-pvp");
   }
 
   function handleNewRandomSeedGame() {
@@ -3366,7 +4458,7 @@ export function App() {
   }
 
   function handleHandDragStart(event: DragEvent<HTMLButtonElement>, instanceId: string) {
-    if (!canRevealHand(game.currentPlayer, workspaceMode)) {
+    if (!canRevealHand(game.currentPlayer, workspaceMode, restrictedViewerSeat)) {
       event.preventDefault();
       return;
     }
@@ -3404,7 +4496,7 @@ export function App() {
   }
 
   function handleHandPointerDown(event: ReactPointerEvent<HTMLButtonElement>, instanceId: string) {
-    if (!canRevealHand(game.currentPlayer, workspaceMode)) {
+    if (!canRevealHand(game.currentPlayer, workspaceMode, restrictedViewerSeat)) {
       return;
     }
     startPointerDrag(event, { kind: "hand", instanceId });
@@ -3717,7 +4809,7 @@ export function App() {
     }
     applyHumanAction(
       { type: "master_action", actionId, target: pendingDropAction.target },
-      (state) => useMasterAction(state, actionId, pendingDropAction.target),
+      (state) => applySessionNativeMasterAction(state, experimentContext, actionId, pendingDropAction.target),
     );
   }
 
@@ -3746,9 +4838,9 @@ export function App() {
   const selectedMonster =
     selection?.kind === "monster" ? game.slots[selection.slotKey].monster : undefined;
   const selectedMasterPlayerId = selection?.kind === "master" ? selection.playerId : undefined;
-  const handPlayerId: PlayerId = cpuVsCpu ? game.currentPlayer : "player";
+  const handPlayerId: PlayerId = fixedSeatInformationRestricted ? viewerSeat : cpuVsCpu ? game.currentPlayer : "player";
   const handPlayer = game.players[handPlayerId];
-  const canRevealCurrentHand = canRevealHand(handPlayerId, workspaceMode);
+  const canRevealCurrentHand = canRevealHand(handPlayerId, workspaceMode, restrictedViewerSeat);
   const selectedHand =
     selection?.kind === "hand" && canRevealCurrentHand ? handPlayer.hand.find((card) => card.instanceId === selection.instanceId) : undefined;
   const infoWorkspaceOpen = isInfoWorkspaceView(zoneView);
@@ -3757,6 +4849,12 @@ export function App() {
   const analysisMode = analyzing;
 
   function handleWorkspaceModeSelect(mode: BattleWorkspaceMode) {
+    if (fixedSeatInformationRestricted && mode !== "play") {
+      setError(livePrivateHumanBattle
+        ? "両席人間の対局中はPlay画面で手番を受け渡してください。対局終了後に観戦・分析できます。"
+        : "固定席セッション中は情報公開モードへ切り替えできません。対局終了後に観戦・分析できます。");
+      return;
+    }
     terminateAutoStepWorker();
     setWorkspaceMode(mode);
     if (mode === "analyze") {
@@ -3822,7 +4920,7 @@ export function App() {
     const cpuPlaybackPaused = cpuVsCpu ? spectatorPaused : cpuTurnPaused;
     return (
       <div className="topbar-playback-controls" aria-label="Auto playback controls">
-        {!cpuVsCpu && (
+        {!cpuVsCpu && !fixedSeatControl && (
           <button
             type="button"
             className={autoPlayEnabled ? "selected" : ""}
@@ -3832,7 +4930,7 @@ export function App() {
             <Icon icon={autoPlayEnabled ? "⏸️" : "▶️"} /> {autoPlayEnabled ? "Auto Stop" : "Auto Play"}
           </button>
         )}
-        {(cpuVsCpu || game.currentPlayer === "cpu") && (
+        {(cpuVsCpu || isCpuPlaybackTurn) && (
           <>
             <button
               type="button"
@@ -4028,6 +5126,16 @@ export function App() {
   }
 
   function renderBattleControlPanel() {
+    if (puzzleTerminal && activeSessionProgress?.kind === "puzzle") {
+      return (
+        <section className="battle-control-panel battle-control-result" data-testid="puzzle-terminal-panel">
+          <h2>{activeSessionProgress.status === "solved" ? "Puzzle達成" : "Puzzle失敗"}</h2>
+          <p>{activeSessionProgress.status === "solved" ? "実際のルールで目標を達成しました。" : "この1手では条件を満たせませんでした。盤面を初期化して再挑戦できます。"}</p>
+          <button type="button" onClick={handleResetPuzzle}>このPuzzleを最初からやり直す</button>
+          <button type="button" onClick={() => setSessionLauncherOpen(true)}>別のセッションを選ぶ</button>
+        </section>
+      );
+    }
     if (game.winner) {
       return (
         <section className="battle-control-panel battle-control-result">
@@ -4042,12 +5150,35 @@ export function App() {
             </div>
             <BattleResultSummary game={game} />
           </div>
+          {challengeFinalizeCanRetry && (
+            <div className="challenge-finalize-retry">
+              <p role="status">{journalWorkerUiState?.operation === "seek" && journalWorkerUiState.mutation ? "終局を検証中です。" : "終局結果の検証が未完了です。"}</p>
+              {sessionLauncherError && <p role="alert">{sessionLauncherError}</p>}
+              <button type="button" onClick={retryChallengeFinalization} disabled={Boolean(journalWorkerUiState?.mutation)}>
+                {activeSessionProgress?.kind === "gauntlet" ? "次の対局へ進むため結果を再検証" : "終局を再検証して結果を確定"}
+              </button>
+            </div>
+          )}
           <div className="battle-action-grid compact">
             <button type="button" onClick={handleNewRandomSeedGame} disabled={fixedDeckError}>
               <Icon icon="🔄" /> 新しいSeedで再戦
             </button>
             <button type="button" onClick={() => showInfoZoneView({ kind: "deckSetup" })}>
               <Icon icon="🧩" /> デッキ設定
+            </button>
+            <button
+              type="button"
+              onClick={() => handleOpenPostgameCoach("player")}
+              disabled={battleJournalRef.current?.completeness.status !== "complete"}
+            >
+              <Icon icon="🧭" /> 席1の振り返り
+            </button>
+            <button
+              type="button"
+              onClick={() => handleOpenPostgameCoach("cpu")}
+              disabled={battleJournalRef.current?.completeness.status !== "complete"}
+            >
+              <Icon icon="🧭" /> 席2の振り返り
             </button>
           </div>
         </section>
@@ -4159,13 +5290,13 @@ export function App() {
                 {renderAdditionalChoicePanel()}
               </div>
             ) : null}
-            {!game.pendingLevelUp && !hasOperationContext && (cpuVsCpu || game.currentPlayer === "cpu") ? (
+            {!game.pendingLevelUp && !hasOperationContext && (cpuVsCpu || isCpuPlaybackTurn) ? (
               <p className="hint battle-control-empty-hint">
                 {cpuVsCpu ? (
                   <>
                     <Icon icon="👁️" /> 注目イベントで停止し、CPU履歴とEffectsで判断を確認
                   </>
-                ) : game.currentPlayer === "cpu" ? (
+                ) : isCpuPlaybackTurn ? (
                   <>
                     <Icon icon="🧠" /> CPU解決中。ログまたはCPU履歴で判断理由を確認
                   </>
@@ -4178,18 +5309,102 @@ export function App() {
     );
   }
 
+  function renderBattleJournalPanel() {
+    return <BattleJournalPanel
+      journal={selectedReviewJournal}
+      cursor={selectedReviewCursor}
+      replay={selectedReviewSnapshot}
+      imported={!!importedJournal}
+      sourceLabel={embeddedReviewSource?.label}
+      allowBranchDetached={Boolean(embeddedReviewSource && !importedJournal && selectedReviewJournal === embeddedReviewSource.journal)}
+      message={journalUiMessage}
+      operation={journalWorkerUiState}
+      workerError={journalWorkerError}
+      seekCancelled={selectedReviewSeekCancelled}
+      onSeek={handleSeekJournal}
+      onReturnToLive={handleReturnToLiveJournal}
+      onImport={handleImportJournal}
+      onExport={handleExportJournal}
+      onCancelOperation={cancelVisibleJournalOperation}
+      onRetrySeek={handleRetryJournalSeek}
+      renderCardIcon={(cardId) => <CardIcon cardId={cardId} />}
+      restrictedPrivateSession={fixedSeatInformationRestricted}
+      privacyViewerSeat={restrictedViewerSeat}
+      workspaceMode={workspaceMode}
+      branchDefaults={(selectedReviewJournal === battleJournalRef.current && !livePrivateHumanBattle && sessionRuntimeRef.current) || embeddedReviewSource?.journal === selectedReviewJournal ? {
+        controllerBySeat: embeddedReviewSource?.manifest.controllerBySeat ?? sessionRuntimeRef.current!.manifest.controllerBySeat,
+        profiles: cloneAiProfiles(embeddedReviewSource?.manifest.profiles ?? sessionRuntimeRef.current!.manifest.profiles),
+      } : undefined}
+      onStartBranch={(selectedReviewJournal === battleJournalRef.current && !livePrivateHumanBattle && sessionRuntimeRef.current) || embeddedReviewSource?.journal === selectedReviewJournal
+        ? (cursor, controllers, profiles) => handleStartJournalBranch(cursor, controllers, profiles, selectedReviewJournal, undefined, embeddedReviewSource)
+        : undefined}
+    />;
+  }
+
+  function renderCoachPanel() {
+    return <PostgameCoachPanel
+      key={sessionRuntimeRef.current?.manifest.id ?? "coach"}
+      report={postgameCoachReport}
+      seat={postgameCoachSeat}
+      message={journalUiMessage}
+      operation={journalWorkerUiState?.operation === "coach" || journalWorkerUiState?.operation === "branch" ? journalWorkerUiState : undefined}
+      workerError={journalWorkerError}
+      onCancel={cancelVisibleJournalOperation}
+      onReviewObservation={handleReviewCoachObservation}
+      branchDefaults={postgameCoachBinding ? {
+        controllerBySeat: postgameCoachBinding.manifest.controllerBySeat,
+        profiles: cloneAiProfiles(postgameCoachBinding.manifest.profiles),
+      } : undefined}
+      onStartBranch={handleStartCoachBranch}
+    />;
+  }
+
+  if (!runtimeHasBattle) {
+    return (
+      <main className="app-shell session-hub-shell">
+        <header className="topbar"><StoneTacticsBrand /><p>盤面はありません。古い対局盤面は操作・表示されていません。</p></header>
+        {renderSessionLauncher(true)}
+        {zoneView?.kind === "battleJournal" && <div className="session-hub-review">{renderBattleJournalPanel()}</div>}
+        {zoneView?.kind === "coach" && <div className="session-hub-review">{renderCoachPanel()}</div>}
+      </main>
+    );
+  }
+
   return (
     <main className={`app-shell ${pointerDragging ? "dragging" : ""}`} onPointerDownCapture={unlockAudioPlayback}>
       <header className="topbar">
         <div>
-          <h1>Card Hero Prototype</h1>
+          <StoneTacticsBrand />
+          {humanVsHumanSession && (
+            <p className="session-mode-badge" data-testid={sessionKind === "local-pvp" ? "local-pvp-session-badge" : "human-seat-session-badge"}>
+              {game.winner
+                ? `${humanSeatSessionLabel} · 両席人間 · 対局完了 · 勝者: ${game.winner === "player" ? "席1" : "席2"}`
+                : `${humanSeatSessionLabel} · 両席人間 · 操作中: ${seatHumanLabel(handoverPending ? effectiveActor : viewerSeat)}`}
+            </p>
+          )}
           <p>Turn {game.turnNumber} / {turnStatus}</p>
           {hasOmniscientAiProfile(activeBattleSettings.aiProfiles) && (
             <p className="omniscient-ai-warning current">この対局は研究用の全情報AIを使用中（公平な通常対戦ではありません）</p>
           )}
+          {experimentContext && (
+            <p className="experimental-ai-warning current">
+              Experimental · 研究用ルール固定 · 席1 {experimentContext.masterOverlayBySeat?.player ?? "通常"} / 席2 {experimentContext.masterOverlayBySeat?.cpu ?? "通常"}（標準対戦とは別条件）
+            </p>
+          )}
         </div>
         <div className="topbar-actions">
           <ModeNavigation mode={workspaceMode} onSelect={handleWorkspaceModeSelect} />
+          {fixedSeatInformationRestricted && !livePrivateHumanBattle && battleJournalRef.current && (
+            <button type="button" onClick={handleOpenBoundJournal} aria-label="公開情報で現在Journalを見る">
+              <Icon icon="⏪" /> 現在Journal · 公開情報
+            </button>
+          )}
+          <button type="button" className="session-launcher-trigger" onClick={() => { setSessionLauncherError(""); setSessionLauncherOpen((open) => !open); }} aria-expanded={sessionLauncherOpen}>
+            <Icon icon="🧭" /> {livePrivateHumanBattle ? "セッション切替（手札を隠す）" : "セッション"}
+          </button>
+          {sessionRuntimeRef.current?.branchSource && !fixedSeatInformationRestricted && (
+            <button type="button" onClick={handleReviewBranchSource}>元の対局Journalを見る</button>
+          )}
           {workspaceMode === "play" && (
             <button type="button" className="tutorial-trigger" onClick={handleShowTutorial} aria-label="チュートリアルを再表示">
               <Icon icon="📖" /> はじめてガイド
@@ -4201,7 +5416,7 @@ export function App() {
               {renderAutoPlaybackControls()}
             </div>
           )}
-          {!analysisMode && <button
+          {!analysisMode && !fixedSeatInformationRestricted && <button
             type="button"
             className="battle-settings-trigger"
             ref={battleSettingsTriggerRef}
@@ -4325,6 +5540,9 @@ export function App() {
           <button type="button" onClick={handleNewGame} disabled={fixedDeckError}>
             <Icon icon="🔄" /> New Game
           </button>
+          <button type="button" onClick={handleStartLocalPvp} disabled={fixedDeckError}>
+            <Icon icon="🤝" /> New Local PvP
+          </button>
           <button
             type="button"
             className={seEnabled ? "selected" : ""}
@@ -4390,6 +5608,7 @@ export function App() {
           </div>
         </div>
       </header>
+      {sessionLauncherOpen && renderSessionLauncher()}
       {journalWorkerUiState && !journalPanelOpen && (
         <JournalOperationNotice operation={journalWorkerUiState} onCancel={cancelVisibleJournalOperation} />
       )}
@@ -4564,23 +5783,9 @@ export function App() {
                   onClose={() => setZoneView(undefined)}
                 />
               ) : zoneView?.kind === "battleJournal" ? (
-                <BattleJournalPanel
-                  journal={selectedReviewJournal}
-                  cursor={selectedReviewCursor}
-                  replay={selectedReviewSnapshot}
-                  imported={!!importedJournal}
-                  message={journalUiMessage}
-                  operation={journalWorkerUiState}
-                  workerError={journalWorkerError}
-                  seekCancelled={selectedReviewSeekCancelled}
-                  onSeek={handleSeekJournal}
-                  onReturnToLive={handleReturnToLiveJournal}
-                  onImport={handleImportJournal}
-                  onExport={handleExportJournal}
-                  onCancelOperation={cancelVisibleJournalOperation}
-                  onRetrySeek={handleRetryJournalSeek}
-                  renderCardIcon={(cardId) => <CardIcon cardId={cardId} />}
-                />
+                renderBattleJournalPanel()
+              ) : zoneView?.kind === "coach" ? (
+                renderCoachPanel()
               ) : zoneView?.kind === "battleHistory" ? (
                 <BattleHistoryPanel history={battleHistory} onReplay={handleReplayHistory} onClear={handleClearBattleHistory} />
               ) : zoneView ? (
@@ -4588,6 +5793,7 @@ export function App() {
                   game={game}
                   view={zoneView}
                   workspaceMode={workspaceMode}
+                  viewerSeat={privateLogViewerSeat}
                   onClose={() => setZoneView(undefined)}
                 />
               ) : null}
@@ -4605,8 +5811,8 @@ export function App() {
               />
             )}
             <div className="board" aria-label="field">
-              {visualEffect?.action && <BoardActionOverlay action={maskHiddenPreparedBoardAction(visualEffect.action, game, workspaceMode)} effectId={visualEffect.id} />}
-              {visualEffect && <ResolutionFeed effect={visualEffect} workspaceMode={workspaceMode} />}
+              {visualEffect?.action && <BoardActionOverlay action={maskHiddenPreparedBoardAction(visualEffect.action, game, workspaceMode, privateLogViewerSeat)} effectId={visualEffect.id} />}
+              {visualEffect && <ResolutionFeed effect={visualEffect} workspaceMode={workspaceMode} viewerSeat={privateLogViewerSeat} />}
               {BOARD_CELLS.map((row, rowIndex) => (
                 <div className="board-row" key={rowIndex}>
                   {row.map((cell) => {
@@ -4617,6 +5823,7 @@ export function App() {
                           slotKey={cell.slotKey}
                           game={game}
                           workspaceMode={workspaceMode}
+                          viewerSeat={privateLogViewerSeat}
                           selected={isSelectedSourceSlot(selection, pendingDropAction, cell.slotKey) || dragPayload?.kind === "monster" && dragPayload.slotKey === cell.slotKey}
                           targetable={activeTargetKeys.has(`monster:${cell.slotKey}`)}
                           targetRole={targetRoleForTarget(game, { kind: "monster", slotKey: cell.slotKey }, activeTargetKeys, selection, pendingDropAction, dragPayload)}
@@ -4694,11 +5901,38 @@ export function App() {
             </div>
             {renderBattleControlPanel()}
             <section className={`hand-area hand-bottom-sheet ${handSheetOpen ? "open" : "collapsed"}`}>
+            {handoverPending ? (
+              <div className="pvp-handover-cover" role="group" aria-label="手番の受け渡し">
+                <span className="pvp-handover-kicker">PRIVATE HAND-OFF</span>
+                <h2>{playerLabel(effectiveActor)}の手番です</h2>
+                <p>画面を次の席へ渡してください。確認するまで手札や裏向きカードは表示されません。</p>
+                <button
+                  type="button"
+                  className="primary-button"
+                  data-testid="pvp-handover-confirm"
+                  onClick={() => {
+                    clearPointerDrag();
+                    setSelection(undefined);
+                    setPendingDropAction(undefined);
+                    clearHandLimitDiscardMode();
+                    setZoneView(undefined);
+                    setSelectedLogIndex(undefined);
+                    setError("");
+                    setViewerSeat(effectiveActor);
+                    setSeatHandoverConfirmationRequired(false);
+                  }}
+                >
+                  {playerLabel(effectiveActor)}が確認して開始
+                </button>
+              </div>
+            ) : <>
             <div className="hand-heading">
               <div>
-                <h2>{handPlayerId === "cpu" ? "CPU Hand" : "Your Hand"}</h2>
+                <h2>{livePrivateHumanBattle || fixedSeatInformationRestricted ? `${seatHumanLabel(handPlayerId)}の手札` : handPlayerId === "cpu" ? "CPU Hand" : "Your Hand"}</h2>
                 <span className="hand-visibility-note">
-                  {workspaceMode === "spectate" ? "観戦 · 両者の手札を公開" : workspaceMode === "analyze" ? "分析レビュー · 手札公開" : "あなたの手札 · 相手ターンも表示"}
+                  {fixedSeatInformationRestricted
+                    ? "固定席 · 自席の手札のみ表示"
+                    : workspaceMode === "spectate" ? "観戦 · 両者の手札を公開" : workspaceMode === "analyze" ? "分析レビュー · 手札公開" : "あなたの手札 · 相手ターンも表示"}
                 </span>
               </div>
               <div className="hand-tools">
@@ -4773,6 +6007,7 @@ export function App() {
                 );
               })}
             </div>
+            </>}
             </section>
           </div>
         </div>
@@ -4818,7 +6053,7 @@ export function App() {
                   )}
                 </div>
               </div>
-              <LatestEventSummary log={game.log.map((entry) => displayLogEntry(entry, workspaceMode))} />
+              <LatestEventSummary log={game.log.map((entry) => displaySessionLogEntry(entry, workspaceMode, privateLogViewerSeat))} />
               <div className="log-filter-row" aria-label="log filters">
                 {LOG_FILTERS.map((filter) => (
                   <button
@@ -4917,6 +6152,11 @@ export function App() {
                   setError("");
                 }}
                 onHpDraw={() => applyHumanAction({ type: "master_hp_draw" }, useMasterHpDraw)}
+                experimentalContext={experimentContext}
+                onExperimentalAction={(command) => applyHumanAction(
+                  { type: "experimental_master_action", ...command },
+                  (state) => applyExperimentalMasterAction(state, experimentContext, command),
+                )}
               />
               <ActionDetailContext
                 game={game}
@@ -4933,6 +6173,7 @@ export function App() {
               <MonsterCommands
                 game={game}
                 workspaceMode={workspaceMode}
+                viewerSeat={privateLogViewerSeat}
                 pendingDropAction={pendingDropAction}
                 slotKey={selection.slotKey}
                 disabled={controlsDisabled}
@@ -5334,7 +6575,7 @@ function getOperationReasonItems(
     return items;
   }
   if (!selection) {
-    if (game.currentPlayer !== "player") {
+    if (getEffectiveActor(game) !== "player") {
       items.push({
         icon: "🧠",
         label: "CPUターン",
@@ -5344,7 +6585,7 @@ function getOperationReasonItems(
     return items;
   }
   if (selection.kind === "hand") {
-    return [...items, ...operationReasonsForHand(game, selection.instanceId)];
+    return [...items, ...operationReasonsForHand(game, selection.instanceId, getEffectiveActor(game))];
   }
   if (selection.kind === "monster") {
     return [...items, ...operationReasonsForMonster(game, selection.slotKey)];
@@ -5354,7 +6595,7 @@ function getOperationReasonItems(
       icon: "🎮",
       label: "マスター選択中",
       text: `${playerLabel(selection.playerId)}マスターの行動は右の行動窓から選びます。`,
-      tone: selection.playerId === game.currentPlayer ? "ok" : "warn",
+      tone: selection.playerId === getEffectiveActor(game) ? "ok" : "warn",
     });
     return items;
   }
@@ -5441,13 +6682,13 @@ function operationReasonFromPendingDrop(game: GameState, action: PendingDropActi
   };
 }
 
-function operationReasonsForHand(game: GameState, instanceId: string): OperationReasonItem[] {
+function operationReasonsForHand(game: GameState, instanceId: string, actor: PlayerId): OperationReasonItem[] {
   const card = getHandCard(game, instanceId);
   if (!card) {
     return [{ icon: "⚠️", label: "手札なし", text: "選択した手札が見つかりません。", tone: "danger" }];
   }
   const def = getCardDef(card.cardId);
-  if (game.currentPlayer !== "player") {
+  if (actor !== "player") {
     return [{ icon: "🧠", label: "CPUターン中", text: "手札は確認できますが、プレイヤー操作はできません。", tone: "warn" }];
   }
   if (def.type === "monster") {
@@ -5470,8 +6711,9 @@ function operationReasonsForHand(game: GameState, instanceId: string): Operation
     }];
   }
   const targets = getMagicTargets(game, instanceId);
-  const costReason = def.cost > game.players.player.stones
-    ? `Stone不足: 必要${def.cost} / 所持${game.players.player.stones}。`
+  const stones = game.players[actor].stones;
+  const costReason = def.cost > stones
+    ? `Stone不足: 必要${def.cost} / 所持${stones}。`
     : `Stone ${def.cost}を消費します。`;
   return [{
     icon: "✨",
@@ -5479,7 +6721,7 @@ function operationReasonsForHand(game: GameState, instanceId: string): Operation
     text: targets.length > 0
       ? `${costReason} 対象候補は${targets.length}件です。`
       : `${costReason} 現在は対象候補がありません。`,
-    tone: targets.length > 0 && def.cost <= game.players.player.stones ? "ok" : "warn",
+    tone: targets.length > 0 && def.cost <= stones ? "ok" : "warn",
   }];
 }
 
@@ -5597,31 +6839,40 @@ function maskPrivateActionPreviews(
   previews: ActionPreview[],
   game: GameState,
   workspaceMode: BattleWorkspaceMode,
+  viewerSeat?: PlayerId | null,
 ): ActionPreview[] {
-  if (workspaceMode !== "play") {
+  if (workspaceMode !== "play" && viewerSeat === undefined) {
     return previews;
   }
+  const privacyMode = viewerSeat !== undefined ? "play" : workspaceMode;
   const hiddenTargetKeys = new Set(BOARD_SLOT_KEYS.flatMap((slotKey) => {
     const monster = game.slots[slotKey].monster;
-    return monster?.owner === "cpu" && monster.status === "prepared"
+    const hidden = viewerSeat !== undefined
+      ? viewerSeat === null || monster?.owner !== viewerSeat
+      : monster?.owner === "cpu";
+    return monster?.status === "prepared" && hidden
       ? [targetToKey({ kind: "monster", slotKey })]
       : [];
   }));
   const privateNames = BOARD_SLOT_KEYS.flatMap((slotKey) => {
     const monster = game.slots[slotKey].monster;
-    if (monster?.owner !== "cpu" || monster.status !== "prepared") {
+    const hidden = viewerSeat !== undefined
+      ? viewerSeat === null || monster?.owner !== viewerSeat
+      : monster?.owner === "cpu";
+    if (!hidden || !monster || monster.status !== "prepared") {
       return [];
     }
     return [monster.cardId, getMonsterDisplayName(monster)];
   });
-  const previewsWithHiddenResults = hidePrivateTargetPreviewDetails(previews, hiddenTargetKeys, workspaceMode);
+  const previewsWithHiddenResults = hidePrivateTargetPreviewDetails(previews, hiddenTargetKeys, privacyMode);
+  const hiddenCardLabel = viewerSeat === null ? "裏向きカード" : "相手の裏向きカード";
   const redact = (value: string | undefined) => {
     if (value === undefined) {
       return undefined;
     }
     return privateNames.reduce(
-      (safeValue, privateName) => safeValue.replaceAll(privateName, "相手の裏向きカード"),
-      displayLogEntry(value, workspaceMode),
+      (safeValue, privateName) => safeValue.replaceAll(privateName, hiddenCardLabel),
+      displaySessionLogEntry(value, workspaceMode, viewerSeat),
     );
   };
   return previewsWithHiddenResults.map((preview) => ({
@@ -6579,8 +7830,9 @@ function HandCardPanel({ card, game, disabled, onDiscard }: HandCardPanelProps) 
 
 interface CardZonePanelProps {
   game: GameState;
-  view: Exclude<ZoneView, { kind: "deckSetup" } | { kind: "aiLab" } | { kind: "battleHistory" } | { kind: "battleJournal" }>;
+  view: Exclude<ZoneView, { kind: "deckSetup" } | { kind: "aiLab" } | { kind: "battleHistory" } | { kind: "battleJournal" } | { kind: "coach" }>;
   workspaceMode: BattleWorkspaceMode;
+  viewerSeat?: PlayerId | null;
   onClose: () => void;
 }
 
@@ -7635,12 +8887,12 @@ function DeckCardList({
   );
 }
 
-function CardZonePanel({ game, view, workspaceMode, onClose }: CardZonePanelProps) {
+function CardZonePanel({ game, view, workspaceMode, viewerSeat, onClose }: CardZonePanelProps) {
   if (view.kind === "catalog") {
     return <CardCatalogPanel game={game} onClose={onClose} />;
   }
   if (view.kind === "effects") {
-    return <EffectHistoryPanel game={game} workspaceMode={workspaceMode} onClose={onClose} />;
+    return <EffectHistoryPanel game={game} workspaceMode={workspaceMode} viewerSeat={viewerSeat} onClose={onClose} />;
   }
   if (view.kind === "cpuHistory") {
     return <CpuDecisionHistoryPanel game={game} onClose={onClose} />;
@@ -7648,8 +8900,8 @@ function CardZonePanel({ game, view, workspaceMode, onClose }: CardZonePanelProp
 
   const cards = game.players[view.playerId][view.zone];
   const title = `${playerLabel(view.playerId)} ${zoneLabel(view.zone)}`;
-  const hideCardFaces = view.zone === "hand" && !canRevealHand(view.playerId, workspaceMode);
-  const hideDeckContents = view.zone === "deck" && !canRevealRemainingDeck(workspaceMode);
+  const hideCardFaces = view.zone === "hand" && !canRevealHand(view.playerId, workspaceMode, viewerSeat);
+  const hideDeckContents = view.zone === "deck" && !canRevealRemainingDeck(workspaceMode, viewerSeat);
   const helpText = hideDeckContents
     ? "対局中は自分/相手の残り山札の内容を非公開にし、枚数のみ表示します。"
     : hideCardFaces
@@ -7778,7 +9030,7 @@ function splitOnce(value: string, separator: string): [string, string | undefine
   return [value.slice(0, index), value.slice(index + separator.length)];
 }
 
-function EffectHistoryPanel({ game, workspaceMode, onClose }: { game: GameState; workspaceMode: BattleWorkspaceMode; onClose: () => void }) {
+function EffectHistoryPanel({ game, workspaceMode, viewerSeat, onClose }: { game: GameState; workspaceMode: BattleWorkspaceMode; viewerSeat?: PlayerId | null; onClose: () => void }) {
   const effectEntries = game.log
     .map((entry, index) => ({ entry, index }))
     .filter(({ entry }) => logCategoryLabel(entry) !== "通常");
@@ -7802,7 +9054,7 @@ function EffectHistoryPanel({ game, workspaceMode, onClose }: { game: GameState;
             <li className={`effect-history-row ${logTone(entry)}`} key={`${entry}_${index}`}>
               <span className="zone-card-index">{index + 1}</span>
               <span className="effect-history-kind"><Icon icon={logIcon(entry)} /> {logCategoryLabel(entry)}</span>
-              <span className="effect-history-text">{displayLogEntry(entry, workspaceMode)}</span>
+              <span className="effect-history-text">{displaySessionLogEntry(entry, workspaceMode, viewerSeat)}</span>
             </li>
           ))}
         </ol>
@@ -8116,6 +9368,7 @@ interface BoardSlotProps {
   slotKey: SlotKey;
   game: GameState;
   workspaceMode: BattleWorkspaceMode;
+  viewerSeat?: PlayerId | null;
   selected: boolean;
   targetable: boolean;
   targetRole?: TargetRole;
@@ -8182,7 +9435,7 @@ function BoardActionOverlay({ action, effectId }: { action: BoardActionEffect; e
   );
 }
 
-function ResolutionFeed({ effect, workspaceMode }: { effect: VisualEffect; workspaceMode: BattleWorkspaceMode }) {
+function ResolutionFeed({ effect, workspaceMode, viewerSeat }: { effect: VisualEffect; workspaceMode: BattleWorkspaceMode; viewerSeat?: PlayerId | null }) {
   if (effect.logs.length === 0) {
     return null;
   }
@@ -8191,7 +9444,7 @@ function ResolutionFeed({ effect, workspaceMode }: { effect: VisualEffect; works
     <div className="resolution-feed" aria-live="polite">
       {effect.logs.map((entry, index) => (
         <span className={`resolution-feed-item ${logTone(entry)}`} key={`${effect.id}_${index}_${entry}`}>
-          <Icon icon={logIcon(entry)} /> {displayLogEntry(entry, workspaceMode)}
+          <Icon icon={logIcon(entry)} /> {displaySessionLogEntry(entry, workspaceMode, viewerSeat)}
         </span>
       ))}
     </div>
@@ -8202,6 +9455,7 @@ function BoardSlot({
   slotKey,
   game,
   workspaceMode,
+  viewerSeat,
   selected,
   targetable,
   targetRole,
@@ -8221,7 +9475,7 @@ function BoardSlot({
   const slot = game.slots[slotKey];
   const monster = slot.monster;
   const prepared = monster?.status === "prepared";
-  const hidePreparedInfo = Boolean(monster && prepared && !canRevealPreparedCard(monster.owner, workspaceMode));
+  const hidePreparedInfo = Boolean(monster && prepared && !canRevealPreparedCard(monster.owner, workspaceMode, viewerSeat));
   const label = slotLabel(slotKey);
   const visibleMonster = monster && !hidePreparedInfo ? monster : undefined;
   const revealedPrepared = Boolean(visibleMonster && prepared);
@@ -8400,6 +9654,7 @@ function CardBackArt() {
 interface MonsterCommandsProps {
   game: GameState;
   workspaceMode: BattleWorkspaceMode;
+  viewerSeat?: PlayerId | null;
   pendingDropAction?: PendingDropAction;
   slotKey: SlotKey;
   disabled: boolean;
@@ -8427,14 +9682,20 @@ interface MasterCommandsProps {
   game: GameState;
   playerId: PlayerId;
   disabled: boolean;
+  experimentalContext?: ExperimentContextV1;
   onMasterAction: (actionId: MasterActionId, targets: Target[]) => void;
+  onExperimentalAction: (command: ExperimentalMasterActionCommand) => void;
   onHpDraw: () => void;
 }
 
-function MasterCommands({ game, playerId, disabled, onMasterAction, onHpDraw }: MasterCommandsProps) {
+function MasterCommands({ game, playerId, disabled, experimentalContext, onMasterAction, onExperimentalAction, onHpDraw }: MasterCommandsProps) {
   const player = game.players[playerId];
-  const isCurrentMaster = playerId === game.currentPlayer;
-  const actionIds = getMasterActionIdsForPlayer(game, playerId);
+  const isCurrentMaster = playerId === getEffectiveActor(game);
+  const nativeActionIds = getExperimentalNativeMasterActionIds(game, experimentalContext, playerId);
+  const actionIds = getMasterActionIdsForPlayer(game, playerId).filter((actionId) => !nativeActionIds || nativeActionIds.includes(actionId));
+  const experimentalActions = isCurrentMaster
+    ? listExperimentalMasterActionCommands(game, experimentalContext)
+    : [];
   const masterActions: UnitActionItem[] = actionIds.map((actionId) => {
     const action = getMasterActionDef(actionId);
     const targets = isCurrentMaster ? getMasterActionTargets(game, actionId) : [];
@@ -8453,6 +9714,15 @@ function MasterCommands({ game, playerId, disabled, onMasterAction, onHpDraw }: 
   const hpDrawDisabledReason = getMasterHpDrawDisabledReason(game, playerId, disabled);
   const masterActionItems: UnitActionItem[] = [
     ...masterActions,
+    ...experimentalActions.map((command, index): UnitActionItem => ({
+      key: `experimental_${command.master}_${command.actionId}_${index}`,
+      icon: "🧪",
+      title: `${experimentalMasterCandidateName(command.master)} · ${command.actionId}`,
+      meta: "実験用に借用中のマスター能力",
+      disabledReason: disabled ? "現在は操作できません" : undefined,
+      readyLabel: "実験能力を使用",
+      onClick: () => onExperimentalAction(command),
+    })),
     {
       key: "hp_draw",
       icon: "🩸",
@@ -8513,7 +9783,7 @@ function getMasterActionDisabledReason(
   controlsDisabled: boolean,
 ): string | undefined {
   const player = game.players[playerId];
-  if (playerId !== game.currentPlayer) {
+  if (playerId !== getEffectiveActor(game)) {
     return `${playerLabel(playerId)}のターンではありません`;
   }
   if (game.winner) {
@@ -8540,7 +9810,7 @@ function getMasterActionDisabledReason(
 
 function getMasterHpDrawDisabledReason(game: GameState, playerId: PlayerId, controlsDisabled: boolean): string | undefined {
   const player = game.players[playerId];
-  if (playerId !== game.currentPlayer) {
+  if (playerId !== getEffectiveActor(game)) {
     return `${playerLabel(playerId)}のターンではありません`;
   }
   if (game.winner) {
@@ -8564,6 +9834,7 @@ function getMasterHpDrawDisabledReason(game: GameState, playerId: PlayerId, cont
 function MonsterCommands({
   game,
   workspaceMode,
+  viewerSeat,
   pendingDropAction,
   slotKey,
   disabled,
@@ -8577,7 +9848,7 @@ function MonsterCommands({
   if (!monster) {
     return null;
   }
-  const hidePreparedInfo = monster.status === "prepared" && !canRevealPreparedCard(monster.owner, workspaceMode);
+  const hidePreparedInfo = monster.status === "prepared" && !canRevealPreparedCard(monster.owner, workspaceMode, viewerSeat);
   const detailStatusBadges = hidePreparedInfo
     ? []
     : [
@@ -8716,7 +9987,7 @@ function getCommandDisabledReason(
     return actionReason;
   }
 
-  const player = game.players[game.currentPlayer];
+  const player = game.players[getEffectiveActor(game)];
   const cost = command.stoneCost ?? 0;
   if (cost > player.stones) {
     return `Stone不足: 必要${cost} / 所持${player.stones}`;
@@ -8774,7 +10045,8 @@ function getMonsterActionDisabledReason(game: GameState, slotKey: SlotKey, contr
   if (game.pendingLevelUp) {
     return "レベルアップ選択中";
   }
-  if (game.currentPlayer !== "player") {
+  const actor = getEffectiveActor(game);
+  if (actor !== "player" && actor !== "cpu") {
     return "CPUターン中";
   }
   if (controlsDisabled) {
@@ -8785,7 +10057,7 @@ function getMonsterActionDisabledReason(game: GameState, slotKey: SlotKey, contr
   if (!monster) {
     return "カードがありません";
   }
-  if (monster.owner !== game.currentPlayer) {
+  if (monster.owner !== actor) {
     return "相手のカードです";
   }
   if (monster.status !== "active") {
@@ -9129,12 +10401,16 @@ function targetRoleLabel(role: TargetRole): string {
   return "空き枠";
 }
 
+function seatHumanLabel(playerId: PlayerId): string {
+  return playerId === "player" ? "席1（人間）" : "席2（人間）";
+}
+
 function isZoneView(view: ZoneView | undefined, playerId: PlayerId, zone: Extract<ZoneView, { kind: "playerZone" }>["zone"]): boolean {
   return view?.kind === "playerZone" && view.playerId === playerId && view.zone === zone;
 }
 
 function isInfoWorkspaceView(view: ZoneView | undefined): boolean {
-  return view?.kind === "deckSetup" || view?.kind === "aiLab" || view?.kind === "catalog" || view?.kind === "battleJournal";
+  return view?.kind === "deckSetup" || view?.kind === "aiLab" || view?.kind === "catalog" || view?.kind === "battleJournal" || view?.kind === "coach";
 }
 
 function toggleZoneView(current: ZoneView | undefined, next: ZoneView): ZoneView | undefined {
@@ -9152,6 +10428,9 @@ function toggleZoneView(current: ZoneView | undefined, next: ZoneView): ZoneView
   }
   if (next.kind === "battleJournal") {
     return current?.kind === "battleJournal" ? undefined : next;
+  }
+  if (next.kind === "coach") {
+    return current?.kind === "coach" ? undefined : next;
   }
   if (next.kind === "aiLab") {
     return current?.kind === "aiLab" ? undefined : next;
@@ -9608,8 +10887,9 @@ function maskHiddenPreparedBoardAction(
   action: BoardActionEffect,
   game: GameState,
   workspaceMode: BattleWorkspaceMode,
+  viewerSeat?: PlayerId | null,
 ): BoardActionEffect {
-  if (workspaceMode !== "play") {
+  if (workspaceMode !== "play" && viewerSeat === undefined) {
     return action;
   }
   const anchors = [action.source, action.target, ...action.targets].filter(
@@ -9620,10 +10900,13 @@ function maskHiddenPreparedBoardAction(
       return false;
     }
     const monster = game.slots[anchor.slotKey].monster;
-    return monster?.owner === "cpu" && monster.status === "prepared";
+    const hidden = viewerSeat !== undefined
+      ? viewerSeat === null || monster?.owner !== viewerSeat
+      : monster?.owner === "cpu";
+    return Boolean(monster?.status === "prepared" && hidden);
   });
   return involvesHiddenPreparedCard
-    ? { ...action, label: "相手の裏向きカードが関与する行動", detail: undefined }
+    ? { ...action, label: viewerSeat === null ? "裏向きカードが関与する行動" : "相手の裏向きカードが関与する行動", detail: undefined }
     : action;
 }
 
@@ -10117,7 +11400,7 @@ interface CardIconProps {
 function CardIcon({ cardId }: CardIconProps) {
   const iconPath = getCardIconPath(cardId);
   if (iconPath) {
-    return <img className="card-image-icon" src={iconPath} alt="" aria-hidden="true" />;
+    return <img className="card-image-icon" src={iconPath} alt="" aria-hidden="true" loading="lazy" decoding="async" />;
   }
   return <Icon icon={cardIcon(cardId)} />;
 }

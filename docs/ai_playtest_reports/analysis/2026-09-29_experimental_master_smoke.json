@@ -1,0 +1,491 @@
+{
+  "generatedAt": "2026-09-28T18:58:56.933Z",
+  "configuration": {
+    "seedStart": 9300,
+    "count": 2,
+    "seedEnd": 9301,
+    "maxSteps": 400,
+    "maxTurns": 100,
+    "overlays": [
+      "decoy",
+      "timing"
+    ],
+    "matchups": [
+      "white-baseline",
+      "black-pressure"
+    ],
+    "candidateProfile": "white",
+    "whiteBaselineProfile": "white",
+    "blackOpponentProfile": "strong",
+    "whiteDeck": "master-lab-white-1377-death-sheep3",
+    "blackDeck": "black-pressure",
+    "games": 16
+  },
+  "summary": [
+    {
+      "matchup": "white-baseline",
+      "games": 8,
+      "completed": 8,
+      "limited": 0,
+      "failed": 0,
+      "warnings": 0,
+      "overlaySeatWins": 3,
+      "winsByOverlay": {
+        "decoy": 0,
+        "timing": 3
+      },
+      "bySeat": {
+        "player": {
+          "games": 4,
+          "overlayWins": 2
+        },
+        "cpu": {
+          "games": 4,
+          "overlayWins": 1
+        }
+      },
+      "averageElapsedMs": 57140,
+      "experimentalActionCount": 153,
+      "experimentalActionCounts": {
+        "decoy:provoke": 4,
+        "decoy:scapegoat": 81,
+        "timing:quick_call": 45,
+        "timing:shift": 23
+      }
+    },
+    {
+      "matchup": "black-pressure",
+      "games": 8,
+      "completed": 8,
+      "limited": 0,
+      "failed": 0,
+      "warnings": 0,
+      "overlaySeatWins": 2,
+      "winsByOverlay": {
+        "decoy": 1,
+        "timing": 1
+      },
+      "bySeat": {
+        "player": {
+          "games": 4,
+          "overlayWins": 0
+        },
+        "cpu": {
+          "games": 4,
+          "overlayWins": 2
+        }
+      },
+      "averageElapsedMs": 11319,
+      "experimentalActionCount": 113,
+      "experimentalActionCounts": {
+        "decoy:provoke": 4,
+        "decoy:scapegoat": 79,
+        "timing:quick_call": 22,
+        "timing:shift": 8
+      }
+    }
+  ],
+  "limitations": [
+    "16局の機能スモークであり、勝敗や勝率は実験能力の強さ/バランスを証明しない。",
+    "各seedで席を反転しているが、乱数系列・deck draw順・agentの探索は完全対称ではない。",
+    "warningは対局内の両AI診断合計。候補overlay固有の誤判断件数ではない。elapsedMsはマシン負荷依存。",
+    "experimentalActionCountsはjournal対象対局内の両seatが実際に選んだ能力の合計。Exchangeで相手seatが借用能力を使う場合も含み、候補seatだけの使用回数ではない。",
+    "overlayはversioned experimental contextを用い、標準MasterId white/blackは維持。未定義sacrificeは含めない。"
+  ],
+  "games": [
+    {
+      "matchup": "white-baseline",
+      "overlay": "decoy",
+      "overlaySeat": "player",
+      "seed": 9300,
+      "playerMaster": "white",
+      "cpuMaster": "white",
+      "playerProfile": "white",
+      "cpuProfile": "white",
+      "playerDeck": "master-lab-white-1377-death-sheep3",
+      "cpuDeck": "master-lab-white-1377-death-sheep3",
+      "winner": "cpu",
+      "winnerProfile": "white",
+      "status": "completed",
+      "steps": 285,
+      "turns": 27,
+      "elapsedMs": 90777,
+      "partialLevelUpResolutionSteps": 0,
+      "experimentalActionCount": 28,
+      "experimentalActionCounts": {
+        "decoy:scapegoat": 25,
+        "decoy:provoke": 3
+      },
+      "issues": []
+    },
+    {
+      "matchup": "white-baseline",
+      "overlay": "decoy",
+      "overlaySeat": "player",
+      "seed": 9301,
+      "playerMaster": "white",
+      "cpuMaster": "white",
+      "playerProfile": "white",
+      "cpuProfile": "white",
+      "playerDeck": "master-lab-white-1377-death-sheep3",
+      "cpuDeck": "master-lab-white-1377-death-sheep3",
+      "winner": "cpu",
+      "winnerProfile": "white",
+      "status": "completed",
+      "steps": 143,
+      "turns": 14,
+      "elapsedMs": 34149,
+      "partialLevelUpResolutionSteps": 0,
+      "experimentalActionCount": 19,
+      "experimentalActionCounts": {
+        "decoy:scapegoat": 19
+      },
+      "issues": []
+    },
+    {
+      "matchup": "white-baseline",
+      "overlay": "decoy",
+      "overlaySeat": "cpu",
+      "seed": 9300,
+      "playerMaster": "white",
+      "cpuMaster": "white",
+      "playerProfile": "white",
+      "cpuProfile": "white",
+      "playerDeck": "master-lab-white-1377-death-sheep3",
+      "cpuDeck": "master-lab-white-1377-death-sheep3",
+      "winner": "player",
+      "winnerProfile": "white",
+      "status": "completed",
+      "steps": 198,
+      "turns": 19,
+      "elapsedMs": 53850,
+      "partialLevelUpResolutionSteps": 0,
+      "experimentalActionCount": 21,
+      "experimentalActionCounts": {
+        "decoy:scapegoat": 20,
+        "decoy:provoke": 1
+      },
+      "issues": []
+    },
+    {
+      "matchup": "white-baseline",
+      "overlay": "decoy",
+      "overlaySeat": "cpu",
+      "seed": 9301,
+      "playerMaster": "white",
+      "cpuMaster": "white",
+      "playerProfile": "white",
+      "cpuProfile": "white",
+      "playerDeck": "master-lab-white-1377-death-sheep3",
+      "cpuDeck": "master-lab-white-1377-death-sheep3",
+      "winner": "player",
+      "winnerProfile": "white",
+      "status": "completed",
+      "steps": 183,
+      "turns": 17,
+      "elapsedMs": 48291,
+      "partialLevelUpResolutionSteps": 0,
+      "experimentalActionCount": 17,
+      "experimentalActionCounts": {
+        "decoy:scapegoat": 17
+      },
+      "issues": []
+    },
+    {
+      "matchup": "white-baseline",
+      "overlay": "timing",
+      "overlaySeat": "player",
+      "seed": 9300,
+      "playerMaster": "white",
+      "cpuMaster": "white",
+      "playerProfile": "white",
+      "cpuProfile": "white",
+      "playerDeck": "master-lab-white-1377-death-sheep3",
+      "cpuDeck": "master-lab-white-1377-death-sheep3",
+      "winner": "player",
+      "winnerProfile": "white",
+      "status": "completed",
+      "steps": 216,
+      "turns": 26,
+      "elapsedMs": 47945,
+      "partialLevelUpResolutionSteps": 0,
+      "experimentalActionCount": 14,
+      "experimentalActionCounts": {
+        "timing:quick_call": 9,
+        "timing:shift": 5
+      },
+      "issues": []
+    },
+    {
+      "matchup": "white-baseline",
+      "overlay": "timing",
+      "overlaySeat": "player",
+      "seed": 9301,
+      "playerMaster": "white",
+      "cpuMaster": "white",
+      "playerProfile": "white",
+      "cpuProfile": "white",
+      "playerDeck": "master-lab-white-1377-death-sheep3",
+      "cpuDeck": "master-lab-white-1377-death-sheep3",
+      "winner": "player",
+      "winnerProfile": "white",
+      "status": "completed",
+      "steps": 192,
+      "turns": 23,
+      "elapsedMs": 49029,
+      "partialLevelUpResolutionSteps": 0,
+      "experimentalActionCount": 11,
+      "experimentalActionCounts": {
+        "timing:quick_call": 8,
+        "timing:shift": 3
+      },
+      "issues": []
+    },
+    {
+      "matchup": "white-baseline",
+      "overlay": "timing",
+      "overlaySeat": "cpu",
+      "seed": 9300,
+      "playerMaster": "white",
+      "cpuMaster": "white",
+      "playerProfile": "white",
+      "cpuProfile": "white",
+      "playerDeck": "master-lab-white-1377-death-sheep3",
+      "cpuDeck": "master-lab-white-1377-death-sheep3",
+      "winner": "cpu",
+      "winnerProfile": "white",
+      "status": "completed",
+      "steps": 300,
+      "turns": 30,
+      "elapsedMs": 78206,
+      "partialLevelUpResolutionSteps": 0,
+      "experimentalActionCount": 15,
+      "experimentalActionCounts": {
+        "timing:quick_call": 13,
+        "timing:shift": 2
+      },
+      "issues": []
+    },
+    {
+      "matchup": "white-baseline",
+      "overlay": "timing",
+      "overlaySeat": "cpu",
+      "seed": 9301,
+      "playerMaster": "white",
+      "cpuMaster": "white",
+      "playerProfile": "white",
+      "cpuProfile": "white",
+      "playerDeck": "master-lab-white-1377-death-sheep3",
+      "cpuDeck": "master-lab-white-1377-death-sheep3",
+      "winner": "player",
+      "winnerProfile": "white",
+      "status": "completed",
+      "steps": 294,
+      "turns": 29,
+      "elapsedMs": 54874,
+      "partialLevelUpResolutionSteps": 0,
+      "experimentalActionCount": 28,
+      "experimentalActionCounts": {
+        "timing:quick_call": 15,
+        "timing:shift": 13
+      },
+      "issues": []
+    },
+    {
+      "matchup": "black-pressure",
+      "overlay": "decoy",
+      "overlaySeat": "player",
+      "seed": 9300,
+      "playerMaster": "white",
+      "cpuMaster": "black",
+      "playerProfile": "white",
+      "cpuProfile": "strong",
+      "playerDeck": "master-lab-white-1377-death-sheep3",
+      "cpuDeck": "black-pressure",
+      "winner": "cpu",
+      "winnerProfile": "strong",
+      "status": "completed",
+      "steps": 192,
+      "turns": 20,
+      "elapsedMs": 11789,
+      "partialLevelUpResolutionSteps": 0,
+      "experimentalActionCount": 24,
+      "experimentalActionCounts": {
+        "decoy:scapegoat": 22,
+        "decoy:provoke": 2
+      },
+      "issues": []
+    },
+    {
+      "matchup": "black-pressure",
+      "overlay": "decoy",
+      "overlaySeat": "player",
+      "seed": 9301,
+      "playerMaster": "white",
+      "cpuMaster": "black",
+      "playerProfile": "white",
+      "cpuProfile": "strong",
+      "playerDeck": "master-lab-white-1377-death-sheep3",
+      "cpuDeck": "black-pressure",
+      "winner": "cpu",
+      "winnerProfile": "strong",
+      "status": "completed",
+      "steps": 153,
+      "turns": 16,
+      "elapsedMs": 16898,
+      "partialLevelUpResolutionSteps": 0,
+      "experimentalActionCount": 20,
+      "experimentalActionCounts": {
+        "decoy:scapegoat": 20
+      },
+      "issues": []
+    },
+    {
+      "matchup": "black-pressure",
+      "overlay": "decoy",
+      "overlaySeat": "cpu",
+      "seed": 9300,
+      "playerMaster": "black",
+      "cpuMaster": "white",
+      "playerProfile": "strong",
+      "cpuProfile": "white",
+      "playerDeck": "black-pressure",
+      "cpuDeck": "master-lab-white-1377-death-sheep3",
+      "winner": "player",
+      "winnerProfile": "strong",
+      "status": "completed",
+      "steps": 198,
+      "turns": 21,
+      "elapsedMs": 13332,
+      "partialLevelUpResolutionSteps": 0,
+      "experimentalActionCount": 24,
+      "experimentalActionCounts": {
+        "decoy:scapegoat": 22,
+        "decoy:provoke": 2
+      },
+      "issues": []
+    },
+    {
+      "matchup": "black-pressure",
+      "overlay": "decoy",
+      "overlaySeat": "cpu",
+      "seed": 9301,
+      "playerMaster": "black",
+      "cpuMaster": "white",
+      "playerProfile": "strong",
+      "cpuProfile": "white",
+      "playerDeck": "black-pressure",
+      "cpuDeck": "master-lab-white-1377-death-sheep3",
+      "winner": "cpu",
+      "winnerProfile": "white",
+      "status": "completed",
+      "steps": 174,
+      "turns": 19,
+      "elapsedMs": 13264,
+      "partialLevelUpResolutionSteps": 0,
+      "experimentalActionCount": 15,
+      "experimentalActionCounts": {
+        "decoy:scapegoat": 15
+      },
+      "issues": []
+    },
+    {
+      "matchup": "black-pressure",
+      "overlay": "timing",
+      "overlaySeat": "player",
+      "seed": 9300,
+      "playerMaster": "white",
+      "cpuMaster": "black",
+      "playerProfile": "white",
+      "cpuProfile": "strong",
+      "playerDeck": "master-lab-white-1377-death-sheep3",
+      "cpuDeck": "black-pressure",
+      "winner": "cpu",
+      "winnerProfile": "strong",
+      "status": "completed",
+      "steps": 197,
+      "turns": 21,
+      "elapsedMs": 11256,
+      "partialLevelUpResolutionSteps": 0,
+      "experimentalActionCount": 15,
+      "experimentalActionCounts": {
+        "timing:quick_call": 10,
+        "timing:shift": 5
+      },
+      "issues": []
+    },
+    {
+      "matchup": "black-pressure",
+      "overlay": "timing",
+      "overlaySeat": "player",
+      "seed": 9301,
+      "playerMaster": "white",
+      "cpuMaster": "black",
+      "playerProfile": "white",
+      "cpuProfile": "strong",
+      "playerDeck": "master-lab-white-1377-death-sheep3",
+      "cpuDeck": "black-pressure",
+      "winner": "cpu",
+      "winnerProfile": "strong",
+      "status": "completed",
+      "steps": 117,
+      "turns": 11,
+      "elapsedMs": 8786,
+      "partialLevelUpResolutionSteps": 0,
+      "experimentalActionCount": 8,
+      "experimentalActionCounts": {
+        "timing:quick_call": 5,
+        "timing:shift": 3
+      },
+      "issues": []
+    },
+    {
+      "matchup": "black-pressure",
+      "overlay": "timing",
+      "overlaySeat": "cpu",
+      "seed": 9300,
+      "playerMaster": "black",
+      "cpuMaster": "white",
+      "playerProfile": "strong",
+      "cpuProfile": "white",
+      "playerDeck": "black-pressure",
+      "cpuDeck": "master-lab-white-1377-death-sheep3",
+      "winner": "player",
+      "winnerProfile": "strong",
+      "status": "completed",
+      "steps": 125,
+      "turns": 11,
+      "elapsedMs": 8574,
+      "partialLevelUpResolutionSteps": 0,
+      "experimentalActionCount": 5,
+      "experimentalActionCounts": {
+        "timing:quick_call": 5
+      },
+      "issues": []
+    },
+    {
+      "matchup": "black-pressure",
+      "overlay": "timing",
+      "overlaySeat": "cpu",
+      "seed": 9301,
+      "playerMaster": "black",
+      "cpuMaster": "white",
+      "playerProfile": "strong",
+      "cpuProfile": "white",
+      "playerDeck": "black-pressure",
+      "cpuDeck": "master-lab-white-1377-death-sheep3",
+      "winner": "cpu",
+      "winnerProfile": "white",
+      "status": "completed",
+      "steps": 102,
+      "turns": 10,
+      "elapsedMs": 6651,
+      "partialLevelUpResolutionSteps": 0,
+      "experimentalActionCount": 2,
+      "experimentalActionCounts": {
+        "timing:quick_call": 2
+      },
+      "issues": []
+    }
+  ]
+}
