@@ -15,6 +15,7 @@ export interface TurnPlannerV2Dependencies {
   decisionKey: (decision: CpuDecision) => string;
   prepareOpponentResponseStates?: (state: GameState, perspective: PlayerId) => GameState[];
   opponentKnowledgeLabel?: string;
+  cacheNamespace?: string;
 }
 
 export interface TurnPlannerV2Options {
@@ -46,6 +47,8 @@ interface SearchNode {
   state: GameState;
   decisions: CpuDecision[];
   orderingScore: number;
+  actionCount: number;
+  transitionCount: number;
 }
 
 interface CachedPlanStep {
@@ -72,14 +75,18 @@ export function chooseTurnPlannerV2Decision(
   dependencies: TurnPlannerV2Dependencies,
   overrides: Partial<TurnPlannerV2Options> = {},
 ): CpuDecision | undefined {
-  const options = { ...DEFAULT_OPTIONS, ...overrides };
+  const options = normalizeOptions(overrides);
+  const scopedDependencies: TurnPlannerV2Dependencies = {
+    ...dependencies,
+    cacheNamespace: `${dependencies.cacheNamespace ?? "default"}:${JSON.stringify(options)}`,
+  };
   const perspective = state.currentPlayer;
-  const continued = continueCachedPlan(state, perspective, dependencies);
+  const continued = continueCachedPlan(state, perspective, scopedDependencies);
   if (continued) {
     return continued;
   }
 
-  const ownPlans = generateTurnPlans(state, perspective, dependencies, {
+  const ownPlans = generateTurnPlans(state, perspective, scopedDependencies, {
     maxActions: options.ownMaxActions,
     beamWidth: options.ownBeamWidth,
     branchWidth: options.ownBranchWidth,
@@ -88,9 +95,9 @@ export function chooseTurnPlannerV2Decision(
     return undefined;
   }
 
-  const responseRoots = selectResponseRoots(ownPlans, options.ownResponseRootWidth, dependencies);
+  const responseRoots = selectResponseRoots(ownPlans, options.ownResponseRootWidth, scopedDependencies);
   const scored = responseRoots.map((plan) =>
-    scoreOpponentResponse(plan, perspective, dependencies, options),
+    scoreOpponentResponse(plan, perspective, scopedDependencies, options),
   );
   scored.sort(compareScoredPlans);
   const selected = scored[0];
@@ -99,9 +106,23 @@ export function chooseTurnPlannerV2Decision(
   }
 
   const planId = `v2-${nextPlanId++}`;
-  const trace = createPlanTrace(planId, selected, scored, ownPlans.length, dependencies, 1);
-  cachePlanContinuation(state, selected, trace, dependencies);
+  const trace = createPlanTrace(planId, selected, scored, ownPlans.length, scopedDependencies, 1);
+  cachePlanContinuation(state, selected, trace, scopedDependencies);
   return withPlanTrace(selected.decisions[0], trace);
+}
+
+function normalizeOptions(overrides: Partial<TurnPlannerV2Options>): TurnPlannerV2Options {
+  const normalize = (value: number | undefined, fallback: number, maximum: number): number =>
+    Number.isFinite(value) ? Math.max(1, Math.min(maximum, Math.trunc(value!))) : fallback;
+  return {
+    ownMaxActions: normalize(overrides.ownMaxActions, DEFAULT_OPTIONS.ownMaxActions, 24),
+    ownBeamWidth: normalize(overrides.ownBeamWidth, DEFAULT_OPTIONS.ownBeamWidth, 64),
+    ownBranchWidth: normalize(overrides.ownBranchWidth, DEFAULT_OPTIONS.ownBranchWidth, 64),
+    ownResponseRootWidth: normalize(overrides.ownResponseRootWidth, DEFAULT_OPTIONS.ownResponseRootWidth, 32),
+    opponentMaxActions: normalize(overrides.opponentMaxActions, DEFAULT_OPTIONS.opponentMaxActions, 24),
+    opponentBeamWidth: normalize(overrides.opponentBeamWidth, DEFAULT_OPTIONS.opponentBeamWidth, 64),
+    opponentBranchWidth: normalize(overrides.opponentBranchWidth, DEFAULT_OPTIONS.opponentBranchWidth, 64),
+  };
 }
 
 export function clearTurnPlannerV2Cache(): void {
@@ -114,11 +135,12 @@ function continueCachedPlan(
   perspective: PlayerId,
   dependencies: TurnPlannerV2Dependencies,
 ): CpuDecision | undefined {
-  const cached = continuationPlanCache.get(dependencies.stateKey(state));
+  const key = continuationCacheKey(state, dependencies);
+  const cached = continuationPlanCache.get(key);
   if (!cached) {
     return undefined;
   }
-  continuationPlanCache.delete(dependencies.stateKey(state));
+  continuationPlanCache.delete(key);
   const candidate = dependencies
     .evaluateDecisions(state, perspective)
     .find((evaluation) => dependencies.decisionKey(evaluation.decision) === cached.decisionKey);
@@ -138,25 +160,48 @@ function generateTurnPlans(
     state: rootState,
     decisions: [],
     orderingScore: dependencies.evaluatePosition(rootState, actor),
+    actionCount: 0,
+    transitionCount: 0,
   }];
   const completed = new Map<string, TurnPlan>();
+  const transitionLimit = options.maxActions * 3 + 1;
 
-  for (let depth = 0; depth < options.maxActions && frontier.length > 0; depth += 1) {
+  for (let depth = 0; depth < transitionLimit && frontier.length > 0; depth += 1) {
     const expanded: SearchNode[] = [];
     for (const node of frontier) {
       if (isTurnHandoff(node.state, actor)) {
         addCompletedPlan(completed, node, actor, dependencies);
         continue;
       }
-      const evaluations = selectDiverseEvaluations(
-        dependencies.evaluateDecisions(node.state, actor),
-        options.branchWidth,
-      );
+      if (node.transitionCount >= transitionLimit) {
+        const forced = forceTurnHandoff(node, actor, dependencies);
+        if (forced) {
+          addCompletedPlan(completed, forced, actor, dependencies);
+        }
+        continue;
+      }
+      if (!node.state.pendingLevelUp && node.actionCount >= options.maxActions) {
+        const forced = forceTurnHandoff(node, actor, dependencies);
+        if (forced) {
+          addCompletedPlan(completed, forced, actor, dependencies);
+        }
+        continue;
+      }
+      const candidates = dependencies.evaluateDecisions(node.state, actor);
+      const evaluations = node.state.pendingLevelUp
+        ? candidates
+        : selectDiverseEvaluations(candidates, options.branchWidth);
       for (const evaluation of evaluations) {
         const decisions = [...node.decisions, evaluation.decision];
         const orderingScore =
           dependencies.evaluatePosition(evaluation.after, actor) + evaluation.totalScore * 0.12 - decisions.length * 0.25;
-        const next = { state: evaluation.after, decisions, orderingScore };
+        const next = {
+          state: evaluation.after,
+          decisions,
+          orderingScore,
+          actionCount: node.actionCount + (node.state.pendingLevelUp ? 0 : 1),
+          transitionCount: node.transitionCount + 1,
+        };
         if (isTurnHandoff(evaluation.after, actor)) {
           addCompletedPlan(completed, next, actor, dependencies);
         } else {
@@ -257,6 +302,9 @@ function forceTurnHandoff(
   if (isTurnHandoff(node.state, actor)) {
     return node;
   }
+  if (node.state.pendingLevelUp) {
+    return undefined;
+  }
   const endTurn = dependencies
     .evaluateDecisions(node.state, actor)
     .find((evaluation) => evaluation.decision.type === "end_turn");
@@ -267,6 +315,8 @@ function forceTurnHandoff(
     state: endTurn.after,
     decisions: [...node.decisions, endTurn.decision],
     orderingScore: dependencies.evaluatePosition(endTurn.after, actor),
+    actionCount: node.actionCount + 1,
+    transitionCount: node.transitionCount + 1,
   };
 }
 
@@ -276,7 +326,7 @@ function addCompletedPlan(
   actor: PlayerId,
   dependencies: TurnPlannerV2Dependencies,
 ): void {
-  if (node.decisions.length === 0) {
+  if (node.decisions.length === 0 || !isTurnHandoff(node.state, actor)) {
     return;
   }
   const handoffScore = dependencies.evaluatePosition(node.state, actor);
@@ -440,14 +490,17 @@ function cachePlanContinuation(
     const transition = dependencies
       .evaluateDecisions(current, current.currentPlayer)
       .find((evaluation) => dependencies.decisionKey(evaluation.decision) === dependencies.decisionKey(currentDecision));
-    if (!transition || transition.after.winner || transition.after.pendingLevelUp) {
+    if (!transition || transition.after.winner) {
       break;
     }
     current = transition.after;
+    if (current.pendingLevelUp && current.pendingLevelUp.playerId !== rootState.currentPlayer) {
+      break;
+    }
     if (current.currentPlayer !== rootState.currentPlayer) {
       break;
     }
-    continuationPlanCache.set(dependencies.stateKey(current), {
+    continuationPlanCache.set(continuationCacheKey(current, dependencies), {
       decisionKey: dependencies.decisionKey(nextDecision),
       trace: {
         ...rootTrace,
@@ -478,6 +531,10 @@ function withPlanTrace(decision: CpuDecision, turnPlan: CpuTurnPlanTrace): CpuDe
   } as CpuDecision;
 }
 
+function continuationCacheKey(state: GameState, dependencies: TurnPlannerV2Dependencies): string {
+  return `${dependencies.cacheNamespace ?? "default"}:${dependencies.stateKey(state)}`;
+}
+
 function decisionBucket(decision: CpuDecision): string {
   if (decision.type === "attack") {
     return decision.action.target.kind === "master" ? "attack_master" : "attack_monster";
@@ -495,5 +552,5 @@ function decisionBucket(decision: CpuDecision): string {
 }
 
 function isTurnHandoff(state: GameState, actor: PlayerId): boolean {
-  return !!state.winner || !!state.pendingLevelUp || state.currentPlayer !== actor;
+  return !!state.winner || (!state.pendingLevelUp && state.currentPlayer !== actor);
 }

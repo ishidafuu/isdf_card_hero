@@ -1,4 +1,4 @@
-import { defineConfig } from "vitest/config";
+import { configDefaults, defineConfig } from "vitest/config";
 
 export default defineConfig({
   test: {
@@ -7,5 +7,6 @@ export default defineConfig({
     maxWorkers: 1,
     fileParallelism: false,
     testTimeout: 120_000,
+    exclude: [...configDefaults.exclude, "tests/e2e/**"],
   },
 });

@@ -6,4 +6,8 @@
 
 差は応答後盤面ではなく、LvUP選択を含めると応答評価値が同値になった点にある。旧期待値の `cpu_front_right` と「盾対象応答評価」理由はこのfixtureでは成立しないため、回帰テストを `cpu_front_left` の合法選択と即時評価優先に更新した。タイブレーク実装自体は変更していない。
 
-ただし、この更新fixtureは応答評価による選択変更を検証しない。過去playtest traceには応答評価がfallbackを上回る実例が記録されているが、この確認では完全な入力状態を特定できず、同じ契約を検証する新しい再現fixtureは追加できていない。独立したresponse-reading回帰fixtureの追加は残件。
+旧fixtureのhidden prepared identityをnormal AIから外すため、旧盤面は明示 `omniscient` のexact-info fixtureに限定し、即時選択 `player_front_left` を検証する。
+
+通常profileの応答契約は別の合法snapshotで確認した。turn 12、白同士、こちらHP/stone 9/3、相手7/2。自軍前衛左ヤンバルLv2 HP3、右デスシープLv2 HP5、後衛左ボムゾウ準備中、後衛右ピグミィLv2 HP3 act1/2 focus、相手前衛ダインLv3 HP6 shield、ボムゾウ準備中、後衛左ピグミィLv1 HP3 act2/2。現fixtureではcandidateは盾対象を `player_front_right` から `player_front_left` へ変更し、理由「盾対象応答評価: 次自ターン167点、fallback比13点差」を記録する。clean cacheで同fixtureを評価し、tieSteps=0の比較と無関係なWhiteV2判断を挟んでwarm再評価しても理由文字列は一致した。過去のRoot診断にあった124点はこの現fixtureの反復値ではなく、異なる過去fixture条件での観測なので比較対象から分離する。これは旧fixtureのgolden追従ではなく、応答評価の有効な独立回帰。
+
+該当するsnapshotの構成/期待値と既定判断への復帰は `tests/game/cpuAi.test.ts` の「changes a public white-mirror shield target after reading the next-turn response」でassertしている。

@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { canRevealHand, canRevealPreparedCard, displayLogEntry, handCardCostLabel, hidePrivateTargetPreviewDetails, shouldHideHandList, sortDeckForDisplay } from "../src/ui/modes";
+import { canRevealHand, canRevealPreparedCard, canRevealRemainingDeck, displayLogEntry, handCardCostLabel, hidePrivateTargetPreviewDetails, shouldHideHandList, sortDeckForDisplay } from "../src/ui/modes";
 
 describe("mode-dependent hidden information", () => {
   it("hides the opponent hand and prepared card in Play, and reveals both in review modes", () => {
@@ -29,6 +29,12 @@ describe("mode-dependent hidden information", () => {
     expect(shouldHideHandList(true, false)).toBe(true);
     expect(shouldHideHandList(true, true)).toBe(false);
     expect(shouldHideHandList(false, false)).toBe(false);
+  });
+
+  it("never reveals a remaining deck in Play, while review modes may reveal it", () => {
+    expect(canRevealRemainingDeck("play")).toBe(false);
+    expect(canRevealRemainingDeck("spectate")).toBe(true);
+    expect(canRevealRemainingDeck("analyze")).toBe(true);
   });
 
   it("masks CPU decision reasons in Play without changing stored or review-mode logs", () => {

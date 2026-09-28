@@ -52,6 +52,7 @@ import type {
 } from "./cpuAiTypes";
 import { appendLog } from "./ruleEngine/log";
 import type {
+  AiDecisionSnapshot,
   CommandAction,
   CommandDef,
   CardInstance,
@@ -67,7 +68,12 @@ import type {
 } from "./types";
 import { drillBreakPartnerSlotKey, isPrimaryDrillBreakAttacker } from "./ruleEngine/drillBreak";
 import { chooseTurnPlannerV2Decision } from "./cpuAiV2/turnPlanner";
-import { determinizeOpponentPrivateZones } from "./cpuAiV2/opponentKnowledge";
+import {
+  createPlanningState,
+  createPublicInformationState,
+  determinizeOpponentPrivateZones,
+  publicInformationStateKey,
+} from "./cpuAiV2/opponentKnowledge";
 import { appendAiDecisionReviewEntry } from "./aiReviewTrace";
 import { HAND_LIMIT } from "./ruleEngine/constants";
 
@@ -540,21 +546,37 @@ export function runCpuDecisionStep(state: GameState, options: CpuAiOptions = {})
   return applyCpuDecision(state, decision);
 }
 
-export function chooseCpuDecision(state: GameState, options: CpuAiOptions = {}): CpuDecision {
+export function chooseCpuDecision(originalState: GameState, options: CpuAiOptions = {}): CpuDecision {
+  const perspective = originalState.currentPlayer;
+  const profile = resolveCpuAiProfile(originalState, options);
+  const state = profile === "omniscient"
+    ? createPlanningState(originalState)
+    : createPublicInformationState(originalState, perspective);
+  const decision = chooseCpuDecisionFromInformationState(state, options, profile);
+  return stripPlanningOnlyDecisionDetails(originalState, decision, profile);
+}
+
+function chooseCpuDecisionFromInformationState(
+  state: GameState,
+  options: CpuAiOptions,
+  profile: CpuAiProfile,
+): CpuDecision {
   const perspective = state.currentPlayer;
-  const profile = resolveCpuAiProfile(state, options);
   const config = resolveCpuAiConfigForProfile(state, options, profile);
-  if (state.pendingLevelUp?.playerId === perspective) {
-    return chooseCpuLevelUpDecision(state, config.weights);
-  }
   const masterDamagePlan = findMasterDamagePlan(state, perspective, config.weights);
-  if (shouldForceMasterDamagePlan(state, perspective, masterDamagePlan, config)) {
+  if (
+    shouldForceMasterDamagePlan(state, perspective, masterDamagePlan, config) &&
+    (profile !== "white_v2" || immediateMasterDamagePlanWinner(state, masterDamagePlan))
+  ) {
     return withMasterDamagePlanReason(state, masterDamagePlan.firstDecision, masterDamagePlan);
   }
   if (profile === "white_v2") {
-    const decision = chooseTurnPlannerV2Decision(state, {
+      const decision = chooseTurnPlannerV2Decision(state, {
       evaluateDecisions: (planningState, planningPerspective) => {
         const planningConfig = resolveCpuAiConfigForProfile(planningState, options, "white");
+        if (planningState.pendingLevelUp?.playerId === planningPerspective) {
+          return evaluatePendingLevelUpCandidates(planningState, planningPerspective, planningConfig);
+        }
         return evaluateImmediateCpuDecisions(planningState, planningPerspective, planningConfig);
       },
       evaluatePosition: (planningState, planningPerspective) => {
@@ -562,15 +584,19 @@ export function chooseCpuDecision(state: GameState, options: CpuAiOptions = {}):
         return evaluateState(planningState, planningPerspective, planningConfig.weights) +
           evaluateConfiguredFutureTacticalValue(planningState, planningPerspective, true, planningConfig);
       },
-      stateKey: terminalPlanStateKey,
+      stateKey: (planningState) => publicInformationStateKey(planningState, planningState.currentPlayer),
       decisionKey: cpuDecisionKey,
       prepareOpponentResponseStates: (responseState, responsePerspective) => [0, 1].map((sampleIndex) =>
-        determinizeOpponentPrivateZones(responseState, responsePerspective, sampleIndex)),
+        determinizeOpponentPrivateZones(responseState, opponentOf(responsePerspective), sampleIndex)),
       opponentKnowledgeLabel: "known-deck-determinization-x2",
+      cacheNamespace: cpuTurnPlannerCacheNamespace(profile, state, options),
     });
     if (decision) {
       return decision;
     }
+  }
+  if (state.pendingLevelUp?.playerId === perspective) {
+    return chooseCpuLevelUpDecision(state, config.weights);
   }
   let best: EvaluatedDecision | undefined;
   const fallbackConfig = profile === "white_planner" || profile === "white_rollout"
@@ -726,6 +752,39 @@ export function chooseCpuDecision(state: GameState, options: CpuAiOptions = {}):
   }
 
   return best ? attachDecisionTrace(best, evaluated) : createEndTurnDecision(state);
+}
+
+function immediateMasterDamagePlanWinner(
+  state: GameState,
+  plan: MasterDamagePlan,
+): plan is MasterDamagePlan & { firstDecision: CpuDecision } {
+  if (!plan.firstDecision || !plan.lethal) {
+    return false;
+  }
+  try {
+    return applyCpuDecisionForPlanning(state, plan.firstDecision).winner === state.currentPlayer;
+  } catch {
+    return false;
+  }
+}
+
+function stripPlanningOnlyDecisionDetails(
+  originalState: GameState,
+  decision: CpuDecision,
+  profile: CpuAiProfile,
+): CpuDecision {
+  if (profile === "omniscient" || decision.type !== "magic") {
+    return decision;
+  }
+  const handCard = originalState.players[originalState.currentPlayer].hand.find(
+    (card) => card.instanceId === decision.action.handInstanceId,
+  );
+  if (handCard?.cardId !== "card_115" || !decision.action.deckTopOrderInstanceIds) {
+    return decision;
+  }
+  const action = { ...decision.action };
+  delete action.deckTopOrderInstanceIds;
+  return { ...decision, action };
 }
 
 export function inspectCpuDecisionEvaluations(
@@ -7477,6 +7536,40 @@ function evaluateImmediateCpuDecisions(
   });
 }
 
+function evaluatePendingLevelUpCandidates(
+  state: GameState,
+  perspective: PlayerId,
+  config: CpuAiProfileConfig,
+): EvaluatedDecision[] {
+  const beforeScore = evaluateState(state, perspective, config.weights);
+  const beforeFutureScore = evaluateConfiguredFutureTacticalValue(state, perspective, false, config);
+  return listCpuLevelUpDecisions(state, config.weights).flatMap((decision, index) => {
+    const transition = evaluateDecisionTransition(state, decision, perspective, beforeScore, beforeFutureScore, false, config);
+    return transition ? [{ decision, totalScore: transition.totalScore, index, after: transition.after }] : [];
+  });
+}
+
+function cpuTurnPlannerCacheNamespace(
+  profile: CpuAiProfile,
+  state: GameState,
+  options: CpuAiOptions,
+): string {
+  const config = resolveCpuAiConfigForProfile(state, options, profile);
+  return JSON.stringify({
+    profile,
+    weights: config.weights,
+    tuning: config.tuning,
+    options: {
+      profile: options.profile ?? null,
+      profiles: options.profiles ?? null,
+      tuning: options.tuning ?? null,
+      tunings: options.tunings ?? null,
+      search: options.search ?? null,
+      searches: options.searches ?? null,
+    },
+  });
+}
+
 export function listCpuDecisions(
   state: GameState,
   weights: AiEvaluationWeights = DEFAULT_AI_EVALUATION_WEIGHTS,
@@ -7542,9 +7635,16 @@ function chooseCpuLevelUpDecision(
   state: GameState,
   weights: AiEvaluationWeights,
 ): Extract<CpuDecision, { type: "resolve_level_up" }> | Extract<CpuDecision, { type: "end_turn" }> {
+  return listCpuLevelUpDecisions(state, weights)[0] ?? createEndTurnDecision(state);
+}
+
+function listCpuLevelUpDecisions(
+  state: GameState,
+  weights: AiEvaluationWeights,
+): Extract<CpuDecision, { type: "resolve_level_up" }>[] {
   const pending = state.pendingLevelUp;
   if (!pending) {
-    return createEndTurnDecision(state);
+    return [];
   }
 
   const choices: Array<{ levels: number; superHandInstanceId?: string }> = [{ levels: 0 }];
@@ -7555,34 +7655,32 @@ function chooseCpuLevelUpDecision(
     choices.push({ levels: 1, superHandInstanceId: option.handInstanceId });
   }
 
-  const scored = choices.map((choice, index) => {
+  return choices.map((choice): Extract<CpuDecision, { type: "resolve_level_up" }> => {
     const after = resolveLevelUp(state, choice.levels, choice.superHandInstanceId);
-    const player = state.players[state.currentPlayer];
-    const afterPlayer = after.players[state.currentPlayer];
+    const playerId = pending.playerId;
+    const player = state.players[playerId];
+    const afterPlayer = after.players[playerId];
     const blocksThresholdMagic = !choice.superHandInstanceId && player.hand.some((card) => {
       const def = getCardDef(card.cardId);
       return def.type === "magic" &&
         def.cost > afterPlayer.stones + 3 &&
         def.cost <= player.stones + 3;
     });
-    const score = evaluateState(after, state.currentPlayer, weights) +
+    const score = evaluateState(after, playerId, weights) +
       (blocksThresholdMagic ? -110 : 0) +
       (after.pendingLevelUp ? -12 : 0);
-    return { choice, score, index };
-  });
-  scored.sort((a, b) => b.score - a.score || a.index - b.index);
-  const selected = scored[0] ?? { choice: { levels: 0 }, score: 0 };
-  const raises = selected.choice.superHandInstanceId
-    ? "スーパー化"
-    : selected.choice.levels > 0
-      ? `${selected.choice.levels}レベル上げる`
-      : "ストーンを温存して見送る";
-  return {
-    type: "resolve_level_up",
-    ...selected.choice,
-    reason: `撃破後の成長を比較し、${raises}`,
-    score: selected.score,
-  };
+    const raises = choice.superHandInstanceId
+      ? "スーパー化"
+      : choice.levels > 0
+        ? `${choice.levels}レベル上げる`
+        : "ストーンを温存して見送る";
+    return {
+      type: "resolve_level_up" as const,
+      ...choice,
+      reason: `撃破後の成長を比較し、${raises}`,
+      score,
+    };
+  }).sort((a, b) => b.score - a.score);
 }
 
 function listMasterDamagePlanDecisions(state: GameState, weights: AiEvaluationWeights): CpuDecision[] {
@@ -7840,34 +7938,74 @@ function summonWakeCreatesMasterPressure(state: GameState, handInstanceId: strin
 }
 
 export function applyCpuDecision(state: GameState, decision: CpuDecision): GameState {
-  const stateWithReason = appendDecisionReasonLog(state, decision);
-  if (decision.type === "resolve_level_up") {
-    return resolveLevelUp(stateWithReason, decision.levels, decision.superHandInstanceId);
+  return applyCpuDecisionInternal(state, decision, true);
+}
+
+function applyCpuDecisionInternal(state: GameState, decision: CpuDecision, resolveSortOrder: boolean): GameState {
+  const appliedDecision = resolveSortOrder ? resolveLiveSortCardAction(state, decision) : decision;
+  const stateWithReason = appendDecisionReasonLog(state, appliedDecision);
+  if (appliedDecision.type === "resolve_level_up") {
+    return resolveLevelUp(stateWithReason, appliedDecision.levels, appliedDecision.superHandInstanceId);
   }
-  if (decision.type === "master_hp_draw") {
+  if (appliedDecision.type === "master_hp_draw") {
     return useMasterHpDraw(stateWithReason);
   }
-  if (decision.type === "attack") {
-    return attackWithCommand(stateWithReason, decision.action);
+  if (appliedDecision.type === "attack") {
+    return attackWithCommand(stateWithReason, appliedDecision.action);
   }
-  if (decision.type === "master_action") {
-    return useMasterAction(stateWithReason, decision.actionId, decision.target);
+  if (appliedDecision.type === "master_action") {
+    return useMasterAction(stateWithReason, appliedDecision.actionId, appliedDecision.target);
   }
-  if (decision.type === "summon") {
-    return summonMonster(stateWithReason, decision.handInstanceId, decision.slotKey);
+  if (appliedDecision.type === "summon") {
+    return summonMonster(stateWithReason, appliedDecision.handInstanceId, appliedDecision.slotKey);
   }
-  if (decision.type === "focus") {
-    return focusMonster(stateWithReason, decision.slotKey);
+  if (appliedDecision.type === "focus") {
+    return focusMonster(stateWithReason, appliedDecision.slotKey);
   }
-  if (decision.type === "magic") {
-    return playMagic(stateWithReason, decision.action);
+  if (appliedDecision.type === "magic") {
+    return playMagic(stateWithReason, appliedDecision.action);
   }
-  if (decision.type === "move") {
-    return moveMonster(stateWithReason, decision.fromSlotKey, decision.toSlotKey);
+  if (appliedDecision.type === "move") {
+    return moveMonster(stateWithReason, appliedDecision.fromSlotKey, appliedDecision.toSlotKey);
   }
-  return decision.discardHandInstanceIds?.length
-    ? endTurnWithHandLimitDiscards(stateWithReason, decision.discardHandInstanceIds)
+  return appliedDecision.discardHandInstanceIds?.length
+    ? endTurnWithHandLimitDiscards(stateWithReason, appliedDecision.discardHandInstanceIds)
     : endTurn(stateWithReason);
+}
+
+/** Replays a previously stored CPU payload without asking the chooser to decide again. */
+export function applyStoredAiDecision(state: GameState, snapshot: AiDecisionSnapshot): GameState {
+  const decision: CpuDecision = {
+    ...snapshot,
+    ...(snapshot.trace ? { trace: snapshot.trace } : {}),
+  };
+  return applyCpuDecisionInternal(state, decision, false);
+}
+
+function resolveLiveSortCardAction(state: GameState, decision: CpuDecision): CpuDecision {
+  if (decision.type !== "magic" || decision.action.deckTopOrderInstanceIds) {
+    return decision;
+  }
+  const card = state.players[state.currentPlayer].hand.find(
+    (item) => item.instanceId === decision.action.handInstanceId,
+  );
+  if (card?.cardId !== "card_115") {
+    return decision;
+  }
+  const topCards = state.players[state.currentPlayer].deck.slice(0, 5);
+  if (topCards.length <= 1) {
+    return decision;
+  }
+  const ordered = [...topCards].sort((left, right) =>
+    handCardKeepValue(state, right) - handCardKeepValue(state, left),
+  );
+  return {
+    ...decision,
+    action: {
+      ...decision.action,
+      deckTopOrderInstanceIds: ordered.map((item) => item.instanceId),
+    },
+  };
 }
 
 function applyCpuDecisionForPlanning(state: GameState, decision: CpuDecision): GameState {

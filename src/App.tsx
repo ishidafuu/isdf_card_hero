@@ -113,13 +113,62 @@ import {
   type LogFilter,
 } from "./logDisplay";
 import { ModeNavigation } from "./ui/ModeNavigation";
-import { canRevealHand, canRevealPreparedCard, displayLogEntry, handCardCostLabel, hidePrivateTargetPreviewDetails, shouldHideHandList, sortDeckForDisplay, type BattleWorkspaceMode } from "./ui/modes";
+import { canRevealHand, canRevealPreparedCard, canRevealRemainingDeck, displayLogEntry, handCardCostLabel, hidePrivateTargetPreviewDetails, shouldHideHandList, sortDeckForDisplay, type BattleWorkspaceMode } from "./ui/modes";
+import { TutorialPanel } from "./ui/TutorialPanel";
+import { BattleJournalPanel, JournalOperationNotice } from "./ui/BattleJournalPanel";
+import {
+  appendBattleCommand,
+  createBattleJournal,
+  extractAiDecisionCommand,
+  markBattleJournalIncomplete,
+} from "./replay/battleJournal";
+import type { BattleCommandPayload, BattleJournal, BattleJournalBranchSnapshot, BattleJournalResult, ReplaySnapshot } from "./replay/types";
+import { createBattleJournalWorkerClient, type BattleJournalWorkerClient, type BattleJournalWorkerInput } from "./replay/workerClient";
+import type { BattleJournalWorkerOperation, BattleJournalWorkerStage } from "./replay/workerProtocol";
+import { advanceTutorialStep, isTutorialVersionComplete, saveTutorialCompletion, tutorialStepForGame, TUTORIAL_STORAGE_KEY, type TutorialStep } from "./ui/tutorial";
 import { updateDiagnosticContext } from "./diagnostics/diagnosticReport";
 
 type BoardCell =
   | { kind: "slot"; slotKey: SlotKey }
   | { kind: "master"; playerId: PlayerId; label: string }
   | { kind: "blocked"; label: string };
+
+interface JournalWorkerUiState {
+  requestId: number;
+  operation: BattleJournalWorkerOperation;
+  target: string;
+  stage: BattleJournalWorkerStage;
+  startedAt: number;
+  elapsedMs: number;
+  mutation: boolean;
+}
+
+interface JournalWorkerRequestState {
+  requestId: number;
+  battleGeneration: number;
+  gameVersion: number;
+  mutation: boolean;
+}
+
+function initialWorkerStage(operation: BattleJournalWorkerOperation): BattleJournalWorkerStage {
+  switch (operation) {
+    case "seek":
+    case "undo": return "replaying";
+    case "branch": return "verifying-branch";
+    case "import": return "validating-import";
+    case "export": return "validating-export";
+  }
+}
+
+function workerOperationLabel(operation: BattleJournalWorkerOperation): string {
+  switch (operation) {
+    case "seek": return "Replay再構築";
+    case "undo": return "Undo検証";
+    case "branch": return "分岐検証";
+    case "import": return "Journal読み込み";
+    case "export": return "Journal書き出し";
+  }
+}
 
 const BOARD_CELLS: BoardCell[][] = [
   [
@@ -147,6 +196,18 @@ const BOARD_CELLS: BoardCell[][] = [
 const BOARD_SLOT_KEYS = BOARD_CELLS.flatMap((row) =>
   row.flatMap((cell) => (cell.kind === "slot" ? [cell.slotKey] : [])),
 );
+
+function tutorialStepForGameState(game: GameState): TutorialStep {
+  const hasActivePlayerMonster = BOARD_SLOT_KEYS.some((slotKey) => {
+    const monster = game.slots[slotKey].monster;
+    return monster?.owner === "player" && monster.status === "active";
+  });
+  const hasPreparedPlayerMonster = BOARD_SLOT_KEYS.some((slotKey) => {
+    const monster = game.slots[slotKey].monster;
+    return monster?.owner === "player" && monster.status === "prepared";
+  });
+  return tutorialStepForGame(game.currentPlayer, hasActivePlayerMonster, hasPreparedPlayerMonster);
+}
 const PLAYER_IDS: PlayerId[] = ["player", "cpu"];
 const VISUAL_EFFECT_DURATION_MS = 1400;
 const CPU_READABLE_STEP_DELAY_MS = 1500;
@@ -218,6 +279,7 @@ type ZoneView =
   | { kind: "effects" }
   | { kind: "cpuHistory" }
   | { kind: "battleHistory" }
+  | { kind: "battleJournal" }
   | { kind: "deckSetup" }
   | { kind: "aiLab" };
 type BattleMode = "player-vs-cpu" | "cpu-vs-cpu";
@@ -449,7 +511,7 @@ function cloneAiProfiles(profiles: CpuAiProfiles): CpuAiProfiles {
 }
 
 function aiProfileSummary(profiles: CpuAiProfiles): string {
-  return `P ${profiles.player} / C ${profiles.cpu}`;
+  return `P ${aiProfileLabel(profiles.player)} / C ${aiProfileLabel(profiles.cpu)}`;
 }
 
 function aiProfileLabel(profile: CpuAiProfile): string {
@@ -477,7 +539,11 @@ function aiProfileLabel(profile: CpuAiProfile): string {
   if (profile === "white_rollout") {
     return "White Rollout";
   }
-  return "Omniscient";
+  return "全情報AI（研究用・非公開情報を参照）";
+}
+
+function hasOmniscientAiProfile(profiles: CpuAiProfiles): boolean {
+  return profiles.player === "omniscient" || profiles.cpu === "omniscient";
 }
 
 function historyDeckSummary(settings: DeckSettings | undefined): string {
@@ -1321,6 +1387,17 @@ function saveAutoStepDelayMs(value: number): void {
   }
 }
 
+function loadTutorialCompletion(): boolean {
+  if (typeof window === "undefined") {
+    return false;
+  }
+  try {
+    return isTutorialVersionComplete(window.localStorage.getItem(TUTORIAL_STORAGE_KEY));
+  } catch {
+    return false;
+  }
+}
+
 export function App() {
   const [initialBattleSeed] = useState(() => createRandomBattleSeed());
   const [battleSettings, setBattleSettings] = useState<BattleSettings>(() => createBattleSettings(initialBattleSeed));
@@ -1361,6 +1438,22 @@ export function App() {
   const [savedBattlePresets, setSavedBattlePresets] = useState<SavedBattlePreset[]>(() => loadSavedBattlePresets());
   const [matchPresetId, setMatchPresetId] = useState<string>(BUILT_IN_MATCH_PRESETS[0]?.id ?? "");
   const [workspaceMode, setWorkspaceMode] = useState<BattleWorkspaceMode>("play");
+  const [tutorialActive, setTutorialActive] = useState(() => !loadTutorialCompletion());
+  const [tutorialStep, setTutorialStep] = useState<TutorialStep>(0);
+  const [journalRevision, setJournalRevision] = useState(0);
+  const [liveJournalCursor, setLiveJournalCursor] = useState(0);
+  const [analyzeJournalCursor, setAnalyzeJournalCursor] = useState<number | null>(null);
+  const [importedJournal, setImportedJournal] = useState<BattleJournal | null>(null);
+  const [importedJournalCursor, setImportedJournalCursor] = useState(0);
+  const [journalUiMessage, setJournalUiMessage] = useState("");
+  const [journalWorkerUiState, setJournalWorkerUiState] = useState<JournalWorkerUiState | undefined>();
+  const [journalWorkerError, setJournalWorkerError] = useState("");
+  const [workerReplaySnapshot, setWorkerReplaySnapshot] = useState<{
+    journal: BattleJournal;
+    cursor: number;
+    result: BattleJournalResult<ReplaySnapshot>;
+  } | undefined>();
+  const [cancelledReview, setCancelledReview] = useState<{ journal: BattleJournal; cursor: number } | undefined>();
   const [battleSettingsOpen, setBattleSettingsOpen] = useState(false);
   const [handSheetOpen, setHandSheetOpen] = useState(true);
   const [isMobileViewport, setIsMobileViewport] = useState(() =>
@@ -1384,6 +1477,13 @@ export function App() {
   const recordedResultKeyRef = useRef<string | undefined>(undefined);
   const logListRef = useRef<HTMLOListElement | null>(null);
   const battleSettingsTriggerRef = useRef<HTMLButtonElement | null>(null);
+  const battleJournalRef = useRef<BattleJournal | null>(null);
+  const liveJournalCursorRef = useRef(0);
+  const journalBranchesRef = useRef<BattleJournal[]>([]);
+  const journalWorkerClientRef = useRef<BattleJournalWorkerClient | undefined>(undefined);
+  const journalWorkerRequestIdRef = useRef(0);
+  const activeJournalWorkerRef = useRef<JournalWorkerRequestState | undefined>(undefined);
+  const journalMutationBusyRef = useRef(false);
   const battleSettingsDialogRef = useRef<HTMLDivElement | null>(null);
   const spectatorStepRequestedRef = useRef(false);
   const battleReportSessionIdRef = useRef(createBattleReportSessionId());
@@ -1411,9 +1511,21 @@ export function App() {
   const bgmTrackRef = useRef<BgmId | undefined>(undefined);
   const autoStepWorkerRef = useRef<Worker | undefined>(undefined);
   const activeAutoStepRequestRef = useRef<AutoStepRequestToken | undefined>(undefined);
+  const activeAutoStepBeforeRef = useRef<{ token: AutoStepRequestToken; state: GameState } | undefined>(undefined);
   const autoStepRequestIdRef = useRef(0);
   const battleGenerationRef = useRef(0);
   const gameVersionRef = useRef(0);
+
+  if (!journalWorkerClientRef.current) {
+    journalWorkerClientRef.current = createBattleJournalWorkerClient();
+  }
+
+  if (!battleJournalRef.current) {
+    const initialJournal = createBattleJournal(game);
+    if (initialJournal.ok) {
+      battleJournalRef.current = initialJournal.value;
+    }
+  }
 
   const deckDrafts = useMemo(() => createDeckDrafts(battleSettings, deckSettings), [battleSettings, deckSettings]);
   const deckCardOptions = useMemo(
@@ -1425,6 +1537,44 @@ export function App() {
   );
   const fixedDeckError = PLAYER_IDS.some((playerId) => deckSettings.fixed[playerId] && !deckDrafts[playerId].summary.valid);
   const activeBattleSettings = activeBattleSettingsRef.current;
+  const selectedReviewJournal = importedJournal ?? battleJournalRef.current;
+  const journalPanelOpen = workspaceMode === "analyze" && zoneView?.kind === "battleJournal";
+  const selectedReviewMaximumCursor = selectedReviewJournal?.completeness.status === "incomplete"
+    ? Math.min(selectedReviewJournal.commands.length, selectedReviewJournal.completeness.afterSequence)
+    : selectedReviewJournal?.commands.length ?? 0;
+  const selectedReviewCursor = importedJournal
+    ? Math.min(importedJournalCursor, selectedReviewMaximumCursor)
+    : Math.min(analyzeJournalCursor ?? liveJournalCursor, selectedReviewMaximumCursor);
+  const selectedReviewSeekCancelled = Boolean(
+    selectedReviewJournal && cancelledReview?.journal === selectedReviewJournal && cancelledReview.cursor === selectedReviewCursor,
+  );
+  const selectedReviewSnapshot = useMemo<BattleJournalResult<ReplaySnapshot> | undefined>(
+    () => {
+      if (!journalPanelOpen || !selectedReviewJournal) {
+        return undefined;
+      }
+      // The live head is already the verified committed state. Avoid replaying and
+      // hashing the whole journal whenever a normal game command is committed.
+      if (!importedJournal && selectedReviewCursor === liveJournalCursor) {
+        return {
+          ok: true,
+          value: {
+            state: game,
+            cursor: selectedReviewCursor,
+            totalCommands: selectedReviewJournal.commands.length,
+          },
+        };
+      }
+      if (
+        workerReplaySnapshot?.journal === selectedReviewJournal &&
+        workerReplaySnapshot.cursor === selectedReviewCursor
+      ) {
+        return workerReplaySnapshot.result;
+      }
+      return undefined;
+    },
+    [game, importedJournal, journalPanelOpen, liveJournalCursor, selectedReviewCursor, selectedReviewJournal, workerReplaySnapshot],
+  );
   const currentPlayer = game.players[game.currentPlayer];
   const cpuVsCpu = workspaceMode === "spectate";
   const analyzing = workspaceMode === "analyze";
@@ -1456,7 +1606,8 @@ export function App() {
   };
   const isAutoResolving = !analyzing && shouldAutoResolveBattle(automationState);
   const canManuallyResolveLevelUp = !analyzing && canResolveLevelUpManually(automationState);
-  const controlsDisabled = analyzing || cpuVsCpu || autoPlayEnabled || game.currentPlayer !== "player" || !!game.winner || !!game.pendingLevelUp || isHandLimitDiscarding;
+  const journalMutationPending = Boolean(journalWorkerUiState?.mutation);
+  const controlsDisabled = analyzing || cpuVsCpu || autoPlayEnabled || journalMutationPending || game.currentPlayer !== "player" || !!game.winner || !!game.pendingLevelUp || isHandLimitDiscarding;
   const hasOperationContext = Boolean(selection || pendingDropAction || error || isHandLimitDiscarding);
   const hasSideContext = Boolean(!pendingDropAction && !game.pendingLevelUp && !isAdditionalChoiceSelection(selection) && (selection || error));
   const showBattleLog = !hasSideContext;
@@ -1466,6 +1617,7 @@ export function App() {
     !analyzing &&
     !cpuVsCpu &&
     !autoPlayEnabled &&
+    !journalMutationPending &&
     !isAutoResolving &&
     game.currentPlayer === "player" &&
     !game.winner;
@@ -1566,6 +1718,218 @@ export function App() {
     setGame(next);
   }
 
+  function cancelJournalWorkerOperation(): void {
+    journalWorkerRequestIdRef.current += 1;
+    activeJournalWorkerRef.current = undefined;
+    journalWorkerClientRef.current?.cancel();
+    journalMutationBusyRef.current = false;
+    setJournalWorkerUiState(undefined);
+  }
+
+  async function runJournalWorker(
+    input: BattleJournalWorkerInput,
+    target: string,
+    options: { mutation?: boolean; expectedGameVersion?: number } = {},
+  ) {
+    cancelJournalWorkerOperation();
+    const requestId = journalWorkerRequestIdRef.current + 1;
+    journalWorkerRequestIdRef.current = requestId;
+    const battleGeneration = battleGenerationRef.current;
+    const gameVersion = options.expectedGameVersion ?? gameVersionRef.current;
+    const mutation = options.mutation ?? false;
+    activeJournalWorkerRef.current = {
+      requestId,
+      battleGeneration,
+      gameVersion,
+      mutation,
+    };
+    journalMutationBusyRef.current = mutation;
+    setJournalWorkerError("");
+    setJournalWorkerUiState({
+      requestId,
+      operation: input.operation,
+      target,
+      stage: initialWorkerStage(input.operation),
+      startedAt: Date.now(),
+      elapsedMs: 0,
+      mutation,
+    });
+    try {
+      const completion = await journalWorkerClientRef.current!.run(
+        requestId,
+        input,
+        (stage) => {
+          if (activeJournalWorkerRef.current?.requestId !== requestId) return;
+          setJournalWorkerUiState((current) => current?.requestId === requestId ? { ...current, stage } : current);
+        },
+      );
+      const active = activeJournalWorkerRef.current;
+      if (!active || active.requestId !== requestId || completion.generation !== requestId) {
+        return undefined;
+      }
+      const stale = battleGeneration !== battleGenerationRef.current ||
+        (options.expectedGameVersion !== undefined && gameVersion !== gameVersionRef.current);
+      activeJournalWorkerRef.current = undefined;
+      journalMutationBusyRef.current = false;
+      setJournalWorkerUiState(undefined);
+      if (stale) {
+        setJournalWorkerError("対局が更新されたため、古い処理結果は適用しませんでした。");
+        return undefined;
+      }
+      return completion;
+    } catch (cause) {
+      if (activeJournalWorkerRef.current?.requestId !== requestId) return undefined;
+      activeJournalWorkerRef.current = undefined;
+      journalMutationBusyRef.current = false;
+      setJournalWorkerUiState(undefined);
+      const message = cause instanceof Error ? cause.message : String(cause);
+      if (!message.toLowerCase().includes("cancelled")) {
+        setJournalWorkerError(`${workerOperationLabel(input.operation)}失敗: ${message}`);
+      }
+      return undefined;
+    }
+  }
+
+  function cancelVisibleJournalOperation(): void {
+    const operation = journalWorkerUiState?.operation;
+    if (operation === "seek" && selectedReviewJournal) {
+      setCancelledReview({ journal: selectedReviewJournal, cursor: selectedReviewCursor });
+    }
+    if (operation) {
+      setJournalUiMessage(`${workerOperationLabel(operation)}をキャンセルしました。${operation === "seek" ? "再試行ボタンで再構築できます。" : "対局状態は変更されていません。"}`);
+    }
+    cancelJournalWorkerOperation();
+  }
+
+  function markCurrentJournalIncomplete(reason: string): void {
+    const journal = battleJournalRef.current;
+    if (!journal) {
+      return;
+    }
+    const incomplete = markBattleJournalIncomplete(journal, reason);
+    if (incomplete !== journal) {
+      battleJournalRef.current = incomplete;
+      setJournalRevision((revision) => revision + 1);
+    }
+  }
+
+  function appendCurrentJournalCommand(before: GameState, after: GameState, payload: BattleCommandPayload): void {
+    const journal = battleJournalRef.current;
+    if (!journal || journal.completeness.status === "incomplete") {
+      return;
+    }
+    appendJournalCommandTo(journal, before, after, payload);
+  }
+
+  function appendJournalCommandTo(journal: BattleJournal, before: GameState, after: GameState, payload: BattleCommandPayload): void {
+    const appended = appendBattleCommand(journal, before, after, payload);
+    if (!appended.ok) {
+      markCurrentJournalIncomplete(`command記録失敗: ${appended.error.message}`);
+      return;
+    }
+    battleJournalRef.current = appended.value;
+    liveJournalCursorRef.current = appended.value.commands.length;
+    setLiveJournalCursor(appended.value.commands.length);
+    setAnalyzeJournalCursor(null);
+    setJournalRevision((revision) => revision + 1);
+  }
+
+  function handleSeekJournal(cursor: number): void {
+    setCancelledReview(undefined);
+    if (importedJournal) {
+      setImportedJournalCursor(cursor);
+    } else {
+      setAnalyzeJournalCursor(cursor);
+    }
+  }
+
+  function handleRetryJournalSeek(): void {
+    setCancelledReview(undefined);
+    setJournalUiMessage("Replay位置の再構築を再試行しています。");
+  }
+
+  function handleReturnToLiveJournal(): void {
+    cancelJournalWorkerOperation();
+    setCancelledReview(undefined);
+    setImportedJournal(null);
+    setAnalyzeJournalCursor(null);
+    setWorkerReplaySnapshot(undefined);
+    setJournalUiMessage("現在の対局Journalに戻りました。ゲーム状態は変更されていません。");
+  }
+
+  function handleImportJournal(json: string): void {
+    void runJournalWorker({ operation: "import", json }, "貼り付けたJournal JSON").then((completion) => {
+      if (!completion) return;
+      const parsed = completion.result as BattleJournalResult<BattleJournal>;
+      if (!parsed.ok) {
+        const message = `読み込み失敗: ${parsed.error.message}`;
+        setJournalUiMessage(message);
+        setJournalWorkerError(message);
+        return;
+      }
+      setImportedJournal(parsed.value);
+      setImportedJournalCursor(parsed.value.commands.length);
+      setAnalyzeJournalCursor(null);
+      setCancelledReview(undefined);
+      setWorkerReplaySnapshot(undefined);
+      setJournalUiMessage("Journalを読み込みました。現在の対局は変更されていません。");
+    });
+  }
+
+  function handleExportJournal(): void {
+    if (!selectedReviewJournal) {
+      return;
+    }
+    const journal = selectedReviewJournal;
+    void runJournalWorker({ operation: "export", journal }, "選択中のJournal JSON").then((completion) => {
+      if (!completion) return;
+      const serialized = completion.result as BattleJournalResult<string>;
+      if (!serialized.ok) {
+        const message = `書き出し失敗: ${serialized.error.message}`;
+        setJournalUiMessage(message);
+        setJournalWorkerError(message);
+        return;
+      }
+      const url = URL.createObjectURL(new Blob([serialized.value], { type: "application/json" }));
+      const link = document.createElement("a");
+      link.href = url;
+      link.download = `battle-journal-${new Date().toISOString().replace(/[:.]/g, "-")}.json`;
+      link.click();
+      URL.revokeObjectURL(url);
+      setJournalUiMessage("完全replay可能なJournal JSONを書き出しました。");
+    });
+  }
+
+  function finishTutorial() {
+    try {
+      saveTutorialCompletion(window.localStorage);
+    } catch {
+      // The tutorial remains available even when localStorage is unavailable.
+    }
+    setTutorialActive(false);
+  }
+
+  function handleShowTutorial() {
+    setTutorialStep(tutorialStepForGameState(game));
+    setTutorialActive(true);
+  }
+
+  function recordTutorialAction(action: HumanActionSnapshot): void {
+    if (!tutorialActive || workspaceMode !== "play") {
+      return;
+    }
+    const nextStep = advanceTutorialStep(tutorialStep, action.type);
+    if (nextStep === tutorialStep) {
+      return;
+    }
+    if (nextStep >= 4) {
+      finishTutorial();
+      setTutorialStep(0);
+      return;
+    }
+    setTutorialStep(nextStep as TutorialStep);
+  }
+
   function getOrCreateAutoStepWorker(): Worker | undefined {
     const existing = autoStepWorkerRef.current;
     if (existing) {
@@ -1592,7 +1956,10 @@ export function App() {
       if (!matchesAutoStepRequest(response, activeRequest)) {
         return;
       }
+      const requestBefore = activeAutoStepBeforeRef.current;
+      const hasMatchingBefore = !!requestBefore && matchesAutoStepRequest(response, requestBefore.token);
       activeAutoStepRequestRef.current = undefined;
+      activeAutoStepBeforeRef.current = undefined;
       setAutoStepBusy(false);
       if (response.type === "error") {
         handleAutoStepWorkerFailure(response.error, worker);
@@ -1603,6 +1970,16 @@ export function App() {
         response.gameVersion !== gameVersionRef.current
       ) {
         return;
+      }
+      if (!hasMatchingBefore || !requestBefore) {
+        markCurrentJournalIncomplete("CPU Worker応答に対応する要求前GameStateが見つかりません。");
+      } else {
+        const extractedCommand = extractAiDecisionCommand(requestBefore.state, response.game);
+        if (extractedCommand.ok) {
+          appendCurrentJournalCommand(requestBefore.state, response.game, extractedCommand.value);
+        } else {
+          markCurrentJournalIncomplete(`AI decisionを特定できません: ${extractedCommand.error.message}`);
+        }
       }
       setManualUndoStack([]);
       commitGame(response.game);
@@ -1637,6 +2014,7 @@ export function App() {
     worker?.terminate();
     autoStepWorkerRef.current = undefined;
     activeAutoStepRequestRef.current = undefined;
+    activeAutoStepBeforeRef.current = undefined;
     autoStepRequestIdRef.current += 1;
     setAutoStepBusy(false);
     setAutoStepError(message || "CPU処理に失敗しました");
@@ -1650,6 +2028,7 @@ export function App() {
   }: { clearError?: boolean; updateState?: boolean } = {}): void {
     autoStepRequestIdRef.current += 1;
     activeAutoStepRequestRef.current = undefined;
+    activeAutoStepBeforeRef.current = undefined;
     autoStepWorkerRef.current?.terminate();
     autoStepWorkerRef.current = undefined;
     if (updateState) {
@@ -1671,11 +2050,64 @@ export function App() {
   }, [game.log, logFilter, selectedLogIndex]);
 
   useEffect(() => {
+    if (tutorialActive && tutorialStep === 2 && workspaceMode === "play" && game.currentPlayer === "player") {
+      setTutorialStep(tutorialStepForGameState(game));
+    }
+  }, [game, tutorialActive, tutorialStep, workspaceMode]);
+
+  useEffect(() => {
     const mediaQuery = window.matchMedia("(max-width: 720px)");
     const syncViewport = () => setIsMobileViewport(mediaQuery.matches);
     syncViewport();
     mediaQuery.addEventListener("change", syncViewport);
     return () => mediaQuery.removeEventListener("change", syncViewport);
+  }, []);
+
+  useEffect(() => {
+    if (!journalPanelOpen || !selectedReviewJournal || (!importedJournal && selectedReviewCursor === liveJournalCursor)) {
+      if (activeJournalWorkerRef.current && activeJournalWorkerRef.current.requestId === journalWorkerUiState?.requestId && journalWorkerUiState?.operation === "seek") {
+        cancelJournalWorkerOperation();
+      }
+      return;
+    }
+    if (journalWorkerUiState && journalWorkerUiState.operation !== "seek") {
+      return;
+    }
+    if (workerReplaySnapshot?.journal === selectedReviewJournal && workerReplaySnapshot.cursor === selectedReviewCursor) {
+      return;
+    }
+    const journal = selectedReviewJournal;
+    const cursor = selectedReviewCursor;
+    if (cancelledReview?.journal === journal && cancelledReview.cursor === cursor) {
+      return;
+    }
+    const target = `command ${cursor} / ${journal.commands.length}`;
+    if (journalWorkerUiState?.operation === "seek" && journalWorkerUiState.target === target) {
+      return;
+    }
+    void runJournalWorker({ operation: "seek", journal, cursor }, target).then((completion) => {
+      if (!completion) return;
+      setWorkerReplaySnapshot({
+        journal,
+        cursor,
+        result: completion.result as BattleJournalResult<ReplaySnapshot>,
+      });
+    });
+  }, [cancelledReview, importedJournal, journalPanelOpen, journalWorkerUiState?.operation, journalWorkerUiState?.target, liveJournalCursor, selectedReviewCursor, selectedReviewJournal, workerReplaySnapshot]);
+
+  useEffect(() => {
+    if (!journalWorkerUiState) return undefined;
+    const timer = window.setInterval(() => {
+      setJournalWorkerUiState((current) => current
+        ? { ...current, elapsedMs: Math.max(0, Date.now() - current.startedAt) }
+        : current);
+    }, 250);
+    return () => window.clearInterval(timer);
+  }, [journalWorkerUiState?.requestId]);
+
+  useEffect(() => () => {
+    activeJournalWorkerRef.current = undefined;
+    journalWorkerClientRef.current?.dispose();
   }, []);
 
   useEffect(() => {
@@ -1686,8 +2118,15 @@ export function App() {
       pendingBattleSettings: battleSettings,
       pendingDeckSettings: deckSettings,
       game,
+      journal: {
+        status: battleJournalRef.current?.completeness.status ?? "unavailable",
+        commandCount: battleJournalRef.current?.commands.length ?? 0,
+        liveCursor: liveJournalCursor,
+        reviewCursor: selectedReviewCursor,
+        reviewingImportedJournal: !!importedJournal,
+      },
     });
-  }, [battleSettings, deckSettings, game, workspaceMode]);
+  }, [battleSettings, deckSettings, game, importedJournal, journalRevision, liveJournalCursor, selectedReviewCursor, workspaceMode]);
 
   useEffect(() => {
     seEnabledRef.current = seEnabled;
@@ -1828,7 +2267,7 @@ export function App() {
   }, [game]);
 
   useEffect(() => {
-    if (!isAutoResolving) {
+    if (!isAutoResolving || journalMutationBusyRef.current) {
       return undefined;
     }
 
@@ -1847,6 +2286,7 @@ export function App() {
       autoStepRequestIdRef.current = requestId;
       dispatchedRequest = { requestId, battleGeneration, gameVersion };
       activeAutoStepRequestRef.current = dispatchedRequest;
+      activeAutoStepBeforeRef.current = { token: dispatchedRequest, state: structuredClone(game) };
       setManualUndoStack([]);
       setAutoStepBusy(true);
       const mode: AutoStepWorkerMode = cpuVsCpu || autoPlayEnabled || Boolean(game.pendingLevelUp) ? "auto" : "cpu";
@@ -1877,7 +2317,7 @@ export function App() {
         terminateAutoStepWorker();
       }
     };
-  }, [autoPlayEnabled, cpuVsCpu, effectiveAutoStepDelayMs, game, isAutoResolving]);
+  }, [autoPlayEnabled, cpuVsCpu, effectiveAutoStepDelayMs, game, isAutoResolving, journalWorkerUiState?.mutation]);
 
   useEffect(() => {
     if (!visualEffect) {
@@ -2020,6 +2460,10 @@ export function App() {
         appendHumanActionReviewEntry(next, game, humanAction);
       }
       if (next !== game) {
+        if (humanAction) {
+          recordTutorialAction(humanAction);
+          appendCurrentJournalCommand(game, next, { controller: "human", action: humanAction });
+        }
         setManualUndoStack((previous) => [...previous, game].slice(-20));
       }
       commitGame(next);
@@ -2040,7 +2484,7 @@ export function App() {
     change: (state: GameState) => GameState,
     keepSelection = false,
   ): GameState | undefined {
-    if (!isManualBattleActionAllowed(action.type, automationState)) {
+    if (journalMutationBusyRef.current || !isManualBattleActionAllowed(action.type, automationState)) {
       return undefined;
     }
     return applyChange(change, keepSelection, action);
@@ -2088,23 +2532,54 @@ export function App() {
     }
   }
 
-  function handleUndoManualAction() {
+  function handleUndoManualAction(): void {
     if (!canUndoManualAction) {
       return;
     }
     const previousGame = manualUndoStack.at(-1);
-    if (!previousGame) {
+    const journal = battleJournalRef.current;
+    if (!previousGame || !journal || journalMutationBusyRef.current) {
       return;
     }
     clearPointerDrag();
-    setManualUndoStack((previous) => previous.slice(0, -1));
     terminateAutoStepWorker({ clearError: true });
-    commitGame(previousGame);
-    setBattleLogComments((previous) => pruneBattleLogCommentsForGame(previous, previousGame));
-    setSelection(undefined);
-    setPendingDropAction(undefined);
-    clearHandLimitDiscardMode();
-    setError("");
+    const targetCursor = Math.max(0, liveJournalCursorRef.current - 1);
+    const expectedGameVersion = gameVersionRef.current;
+    void runJournalWorker({ operation: "undo", journal, cursor: targetCursor, expectedState: previousGame }, `Undo → command ${targetCursor}`, {
+      mutation: true,
+      expectedGameVersion,
+    }).then((completion) => {
+      if (!completion) return;
+      const replay = completion.result as BattleJournalResult<BattleJournalBranchSnapshot>;
+      if (!replay.ok) {
+        if (replay.error.code === "HASH_MISMATCH") {
+          markCurrentJournalIncomplete(`Undo snapshotとjournal seek stateのhashが一致しません: ${replay.error.message}`);
+        }
+        setJournalWorkerError(`Undoを適用できません: ${replay.error.message}`);
+        return;
+      }
+      if (battleJournalRef.current !== journal || liveJournalCursorRef.current !== targetCursor + 1) {
+        setJournalWorkerError("対局が更新されたため、古いUndo結果は適用しませんでした。");
+        return;
+      }
+      const replayedGame = replay.value.snapshot.state;
+      journalBranchesRef.current.push(journal);
+      if (journalBranchesRef.current.length > 10) journalBranchesRef.current.shift();
+      battleJournalRef.current = replay.value.journal;
+      setManualUndoStack((previous) => previous.slice(0, -1));
+      if (tutorialActive) setTutorialStep(tutorialStepForGameState(replayedGame));
+      liveJournalCursorRef.current = targetCursor;
+      setLiveJournalCursor(targetCursor);
+      setAnalyzeJournalCursor(null);
+      setJournalRevision((revision) => revision + 1);
+      setWorkerReplaySnapshot(undefined);
+      commitGame(replayedGame);
+      setBattleLogComments((previous) => pruneBattleLogCommentsForGame(previous, replayedGame));
+      setSelection(undefined);
+      setPendingDropAction(undefined);
+      clearHandLimitDiscardMode();
+      setError("");
+    });
   }
 
   function toggleInfoPanel() {
@@ -2497,6 +2972,20 @@ export function App() {
     }
 
     const next = createGameFromSettings(settings, decks);
+    cancelJournalWorkerOperation();
+    const nextJournal = createBattleJournal(next);
+    battleJournalRef.current = nextJournal.ok ? nextJournal.value : null;
+    journalBranchesRef.current = [];
+    liveJournalCursorRef.current = 0;
+    setLiveJournalCursor(0);
+    setAnalyzeJournalCursor(null);
+    setImportedJournal(null);
+    setImportedJournalCursor(0);
+    setCancelledReview(undefined);
+    setWorkerReplaySnapshot(undefined);
+    setJournalWorkerError("");
+    setJournalUiMessage(nextJournal.ok ? "" : `Journal開始失敗: ${nextJournal.error.message}`);
+    setJournalRevision((revision) => revision + 1);
     terminateAutoStepWorker({ clearError: true });
     battleGenerationRef.current += 1;
     gameVersionRef.current = 0;
@@ -2509,6 +2998,9 @@ export function App() {
     activeBattleSettingsRef.current = cloneBattleSettings(settings);
     activeDeckSettingsRef.current = cloneDeckSettings(decks);
     setWorkspaceMode(settings.mode === "cpu-vs-cpu" ? "spectate" : "play");
+    if (tutorialActive) {
+      setTutorialStep(0);
+    }
     previousGameRef.current = next;
     commitGame(next);
     setManualUndoStack([]);
@@ -2570,7 +3062,6 @@ export function App() {
     setDeckPresetFilters(createDeckPresetFilters());
     setBattleSettings(next.settings);
     setDeckSettings(next.deckSettings);
-    startNewGame(next.settings, next.deckSettings);
   }
 
   function handleSaveBattlePreset() {
@@ -2599,7 +3090,6 @@ export function App() {
     setSavedPresetId(preset.id);
     setBattleSettings(nextSettings);
     setDeckSettings(nextDeckSettings);
-    startNewGame(nextSettings, nextDeckSettings);
   }
 
   function handleDeleteSavedBattlePreset(presetId: string) {
@@ -3694,9 +4184,17 @@ export function App() {
         <div>
           <h1>Card Hero Prototype</h1>
           <p>Turn {game.turnNumber} / {turnStatus}</p>
+          {hasOmniscientAiProfile(activeBattleSettings.aiProfiles) && (
+            <p className="omniscient-ai-warning current">この対局は研究用の全情報AIを使用中（公平な通常対戦ではありません）</p>
+          )}
         </div>
         <div className="topbar-actions">
           <ModeNavigation mode={workspaceMode} onSelect={handleWorkspaceModeSelect} />
+          {workspaceMode === "play" && (
+            <button type="button" className="tutorial-trigger" onClick={handleShowTutorial} aria-label="チュートリアルを再表示">
+              <Icon icon="📖" /> はじめてガイド
+            </button>
+          )}
           {!analysisMode && (
             <div className="topbar-quick-actions">
               {renderUndoControl()}
@@ -3787,6 +4285,11 @@ export function App() {
               ))}
             </select>
           </label>
+          {hasOmniscientAiProfile(battleSettings.aiProfiles) && (
+            <p className="omniscient-ai-warning">
+              全情報AIは研究用です。対戦相手の非公開手札・準備中カード情報を参照するため、公平な通常対戦の比較には使わないでください。
+            </p>
+          )}
           <label className="battle-setting-control">
             P Master
             <select
@@ -3873,6 +4376,7 @@ export function App() {
             <span>先攻 {playerLabel(battleSettings.firstPlayer)}</span>
             <span>{getMasterName(battleSettings.masterIds.player)} vs {getMasterName(battleSettings.masterIds.cpu)}</span>
             <span>AI {aiProfileLabel(battleSettings.aiProfiles.player)} / {aiProfileLabel(battleSettings.aiProfiles.cpu)}</span>
+            {hasOmniscientAiProfile(battleSettings.aiProfiles) && <span className="omniscient-ai-warning">研究用・全情報参照</span>}
             <span>Deck P {deckSettings.fixed.player ? "固定" : "自動"} {deckDrafts.player.summary.total}/30 · C {deckSettings.fixed.cpu ? "固定" : "自動"} {deckDrafts.cpu.summary.total}/30</span>
             {activeBattleSettingsRef.current.mode !== battleSettings.mode ||
              activeBattleSettingsRef.current.seed !== battleSettings.seed ||
@@ -3886,6 +4390,10 @@ export function App() {
           </div>
         </div>
       </header>
+      {journalWorkerUiState && !journalPanelOpen && (
+        <JournalOperationNotice operation={journalWorkerUiState} onCancel={cancelVisibleJournalOperation} />
+      )}
+      {journalWorkerError && !journalPanelOpen && <p className="journal-worker-error" role="alert">{journalWorkerError}</p>}
 
       <section
         className={[
@@ -3966,6 +4474,7 @@ export function App() {
                   </button>
                 </div>
                 <div className="info-tools info-tools-research">
+                  <span className="info-tools-group-label">研究・調整 / 履歴</span>
                   {workspaceMode !== "play" && (
                   <button
                     type="button"
@@ -3974,6 +4483,15 @@ export function App() {
                   >
                     <Icon icon="🧠" /> CPU AI
                   </button>
+                  )}
+                  {workspaceMode === "analyze" && (
+                    <button
+                      type="button"
+                      className={zoneView?.kind === "battleJournal" ? "selected" : ""}
+                      onClick={() => toggleInfoZoneView({ kind: "battleJournal" })}
+                    >
+                      <Icon icon="⏪" /> Journal
+                    </button>
                   )}
                   <button
                     type="button"
@@ -4026,6 +4544,7 @@ export function App() {
                   onBattlePresetNameChange={handleBattlePresetNameChange}
                   onSaveBattlePreset={handleSaveBattlePreset}
                   onDeleteSavedBattlePreset={handleDeleteSavedBattlePreset}
+                  onMasterChange={handleBattleMasterChange}
                   onFixedChange={handleDeckFixedChange}
                   onAllowSpecialChange={handleDeckAllowSpecialChange}
                   onTextChange={handleDeckTextChange}
@@ -4044,6 +4563,24 @@ export function App() {
                   onSuiteChange={setAiLabSuiteId}
                   onClose={() => setZoneView(undefined)}
                 />
+              ) : zoneView?.kind === "battleJournal" ? (
+                <BattleJournalPanel
+                  journal={selectedReviewJournal}
+                  cursor={selectedReviewCursor}
+                  replay={selectedReviewSnapshot}
+                  imported={!!importedJournal}
+                  message={journalUiMessage}
+                  operation={journalWorkerUiState}
+                  workerError={journalWorkerError}
+                  seekCancelled={selectedReviewSeekCancelled}
+                  onSeek={handleSeekJournal}
+                  onReturnToLive={handleReturnToLiveJournal}
+                  onImport={handleImportJournal}
+                  onExport={handleExportJournal}
+                  onCancelOperation={cancelVisibleJournalOperation}
+                  onRetrySeek={handleRetryJournalSeek}
+                  renderCardIcon={(cardId) => <CardIcon cardId={cardId} />}
+                />
               ) : zoneView?.kind === "battleHistory" ? (
                 <BattleHistoryPanel history={battleHistory} onReplay={handleReplayHistory} onClear={handleClearBattleHistory} />
               ) : zoneView ? (
@@ -4060,6 +4597,13 @@ export function App() {
 
         <div className="battle-area">
           <div className="battle-primary">
+            {tutorialActive && workspaceMode === "play" && (
+              <TutorialPanel
+                step={tutorialStep}
+                onSkip={finishTutorial}
+                onClose={() => setTutorialActive(false)}
+              />
+            )}
             <div className="board" aria-label="field">
               {visualEffect?.action && <BoardActionOverlay action={maskHiddenPreparedBoardAction(visualEffect.action, game, workspaceMode)} effectId={visualEffect.id} />}
               {visualEffect && <ResolutionFeed effect={visualEffect} workspaceMode={workspaceMode} />}
@@ -6035,7 +6579,7 @@ function HandCardPanel({ card, game, disabled, onDiscard }: HandCardPanelProps) 
 
 interface CardZonePanelProps {
   game: GameState;
-  view: Exclude<ZoneView, { kind: "deckSetup" } | { kind: "aiLab" } | { kind: "battleHistory" }>;
+  view: Exclude<ZoneView, { kind: "deckSetup" } | { kind: "aiLab" } | { kind: "battleHistory" } | { kind: "battleJournal" }>;
   workspaceMode: BattleWorkspaceMode;
   onClose: () => void;
 }
@@ -6184,6 +6728,7 @@ interface DeckSetupPanelProps {
   onBattlePresetNameChange: (name: string) => void;
   onSaveBattlePreset: () => void;
   onDeleteSavedBattlePreset: (presetId: string) => void;
+  onMasterChange: (playerId: PlayerId, masterId: MasterId) => void;
   onFixedChange: (playerId: PlayerId, fixed: boolean) => void;
   onAllowSpecialChange: (playerId: PlayerId, allowSpecial: boolean) => void;
   onTextChange: (playerId: PlayerId, text: string) => void;
@@ -6218,6 +6763,7 @@ function DeckSetupPanel({
   onBattlePresetNameChange,
   onSaveBattlePreset,
   onDeleteSavedBattlePreset,
+  onMasterChange,
   onFixedChange,
   onAllowSpecialChange,
   onTextChange,
@@ -6230,10 +6776,31 @@ function DeckSetupPanel({
   onDeckPresetFilterChange,
   onDeckPresetSortChange,
 }: DeckSetupPanelProps) {
+  const [setupView, setSetupView] = useState<"basic" | "research">("basic");
+  const basicTabRef = useRef<HTMLButtonElement | null>(null);
+  const researchTabRef = useRef<HTMLButtonElement | null>(null);
   const playerId = activePlayerId;
   const draft = drafts[playerId];
   const summary = draft.summary;
   const fixed = deckSettings.fixed[playerId];
+
+  function handleSetupTabKeyDown(event: ReactKeyboardEvent<HTMLButtonElement>) {
+    const nextView = event.key === "ArrowRight"
+      ? setupView === "basic" ? "research" : "basic"
+      : event.key === "ArrowLeft"
+        ? setupView === "basic" ? "research" : "basic"
+        : event.key === "Home"
+          ? "basic"
+          : event.key === "End"
+            ? "research"
+            : undefined;
+    if (!nextView) {
+      return;
+    }
+    event.preventDefault();
+    setSetupView(nextView);
+    (nextView === "basic" ? basicTabRef : researchTabRef).current?.focus();
+  }
 
   return (
     <section className="zone-panel deck-setup-panel">
@@ -6246,18 +6813,20 @@ function DeckSetupPanel({
           <Icon icon="✕" /> Close
         </button>
       </div>
-      <MatchPresetPanel
-        builtInMatchPresets={builtInMatchPresets}
-        matchPresetId={matchPresetId}
-        savedBattlePresets={savedBattlePresets}
-        savedPresetId={savedPresetId}
-        battlePresetName={battlePresetName}
-        onBuiltInMatchPresetChange={onBuiltInMatchPresetChange}
-        onSavedPresetChange={onSavedPresetChange}
-        onBattlePresetNameChange={onBattlePresetNameChange}
-        onSaveBattlePreset={onSaveBattlePreset}
-        onDeleteSavedBattlePreset={onDeleteSavedBattlePreset}
-      />
+      {setupView === "basic" && (
+        <MatchPresetPanel
+          builtInMatchPresets={builtInMatchPresets}
+          matchPresetId={matchPresetId}
+          savedBattlePresets={savedBattlePresets}
+          savedPresetId={savedPresetId}
+          battlePresetName={battlePresetName}
+          onBuiltInMatchPresetChange={onBuiltInMatchPresetChange}
+          onSavedPresetChange={onSavedPresetChange}
+          onBattlePresetNameChange={onBattlePresetNameChange}
+          onSaveBattlePreset={onSaveBattlePreset}
+          onDeleteSavedBattlePreset={onDeleteSavedBattlePreset}
+        />
+      )}
       <div className="deck-setup-target-tabs" aria-label="deck setup target">
         {PLAYER_IDS.map((targetPlayerId) => (
           <button
@@ -6271,17 +6840,48 @@ function DeckSetupPanel({
           </button>
         ))}
       </div>
-      <div className="deck-setup-grid single">
+      <div className="deck-setup-view-tabs" role="tablist" aria-label="Deck setup level">
+        <button
+          type="button"
+          role="tab"
+          id="deck-setup-tab-basic"
+          aria-controls="deck-setup-panel"
+          aria-selected={setupView === "basic"}
+          tabIndex={setupView === "basic" ? 0 : -1}
+          ref={basicTabRef}
+          onKeyDown={handleSetupTabKeyDown}
+          onClick={() => setSetupView("basic")}
+        >
+          基本設定
+        </button>
+        <button
+          type="button"
+          role="tab"
+          id="deck-setup-tab-research"
+          aria-controls="deck-setup-panel"
+          aria-selected={setupView === "research"}
+          tabIndex={setupView === "research" ? 0 : -1}
+          ref={researchTabRef}
+          onKeyDown={handleSetupTabKeyDown}
+          onClick={() => setSetupView("research")}
+        >
+          研究・詳細設定
+        </button>
+      </div>
+      <div
+        id="deck-setup-panel"
+        role="tabpanel"
+        aria-labelledby={setupView === "basic" ? "deck-setup-tab-basic" : "deck-setup-tab-research"}
+        tabIndex={0}
+        className="deck-setup-grid single"
+      >
         <section className={`deck-editor-card ${summary.valid ? "" : "invalid"}`} key={playerId}>
           <div className="deck-editor-heading">
             <div>
               <h4>{playerLabel(playerId)} Deck</h4>
-              <p>
-                {fixed ? "固定デッキ" : `${getMasterName(battleSettings.masterIds[playerId])}評価ランダム / seed ${battleSettings.seed}`} /
-                Special {deckSettings.allowSpecial[playerId] ? "ON" : "OFF"}
-              </p>
+              <p>{fixed ? "固定デッキ" : `評価ランダム / seed ${battleSettings.seed}`} · {summary.total}/30枚</p>
             </div>
-            <div className="deck-toggle-group">
+            {setupView === "basic" && <div className="deck-toggle-group">
               <label className="deck-mode-toggle">
                 <input
                   type="checkbox"
@@ -6290,63 +6890,98 @@ function DeckSetupPanel({
                 />
                 固定
               </label>
+            </div>}
+          </div>
+          <DeckSummaryView summary={summary} />
+          {setupView === "basic" ? (
+            <>
+              <div className="deck-basic-controls">
+                <label className="preset-control">
+                  Master
+                  <select
+                    value={battleSettings.masterIds[playerId]}
+                    onChange={(event) => onMasterChange(playerId, event.target.value as MasterId)}
+                  >
+                    {MASTER_IDS.map((masterId) => (
+                      <option value={masterId} key={masterId}>{getMasterName(masterId)}</option>
+                    ))}
+                  </select>
+                </label>
+                <label className="preset-control">
+                  Deck preset
+                  <select
+                    value={deckPresetPickerIds[playerId]}
+                    onChange={(event) => onDeckPresetPickerChange(playerId, event.target.value as DeckPresetId)}
+                  >
+                    {DECK_PRESETS.map((preset) => (
+                      <option value={preset.id} key={preset.id}>{preset.name}</option>
+                    ))}
+                  </select>
+                </label>
+                <button type="button" onClick={() => onUseGeneratedDeck(playerId)}>
+                  <Icon icon="📌" /> 現在seedの内容を固定
+                </button>
+              </div>
+              {fixed ? (
+                <>
+                  <DeckBuilderControls
+                    cardOptions={cardOptions[playerId]}
+                    selectedCardId={pickerIds[playerId]}
+                    selectLabel={`${playerLabel(playerId)}のデッキに追加するカード`}
+                    disabled={summary.total >= 30 || draft.cardIds.filter((cardId) => cardId === pickerIds[playerId]).length >= 3}
+                    onSelect={(cardId) => onPickerChange(playerId, cardId)}
+                    onAdd={() => onAddCard(playerId, pickerIds[playerId])}
+                  />
+                  <DeckCardList
+                    cardIds={draft.cardIds}
+                    editable
+                    onAddCard={(cardId) => onAddCard(playerId, cardId)}
+                    onRemoveCard={(cardId) => onRemoveCard(playerId, cardId)}
+                  />
+                </>
+              ) : (
+                <DeckCardList cardIds={draft.cardIds} />
+              )}
+            </>
+          ) : (
+            <>
+              <p className="deck-research-note">研究用の絞り込み、大量候補表示、直接編集です。通常の対戦準備では基本設定を使えます。</p>
               <label className="deck-mode-toggle">
                 <input
                   type="checkbox"
                   checked={deckSettings.allowSpecial[playerId]}
                   onChange={(event) => onAllowSpecialChange(playerId, event.target.checked)}
                 />
-                Special
+                Specialカードを許可
               </label>
-            </div>
-          </div>
-          <DeckSummaryView summary={summary} />
-          <DeckPresetControls
-            presetId={deckPresetPickerIds[playerId]}
-            filters={deckPresetFilters[playerId]}
-            sortKey={deckPresetSorts[playerId]}
-            onFilterChange={(filters) => onDeckPresetFilterChange(playerId, filters)}
-            onSortChange={(sortKey) => onDeckPresetSortChange(playerId, sortKey)}
-            onPresetChange={(presetId) => onDeckPresetPickerChange(playerId, presetId)}
-          />
-          <div className="deck-editor-actions">
-            <button type="button" onClick={() => onUseGeneratedDeck(playerId)}>
-              <Icon icon="📌" /> 現在seedの内容を固定
-            </button>
-            {fixed && (
-              <button type="button" onClick={() => onFixedChange(playerId, false)}>
-                <Icon icon="🎲" /> ランダムに戻す
-              </button>
-            )}
-          </div>
-          {fixed ? (
-            <>
-              <DeckBuilderControls
-                cardOptions={cardOptions[playerId]}
-                selectedCardId={pickerIds[playerId]}
-                disabled={summary.total >= 30 || draft.cardIds.filter((cardId) => cardId === pickerIds[playerId]).length >= 3}
-                onSelect={(cardId) => onPickerChange(playerId, cardId)}
-                onAdd={() => onAddCard(playerId, pickerIds[playerId])}
+              <DeckPresetControls
+                presetId={deckPresetPickerIds[playerId]}
+                filters={deckPresetFilters[playerId]}
+                sortKey={deckPresetSorts[playerId]}
+                onFilterChange={(filters) => onDeckPresetFilterChange(playerId, filters)}
+                onSortChange={(sortKey) => onDeckPresetSortChange(playerId, sortKey)}
+                onPresetChange={(presetId) => onDeckPresetPickerChange(playerId, presetId)}
               />
-              <DeckCardList
-                cardIds={draft.cardIds}
-                editable
-                onAddCard={(cardId) => onAddCard(playerId, cardId)}
-                onRemoveCard={(cardId) => onRemoveCard(playerId, cardId)}
-              />
-              <details className="deck-raw-editor">
-                <summary><Icon icon="✎" /> テキストで直接編集</summary>
-                <textarea
-                  className="deck-editor-textarea"
-                  value={deckSettings.text[playerId]}
-                  onChange={(event) => onTextChange(playerId, event.target.value)}
-                  maxLength={DECK_TEXT_MAX_LENGTH}
-                  spellCheck={false}
-                />
-              </details>
+              <div className="deck-editor-actions">
+                <button type="button" onClick={() => onUseGeneratedDeck(playerId)}>
+                  <Icon icon="📌" /> 現在seedの内容を固定
+                </button>
+                {fixed && <button type="button" onClick={() => onFixedChange(playerId, false)}><Icon icon="🎲" /> ランダムに戻す</button>}
+              </div>
+              {fixed && (
+                <details className="deck-raw-editor">
+                  <summary><Icon icon="✎" /> テキストで直接編集</summary>
+                  <textarea
+                    className="deck-editor-textarea"
+                    aria-label={`${playerLabel(playerId)}の固定デッキをテキストで編集`}
+                    value={deckSettings.text[playerId]}
+                    onChange={(event) => onTextChange(playerId, event.target.value)}
+                    maxLength={DECK_TEXT_MAX_LENGTH}
+                    spellCheck={false}
+                  />
+                </details>
+              )}
             </>
-          ) : (
-            <DeckCardList cardIds={draft.cardIds} />
           )}
           {!summary.valid && (
             <ul className="deck-errors">
@@ -6391,11 +7026,11 @@ function MatchPresetPanel({
     <section className="match-preset-panel">
       <div>
         <h4><Icon icon="🎛️" /> Battle Presets</h4>
-        <p>対戦条件、マスター、AI、デッキ条件をまとめて再現できます。</p>
+        <p>次戦の対戦条件・マスター・AI・デッキ設定へ読み込みます。現在の対局とJournalは維持され、「New Game」で適用されます。</p>
       </div>
       <div className="preset-control-grid">
         <label className="preset-control">
-          Built-in
+          次戦 Built-in
           <select
             value={selectedBuiltIn?.id ?? ""}
             onChange={(event) => onBuiltInMatchPresetChange(event.target.value)}
@@ -6421,7 +7056,7 @@ function MatchPresetPanel({
           <Icon icon="💾" /> 保存
         </button>
         <label className="preset-control">
-          Saved
+          次戦 Saved
           <select
             value={savedPresetId}
             onChange={(event) => onSavedPresetChange(event.target.value)}
@@ -6550,7 +7185,7 @@ function DeckPresetControls({
           })}
         </div>
       </div>
-      <div className="deck-preset-browser" role="listbox" aria-label="deck preset candidates">
+      <div className="deck-preset-browser" role="group" aria-label="保存済みデッキ候補">
         <div className="deck-preset-browser-heading">
           <strong>Candidates</strong>
           <span>{Math.min(visiblePresetCount, filteredPresets.length)} / {filteredPresets.length}</span>
@@ -6680,7 +7315,7 @@ function DeckIconMatrix({ cardIds, compact = false }: { cardIds: readonly string
   const counts = deckMatrixKindCounts(cells);
 
   return (
-    <div className={`deck-icon-matrix-wrap ${compact ? "compact" : ""}`} aria-label="deck card icons">
+    <div className={`deck-icon-matrix-wrap ${compact ? "compact" : ""}`} role="group" aria-label="デッキカード一覧">
       <div className="deck-icon-kind-legend" aria-hidden="true">
         {DECK_MATRIX_KIND_ORDER.map((kind) => (
           <span className={kind} key={kind}>{deckMatrixKindLabel(kind)} {counts[kind]}</span>
@@ -6694,6 +7329,7 @@ function DeckIconMatrix({ cardIds, compact = false }: { cardIds: readonly string
               className={`deck-icon-cell ${kind}`}
               title={`${def.name} / ${cardTypeLabel(cardId)}`}
               aria-label={`${index + 1}. ${def.name}`}
+              role="img"
               key={`${cardId}-${index}`}
             >
               <CardIcon cardId={cardId} />
@@ -6901,19 +7537,21 @@ function formatPercent(value: number): string {
 function DeckBuilderControls({
   cardOptions,
   selectedCardId,
+  selectLabel,
   disabled,
   onSelect,
   onAdd,
 }: {
   cardOptions: DeckCardOption[];
   selectedCardId: string;
+  selectLabel: string;
   disabled: boolean;
   onSelect: (cardId: string) => void;
   onAdd: () => void;
 }) {
   return (
     <div className="deck-builder-controls">
-      <select value={selectedCardId} onChange={(event) => onSelect(event.target.value)}>
+      <select aria-label={selectLabel} value={selectedCardId} onChange={(event) => onSelect(event.target.value)}>
         {cardOptions.map((option) => (
           <option value={option.id} key={option.id}>
             {option.pool === "special" ? "Special / " : ""}{option.typeLabel} / {option.name}
@@ -7011,9 +7649,9 @@ function CardZonePanel({ game, view, workspaceMode, onClose }: CardZonePanelProp
   const cards = game.players[view.playerId][view.zone];
   const title = `${playerLabel(view.playerId)} ${zoneLabel(view.zone)}`;
   const hideCardFaces = view.zone === "hand" && !canRevealHand(view.playerId, workspaceMode);
-  const hideDeckOrder = view.zone === "deck" && workspaceMode === "play";
-  const helpText = hideDeckOrder
-    ? "自分/相手の山札順は対戦中非公開です。カード内容は順序を隠して表示しています。"
+  const hideDeckContents = view.zone === "deck" && !canRevealRemainingDeck(workspaceMode);
+  const helpText = hideDeckContents
+    ? "対局中は自分/相手の残り山札の内容を非公開にし、枚数のみ表示します。"
     : hideCardFaces
     ? "相手の手札は非公開です。"
     : view.zone === "hand" && view.playerId === "cpu" && workspaceMode === "analyze"
@@ -7035,13 +7673,13 @@ function CardZonePanel({ game, view, workspaceMode, onClose }: CardZonePanelProp
       </div>
       {cards.length === 0 ? (
         <p className="empty-zone"><Icon icon="□" /> Empty</p>
-      ) : hideCardFaces ? (
+      ) : hideCardFaces || hideDeckContents ? (
         <div className="zone-card-list">
           {cards.map((card, index) => (
             <div className="zone-card-row hidden-zone-card" key={`${card.instanceId}_${index}`}>
               <span className="zone-card-index">{index + 1}</span>
               <CardBackArt />
-              <span className="zone-card-name">非公開</span>
+              <span className="zone-card-name">{hideCardFaces ? "非公開手札" : "非公開カード"}</span>
             </div>
           ))}
         </div>
@@ -8496,7 +9134,7 @@ function isZoneView(view: ZoneView | undefined, playerId: PlayerId, zone: Extrac
 }
 
 function isInfoWorkspaceView(view: ZoneView | undefined): boolean {
-  return view?.kind === "deckSetup" || view?.kind === "aiLab" || view?.kind === "catalog";
+  return view?.kind === "deckSetup" || view?.kind === "aiLab" || view?.kind === "catalog" || view?.kind === "battleJournal";
 }
 
 function toggleZoneView(current: ZoneView | undefined, next: ZoneView): ZoneView | undefined {
@@ -8511,6 +9149,9 @@ function toggleZoneView(current: ZoneView | undefined, next: ZoneView): ZoneView
   }
   if (next.kind === "battleHistory") {
     return current?.kind === "battleHistory" ? undefined : next;
+  }
+  if (next.kind === "battleJournal") {
+    return current?.kind === "battleJournal" ? undefined : next;
   }
   if (next.kind === "aiLab") {
     return current?.kind === "aiLab" ? undefined : next;

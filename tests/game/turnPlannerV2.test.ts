@@ -37,7 +37,7 @@ describe("turn planner v2", () => {
 
   it("continues the selected turn sequence on the expected next state", () => {
     const fixture = createPlannerFixture();
-    const selected = chooseTurnPlannerV2Decision(fixture.states.root, fixture.dependencies, {
+    const options = {
       ownMaxActions: 3,
       ownBeamWidth: 8,
       ownBranchWidth: 8,
@@ -45,10 +45,11 @@ describe("turn planner v2", () => {
       opponentMaxActions: 3,
       opponentBeamWidth: 8,
       opponentBranchWidth: 8,
-    });
+    };
+    const selected = chooseTurnPlannerV2Decision(fixture.states.root, fixture.dependencies, options);
     expect(selected?.type).toBe("summon");
 
-    const continued = chooseTurnPlannerV2Decision(fixture.states.safeSetup, fixture.dependencies);
+    const continued = chooseTurnPlannerV2Decision(fixture.states.safeSetup, fixture.dependencies, options);
 
     expect(continued?.type).toBe("end_turn");
     expect(continued?.trace?.turnPlan?.phase).toBe("continuation");
@@ -108,6 +109,96 @@ describe("turn planner v2", () => {
     expect(selected?.trace?.turnPlan?.opponentWorstResponseScore).toBe(-100);
     expect(selected?.trace?.turnPlan?.opponentSampleCount).toBe(2);
     expect(selected?.trace?.turnPlan?.opponentKnowledge).toBe("fixture-x2");
+  });
+
+  it("compares every legal pending level-up choice and only returns a complete handoff plan", () => {
+    const root = {
+      ...fixtureState("pending_root", "cpu", 0),
+      pendingLevelUp: { playerId: "cpu", attackerSlotKey: "cpu_front_left", maxLevels: 2 },
+    } as FixtureState;
+    const resolved0 = fixtureState("resolved_0", "cpu", 10);
+    const resolved1 = fixtureState("resolved_1", "cpu", 20);
+    const resolved2 = fixtureState("resolved_2", "cpu", 100);
+    const resolvedSuper = fixtureState("resolved_super", "cpu", 70);
+    const handed = [
+      fixtureState("handoff_0", "player", 10),
+      fixtureState("handoff_1", "player", 20),
+      fixtureState("handoff_2", "player", 100),
+      fixtureState("handoff_super", "player", 70),
+    ];
+    const transitions = new Map<string, TurnPlannerDecisionEvaluation[]>([
+      ["pending_root", [
+        evaluation(levelUpDecision(0, "decline"), 0, resolved0, 0),
+        evaluation(levelUpDecision(1, "partial"), 0, resolved1, 1),
+        evaluation(levelUpDecision(2, "full"), 0, resolved2, 2),
+        evaluation(levelUpDecision(1, "super", "super-card"), 0, resolvedSuper, 3),
+      ]],
+      ...[resolved0, resolved1, resolved2, resolvedSuper].map((state, index) => [
+        state.fixtureId,
+        [evaluation(decision("end_turn", `end-${index}`), 0, handed[index], 0)],
+      ] as [string, TurnPlannerDecisionEvaluation[]]),
+    ]);
+    const dependencies: TurnPlannerV2Dependencies = {
+      evaluateDecisions: (state) => transitions.get((state as FixtureState).fixtureId) ?? [],
+      evaluatePosition: (state) => (state as FixtureState).cpuScore,
+      stateKey: (state) => (state as FixtureState).fixtureId,
+      decisionKey: (item) => item.reason,
+    };
+
+    const selected = chooseTurnPlannerV2Decision(root, dependencies, {
+      ownMaxActions: 1,
+      ownBeamWidth: 4,
+      ownBranchWidth: 1,
+      ownResponseRootWidth: 4,
+      opponentMaxActions: 1,
+      opponentBeamWidth: 1,
+      opponentBranchWidth: 1,
+    });
+
+    expect(selected).toMatchObject({ type: "resolve_level_up", levels: 2 });
+    expect(selected?.trace?.turnPlan?.actions).toEqual(["full", "end-2"]);
+    expect(selected?.trace?.turnPlan?.length).toBe(2);
+  });
+
+  it("never completes a plan when the budget ends with an unresolved pending choice", () => {
+    const root = {
+      ...fixtureState("stuck_pending", "cpu", 0),
+      pendingLevelUp: { playerId: "cpu", attackerSlotKey: "cpu_front_left", maxLevels: 2 },
+    } as FixtureState;
+    const selected = chooseTurnPlannerV2Decision(root, {
+      evaluateDecisions: () => [],
+      evaluatePosition: (state) => (state as FixtureState).cpuScore,
+      stateKey: (state) => (state as FixtureState).fixtureId,
+      decisionKey: (item) => item.reason,
+    }, {
+      ownMaxActions: 1,
+      ownBeamWidth: 1,
+      ownBranchWidth: 1,
+      ownResponseRootWidth: 1,
+      opponentMaxActions: 1,
+      opponentBeamWidth: 1,
+      opponentBranchWidth: 1,
+    });
+    expect(selected).toBeUndefined();
+  });
+
+  it("normalizes unsafe options and does not reuse a continuation across option sets", () => {
+    const fixture = createPlannerFixture();
+    const first = chooseTurnPlannerV2Decision(fixture.states.root, fixture.dependencies, {
+      ownMaxActions: Number.POSITIVE_INFINITY,
+      ownBeamWidth: 0,
+      ownBranchWidth: -8,
+      ownResponseRootWidth: Number.NaN,
+    });
+    expect(first).toBeDefined();
+    const changedOptions = chooseTurnPlannerV2Decision(fixture.states.safeSetup, fixture.dependencies, {
+      ownMaxActions: 1,
+      ownBeamWidth: 1,
+      ownBranchWidth: 1,
+      ownResponseRootWidth: 1,
+    });
+    expect(changedOptions?.trace?.turnPlan?.phase).toBe("root");
+    expect(changedOptions?.trace?.turnPlan?.planId).not.toBe(first?.trace?.turnPlan?.planId);
   });
 
 });
@@ -209,4 +300,8 @@ function decision(type: CpuDecision["type"], key: string): CpuDecision {
     };
   }
   return { type: "end_turn", reason: key, score: 0 };
+}
+
+function levelUpDecision(levels: number, reason: string, superHandInstanceId?: string): CpuDecision {
+  return { type: "resolve_level_up", levels, superHandInstanceId, reason, score: 0 };
 }

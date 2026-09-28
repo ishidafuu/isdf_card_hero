@@ -27,6 +27,7 @@ export type MasterLabDeckPresetOption = "random" | DeckPresetId;
 export type MasterLabIssueKind = "exception" | "unresolved_level_up" | "stagnation" | "step_limit" | "turn_limit" | "long_game";
 export type MasterLabIssueSeverity = "failure" | "warning";
 export type MasterLabDecisionSource = "cpu" | "master_lab";
+const MAX_CONSECUTIVE_PENDING_LEVEL_UP_RESOLUTIONS = 4;
 
 export interface MasterLabMagicOpportunityOptions {
   cardIds: readonly string[];
@@ -198,6 +199,7 @@ export interface MasterLabMagicOpportunityRecord {
 export interface MasterLabGameResult {
   seed: number;
   steps: number;
+  partialLevelUpResolutionSteps: number;
   turns: number;
   winner?: PlayerId;
   issueCount: number;
@@ -355,6 +357,7 @@ export function formatMasterLabAutoPlaySummary(result: MasterLabAutoPlayResult):
     `AI profiles: player ${result.options.aiProfiles.player}, cpu ${result.options.aiProfiles.cpu}`,
     `Winners: player ${result.summary.winners.player}, cpu ${result.summary.winners.cpu}, undecided ${result.summary.undecided}`,
     `Max: ${result.summary.maxSteps} steps / ${result.summary.maxTurns} turns`,
+    `Partial LvUP continuation steps: ${result.games.reduce((total, game) => total + game.partialLevelUpResolutionSteps, 0)}`,
     `Master Lab decisions: ${result.summary.labDecisionCount}`,
     `Master Lab action usage: ${formatUsage(result.summary.labActionUsage)}`,
     `Master Lab target usage: ${formatUsage(result.summary.labActionTargetUsage)}`,
@@ -427,6 +430,8 @@ function runMasterLabAutoPlayGame(
   const context: MasterLabRunContext = { seed, options, history: [], issues: [] };
   let game = createMasterLabInitialGame(seed, options);
   let repeatedSignatureCount = 0;
+  let consecutivePendingResolutions = 0;
+  let partialLevelUpResolutionSteps = 0;
   let previousSignature = progressSignature(game);
   let step = 0;
   const labActionUsage: Record<string, number> = {};
@@ -450,12 +455,24 @@ function runMasterLabAutoPlayGame(
       }
 
       if (game.pendingLevelUp) {
+        const beforePendingSignature = progressSignature(game);
         game = runAutoStep(game, { profiles: options.aiProfiles, tunings: options.aiTunings, searches: options.aiSearches });
         if (game.pendingLevelUp) {
-          pushIssue(context, "unresolved_level_up", "failure", game, step, "level-up prompt remained after auto resolution");
-          break;
+          partialLevelUpResolutionSteps += 1;
+          consecutivePendingResolutions += 1;
+          if (progressSignature(game) === beforePendingSignature) {
+            pushIssue(context, "unresolved_level_up", "failure", game, step, "level-up prompt made no legal progress");
+            break;
+          }
+          if (consecutivePendingResolutions > MAX_CONSECUTIVE_PENDING_LEVEL_UP_RESOLUTIONS) {
+            pushIssue(context, "unresolved_level_up", "failure", game, step, "level-up resolution exceeded the bounded partial-choice limit");
+            break;
+          }
+        } else {
+          consecutivePendingResolutions = 0;
         }
       } else {
+        consecutivePendingResolutions = 0;
         const transition = runMasterLabDecisionStep(game, step, context);
         game = transition.next;
         for (const record of transition.magicOpportunityRecords) {
@@ -516,6 +533,7 @@ function runMasterLabAutoPlayGame(
     result: {
       seed,
       steps: step,
+      partialLevelUpResolutionSteps,
       turns: game.turnNumber,
       winner: game.winner,
       issueCount,

@@ -34,6 +34,8 @@ describe("master lab final gate", () => {
     expect(result.runs).toHaveLength(5);
     expect(result.summary.games).toBe(5);
     expect(result.summary.failures).toBe(0);
+    const blackPressureRun = result.runs.find((run) => run.matchup.id === "decoy_vs_black");
+    expect(blackPressureRun?.result.games[0].partialLevelUpResolutionSteps).toBeGreaterThan(0);
 
     const markdown = formatMasterLabFinalGateMarkdown(result);
     expect(markdown).toContain("# Master Lab Final Gate: decoy");

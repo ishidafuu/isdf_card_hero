@@ -1,0 +1,114 @@
+[
+  {
+    "selector": ".app-shell",
+    "rect": {
+      "x": 0,
+      "y": 0,
+      "width": 390,
+      "height": 1532.28125,
+      "widthRatio": 1,
+      "heightRatio": 1.8154991113744077
+    },
+    "color": "rgb(29, 37, 39)",
+    "backgroundColor": "rgba(0, 0, 0, 0)",
+    "borderRadius": "0px"
+  },
+  {
+    "selector": ".topbar",
+    "rect": {
+      "x": 10,
+      "y": 10,
+      "width": 370,
+      "height": 318,
+      "widthRatio": 0.9487179487179487,
+      "heightRatio": 0.3767772511848341
+    },
+    "color": "rgb(29, 37, 39)",
+    "backgroundColor": "rgba(0, 0, 0, 0)",
+    "borderRadius": "0px"
+  },
+  {
+    "selector": ".mode-navigation",
+    "rect": {
+      "x": 10,
+      "y": 58,
+      "width": 370,
+      "height": 30,
+      "widthRatio": 0.9487179487179487,
+      "heightRatio": 0.035545023696682464
+    },
+    "color": "rgb(29, 37, 39)",
+    "backgroundColor": "rgba(0, 0, 0, 0)",
+    "borderRadius": "0px"
+  },
+  {
+    "selector": ".battle-area",
+    "rect": {
+      "x": 10,
+      "y": 338,
+      "width": 370,
+      "height": 713.90625,
+      "widthRatio": 0.9487179487179487,
+      "heightRatio": 0.8458604857819905
+    },
+    "color": "rgb(29, 37, 39)",
+    "backgroundColor": "rgba(0, 0, 0, 0)",
+    "borderRadius": "0px"
+  },
+  {
+    "selector": ".battle-primary",
+    "rect": {
+      "x": 10,
+      "y": 338,
+      "width": 370,
+      "height": 713.90625,
+      "widthRatio": 0.9487179487179487,
+      "heightRatio": 0.8458604857819905
+    },
+    "color": "rgb(29, 37, 39)",
+    "backgroundColor": "rgba(0, 0, 0, 0)",
+    "borderRadius": "0px"
+  },
+  {
+    "selector": ".board",
+    "rect": {
+      "x": 10,
+      "y": 338,
+      "width": 370,
+      "height": 376,
+      "widthRatio": 0.9487179487179487,
+      "heightRatio": 0.44549763033175355
+    },
+    "color": "rgb(29, 37, 39)",
+    "backgroundColor": "rgba(0, 0, 0, 0)",
+    "borderRadius": "0px"
+  },
+  {
+    "selector": ".battle-control-panel",
+    "rect": {
+      "x": 10,
+      "y": 726,
+      "width": 370,
+      "height": 99.328125,
+      "widthRatio": 0.9487179487179487,
+      "heightRatio": 0.1176873518957346
+    },
+    "color": "rgb(29, 37, 39)",
+    "backgroundColor": "rgb(248, 250, 244)",
+    "borderRadius": "8px"
+  },
+  {
+    "selector": ".hand-list",
+    "rect": {
+      "x": 20,
+      "y": 693.421875,
+      "width": 350,
+      "height": 141.578125,
+      "widthRatio": 0.8974358974358975,
+      "heightRatio": 0.16774659360189573
+    },
+    "color": "rgb(29, 37, 39)",
+    "backgroundColor": "rgba(0, 0, 0, 0)",
+    "borderRadius": "0px"
+  }
+]

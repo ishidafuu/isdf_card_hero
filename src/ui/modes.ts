@@ -23,6 +23,10 @@ export function shouldHideHandList(isMobileViewport: boolean, handSheetOpen: boo
   return isMobileViewport && !handSheetOpen;
 }
 
+export function canRevealRemainingDeck(mode: BattleWorkspaceMode): boolean {
+  return mode !== "play";
+}
+
 export function displayLogEntry(entry: string, mode: BattleWorkspaceMode): string {
   if (mode !== "play") {
     return entry;

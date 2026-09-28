@@ -1,7 +1,8 @@
 import { describe, expect, it } from "vitest";
-import { getMonsterDef } from "../../src/game/cards";
+import { getCardDef, getCardPool, getMonsterDef } from "../../src/game/cards";
 import { applyCpuDecision, chooseCpuDecision, CPU_AI_PROFILES, inspectCpuDecisionEvaluations, listCpuDecisions } from "../../src/game/cpuAi";
 import { buildDeckPresetCardIds, deckPresetAllowsSpecial } from "../../src/game/deckPresets";
+import { clearTurnPlannerV2Cache } from "../../src/game/cpuAiV2/turnPlanner";
 import { attackWithCommand, createInitialGame, endTurn, runAutoStep, runCpuStep } from "../../src/game/rules";
 import type { CardInstance, GameState, MonsterState, PlayerId } from "../../src/game/types";
 
@@ -60,6 +61,79 @@ describe("cpu ai", () => {
     const resolved = applyCpuDecision(pending, decision);
     expect(resolved.slots.cpu_front_left.monster?.level).toBe(2);
     expect(resolved.slots.cpu_front_left.monster?.hp).toBeGreaterThan(1);
+  });
+
+  it("plans WhiteV2 level-up choices inside the full turn and continues after resolving", () => {
+    const game = createCpuGame([{ cardId: "thunder", instanceId: "cpu_thunder" }]);
+    game.players.cpu.masterId = "white";
+    game.players.player.masterId = "white";
+    game.players.cpu.stones = 1;
+    game.slots.cpu_front_left.monster = createActiveMonster("takokke", "cpu", { hp: 1 });
+    game.slots.player_front_left.monster = createActiveMonster("takokke", "player", { hp: 2 });
+    const pending = attackWithCommand(game, {
+      attackerSlotKey: "cpu_front_left",
+      commandId: "attack",
+      target: { kind: "monster", slotKey: "player_front_left" },
+    });
+    const preparedIndex = pending.players.player.deck.findIndex((card) => {
+      const def = getCardDef(card.cardId);
+      return def.type === "monster" && getCardPool(def) === "normal";
+    });
+    if (preparedIndex >= 0) {
+      const preparedCard = pending.players.player.deck.splice(preparedIndex, 1)[0];
+      pending.slots.player_back_left.monster = createActiveMonster(preparedCard.cardId, "player", {
+        status: "prepared",
+        instanceId: preparedCard.instanceId,
+      });
+    }
+    const hiddenVariant = structuredClone(pending);
+    const handIndex = hiddenVariant.players.player.hand.findIndex((card) => {
+      const def = getCardDef(card.cardId);
+      return def.type === "monster" && getCardPool(def) === "normal" &&
+        card.cardId !== hiddenVariant.slots.player_back_left.monster?.cardId;
+    });
+    if (handIndex >= 0 && hiddenVariant.slots.player_back_left.monster) {
+      const prepared = hiddenVariant.slots.player_back_left.monster;
+      const handCard = hiddenVariant.players.player.hand[handIndex];
+      hiddenVariant.players.player.hand[handIndex] = { ...handCard, cardId: prepared.cardId };
+      hiddenVariant.slots.player_back_left.monster = createActiveMonster(handCard.cardId, "player", {
+        status: "prepared",
+        instanceId: prepared.instanceId,
+        hp: 1,
+        focused: true,
+        shielded: true,
+      });
+    }
+    hiddenVariant.players.cpu.deck.reverse();
+    hiddenVariant.randomSeed ^= 0x31415926;
+
+    clearTurnPlannerV2Cache();
+    const planned = chooseCpuDecision(pending, { profile: "white_v2" });
+    expect(planned.type).toBe("resolve_level_up");
+    expect(planned.trace?.turnPlan).toMatchObject({ phase: "root", step: 1 });
+    const resolved = applyCpuDecision(pending, planned);
+    expect(resolved.pendingLevelUp).toBeUndefined();
+    const warmA = chooseCpuDecision(resolved, { profile: "white_v2" });
+    expect(warmA.trace?.turnPlan).toMatchObject({
+      planId: planned.trace?.turnPlan?.planId,
+      phase: "continuation",
+      step: 2,
+    });
+    clearTurnPlannerV2Cache();
+    const plannedAgain = chooseCpuDecision(pending, { profile: "white_v2" });
+    const hiddenResolved = applyCpuDecision(hiddenVariant, plannedAgain);
+    const warmB = chooseCpuDecision(hiddenResolved, { profile: "white_v2" });
+    expect(warmB.trace?.turnPlan).toMatchObject({
+      planId: plannedAgain.trace?.turnPlan?.planId,
+      phase: "continuation",
+      step: 2,
+    });
+    expect(decisionTestSignature(warmB)).toBe(decisionTestSignature(warmA));
+    clearTurnPlannerV2Cache();
+    const coldA = chooseCpuDecision(resolved, { profile: "white_v2" });
+    clearTurnPlannerV2Cache();
+    const coldB = chooseCpuDecision(hiddenResolved, { profile: "white_v2" });
+    expect(decisionTestSignature(coldB)).toBe(decisionTestSignature(coldA));
   });
 
   it("records the player-side AI level-up choice in decision history", () => {
@@ -228,7 +302,6 @@ describe("cpu ai", () => {
       actionCount: 1,
     });
     game.slots.player_front_right.monster = createActiveMonster("card_133", "player", {
-      status: "prepared",
       hp: 6,
     });
     game.slots.cpu_front_left.monster = createActiveMonster("polyspinner", "cpu", {
@@ -505,28 +578,34 @@ describe("cpu ai", () => {
     expect(afterTurnChange.turnAiRolloutDecisionHistory).toBeUndefined();
   });
 
-  it("holds stones instead of early low-conversion white mirror setup after front work", () => {
-    const deck = buildDeckPresetCardIds("master-lab-white-1377-death-sheep3");
-    const allowsSpecial = deckPresetAllowsSpecial("master-lab-white-1377-death-sheep3");
-    const options = { profiles: { player: "white" as const, cpu: "white_planner" as const } };
-    let game = createInitialGame(994322, {
-      masterIds: { player: "white", cpu: "white" },
-      playerDeckCardIds: deck,
-      cpuDeckCardIds: deck,
-      allowSpecialDecks: { player: allowsSpecial, cpu: allowsSpecial },
-    });
-
-    for (let step = 0; step < 16; step += 1) {
-      game = runAutoStep(game, options);
+  it("preserves stones and hand when a fresh public white-mirror snapshot rejects low-conversion focus", () => {
+    const game = createCpuGame();
+    game.turnNumber = 3;
+    game.players.cpu.masterId = "white";
+    game.players.player.masterId = "white";
+    game.players.cpu.stones = 3;
+    game.players.player.stones = 1;
+    game.players.cpu.hand = [];
+    game.players.player.hand = [];
+    for (const slot of Object.values(game.slots)) {
+      delete slot.monster;
     }
+    game.slots.cpu_front_left.monster = createActiveMonster("card_047", "cpu", { actionCount: 1 });
+    game.slots.cpu_front_right.monster = createActiveMonster("card_037", "cpu", { actionCount: 1 });
+    game.slots.cpu_back_left.monster = createActiveMonster("card_047", "cpu");
+    game.slots.player_front_left.monster = createActiveMonster("card_133", "player", { actionCount: 1 });
+    game.slots.player_front_right.monster = createActiveMonster("card_047", "player", { actionCount: 1 });
+    const options = { profiles: { player: "white" as const, cpu: "white_planner" as const } };
 
     const decision = chooseCpuDecision(game, options);
-
     expect(decision.type).toBe("end_turn");
     expect(decision.reason).toContain("白ミラー序盤");
     expect(decision.trace?.totalScore).toBeDefined();
     expect(decision.trace?.totalScore).not.toBe(decision.score);
     expect(decision.trace?.alternatives?.length).toBeGreaterThan(0);
+    const after = applyCpuDecision(game, decision);
+    expect(after.players.cpu.stones).toBe(game.players.cpu.stones);
+    expect(after.players.cpu.hand).toEqual(game.players.cpu.hand);
     const firstAlternative = decision.trace?.alternatives?.[0];
     if (firstAlternative) {
       const roundedGap = Math.round(firstAlternative.scoreGap);
@@ -3049,7 +3128,7 @@ describe("cpu ai", () => {
     expect(decision.reason).toContain("前衛カードを前列右へ召喚");
   });
 
-  it("shields a fragile early multi-action front over a durable focused front in a white mirror", () => {
+  it("keeps immediate shield evaluation for the old fixture under explicit omniscience", () => {
     const game = createPlayerAutoGame([]);
     game.turnNumber = 2;
     game.players.player.masterId = "white";
@@ -3100,10 +3179,67 @@ describe("cpu ai", () => {
       status: "prepared",
     });
 
-    const decision = chooseCpuDecision(game, { profiles: { player: "white_planner", cpu: "white" } });
+    const decision = chooseCpuDecision(game, { profiles: { player: "omniscient", cpu: "white" } });
 
-    expect(decisionTestSignature(decision)).toBe("master_action:shield:player_front_right");
-    expect(decision.reason).toContain("複数行動前衛を盾対象");
+    expect(decisionTestSignature(decision)).toBe("master_action:shield:player_front_left");
+    expect(decision.reason).not.toContain("盾対象応答評価");
+  });
+
+  it("changes a public white-mirror shield target after reading the next-turn response", () => {
+    const game = createPlayerAutoGame(createHand("ph", 5));
+    game.turnNumber = 12;
+    game.players.player.masterId = "white";
+    game.players.cpu.masterId = "white";
+    game.players.player.masterHp = 9;
+    game.players.cpu.masterHp = 7;
+    game.players.player.stones = 3;
+    game.players.cpu.stones = 2;
+    game.players.player.deck = createHand("pd", 14);
+    game.players.cpu.deck = createHand("cd", 14);
+    game.players.cpu.hand = createHand("ch", 4);
+    for (const slot of Object.values(game.slots)) {
+      delete slot.monster;
+    }
+    game.slots.player_front_left.monster = createActiveMonster("yanbaru", "player", {
+      instanceId: "player_yanbaru", level: 2, hp: 3, investedStones: 2, actionCount: 1,
+    });
+    game.slots.player_front_right.monster = createActiveMonster("card_133", "player", {
+      instanceId: "player_card_133", level: 2, hp: 5, investedStones: 2, actionCount: 1,
+    });
+    game.slots.player_back_left.monster = createActiveMonster("bomuzo", "player", {
+      instanceId: "player_bomuzo", status: "prepared",
+    });
+    game.slots.player_back_right.monster = createActiveMonster("card_051", "player", {
+      instanceId: "player_card_051", level: 2, hp: 3, investedStones: 2, actionCount: 1, actionLimit: 2, focused: true,
+    });
+    game.slots.cpu_front_left.monster = createActiveMonster("card_047", "cpu", {
+      instanceId: "cpu_card_047", level: 3, hp: 6, investedStones: 3, actionCount: 1, shielded: true,
+    });
+    game.slots.cpu_front_right.monster = createActiveMonster("bomuzo", "cpu", {
+      instanceId: "cpu_bomuzo", status: "prepared",
+    });
+    game.slots.cpu_back_left.monster = createActiveMonster("card_051", "cpu", {
+      instanceId: "cpu_card_051", hp: 3, actionCount: 2, actionLimit: 2,
+    });
+
+    const plannerOptions = { profiles: { player: "white_planner" as const, cpu: "white" as const } };
+    clearTurnPlannerV2Cache();
+    const responseAware = chooseCpuDecision(game, plannerOptions);
+    const immediateOnly = chooseCpuDecision(game, {
+      ...plannerOptions,
+      searches: { player: { terminalPlanRolloutShieldTargetTieSteps: 0 } },
+    });
+    const unrelatedDecision = chooseCpuDecision(createCpuGame(), { profile: "white_v2" });
+    const warmResponseAware = chooseCpuDecision(game, plannerOptions);
+
+    expect(decisionTestSignature(responseAware)).toBe("master_action:shield:player_front_left");
+    expect(responseAware.reason).toContain("盾対象応答評価");
+    expect(responseAware.reason).toContain("次自ターン167点");
+    expect(responseAware.reason).toContain("fallback比13点差");
+    expect(warmResponseAware.reason).toBe(responseAware.reason);
+    expect(decisionTestSignature(unrelatedDecision)).not.toBe("");
+    expect(decisionTestSignature(immediateOnly)).toBe("master_action:shield:player_front_right");
+    expect(decisionTestSignature(responseAware)).not.toBe(decisionTestSignature(immediateOnly));
   });
 
   it("holds late white mirror non-lethal face damage when it would give stone at zero stones", () => {
@@ -3489,7 +3625,7 @@ describe("cpu ai", () => {
 
     const missState = createCenturiasMasterCacheGame(0, "random-seed-cache");
     const missDecision = chooseCpuDecision(missState, { profile: "stable" });
-    expect(missDecision.type).toBe("end_turn");
+    expect(decisionTestSignature(missDecision)).toBe(decisionTestSignature(hitDecision));
   });
 
   it("does not reuse an illegal master damage plan after a command is sealed", () => {
@@ -3788,7 +3924,7 @@ describe("cpu ai", () => {
       status: "prepared",
     });
 
-    const decision = chooseCpuDecision(game);
+    const decision = chooseCpuDecision(game, { profile: "omniscient" });
 
     expect(decision.type).toBe("master_action");
     if (decision.type === "master_action") {

@@ -1,6 +1,6 @@
 # プロダクト完成計画
 
-この文書は実装順と完了判定を管理する。チェックは実装・対象検証・フェイズレビューがすべて完了した項目だけに付ける。初回実装だけでは完了にしない。2026-09-28に短期フェイズの全8項目をrootがレビュー承認済み。中期フェイズは着手ゲートが開いたが、実装開始指示待ち。
+この文書は実装順と完了判定を管理する。チェックは実装・対象検証・フェイズレビューがすべて完了した項目だけに付ける。初回実装だけでは完了にしない。2026-09-28に短期フェイズの全8項目、2026-09-29に中期フェイズの全7項目をrootがレビュー承認済み。
 
 ## 短期フェイズ
 
@@ -31,15 +31,19 @@
 
 ## 中期フェイズ
 
-フェイズ完了ゲート: 短期フェイズのレビュー承認後に着手する。7項目の受入条件と対局/AI回帰を記録し、全テスト・build・diff checkを実施したうえでレビューする。
+フェイズ完了ゲート: 短期フェイズのレビュー承認後に着手する。7項目の受入条件と対局/AI回帰を記録し、全テスト・build・diff checkを実施したうえでレビューする。状態: 完了・2026-09-29 rootレビュー承認済み。
 
-- [ ] 1. AI hidden情報 / 乱数公平性 — CPU判断が非公開の相手情報へ不正アクセスせず、乱数源/seedの扱いが人間とCPUで公平であることをコード経路と再現可能なテストで証明する。
-- [ ] 2. WhiteV2 fullturn — WhiteV2が1手の局所選択ではなく、合法な自ターン全体を計画/実行する。終了条件、計算上限、合法性、ベースライン対比のテストを用意する。
-- [ ] 3. White baseline 両先攻ベンチ — 両先攻を対称に測る固定seedのベンチを整備し、比較対象・勝敗・引分・試行数をレポートして再実行可能にする。
-- [ ] 4. 初回tutorial — 初回利用者が対局開始と主要操作を完了でき、再表示/スキップ可能で通常対局の入力を妨げない。初回/既存利用の両方を確認する。
-- [ ] 5. DeckSetup簡易 / 研究分離 — 通常のデッキ設定を簡潔にし、研究・調整機能を通常導線から分離する。既存デッキの保持と対局への反映を検証する。
-- [ ] 6. command journal 完全replay — 初期状態と順序付きcommand journalからゲーム状態・結果・ログを決定的に再構築する。乱数、境界イベント、旧記録互換を含むreplay一致テストを用意する。
-- [ ] 7. E2E / a11y / visual regression — Play/Spectate/Analyzeと代表的対局フローのE2E、主要操作のアクセシビリティ検査、承認済み画面のvisual regressionをCI等で再現可能にする。
+中期最終証跡（2026-09-29、root実施・承認）: `npm test` は52 files / 729 tests pass（389.54秒）、`npm run build` pass（500KB超chunkのwarningあり）、local ChromiumでE2Eは9/9 pass（実stdout: `9 passed (1.8m)`）。GitHub CIは設定済みだが、remote runは未実行。axeはPlay/Spectate/Analyze、設定、DeckSetup basic/research、tutorial等の実画面検査で0 violations。画像decode完了を待つ検査後の4枚の固定seed PNGをrootが目視承認した。visual回帰はgeometry/color/radiusのJSON契約を比較し、PNGは目視補助でありpixel差分baselineではない。242 commands（review historyなし）のseek/parse測定と、別条件の482 command rollover stressは混同しない。後者は空の初期review history・eventLog有効からhuman/AI end_turn各241件を実記録し、482 commandsのseek後hash一致、human/AI history各240件・最新sequence 241を確認。再検証の記録43,093ms、seek 23,086.8ms。dual32-v2 hashと、検証済みstress journal（`output/replay-stress/482-command-journal.json`、98,462 bytes）をrootの実ブラウザー確認に使用した。worker経由の482-command import中は50msごとのresponsive probeが32回（約1.6秒）進行。cancel、Current game、New Gameによる後続意図の後に古い結果がlive header/journalを上書きせず、page errorsも0件。8 smoke benchmarkは失敗0（White 3–1、Black 2–2）だが、強さや採用可否の証明ではない。追加40件の追試は未完了であり、完了扱いしない。
+
+中期のjournal測定は負荷の大きい同期replayをWorkerへ移す判断の根拠にもなった。create/append/seek/parse/import/export/undo/branchの対象テスト、E2Eのread-only seek・JSON往復・undo分岐・cancel/stale抑止、型検査とbuildを確認済み。完全記録のschema検証とfull replayを通らない入力は完全journalとして扱わない。visual JSON契約は承認済みで、CIで自動更新しない。
+
+- [x] 1. AI hidden情報 / 乱数公平性 — CPU判断が非公開の相手情報へ不正アクセスせず、乱数源/seedの扱いが人間とCPUで公平であることをコード経路と再現可能なテストで証明する。
+- [x] 2. WhiteV2 fullturn — WhiteV2が1手の局所選択ではなく、合法な自ターン全体を計画/実行する。終了条件、計算上限、合法性、ベースライン対比のテストを用意する。
+- [x] 3. White baseline 両先攻ベンチ — 両先攻を対称に測る固定seedのベンチを整備し、比較対象・勝敗・引分・試行数をレポートして再実行可能にする。
+- [x] 4. 初回tutorial — 初回利用者が対局開始と主要操作を完了でき、再表示/スキップ可能で通常対局の入力を妨げない。初回/既存利用の両方を確認する。
+- [x] 5. DeckSetup簡易 / 研究分離 — 通常のデッキ設定を簡潔にし、研究・調整機能を通常導線から分離する。既存デッキの保持と対局への反映を検証する。
+- [x] 6. command journal 完全replay — 初期状態と順序付きcommand journalからゲーム状態・結果・ログを決定的に再構築する。乱数、境界イベント、旧記録互換を含むreplay一致テストを用意する。
+- [x] 7. E2E / a11y / visual regression — Play/Spectate/Analyzeと代表的対局フローのE2E、主要操作のアクセシビリティ検査、承認済み画面のvisual regressionをCI等で再現可能にする。
 
 ## 後段フェイズ
 

@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { validateAutoPlay } from "../../src/game/autoPlayValidation";
+import { newLogEntries, validateAutoPlay } from "../../src/game/autoPlayValidation";
 import { buildDeckPresetCardIds, DECK_PRESET_IDS, deckPresetAllowsSpecial, validateDeckPresets } from "../../src/game/deckPresets";
 import { summarizeDeckCardIds } from "../../src/game/cards";
 
@@ -165,22 +165,15 @@ describe("auto play validation", () => {
     expect(result.issues[0].history.length).toBeGreaterThan(0);
   });
 
-  it("keeps per-decision new log entries after the game log reaches its cap", () => {
-    const result = validateAutoPlay({
-      seedStart: 7,
-      count: 1,
-      maxSteps: 150,
-      maxTurns: 120,
-      historyLimit: 140,
-    });
+  it("keeps per-decision new log entries after the display log reaches its cap", () => {
+    const before = Array.from({ length: 120 }, (_, index) => `entry-${index}`);
+    const after = Array.from({ length: 120 }, (_, index) => `entry-${index + 3}`);
 
-    expect(result.ok).toBe(false);
-    expect(result.issues[0]).toMatchObject({
-      kind: "step_limit",
-      severity: "failure",
-      seed: 7,
-    });
-    expect(result.issues[0].history.length).toBeGreaterThan(120);
-    expect(result.issues[0].history.every((event) => event.newLog.length > 0)).toBe(true);
-  }, AUTO_PLAY_TEST_TIMEOUT_MS);
+    expect(newLogEntries(before, 0, after, 3)).toEqual([
+      "entry-120",
+      "entry-121",
+      "entry-122",
+    ]);
+  });
+
 });

@@ -29,6 +29,8 @@ export interface AutoPlayValidationOptions {
   seedEnd?: number;
   count?: number;
   deckPreset?: "random" | DeckPresetId;
+  playerDeckPreset?: "random" | DeckPresetId;
+  cpuDeckPreset?: "random" | DeckPresetId;
   masterIds?: Partial<Record<PlayerId, MasterId>>;
   maxSteps?: number;
   maxTurns?: number;
@@ -110,7 +112,9 @@ export interface AutoPlayIssue {
 
 export interface AutoPlayGameResult {
   seed: number;
+  elapsedMs: number;
   steps: number;
+  partialLevelUpResolutionSteps: number;
   turns: number;
   winner?: PlayerId;
   issueCount: number;
@@ -141,6 +145,7 @@ interface RunContext {
   history: AutoPlayDecisionEvent[];
   issues: AutoPlayIssue[];
   moveCountsByTurn: Map<string, number>;
+  partialLevelUpResolutionSteps: number;
 }
 
 const DEFAULT_OPTIONS = {
@@ -158,6 +163,7 @@ const DEFAULT_OPTIONS = {
   masterIds: { player: "white", cpu: "white" } satisfies Record<PlayerId, MasterId>,
   aiProfile: "stable" as const satisfies CpuAiProfile,
 };
+const MAX_CONSECUTIVE_PENDING_LEVEL_UP_RESOLUTIONS = 4;
 
 export function validateAutoPlay(options: AutoPlayValidationOptions = {}): AutoPlayValidationResult {
   const resolved = resolveOptions(options);
@@ -206,10 +212,12 @@ export function formatAutoPlayValidationSummary(result: AutoPlayValidationResult
     `Auto play validation: ${result.ok ? "PASS" : "FAIL"}`,
     `Seeds: ${result.options.seedStart}-${result.options.seedEnd} (${result.summary.games} games)`,
     `Deck preset: ${result.options.deckPreset}`,
+    `Player deck: ${result.options.playerDeckPreset}; CPU deck: ${result.options.cpuDeckPreset}`,
     `Masters: player ${result.options.masterIds.player}, cpu ${result.options.masterIds.cpu}`,
     `AI profiles: player ${result.options.aiProfiles.player}, cpu ${result.options.aiProfiles.cpu}`,
     `Winners: player ${result.summary.winners.player}, cpu ${result.summary.winners.cpu}`,
     `Max: ${result.summary.maxSteps} steps / ${result.summary.maxTurns} turns`,
+    `Partial LvUP continuation steps: ${result.games.reduce((total, game) => total + game.partialLevelUpResolutionSteps, 0)}`,
     `Issues: ${result.summary.failures} failures, ${result.summary.warnings} warnings`,
   ];
 
@@ -246,6 +254,8 @@ function resolveOptions(options: AutoPlayValidationOptions): AutoPlayValidationR
     failOnWarnings: options.failOnWarnings ?? DEFAULT_OPTIONS.failOnWarnings,
     includeGameHistory: options.includeGameHistory ?? DEFAULT_OPTIONS.includeGameHistory,
     deckPreset: options.deckPreset ?? DEFAULT_OPTIONS.deckPreset,
+    playerDeckPreset: options.playerDeckPreset ?? options.deckPreset ?? DEFAULT_OPTIONS.deckPreset,
+    cpuDeckPreset: options.cpuDeckPreset ?? options.deckPreset ?? DEFAULT_OPTIONS.deckPreset,
     aiProfile: fallbackAiProfile,
     aiProfiles: {
       player: options.aiProfiles?.player ?? fallbackAiProfile,
@@ -266,14 +276,17 @@ function runAutoPlayGame(
   seed: number,
   options: AutoPlayValidationResult["options"],
 ): { result: AutoPlayGameResult; issues: AutoPlayIssue[] } {
+  const startedAt = Date.now();
   const context: RunContext = {
     seed,
     history: [],
     issues: [],
     moveCountsByTurn: new Map(),
+    partialLevelUpResolutionSteps: 0,
   };
-  let game = createAutoPlayInitialGame(seed, options.deckPreset, options.masterIds);
+  let game = createAutoPlayInitialGame(seed, options.playerDeckPreset, options.cpuDeckPreset, options.masterIds);
   let repeatedSignatureCount = 0;
+  let consecutivePendingResolutions = 0;
   let previousSignature = progressSignature(game);
   let step = 0;
 
@@ -285,12 +298,24 @@ function runAutoPlayGame(
       }
 
       if (game.pendingLevelUp) {
+        const beforePendingSignature = progressSignature(game);
         game = runAutoStep(game, { profiles: options.aiProfiles });
         if (game.pendingLevelUp) {
-          pushIssue(context, "unresolved_level_up", "failure", game, step, "level-up prompt remained after auto resolution");
-          break;
+          context.partialLevelUpResolutionSteps += 1;
+          consecutivePendingResolutions += 1;
+          if (progressSignature(game) === beforePendingSignature) {
+            pushIssue(context, "unresolved_level_up", "failure", game, step, "level-up prompt made no legal progress");
+            break;
+          }
+          if (consecutivePendingResolutions > MAX_CONSECUTIVE_PENDING_LEVEL_UP_RESOLUTIONS) {
+            pushIssue(context, "unresolved_level_up", "failure", game, step, "level-up resolution exceeded the bounded partial-choice limit");
+            break;
+          }
+        } else {
+          consecutivePendingResolutions = 0;
         }
       } else {
+        consecutivePendingResolutions = 0;
         game = runDecisionStepWithTrace(game, step, options, context);
       }
 
@@ -327,7 +352,9 @@ function runAutoPlayGame(
   return {
     result: {
       seed,
+      elapsedMs: Date.now() - startedAt,
       steps: step,
+      partialLevelUpResolutionSteps: context.partialLevelUpResolutionSteps,
       turns: game.turnNumber,
       winner: game.winner,
       issueCount,
@@ -346,19 +373,23 @@ function runAutoPlayGame(
 
 function createAutoPlayInitialGame(
   seed: number,
-  deckPreset: AutoPlayValidationResult["options"]["deckPreset"],
+  playerDeckPreset: AutoPlayValidationResult["options"]["playerDeckPreset"],
+  cpuDeckPreset: AutoPlayValidationResult["options"]["cpuDeckPreset"],
   masterIds: Record<PlayerId, MasterId>,
 ): GameState {
-  if (deckPreset === "random") {
+  if (playerDeckPreset === "random" && cpuDeckPreset === "random") {
     return createInitialGame(seed, { masterIds });
   }
-  const cardIds = buildDeckPresetCardIds(deckPreset);
-  const allowSpecial = deckPresetAllowsSpecial(deckPreset);
+  const playerDeckCardIds = playerDeckPreset === "random" ? undefined : buildDeckPresetCardIds(playerDeckPreset);
+  const cpuDeckCardIds = cpuDeckPreset === "random" ? undefined : buildDeckPresetCardIds(cpuDeckPreset);
   return createInitialGame(seed, {
     masterIds,
-    playerDeckCardIds: cardIds,
-    cpuDeckCardIds: cardIds,
-    allowSpecialDecks: { player: allowSpecial, cpu: allowSpecial },
+    playerDeckCardIds,
+    cpuDeckCardIds,
+    allowSpecialDecks: {
+      player: playerDeckPreset !== "random" && deckPresetAllowsSpecial(playerDeckPreset),
+      cpu: cpuDeckPreset !== "random" && deckPresetAllowsSpecial(cpuDeckPreset),
+    },
   });
 }
 
@@ -376,6 +407,7 @@ function runDecisionStepWithTrace(
     hasRawEndTurnWarningCandidate ? inspectCpuDecisionEvaluations(game, { profiles: options.aiProfiles }) : undefined;
   const beforeSummary = summarizeGameState(game);
   const logBefore = game.log;
+  const logOffsetBefore = game.logOffset ?? 0;
   const next = applyCpuDecision(game, decision);
   const event: AutoPlayDecisionEvent = {
     seed: context.seed,
@@ -389,7 +421,7 @@ function runDecisionStepWithTrace(
     nonEndDecisionCount: decisions.filter((candidate) => candidate.type !== "end_turn").length,
     before: beforeSummary,
     after: summarizeGameState(next),
-    newLog: newLogEntries(logBefore, next.log),
+    newLog: newLogEntries(logBefore, logOffsetBefore, next.log, next.logOffset ?? 0),
   };
   pushHistory(context, event, options.historyLimit);
   detectSuspiciousDecision(context, game, next, decision, decisions, evaluatedDecisions, step);
@@ -500,7 +532,13 @@ function pushIssue(
   });
 }
 
-function newLogEntries(before: string[], after: string[]): string[] {
+export function newLogEntries(before: string[], beforeOffset: number, after: string[], afterOffset: number): string[] {
+  const beforeEnd = beforeOffset + before.length;
+  const afterEnd = afterOffset + after.length;
+  if (afterOffset > beforeOffset) {
+    const firstNewIndex = Math.max(0, beforeEnd - afterOffset);
+    return afterEnd > beforeEnd ? after.slice(firstNewIndex) : [];
+  }
   const maxOverlap = Math.min(before.length, after.length);
   for (let overlap = maxOverlap; overlap > 0; overlap -= 1) {
     const beforeStart = before.length - overlap;

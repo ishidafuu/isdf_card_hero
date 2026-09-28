@@ -11,6 +11,7 @@
     "build": "tsc -b && vite build",
     "preview": "vite preview",
     "test": "vitest run",
+    "test:e2e": "playwright test",
     "collect:battle-reports": "vite-node scripts/battle-report-inbox.ts",
     "analyze:battle-report": "vite-node scripts/analyze-battle-report.ts",
     "audit:human-turns": "vite-node scripts/analyze-human-turns.ts",
@@ -73,6 +74,7 @@
     "import:deck-submissions": "node scripts/import-cardhero-bu-decks.mjs",
     "validate:auto-play": "vite-node scripts/auto-play-validation.ts",
     "benchmark:ai-paired-seat": "vite-node scripts/ai-paired-seat-benchmark.ts",
+    "benchmark:white-v2-seats": "vite-node scripts/white-v2-seat-benchmark.ts",
     "evaluate:units": "vite-node scripts/unit-evaluation.ts"
   },
   "dependencies": {
@@ -80,6 +82,8 @@
     "react-dom": "^19.2.7"
   },
   "devDependencies": {
+    "@axe-core/playwright": "^4.12.1",
+    "@playwright/test": "^1.63.0",
     "@types/node": "^25.9.2",
     "@types/react": "^19.2.17",
     "@types/react-dom": "^19.2.3",

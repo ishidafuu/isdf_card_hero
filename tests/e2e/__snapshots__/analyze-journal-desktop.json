@@ -1,0 +1,128 @@
+[
+  {
+    "selector": ".app-shell",
+    "rect": {
+      "x": 0,
+      "y": -242,
+      "width": 1280,
+      "height": 747,
+      "widthRatio": 1,
+      "heightRatio": 1.0375
+    },
+    "color": "rgb(29, 37, 39)",
+    "backgroundColor": "rgba(0, 0, 0, 0)",
+    "borderRadius": "0px"
+  },
+  {
+    "selector": ".topbar",
+    "rect": {
+      "x": 16,
+      "y": -226,
+      "width": 1248,
+      "height": 77,
+      "widthRatio": 0.975,
+      "heightRatio": 0.10694444444444444
+    },
+    "color": "rgb(29, 37, 39)",
+    "backgroundColor": "rgba(0, 0, 0, 0)",
+    "borderRadius": "0px"
+  },
+  {
+    "selector": ".mode-navigation",
+    "rect": {
+      "x": 993.4375,
+      "y": -224.5,
+      "width": 270.5625,
+      "height": 34,
+      "widthRatio": 0.211376953125,
+      "heightRatio": 0.04722222222222222
+    },
+    "color": "rgb(29, 37, 39)",
+    "backgroundColor": "rgba(0, 0, 0, 0)",
+    "borderRadius": "0px"
+  },
+  {
+    "selector": ".battle-area",
+    "rect": {
+      "x": 0,
+      "y": 0,
+      "width": 0,
+      "height": 0,
+      "widthRatio": 0,
+      "heightRatio": 0
+    },
+    "color": "rgb(29, 37, 39)",
+    "backgroundColor": "rgba(0, 0, 0, 0)",
+    "borderRadius": "0px"
+  },
+  {
+    "selector": ".battle-primary",
+    "rect": {
+      "x": 0,
+      "y": 0,
+      "width": 0,
+      "height": 0,
+      "widthRatio": 0,
+      "heightRatio": 0
+    },
+    "color": "rgb(29, 37, 39)",
+    "backgroundColor": "rgba(0, 0, 0, 0)",
+    "borderRadius": "0px"
+  },
+  {
+    "selector": ".board",
+    "rect": {
+      "x": 0,
+      "y": 0,
+      "width": 0,
+      "height": 0,
+      "widthRatio": 0,
+      "heightRatio": 0
+    },
+    "color": "rgb(29, 37, 39)",
+    "backgroundColor": "rgba(0, 0, 0, 0)",
+    "borderRadius": "0px"
+  },
+  {
+    "selector": ".battle-control-panel",
+    "rect": {
+      "x": 0,
+      "y": 0,
+      "width": 0,
+      "height": 0,
+      "widthRatio": 0,
+      "heightRatio": 0
+    },
+    "color": "rgb(29, 37, 39)",
+    "backgroundColor": "rgb(248, 250, 244)",
+    "borderRadius": "8px"
+  },
+  {
+    "selector": ".hand-list",
+    "rect": {
+      "x": 0,
+      "y": 0,
+      "width": 0,
+      "height": 0,
+      "widthRatio": 0,
+      "heightRatio": 0
+    },
+    "color": "rgb(29, 37, 39)",
+    "backgroundColor": "rgba(0, 0, 0, 0)",
+    "borderRadius": "0px"
+  },
+  {
+    "selector": ".battle-journal-panel",
+    "rect": {
+      "x": 16,
+      "y": 16,
+      "width": 1248,
+      "height": 704,
+      "widthRatio": 0.975,
+      "heightRatio": 0.9777777777777777
+    },
+    "color": "rgb(29, 37, 39)",
+    "backgroundColor": "rgb(241, 245, 236)",
+    "borderRadius": "6px"
+  }
+]
