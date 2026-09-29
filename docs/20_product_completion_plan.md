@@ -60,3 +60,15 @@
 - [x] 3. local人対人 / Draft / Sealed — 端末内2人対戦、Draft、Sealedの各ルール・設定・終了結果が独立して動作し、隠し情報と手番制御を守る。各モードのシナリオテストを用意する。
 - [x] 4. Experimental masters — 実験用Masterを通常対局から分離し、明示的に選択した場合だけ利用可能にする。能力、対局保存、AI/人間双方の合法性とバランス評価を記録する。
 - [x] 5. 自作カードアート / 正式ブランド — 全カードの独自アートを制作・配布し、旧画像への依存を外す。独自タイトル/ロゴ/配色/文言を画面全体に適用し、素材manifestに権利/出典を記録する。取り込み機能は本項目の必須条件ではない。原典のカード名/ルールの全面置換は未承認で、提供物は非公式互換として表示する。権利/商標クリア済みと断定せず、素材の権利状態をレビューする。
+
+## 完了後の追加アート修正（別タスク、20項目の履歴は維持）
+
+2026-09-29のユーザー追加指示を受け、元画像のシルエット、色面、ポーズ、クロップを基準にした読みやすいシンプル2D描き直しへ切り替えた。カード名や旧subject文から別キャラクターを発明しない。後段5項目と全20項目の完了/Root承認記録は維持し、この追作業によって当時の完了履歴を取り消さない。
+
+- 公開状態: `public/art/card-art-manifest.json` はversion 2。内訳は147 reference-redrawと、生成拒否により現行v1を変更せず保持した004/005/007の3枚。保持3枚は描き直し成功として数えない。ユーザーによるこの3枚の扱いの回答は引き続き待ち。
+- 147枚の証跡: Rootが各147件の実call全文・参照入力と候補を突合し、画像の64/48/32px視認をレビューした。生成入力は元JPGを明示参照し、094のみ元JPGと中間画像の計2枚を入力している。manifestはprompt、候補SHA、reference source/SHA、権利状態を記録し、生成元の保存場所と制作途中の証跡は含めない。
+- 公開監査: Root独立監査でmanifest SHA `703ca4b69d9ed03e4754a00378b646b1bc89b7dcba22ca42610b51e112d12733`、147件の選定画像SHA一致、保持3件のv1 SHA/prompt不変を確認。公開変更範囲はmanifestと147 PNGの計148ファイルで、native UI変更は0。
+- テスト境界: `tests/cardArtBuilderV2.test.ts` の14件は合成fixtureに対するschema/preflight/dry-run/publish rollback安全性の検査で、実画像の視覚品質や権利を証明するものではない。`tests/cardArtAssets.test.ts` は公開version 2、147/3内訳、PNG signature、manifest対応、配布bytesのSHA/寸法とprivate-path漏洩を検査する。v2固定後の対象テストは1 file / 3 tests PASSで、最終全unit suiteにも含まれる。全unit PASSは実画像の権利を証明するものではない。
+- 権利状態: reference-based redrawであり、権利・商標クリア済みとは断定しない。生成拒否3件は元のまま残し、扱いの回答を待つ。
+
+公開後の最終検証（2026-09-29、Root報告分）: `npm test` は64 files / 808 tests PASS（866.76秒）。`diagnosticErrorBoundary` 6 testsは293msでPASSし、長い無出力はjsdom環境初期化360.16秒によるものと確認した（単独実行も6/6 PASS）。`npm run build` と最終ソースの `npx tsc -b` PASS（buildに既知の500KB超chunk警告あり）、Playwright E2E 13/13 PASS（2.8分、承認済みbaseline更新なし）。配布150 PNGのbytes SHA/寸法監査とproduction previewのmanifest/150画像HTTP SHA・decode・寸法一致もPASS。desktop Play、Card Library、390px mobileの実画面はRoot目視済み、axe違反0・console/page error 0・横overflowなし。

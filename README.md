@@ -26,7 +26,9 @@ Playwright E2EはローカルChromiumが必要です。Visual検査は承認済�
 
 ## アートの出典
 
-全150枚の独自カードアートと素材情報は[配布用アートmanifest](public/art/card-art-manifest.json)を参照してください。manifestには採用画像のprompt・hash・出典を記録しています。元出力の保存場所と制作途中の証跡は非公開です。素材情報は権利や商標のクリア済みを示すものではありません。
+現在配布中の画像は[アートmanifest](public/art/card-art-manifest.json)で管理しています。v2は147枚のreference-based redrawと、生成拒否により現行v1画像をそのまま保持した004/005/007の3枚で構成されています。保持された3枚は描き直し完了を意味しません。147枚は元画像を参照して描き直したもので、094は元JPGと中間画像の計2枚を生成入力に使っています。
+
+manifestには採用画像のprompt/hash/reference出典と権利状態を記録し、生成元の保存場所や制作途中の証跡は公開していません。reference-based redrawは権利・商標クリア済みを意味せず、その確認済みとも主張しません。
 
 ## 関連資料
 
